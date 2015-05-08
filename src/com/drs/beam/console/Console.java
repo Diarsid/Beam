@@ -25,9 +25,9 @@ public class Console implements Runnable, ExternalIOIF{
     private final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private final InputHandler input;
     
-    private final String ORG =      "Org > ";
-    private final String ERROR =    "Org Error > ";
-    private final String SPACE =    "      ";
+    private final String ORG =      "Beam > ";
+    private final String ERROR =    "Beam Error > ";
+    private final String SPACE =    "       ";
     
     private TaskManagerIF taskManager;
     private OSExecutorIF osExecutor;
@@ -64,7 +64,7 @@ public class Console implements Runnable, ExternalIOIF{
                 // switch operator
                 // obtain new string as command to choose between cases
                 command:
-                switch (reader.readLine().trim().intern()){
+                switch (reader.readLine().trim()){
                     // command to close console
                     case "close" :{
                         orgIO.setDefaultIO();
@@ -170,11 +170,11 @@ public class Console implements Runnable, ExternalIOIF{
                         //
                         break command;
                     }
-                    case ("use native show task") : {
+                    case ("use native task showing") : {
                         orgIO.useNativeShowTaskMethod();
                         break command;
                     }
-                    case ("use external show task") : {
+                    case ("use external task showing") : {
                         orgIO.useExternalShowTaskMethod();
                         break command;
                     }
