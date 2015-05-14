@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * project: Beam
+ * author: Diarsid
  */
 package com.drs.beam.console;
 
@@ -15,10 +14,7 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
 
-/**
- *
- * @author Diarsid
- */
+
 public class Console implements Runnable, ExternalIOIF{
     // Fields =============================================================================
     private final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));

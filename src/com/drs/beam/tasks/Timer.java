@@ -1,14 +1,10 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.tasks;
 
 import java.time.LocalDateTime;
-
-/**
- * Created with IntelliJ IDEA.
- * User: Diarsid
- * Date: 04.09.14
- * Time: 1:15
- * To change this template use File | Settings | File Templates.
- */
 
     /*
     Runnable class to watch current time, check alarm task's time

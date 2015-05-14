@@ -1,3 +1,7 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam;
 
 import com.drs.beam.io.BeamIO;
@@ -14,11 +18,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-/**
- * Org by Diarsid
- * Time: 2:27 - 14.12.14
- * IDE: IntelliJ IDEA 12
- */
+
 
 public class Organizer{
     // Fields ---------------------------------------------------------------------------------

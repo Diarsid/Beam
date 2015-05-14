@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * project: Beam
+ * author: Diarsid
  */
 package com.drs.beam.console;
 
@@ -68,12 +67,6 @@ public class InputHandler {
             if (text.length()==0)
                 // if nothing was entered, input continues
                 continue inputText;
-            // sequence of characters '~}' is used as a delimiter between strings
-            // when string[] is saved into DB TEXT field
-            if (text.contains("~}")) {
-                console.printLn("Forbidden characters! Try again.");
-                continue inputText;
-            }
             // if given string satisfied all requirements input loop ends, method returns it's value
             break inputText;
         }

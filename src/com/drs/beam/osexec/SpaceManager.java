@@ -1,10 +1,8 @@
-package com.drs.beam.osexec;
-
-/**
- * Org by Diarsid
- * Time: 19:08 - 25.01.15
- * IDE: IntelliJ IDEA 12
+/*
+ * project: Beam
+ * author: Diarsid
  */
+package com.drs.beam.osexec;
 
 public class SpaceManager {
     // Fields ==========================================================================================================

@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * project: Beam
+ * author: Diarsid
  */
 package com.drs.beam.tasks.dao;
 
@@ -15,22 +14,24 @@ import java.util.ArrayList;
  * @author Diarsid
  */
 public interface TasksDao {    
+    void        saveTask(Task task);
+    
+    boolean     isDBinitialized();
+    void        initTasksTable(); 
+    
+    boolean     deleteTaskByText  (String text);
+    boolean     deleteTasks      (int tasksSort);    
+        
+    ArrayList<Task>  extractFirstTasks    ();
+    ArrayList<Task>  extractExpiredTasks  (LocalDateTime fromNow);
+    
+    int             getLastId           ();
+    LocalDateTime    getFirstTaskTime     ();
+    ArrayList<Task>  getTasks            (int isActive);
+    ArrayList<Task>  getTasksByTime       (LocalDateTime firstTaskTime);
+        
+        
     static TasksDao getDao(){
         return DBManager.getTasksDAO();
     }
-    
-    void saveTask(Task task);
-    
-    boolean     isDBinitialized();
-    void        initTasksTable();    
-    
-    int             getLastId           ();
-    LocalDateTime    getFirstTaskTime     ();    
-    ArrayList<Task>  extractFirstTasks    ();
-    ArrayList<Task>  extractExpiredTasks  (LocalDateTime fromNow);
-    ArrayList<Task>  getTasks            (int isActive);
-    ArrayList<Task>  getTasksByTime       (LocalDateTime firstTaskTime);
-    
-    boolean deleteTaskByText  (String text);
-    boolean deleteTasks      (int tasksSort);
 }

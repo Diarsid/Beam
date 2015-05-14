@@ -1,15 +1,13 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.remote.codebase;
 
 import com.drs.beam.tasks.Task;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-
-/**
- * Org by Diarsid
- * Time: 13:07 - 25.02.15
- * IDE: IntelliJ IDEA 12
- */
 
 public interface TaskManagerIF extends Remote {      
     

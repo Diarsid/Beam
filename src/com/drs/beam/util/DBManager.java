@@ -1,18 +1,14 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.util;
 
 import com.drs.beam.io.BeamIO;
 import com.drs.beam.io.InnerIOIF;
 import com.drs.beam.tasks.dao.H2PooledTasksDao;
 import com.drs.beam.tasks.dao.TasksDao;
-import org.h2.jdbcx.JdbcConnectionPool;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Diarsid
- * Date: 02.09.14
- * Time: 0:56
- * To change this template use File | Settings | File Templates.
- */
 public class DBManager {
     // Fields =============================================================================
     private static InnerIOIF ioEngine = BeamIO.getInnerIO();
@@ -36,7 +32,7 @@ public class DBManager {
         TasksDao dao = null;
         choosing: switch(config.getCoreDBName()){
             case ("H2pooled") : {
-                dao = getPooledH2(config);
+                dao = new H2PooledTasksDao(config.getCoreDBURL(), "sa", "");
                 break choosing;
             }
             case ("H2") : {
@@ -53,16 +49,5 @@ public class DBManager {
             System.exit(1);
         }
         return dao;
-    }
-    
-    /*
-    * Private method provides H2PooledTasksDao implementation of TasksDao interface for
-    * H2 database with built in H2 connection pool.
-    */
-    private static H2PooledTasksDao getPooledH2(ConfigReader config){
-        JdbcConnectionPool cp = JdbcConnectionPool.create(
-            config.getCoreDBURL(), "sa", "");
-        return new H2PooledTasksDao(cp);
-    }
-    
+    }    
 }

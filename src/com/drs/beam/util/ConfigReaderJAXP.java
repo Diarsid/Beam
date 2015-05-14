@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * project: Beam
+ * author: Diarsid
  */
 package com.drs.beam.util;
 
@@ -25,7 +24,6 @@ class ConfigReaderJAXP implements ConfigReader{
     private String result;    
     
     // Constructor ========================================================================
-
     public ConfigReaderJAXP() {
         try {
             config = DocumentBuilderFactory
@@ -38,14 +36,16 @@ class ConfigReaderJAXP implements ConfigReader{
         }        
     }
     
+    // Methods ============================================================================
+    
     public static void main(String[] args) {
         ConfigReaderJAXP conf = new ConfigReaderJAXP();
         System.out.println(conf.getCoreDBDriver());
         System.out.println(conf.getCoreDBURL());
     }
     
-    // Methods ============================================================================
-    
+    // ConfigReader methods implementations to get required info from config.xml ----------
+    @Override
     public int getOrganizerPort(){
         try{
             exp = "//rmi-info/organizer";
@@ -58,6 +58,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return -1;
         }
     }
+    
+    @Override
     public String getOrganizerHost(){
         try {
             exp = "//rmi-info/organizer";
@@ -70,6 +72,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public int getConsolePort(){
         try{
             exp = "//rmi-info/console";
@@ -82,6 +86,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return -1;
         }
     }
+    
+    @Override
     public String getConsoleHost(){
         try {
             exp = "//rmi-info/console";
@@ -94,6 +100,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getTaskManagerName(){
         try {
             exp = "//rmi-info/organizer/task-manager-rmi-name";
@@ -105,6 +113,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getOSExecutorName(){
         try {
             exp = "//rmi-info/organizer/os-executor-rmi-name";
@@ -116,6 +126,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getOrgIOName(){
         try {
             exp = "//rmi-info/organizer/org-io-rmi-name";
@@ -127,6 +139,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getConsoleName(){
         try {
             exp = "//rmi-info/console/console-rmi-name";
@@ -139,6 +153,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getCoreDBDriver(){
         try {
             exp = "/configuration/databases/core/jdbc-driver";
@@ -151,6 +167,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getCoreDBURL(){
         try {
             exp = "/configuration/databases/core/jdbc-url";
@@ -167,6 +185,8 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
+    
+    @Override
     public String getCoreDBName(){
         try {
             exp = "/configuration/databases/core/db-name";
@@ -179,6 +199,4 @@ class ConfigReaderJAXP implements ConfigReader{
             return null;
         }
     }
-    
-    
 }

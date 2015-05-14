@@ -1,3 +1,7 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.io;
 
 import com.drs.beam.remote.codebase.ExternalIOIF;
@@ -9,10 +13,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-/**
- * Org by Diarsid
- * Time: 21:14 - 04.12.14
- * IDE: IntelliJ IDEA 12
+/*
+ *
  */
 
 public class BeamIO implements InnerIOIF, OrgIOIF {
@@ -35,6 +37,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     /*
      *
      */
+    @Override
     public void showTask(Task task){
         if (hasExternalIOProcessor && useExternalShowTaskMethod){
             try{
@@ -50,6 +53,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     /*
      *
      */
+    @Override
     public void informAboutError(String error){
         if (hasExternalIOProcessor){
             try{
@@ -65,6 +69,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     /*
      *
      */
+    @Override
     public void inform(String info){
         if (hasExternalIOProcessor){
             try{
@@ -76,7 +81,8 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
         } else
             nativeInform(info);
     }
-
+    
+    // Private "native" application methods for IO ----------------------------------------
     /*
      *
      */
@@ -84,21 +90,37 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
         //
     }
 
+    /*
+     *
+     */
     private void nativeInform(String info){
         System.out.println(info);
     }
 
+    /*
+     *
+     */
     private void nativeInformAboutError(String error){
         System.out.println(error);
     }
+    
+    /*
+     *
+     */    
+    private void resetIOtoDefault(){
+        hasExternalIOProcessor = false;
+        useExternalShowTaskMethod = false;
+        externalIOEngine = null;
+    }
 
-    // Methods implements OrgIOIF interface ----------------------------------------------------------------------------
+    // Methods implements OrgIOIF interface -----------------------------------------------
 
     /*
      * Intended for accepting external object implements ExternalIOIF with RMI
      * using given port and object`s name in RMI registry on given port.
      * Invoked by ExternalIOIF object to bind himself with organizer.
      */
+    @Override
     public void acceptNewIOProcessor() throws RemoteException{
         try{
             ConfigReader config = ConfigReader.getReader();
@@ -116,6 +138,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
      * Invoked by ExternalIOIF object to get information about whether organizer already has a reference on
      * external object implements ExternalIOIF
      */
+    @Override
     public boolean hasExternalIOProcessor() throws RemoteException{
         try {
             externalIOEngine.isActive();
@@ -129,6 +152,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     /*
      *
      */
+    @Override
     public void useExternalShowTaskMethod() throws RemoteException{
         useExternalShowTaskMethod = true;
     }
@@ -136,24 +160,17 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     /*
      *
      */
+    @Override
     public void useNativeShowTaskMethod() throws RemoteException{
         useExternalShowTaskMethod = false;
-    }  
-
-    /*
-     *
-     */
-    public void resetIOtoDefault(){
-        hasExternalIOProcessor = false;
-        useExternalShowTaskMethod = false;
-        externalIOEngine = null;
-    }
+    }     
 
     /* Implements method in OrganizerRemoteInterface.
      * Intended to force organizer to use his native IO if console or other external IO which was bound with this
      * organizer instance has been closed or stopped.
      * Invokes method resetIOtoDefault() in order to use BeamIO when external IO isn`t active.
      */
+    @Override
     public void setDefaultIO() throws RemoteException{
         resetIOtoDefault();
     }
@@ -162,6 +179,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
      * Terminates this JVM instance.
      * Invoked by ExternalIOIF object to stop the program.
      */
+    @Override
     public void exit() throws RemoteException {
         new Thread(new Runnable(){
             @Override
@@ -174,7 +192,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     // Static getter methods --------------------------------------------------------------
     
     /*
-    *  Static method to get instance of InnerIOIF interface to perform message output 
+    * Static method to get instance of InnerIOIF interface to perform message output 
     * from within the programm 
     */
     public static InnerIOIF getInnerIO(){

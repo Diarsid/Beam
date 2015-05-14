@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * project: Beam
+ * author: Diarsid
  */
 package com.drs.beam.tasks.dao;
 
@@ -12,6 +11,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
@@ -77,9 +77,9 @@ public class H2PooledTasksDao implements TasksDao{
             "WHERE t_content LIKE ?";
     
     // Constructor ========================================================================
-    public H2PooledTasksDao(JdbcConnectionPool cp){
-        this.conPool = cp;
-        cp.setMaxConnections(1);
+    public H2PooledTasksDao(String url, String user, String pass){
+        this.conPool = JdbcConnectionPool.create(url, user, pass);
+        this.conPool.setMaxConnections(1);
     }
 
     // Methods ============================================================================
@@ -196,6 +196,7 @@ public class H2PooledTasksDao implements TasksDao{
         } catch (SQLException e) {
             processSQLException(e);
         }
+        Collections.sort(retrievedTasks);
         return retrievedTasks;
     }
     
@@ -225,6 +226,7 @@ public class H2PooledTasksDao implements TasksDao{
         }catch (SQLException e) {
             processSQLException(e);
         }
+        Collections.sort(expiredTasks);
         return expiredTasks;
     }
     
@@ -258,6 +260,10 @@ public class H2PooledTasksDao implements TasksDao{
         }catch (SQLException e) {
             processSQLException(e);
         }
+        Collections.sort(tasks);
+        if (isActive < 0){
+            Collections.reverse(tasks);
+        }
         return tasks;
     }
     
@@ -278,6 +284,7 @@ public class H2PooledTasksDao implements TasksDao{
         }catch (SQLException e) {
             processSQLException(e);
         }
+        Collections.sort(tasks);
         return tasks;
     }
     

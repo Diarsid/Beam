@@ -1,3 +1,7 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.tasks;
 
 import com.drs.beam.io.BeamIO;
@@ -7,15 +11,9 @@ import com.drs.beam.tasks.dao.TasksDao;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Diarsid
- * Date: 02.09.14
- * Time: 0:47
- * To change this template use File | Settings | File Templates.
- */
     /*
     Pivotal program's class to operate with tasks.
     Interacts with and logically connects program's database, input, output and time watching of active tasks.
@@ -25,22 +23,15 @@ import java.util.ArrayList;
      */
 public class TaskManager implements TaskManagerIF {
     // Fields =============================================================================
-    private final InnerIOIF     ioEngine;
-    private final InputVerifier  verifier;
-    private final TasksDao      dao;
-    
-    private LocalDateTime firstTaskTime = null;
-    
-    // temporary often used fields
-    private Task            tempTask;
-    private LocalDateTime    tempTime = null;
+    private final InnerIOIF ioEngine;
+    private final TasksDao  dao;
+    private LocalDateTime   firstTaskTime = null;    
     
     // Constructor ========================================================================
     // Constructor provides necessary DBManager and Timer objects for this TaskManager
     // reads database when program starts
     public TaskManager(){
         this.ioEngine = BeamIO.getInnerIO();
-        this.verifier = new InputVerifier();
         this.dao = TasksDao.getDao();
         this.initWork();
         new Timer(this);
@@ -48,20 +39,33 @@ public class TaskManager implements TaskManagerIF {
 
     // Methods ============================================================================
 
-    // getters
+    /*
+    * 
+    */ 
     LocalDateTime getFirstTaskTime(){
         return firstTaskTime;
+    }
+    
+    // checks whether program has any active tasks to watch their time
+    public boolean isAnyTasks(){
+        return (firstTaskTime != null);
     }
     
     private void refreshFirstTaskTime(){
         firstTaskTime = dao.getFirstTaskTime();        
     }
-    // initial database reading when program starts it's work
+    
+    /*
+    * Method for initial database reading when program starts it's work.
+    */    
     private void initWork(){
         if (!dao.isDBinitialized()){
             dao.initTasksTable();
         } else{
+            // If there is any problems with databse, returns -1.
             int newId = dao.getLastId();
+            // If there are any storing tasks get and perform all tasks whose time 
+            // has been expired.
             if ( newId >= 0){
                 Task.setInitId(newId);
                 ArrayList<Task> tasks = dao.extractExpiredTasks(LocalDateTime.now());
@@ -72,9 +76,9 @@ public class TaskManager implements TaskManagerIF {
             } else {
                 System.exit(1);                
             }
-            
         }            
     }
+    
     private void performTask(Task task){
         executing: switch(task.getType()){
             case (Task.USUAL_TASK) : {
@@ -86,7 +90,96 @@ public class TaskManager implements TaskManagerIF {
                 break executing;                
             }
         } 
+    }    
+    
+    // Characters sequence '~}' is used as a delimiter between strings
+    // when string[] is saved into DB TEXT field.    
+    private boolean verifyTaskOnForbiddenChars(String[] text) {
+        for (String s : text){
+            if (s.contains("~}"))
+                return false;
+        }
+        return true;
     }
+
+    private boolean verifyTextOnForbiddenChars(String text) {
+        if (text.contains("~}")){
+            return false;
+        }
+        return true;
+    }
+    
+    private LocalDateTime ofFormat(String timeString, boolean mustBeFuture){
+        LocalDateTime time = null;
+        parsing: try{
+            // get length of incoming string to define it's format
+            switch (timeString.length()){
+                case (16) : {
+                    // time format: dd-MM-uuuu HH:mm
+                    // full format
+                    time = LocalDateTime.parse(
+                            timeString,
+                            DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN));
+                    break parsing;
+                }
+                case (5) : {
+                    // time format: HH:MM
+                    // specifies today's hours and minutes
+                    time = LocalDateTime.now().withSecond(00).withNano(000)
+                            .withHour(Integer.parseInt(timeString.substring(0,2)))
+                            .withMinute(Integer.parseInt(timeString.substring(3,5)));
+                    break parsing;
+                }
+                case (6) : {
+                    // time format: +HH:MM
+                    // specifies time in hours and minutes, which is added to current time-date like timer
+                    time = LocalDateTime.now().withSecond(00).withNano(000)
+                            .plusHours(Integer.parseInt(timeString.substring(1,3)))
+                            .plusMinutes(Integer.parseInt(timeString.substring(4,6)));
+                    break parsing;
+                }
+                case (8) : {
+                    // time format: dd HH:MM
+                    // specifies hours, minutes and day of current month
+                    time = LocalDateTime.now().withSecond(00).withNano(000)
+                            .withDayOfMonth(Integer.parseInt(timeString.substring(0,2)))
+                            .withHour(Integer.parseInt(timeString.substring(3,5)))
+                            .withMinute(Integer.parseInt(timeString.substring(6,8)));
+                    break parsing;
+                }
+                case (11) : {
+                    // time format: dd-mm HH:MM
+                    // specifies hours, minutes, day and month of current year
+                    time = LocalDateTime.now().withSecond(00).withNano(000)
+                            .withDayOfMonth(Integer.parseInt(timeString.substring(0,2)))
+                            .withMonth(Integer.parseInt(timeString.substring(3,5)))
+                            .withHour(Integer.parseInt(timeString.substring(6,8)))
+                            .withMinute(Integer.parseInt(timeString.substring(9,11)));
+                    break parsing;
+                }
+                default: {
+                    ioEngine.informAboutError("Time verifying: Unrecognizable time format.");
+                    break parsing;
+                }
+            }
+        } catch (DateTimeParseException e){
+            ioEngine.informAboutError("Time verifying: Wrong time format.");
+            return null;
+        } catch (NumberFormatException e){            
+            ioEngine.informAboutError("Time verifying: Wrong characters have been inputted!");
+            return null;
+        }
+        
+        if (time == null){            
+            return null;
+        } else if (mustBeFuture && time.isBefore(LocalDateTime.now())){
+            ioEngine.informAboutError("Time verifying: Given time is past. It must be future!");
+            return null;
+        } else {
+            return time;
+        }       
+    }
+    
     // method to perform task, when it's time comes
     void performFirstTask(){
         ArrayList<Task> tasks = dao.extractFirstTasks();
@@ -96,26 +189,21 @@ public class TaskManager implements TaskManagerIF {
         }        
     }
     
+    // Methods implements TaskManagerIF interface -----------------------------------------
     @Override
-    public void createNewTask(String time, String[] task) throws RemoteException{
-        try{
-            tempTime = verifier.verifyTimeFormat(time, true);
-            verifier.verifyTask(task);
-        }catch (VerifyFailureException e){
-            ioEngine.informAboutError(e.getVerifyMessage());
+    public void createNewTask(String timeString, String[] task) throws RemoteException{
+        LocalDateTime time = ofFormat(timeString, true);
+        if (time == null){
+            ioEngine.informAboutError("Time veryfying: time parsing method has returned NULL");
             return;
         }
-        tempTask = Task.newTask("task", tempTime, task);        
-        dao.saveTask(tempTask);                    
-        refreshFirstTaskTime();
-        
-        tempTask = null;
-        tempTime = null;
-    }
-
-    // checks whether program has any active tasks to watch their time
-    public boolean isAnyTasks(){
-        return (firstTaskTime != null);
+        if (verifyTaskOnForbiddenChars(task)){
+            Task newTask = Task.newTask("task", time, task);        
+            dao.saveTask(newTask);                    
+            refreshFirstTaskTime();
+        } else {
+            ioEngine.informAboutError("Text verifying: Forbidden characters '~}' was inputted!");            
+        }
     }
     
     @Override
@@ -135,7 +223,7 @@ public class TaskManager implements TaskManagerIF {
     
     @Override
     public ArrayList<Task> getPastTasks() throws RemoteException{        
-        // value -1 to inform that we need only future tasks
+        // value -1 to inform that we need only past tasks
         return dao.getTasks(-1);
     }
     
@@ -145,17 +233,16 @@ public class TaskManager implements TaskManagerIF {
     }
     
     @Override
-    public boolean deleteTaskByText(String text) throws RemoteException{        
-        try {
-            boolean result;
-            verifier.verifyText(text);
+    public boolean deleteTaskByText(String text) throws RemoteException{ 
+        boolean result;
+        if (verifyTextOnForbiddenChars(text)){
             result = dao.deleteTaskByText(text);
             refreshFirstTaskTime();
             return result;
-        } catch (VerifyFailureException e) {
-            ioEngine.informAboutError(e.getVerifyMessage());
+        } else{
+            ioEngine.informAboutError("Text verifying: Forbidden characters '~}' was inputted!");
             return false;
-        }        
+        }     
     }
     
     @Override

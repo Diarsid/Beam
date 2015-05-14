@@ -1,3 +1,7 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.console;
 
 import com.drs.beam.remote.codebase.ExternalIOIF;
@@ -12,11 +16,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-/**
- * Org by Diarsid
- * Time: 15:05 - 10.01.15
- * IDE: IntelliJ IDEA 12
- */
 
 public class ConsoleManager{
     // Fields ----------------------------------------------------------------------------------------------------------

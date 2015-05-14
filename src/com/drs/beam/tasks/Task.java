@@ -1,3 +1,7 @@
+/*
+ * project: Beam
+ * author: Diarsid
+ */
 package com.drs.beam.tasks;
 
 import java.io.Serializable;
@@ -6,12 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.StringJoiner;
-
-/**
- * Org by Diarsid
- * Time: 16:03 - 04.12.14
- * IDE: IntelliJ IDEA 12
- */
 
 public class Task implements Comparable<Task>, Serializable{
     // Fields =============================================================================
@@ -58,7 +56,7 @@ public class Task implements Comparable<Task>, Serializable{
         idGen = lastUsedId;
     }
     
-    // Getters - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    // Getters ----------------------------------------------------------------------------
     public int getId(){
         return this.id;
     }
@@ -71,6 +69,7 @@ public class Task implements Comparable<Task>, Serializable{
     public String getTimeDBString(){
         return this.time.format(DateTimeFormatter.ofPattern(DB_TIME_PATTERN));
     }
+    
     /*
     * Converts content as String[] into one String in order to write it into one TEXT 
     * database field. Uses StringJoiner object with char sequence '~}' as a delimiter 
@@ -88,9 +87,8 @@ public class Task implements Comparable<Task>, Serializable{
     }
     public String getType(){
         return this.type;
-    }
+    }    
     
-    // Overrided basic methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     /*
     * Implementation of abstract method compareTo() in Comparable interface
     */
