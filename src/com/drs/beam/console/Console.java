@@ -238,11 +238,11 @@ public class Console implements Runnable, ExternalIOIF{
         try{
             writer.newLine();
             writer.write(SPACE);
-            writer.write(task.getTimeOutputString());
+            writer.write("| " + task.getTimeOutputString());
             writer.newLine();
             for (String s : task.getContent()){
                 writer.write(SPACE);
-                writer.write(s);
+                writer.write("| " + s);
                 writer.newLine();
             }
             writer.flush();
