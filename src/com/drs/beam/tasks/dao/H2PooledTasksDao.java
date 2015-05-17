@@ -7,7 +7,12 @@ package com.drs.beam.tasks.dao;
 import com.drs.beam.io.BeamIO;
 import com.drs.beam.io.InnerIOIF;
 import com.drs.beam.tasks.Task;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -83,6 +88,49 @@ public class H2PooledTasksDao implements TasksDao{
     }
 
     // Methods ============================================================================
+    
+    // Private util methods 
+    
+    private void processSQLException(SQLException e){
+        ioEngine.informAboutError(e.getMessage());
+        ioEngine.informAboutError("------> stack trace :");
+        for (StackTraceElement element : e.getStackTrace()){
+            ioEngine.informAboutError(element.toString());
+        }        
+    }
+    
+    private Task getTaskFromResultSet(ResultSet rs) throws SQLException{
+        Task task = Task.restoreTask(
+                    rs.getString("t_type"), 
+                    rs.getInt("t_id"), 
+                    LocalDateTime.parse(
+                            rs.getString("t_time"), 
+                            DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN)), 
+                    rs.getString("t_content"));
+        return task;
+    }
+    
+    private void update(ResultSet rs, Task taskToUpdate) throws SQLException{
+        updateSQL:
+                switch(taskToUpdate.getType()) {
+                    case("event") : {
+                        // update: increase year by 1, status remains TRUE
+                        String newCalendarEventTime = 
+                            taskToUpdate.getTime().plusYears(1)
+                            .format(DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN));
+                        rs.updateString("t_time", newCalendarEventTime);
+                        break updateSQL;
+                    }
+                    case("task") : {
+                        // update: change status to FALSE
+                        rs.updateBoolean("t_status", false);
+                        break updateSQL;
+                    }
+                }
+        rs.updateRow();   
+    }
+    
+    // TasksDAO interface methods to perform SQL
     
     /*
     * Method for saving tasks into H2 database.
@@ -321,46 +369,5 @@ public class H2PooledTasksDao implements TasksDao{
             processSQLException(e);            
             return false;
         }
-    }
-    
-    // privat util methods
-    
-    private void processSQLException(SQLException e){
-        ioEngine.informAboutError(e.getMessage());
-        ioEngine.informAboutError("------> stack trace :");
-        for (StackTraceElement element : e.getStackTrace()){
-            ioEngine.informAboutError(element.toString());
-        }        
-    }
-    
-    private Task getTaskFromResultSet(ResultSet rs) throws SQLException{
-        Task task = Task.restoreTask(
-                    rs.getString("t_type"), 
-                    rs.getInt("t_id"), 
-                    LocalDateTime.parse(
-                            rs.getString("t_time"), 
-                            DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN)), 
-                    rs.getString("t_content"));
-        return task;
-    }
-    
-    private void update(ResultSet rs, Task taskToUpdate) throws SQLException{
-        updateSQL:
-                switch(taskToUpdate.getType()) {
-                    case("event") : {
-                        // update: increase year by 1, status remains TRUE
-                        String newCalendarEventTime = 
-                            taskToUpdate.getTime().plusYears(1)
-                            .format(DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN));
-                        rs.updateString("t_time", newCalendarEventTime);
-                        break updateSQL;
-                    }
-                    case("task") : {
-                        // update: cnage status to FALSE
-                        rs.updateBoolean("t_status", false);
-                        break updateSQL;
-                    }
-                }
-        rs.updateRow();   
     }
 }
