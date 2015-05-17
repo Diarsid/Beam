@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.util;
+package com.drs.beam.util.config;
 
 import java.io.File;
 import org.jdom2.Document;

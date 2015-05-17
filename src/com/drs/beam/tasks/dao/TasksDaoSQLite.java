@@ -8,6 +8,6 @@ package com.drs.beam.tasks.dao;
  *
  * @author Diarsid
  */
-public class SQLiteTasksDao {
+public class TasksDaoSQLite {
     
 }

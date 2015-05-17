@@ -7,20 +7,25 @@ package com.drs.beam.io;
 import com.drs.beam.remote.codebase.ExternalIOIF;
 import com.drs.beam.remote.codebase.OrgIOIF;
 import com.drs.beam.tasks.Task;
-import com.drs.beam.util.ConfigReader;
+import com.drs.beam.io.jfxgui.Gui;
+import com.drs.beam.io.jfxgui.GuiEngine;
+import com.drs.beam.util.config.ConfigReader;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 /*
- *
+ * Central class which is responsible for program`s output.
+ * Defines ways to output information and connects entire program 
+ * with external output mechanism which implements ExternalIOIF e.g. 
+ * external Console.
  */
-
 public class BeamIO implements InnerIOIF, OrgIOIF {
     // Fields =============================================================================
-    static private BeamIO io = new BeamIO();
+    private static final BeamIO io = new BeamIO();
     
+    private final Gui gui = new GuiEngine();
     private ExternalIOIF externalIOEngine;
 
     private boolean hasExternalIOProcessor = false;
@@ -28,14 +33,23 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
 
     // Constructors =======================================================================
     public BeamIO() {
+        new Thread(gui, "JavaFX Application Thread").start();
     }
 
-    // Methods ============================================================================
-
-    // Methods implements InnerIOIF interface ---------------------------------------------
-
+    // Methods ============================================================================    
+    
+    public static InnerIOIF getInnerIO(){
+        return io;
+    }
+    
+    public static OrgIOIF getRemoteIO(){
+        return io;
+    }
+    
     /*
-     *
+     * Methods implements InnerIOIF interface.
+     * Define way to show specified Task to user according to whether 
+     * external output availability and should program uses external output or not.
      */
     @Override
     public void showTask(Task task){
@@ -49,26 +63,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
         } else
             nativeShowTask(task);
     }
-
-    /*
-     *
-     */
-    @Override
-    public void informAboutError(String error){
-        if (hasExternalIOProcessor){
-            try{
-                externalIOEngine.informAboutError(error);
-            } catch (RemoteException e){
-                resetIOtoDefault();
-                nativeInformAboutError(error);
-            }
-        } else
-            nativeInformAboutError(error);
-    }
-
-    /*
-     *
-     */
+    
     @Override
     public void inform(String info){
         if (hasExternalIOProcessor){
@@ -81,44 +76,68 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
         } else
             nativeInform(info);
     }
+
+    @Override
+    public void informAboutError(String error, boolean isCritical){
+        if (hasExternalIOProcessor){
+            try{
+                externalIOEngine.informAboutError(error, isCritical);
+            } catch (RemoteException e){
+                resetIOtoDefault();
+                nativeInformAboutError(error, isCritical);
+            }
+        } else
+            nativeInformAboutError(error, isCritical);
+    }
     
-    // Private "native" application methods for IO ----------------------------------------
+    @Override
+    public void informAboutException(Exception e, boolean isCritical){
+        if (hasExternalIOProcessor){
+            try {
+                externalIOEngine.informAboutException(e, isCritical);
+            } catch (RemoteException re) {
+                resetIOtoDefault();
+                nativeInformAboutException(e, isCritical);
+            }
+        } else
+            nativeInformAboutException(e, isCritical);
+    }
+    
     /*
-     *
+     * Private "native" application methods for output.
+     * Are used when external output is unavailable or program 
+     * should not use it`s methods.
      */
     private void nativeShowTask(Task task){
+        gui.showTask(task);
+    }
+
+    private void nativeInform(String info){
         //
     }
-
-    /*
-     *
-     */
-    private void nativeInform(String info){
-        System.out.println(info);
-    }
-
-    /*
-     *
-     */
-    private void nativeInformAboutError(String error){
-        System.out.println(error);
+    
+    private void nativeInformAboutError(String error, boolean isCritical){
+        //
+        if(isCritical) 
+            System.exit(1);
     }
     
-    /*
-     *
-     */    
+    private void nativeInformAboutException(Exception e, boolean isCritical){
+        //
+        if(isCritical) 
+            System.exit(1);
+    }
+          
     private void resetIOtoDefault(){
         hasExternalIOProcessor = false;
         useExternalShowTaskMethod = false;
         externalIOEngine = null;
     }
 
-    // Methods implements OrgIOIF interface -----------------------------------------------
-
     /*
      * Intended for accepting external object implements ExternalIOIF with RMI
      * using given port and object`s name in RMI registry on given port.
-     * Invoked by ExternalIOIF object to bind himself with organizer.
+     * Is invoked by ExternalIOIF object to bind himself with organizer.
      */
     @Override
     public void acceptNewIOProcessor() throws RemoteException{
@@ -129,56 +148,44 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
             externalIOEngine = (ExternalIOIF) registry.lookup(config.getConsoleName());
             hasExternalIOProcessor = true;
         } catch (NotBoundException e){
-            e.printStackTrace();
-            System.out.println(e.getMessage());
+            nativeInformAboutException(e, false);
         }
     }
 
     /*
-     * Invoked by ExternalIOIF object to get information about whether organizer already has a reference on
-     * external object implements ExternalIOIF
+     * Invoked by ExternalIOIF object to get information about whether organizer 
+     * already has a reference to external object implements ExternalIOIF
      */
     @Override
     public boolean hasExternalIOProcessor() throws RemoteException{
-        try {
+        if (externalIOEngine == null){
+            return false;
+        } else{
+            try {            
             externalIOEngine.isActive();
             return true;
-        } catch (RemoteException | NullPointerException e){
-            resetIOtoDefault();
-            return false;
-        }
+            } catch (RemoteException e){
+                resetIOtoDefault();
+                return false;
+            }            
+        }        
     }
-
-    /*
-     *
-     */
+    
     @Override
     public void useExternalShowTaskMethod() throws RemoteException{
         useExternalShowTaskMethod = true;
     }
-
-    /*
-     *
-     */
+    
     @Override
     public void useNativeShowTaskMethod() throws RemoteException{
         useExternalShowTaskMethod = false;
     }     
 
-    /* Implements method in OrganizerRemoteInterface.
-     * Intended to force organizer to use his native IO if console or other external IO which was bound with this
-     * organizer instance has been closed or stopped.
-     * Invokes method resetIOtoDefault() in order to use BeamIO when external IO isn`t active.
-     */
     @Override
     public void setDefaultIO() throws RemoteException{
         resetIOtoDefault();
     }
-
-    /* Implements method in OrganizerRemoteInterface.
-     * Terminates this JVM instance.
-     * Invoked by ExternalIOIF object to stop the program.
-     */
+    
     @Override
     public void exit() throws RemoteException {
         new Thread(new Runnable(){
@@ -187,23 +194,5 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
                 System.exit(0);
             }
         }).start();
-    }
-    
-    // Static getter methods --------------------------------------------------------------
-    
-    /*
-    * Static method to get instance of InnerIOIF interface to perform message output 
-    * from within the programm 
-    */
-    public static InnerIOIF getInnerIO(){
-        return io;
-    }
-    
-    /*
-    * Static method to get instance of OrgIOIF interface to export it trough RMI for external
-    * usage
-    */
-    public static OrgIOIF getRemoteIO(){
-        return io;
     }
 }
