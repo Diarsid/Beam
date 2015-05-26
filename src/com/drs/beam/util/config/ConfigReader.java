@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.util;
+package com.drs.beam.util.config;
 
 /**
  *

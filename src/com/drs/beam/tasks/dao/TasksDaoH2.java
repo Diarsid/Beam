@@ -7,6 +7,7 @@ package com.drs.beam.tasks.dao;
 import com.drs.beam.io.BeamIO;
 import com.drs.beam.io.InnerIOIF;
 import com.drs.beam.tasks.Task;
+import com.drs.beam.util.data.DataBase;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,18 +18,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.h2.jdbcx.JdbcConnectionPool;
 
 /**
  *
  * @author Diarsid
  */
-public class H2PooledTasksDao implements TasksDao{
+public class TasksDaoH2 implements TasksDao{
     // Fields =============================================================================
-    private final JdbcConnectionPool conPool;
+    private final DataBase data;
     private final InnerIOIF ioEngine = BeamIO.getInnerIO();
     
-    // SQL statements
     private final String INSERT_NEW_TASK = 
             "INSERT INTO tasks VALUES (?, ?, ?, ?, ?)";
     private final String DETECT_TABLE = 
@@ -82,23 +81,12 @@ public class H2PooledTasksDao implements TasksDao{
             "WHERE t_content LIKE ?";
     
     // Constructor ========================================================================
-    public H2PooledTasksDao(String url, String user, String pass){
-        this.conPool = JdbcConnectionPool.create(url, user, pass);
-        this.conPool.setMaxConnections(1);
+    public TasksDaoH2(DataBase dataBase){
+        this.data = dataBase;
     }
 
     // Methods ============================================================================
-    
-    // Private util methods 
-    
-    private void processSQLException(SQLException e){
-        ioEngine.informAboutError(e.getMessage());
-        ioEngine.informAboutError("------> stack trace :");
-        for (StackTraceElement element : e.getStackTrace()){
-            ioEngine.informAboutError(element.toString());
-        }        
-    }
-    
+          
     private Task getTaskFromResultSet(ResultSet rs) throws SQLException{
         Task task = Task.restoreTask(
                     rs.getString("t_type"), 
@@ -137,7 +125,7 @@ public class H2PooledTasksDao implements TasksDao{
     */
     @Override
     public void saveTask(Task task) {
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             PreparedStatement st = con.prepareStatement(INSERT_NEW_TASK);)
         {   
             st.setInt       (1, task.getId());
@@ -148,7 +136,7 @@ public class H2PooledTasksDao implements TasksDao{
             
             st.executeUpdate();
         } catch (SQLException e){
-            processSQLException(e);
+            ioEngine.informAboutException(e, false);
         }
     }
     
@@ -158,14 +146,14 @@ public class H2PooledTasksDao implements TasksDao{
     */
     @Override
     public boolean isDBinitialized(){
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             Statement st = con.createStatement();)
         {
             ResultSet rs = st.executeQuery(DETECT_TABLE);
             ResultSetMetaData tableData = rs.getMetaData();
             return (tableData.getColumnCount() == 5);            
         }catch (SQLException e){
-            processSQLException(e);            
+            ioEngine.informAboutException(e, false);          
             return false;
         }
     }
@@ -175,32 +163,32 @@ public class H2PooledTasksDao implements TasksDao{
     */
     @Override
     public void initTasksTable(){
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             Statement st = con.createStatement();)
         {            
             st.executeUpdate(CREATE_TABLE);            
         } catch (SQLException e){
-            processSQLException(e);
+            ioEngine.informAboutException(e, true);
         }
     }
     
     @Override
     public int getLastId(){
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(GET_MAX_ID);)
         {
             rs.next();
             return rs.getInt(1);            
         } catch (SQLException e){
-            processSQLException(e); 
+            ioEngine.informAboutException(e, true);
             return -1;
         }
     }
     
     @Override
     public LocalDateTime getFirstTaskTime(){        
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(GET_FIRST_TIME);)
         {
@@ -217,7 +205,7 @@ public class H2PooledTasksDao implements TasksDao{
                 return null;
             }                    
         }catch (SQLException e){
-            processSQLException(e);
+            ioEngine.informAboutException(e, true);
             return null;
         }
     }  
@@ -225,7 +213,7 @@ public class H2PooledTasksDao implements TasksDao{
     @Override
     public ArrayList<Task> extractFirstTasks(){
         ArrayList<Task> retrievedTasks = new ArrayList<>();
-        try (Connection con = conPool.getConnection();
+        try (Connection con = data.getConnection();
             // create updatable ResultSet because we need update 't_status' field 
             // for usual task and increase 't_time' value of event for 1 year 
             Statement st = con.createStatement(
@@ -242,7 +230,7 @@ public class H2PooledTasksDao implements TasksDao{
                 update(rs, task);
             }
         } catch (SQLException e) {
-            processSQLException(e);
+            ioEngine.informAboutException(e, false);
         }
         Collections.sort(retrievedTasks);
         return retrievedTasks;
@@ -252,7 +240,7 @@ public class H2PooledTasksDao implements TasksDao{
     public ArrayList<Task> extractExpiredTasks(LocalDateTime fromNow){
         ArrayList<Task> expiredTasks = new ArrayList<>();
         try(
-            Connection con = conPool.getConnection();
+            Connection con = data.getConnection();
             PreparedStatement st = con.prepareStatement(
                     EXTRACT_EXPIRED_TASKS,
                     ResultSet.TYPE_SCROLL_INSENSITIVE, 
@@ -272,7 +260,7 @@ public class H2PooledTasksDao implements TasksDao{
             }
             rs.close();
         }catch (SQLException e) {
-            processSQLException(e);
+            ioEngine.informAboutException(e, false);
         }
         Collections.sort(expiredTasks);
         return expiredTasks;
@@ -287,7 +275,7 @@ public class H2PooledTasksDao implements TasksDao{
     @Override
     public ArrayList<Task> getTasks(int isActive){
         ArrayList<Task> tasks = new ArrayList<>();
-        try(Connection con = conPool.getConnection();)
+        try(Connection con = data.getConnection();)
         {
             PreparedStatement st;
             if (isActive == 0){
@@ -306,7 +294,7 @@ public class H2PooledTasksDao implements TasksDao{
             rs.close();
             st.close();
         }catch (SQLException e) {
-            processSQLException(e);
+            ioEngine.informAboutException(e, false);
         }
         Collections.sort(tasks);
         if (isActive < 0){
@@ -318,7 +306,7 @@ public class H2PooledTasksDao implements TasksDao{
     @Override
     public ArrayList<Task> getTasksByTime(LocalDateTime time){
         ArrayList<Task> tasks = new ArrayList<>();
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             PreparedStatement st = con.prepareStatement(SELECT_TASKS_WHERE_TIME);)
         {
             st.setString(1,
@@ -330,7 +318,7 @@ public class H2PooledTasksDao implements TasksDao{
             }
             rs.close();
         }catch (SQLException e) {
-            processSQLException(e);
+            ioEngine.informAboutException(e, false);
         }
         Collections.sort(tasks);
         return tasks;
@@ -338,21 +326,21 @@ public class H2PooledTasksDao implements TasksDao{
     
     @Override
     public boolean deleteTaskByText(String text){
-        try(Connection con = conPool.getConnection();
+        try(Connection con = data.getConnection();
             PreparedStatement st = con.prepareStatement(DELETE_TASKS_WHERE_TEXT);)            
         {
             st.setString(1, "%"+text+"%");
             int qty = st.executeUpdate();
             return (qty > 0); 
         }catch (SQLException e) {
-            processSQLException(e);
+            ioEngine.informAboutException(e, false);
             return false;
         }
     }
         
     @Override
     public boolean deleteTasks(int tasksSort){
-        try(Connection con = conPool.getConnection();)            
+        try(Connection con = data.getConnection();)            
         {
             PreparedStatement st;
             if (tasksSort == 0){
@@ -366,7 +354,7 @@ public class H2PooledTasksDao implements TasksDao{
             st.close();
             return (qty > 0);
         }catch (SQLException e) {
-            processSQLException(e);            
+            ioEngine.informAboutException(e, false); 
             return false;
         }
     }
