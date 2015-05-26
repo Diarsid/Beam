@@ -6,7 +6,7 @@ package com.drs.beam.console;
 
 import com.drs.beam.console.Console;
 import com.drs.beam.remote.codebase.ExternalIOIF;
-import com.drs.beam.remote.codebase.OSExecutorIF;
+import com.drs.beam.remote.codebase.ExecutorIF;
 import com.drs.beam.remote.codebase.OrgIOIF;
 import com.drs.beam.remote.codebase.TaskManagerIF;
 import com.drs.beam.tasks.Task;
@@ -14,7 +14,11 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.List;
 
-
+/*
+ * Class represents external console.
+ * Reads commands, sends them to main program and prints output. It can be closed 
+ * without exit of main program.
+ */
 public class Console implements Runnable, ExternalIOIF{
     // Fields =============================================================================
     private final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
@@ -22,11 +26,11 @@ public class Console implements Runnable, ExternalIOIF{
     private final InputHandler input;
     
     private final String ORG =      "Beam > ";
-    private final String ERROR =    "Beam Error > ";
+    private final String ERROR =    "Beam error > ";
     private final String SPACE =    "       ";
     
     private TaskManagerIF taskManager;
-    private OSExecutorIF osExecutor;
+    private ExecutorIF osExecutor;
     private OrgIOIF orgIO;
     
     // Constructor ========================================================================
@@ -41,10 +45,48 @@ public class Console implements Runnable, ExternalIOIF{
         ConsoleManager manager = new ConsoleManager(console);
         manager.connect();
         new Thread(console, "Org_console").start();
+    }    
+    
+    void setTaskManager(TaskManagerIF taskManager) {
+        this.taskManager = taskManager;
+    }
+
+    void setOsExecutor(ExecutorIF osExecutor) {
+        this.osExecutor = osExecutor;
+    }
+
+    void setOrgIO(OrgIOIF orgIO) {
+        this.orgIO = orgIO;
     }
     
+    BufferedReader reader(){
+        return reader;
+    }
     
-    // Method run() implement Runnable interface -----------------------------------------------------------------------
+    public void close(){
+        try{
+            orgIO.setDefaultIO();
+            System.exit(0);
+        } catch(RemoteException e){}        
+    }
+    
+    public void exitProgram(){
+        try{            
+            orgIO.exit();
+            System.exit(0);
+        } catch(RemoteException e){}  
+    }
+    
+    private void exitIfCritical(boolean isCritical){
+        if(isCritical){
+            try{
+                Thread.sleep(5000);
+                orgIO.exit();
+                System.exit(0);
+            } catch(InterruptedException|RemoteException ie){}
+        }
+    }
+    
     @Override
     public void run(){
         String timeBuffer;
@@ -63,8 +105,7 @@ public class Console implements Runnable, ExternalIOIF{
                 switch (reader.readLine().trim()){
                     // command to close console
                     case "close" :{
-                        orgIO.setDefaultIO();
-                        System.exit(0);
+                        close();
                     }
                     // command to view the earliest task's time
                     case "alarm" :{
@@ -137,8 +178,7 @@ public class Console implements Runnable, ExternalIOIF{
                                 Thread.sleep(1000);
                             } catch (Exception e) {
                             }
-                            orgIO.exit();
-                            System.exit(0);
+                            exitProgram();
                         }  else
                             break command;
                     }
@@ -179,29 +219,33 @@ public class Console implements Runnable, ExternalIOIF{
         } catch (IOException e) {}
     }
 
-    // console`s methods to format it's output -----------------------------------------------------------------
+    // Console`s methods to format it's output --------------------------------------------
 
     void print() throws IOException{
             writer.write(ORG);
             writer.flush();
     }
+    
     void print(String s) throws IOException{
             writer.write(ORG);
             writer.write(s);
             writer.flush();
     }
+    
     void printLn(String s) throws IOException{
             writer.write(ORG);
             writer.write(s);
             writer.newLine();
             writer.flush();
     }
+    
     void printLnError(String s) throws IOException{
             writer.write(ERROR);
             writer.write(s);
             writer.newLine();
             writer.flush();
     }
+    
     void printTasks(List<Task> tasks) throws IOException{
         for(Task task : tasks){
             writer.newLine();
@@ -216,23 +260,8 @@ public class Console implements Runnable, ExternalIOIF{
             writer.flush();    
         }
     }
-
     
-    // ------------------------------------------------------------------
-
-    void setTaskManager(TaskManagerIF taskManager) {
-        this.taskManager = taskManager;
-    }
-
-    void setOsExecutor(OSExecutorIF osExecutor) {
-        this.osExecutor = osExecutor;
-    }
-
-    void setOrgIO(OrgIOIF orgIO) {
-        this.orgIO = orgIO;
-    }
-    
-    // ------------------------------------------------------------------
+    // ExternalIOIF methods implementations -----------------------------------------------
     @Override
     public void showTask(Task task) throws RemoteException{
         try{
@@ -249,25 +278,44 @@ public class Console implements Runnable, ExternalIOIF{
             print();
         } catch(IOException e){}
     }
-    @Override
-    public void informAboutError(String error) throws RemoteException{
-        try{
-            printLnError(error);
-        }catch(IOException e){}        
-    }
-    @Override
-    public void informAbout(String info) throws RemoteException{
-        try{
-            printLn(info);
-        }catch(IOException e){}
-    }
+    
     @Override
     public void isActive() throws RemoteException{
     }
     
-    // ----------------------------------------------------------------
-    BufferedReader reader(){
-        return reader;
+    @Override
+    public void informAbout(String info) throws RemoteException{
+        try{
+            writer.newLine();
+            printLn(info);
+            writer.write(ORG);
+            writer.flush();
+        }catch(IOException e){}
     }
     
+    @Override
+    public void informAboutError(String error, boolean isCritical) throws RemoteException{
+        try{
+            writer.newLine();
+            printLnError(error);
+            writer.write(ORG);
+            writer.flush();
+        }catch(IOException e){}
+        exitIfCritical(isCritical);
+    }
+    
+    @Override
+    public void informAboutException (Exception e, boolean isCritical) throws RemoteException{
+        try{
+            writer.newLine();
+            printLnError(e.getMessage());
+            printLnError("-------> stack trace:");
+            for (StackTraceElement element : e.getStackTrace()){
+                printLnError("       " + element.toString());
+            }
+            writer.write(ORG);
+            writer.flush();
+        }catch(IOException ioe){}
+        exitIfCritical(isCritical);
+    }
 }

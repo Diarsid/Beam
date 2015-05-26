@@ -5,10 +5,10 @@
 package com.drs.beam.console;
 
 import com.drs.beam.remote.codebase.ExternalIOIF;
-import com.drs.beam.remote.codebase.OSExecutorIF;
+import com.drs.beam.remote.codebase.ExecutorIF;
 import com.drs.beam.remote.codebase.OrgIOIF;
 import com.drs.beam.remote.codebase.TaskManagerIF;
-import com.drs.beam.util.ConfigReader;
+import com.drs.beam.util.config.ConfigReader;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -16,6 +16,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+/*
+ * Class is responsoble for exproting Console object on port 
+ * through RMI and connecting it with organizer.
+ */
 public class ConsoleManager{
     // Fields =============================================================================
     private final ConfigReader config = ConfigReader.getReader();
@@ -43,9 +47,9 @@ public class ConsoleManager{
                     (ExternalIOIF) UnicastRemoteObject.exportObject(console, port);
             registry.bind(config.getConsoleName(), consoleStub);
         }catch (AlreadyBoundException abe){
-            showProblemMessageAndExit("Console export failure: AlreadyBoundException");
+            showProblemMessageAndClose("Console export failure: AlreadyBoundException");
         }catch (RemoteException re){       
-            showProblemMessageAndExit("Console export failure: RemoteException");
+            showProblemMessageAndClose("Console export failure: RemoteException");
         }
     }
     
@@ -57,31 +61,25 @@ public class ConsoleManager{
                     .getRegistry(config.getOrganizerHost(), config.getOrganizerPort());                
             OrgIOIF orgIO = (OrgIOIF) registry.lookup(config.getOrgIOName());
             if(orgIO.hasExternalIOProcessor()){
-                showProblemMessageAndExit("Organizer already has external output!");
+                showProblemMessageAndClose("Organizer already has external output!");
             } else{
                 orgIO.acceptNewIOProcessor();
-                orgIO.useExternalShowTaskMethod();
+                orgIO.useNativeShowTaskMethod();
                 console.setOrgIO(orgIO);
-                console.setOsExecutor((OSExecutorIF) registry.lookup(config.getOSExecutorName()));
+                console.setOsExecutor((ExecutorIF) registry.lookup(config.getOSExecutorName()));
                 console.setTaskManager((TaskManagerIF) registry.lookup(config.getTaskManagerName()));
             }
-        } catch (NotBoundException e){
-            System.out.println(e.getMessage());
-            e.printStackTrace();            
-            showProblemMessageAndExit("Connecting to Organizer failure: NotBoundException");
+        } catch (NotBoundException e){    
+            showProblemMessageAndClose("Connecting to Organizer failure: NotBoundException");
         } catch (RemoteException re){
-            //re.printStackTrace();
-            //System.out.println(re.getMessage());
-            showProblemMessageAndExit("Connecting to Organizer failure: RemoteException");
+            showProblemMessageAndClose("Connecting to Organizer failure: RemoteException");
         }
     }
  
-    private void showProblemMessageAndExit(String message){
-        System.out.println();
-        System.out.println(message);
+    private void showProblemMessageAndClose(String message){
         try{
-            Thread.sleep(5000);
-        } catch(InterruptedException e){}
-        System.exit(0);
+            console.informAboutError(message, false);
+            console.close();
+        } catch(RemoteException e){}
     }
 }

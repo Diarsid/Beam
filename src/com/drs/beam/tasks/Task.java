@@ -11,12 +11,31 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+/*
+ * Class describes different tasks user able to set.
+ * Task object represent some task in future which should be performed in future.  
+ * It can be simple text message like reminder to do something. Or it can be a  
+ * scheduled command which should be excecuted by program executor part when specified 
+ * time comes.
+ * 
+ * All tasks stores in database whith status TRUE until they time will come. After task 
+ * is performed it remains in database but has now status FALSE. Tasks of all statuses  
+ * can be removed by they status TRUE or FALSE.
+ * 
+ * Task`s objects can have one of types:
+ * USUAL_TASK - means this is disposable task, which will be executed just once an
+ * than it will change his status to FALSE.
+ * CALENDAR_EVENT - means this task is not disposable and it will be performed once 
+ * per a year in it`s time during current year. Once task is performed his status 
+ * remains TRUE but his time increases by 1 year.
+ */
 public class Task implements Comparable<Task>, Serializable{
     // Fields =============================================================================
     public static final String OUTPUT_TIME_PATTERN = "HH:mm (dd-MM-uuuu)";
     public static final String DB_TIME_PATTERN = "uuuu-MM-dd HH:mm";
     public static final String CALENDAR_EVENT = "event";
     public static final String USUAL_TASK = "task";
+    //public static final String COMMAND
     
     private static int idGen = 0;
     
@@ -60,12 +79,15 @@ public class Task implements Comparable<Task>, Serializable{
     public int getId(){
         return this.id;
     }
+    
     public LocalDateTime getTime() {
         return this.time;
     }
+    
     public String getTimeOutputString(){
         return this.time.format(DateTimeFormatter.ofPattern(OUTPUT_TIME_PATTERN));
-    }    
+    }   
+    
     public String getTimeDBString(){
         return this.time.format(DateTimeFormatter.ofPattern(DB_TIME_PATTERN));
     }
@@ -82,16 +104,15 @@ public class Task implements Comparable<Task>, Serializable{
         }
         return sj.toString();
     }
+    
     public String[] getContent(){
         return this.content;
     }
+    
     public String getType(){
         return this.type;
     }    
     
-    /*
-    * Implementation of abstract method compareTo() in Comparable interface
-    */
     @Override
     public int compareTo(Task task){
       if (this.time.isBefore(task.time)) 

@@ -5,7 +5,7 @@
 package com.drs.beam.tasks.dao;
 
 import com.drs.beam.tasks.Task;
-import com.drs.beam.util.DBManager;
+import com.drs.beam.util.data.DBManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
