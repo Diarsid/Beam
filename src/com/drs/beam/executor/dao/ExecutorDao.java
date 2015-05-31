@@ -5,6 +5,7 @@
 package com.drs.beam.executor.dao;
 
 import com.drs.beam.util.data.DBManager;
+import java.util.List;
 
 /**
  *
@@ -12,7 +13,10 @@ import com.drs.beam.util.data.DBManager;
  */
 public interface ExecutorDao {
     
-    public void saveNewCommand(String[] command, String commandName);
+    public String getLocationByName(String location);
+    public List<String> getCommandsByNames(List<String> commandsNames);
+    
+    public void saveNewCommand(List<String> command, String commandName);
     public void saveNewLocation(String location);
     
     public void removeCommand(String commandName);

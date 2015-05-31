@@ -80,6 +80,8 @@ public class TasksDaoH2 implements TasksDao{
             "FROM tasks " +
             "WHERE t_content LIKE ?";
     
+    private final String ANY_SYMBOLS = "%";
+    
     // Constructor ========================================================================
     public TasksDaoH2(DataBase dataBase){
         this.data = dataBase;
@@ -329,7 +331,7 @@ public class TasksDaoH2 implements TasksDao{
         try(Connection con = data.getConnection();
             PreparedStatement st = con.prepareStatement(DELETE_TASKS_WHERE_TEXT);)            
         {
-            st.setString(1, "%"+text+"%");
+            st.setString(1, ANY_SYMBOLS+text+ANY_SYMBOLS);
             int qty = st.executeUpdate();
             return (qty > 0); 
         }catch (SQLException e) {

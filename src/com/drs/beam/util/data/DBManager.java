@@ -18,6 +18,9 @@ import com.drs.beam.tasks.dao.TasksDao;
 public class DBManager {
     // Fields =============================================================================
     private static final InnerIOIF ioEngine = BeamIO.getInnerIO();
+    private static DataBase db;
+    private static TasksDao tasksDao;
+    private static ExecutorDao executorDao;
     
     static {
         ConfigReader config = ConfigReader.getReader();
@@ -28,57 +31,44 @@ public class DBManager {
             // work further and must be finished.
             ioEngine.informAboutException(e, true);
         }
+        choosing: switch(config.getCoreDBName()){
+            case ("H2pooled") : {
+                db = new DataBaseH2Pooled(config.getCoreDBURL(), "sa", "", 3);
+                tasksDao = new TasksDaoH2(db);
+                executorDao = new ExecutorDaoH2(db);
+                break choosing;
+            }
+            case ("H2") : {
+                //
+                break choosing;
+            }
+            case ("SQLite") : {
+                //
+                break choosing;
+            }
+            default : {
+                ioEngine.informAboutError("DBManager init error: unrecognized data base.",
+                        true);
+            }
+        }
+        if (tasksDao == null){
+            ioEngine.informAboutError(
+                    "DBManager init error: tasks DAO == null.", true);
+        }
+        if (executorDao == null){
+            ioEngine.informAboutError(
+                    "DBManager init error: executor DAO == null.", true);
+        }
+        
     }
     
     // Methods ============================================================================
         
     public static TasksDao getTasksDAO(){
-        ConfigReader config = ConfigReader.getReader();
-        TasksDao dao = null;
-        choosing: switch(config.getCoreDBName()){
-            case ("H2pooled") : {
-                DataBase db = new DataBaseH2Pooled(config.getCoreDBURL(), "sa", "", 3);
-                dao = new TasksDaoH2(db);
-                break choosing;
-            }
-            case ("H2") : {
-                //
-                break choosing;
-            }
-            case ("SQLite") : {
-                //
-                break choosing;
-            }
-        }
-        if (dao == null){
-            ioEngine.informAboutError(
-                    "Database connection failure: TasksDao == null.", true);
-        }
-        return dao;
+        return tasksDao;
     }    
     
-    public static ExecutorDao getExecutorDao(){
-        ConfigReader config = ConfigReader.getReader();
-        ExecutorDao dao = null;
-        choosing: switch(config.getCoreDBName()){
-            case ("H2pooled") : {
-                DataBase db = new DataBaseH2Pooled(config.getCoreDBURL(), "sa", "", 3);
-                dao = new ExecutorDaoH2(db);
-                break choosing;
-            }
-            case ("H2") : {
-                //
-                break choosing;
-            }
-            case ("SQLite") : {
-                //
-                break choosing;
-            }
-        }
-        if (dao == null){
-            ioEngine.informAboutError(
-                    "Database connection failure: ExecutorDao == null.", true);
-        }
-        return dao;
+    public static ExecutorDao getExecutorDao(){        
+        return executorDao;
     }
 }

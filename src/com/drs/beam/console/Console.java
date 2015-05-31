@@ -311,7 +311,7 @@ public class Console implements Runnable, ExternalIOIF{
             printLnError(e.getMessage());
             printLnError("-------> stack trace:");
             for (StackTraceElement element : e.getStackTrace()){
-                printLnError("       " + element.toString());
+                printLnError(SPACE + element.toString());
             }
             writer.write(ORG);
             writer.flush();
