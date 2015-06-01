@@ -25,7 +25,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     // Fields =============================================================================
     private static final BeamIO io = new BeamIO();
     
-    private final Gui gui = new GuiEngine();
+    private final Gui gui;
     private ExternalIOIF externalIOEngine;
 
     private boolean hasExternalIOProcessor = false;
@@ -33,6 +33,7 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
 
     // Constructors =======================================================================
     public BeamIO() {
+        gui = new GuiEngine();
         new Thread(gui, "JavaFX Application Thread").start();
     }
 
@@ -117,13 +118,14 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     }
     
     private void nativeInformAboutError(String error, boolean isCritical){
-        //
+        System.out.println(error);
         if(isCritical) 
             System.exit(1);
     }
     
     private void nativeInformAboutException(Exception e, boolean isCritical){
-        //
+        System.out.println(e.getMessage());
+        e.printStackTrace();
         if(isCritical) 
             System.exit(1);
     }

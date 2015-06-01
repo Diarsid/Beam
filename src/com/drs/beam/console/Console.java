@@ -25,12 +25,15 @@ public class Console implements Runnable, ExternalIOIF{
     private final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private final InputHandler input;
     
-    private final String ORG =      "Beam > ";
+    private final String BEAM =     "Beam > ";
     private final String ERROR =    "Beam error > ";
     private final String SPACE =    "       ";
+    private final String UNDER =    "     > ";
+    private final String[] yesPatterns = {"y", "+", "yes", "ye"};
+    private final String[] stopPatterns = {".", "", "s", " "};
     
     private TaskManagerIF taskManager;
-    private ExecutorIF osExecutor;
+    private ExecutorIF executor;
     private OrgIOIF orgIO;
     
     // Constructor ========================================================================
@@ -52,7 +55,7 @@ public class Console implements Runnable, ExternalIOIF{
     }
 
     void setOsExecutor(ExecutorIF osExecutor) {
-        this.osExecutor = osExecutor;
+        this.executor = osExecutor;
     }
 
     void setOrgIO(OrgIOIF orgIO) {
@@ -63,183 +66,236 @@ public class Console implements Runnable, ExternalIOIF{
         return reader;
     }
     
-    public void close(){
+    void close(){
         try{
-            orgIO.setDefaultIO();
+            if (orgIO != null){
+                orgIO.setDefaultIO();
+            }            
             System.exit(0);
         } catch(RemoteException e){}        
     }
     
-    public void exitProgram(){
-        try{            
-            orgIO.exit();
+    private void exitProgram(){
+        try{  
+            if (orgIO != null){
+                orgIO.exit();
+            }
             System.exit(0);
         } catch(RemoteException e){}  
     }
     
-    private void exitIfCritical(boolean isCritical){
+    private void exitProgramIfCriticalError(boolean isCritical){
         if(isCritical){
             try{
                 Thread.sleep(5000);
                 orgIO.exit();
                 System.exit(0);
-            } catch(InterruptedException|RemoteException ie){}
+            } catch(InterruptedException|RemoteException e){}
+        }
+    }
+    
+    private void exitDialog() throws IOException{
+        printBeamWithMessageLn("Do you really want to stop me?");
+        printUnder("yes / no : ");
+        String com = reader.readLine().trim().toLowerCase();
+        if (check(com, yesPatterns)){
+            writer.write(" :(");
+            writer.newLine();
+            writer.write("will meet you another time...");
+            writer.flush();
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+            }
+            exitProgram();
         }
     }
     
     @Override
     public void run(){
-        String timeBuffer;
-        String stringBuffer;
-        String[] strArrBuffer;
-        try{
-            // endless loop to await commands
+        String command;
+        String[] params;        
+        try{            
             input: while (true){
-                timeBuffer = null;
-                stringBuffer = null;
-                strArrBuffer = null;
-                this.print();
-                // switch operator
-                // obtain new string as command to choose between cases
-                command:
-                switch (reader.readLine().trim()){
-                    // command to close console
+                this.printBeam();
+                command = reader.readLine().trim().toLowerCase();
+                params = command.split(" ");
+                if (params.length == 0){
+                    continue input;
+                }
+                parsing: switch (params[0]){ 
+                    case "help" : {
+                        printHelp();
+                        break parsing;
+                    }
                     case "close" :{
                         close();
                     }
-                    // command to view the earliest task's time
-                    case "alarm" :{
-                        printLn(taskManager.getFirstAlarmTime());
-                        break command;
-                    }
-                    // command to create new task
-                    case "new" :{
-                        // input new task's time
-                        timeBuffer = input.inputTime();
-                        // stop creation if time input was incorrect or stopped
-                        if ( ".".equals(timeBuffer) || "".equals(timeBuffer))
-                            break command;
-                        strArrBuffer = input.inputTask();
-                        taskManager.createNewTask(timeBuffer, strArrBuffer);                        
-                        break command;
-                    }
-                    // test whether everything is ok and console works
-                    case "listener" :{
-                        this.printLn("listener ready");
-                        break command;
-                    }
-                    // print all future active tasks
-                    case ("tasks") :{
-                        writer.write(SPACE);
-                        writer.write("========= Tasks =========");
-                        writer.newLine();
-                        printTasks(taskManager.getFutureTasks());
-                        writer.newLine();
-                        writer.write(SPACE);
-                        writer.write("=========================");
-                        writer.newLine();
-                        writer.flush();
-                        break command;
-                    }
-                    // print all past tasks
-                    case ("past") :{
-                        writer.write(SPACE);
-                        writer.write("========= Past ==========");
-                        writer.newLine();
-                        printTasks(taskManager.getPastTasks());
-                        writer.newLine();
-                        writer.write(SPACE);
-                        writer.write("=========================");
-                        writer.newLine();
-                        writer.flush();
-                        break command;
-                    }
-                    // deletion of some task
-                    case ("delete") :{                        
-                        stringBuffer = input.inputTextToDelete();
-                        // stop deletion if text input was incorrect or stopped
-                        if ( stringBuffer == null )
-                            break command;
-                        // perform deletion
-                        if (taskManager.deleteTaskByText(stringBuffer))
-                            printLn("Task has been deleted.");                        
-                        break command;
-                    }
-                    case ("exit") :{
-                        printLn("Do you really want to stop me?");
-                        print("y/n > ");
-                        stringBuffer = reader.readLine().trim();
-                        if (stringBuffer.equals("y") || stringBuffer.equals("yes")){
-                            writer.write(" :(");
-                            writer.newLine();
-                            writer.write("will meet you another time...");
-                            writer.flush();
-                            try {
-                                Thread.sleep(1000);
-                            } catch (Exception e) {
+                    case "new" : {
+                        if (params.length < 2){
+                            continue input;
+                        }                        
+                        switch (params[1]){
+                            case ("location") : {
+                                newLocation();
+                                break parsing;
                             }
-                            exitProgram();
-                        }  else
-                            break command;
+                            case ("task") : {
+                                newTask();
+                                break parsing;
+                            }
+                            case ("event") : {
+                                newEvent();
+                                break parsing;
+                            }
+                            case ("command") : {
+                                newCommand();
+                                break parsing;
+                            }
+                        }
                     }
-                    case ("run") : {
-                        //
-                        break command;
+                    case "alarm" :{
+                        printBeamWithMessageLn(taskManager.getFirstAlarmTime());
+                        break parsing;
+                    }                    
+                    case "run" : {
+                        executor.run(command); 
+                        break parsing;
                     }
-                    case ("r") : {
-                        //
-                        break command;
+                    case "open" : {
+                        executor.open(command);
+                        break parsing;
                     }
-                    case ("open") : {
-                        //
-                        break command;
+                    case "call" : {
+                        executor.call(command);
+                        break parsing;
                     }
-                    case ("o") : {
-                        //
-                        break command;
+                    case "view" : {
+                        if (params.length < 2){
+                            continue input;
+                        }                        
+                        switch (params[1]){
+                            case "tasks" : {
+                                writer.write(SPACE);
+                                writer.write("========= Tasks =========");
+                                writer.newLine();
+                                printTasks(taskManager.getFutureTasks());
+                                writer.newLine();
+                                writer.write(SPACE);
+                                writer.write("=========================");
+                                writer.newLine();
+                                writer.flush();
+                                break parsing;
+                            }
+                            case "past" : {
+                                writer.write(SPACE);
+                                writer.write("========= Past ==========");
+                                writer.newLine();
+                                printTasks(taskManager.getPastTasks());
+                                writer.newLine();
+                                writer.write(SPACE);
+                                writer.write("=========================");
+                                writer.newLine();
+                                writer.flush();
+                                break parsing;
+                            }
+                            case "locations" : {
+                                
+                                break parsing;
+                            }
+                            case "commands" : {
+                                
+                                break parsing;
+                            }
+                        }                        
                     }
-                    case ("install") : {
-                        //
-                        break command;
+                    case "del" :{
+                        if (params.length < 2){
+                            continue input;
+                        }                        
+                        switch (params[1]){
+                            case "task" : {
+                                deleteTask();
+                                break parsing;
+                            }
+                            case "past" : {
+                                deleteTask();
+                                break parsing;
+                            }
+                            case "event" : {
+                                deleteEvent();
+                                break parsing;
+                            }
+                            case "location" : {
+                                deleteLocation();
+                                break parsing;
+                            }
+                            case "command" : {
+                                deleteCommand();
+                                break parsing;
+                            }
+                        }                        
                     }
-                    case ("i") : {
-                        //
-                        break command;
+                    case "exit" :{
+                        exitDialog();
+                        break parsing;
                     }
-                    case ("use native task showing") : {
-                        orgIO.useNativeShowTaskMethod();
-                        break command;
-                    }
-                    case ("use external task showing") : {
-                        orgIO.useExternalShowTaskMethod();
-                        break command;
+                    case "use" : {
+                        if (params.length < 2){
+                            continue input;
+                        }                        
+                        switch (params[1]){
+                            case "native" : {
+                                orgIO.useNativeShowTaskMethod();
+                                break parsing;
+                            }
+                            case "external" : {
+                                orgIO.useExternalShowTaskMethod();
+                                break parsing;
+                            }
+                        }
                     }
                 }
             }
         } catch (IOException e) {}
+        command = "";
+        params = null;
     }
 
     // Console`s methods to format it's output --------------------------------------------
 
-    void print() throws IOException{
-            writer.write(ORG);
+    void printBeam() throws IOException{
+            writer.write(BEAM);
             writer.flush();
     }
     
-    void print(String s) throws IOException{
-            writer.write(ORG);
+    void printBeamWithMessage(String s) throws IOException{
+            writer.write(BEAM);
             writer.write(s);
             writer.flush();
     }
     
-    void printLn(String s) throws IOException{
-            writer.write(ORG);
+    void printBeamWithMessageLn(String s) throws IOException{
+            writer.write(BEAM);
             writer.write(s);
             writer.newLine();
             writer.flush();
     }
     
-    void printLnError(String s) throws IOException{
+    void printUnder(String s) throws IOException{
+        writer.write(UNDER);
+        writer.write(s);
+        writer.flush();
+    }
+    
+    void printUnderLn(String s) throws IOException{
+        writer.write(UNDER);
+        writer.write(s);
+        writer.newLine();
+        writer.flush();
+    }
+    
+    void printBeamErrorWithMessageLn(String s) throws IOException{
             writer.write(ERROR);
             writer.write(s);
             writer.newLine();
@@ -261,6 +317,64 @@ public class Console implements Runnable, ExternalIOIF{
         }
     }
     
+    private void printHelp(){
+        
+    }     
+    
+    private boolean check(String s, String[] patterns){
+        for (String pattern : patterns){
+            if (pattern.equals(s)) return true;
+        }
+        return false;
+    }
+    
+    private void newLocation() throws IOException{        
+        printUnder("set name: ");
+        String name = reader.readLine().trim().toLowerCase();
+        if (check(name, stopPatterns)) return;
+        printUnder("set path: ");
+        String location = reader.readLine().trim().toLowerCase();
+        if (check(location, stopPatterns)) return;
+        executor.newLocation(location, name);
+    }
+    
+    private void newTask() throws IOException{        
+        String newTime = input.inputTime();
+        if (check(newTime, stopPatterns)) return;
+        String[] newTask = input.inputTask();
+        taskManager.createNewTask(newTime, newTask);
+    }
+    
+    private void newEvent() throws IOException{
+        
+    }
+    
+    private void newCommand() throws IOException{
+        
+    }
+    
+    private void deleteLocation() throws IOException{
+        
+    }
+    
+    private void deleteTask() throws IOException{        
+        String deleted = input.inputTextToDelete();
+        // stop deletion if text input was incorrect or stopped
+        if ( deleted.length() > 0 ){
+            if (taskManager.deleteTaskByText(deleted)){
+                printBeamWithMessageLn("Task has been deleted.");
+            }                                    
+        }
+    }
+    
+    private void deleteEvent() throws IOException{
+        
+    }
+    
+    private void deleteCommand() throws IOException{
+        
+    }
+    
     // ExternalIOIF methods implementations -----------------------------------------------
     @Override
     public void showTask(Task task) throws RemoteException{
@@ -275,7 +389,7 @@ public class Console implements Runnable, ExternalIOIF{
                 writer.newLine();
             }
             writer.flush();
-            print();
+            printBeam();
         } catch(IOException e){}
     }
     
@@ -286,9 +400,7 @@ public class Console implements Runnable, ExternalIOIF{
     @Override
     public void informAbout(String info) throws RemoteException{
         try{
-            writer.newLine();
-            printLn(info);
-            writer.write(ORG);
+            printBeamWithMessageLn(info);
             writer.flush();
         }catch(IOException e){}
     }
@@ -296,26 +408,24 @@ public class Console implements Runnable, ExternalIOIF{
     @Override
     public void informAboutError(String error, boolean isCritical) throws RemoteException{
         try{
-            writer.newLine();
-            printLnError(error);
-            writer.write(ORG);
+            printBeamErrorWithMessageLn(error);
             writer.flush();
         }catch(IOException e){}
-        exitIfCritical(isCritical);
+        exitProgramIfCriticalError(isCritical);
     }
     
     @Override
     public void informAboutException (Exception e, boolean isCritical) throws RemoteException{
         try{
             writer.newLine();
-            printLnError(e.getMessage());
-            printLnError("-------> stack trace:");
+            printBeamErrorWithMessageLn(e.getMessage());
+            printBeamErrorWithMessageLn("-------> stack trace:");
             for (StackTraceElement element : e.getStackTrace()){
-                printLnError(SPACE + element.toString());
+                printBeamErrorWithMessageLn(SPACE + element.toString());
             }
-            writer.write(ORG);
+            writer.write(BEAM);
             writer.flush();
         }catch(IOException ioe){}
-        exitIfCritical(isCritical);
+        exitProgramIfCriticalError(isCritical);
     }
 }

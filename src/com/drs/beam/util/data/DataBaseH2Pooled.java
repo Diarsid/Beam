@@ -24,7 +24,7 @@ public class DataBaseH2Pooled implements DataBase{
     
     // Methods ============================================================================
     @Override
-    public Connection getConnection() throws SQLException{
+    public Connection connect() throws SQLException{
         return conPool.getConnection();
     }
 }

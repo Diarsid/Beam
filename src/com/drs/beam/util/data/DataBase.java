@@ -12,5 +12,5 @@ import java.sql.SQLException;
  * Hides concrete implementation of connecting with particular database
  */
 public interface DataBase {
-    public Connection getConnection() throws SQLException;
+    public Connection connect() throws SQLException;
 }

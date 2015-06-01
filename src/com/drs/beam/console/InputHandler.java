@@ -23,13 +23,13 @@ public class InputHandler {
     // private console methods to handle with it's data input ----------------------------------------------------------
     String inputTime() throws IOException{
         // different time formats which may be entered and parsed by program
-        console.printLn("Input time: YYYY-MM-DD HH:MM \r\n" +
+        console.printBeamWithMessageLn("Input time: YYYY-MM-DD HH:MM \r\n" +
           "                  +HH:MM       - timer \r\n" +
           "                  HH:MM        - today task \r\n" +
           "                  dd HH:MM     - this month task \r\n" +
           "                  dd-mm HH:MM  - this year task");
-        console.print("Input time: ");
-        return console.reader().readLine().trim();
+        console.printBeamWithMessage("Input time: ");
+        return console.reader().readLine().trim().toLowerCase();
     }
 
     String[] inputTask() throws IOException{
@@ -37,7 +37,7 @@ public class InputHandler {
         ArrayList<String> taskContent = new ArrayList<>();
         // endless input loop until '.' will be entered which means end of task
         taskInput: while (true){
-            console.print("Input task line: ");
+            console.printBeamWithMessage("Input task line: ");
             taskLine = console.reader().readLine().trim();
             // symbol '.' finishes input and breaks input loop
             if ((".").equals(taskLine)){
@@ -56,10 +56,10 @@ public class InputHandler {
     }
 
     String inputTextToDelete() throws IOException{
-        String text = null;
+        String text = "";
         // begin of input loop
         inputText: while (true){
-            console.print("Input text to delete: ");
+            console.printBeamWithMessage("Input text to delete: ");
             text = console.reader().readLine().trim();
             // symbol '.' finishes input and breaks input loop, method returns null
             if (text.equals("."))

@@ -11,7 +11,6 @@ import com.drs.beam.util.data.DataBase;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -29,16 +28,7 @@ public class TasksDaoH2 implements TasksDao{
     private final InnerIOIF ioEngine = BeamIO.getInnerIO();
     
     private final String INSERT_NEW_TASK = 
-            "INSERT INTO tasks VALUES (?, ?, ?, ?, ?)";
-    private final String DETECT_TABLE = 
-            "SELECT TOP 1 * FROM tasks";
-    private final String CREATE_TABLE = 
-            "CREATE TABLE tasks (" +
-            "t_id       INTEGER         NOT NULL PRIMARY KEY, " +
-            "t_time     CHARACTER(16)   NOT NULL, " +
-            "t_content  VARCHAR(200)    NOT NULL, " +
-            "t_type     VARCHAR(5)      NOT NULL," +
-            "t_status   BOOLEAN         NOT NULL)";
+            "INSERT INTO tasks VALUES (?, ?, ?, ?, ?)";    
     private final String GET_MAX_ID = 
             "SELECT MAX(t_id) " +
             "FROM tasks ";
@@ -127,7 +117,7 @@ public class TasksDaoH2 implements TasksDao{
     */
     @Override
     public void saveTask(Task task) {
-        try(Connection con = data.getConnection();
+        try(Connection con = data.connect();
             PreparedStatement st = con.prepareStatement(INSERT_NEW_TASK);)
         {   
             st.setInt       (1, task.getId());
@@ -140,43 +130,11 @@ public class TasksDaoH2 implements TasksDao{
         } catch (SQLException e){
             ioEngine.informAboutException(e, false);
         }
-    }
-    
-    /*
-    * Method to check whether currently using database has required table for tasks storing.
-    * Check if table "tasks" exist in the database and if it has 5 columns.
-    */
-    @Override
-    public boolean isDBinitialized(){
-        try(Connection con = data.getConnection();
-            Statement st = con.createStatement();)
-        {
-            ResultSet rs = st.executeQuery(DETECT_TABLE);
-            ResultSetMetaData tableData = rs.getMetaData();
-            return (tableData.getColumnCount() == 5);            
-        }catch (SQLException e){
-            ioEngine.informAboutException(e, false);          
-            return false;
-        }
-    }
-    
-    /*
-    * Method to create required table for tasks storing if such one doesn`t exists yet.
-    */
-    @Override
-    public void initTasksTable(){
-        try(Connection con = data.getConnection();
-            Statement st = con.createStatement();)
-        {            
-            st.executeUpdate(CREATE_TABLE);            
-        } catch (SQLException e){
-            ioEngine.informAboutException(e, true);
-        }
-    }
-    
+    }  
+        
     @Override
     public int getLastId(){
-        try(Connection con = data.getConnection();
+        try(Connection con = data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(GET_MAX_ID);)
         {
@@ -190,7 +148,7 @@ public class TasksDaoH2 implements TasksDao{
     
     @Override
     public LocalDateTime getFirstTaskTime(){        
-        try(Connection con = data.getConnection();
+        try(Connection con = data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(GET_FIRST_TIME);)
         {
@@ -215,7 +173,7 @@ public class TasksDaoH2 implements TasksDao{
     @Override
     public ArrayList<Task> extractFirstTasks(){
         ArrayList<Task> retrievedTasks = new ArrayList<>();
-        try (Connection con = data.getConnection();
+        try (Connection con = data.connect();
             // create updatable ResultSet because we need update 't_status' field 
             // for usual task and increase 't_time' value of event for 1 year 
             Statement st = con.createStatement(
@@ -242,7 +200,7 @@ public class TasksDaoH2 implements TasksDao{
     public ArrayList<Task> extractExpiredTasks(LocalDateTime fromNow){
         ArrayList<Task> expiredTasks = new ArrayList<>();
         try(
-            Connection con = data.getConnection();
+            Connection con = data.connect();
             PreparedStatement st = con.prepareStatement(
                     EXTRACT_EXPIRED_TASKS,
                     ResultSet.TYPE_SCROLL_INSENSITIVE, 
@@ -277,7 +235,7 @@ public class TasksDaoH2 implements TasksDao{
     @Override
     public ArrayList<Task> getTasks(int isActive){
         ArrayList<Task> tasks = new ArrayList<>();
-        try(Connection con = data.getConnection();)
+        try(Connection con = data.connect();)
         {
             PreparedStatement st;
             if (isActive == 0){
@@ -308,7 +266,7 @@ public class TasksDaoH2 implements TasksDao{
     @Override
     public ArrayList<Task> getTasksByTime(LocalDateTime time){
         ArrayList<Task> tasks = new ArrayList<>();
-        try(Connection con = data.getConnection();
+        try(Connection con = data.connect();
             PreparedStatement st = con.prepareStatement(SELECT_TASKS_WHERE_TIME);)
         {
             st.setString(1,
@@ -328,7 +286,7 @@ public class TasksDaoH2 implements TasksDao{
     
     @Override
     public boolean deleteTaskByText(String text){
-        try(Connection con = data.getConnection();
+        try(Connection con = data.connect();
             PreparedStatement st = con.prepareStatement(DELETE_TASKS_WHERE_TEXT);)            
         {
             st.setString(1, ANY_SYMBOLS+text+ANY_SYMBOLS);
@@ -342,7 +300,7 @@ public class TasksDaoH2 implements TasksDao{
         
     @Override
     public boolean deleteTasks(int tasksSort){
-        try(Connection con = data.getConnection();)            
+        try(Connection con = data.connect();)            
         {
             PreparedStatement st;
             if (tasksSort == 0){

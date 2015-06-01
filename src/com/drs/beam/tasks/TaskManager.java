@@ -53,10 +53,7 @@ public class TaskManager implements TaskManagerIF {
         
     // Method for initial database reading when program starts it's work 
     // after a period of it`s inactivity.   
-    private void initWork(){
-        if (!dao.isDBinitialized()){
-            dao.initTasksTable();
-        } else{
+    private void initWork(){        
             // If there is any problems with databse, returns -1.
             int newId = dao.getLastId();
             // If there are any storing tasks it is neccesay to get and perform 
@@ -70,8 +67,7 @@ public class TaskManager implements TaskManagerIF {
                 refreshFirstTaskTime();
             } else {
                 ioEngine.informAboutError("Unknown problem: tasks ID < 0", true);
-            }
-        }            
+            }                    
     }
     
     private void performTask(Task task){

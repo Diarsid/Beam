@@ -14,6 +14,7 @@ import com.drs.beam.remote.codebase.OrgIOIF;
 import com.drs.beam.remote.codebase.TaskManagerIF;
 import com.drs.beam.tasks.TaskManager;
 import com.drs.beam.util.config.ConfigReader;
+import com.drs.beam.util.data.DBManager;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -29,13 +30,14 @@ public class Organizer{
     private final InnerIOIF innerIO;
     private final OrgIOIF remoteIO;
     private final TaskManagerIF taskManager;
-    private final ExecutorIF osExecutor;
+    private final ExecutorIF executor;
 
     // Constructor ========================================================================
     Organizer() {
         this.innerIO = BeamIO.getInnerIO();
-        this.remoteIO = BeamIO.getRemoteIO();        
-        this.osExecutor = new Executor();
+        this.remoteIO = BeamIO.getRemoteIO(); 
+        DBManager.prepareToWork();               
+        this.executor = new Executor();
         this.taskManager = new TaskManager();
     }
 
@@ -58,7 +60,7 @@ public class Organizer{
                     (OrgIOIF) UnicastRemoteObject.exportObject(remoteIO, organizerPort);
 
             ExecutorIF osExecutorStub =
-                    (ExecutorIF) UnicastRemoteObject.exportObject(osExecutor, organizerPort);
+                    (ExecutorIF) UnicastRemoteObject.exportObject(executor, organizerPort);
 
             TaskManagerIF TaskManagerStub =
                     (TaskManagerIF) UnicastRemoteObject.exportObject(taskManager, organizerPort);

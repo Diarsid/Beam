@@ -14,10 +14,7 @@ import java.util.ArrayList;
  * @author Diarsid
  */
 public interface TasksDao {    
-    void        saveTask(Task task);
-    
-    boolean     isDBinitialized();
-    void        initTasksTable(); 
+    void        saveTask(Task task); 
     
     boolean     deleteTaskByText  (String text);
     boolean     deleteTasks      (int tasksSort);    

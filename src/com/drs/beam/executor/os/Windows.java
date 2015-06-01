@@ -20,11 +20,7 @@ import java.util.StringJoiner;
  */
 public class Windows implements OS{    
     // Fields ==================================================================
-    private final String PROGRAMS_LOCATION;
-    private final String CMD_START = "cmd /c start ";
-    private final String NATIVE_SEPARATOR = "/";
-    private final String WIN_SEPARATOR = "\\";
-    private final String SPACE = " ";
+    private final String PROGRAMS_LOCATION;    
     
     private final Desktop desktop;
     private final InnerIOIF ioEngine;
@@ -55,7 +51,7 @@ public class Windows implements OS{
             StringBuilder pathBuilder = new StringBuilder();
             pathBuilder
                     .append(location)
-                    .append(NATIVE_SEPARATOR)
+                    .append("/")
                     .append(file);
             try{
                 desktop.open(new File(pathBuilder.toString()));
@@ -72,13 +68,13 @@ public class Windows implements OS{
         if (file.length()>0 && program.length()>0){
             StringBuilder commandBuilder = new StringBuilder();
             commandBuilder
-                    .append(CMD_START)
-                    .append(PROGRAMS_LOCATION.replace(NATIVE_SEPARATOR, WIN_SEPARATOR))
-                    .append(WIN_SEPARATOR)
+                    .append("cmd /c start ")
+                    .append(PROGRAMS_LOCATION.replace("/", "\\"))
+                    .append("\\")
                     .append(program)
-                    .append(SPACE)
-                    .append(location.replace(NATIVE_SEPARATOR, WIN_SEPARATOR))
-                    .append(WIN_SEPARATOR)
+                    .append(" ")
+                    .append(location.replace("/", "\\"))
+                    .append("\\")
                     .append(file);
             try{
                 Runtime.getRuntime().exec(commandBuilder.toString());
@@ -97,7 +93,7 @@ public class Windows implements OS{
             StringBuilder pathBuilder = new StringBuilder();
             pathBuilder
                     .append(PROGRAMS_LOCATION)
-                    .append(NATIVE_SEPARATOR)
+                    .append("/")
                     .append(program);
             try{
                 desktop.open(new File(pathBuilder.toString()));
@@ -111,10 +107,10 @@ public class Windows implements OS{
     public boolean ifDirectoryExists(String location){
         File dir = new File(location);
         if (!dir.exists()) {
-            ioEngine.inform("this path doesn`t exists.");
+            ioEngine.inform("This path doesn`t exists.");
             return false;
         } else if (!dir.isDirectory()) {
-            ioEngine.inform("this isn`t a directory.");
+            ioEngine.inform("This isn`t a directory.");
             return false;
         } else {
             return true;
@@ -124,19 +120,15 @@ public class Windows implements OS{
     private String checkNameInLocation(String fileOrFolderName, String location){
         File dir = new File(location);
         if (dir.exists() && dir.isDirectory()){
-            String[] content = dir.list();
-            int matchesQty = 0;
-            List<String> matches = new ArrayList<String>();
-            for(String element : content){
-                if (element.contains(fileOrFolderName)){
-                    fileOrFolderName = element;
-                    matchesQty++;
+            List<String> matches = new ArrayList<>();
+            for(String element : dir.list()){
+                if (element.toLowerCase().contains(fileOrFolderName)){
                     matches.add(element);
                 }
             }
-            if (matchesQty == 1){
-                return fileOrFolderName;
-            } else if (matchesQty > 1) {
+            if (matches.size() == 1){
+                return matches.get(0);
+            } else if (matches.size() > 1) {
                 StringJoiner sj = new StringJoiner(", ");
                 for(String s : matches){
                     sj.add(s);

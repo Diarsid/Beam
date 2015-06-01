@@ -20,10 +20,21 @@ public class DBManager {
     private static final InnerIOIF ioEngine = BeamIO.getInnerIO();
     private static DataBase db;
     private static TasksDao tasksDao;
-    private static ExecutorDao executorDao;
+    private static ExecutorDao executorDao;   
+        
+    // Methods ============================================================================
+        
+    public static TasksDao getTasksDAO(){
+        return tasksDao;
+    }    
     
-    static {
+    public static ExecutorDao getExecutorDao(){        
+        return executorDao;
+    }
+    
+    public static void prepareToWork(){
         ConfigReader config = ConfigReader.getReader();
+        DBInitializer init = new DBInitializer();
         try {
             Class.forName(config.getCoreDBDriver());
         } catch (Exception e) {
@@ -33,7 +44,8 @@ public class DBManager {
         }
         choosing: switch(config.getCoreDBName()){
             case ("H2pooled") : {
-                db = new DataBaseH2Pooled(config.getCoreDBURL(), "sa", "", 3);
+                db = new DataBaseH2Pooled(config.getCoreDBURL(), "sa", "", 3);                
+                init.initDataBase(db);
                 tasksDao = new TasksDaoH2(db);
                 executorDao = new ExecutorDaoH2(db);
                 break choosing;
@@ -58,17 +70,6 @@ public class DBManager {
         if (executorDao == null){
             ioEngine.informAboutError(
                     "DBManager init error: executor DAO == null.", true);
-        }
-        
-    }
-    
-    // Methods ============================================================================
-        
-    public static TasksDao getTasksDAO(){
-        return tasksDao;
-    }    
-    
-    public static ExecutorDao getExecutorDao(){        
-        return executorDao;
-    }
+        }           
+    }  
 }
