@@ -32,7 +32,7 @@ public class TaskWindowSwing {
     private final JFrame frame = new JFrame();
     
     // Constructors =======================================================================
-    public TaskWindowSwing() {
+    TaskWindowSwing() {
     }
     
     // Methods ============================================================================
@@ -41,7 +41,7 @@ public class TaskWindowSwing {
         frame.dispose();
     }
     
-    public void invoke(Task task) {
+    void invoke(Task task) {
         ImageIcon icon = new ImageIcon(Gui.IMAGES_LOCATION+"task_ico.jpeg");
           
         frame.setMinimumSize(new Dimension(300, 50));

@@ -3,8 +3,9 @@
  * author: Diarsid
  */
 
-package com.drs.beam.modules.io.gui;
+package com.drs.beam.modules.io.gui.swing;
 
+import com.drs.beam.modules.io.gui.Gui;
 import com.drs.beam.modules.io.gui.swing.ExceptionWindowSwing;
 import com.drs.beam.modules.io.gui.swing.MessageWindowSwing;
 import com.drs.beam.modules.io.gui.swing.TaskWindowSwing;
