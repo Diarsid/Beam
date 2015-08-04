@@ -91,16 +91,22 @@ public class TaskManager implements TaskManagerIF {
     
     /*
      * Characters sequence '~}' is used as a delimiter between strings
-     * when string[] is saved into DB TEXT field.    
+     * when task`s text in string[] is saved into DB TEXT field.    
      */
     private boolean verifyTaskOnForbiddenChars(String[] text) {
         for (String s : text){
-            if (s.contains("~}"))
+            if (s.contains("~}")){
+                ioEngine.informAboutError("Text verifying: Forbidden characters '~}' was inputted!", false);
                 return false;
+            }                                
         }
         return true;
     }
-
+    
+    /*
+     * Characters sequence '~}' is used as a delimiter between task`s text strings that 
+     * was saved into DB TEXT field. 
+     */
     private boolean verifyTextOnForbiddenChars(String text) {
         if (text.contains("~}")){
             return false;
@@ -126,8 +132,8 @@ public class TaskManager implements TaskManagerIF {
                             DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN));
                     break parsing;
                 }
-                // time format: +HH - 3 chars
-                // specifies time in hours and minutes, which is added to current time-date like timer
+                // time format: +MM - 3 chars
+                // specifies time in minutes, which is added to current time-date like timer
                 case (3) : {                    
                     time = LocalDateTime.now().withSecond(00).withNano(000)
                             .plusMinutes(Integer.parseInt(timeString.substring(1,3)));
@@ -183,6 +189,12 @@ public class TaskManager implements TaskManagerIF {
             return null;
         }
         
+        // If given time format is OK and time was parsed correctly, it is required to test
+        // this time whether it is future.\
+        //
+        // If argument mustBeFuture is TRUE, method should return NULL instead of parsed 
+        // time if it represents past date. If mustBeFuture is FALSE, it is allowed to return 
+        // time which represents past date.
         if (time == null){            
             return null;
         } else if (mustBeFuture && time.isBefore(LocalDateTime.now())){
@@ -206,16 +218,10 @@ public class TaskManager implements TaskManagerIF {
     @Override
     public void createNewTask(String timeString, String[] task) throws RemoteException{
         LocalDateTime time = ofFormat(timeString, true);
-        if (time == null){
-            ioEngine.informAboutError("Time veryfying: time parsing method has returned NULL", false);
-            return;
-        }
-        if (verifyTaskOnForbiddenChars(task)){
+        if (time != null && verifyTaskOnForbiddenChars(task)){
             Task newTask = Task.newTask("task", time, task);        
             dao.saveTask(newTask);                    
             refreshFirstTaskTime();
-        } else {
-            ioEngine.informAboutError("Text verifying: Forbidden characters '~}' was inputted!", false);            
         }
     }
     
