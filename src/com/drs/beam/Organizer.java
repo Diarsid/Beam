@@ -4,17 +4,16 @@
  */
 package com.drs.beam;
 
-import com.drs.beam.io.BeamIO;
-import com.drs.beam.io.InnerIOIF;
-import com.drs.beam.io.jfxgui.GuiEngine;
-import com.drs.beam.io.jfxgui.Gui;
-import com.drs.beam.executor.Executor;
+import com.drs.beam.modules.data.DBManager;
+import com.drs.beam.modules.io.BeamIO;
+import com.drs.beam.modules.io.InnerIOIF;
+import com.drs.beam.modules.executor.BeamExecutor;
 import com.drs.beam.remote.codebase.ExecutorIF;
 import com.drs.beam.remote.codebase.OrgIOIF;
 import com.drs.beam.remote.codebase.TaskManagerIF;
-import com.drs.beam.tasks.TaskManager;
-import com.drs.beam.util.config.ConfigReader;
-import com.drs.beam.util.data.DBManager;
+import com.drs.beam.modules.tasks.TaskManager;
+import com.drs.beam.util.config.ConfigContainer;
+import com.drs.beam.util.config.ConfigParams;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -27,34 +26,43 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class Organizer{
     // Fields =============================================================================
-    private final InnerIOIF innerIO;
-    private final OrgIOIF remoteIO;
-    private final TaskManagerIF taskManager;
-    private final ExecutorIF executor;
+    static {
+        
+    }
+    private static InnerIOIF innerIO;
+    private static OrgIOIF remoteIO;
+    private static TaskManagerIF taskManager;
+    private static ExecutorIF executor;
 
     // Constructor ========================================================================
     Organizer() {
-        this.innerIO = BeamIO.getInnerIO();
-        this.remoteIO = BeamIO.getRemoteIO(); 
-        DBManager.prepareToWork();               
-        this.executor = new Executor();
-        this.taskManager = new TaskManager();
     }
 
     // Methods ============================================================================
 
     public static void main(String[] args) {
-        Organizer organizer = new Organizer();        
-        organizer.export();
+        ConfigContainer.parseStartArgumentsIntoConfiguration(args);
+        BeamIO.init();
+        DBManager.init();    
+        Organizer.init();
+        export();
+        ConfigContainer.cancel();
         System.out.println("ready!");
     }
     
-    private void export(){
+    private static void init(){
+        innerIO = BeamIO.getInnerIO();
+        remoteIO = BeamIO.getRemoteIO();
+        taskManager = new TaskManager();
+        executor = new BeamExecutor();
+    }
+    
+    private static void export(){
         if (System.getSecurityManager()==null)
             System.setSecurityManager(new SecurityManager());
-        try{
-            ConfigReader config = ConfigReader.getReader();
-            int organizerPort = config.getOrganizerPort();
+        try{            
+            int organizerPort = Integer.parseInt(
+                    ConfigContainer.getParam(ConfigParams.ORGANIZER_PORT));
             Registry registry = LocateRegistry.createRegistry(organizerPort);
             OrgIOIF orgIOStub =
                     (OrgIOIF) UnicastRemoteObject.exportObject(remoteIO, organizerPort);
@@ -65,12 +73,13 @@ public class Organizer{
             TaskManagerIF TaskManagerStub =
                     (TaskManagerIF) UnicastRemoteObject.exportObject(taskManager, organizerPort);
 
-            registry.bind(config.getOrgIOName(), orgIOStub);
-            registry.bind(config.getOSExecutorName(), osExecutorStub);
-            registry.bind(config.getTaskManagerName(), TaskManagerStub);
+            registry.bind(ConfigContainer.getParam(ConfigParams.ORG_IO_NAME), orgIOStub);
+            registry.bind(ConfigContainer.getParam(ConfigParams.EXECUTOR_NAME), osExecutorStub);
+            registry.bind(ConfigContainer.getParam(ConfigParams.TASK_MANAGER_NAME), TaskManagerStub);
 
         }catch (AlreadyBoundException|RemoteException e){            
             innerIO.informAboutException(e, true);
         }
-    }
+    }  
+    
 }

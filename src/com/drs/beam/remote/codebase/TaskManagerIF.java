@@ -4,7 +4,7 @@
  */
 package com.drs.beam.remote.codebase;
 
-import com.drs.beam.tasks.Task;
+import com.drs.beam.modules.tasks.Task;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;

@@ -37,14 +37,57 @@ class ConfigReaderJDOM implements ConfigReader{
     
     // Methods ============================================================================
     
-    public static void main(String[] args) throws Exception{
-        ConfigReaderJDOM config = new ConfigReaderJDOM();
-        System.out.println(config.getCoreDBDriver());
-        System.out.println(config.getCoreDBURL());
-        
+    @Override
+    public  String   getLibrariesLocation(){
+        try {
+            exp = xFactory.compile("//resources/libraries");
+            element = (Element) exp.evaluate(doc).get(0);
+            return element.getText();
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
     }
     
-    // ConfigReader methods implementations to get required info from config.xml ----------
+    @Override
+    public String getImagesLocation(){
+        try {
+            exp = xFactory.compile("//resources/images");
+            element = (Element) exp.evaluate(doc).get(0);
+            return element.getText();
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getGuiPlatform(){
+        try {
+            exp = xFactory.compile("//ui/inner");
+            element = (Element) exp.evaluate(doc).get(0);
+            return element.getText();
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getProgramsLocation(){
+        try {
+            exp = xFactory.compile("//executor/programs");
+            element = (Element) exp.evaluate(doc).get(0);
+            return element.getText();
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
     
     @Override    
     public int getOrganizerPort(){
@@ -187,6 +230,32 @@ class ConfigReaderJDOM implements ConfigReader{
     public String getCoreDBName(){
         try {
             exp = xFactory.compile("/configuration/databases/core/db-name");
+            element = (Element) exp.evaluate(doc).get(0);
+            return element.getText();
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public  String   getDbDriverJar(){
+        try {
+            exp = xFactory.compile("/configuration/databases/core/db-driver-jar");
+            element = (Element) exp.evaluate(doc).get(0);
+            return element.getText();
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public  String   getLoadingType(){
+        try {
+            exp = xFactory.compile("/configuration/loading");
             element = (Element) exp.evaluate(doc).get(0);
             return element.getText();
         }catch(Exception e){

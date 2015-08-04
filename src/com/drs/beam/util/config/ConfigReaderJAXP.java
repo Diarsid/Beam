@@ -18,6 +18,8 @@ import org.w3c.dom.Node;
  */
 class ConfigReaderJAXP implements ConfigReader{
     // Fields =============================================================================    
+    private static ConfigReaderJAXP reader = new ConfigReaderJAXP();
+    
     private Document config;
     private XPath xPath = XPathFactory.newInstance().newXPath();
     private String exp;
@@ -38,13 +40,75 @@ class ConfigReaderJAXP implements ConfigReader{
     
     // Methods ============================================================================
     
-    public static void main(String[] args) {
-        ConfigReaderJAXP conf = new ConfigReaderJAXP();
-        System.out.println(conf.getCoreDBDriver());
-        System.out.println(conf.getCoreDBURL());
+    
+    static void cancel(){
+        reader.cancelReader();
+        reader = null;
     }
     
-    // ConfigReader methods implementations to get required info from config.xml ----------
+    static ConfigReader getReader(){
+        return reader;
+    }
+    
+    private void cancelReader(){
+        this.config = null;
+        this.xPath = null;
+        this.exp = null;
+        this.result = null;
+    }
+    
+    @Override
+    public  String   getLibrariesLocation(){
+        try {
+            exp = "//resources/libraries";
+            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
+            return result;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getImagesLocation(){
+        try {
+            exp = "//resources/images";
+            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
+            return result;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getGuiPlatform(){
+        try {
+            exp = "//ui/inner";
+            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
+            return result;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getProgramsLocation(){
+        try {
+            exp = "//executor/programs";
+            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
+            return result;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
     @Override
     public int getOrganizerPort(){
         try{
@@ -190,6 +254,34 @@ class ConfigReaderJAXP implements ConfigReader{
     public String getCoreDBName(){
         try {
             exp = "/configuration/databases/core/db-name";
+            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
+            result = node.getTextContent();
+            return result;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getDbDriverJar(){
+        try {
+            exp = "/configuration/databases/core/db-driver-jar";
+            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
+            result = node.getTextContent();
+            return result;
+        }catch(Exception e){
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+    }
+    
+    @Override
+    public String getLoadingType(){
+        try {
+            exp = "/configuration/loading";
             Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
             result = node.getTextContent();
             return result;

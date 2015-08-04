@@ -13,17 +13,18 @@ import java.util.Map;
  * 
  */
 public interface ExecutorIF extends Remote {
-    public void open(String command) throws RemoteException;
-    public void run(String command) throws RemoteException;
-    public void call(String command) throws RemoteException;
+    void open(String command) throws RemoteException;
+    void run(String command) throws RemoteException;
+    void call(String command) throws RemoteException;
+    void start(String command) throws RemoteException;
+    void stop(String command) throws RemoteException;
     
-    public void newCommand(List<String> command, String commandName) throws RemoteException;
-    public void newLocation(String location) throws RemoteException;
-    public void newLocation(String locationPath, String locationName) throws RemoteException;
+    void newCommand(List<String> command, String commandName) throws RemoteException;
+    void newLocation(String locationPath, String locationName) throws RemoteException;
     
-    public Map<String, String> viewLocations() throws RemoteException;
-    public Map<String, List<String>> viewCommands() throws RemoteException;
+    Map<String, String>      getLocations() throws RemoteException;
+    Map<String, List<String>> getCommands() throws RemoteException;
     
-    public void deleteCommand(String commandName) throws RemoteException;
-    public void deleteLocation(String locationName) throws RemoteException;
+    boolean deleteCommand(String commandName) throws RemoteException;
+    boolean deleteLocation(String locationName) throws RemoteException;
 }

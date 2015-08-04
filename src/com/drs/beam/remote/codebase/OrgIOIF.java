@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
  */
 public interface OrgIOIF extends Remote {
     public boolean hasExternalIOProcessor() throws RemoteException;
-    public void acceptNewIOProcessor() throws RemoteException;
+    public void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort) throws RemoteException;
     public void useExternalShowTaskMethod() throws RemoteException;
     public void useNativeShowTaskMethod() throws RemoteException;
     public void exit() throws RemoteException;
