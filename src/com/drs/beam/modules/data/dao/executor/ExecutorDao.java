@@ -4,7 +4,7 @@
  */
 package com.drs.beam.modules.data.dao.executor;
 
-import com.drs.beam.modules.data.DBManager;
+import com.drs.beam.modules.data.DataManager;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +28,6 @@ public interface ExecutorDao {
     public Map<String, List<String>> getCommands();
     
     public static ExecutorDao getDao(){
-        return DBManager.getExecutorDao();
+        return DataManager.getExecutorDao();
     }    
 }

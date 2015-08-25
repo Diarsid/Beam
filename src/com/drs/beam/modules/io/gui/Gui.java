@@ -8,7 +8,7 @@ import com.drs.beam.modules.io.gui.jfx.GuiJFX;
 import com.drs.beam.modules.io.gui.swing.GuiSwing;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.util.config.ConfigContainer;
-import com.drs.beam.util.config.ConfigParams;
+import com.drs.beam.util.config.ConfigParam;
 
 /*
  * 'Native' program`s output interface.
@@ -19,7 +19,7 @@ import com.drs.beam.util.config.ConfigParams;
  * Is implemented with JavaFX or Swing technology which is choosed from config.xml.
  */
 public interface Gui{
-    public final String IMAGES_LOCATION = ConfigContainer.getParam(ConfigParams.IMAGES_LOCATION);
+    public final String IMAGES_LOCATION = ConfigContainer.getParam(ConfigParam.IMAGES_LOCATION);
     
     /*
      * Method used to show user`s tasks.
@@ -45,7 +45,7 @@ public interface Gui{
      * impossible to determine gui platform, program should be closed.
      */
     public static Gui getGui(){
-        switch(ConfigContainer.getParam(ConfigParams.GUI_PLATFORM).toLowerCase()) {
+        switch(ConfigContainer.getParam(ConfigParam.GUI_PLATFORM).toLowerCase()) {
             case "javafx" : {
                 GuiJFX fx = new GuiJFX();
                 new Thread(fx, "JavaFX Application Thread").start();

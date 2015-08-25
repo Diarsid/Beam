@@ -6,7 +6,7 @@
 package com.drs.beam.modules.data.dao.executor;
 
 import com.drs.beam.modules.io.BeamIO;
-import com.drs.beam.modules.io.InnerIOIF;
+import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.data.base.DataBase;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +27,7 @@ import java.util.StringJoiner;
 public class ExecutorDaoH2 implements ExecutorDao{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOIF ioEngine = BeamIO.getInnerIO();
+    private final InnerIOInterface ioEngine = BeamIO.getInnerIO();
     
     /* 
      * SQL Tables description for locations and commands entities.

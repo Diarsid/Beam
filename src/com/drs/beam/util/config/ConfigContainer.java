@@ -16,7 +16,7 @@ public class ConfigContainer {
     // Fields ==================================================================
     private static ConfigContainer container = new ConfigContainer();
     
-    private Map<ConfigParams, String> configurations;
+    private Map<ConfigParam, String> configurations;
     
     // Constructors ============================================================
     private ConfigContainer() {
@@ -31,20 +31,20 @@ public class ConfigContainer {
     }
     
     public static void parseStartArgumentsIntoConfiguration(String[] startArgs){
-        ConfigParams configParam;
+        ConfigParam configParam;
         String configParamName;
         String configParamValue;
         int indexOfEqual;
         for(String configurationPair : startArgs){
             indexOfEqual = configurationPair.indexOf("=");
             configParamName = configurationPair.substring(0, indexOfEqual);
-            configParam = ConfigParams.valueOf(configParamName);
+            configParam = ConfigParam.valueOf(configParamName);
             configParamValue = configurationPair.substring(indexOfEqual+1, configurationPair.length()); 
             container.configurations.put(configParam, configParamValue);
         }
     }    
     
-    public static String getParam(ConfigParams name){
+    public static String getParam(ConfigParam name){
         try{
             return container.configurations.get(name);
         } catch(NullPointerException npe){

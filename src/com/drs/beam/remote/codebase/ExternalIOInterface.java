@@ -12,7 +12,7 @@ import java.util.List;
 /*
  * Interface describes 
  */
-public interface ExternalIOIF extends Remote {    
+public interface ExternalIOInterface extends Remote {    
     void isActive            ()              throws RemoteException;
     void showTask            (Task task)      throws RemoteException;
     

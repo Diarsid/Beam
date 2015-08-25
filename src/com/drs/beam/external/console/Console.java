@@ -4,10 +4,10 @@
  */
 package com.drs.beam.external.console;
 
-import com.drs.beam.remote.codebase.ExternalIOIF;
-import com.drs.beam.remote.codebase.ExecutorIF;
-import com.drs.beam.remote.codebase.OrgIOIF;
-import com.drs.beam.remote.codebase.TaskManagerIF;
+import com.drs.beam.remote.codebase.ExternalIOInterface;
+import com.drs.beam.remote.codebase.ExecutorInterface;
+import com.drs.beam.remote.codebase.RemoteAccessInterface;
+import com.drs.beam.modules.tasks.TaskManagerInterface;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.util.config.ConfigContainer;
 import java.io.*;
@@ -22,7 +22,7 @@ import java.util.StringJoiner;
  * Reads commands, sends them to main program and prints output. It can be closed 
  * without exit of main program.
  */
-public class Console implements Runnable, ExternalIOIF{
+public class Console implements Runnable, ExternalIOInterface{
     // Fields =============================================================================
     private final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
     private final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -38,9 +38,9 @@ public class Console implements Runnable, ExternalIOIF{
     private final String[] stopPatterns = {".", "", "s", " "};
     private final String[] helpPatterns = {"h", "help", "hlp", "hp"};
     
-    private static TaskManagerIF taskManager;
-    private static ExecutorIF executor;
-    private static OrgIOIF orgIO;
+    private static TaskManagerInterface taskManager;
+    private static ExecutorInterface executor;
+    private static RemoteAccessInterface orgIO;
     
     // Constructor ========================================================================
     public Console() {
@@ -59,15 +59,15 @@ public class Console implements Runnable, ExternalIOIF{
         new Thread(console, "Org_console").start();
     }    
     
-    void setTaskManager(TaskManagerIF tm) {
+    void setTaskManager(TaskManagerInterface tm) {
         taskManager = tm;
     }
 
-    void setOsExecutor(ExecutorIF e) {
+    void setOsExecutor(ExecutorInterface e) {
         executor = e;
     }
 
-    void setOrgIO(OrgIOIF io) {
+    void setOrgIO(RemoteAccessInterface io) {
         orgIO = io;
     }
     
@@ -597,7 +597,7 @@ public class Console implements Runnable, ExternalIOIF{
         }        
     }
     
-    // ExternalIOIF methods implementations -----------------------------------------------
+    // ExternalIOInterface methods implementations -----------------------------------------------
     @Override
     public void showTask(Task task) throws RemoteException{
         try{

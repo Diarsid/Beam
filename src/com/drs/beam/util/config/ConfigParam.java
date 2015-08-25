@@ -8,7 +8,7 @@ package com.drs.beam.util.config;
  *
  * @author Diarsid
  */
-public enum ConfigParams {
+public enum ConfigParam {
     ORGANIZER_PORT,
     ORGANIZER_HOST,
     CONSOLE_PORT,

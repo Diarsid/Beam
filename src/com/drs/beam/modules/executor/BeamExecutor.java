@@ -6,8 +6,8 @@ package com.drs.beam.modules.executor;
 
 import com.drs.beam.modules.data.dao.executor.ExecutorDao;
 import com.drs.beam.modules.io.BeamIO;
-import com.drs.beam.modules.io.InnerIOIF;
-import com.drs.beam.remote.codebase.ExecutorIF;
+import com.drs.beam.modules.io.InnerIOInterface;
+import com.drs.beam.remote.codebase.ExecutorInterface;
 import com.drs.beam.modules.executor.os.OS;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -16,9 +16,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class BeamExecutor implements ExecutorIF {
+public class BeamExecutor implements ExecutorInterface {
     // Fields =============================================================================
-    private final InnerIOIF ioEngine;
+    private final InnerIOInterface ioEngine;
     private final ExecutorDao dao;
     private final OS system;
     

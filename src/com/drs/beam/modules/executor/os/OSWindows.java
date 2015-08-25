@@ -7,9 +7,9 @@ package com.drs.beam.modules.executor.os;
 import com.drs.beam.modules.executor.os.exceptions.NoLocationException;
 import com.drs.beam.modules.executor.os.exceptions.NoTargetException;
 import com.drs.beam.modules.io.BeamIO;
-import com.drs.beam.modules.io.InnerIOIF;
+import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.util.config.ConfigContainer;
-import com.drs.beam.util.config.ConfigParams;
+import com.drs.beam.util.config.ConfigParam;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -24,11 +24,11 @@ import java.util.Arrays;
 public class OSWindows implements OS{    
     // Fields =============================================================================
     private final String PROGRAMS_LOCATION; 
-    private final InnerIOIF ioEngine;
+    private final InnerIOInterface ioEngine;
     
     // Constructors =======================================================================
     public OSWindows() {
-        this.PROGRAMS_LOCATION = ConfigContainer.getParam(ConfigParams.PROGRAMS_LOCATION)
+        this.PROGRAMS_LOCATION = ConfigContainer.getParam(ConfigParam.PROGRAMS_LOCATION)
                 .replace("\\", "/")
                 .toLowerCase()
                 .intern();

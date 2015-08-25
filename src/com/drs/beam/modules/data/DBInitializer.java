@@ -6,7 +6,7 @@
 package com.drs.beam.modules.data;
 
 import com.drs.beam.modules.data.base.DataBase;
-import com.drs.beam.modules.io.InnerIOIF;
+import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.io.BeamIO;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -20,7 +20,7 @@ import java.sql.Statement;
  */
 public class DBInitializer {    
     // Fields =============================================================================  
-    private final InnerIOIF ioEngine = BeamIO.getInnerIO();
+    private final InnerIOInterface ioEngine = BeamIO.getInnerIO();
     
     private final String CHECK_TASKS_TABLE = 
             "SELECT TOP 1 * FROM tasks";

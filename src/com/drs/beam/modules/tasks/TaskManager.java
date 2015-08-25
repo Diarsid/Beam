@@ -5,8 +5,7 @@
 package com.drs.beam.modules.tasks;
 
 import com.drs.beam.modules.io.BeamIO;
-import com.drs.beam.modules.io.InnerIOIF;
-import com.drs.beam.remote.codebase.TaskManagerIF;
+import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.data.dao.tasks.TasksDao;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
@@ -23,9 +22,9 @@ import java.util.ArrayList;
  * getting them according to different criteria and so on.
  * Is responsible for initial database reading when program starts it's work.
  */
-public class TaskManager implements TaskManagerIF {
+public class TaskManager implements TaskManagerInterface {
     // Fields =============================================================================
-    private final InnerIOIF ioEngine;
+    private final InnerIOInterface ioEngine;
     private final TasksDao  dao;
     private LocalDateTime   firstTaskTime = null;    
     
@@ -214,7 +213,7 @@ public class TaskManager implements TaskManagerIF {
         }        
     }
     
-    // Methods implements TaskManagerIF interface -----------------------------------------
+    // Methods implements TaskManagerInterface interface -----------------------------------------
     @Override
     public void createNewTask(String timeString, String[] task) throws RemoteException{
         LocalDateTime time = ofFormat(timeString, true);

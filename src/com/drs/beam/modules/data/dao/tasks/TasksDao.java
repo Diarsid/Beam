@@ -5,7 +5,7 @@
 package com.drs.beam.modules.data.dao.tasks;
 
 import com.drs.beam.modules.tasks.Task;
-import com.drs.beam.modules.data.DBManager;
+import com.drs.beam.modules.data.DataManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -26,9 +26,4 @@ public interface TasksDao {
     LocalDateTime    getFirstTaskTime     ();
     ArrayList<Task>  getTasks            (int isActive);
     ArrayList<Task>  getTasksByTime       (LocalDateTime firstTaskTime);
-        
-        
-    static TasksDao getDao(){
-        return DBManager.getTasksDAO();
-    }
 }

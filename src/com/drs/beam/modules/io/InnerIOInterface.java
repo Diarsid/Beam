@@ -15,7 +15,7 @@ import java.util.List;
  * display given output infomation according to it`s 
  * types, settings and other requirements.
  */
-public interface InnerIOIF {    
+public interface InnerIOInterface {    
     void showTask(Task task);    
     void inform(String info);    
     void informAboutError(String error, boolean isCritical);

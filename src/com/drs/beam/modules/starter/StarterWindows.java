@@ -5,7 +5,7 @@
 
 package com.drs.beam.modules.starter;
 
-import com.drs.beam.util.config.ConfigParams;
+import com.drs.beam.util.config.ConfigParam;
 import com.drs.beam.util.config.ConfigReader;
 import java.io.IOException;
 
@@ -30,62 +30,62 @@ public class StarterWindows implements Starter{
     public void runBeam(){
         StringBuilder argumentsBuilder = new StringBuilder();
         argumentsBuilder
-                .append(ConfigParams.CORE_DB_DRIVER)
+                .append(ConfigParam.CORE_DB_DRIVER)
                 .append(equalSign)
                 .append(reader.getCoreDBDriver())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.CORE_DB_NAME)
+                .append(ConfigParam.CORE_DB_NAME)
                 .append(equalSign)
                 .append(reader.getCoreDBName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.CORE_DB_URL)
+                .append(ConfigParam.CORE_DB_URL)
                 .append(equalSign)
                 .append(reader.getCoreDBURL())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.TASK_MANAGER_NAME)
+                .append(ConfigParam.TASK_MANAGER_NAME)
                 .append(equalSign)
                 .append(reader.getTaskManagerName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.EXECUTOR_NAME)
+                .append(ConfigParam.EXECUTOR_NAME)
                 .append(equalSign)
                 .append(reader.getOSExecutorName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.ORG_IO_NAME)
+                .append(ConfigParam.ORG_IO_NAME)
                 .append(equalSign)
                 .append(reader.getOrgIOName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.GUI_PLATFORM)
+                .append(ConfigParam.GUI_PLATFORM)
                 .append(equalSign)
                 .append(reader.getGuiPlatform())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.IMAGES_LOCATION)
+                .append(ConfigParam.IMAGES_LOCATION)
                 .append(equalSign)
                 .append(reader.getImagesLocation())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.LIBRARIES_LOCATION)
+                .append(ConfigParam.LIBRARIES_LOCATION)
                 .append(equalSign)
                 .append(reader.getLibrariesLocation())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.ORGANIZER_HOST)
+                .append(ConfigParam.ORGANIZER_HOST)
                 .append(equalSign)
                 .append(reader.getOrganizerHost())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.ORGANIZER_PORT)
+                .append(ConfigParam.ORGANIZER_PORT)
                 .append(equalSign)
                 .append(reader.getOrganizerPort())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.PROGRAMS_LOCATION)
+                .append(ConfigParam.PROGRAMS_LOCATION)
                 .append(equalSign)
                 .append(reader.getProgramsLocation())
                 .append(space);        
@@ -122,42 +122,42 @@ public class StarterWindows implements Starter{
     public void runConsole(){        
         StringBuilder argumentsBuilder = new StringBuilder();
         argumentsBuilder
-                .append(ConfigParams.TASK_MANAGER_NAME)
+                .append(ConfigParam.TASK_MANAGER_NAME)
                 .append(equalSign)
                 .append(reader.getTaskManagerName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.EXECUTOR_NAME)
+                .append(ConfigParam.EXECUTOR_NAME)
                 .append(equalSign)
                 .append(reader.getOSExecutorName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.ORG_IO_NAME)
+                .append(ConfigParam.ORG_IO_NAME)
                 .append(equalSign)
                 .append(reader.getOrgIOName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.ORGANIZER_HOST)
+                .append(ConfigParam.ORGANIZER_HOST)
                 .append(equalSign)
                 .append(reader.getOrganizerHost())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.ORGANIZER_PORT)
+                .append(ConfigParam.ORGANIZER_PORT)
                 .append(equalSign)
                 .append(reader.getOrganizerPort())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.CONSOLE_NAME)
+                .append(ConfigParam.CONSOLE_NAME)
                 .append(equalSign)
                 .append(reader.getConsoleName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.CONSOLE_HOST)
+                .append(ConfigParam.CONSOLE_HOST)
                 .append(equalSign)
                 .append(reader.getConsoleHost())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParams.CONSOLE_PORT)
+                .append(ConfigParam.CONSOLE_PORT)
                 .append(equalSign)
                 .append(reader.getConsolePort())
                 .append(space);

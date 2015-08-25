@@ -4,12 +4,12 @@
  */
 package com.drs.beam.external.console;
 
-import com.drs.beam.remote.codebase.ExternalIOIF;
-import com.drs.beam.remote.codebase.ExecutorIF;
-import com.drs.beam.remote.codebase.OrgIOIF;
-import com.drs.beam.remote.codebase.TaskManagerIF;
+import com.drs.beam.remote.codebase.ExternalIOInterface;
+import com.drs.beam.remote.codebase.ExecutorInterface;
+import com.drs.beam.remote.codebase.RemoteAccessInterface;
+import com.drs.beam.modules.tasks.TaskManagerInterface;
 import com.drs.beam.util.config.ConfigContainer;
-import com.drs.beam.util.config.ConfigParams;
+import com.drs.beam.util.config.ConfigParam;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -41,11 +41,11 @@ public class ConsoleManager{
         if (System.getSecurityManager()==null)
             System.setSecurityManager(new SecurityManager());
         try{
-            int port = Integer.parseInt(ConfigContainer.getParam(ConfigParams.CONSOLE_PORT));
+            int port = Integer.parseInt(ConfigContainer.getParam(ConfigParam.CONSOLE_PORT));
             Registry registry = LocateRegistry.createRegistry(port);
-            ExternalIOIF consoleStub =
-                    (ExternalIOIF) UnicastRemoteObject.exportObject(console, port);
-            registry.bind(ConfigContainer.getParam(ConfigParams.CONSOLE_NAME), consoleStub);
+            ExternalIOInterface consoleStub =
+                    (ExternalIOInterface) UnicastRemoteObject.exportObject(console, port);
+            registry.bind(ConfigContainer.getParam(ConfigParam.CONSOLE_NAME), consoleStub);
         }catch (AlreadyBoundException abe){
             System.out.println(abe.getMessage());
             showProblemMessageAndClose("Console export failure: AlreadyBoundException");
@@ -59,23 +59,19 @@ public class ConsoleManager{
             System.setSecurityManager(new SecurityManager());
         try{
             Registry registry = LocateRegistry
-                    .getRegistry(
-                            ConfigContainer.getParam(ConfigParams.ORGANIZER_HOST), 
-                            Integer.parseInt(ConfigContainer.getParam(ConfigParams.ORGANIZER_PORT)));                
-            OrgIOIF orgIO = (OrgIOIF) registry.lookup(ConfigContainer.getParam(ConfigParams.ORG_IO_NAME));
+                    .getRegistry(ConfigContainer.getParam(ConfigParam.ORGANIZER_HOST), 
+                            Integer.parseInt(ConfigContainer.getParam(ConfigParam.ORGANIZER_PORT)));                
+            RemoteAccessInterface orgIO = (RemoteAccessInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.ORG_IO_NAME));
             if(orgIO.hasExternalIOProcessor()){
                 showProblemMessageAndClose("Organizer already has external output!");
             } else{
-                orgIO.acceptNewIOProcessor(
-                        ConfigContainer.getParam(ConfigParams.CONSOLE_NAME), 
-                        ConfigContainer.getParam(ConfigParams.CONSOLE_HOST), 
-                        Integer.parseInt(ConfigContainer.getParam(ConfigParams.CONSOLE_PORT)));
+                orgIO.acceptNewIOProcessor(ConfigContainer.getParam(ConfigParam.CONSOLE_NAME), 
+                        ConfigContainer.getParam(ConfigParam.CONSOLE_HOST), 
+                        Integer.parseInt(ConfigContainer.getParam(ConfigParam.CONSOLE_PORT)));
                 orgIO.useNativeShowTaskMethod();
                 console.setOrgIO(orgIO);
-                console.setTaskManager((TaskManagerIF) registry.lookup(
-                        ConfigContainer.getParam(ConfigParams.TASK_MANAGER_NAME)));
-                console.setOsExecutor((ExecutorIF) registry.lookup(
-                        ConfigContainer.getParam(ConfigParams.EXECUTOR_NAME)));
+                console.setTaskManager((TaskManagerInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.TASK_MANAGER_NAME)));
+                console.setOsExecutor((ExecutorInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.EXECUTOR_NAME)));
             }
         } catch (NotBoundException e){  
             System.out.println(e.getMessage());

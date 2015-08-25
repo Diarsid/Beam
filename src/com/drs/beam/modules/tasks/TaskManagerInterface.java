@@ -2,14 +2,15 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.remote.codebase;
+package com.drs.beam.modules.tasks;
 
+import com.drs.beam.modules.Module;
 import com.drs.beam.modules.tasks.Task;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public interface TaskManagerIF extends Remote {      
+public interface TaskManagerInterface extends Remote, Module {      
     
     public void     createNewTask(String time, String[] task) throws RemoteException;
     

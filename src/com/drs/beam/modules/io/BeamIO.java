@@ -4,8 +4,8 @@
  */
 package com.drs.beam.modules.io;
 
-import com.drs.beam.remote.codebase.ExternalIOIF;
-import com.drs.beam.remote.codebase.OrgIOIF;
+import com.drs.beam.remote.codebase.ExternalIOInterface;
+import com.drs.beam.remote.codebase.RemoteAccessInterface;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.modules.io.gui.Gui;
 import java.rmi.NotBoundException;
@@ -17,41 +17,32 @@ import java.util.List;
 /*
  * Central class which is responsible for program`s output.
  * Defines ways to output information and connects entire program 
- * with external output mechanism which implements ExternalIOIF e.g. 
+ * with external output mechanism which implements RemoteAccessInterface e.g. 
  * external Console.
  */
-public class BeamIO implements InnerIOIF, OrgIOIF {
+public class BeamIO implements InnerIOInterface, RemoteAccessInterface {
     
     // Fields =============================================================================
-    private static BeamIO io;
-    private static ExternalIOIF externalIOEngine;
     
-    private final Gui gui;
+    private static ExternalIOInterface externalIOEngine;
+    
+    private Gui gui;
     
     private boolean hasExternalIOProcessor = false;
     private boolean useExternalShowTaskMethod = false;
 
     // Constructors =======================================================================
-    public BeamIO() {
-        gui = Gui.getGui();        
+    public BeamIO() {                
     }
 
-    // Methods ============================================================================    
+    // Methods ============================================================================
     
-    public static void init(){
-        io = new BeamIO();
-    }
-    
-    public static InnerIOIF getInnerIO(){
-        return io;
-    }  
-    
-    public static OrgIOIF getRemoteIO(){
-        return io;
+    public void init(){
+        this.gui = Gui.getGui();
     }
     
     /*
-     * Method implements InnerIOIF interface.
+     * Method implements InnerIOInterface interface.
      * Define way to show specified Task to user according to whether 
      * external output is available and should program uses that one or not.
      */
@@ -64,8 +55,9 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
                 resetIOtoDefault();
                 nativeShowTask(task);
             }
-        } else
+        } else {
             nativeShowTask(task);
+        }
     }
     
     @Override
@@ -77,8 +69,9 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
                 resetIOtoDefault();
                 nativeInform(info);
             }
-        } else
+        } else {
             nativeInform(info);
+        }    
     }
 
     @Override
@@ -90,8 +83,9 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
                 resetIOtoDefault();
                 nativeInformAboutError(error, isCritical);
             }
-        } else
+        } else {
             nativeInformAboutError(error, isCritical);
+        }    
     }
     
     @Override
@@ -104,8 +98,9 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
                 resetIOtoDefault();
                 nativeInformAboutException(e, isCritical);
             }
-        } else
+        } else {
             nativeInformAboutException(e, isCritical);
+        }    
     }
     
     @Override
@@ -152,16 +147,16 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     }
 
     /*
-     * Intended for accepting external object implements ExternalIOIF with RMI
+     * Intended for accepting external object implements ExternalIOInterface with RMI
      * using given port and object`s name in RMI registry on given port.
-     * Is invoked by ExternalIOIF object to bind himself with organizer.
+     * Is invoked by ExternalIOInterface object to bind himself with organizer.
      */
     @Override
     public void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort) throws RemoteException{
         try{ 
             Registry registry = LocateRegistry
                     .getRegistry(consoleHost, consolePort);
-            externalIOEngine = (ExternalIOIF) registry.lookup(consoleRmiName);
+            externalIOEngine = (ExternalIOInterface) registry.lookup(consoleRmiName);
             hasExternalIOProcessor = true;
         } catch (NotBoundException e){
             nativeInformAboutException(e, false);
@@ -169,8 +164,8 @@ public class BeamIO implements InnerIOIF, OrgIOIF {
     }
 
     /*
-     * Invoked by ExternalIOIF object to get information about whether organizer 
-     * already has a reference to external object implements ExternalIOIF
+     * Invoked by ExternalIOInterface object to get information about whether organizer 
+     * already has a reference to external object implements ExternalIOInterface
      */
     @Override
     public boolean hasExternalIOProcessor() throws RemoteException{

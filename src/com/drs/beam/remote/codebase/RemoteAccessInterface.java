@@ -12,7 +12,7 @@ import java.rmi.RemoteException;
  * by external io engine from outside. Methods can be invoked by external io engine 
  * to force program to exit or change it`s behavior regarding it`s output activity.
  */
-public interface OrgIOIF extends Remote {
+public interface RemoteAccessInterface extends Remote {
     public boolean hasExternalIOProcessor() throws RemoteException;
     public void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort) throws RemoteException;
     public void useExternalShowTaskMethod() throws RemoteException;

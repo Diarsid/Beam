@@ -5,7 +5,7 @@
 package com.drs.beam.modules.data.dao.tasks;
 
 import com.drs.beam.modules.io.BeamIO;
-import com.drs.beam.modules.io.InnerIOIF;
+import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.modules.data.base.DataBase;
 import java.sql.Connection;
@@ -25,7 +25,7 @@ import java.util.Collections;
 public class TasksDaoH2 implements TasksDao{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOIF ioEngine = BeamIO.getInnerIO();
+    private final InnerIOInterface ioEngine = BeamIO.getInnerIO();
     
     private final String INSERT_NEW_TASK = 
             "INSERT INTO tasks VALUES (?, ?, ?, ?, ?)";    
