@@ -5,7 +5,6 @@
 package com.drs.beam.modules.executor;
 
 import com.drs.beam.modules.data.dao.executor.ExecutorDao;
-import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.remote.codebase.ExecutorInterface;
 import com.drs.beam.modules.executor.os.OS;
@@ -23,13 +22,14 @@ public class BeamExecutor implements ExecutorInterface {
     private final OS system;
     
     // Constructors =======================================================================
-    public BeamExecutor() {
-        this.ioEngine = BeamIO.getInnerIO();
-        this.dao = ExecutorDao.getDao();        
-        this.system = OS.getOS();
+    public BeamExecutor(InnerIOInterface io, ExecutorDao executorDao) {
+        this.ioEngine = io;
+        this.dao = executorDao;        
+        this.system = OS.getOS(io);
     }
 
     // Methods ============================================================================
+    
     @Override
     public void open(String command) throws RemoteException{
         List<String> commandParts = prepareCommand(command);
@@ -52,7 +52,7 @@ public class BeamExecutor implements ExecutorInterface {
                 this.openLocation(commandParts.get(1));
             }
         } catch (IndexOutOfBoundsException indexException) {
-            ioEngine.informAboutError("Unrecognizable command.", false);
+            this.ioEngine.informAboutError("Unrecognizable command.", false);
         }
     }
     
@@ -87,7 +87,7 @@ public class BeamExecutor implements ExecutorInterface {
             command.set(i, s);
         }
         commandName = commandName.trim().toLowerCase();
-        dao.saveNewCommand(command, commandName);
+        this.dao.saveNewCommand(command, commandName);
     }
     
     @Override
@@ -96,32 +96,32 @@ public class BeamExecutor implements ExecutorInterface {
         locationName = locationName.trim().toLowerCase();
         locationPath = locationPath.trim().toLowerCase();
         // if given path exists and it is actually folder, not a file
-        if (system.ifDirectoryExists(locationPath)){            
-            dao.saveNewLocation(locationPath, locationName);
+        if (this.system.ifDirectoryExists(locationPath)){            
+            this.dao.saveNewLocation(locationPath, locationName);
         } 
     }
         
     @Override
     public boolean deleteCommand(String commandName) throws RemoteException{
         commandName = commandName.trim().toLowerCase();
-        return dao.removeCommand(commandName);
+        return this.dao.removeCommand(commandName);
     }
     
     @Override
     // location pattern: projects
     public boolean deleteLocation(String locationName) throws RemoteException{
         locationName = locationName.trim().toLowerCase();
-        return dao.removeLocation(locationName); 
+        return this.dao.removeLocation(locationName); 
     }  
     
     @Override
     public Map<String, String> getLocations() throws RemoteException{
-        return dao.getLocations();
+        return this.dao.getLocations();
     }
     
     @Override
     public Map<String, List<String>> getCommands() throws RemoteException{
-        return dao.getCommands();
+        return this.dao.getCommands();
     }    
        
     private void openLocation(String locationName){
@@ -130,7 +130,7 @@ public class BeamExecutor implements ExecutorInterface {
         // location pattern: C:/path/to/my/projects
         locationName = resolveMultipleLocationsInDB(locationName);
         if (locationName.length() > 0){
-            system.openLocation(locationName);
+            this.system.openLocation(locationName);
         } 
     }
     
@@ -142,7 +142,7 @@ public class BeamExecutor implements ExecutorInterface {
         
         locationName = resolveMultipleLocationsInDB(locationName);
         if (locationName.length() > 0){
-            system.openFileInLocation(targetName, locationName);
+            this.system.openFileInLocation(targetName, locationName);
         }             
     }
     
@@ -153,23 +153,23 @@ public class BeamExecutor implements ExecutorInterface {
         
         locationName = resolveMultipleLocationsInDB(locationName);
         if (locationName.length() > 0){
-            system.openFileInLocationWithProgram(file, locationName, program);
+            this.system.openFileInLocationWithProgram(file, locationName, program);
         }    
     }
     
     private void runGivenPrograms(List<String> arguments){
         for(int i = 1; i < arguments.size(); i++){
-            system.runProgram(arguments.get(i).trim().toLowerCase());
+            this.system.runProgram(arguments.get(i).trim().toLowerCase());
         }
     }
     
     private void callGivenCommands(List<String> arguments){
         for(int i = 1; i < arguments.size(); i++){
             Map<String, List<String>> commands = 
-                dao.getCommandsByName(arguments.get(i));
+                this.dao.getCommandsByName(arguments.get(i));
             
             if (commands.size() < 1){
-                ioEngine.inform("Couldn`t find such command.");
+                this.ioEngine.inform("Couldn`t find such command.");
             } else if (commands.size() == 1){
                 for(Map.Entry<String, List<String>> entry : commands.entrySet()){
                     executelistOfCommands(entry.getValue());                    
@@ -179,7 +179,7 @@ public class BeamExecutor implements ExecutorInterface {
                 for (Entry<String, List<String>> entry : commands.entrySet()) {
                     numberedCommandsNames.add(entry.getKey());   
                 }
-                int variant = ioEngine.resolveVariantsWithExternalIO(
+                int variant = this.ioEngine.resolveVariantsWithExternalIO(
                         "There are several commands:", 
                         numberedCommandsNames
                 );
@@ -201,20 +201,20 @@ public class BeamExecutor implements ExecutorInterface {
                 }
             }
         } catch (RemoteException e){
-            ioEngine.informAboutException(e, false);
+            this.ioEngine.informAboutException(e, false);
         }
     }
     
     private String resolveMultipleLocationsInDB(String locationName){
         Map<String, String> foundedLocations;
         if (locationName.contains("-")){
-            foundedLocations = dao.getLocationsByNameParts(locationName.split("-"));            
+            foundedLocations = this.dao.getLocationsByNameParts(locationName.split("-"));            
         } else {
-            foundedLocations = dao.getLocationsByName(locationName);            
+            foundedLocations = this.dao.getLocationsByName(locationName);            
         } 
         
         if (foundedLocations.size() < 1){
-            ioEngine.inform("Couldn`t find such location.");
+            this.ioEngine.inform("Couldn`t find such location.");
             return "";
         } else if (foundedLocations.size() == 1){
             // If there is only one entry in the map, convert values to array 
@@ -222,7 +222,7 @@ public class BeamExecutor implements ExecutorInterface {
             return (String)foundedLocations.values().toArray()[0];
         } else {
             List<String> locationVariants = new ArrayList(foundedLocations.keySet());
-            int varNumber = ioEngine.resolveVariantsWithExternalIO(
+            int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
                     "There are several locations:", 
                     locationVariants);
             if (varNumber < 0){
@@ -245,7 +245,7 @@ public class BeamExecutor implements ExecutorInterface {
         if (commandParts.size() == 2){
             system.runProgram(commandParts.get(1)+"-"+mark);
         } else {
-            ioEngine.informAboutError("Unrecognizable command.", false);
+            this.ioEngine.informAboutError("Unrecognizable command.", false);
         }
     }
 }

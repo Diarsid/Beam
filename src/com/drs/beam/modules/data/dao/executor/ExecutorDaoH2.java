@@ -27,7 +27,7 @@ import java.util.StringJoiner;
 public class ExecutorDaoH2 implements ExecutorDao{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOInterface ioEngine = BeamIO.getInnerIO();
+    private final InnerIOInterface ioEngine;
     
     /* 
      * SQL Tables description for locations and commands entities.
@@ -95,8 +95,9 @@ public class ExecutorDaoH2 implements ExecutorDao{
     private final String NO_STORED_COMMANDS = "There aren`t any commands.";
     
     // Constructors =======================================================================
-    public ExecutorDaoH2(DataBase data) {
+    public ExecutorDaoH2(DataBase data, InnerIOInterface io) {
         this.data = data;
+        this.ioEngine = io;
     }
     
     // Methods ============================================================================

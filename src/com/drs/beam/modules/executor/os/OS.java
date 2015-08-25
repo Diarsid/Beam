@@ -5,6 +5,7 @@
 package com.drs.beam.modules.executor.os;
 
 import com.drs.beam.modules.io.BeamIO;
+import com.drs.beam.modules.io.InnerIOInterface;
 
 /**
  *
@@ -19,19 +20,19 @@ public interface OS {
     void openFileInLocationWithProgram(String file, String location, String program);
     void runProgram(String program);
     
-    static OS getOS(){
+    static OS getOS(InnerIOInterface io){
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")){
-            return new OSWindows();
+            return new OSWindows(io);
         } else if (systemName.contains("x")) {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program
-            BeamIO.getInnerIO().informAboutError("Program does not have OSUnix implementation yet.", true);
+            io.informAboutError("Program does not have OSUnix implementation yet.", true);
             return null;
         } else {
             // Some error occured or there is unknown OS.
             // Terminates program
-            BeamIO.getInnerIO().informAboutError("Unsupported or unknown OS.", true);
+            io.informAboutError("Unsupported or unknown OS.", true);
             return null;
         }     
     }

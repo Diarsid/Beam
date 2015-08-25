@@ -20,7 +20,7 @@ import java.sql.Statement;
  */
 public class DBInitializer {    
     // Fields =============================================================================  
-    private final InnerIOInterface ioEngine = BeamIO.getInnerIO();
+    private final InnerIOInterface ioEngine;
     
     private final String CHECK_TASKS_TABLE = 
             "SELECT TOP 1 * FROM tasks";
@@ -46,12 +46,13 @@ public class DBInitializer {
             "location_path   VARCHAR(300)    NOT NULL)";
     
     // Constructors =======================================================================
-    public DBInitializer() {
+    public DBInitializer(InnerIOInterface io) {
+        this.ioEngine = io;
     }
 
     // Methods ============================================================================    
     
-    void initDataBase(DataBase db){
+    void checkDataBase(DataBase db){
         try (   Connection con = db.connect();
                 Statement st = con.createStatement();)
         {

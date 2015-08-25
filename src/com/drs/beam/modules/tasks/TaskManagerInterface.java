@@ -10,9 +10,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public interface TaskManagerInterface extends Remote, Module {      
+public interface TaskManagerInterface extends Remote{      
     
-    public void     createNewTask(String time, String[] task) throws RemoteException;
+    public void createNewTask(String time, String[] task) throws RemoteException;
     
     public String           getFirstAlarmTime()  throws RemoteException;
     public ArrayList<Task>   getFutureTasks()    throws RemoteException;

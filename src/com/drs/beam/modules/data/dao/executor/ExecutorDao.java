@@ -26,8 +26,4 @@ public interface ExecutorDao {
         
     public Map<String, String> getLocations();
     public Map<String, List<String>> getCommands();
-    
-    public static ExecutorDao getDao(){
-        return DataManager.getExecutorDao();
-    }    
 }

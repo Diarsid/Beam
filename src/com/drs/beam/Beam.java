@@ -28,17 +28,17 @@ import java.util.Map;
  * Main application class.
  * Creates all parts of program, initializes and exports them on port trough RMI.
  */
-public class Organizer{
+public class Beam {
     // Fields =============================================================================    
     private static InnerIOInterface innerIO;
-    private static RemoteAccessInterface remoteIO;
+    private static RemoteAccessInterface remoteAccess;
     private static TaskManagerInterface taskManager;
     private static ExecutorInterface executor;
     
     private static final Map<ModuleName, Module> modules = new HashMap<>();
 
     // Constructor ========================================================================
-    Organizer() {
+    Beam() {
     }
 
     // Methods ============================================================================
@@ -57,20 +57,15 @@ public class Organizer{
 
     public static void main(String[] args) {
         ConfigContainer.parseStartArgumentsIntoConfiguration(args);
-        BeamIO.init();
-        DataManager dataManager = new DataManager(innerIo);
-        dataManager.init();
-        Organizer.init();
+        BeamIO io = new BeamIO();
+        Beam.innerIO = (InnerIOInterface) io;
+        Beam.remoteAccess = (RemoteAccessInterface) io;
+        DataManager dataManager = new DataManager(innerIO);
+        Beam.taskManager = new TaskManager(innerIO, dataManager.getTasksDAO());
+        Beam.executor = new BeamExecutor(innerIO, dataManager.getExecutorDao());
         export();
         ConfigContainer.cancel();
         System.out.println("ready!");
-    }
-    
-    private static void init(){
-        innerIO = BeamIO.getInnerIO();
-        remoteIO = BeamIO.getRemoteIO();
-        taskManager = new TaskManager();
-        executor = new BeamExecutor();
     }
     
     private static void export(){
@@ -80,7 +75,7 @@ public class Organizer{
             int organizerPort = Integer.parseInt(ConfigContainer.getParam(ConfigParam.ORGANIZER_PORT));
             Registry registry = LocateRegistry.createRegistry(organizerPort);
             RemoteAccessInterface orgIOStub =
-                    (RemoteAccessInterface) UnicastRemoteObject.exportObject(remoteIO, organizerPort);
+                    (RemoteAccessInterface) UnicastRemoteObject.exportObject(remoteAccess, organizerPort);
 
             ExecutorInterface osExecutorStub =
                     (ExecutorInterface) UnicastRemoteObject.exportObject(executor, organizerPort);

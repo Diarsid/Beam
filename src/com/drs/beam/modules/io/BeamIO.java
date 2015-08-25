@@ -16,34 +16,30 @@ import java.util.List;
 
 /*
  * Central class which is responsible for program`s output.
- * Defines ways to output information and connects entire program 
- * with external output mechanism which implements RemoteAccessInterface e.g. 
- * external Console.
+ * 
+ * Defines ways to output program`s information through InnerIOInterface. This interface is
+ * used by other program`s modules for informing about events, exceptions, errors, printing 
+ * response information etc.
  */
 public class BeamIO implements InnerIOInterface, RemoteAccessInterface {
     
     // Fields =============================================================================
+    private ExternalIOInterface externalIOEngine;
     
-    private static ExternalIOInterface externalIOEngine;
-    
-    private Gui gui;
+    private final Gui gui;
     
     private boolean hasExternalIOProcessor = false;
     private boolean useExternalShowTaskMethod = false;
 
     // Constructors =======================================================================
-    public BeamIO() {                
+    public BeamIO() {        
+        this.gui = Gui.getGui();
     }
 
     // Methods ============================================================================
-    
-    public void init(){
-        this.gui = Gui.getGui();
-    }
-    
+        
     /*
-     * Method implements InnerIOInterface interface.
-     * Define way to show specified Task to user according to whether 
+     * Defines way to show specified Task to user according to whether 
      * external output is available and should program uses that one or not.
      */
     @Override

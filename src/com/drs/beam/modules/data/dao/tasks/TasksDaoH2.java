@@ -25,7 +25,7 @@ import java.util.Collections;
 public class TasksDaoH2 implements TasksDao{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOInterface ioEngine = BeamIO.getInnerIO();
+    private final InnerIOInterface ioEngine;
     
     private final String INSERT_NEW_TASK = 
             "INSERT INTO tasks VALUES (?, ?, ?, ?, ?)";    
@@ -73,8 +73,9 @@ public class TasksDaoH2 implements TasksDao{
     private final String ANY_SYMBOLS = "%";
     
     // Constructor ========================================================================
-    public TasksDaoH2(DataBase dataBase){
+    public TasksDaoH2(DataBase dataBase, InnerIOInterface io){
         this.data = dataBase;
+        this.ioEngine = io;
     }
 
     // Methods ============================================================================

@@ -4,7 +4,6 @@
  */
 package com.drs.beam.modules.tasks;
 
-import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.data.dao.tasks.TasksDao;
 import java.rmi.RemoteException;
@@ -25,13 +24,13 @@ import java.util.ArrayList;
 public class TaskManager implements TaskManagerInterface {
     // Fields =============================================================================
     private final InnerIOInterface ioEngine;
-    private final TasksDao  dao;
-    private LocalDateTime   firstTaskTime = null;    
+    private final TasksDao dao;
+    private LocalDateTime firstTaskTime = null;    
     
     // Constructor ========================================================================
-    public TaskManager(){
-        this.ioEngine = BeamIO.getInnerIO();
-        this.dao = TasksDao.getDao();    
+    public TaskManager(InnerIOInterface io, TasksDao tasksDao){
+        this.ioEngine = io;
+        this.dao = tasksDao;    
         initWork();
     }
 

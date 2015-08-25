@@ -27,12 +27,12 @@ public class OSWindows implements OS{
     private final InnerIOInterface ioEngine;
     
     // Constructors =======================================================================
-    public OSWindows() {
+    public OSWindows(InnerIOInterface io) {
         this.PROGRAMS_LOCATION = ConfigContainer.getParam(ConfigParam.PROGRAMS_LOCATION)
                 .replace("\\", "/")
                 .toLowerCase()
                 .intern();
-        this.ioEngine = BeamIO.getInnerIO();
+        this.ioEngine = io;
     }
     
     // Methods ============================================================================
