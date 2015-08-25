@@ -4,7 +4,6 @@
  */
 package com.drs.beam.modules.tasks;
 
-import com.drs.beam.modules.Module;
 import com.drs.beam.modules.tasks.Task;
 import java.rmi.Remote;
 import java.rmi.RemoteException;

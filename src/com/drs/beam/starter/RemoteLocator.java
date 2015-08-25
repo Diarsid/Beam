@@ -3,7 +3,7 @@
  * author: Diarsid
  */
 
-package com.drs.beam.modules.starter;
+package com.drs.beam.starter;
 
 import com.drs.beam.util.config.ConfigReader;
 import java.rmi.RemoteException;

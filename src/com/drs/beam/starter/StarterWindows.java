@@ -3,7 +3,7 @@
  * author: Diarsid
  */
 
-package com.drs.beam.modules.starter;
+package com.drs.beam.starter;
 
 import com.drs.beam.util.config.ConfigParam;
 import com.drs.beam.util.config.ConfigReader;
@@ -108,7 +108,7 @@ public class StarterWindows implements Starter{
                 .append("-Djava.security.policy=rmi.policy ")
                 .append("-Djava.rmi.server.hostname=").append(reader.getOrganizerHost())
                 .append(" ")
-                .append("com.drs.beam.Organizer ")
+                .append("com.drs.beam.Beam ")
                 .append(argumentsBuilder.toString());        
         try{
             Runtime.getRuntime().exec(commandBuilder.toString());

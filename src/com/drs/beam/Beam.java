@@ -4,8 +4,6 @@
  */
 package com.drs.beam;
 
-import com.drs.beam.modules.Module;
-import com.drs.beam.modules.ModuleName;
 import com.drs.beam.modules.data.DataManager;
 import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
@@ -21,12 +19,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
 
 /*
  * Main application class.
- * Creates all parts of program, initializes and exports them on port trough RMI.
+ * Creates all parts of program, initializes and exports them on localhost port trough RMI.
  */
 public class Beam {
     // Fields =============================================================================    
@@ -34,27 +30,13 @@ public class Beam {
     private static RemoteAccessInterface remoteAccess;
     private static TaskManagerInterface taskManager;
     private static ExecutorInterface executor;
-    
-    private static final Map<ModuleName, Module> modules = new HashMap<>();
 
     // Constructor ========================================================================
     Beam() {
     }
 
     // Methods ============================================================================
-    
-    public static Module getModule(ModuleName name){
-        return modules.get(name);        
-    }
-    
-    private static void register(Module module, ModuleName name){
-        modules.put(name, module);
-    }
-    
-    private static void unregister(ModuleName name){
-        modules.remove(name);
-    }
-
+   
     public static void main(String[] args) {
         ConfigContainer.parseStartArgumentsIntoConfiguration(args);
         BeamIO io = new BeamIO();
@@ -65,7 +47,6 @@ public class Beam {
         Beam.executor = new BeamExecutor(innerIO, dataManager.getExecutorDao());
         export();
         ConfigContainer.cancel();
-        System.out.println("ready!");
     }
     
     private static void export(){
@@ -90,6 +71,5 @@ public class Beam {
         }catch (AlreadyBoundException|RemoteException e){            
             innerIO.informAboutException(e, true);
         }
-    }  
-    
+    }      
 }

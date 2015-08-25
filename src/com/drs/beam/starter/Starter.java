@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.modules.starter;
+package com.drs.beam.starter;
 
 
 /**
@@ -18,7 +18,7 @@ public interface Starter {
         if (systemName.contains("win")){
             return new StarterWindows();
         } else if (systemName.contains("x")){
-            return new StarterUnix();
+            return null;
         } else {
             System.out.println("Unknown OS.");
             System.exit(1);
