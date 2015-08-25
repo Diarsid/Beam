@@ -17,7 +17,7 @@ public class HelpWriter {
     private final Console console;
     
     private final String HELP_START =   "   +---- HELP ------------------------------------------";
-    private final String HELP =         "   |  ";
+    private final String HELP =        "   |  ";
     private final String HELP_END =     "   +----------------------------------------------------";
     
     // Constructors =======================================================================

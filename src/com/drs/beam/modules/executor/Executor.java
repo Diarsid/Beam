@@ -6,7 +6,6 @@ package com.drs.beam.modules.executor;
 
 import com.drs.beam.modules.data.dao.executor.ExecutorDao;
 import com.drs.beam.modules.io.InnerIOInterface;
-import com.drs.beam.remote.codebase.ExecutorInterface;
 import com.drs.beam.modules.executor.os.OS;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -15,14 +14,14 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class BeamExecutor implements ExecutorInterface {
+public class Executor implements ExecutorInterface {
     // Fields =============================================================================
     private final InnerIOInterface ioEngine;
     private final ExecutorDao dao;
     private final OS system;
     
     // Constructors =======================================================================
-    public BeamExecutor(InnerIOInterface io, ExecutorDao executorDao) {
+    public Executor(InnerIOInterface io, ExecutorDao executorDao) {
         this.ioEngine = io;
         this.dao = executorDao;        
         this.system = OS.getOS(io);

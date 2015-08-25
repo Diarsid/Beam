@@ -4,9 +4,9 @@
  */
 package com.drs.beam.external.console;
 
-import com.drs.beam.remote.codebase.ExternalIOInterface;
-import com.drs.beam.remote.codebase.ExecutorInterface;
-import com.drs.beam.remote.codebase.RemoteAccessInterface;
+import com.drs.beam.external.ExternalIOInterface;
+import com.drs.beam.modules.executor.ExecutorInterface;
+import com.drs.beam.modules.io.RemoteAccessInterface;
 import com.drs.beam.modules.tasks.TaskManagerInterface;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.util.config.ConfigContainer;

@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.remote.codebase;
+package com.drs.beam.modules.executor;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

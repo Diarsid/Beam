@@ -4,8 +4,7 @@
  */
 package com.drs.beam.modules.io;
 
-import com.drs.beam.remote.codebase.ExternalIOInterface;
-import com.drs.beam.remote.codebase.RemoteAccessInterface;
+import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.modules.io.gui.Gui;
 import java.rmi.NotBoundException;
@@ -116,7 +115,7 @@ public class BeamIO implements InnerIOInterface, RemoteAccessInterface {
     }
     
     /*
-     * Private "native" application methods for output.
+     * "Native" application methods for output.
      * Are used when external output is unavailable or program 
      * should not use it`s methods.
      */

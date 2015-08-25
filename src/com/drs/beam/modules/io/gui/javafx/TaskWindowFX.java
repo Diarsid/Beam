@@ -2,11 +2,13 @@
  * project: Beam
  * author: Diarsid
  */
-
-package com.drs.beam.modules.io.gui.jfx;
+package com.drs.beam.modules.io.gui.javafx;
 
 import com.drs.beam.modules.io.gui.Gui;
 
+import javafx.stage.Stage;
+import com.drs.beam.modules.tasks.Task;
+import java.util.StringJoiner;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -19,22 +21,20 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
 
-/*
- * Window for showing usual message.
+/**
+ *
+ * @author Diarsid
  */
-public class MessageWindowFX implements Runnable{
+public class TaskWindowFX implements Runnable{
     // Fields =============================================================================
-    private final String message;
-    private final boolean isCritical;
+    private final Task task;
     
     // Constructors =======================================================================
-    public MessageWindowFX(String message, boolean isCritical) {
-        this.message = message;
-        this.isCritical = isCritical;
+    public TaskWindowFX(Task task){    
+        this.task = task;
     }
-    
+
     // Methods ============================================================================
     @Override
     public void run() {
@@ -45,25 +45,31 @@ public class MessageWindowFX implements Runnable{
         
         HBox hBox = new HBox(15);
         hBox.setMinWidth(300);
-        hBox.setMaxWidth(500);
         hBox.setAlignment(Pos.CENTER_LEFT);
         
-        VBox messageTextBox = new VBox();
-        messageTextBox.setAlignment(Pos.TOP_LEFT);        
+        VBox taskTextBox = new VBox();
+        taskTextBox.setAlignment(Pos.TOP_LEFT);        
         
-        ImageView messagePic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"message.jpeg"));
+        ImageView taskPic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"task.jpeg"));
         
-        Label picture = new Label("", messagePic); 
+        Label picture = new Label("", taskPic);        
         
-        Label messageLabel = new Label(); 
-        messageLabel.setFont(new Font(14.0));
-        messageLabel.setWrapText(true);
-        messageLabel.setPadding(new Insets(0, 0, 0, 0));
+        Label taskTimeLabel = new Label();
+        taskTimeLabel.setFont(new Font(14.0));
+        taskTimeLabel.setText(task.getTimeOutputString());
         
-        messageLabel.setText(this.message);
+        Label taskTextLabel = new Label(); 
+        taskTextLabel.setFont(new Font(14.0));
+        taskTextLabel.setPadding(new Insets(0, 0, 0, 20));
         
-        messageTextBox.getChildren().addAll(messageLabel);
-        hBox.getChildren().addAll(picture, messageTextBox);
+        StringJoiner joiner = new StringJoiner("\n");
+        for(String s : task.getContent()){
+            joiner.add(s);
+        }
+        taskTextLabel.setText(joiner.toString());
+        
+        taskTextBox.getChildren().addAll(taskTimeLabel, taskTextLabel);
+        hBox.getChildren().addAll(picture, taskTextBox);
         
         Button button = new Button("Ok");
         button.setFont(new Font(14.0));
@@ -71,11 +77,7 @@ public class MessageWindowFX implements Runnable{
         button.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if(isCritical){
-                    System.exit(1);
-                } else {
-                    stage.close();
-                }
+                stage.close();
             }
         });
         
@@ -83,8 +85,8 @@ public class MessageWindowFX implements Runnable{
         
         Scene scene = new Scene(mainVBox);
         
-        stage.setTitle("Message");
-        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"message_ico.jpeg"));
+        stage.setTitle("Task");
+        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"task_ico.jpeg"));
         stage.setScene(scene);
         stage.sizeToScene();
         stage.setResizable(false);

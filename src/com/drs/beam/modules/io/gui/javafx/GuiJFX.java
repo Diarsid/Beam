@@ -3,12 +3,12 @@
  * author: Diarsid
  */
 
-package com.drs.beam.modules.io.gui.jfx;
+package com.drs.beam.modules.io.gui.javafx;
 
 import com.drs.beam.modules.io.gui.Gui;
-import com.drs.beam.modules.io.gui.jfx.ExceptionWindowFX;
-import com.drs.beam.modules.io.gui.jfx.MessageWindowFX;
-import com.drs.beam.modules.io.gui.jfx.TaskWindowFX;
+import com.drs.beam.modules.io.gui.javafx.ExceptionWindowFX;
+import com.drs.beam.modules.io.gui.javafx.MessageWindowFX;
+import com.drs.beam.modules.io.gui.javafx.TaskWindowFX;
 import com.drs.beam.modules.tasks.Task;
 import javafx.application.Application;
 import javafx.application.Platform;

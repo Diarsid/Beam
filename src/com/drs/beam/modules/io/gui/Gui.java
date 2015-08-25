@@ -4,7 +4,7 @@
  */
 package com.drs.beam.modules.io.gui;
 
-import com.drs.beam.modules.io.gui.jfx.GuiJFX;
+import com.drs.beam.modules.io.gui.javafx.GuiJFX;
 import com.drs.beam.modules.io.gui.swing.GuiSwing;
 import com.drs.beam.modules.tasks.Task;
 import com.drs.beam.util.config.ConfigContainer;

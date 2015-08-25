@@ -3,11 +3,10 @@
  * author: Diarsid
  */
 
-package com.drs.beam.modules.io.gui.jfx;
+package com.drs.beam.modules.io.gui.javafx;
 
 import com.drs.beam.modules.io.gui.Gui;
 
-import java.util.StringJoiner;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -23,28 +22,19 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /*
- * Window for showing exceptions.
+ * Window for showing usual message.
  */
-public class ExceptionWindowFX implements Runnable{
+public class MessageWindowFX implements Runnable{
     // Fields =============================================================================
-    private final Exception exc;
+    private final String message;
     private final boolean isCritical;
     
     // Constructors =======================================================================
-    public ExceptionWindowFX(Exception exc, boolean isCritical){    
-        this.exc = exc;  
+    public MessageWindowFX(String message, boolean isCritical) {
+        this.message = message;
         this.isCritical = isCritical;
     }
     
-    private String getTextFromException(Exception e){
-        StringJoiner joiner = new StringJoiner("\n");
-        joiner.add(e.getMessage());
-        for(StackTraceElement elem : e.getStackTrace()){
-            joiner.add(elem.toString());
-        }
-        return joiner.toString();
-    }
-
     // Methods ============================================================================
     @Override
     public void run() {
@@ -55,21 +45,22 @@ public class ExceptionWindowFX implements Runnable{
         
         HBox hBox = new HBox(15);
         hBox.setMinWidth(300);
+        hBox.setMaxWidth(500);
         hBox.setAlignment(Pos.CENTER_LEFT);
         
         VBox messageTextBox = new VBox();
         messageTextBox.setAlignment(Pos.TOP_LEFT);        
         
-        ImageView messagePic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"exception.jpeg"));
+        ImageView messagePic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"message.jpeg"));
         
         Label picture = new Label("", messagePic); 
         
         Label messageLabel = new Label(); 
-        messageLabel.setFont(new Font(12.0));
+        messageLabel.setFont(new Font(14.0));
         messageLabel.setWrapText(true);
         messageLabel.setPadding(new Insets(0, 0, 0, 0));
         
-        messageLabel.setText(getTextFromException(exc));
+        messageLabel.setText(this.message);
         
         messageTextBox.getChildren().addAll(messageLabel);
         hBox.getChildren().addAll(picture, messageTextBox);
@@ -84,7 +75,7 @@ public class ExceptionWindowFX implements Runnable{
                     System.exit(1);
                 } else {
                     stage.close();
-                }                
+                }
             }
         });
         
@@ -93,7 +84,7 @@ public class ExceptionWindowFX implements Runnable{
         Scene scene = new Scene(mainVBox);
         
         stage.setTitle("Message");
-        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"exception_ico.jpeg"));
+        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"message_ico.jpeg"));
         stage.setScene(scene);
         stage.sizeToScene();
         stage.setResizable(false);

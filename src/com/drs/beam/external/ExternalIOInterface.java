@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.remote.codebase;
+package com.drs.beam.external;
 
 import com.drs.beam.modules.tasks.Task;
 import java.rmi.Remote;

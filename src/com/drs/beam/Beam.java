@@ -7,9 +7,9 @@ package com.drs.beam;
 import com.drs.beam.modules.data.DataManager;
 import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
-import com.drs.beam.modules.executor.BeamExecutor;
-import com.drs.beam.remote.codebase.ExecutorInterface;
-import com.drs.beam.remote.codebase.RemoteAccessInterface;
+import com.drs.beam.modules.executor.Executor;
+import com.drs.beam.modules.executor.ExecutorInterface;
+import com.drs.beam.modules.io.RemoteAccessInterface;
 import com.drs.beam.modules.tasks.TaskManagerInterface;
 import com.drs.beam.modules.tasks.TaskManager;
 import com.drs.beam.util.config.ConfigContainer;
@@ -44,7 +44,7 @@ public class Beam {
         Beam.remoteAccess = (RemoteAccessInterface) io;
         DataManager dataManager = new DataManager(innerIO);
         Beam.taskManager = new TaskManager(innerIO, dataManager.getTasksDAO());
-        Beam.executor = new BeamExecutor(innerIO, dataManager.getExecutorDao());
+        Beam.executor = new Executor(innerIO, dataManager.getExecutorDao());
         export();
         ConfigContainer.cancel();
     }

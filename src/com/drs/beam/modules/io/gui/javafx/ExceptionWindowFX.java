@@ -2,12 +2,11 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.modules.io.gui.jfx;
+
+package com.drs.beam.modules.io.gui.javafx;
 
 import com.drs.beam.modules.io.gui.Gui;
 
-import javafx.stage.Stage;
-import com.drs.beam.modules.tasks.Task;
 import java.util.StringJoiner;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,18 +20,29 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
-/**
- *
- * @author Diarsid
+/*
+ * Window for showing exceptions.
  */
-public class TaskWindowFX implements Runnable{
+public class ExceptionWindowFX implements Runnable{
     // Fields =============================================================================
-    private final Task task;
+    private final Exception exc;
+    private final boolean isCritical;
     
     // Constructors =======================================================================
-    public TaskWindowFX(Task task){    
-        this.task = task;
+    public ExceptionWindowFX(Exception exc, boolean isCritical){    
+        this.exc = exc;  
+        this.isCritical = isCritical;
+    }
+    
+    private String getTextFromException(Exception e){
+        StringJoiner joiner = new StringJoiner("\n");
+        joiner.add(e.getMessage());
+        for(StackTraceElement elem : e.getStackTrace()){
+            joiner.add(elem.toString());
+        }
+        return joiner.toString();
     }
 
     // Methods ============================================================================
@@ -47,29 +57,22 @@ public class TaskWindowFX implements Runnable{
         hBox.setMinWidth(300);
         hBox.setAlignment(Pos.CENTER_LEFT);
         
-        VBox taskTextBox = new VBox();
-        taskTextBox.setAlignment(Pos.TOP_LEFT);        
+        VBox messageTextBox = new VBox();
+        messageTextBox.setAlignment(Pos.TOP_LEFT);        
         
-        ImageView taskPic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"task.jpeg"));
+        ImageView messagePic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"exception.jpeg"));
         
-        Label picture = new Label("", taskPic);        
+        Label picture = new Label("", messagePic); 
         
-        Label taskTimeLabel = new Label();
-        taskTimeLabel.setFont(new Font(14.0));
-        taskTimeLabel.setText(task.getTimeOutputString());
+        Label messageLabel = new Label(); 
+        messageLabel.setFont(new Font(12.0));
+        messageLabel.setWrapText(true);
+        messageLabel.setPadding(new Insets(0, 0, 0, 0));
         
-        Label taskTextLabel = new Label(); 
-        taskTextLabel.setFont(new Font(14.0));
-        taskTextLabel.setPadding(new Insets(0, 0, 0, 20));
+        messageLabel.setText(getTextFromException(exc));
         
-        StringJoiner joiner = new StringJoiner("\n");
-        for(String s : task.getContent()){
-            joiner.add(s);
-        }
-        taskTextLabel.setText(joiner.toString());
-        
-        taskTextBox.getChildren().addAll(taskTimeLabel, taskTextLabel);
-        hBox.getChildren().addAll(picture, taskTextBox);
+        messageTextBox.getChildren().addAll(messageLabel);
+        hBox.getChildren().addAll(picture, messageTextBox);
         
         Button button = new Button("Ok");
         button.setFont(new Font(14.0));
@@ -77,7 +80,11 @@ public class TaskWindowFX implements Runnable{
         button.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                stage.close();
+                if(isCritical){
+                    System.exit(1);
+                } else {
+                    stage.close();
+                }                
             }
         });
         
@@ -85,8 +92,8 @@ public class TaskWindowFX implements Runnable{
         
         Scene scene = new Scene(mainVBox);
         
-        stage.setTitle("Task");
-        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"task_ico.jpeg"));
+        stage.setTitle("Message");
+        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"exception_ico.jpeg"));
         stage.setScene(scene);
         stage.sizeToScene();
         stage.setResizable(false);
