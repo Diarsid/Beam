@@ -25,10 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
  * Creates all parts of program, initializes and exports them on port trough RMI.
  */
 public class Organizer{
-    // Fields =============================================================================
-    static {
-        
-    }
+    // Fields =============================================================================    
     private static InnerIOIF innerIO;
     private static OrgIOIF remoteIO;
     private static TaskManagerIF taskManager;
