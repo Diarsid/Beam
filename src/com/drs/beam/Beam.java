@@ -43,8 +43,8 @@ public class Beam {
         Beam.innerIO = (InnerIOInterface) io;
         Beam.remoteAccess = (RemoteAccessInterface) io;
         DataManager dataManager = new DataManager(innerIO);
-        Beam.taskManager = new TaskManager(innerIO, dataManager.getTasksDAO());
-        Beam.executor = new Executor(innerIO, dataManager.getExecutorDao());
+        Beam.taskManager = new TaskManager(innerIO, dataManager);
+        Beam.executor = new Executor(innerIO, dataManager);
         export();
         ConfigContainer.cancel();
     }

@@ -3,9 +3,8 @@
  * author: Diarsid
  */
 
-package com.drs.beam.modules.data.dao.executor;
+package com.drs.beam.modules.data.dao.locations;
 
-import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.data.base.DataBase;
 import java.sql.Connection;
@@ -13,7 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -24,23 +22,20 @@ import java.util.StringJoiner;
  *
  * @author Diarsid
  */
-public class ExecutorDaoH2 implements ExecutorDao{
+public class LocationsDaoH2 implements LocationsDao{
     // Fields =============================================================================
     private final DataBase data;
     private final InnerIOInterface ioEngine;
     
     /* 
-     * SQL Tables description for locations and commands entities.
-     * 
-     *  Location`s table:
+     * SQL Table description for locations entities.
+     *  +--------------------------------------------------------------+
+     *  | locations                                                    |
+     *  +--------------------------------------------------------------+
      *  | location_name  | location_path                               |
-     *  |----------------+---------------------------------------------+
-     *  | javaBooks      | C:/path/to/my/library/with/books/about/java |
-     * 
-     *  Command`s table:
-     *  | command_name  | command_text                                                    |
-     *  |---------------+-----------------------------------------------------------------+
-     *  | work          | run netbeans::open myproj in projects::open Bloch in javaBooks  |
+     *  +----------------+---------------------------------------------+
+     *  | javaBooks      | /path/to/my/library/with/books/about/java   |
+     *  +----------------+---------------------------------------------+
      */
 
     private final String SELECT_LOCATIONS_WHERE_NAME_LIKE = 
@@ -55,18 +50,8 @@ public class ExecutorDaoH2 implements ExecutorDao{
             " location_name LIKE ? ";
     private final String AND = 
             " AND ";
-    private final String SELECT_COMMANDS_WHERE_NAME_LIKE = 
-            "SELECT command_name, command_text " +
-            "FROM commands " +
-            "WHERE command_name LIKE ?";
-    private final String INSERT_NEW_COMMAND = 
-            "INSERT INTO commands VALUES (?, ?)";
     private final String INSERT_NEW_LOCATION = 
-            "INSERT INTO locations VALUES (?, ?)";
-    private final String DELETE_COMMAND_WHERE_NAME_lIKE = 
-            "DELETE "+
-            "FROM commands " +
-            "WHERE command_name LIKE ?";
+            "INSERT INTO locations VALUES (?, ?)";   
     private final String DELETE_LOCATION_WHERE_NAME_lIKE = 
             "DELETE "+
             "FROM locations " +
@@ -74,28 +59,18 @@ public class ExecutorDaoH2 implements ExecutorDao{
     private final String SELECT_ALL_LOCATIONS = 
             "SELECT * "+
             "FROM locations";
-    private final String SELECT_ALL_COMMANDS = 
-            "SELECT * "+
-            "FROM commands";
     
     // Notifications
     private final String MORE_THAN_ONE_LOCATION = 
-            "There are more than one location with such name.";
-    private final String MORE_THAN_ONE_COMMAND = 
-            "There are more than one command with such name.";
+            "There are more than one location with such name.";    
     private final String NO_SUCH_LOCATION = 
-            "Couldn`t find location with such name.";
-    private final String NO_SUCH_COMMAND = 
-            "Couldn`t find command with such name.";  
+            "Couldn`t find location with such name.";   
     private final String LOCATION_ALREADY_EXISTS = 
-            "Such location name already exists.";
-    private final String COMMAND_ALREADY_EXISTS = 
-            "Such command name already exists.";
+            "Such location name already exists.";    
     private final String NO_STORED_LOCATIONS = "There aren`t any locations.";
-    private final String NO_STORED_COMMANDS = "There aren`t any commands.";
     
     // Constructors =======================================================================
-    public ExecutorDaoH2(DataBase data, InnerIOInterface io) {
+    public LocationsDaoH2(DataBase data, InnerIOInterface io) {
         this.data = data;
         this.ioEngine = io;
     }
@@ -117,7 +92,7 @@ public class ExecutorDaoH2 implements ExecutorDao{
     @Override
     public Map<String, String> getLocationsByName(String locationName){
         Map<String, String> locations = new HashMap<>();
-        try(    Connection con = data.connect();
+        try(    Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(SELECT_LOCATIONS_WHERE_NAME_LIKE);)
         {
             ps.setString(1, "%"+locationName+"%");
@@ -130,7 +105,7 @@ public class ExecutorDaoH2 implements ExecutorDao{
             rs.close();
             return locations;
         } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
+            this.ioEngine.informAboutException(e, false);
             return locations;
         }
     }
@@ -138,7 +113,7 @@ public class ExecutorDaoH2 implements ExecutorDao{
     @Override
     public Map<String, String> getLocationsByNameParts(String[] locationNameParts){
         Map<String, String> locations = new HashMap<>();
-        try(    Connection con = data.connect())
+        try(    Connection con = this.data.connect())
         {   
             StringBuilder statementBuild = new StringBuilder();
             statementBuild.append(SELECT_LOCATIONS_WHERE_NAME);
@@ -164,57 +139,14 @@ public class ExecutorDaoH2 implements ExecutorDao{
                 return locations;
             }
         } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
+            this.ioEngine.informAboutException(e, false);
             return locations;
         }
     }
-    
-    @Override
-    public Map<String, List<String>>  getCommandsByName(String commandName){
-        Map<String, List<String>> allCommands = new HashMap<>();
-        try(    Connection con = data.connect();
-                PreparedStatement ps = con.prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);)
-        {   
-            String restoredCommandName;
-            String restoredCommandText;
-            ps.setString(1, "%"+commandName+"%");
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()){
-                restoredCommandName = rs.getString(1);
-                restoredCommandText = rs.getString(2);
-                allCommands.put(
-                        restoredCommandName, 
-                        convertStoredCommandForUsing(restoredCommandText)
-                );
-            }
-            rs.close();
-            ps.close();            
-            return allCommands;
-        } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
-            return allCommands;
-        }   
-    }
-    
-    @Override
-    public void saveNewCommand(List<String> command, String commandName){
-        try(    Connection con = data.connect();
-                PreparedStatement ps = con.prepareStatement(INSERT_NEW_COMMAND);){
-            ps.setString(1, commandName);
-            ps.setString(2, convertInputCommandForStoring(command));
-            ps.executeUpdate();
-        } catch(SQLException e){
-            if (e.getSQLState().startsWith("23")){
-                ioEngine.informAboutError(COMMAND_ALREADY_EXISTS, false);
-            } else {
-                ioEngine.informAboutException(e, false);
-            }
-        }
-    }
-    
+        
     @Override
     public void saveNewLocation(String locationPath, String locationName){
-        try(    Connection con = data.connect();
+        try(    Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(INSERT_NEW_LOCATION);)
         {
             ps.setString(1, locationName);
@@ -222,37 +154,23 @@ public class ExecutorDaoH2 implements ExecutorDao{
             ps.executeUpdate();
         } catch(SQLException e){
             if (e.getSQLState().startsWith("23")){
-                ioEngine.informAboutError(LOCATION_ALREADY_EXISTS, false);
+                this.ioEngine.informAboutError(LOCATION_ALREADY_EXISTS, false);
             } else {
-                ioEngine.informAboutException(e, false);
+                this.ioEngine.informAboutException(e, false);
             }            
         }   
     }
     
     @Override
-    public boolean removeCommand(String commandName){
-        try (   Connection con = data.connect();
-                PreparedStatement ps = con.prepareStatement(DELETE_COMMAND_WHERE_NAME_lIKE);)
-        {
-            ps.setString(1, commandName);
-            int qty = ps.executeUpdate();
-            return (qty > 0);
-        } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
-            return false;
-        }    
-    }
-    
-    @Override
     public boolean removeLocation(String locationName){
-        try(    Connection con = data.connect();
+        try(    Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(DELETE_LOCATION_WHERE_NAME_lIKE);)
         {
             ps.setString(1, locationName);
             int qty = ps.executeUpdate();
             return (qty > 0);
         } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
+            this.ioEngine.informAboutException(e, false);
             return false;
         } 
     }
@@ -260,7 +178,7 @@ public class ExecutorDaoH2 implements ExecutorDao{
     @Override
     public Map<String, String> getLocations(){
         Map<String, String> locations = new HashMap<>();
-        try(    Connection con = data.connect();
+        try(    Connection con = this.data.connect();
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery(SELECT_ALL_LOCATIONS);)
         {            
@@ -269,28 +187,8 @@ public class ExecutorDaoH2 implements ExecutorDao{
             } 
             return locations;
         } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
+            this.ioEngine.informAboutException(e, false);
             return locations;
         }     
     } 
-    
-    @Override
-    public Map<String, List<String>> getCommands(){
-        Map<String, List<String>> commands = new HashMap<>();
-        try(    Connection con = data.connect();
-                Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);)
-        {
-            while(rs.next()){
-                commands.put(
-                        rs.getString(1), 
-                        convertStoredCommandForUsing(rs.getString(2)));
-            }
-            return commands;
-        } catch(SQLException e){
-            ioEngine.informAboutException(e, false);
-            return commands;
-        } 
-    }
-
 }

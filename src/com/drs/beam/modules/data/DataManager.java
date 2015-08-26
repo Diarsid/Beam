@@ -6,8 +6,10 @@ package com.drs.beam.modules.data;
 
 import com.drs.beam.modules.data.base.DataBaseH2Pooled;
 import com.drs.beam.modules.data.base.DataBase;
-import com.drs.beam.modules.data.dao.executor.ExecutorDao;
-import com.drs.beam.modules.data.dao.executor.ExecutorDaoH2;
+import com.drs.beam.modules.data.dao.commands.CommandsDao;
+import com.drs.beam.modules.data.dao.commands.CommandsDaoH2;
+import com.drs.beam.modules.data.dao.locations.LocationsDao;
+import com.drs.beam.modules.data.dao.locations.LocationsDaoH2;
 import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.data.dao.tasks.TasksDaoH2;
@@ -20,7 +22,8 @@ import com.drs.beam.util.config.ConfigParam;
 public class DataManager{
     // Fields =============================================================================
     private TasksDao tasksDao;
-    private ExecutorDao executorDao;
+    private LocationsDao locationsDao;
+    private CommandsDao commandsDao;
     
     // Constructor ========================================================================
     public DataManager(InnerIOInterface io) {
@@ -44,7 +47,8 @@ public class DataManager{
                         3);                
                 initializer.checkDataBase(db);
                 this.tasksDao = new TasksDaoH2(db, io);
-                this.executorDao = new ExecutorDaoH2(db, io);
+                this.locationsDao = new LocationsDaoH2(db, io);
+                this.commandsDao = new CommandsDaoH2(db, io);
                 break choosing;
             }
             case ("h2") : {
@@ -66,10 +70,14 @@ public class DataManager{
     // Methods ============================================================================
         
     public TasksDao getTasksDAO(){
-        return tasksDao;
+        return this.tasksDao;
     }    
     
-    public ExecutorDao getExecutorDao(){        
-        return executorDao;
+    public LocationsDao getLocationsDao(){        
+        return this.locationsDao;
+    }
+    
+    public CommandsDao getCommandsDao(){
+        return this.commandsDao;
     }
 }

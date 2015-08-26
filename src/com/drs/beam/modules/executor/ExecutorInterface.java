@@ -13,6 +13,7 @@ import java.util.Map;
  * 
  */
 public interface ExecutorInterface extends Remote {
+    
     void open(String command) throws RemoteException;
     void run(String command) throws RemoteException;
     void call(String command) throws RemoteException;

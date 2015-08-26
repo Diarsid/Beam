@@ -4,7 +4,9 @@
  */
 package com.drs.beam.modules.executor;
 
-import com.drs.beam.modules.data.dao.executor.ExecutorDao;
+import com.drs.beam.modules.data.DataManager;
+import com.drs.beam.modules.data.dao.commands.CommandsDao;
+import com.drs.beam.modules.data.dao.locations.LocationsDao;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.executor.os.OS;
 import java.rmi.RemoteException;
@@ -17,13 +19,15 @@ import java.util.Map.Entry;
 public class Executor implements ExecutorInterface {
     // Fields =============================================================================
     private final InnerIOInterface ioEngine;
-    private final ExecutorDao dao;
+    private final LocationsDao locDao;
+    private final CommandsDao comDao;
     private final OS system;
     
     // Constructors =======================================================================
-    public Executor(InnerIOInterface io, ExecutorDao executorDao) {
+    public Executor(InnerIOInterface io, DataManager dataManager) {
         this.ioEngine = io;
-        this.dao = executorDao;        
+        this.locDao = dataManager.getLocationsDao();
+        this.comDao = dataManager.getCommandsDao();
         this.system = OS.getOS(io);
     }
 
@@ -86,7 +90,7 @@ public class Executor implements ExecutorInterface {
             command.set(i, s);
         }
         commandName = commandName.trim().toLowerCase();
-        this.dao.saveNewCommand(command, commandName);
+        this.comDao.saveNewCommand(command, commandName);
     }
     
     @Override
@@ -96,31 +100,31 @@ public class Executor implements ExecutorInterface {
         locationPath = locationPath.trim().toLowerCase();
         // if given path exists and it is actually folder, not a file
         if (this.system.ifDirectoryExists(locationPath)){            
-            this.dao.saveNewLocation(locationPath, locationName);
+            this.locDao.saveNewLocation(locationPath, locationName);
         } 
     }
         
     @Override
     public boolean deleteCommand(String commandName) throws RemoteException{
         commandName = commandName.trim().toLowerCase();
-        return this.dao.removeCommand(commandName);
+        return this.comDao.removeCommand(commandName);
     }
     
     @Override
     // location pattern: projects
     public boolean deleteLocation(String locationName) throws RemoteException{
         locationName = locationName.trim().toLowerCase();
-        return this.dao.removeLocation(locationName); 
+        return this.locDao.removeLocation(locationName); 
     }  
     
     @Override
     public Map<String, String> getLocations() throws RemoteException{
-        return this.dao.getLocations();
+        return this.locDao.getLocations();
     }
     
     @Override
     public Map<String, List<String>> getCommands() throws RemoteException{
-        return this.dao.getCommands();
+        return this.comDao.getCommands();
     }    
        
     private void openLocation(String locationName){
@@ -165,7 +169,7 @@ public class Executor implements ExecutorInterface {
     private void callGivenCommands(List<String> arguments){
         for(int i = 1; i < arguments.size(); i++){
             Map<String, List<String>> commands = 
-                this.dao.getCommandsByName(arguments.get(i));
+                this.comDao.getCommandsByName(arguments.get(i));
             
             if (commands.size() < 1){
                 this.ioEngine.inform("Couldn`t find such command.");
@@ -207,9 +211,9 @@ public class Executor implements ExecutorInterface {
     private String resolveMultipleLocationsInDB(String locationName){
         Map<String, String> foundedLocations;
         if (locationName.contains("-")){
-            foundedLocations = this.dao.getLocationsByNameParts(locationName.split("-"));            
+            foundedLocations = this.locDao.getLocationsByNameParts(locationName.split("-"));            
         } else {
-            foundedLocations = this.dao.getLocationsByName(locationName);            
+            foundedLocations = this.locDao.getLocationsByName(locationName);            
         } 
         
         if (foundedLocations.size() < 1){
@@ -242,7 +246,7 @@ public class Executor implements ExecutorInterface {
     private void runMarkedProgram(String mark, String command){
         List<String> commandParts = prepareCommand(command);
         if (commandParts.size() == 2){
-            system.runProgram(commandParts.get(1)+"-"+mark);
+            this.system.runProgram(commandParts.get(1)+"-"+mark);
         } else {
             this.ioEngine.informAboutError("Unrecognizable command.", false);
         }
