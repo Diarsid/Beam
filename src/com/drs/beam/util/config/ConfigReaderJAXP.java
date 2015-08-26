@@ -22,8 +22,6 @@ class ConfigReaderJAXP implements ConfigReader{
     
     private Document config;
     private XPath xPath = XPathFactory.newInstance().newXPath();
-    private String exp;
-    private String result;    
     
     // Constructor ========================================================================
     public ConfigReaderJAXP() {
@@ -31,7 +29,7 @@ class ConfigReaderJAXP implements ConfigReader{
             config = DocumentBuilderFactory
                     .newInstance()
                     .newDocumentBuilder()
-                    .parse(new File("./config.xml"));
+                    .parse(new File("./config/config.xml"));
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -44,25 +42,26 @@ class ConfigReaderJAXP implements ConfigReader{
     static void cancel(){
         reader.cancelReader();
         reader = null;
-    }
-    
-    static ConfigReader getReader(){
-        return reader;
-    }
+    }    
     
     private void cancelReader(){
         this.config = null;
         this.xPath = null;
-        this.exp = null;
-        this.result = null;
     }
     
+    static ConfigReader getReader(){
+        return reader;
+    }    
+    
     @Override
-    public  String   getLibrariesLocation(){
-        try {
-            exp = "//resources/libraries";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+    public String getLibrariesLocation(){
+        try {            
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/resources/libraries", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -73,9 +72,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getImagesLocation(){
         try {
-            exp = "//resources/images";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/resources/images", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -86,9 +88,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getGuiPlatform(){
         try {
-            exp = "//ui/inner";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/ui/inner", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -99,9 +104,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getProgramsLocation(){
         try {
-            exp = "//executor/programs";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/executor/programs", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -112,10 +120,16 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public int getOrganizerPort(){
         try{
-            exp = "//rmi-info/organizer";
-            Node org = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            int port = Integer.parseInt(org.getAttributes().getNamedItem("port").getTextContent()); 
-            return port;
+            return Integer.parseInt(
+                    ((Node) xPath
+                            .evaluate(
+                                    "/configuration/rmi-info/organizer", 
+                                    config, 
+                                    XPathConstants.NODE))
+                            .getAttributes()
+                            .getNamedItem("port")
+                            .getTextContent()
+            );
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -126,10 +140,14 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getOrganizerHost(){
         try {
-            exp = "//rmi-info/organizer";
-            Node org = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = org.getAttributes().getNamedItem("host").getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/rmi-info/organizer", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getAttributes()
+                    .getNamedItem("host")
+                    .getTextContent();            
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -140,10 +158,16 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public int getConsolePort(){
         try{
-            exp = "//rmi-info/console";
-            Node console = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            int port = Integer.parseInt(console.getAttributes().getNamedItem("port").getTextContent());
-            return port;
+            return Integer.parseInt(
+                    ((Node) xPath
+                            .evaluate(
+                                    "/configuration/rmi-info/console", 
+                                    config, 
+                                    XPathConstants.NODE))
+                            .getAttributes()
+                            .getNamedItem("port")
+                            .getTextContent()
+            );
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -154,10 +178,14 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getConsoleHost(){
         try {
-            exp = "//rmi-info/console";
-            Node console = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);            
-            result = console.getAttributes().getNamedItem("host").getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/rmi-info/console", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getAttributes()
+                    .getNamedItem("host")
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -168,9 +196,11 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getTaskManagerName(){
         try {
-            exp = "//rmi-info/organizer/task-manager-rmi-name";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate("/configuration/rmi-info/organizer/task-manager-rmi-name", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -181,9 +211,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getOSExecutorName(){
         try {
-            exp = "//rmi-info/organizer/os-executor-rmi-name";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/rmi-info/organizer/os-executor-rmi-name", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -194,9 +227,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getOrgIOName(){
         try {
-            exp = "//rmi-info/organizer/org-io-rmi-name";
-            result = ((Node) xPath.evaluate(exp, config, XPathConstants.NODE)).getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/rmi-info/organizer/org-io-rmi-name", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();           
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -207,10 +243,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getConsoleName(){
         try {
-            exp = "//rmi-info/console/console-rmi-name";
-            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = node.getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/rmi-info/console/console-rmi-name", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -221,10 +259,11 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getCoreDBDriver(){
         try {
-            exp = "/configuration/databases/core/jdbc-driver";
-            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = node.getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate("/configuration/databases/core/jdbc-driver", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -235,14 +274,19 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getCoreDBURL(){
         try {
-            exp = "/configuration/databases/core/jdbc-url";
-            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = node.getTextContent();
-            
-            exp = "/configuration/databases/core/db-location";
-            node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = result + node.getTextContent();
-            return result;
+            String url = ((Node) xPath
+                    .evaluate(
+                            "/configuration/databases/core/jdbc-url", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
+            String location = ((Node) xPath
+                    .evaluate(
+                            "/configuration/databases/core/db-location", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();            
+            return url + location;
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -253,10 +297,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getCoreDBName(){
         try {
-            exp = "/configuration/databases/core/db-name";
-            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = node.getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/databases/core/db-name", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -267,10 +313,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getDbDriverJar(){
         try {
-            exp = "/configuration/databases/core/db-driver-jar";
-            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = node.getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/databases/core/db-driver-jar", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -281,10 +329,12 @@ class ConfigReaderJAXP implements ConfigReader{
     @Override
     public String getLoadingType(){
         try {
-            exp = "/configuration/loading";
-            Node node = (Node) xPath.evaluate(exp, config, XPathConstants.NODE);
-            result = node.getTextContent();
-            return result;
+            return ((Node) xPath
+                    .evaluate(
+                            "/configuration/loading", 
+                            config, 
+                            XPathConstants.NODE))
+                    .getTextContent();
         }catch(Exception e){
             e.printStackTrace();
             System.exit(1);

@@ -28,14 +28,14 @@ public class RemoteLocator {
     // Methods ============================================================================
         
     List<String> defineModulesToStart(){
-        List<String> objects = new ArrayList<>();
+        List<String> modules = new ArrayList<>();
         if (!isBeamWorking()){
-            objects.add("beam");
+            modules.add("beam");
         } 
         if (!isConsoleWorking()){
-            objects.add("console");
+            modules.add("console");
         }
-        return objects;
+        return modules;
     }
     
     boolean isBeamWorking(){
@@ -59,5 +59,4 @@ public class RemoteLocator {
             return false;
         }
     }
-
 }

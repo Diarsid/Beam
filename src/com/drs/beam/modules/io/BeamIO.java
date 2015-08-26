@@ -27,12 +27,14 @@ public class BeamIO implements InnerIOInterface, RemoteAccessInterface {
     
     private final Gui gui;
     
-    private boolean hasExternalIOProcessor = false;
-    private boolean useExternalShowTaskMethod = false;
+    private boolean hasExternalIOProcessor;
+    private boolean useExternalShowTaskMethod;
 
     // Constructors =======================================================================
     public BeamIO() {        
         this.gui = Gui.getGui();
+        this.hasExternalIOProcessor = false;
+        this.useExternalShowTaskMethod = false;
     }
 
     // Methods ============================================================================

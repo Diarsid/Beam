@@ -195,12 +195,33 @@ public class Executor implements ExecutorInterface {
     private void executelistOfCommands(List<String> list){
         try{
             for(String command : list){
-                if (command.startsWith("open")){
-                    open(command);
-                } else if (command.startsWith("run")){
-                    run(command);
-                } else if (command.startsWith("call")){
-                    call(command);
+                switch(command.substring(0, command.indexOf(" "))){
+                    case "open" :
+                    case "op" :
+                    case "o" : {
+                        open(command);
+                        break;
+                    } 
+                    case "r" :
+                    case "run" : {
+                        run(command);
+                        break;
+                    }
+                    case "call" : {
+                        call(command);
+                        break;
+                    }
+                    case "start" : {
+                        start(command);
+                        break;
+                    }
+                    case "stop" : {
+                        stop(command);
+                        break;
+                    }
+                    default : {
+                        this.ioEngine.informAboutError("Unrecognizible command.", false);
+                    }
                 }
             }
         } catch (RemoteException e){

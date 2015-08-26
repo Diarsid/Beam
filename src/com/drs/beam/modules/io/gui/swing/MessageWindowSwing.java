@@ -6,7 +6,6 @@
 package com.drs.beam.modules.io.gui.swing;
 
 import com.drs.beam.modules.io.gui.Gui;
-import com.drs.beam.modules.tasks.Task;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

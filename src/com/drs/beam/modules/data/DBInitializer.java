@@ -61,10 +61,9 @@ public class DBInitializer {
             checkTable(st, "Commands",  CHECK_COMMANDS_TABLE,   CREATE_COMMANDS_TABLE,   2);
             st.close();
         } catch (SQLException e) {
-            ioEngine.informAboutException(e, true);
+            this.ioEngine.informAboutException(e, true);
         }
-    }
-    
+    }    
     
     private void checkTable(Statement st, String table, 
             String checkSQL, String createSQL, int correctColsQty){
@@ -72,15 +71,15 @@ public class DBInitializer {
         {
             ResultSetMetaData tableData = rs.getMetaData();
             if (tableData.getColumnCount() != correctColsQty){
-                ioEngine.informAboutError(table + " table has wrong columns.", true);
+                this.ioEngine.informAboutError(table + " table has wrong columns.", true);
             }            
         }catch (SQLException e){
             try{
                 st.executeUpdate(createSQL);
-                ioEngine.informAboutError(table + " table initialization successful. " + 
+                this.ioEngine.informAboutError(table + " table initialization successful. " + 
                         table + " table was not initialized.", false);
             } catch (SQLException ex){
-                ioEngine.informAboutException(ex, true);
+                this.ioEngine.informAboutException(ex, true);
             }
         }
     }    

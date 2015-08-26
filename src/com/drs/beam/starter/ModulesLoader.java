@@ -12,11 +12,6 @@ import java.util.List;
  * @author Diarsid
  */
 public class ModulesLoader {
-    // Fields =============================================================================
-
-    // Constructors =======================================================================
-
-    // Methods ============================================================================
     
     public static void main(String[] args) {
         RemoteLocator locator = new RemoteLocator();
@@ -40,5 +35,4 @@ public class ModulesLoader {
             }
         }        
     }
-
 }

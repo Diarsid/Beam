@@ -6,7 +6,6 @@ package com.drs.beam.modules.executor.os;
 
 import com.drs.beam.modules.executor.os.exceptions.NoLocationException;
 import com.drs.beam.modules.executor.os.exceptions.NoTargetException;
-import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
@@ -50,7 +49,7 @@ public class OSWindows implements OS{
                 }
             }
         }).start();
-        ioEngine.inform("opening...");
+        this.ioEngine.inform("opening...");
     }
     
     @Override
@@ -60,10 +59,10 @@ public class OSWindows implements OS{
         try{
             file = checkNameInLocation(file, location);
         } catch (NoLocationException nle){
-            ioEngine.inform("Location not found.");
+            this.ioEngine.inform("Location not found.");
             return;
         } catch (NoTargetException nte){
-            ioEngine.inform("File not found.");
+            this.ioEngine.inform("File not found.");
             return;
         }
         
@@ -85,7 +84,7 @@ public class OSWindows implements OS{
                     }
                 }
             }).start();
-            ioEngine.inform("opening...");
+            this.ioEngine.inform("opening...");
         }        
     }
     
@@ -94,20 +93,20 @@ public class OSWindows implements OS{
         try{
             file = checkNameInLocation(file, location);
         } catch (NoLocationException nle){
-            ioEngine.inform("Location not found.");
+            this.ioEngine.inform("Location not found.");
             return;
         } catch (NoTargetException nte){
-            ioEngine.inform("File not found.");
+            this.ioEngine.inform("File not found.");
             return;
         }
         
         try{
             program = checkNameInLocation(program, PROGRAMS_LOCATION);
         } catch (NoLocationException nle){
-            ioEngine.inform("Program`s location not found.");
+            this.ioEngine.inform("Program`s location not found.");
             return;
         } catch (NoTargetException nte){
-            ioEngine.inform("Program not found.");
+            this.ioEngine.inform("Program not found.");
             return;
         }
         
@@ -134,7 +133,7 @@ public class OSWindows implements OS{
                     }
                 }
             }).start();
-            ioEngine.inform("running...");
+            this.ioEngine.inform("running...");
         }
     }
     
@@ -145,10 +144,10 @@ public class OSWindows implements OS{
         try{
             program = checkNameInLocation(program, PROGRAMS_LOCATION);
         } catch (NoLocationException nle){
-            ioEngine.inform("Program`s location not found.");
+            this.ioEngine.inform("Program`s location not found.");
             return;
         } catch (NoTargetException nte){
-            ioEngine.inform("Program not found.");
+            this.ioEngine.inform("Program not found.");
             return;
         }
         
@@ -170,7 +169,7 @@ public class OSWindows implements OS{
                     }
                 }
             }).start();
-            ioEngine.inform("running...");
+            this.ioEngine.inform("running...");
         }    
     }
     
@@ -178,10 +177,10 @@ public class OSWindows implements OS{
     public boolean ifDirectoryExists(String location){
         File dir = new File(location);
         if (!dir.exists()) {
-            ioEngine.inform("This path doesn`t exists.");
+            this.ioEngine.inform("This path doesn`t exists.");
             return false;
         } else if (!dir.isDirectory()) {
-            ioEngine.inform("This isn`t a directory.");
+            this.ioEngine.inform("This isn`t a directory.");
             return false;
         } else {
             return true;
@@ -220,7 +219,7 @@ public class OSWindows implements OS{
             if (matches.size() == 1){
                 return matches.get(0);
             } else if (matches.size() > 1) {                
-                int variantNumber = ioEngine.resolveVariantsWithExternalIO(
+                int variantNumber = this.ioEngine.resolveVariantsWithExternalIO(
                         "There are several targets:", 
                         matches);
                 if (variantNumber > 0){
@@ -228,7 +227,7 @@ public class OSWindows implements OS{
                 } else if (variantNumber == -1){
                     return "";
                 } else if (variantNumber == -2){
-                    ioEngine.inform("There are no external IO engine now.");
+                    this.ioEngine.inform("There are no external IO engine now.");
                     return "";
                 } else {
                     return "";

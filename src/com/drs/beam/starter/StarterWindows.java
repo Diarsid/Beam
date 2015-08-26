@@ -109,7 +109,7 @@ public class StarterWindows implements Starter{
             commandBuilder.append(space);
         }
         commandBuilder
-                .append("-Djava.security.policy=rmi.policy ")
+                .append("-Djava.security.policy=config\\rmi.policy ")
                 .append("-Djava.rmi.server.hostname=").append(reader.getOrganizerHost())
                 .append(space)
                 .append(Beam.class.getCanonicalName())
@@ -173,7 +173,7 @@ public class StarterWindows implements Starter{
             commandBuilder.append("-cp Beam.jar ");
         }
         commandBuilder
-                .append("-Djava.security.policy=rmi.policy ")
+                .append("-Djava.security.policy=config\\rmi.policy ")
                 .append("-Djava.rmi.server.hostname=").append(reader.getConsoleHost())
                 .append(space)
                 .append(Console.class.getCanonicalName())
