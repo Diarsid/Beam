@@ -107,6 +107,9 @@ public class TasksDaoH2 implements TasksDao{
                         rs.updateBoolean("t_status", false);
                         break updateSQL;
                     }
+                    default : {
+                        this.ioEngine.informAboutError("Unknown task`s type.", false);
+                    }
                 }
         rs.updateRow();   
     }
