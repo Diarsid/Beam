@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <resources>
+        <libraries>./lib/</libraries>
+        <images>./data/images/</images>
+    </resources>
+
+    <executor>
+        <installation>D:/SOUL/Src/Programs</installation>
+        <programs>D:/SOUL/Space/Program_links</programs>
+    </executor>
+    
+    <!--
+        Loading options (case insensitive):
+        - "jar"     to load for packaged program  
+        - "classes" to load for unpackaged program
+    -->
+    <loading>classes</loading>
+    
+    <rmi-info>        
+        <console host="127.0.0.1" port="43015">
+            <console-rmi-name>console</console-rmi-name>
+        </console>
+        <organizer host="127.0.0.1" port="43016">
+            <task-manager-rmi-name>TaskManager</task-manager-rmi-name>
+            <os-executor-rmi-name>Executor</os-executor-rmi-name>
+            <org-io-rmi-name>orgIO</org-io-rmi-name>                      
+        </organizer>        
+    </rmi-info>
+    
+    <logging>
+        
+    </logging> 
+        
+    <ui>
+        <!--    
+            options for inner node (case insensitive):
+            - "JavaFX"
+            - "Swing"
+        -->
+        <inner>Swing</inner>  
+        <external>system_console</external>      
+    </ui>
+    
+    <databases>
+        <core>
+            <db-name>H2pooled</db-name>
+            <db-location>./data/BeamData</db-location>
+            <jdbc-url>jdbc:h2:</jdbc-url>
+            <jdbc-driver>org.h2.Driver</jdbc-driver>
+            <db-driver-jar>h2-1.3.176.jar</db-driver-jar>
+        </core>       
+    </databases>                              
+</configuration>
+
+
+
+
