@@ -114,11 +114,10 @@ public class LocationsDaoH2 implements LocationsDao{
     public Map<String, String> getLocationsByNameParts(String[] locationNameParts){
         Map<String, String> locations = new HashMap<>();
         try(    Connection con = this.data.connect())
-        {   
-            StringBuilder statementBuild = new StringBuilder();
-            statementBuild.append(SELECT_LOCATIONS_WHERE_NAME);
-            statementBuild.append(NAME_LIKE_NAMEPART);
+        {               
             if (locationNameParts.length > 0){
+                StringBuilder statementBuild = new StringBuilder();
+                statementBuild.append(SELECT_LOCATIONS_WHERE_NAME).append(NAME_LIKE_NAMEPART);
                 for(int i = 1; i < locationNameParts.length; i++){
                     statementBuild.append(AND).append(NAME_LIKE_NAMEPART);
                 }

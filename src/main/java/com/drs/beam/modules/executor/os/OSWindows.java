@@ -191,6 +191,29 @@ public class OSWindows implements OS{
         }        
     }
     
+    @Override
+    public List<String> getLocationContent(String location){
+        File dir = new File(location);
+        if (dir.exists() && dir.isDirectory()){
+            File[] list = dir.listFiles(); 
+            List<String> content = new ArrayList<>();
+            int folderIndex = 0;
+            for(File file : list){
+                if (file.isDirectory()){
+                    content.add(folderIndex, " [_] " + file.getName());
+                    folderIndex++;
+                } else {
+                    content.add("  o  " + file.getName());
+                }
+            }
+            content.remove("  o  desktop.ini");
+            return content;
+        } else {
+            this.ioEngine.informAboutError("This location does not exists or is not a directory.", false);
+            return null;
+        }
+    }
+    
     private String checkNameInLocation(String fileOrFolderName, String location) 
             throws NoTargetException, NoLocationException{
         

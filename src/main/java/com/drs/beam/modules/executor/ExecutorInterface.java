@@ -23,8 +23,13 @@ public interface ExecutorInterface extends Remote {
     void newCommand(List<String> command, String commandName) throws RemoteException;
     void newLocation(String locationPath, String locationName) throws RemoteException;
     
-    Map<String, String>      getLocations() throws RemoteException;
-    Map<String, List<String>> getCommands() throws RemoteException;
+    List<String> listLocationContent(String locationName) throws RemoteException;
+    
+    Map<String, String>      getAllLocations() throws RemoteException;
+    Map<String, List<String>> getAllCommands() throws RemoteException;
+    
+    String      getLocation(String locationName) throws RemoteException;
+    List<String> getCommand(String commandName)  throws RemoteException;
     
     boolean deleteCommand(String commandName) throws RemoteException;
     boolean deleteLocation(String locationName) throws RemoteException;

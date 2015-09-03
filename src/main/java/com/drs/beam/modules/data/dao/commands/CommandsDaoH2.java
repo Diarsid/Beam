@@ -5,8 +5,6 @@
 
 package com.drs.beam.modules.data.dao.commands;
 
-import com.drs.beam.modules.data.dao.locations.*;
-import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
 import com.drs.beam.modules.data.base.DataBase;
 import java.sql.Connection;
@@ -14,7 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

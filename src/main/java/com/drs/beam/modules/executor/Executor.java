@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class Executor implements ExecutorInterface {
     // Fields =============================================================================
@@ -138,14 +137,88 @@ public class Executor implements ExecutorInterface {
     }  
     
     @Override
-    public Map<String, String> getLocations() throws RemoteException{
+    public Map<String, String> getAllLocations() throws RemoteException{
         return this.locationsDao.getLocations();
     }
     
     @Override
-    public Map<String, List<String>> getCommands() throws RemoteException{
+    public Map<String, List<String>> getAllCommands() throws RemoteException{
         return this.commandsDao.getCommands();
-    }    
+    }   
+    
+    @Override
+    public List<String> listLocationContent(String locationName) throws RemoteException{
+        locationName = locationName.trim().toLowerCase();
+        locationName = resolveMultipleLocationsInDB(locationName);
+        if (locationName.length() > 0){
+            List<String> locationContent = this.system.getLocationContent(locationName);
+            if (locationContent != null){
+                locationContent.add(0, locationName.substring(locationName.lastIndexOf("/")+1));
+                return locationContent;
+            } else {                
+                return new ArrayList<>();
+            }
+        } else {
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public String getLocation(String locationName) throws RemoteException{
+        locationName = locationName.trim().toLowerCase();
+        Map<String, String> foundLocations;
+        if (locationName.contains("-")){
+            foundLocations = this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
+        } else {
+            foundLocations = this.locationsDao.getLocationsByName(locationName);            
+        }
+        
+        if (foundLocations.size() < 1){
+            this.ioEngine.inform("Couldn`t find such location.");
+            return "";
+        } else if (foundLocations.size() == 1) {            
+            return (String)foundLocations.keySet().toArray()[0] + " : " +
+                    (String)foundLocations.values().toArray()[0];
+        } else {
+            List<String> variants = new ArrayList<>(foundLocations.keySet());
+            int variant = this.ioEngine.resolveVariantsWithExternalIO(
+                    "There are several locations:", 
+                    variants);
+            if (variant < 0){
+                return "";
+            } else {
+                return variants.get(variant-1) + " : " + foundLocations.get(variants.get(variant-1));
+            }
+        }
+    }
+    
+    @Override
+    public List<String> getCommand(String commandName) throws RemoteException{
+        commandName = commandName.trim().toLowerCase();
+        Map<String, List<String>> commands = this.commandsDao.getCommandsByName(commandName);
+        
+        if (commands.size() < 1){
+            this.ioEngine.inform("Couldn`t find such command");
+            return new ArrayList<>();
+        } else if (commands.size() == 1){
+            List<String> commandContent = new ArrayList<>(
+                    commands.get((String)commands.keySet().toArray()[0]));
+            commandContent.add(0, (String)commands.keySet().toArray()[0]);
+            return commandContent;
+        } else {
+            List<String> commandVariants = new ArrayList(commands.keySet());
+            int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
+                    "There are several commands:", 
+                    commandVariants);
+            if (varNumber < 0) {
+                return new ArrayList<>();
+            } else {
+                List<String> commandContent = commands.get((String)commands.keySet().toArray()[varNumber-1]);
+                commandContent.add(0, (String)commands.keySet().toArray()[varNumber-1]);
+                return commandContent;
+            }
+        }
+    }
        
     private void openLocation(String locationName){
         locationName = locationName.trim().toLowerCase();
@@ -220,29 +293,29 @@ public class Executor implements ExecutorInterface {
     }
         
     private String resolveMultipleLocationsInDB(String locationName){
-        Map<String, String> foundedLocations;
+        Map<String, String> foundLocations;
         if (locationName.contains("-")){
-            foundedLocations = this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
+            foundLocations = this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
         } else {
-            foundedLocations = this.locationsDao.getLocationsByName(locationName);            
+            foundLocations = this.locationsDao.getLocationsByName(locationName);            
         } 
         
-        if (foundedLocations.size() < 1){
+        if (foundLocations.size() < 1){
             this.ioEngine.inform("Couldn`t find such location.");
             return "";
-        } else if (foundedLocations.size() == 1){
+        } else if (foundLocations.size() == 1){
             // If there is only one entry in the map, convert values to array 
             // and get it by index [0]
-            return (String)foundedLocations.values().toArray()[0];
+            return (String)foundLocations.values().toArray()[0];
         } else {
-            List<String> locationVariants = new ArrayList(foundedLocations.keySet());
+            List<String> locationVariants = new ArrayList(foundLocations.keySet());
             int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
                     "There are several locations:", 
                     locationVariants);
             if (varNumber < 0){
                 return "";
             } else {
-                return foundedLocations.get(locationVariants.get(varNumber-1));
+                return foundLocations.get(locationVariants.get(varNumber-1));
             }            
         }
     }

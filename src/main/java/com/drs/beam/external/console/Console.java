@@ -208,6 +208,33 @@ public class Console implements Runnable, ExternalIOInterface{
                             }
                         }
                     }
+                    case "li" :
+                    case "list" : {
+                        if (params.size() > 1){
+                            this.listLocation(params.get(1));
+                        }
+                        break parsing;
+                    }
+                    case "get" : {
+                        if (params.size() < 2){
+                            continue input;
+                        }                        
+                        switch (params.get(1)){
+                            case "comm" :
+                            case "command" : {
+                                this.getCommand();
+                                break parsing;
+                            }
+                            case "loc" :
+                            case "location" : {
+                                this.getLocation();
+                                break parsing;
+                            } 
+                            default : {
+                                break parsing;
+                            }
+                        }
+                    }
                     case "alarm" : {
                         printUnderLn(this.taskManager.getFirstAlarmTime());
                         break parsing;
@@ -484,7 +511,7 @@ public class Console implements Runnable, ExternalIOInterface{
     }
     
     private void printLocations() throws IOException{
-        Map<String, String> locations = this.executor.getLocations();
+        Map<String, String> locations = this.executor.getAllLocations();
         if (locations.isEmpty()) {
             printUnderLn("There aren`t any locations.");
             return;
@@ -510,7 +537,7 @@ public class Console implements Runnable, ExternalIOInterface{
     }
     
     private void printCommands() throws IOException{
-        Map<String, List<String>> commands = this.executor.getCommands();
+        Map<String, List<String>> commands = this.executor.getAllCommands();
         if (commands.isEmpty()) {
             printUnderLn("There aren`t any commands.");
             return;
@@ -610,6 +637,55 @@ public class Console implements Runnable, ExternalIOInterface{
                 printUnderLn("Command was removed.");
             }
         }        
+    }
+    
+    private void listLocation(String locationName) throws IOException {
+        List<String> locationContent = this.executor.listLocationContent(locationName);
+        if (locationContent.size() > 1){
+            this.printUnderLn(locationContent.get(0) + ":");
+            for (int i = 1; i < locationContent.size(); i++){
+                this.writer.write(SPACE+locationContent.get(i));
+                this.writer.newLine();
+            }
+            this.writer.flush();
+        } else if (locationContent.size() == 1){
+            this.printUnderLn("Location " + locationContent.get(0) + " is empty.");
+        }        
+    }
+    
+    private void getLocation() throws IOException{
+        this.printUnder("name: ");
+        String location = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(location)){
+            return;
+        }
+        if (location.length() > 0){
+            String foundLocation = this.executor.getLocation(location);
+            if (foundLocation.length() > 0){
+                this.printSpaceLn(foundLocation);
+            }
+        }
+    }
+    
+    private void getCommand() throws IOException {
+        this.printUnder("name: ");
+        String command = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(command)){
+            return;
+        }
+        if (command.length() > 0){            
+            List<String> commandContent = this.executor.getCommand(command);
+            if (commandContent.size() > 1){
+                this.printSpaceLn(commandContent.get(0) + ":");
+                for (int i = 1; i < commandContent.size(); i++){
+                    this.writer.write(SPACE + "   > " + commandContent.get(i));
+                    this.writer.newLine();
+                }
+                this.writer.flush();
+            } else if (commandContent.size() == 1){
+                this.printUnderLn("Command " + commandContent.get(0) + " is empty.");
+            }
+        }
     }
     
     // ExternalIOInterface methods implementations -----------------------------------------------

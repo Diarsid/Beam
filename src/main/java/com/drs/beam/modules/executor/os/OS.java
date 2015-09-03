@@ -4,8 +4,8 @@
  */
 package com.drs.beam.modules.executor.os;
 
-import com.drs.beam.modules.io.BeamIO;
 import com.drs.beam.modules.io.InnerIOInterface;
+import java.util.List;
 
 /**
  *
@@ -19,6 +19,8 @@ public interface OS {
     
     void openFileInLocationWithProgram(String file, String location, String program);
     void runProgram(String program);
+    
+    List<String> getLocationContent(String locationName);
     
     static OS getOS(InnerIOInterface io){
         String systemName = System.getProperty("os.name").toLowerCase();
