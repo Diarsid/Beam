@@ -24,18 +24,30 @@ import java.util.ArrayList;
  */
 public class TaskManager implements TaskManagerInterface {
     // Fields =============================================================================
+    private static TaskManager taskManager;
+    
     private final InnerIOInterface ioEngine;
     private final TasksDao dao;
     private LocalDateTime firstTaskTime = null;    
     
     // Constructor ========================================================================
-    public TaskManager(InnerIOInterface io, DataManager dataManager){
+    private TaskManager(InnerIOInterface io, DataManager dataManager){
         this.ioEngine = io;
         this.dao = dataManager.getTasksDAO();    
         initWork();
     }
 
     // Methods ============================================================================
+    
+    public static void init(InnerIOInterface io, DataManager dataManager){
+        if (taskManager == null){
+            taskManager = new TaskManager(io, dataManager);
+        }
+    }
+    
+    public static TaskManager getTaskManager(){
+        return taskManager;
+    }
      
     LocalDateTime getFirstTaskTime(){
         return firstTaskTime;

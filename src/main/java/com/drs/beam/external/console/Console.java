@@ -57,19 +57,19 @@ public class Console implements Runnable, ExternalIOInterface{
         ConsoleRemoteManager manager = new ConsoleRemoteManager(console);
         manager.connect();
         ConfigContainer.cancel();
-        new Thread(console, "Org_console").start();
+        new Thread(console, "Beam_console").start();
     }    
     
     void setTaskManager(TaskManagerInterface tm) {
         this.taskManager = tm;
     }
 
-    void setOsExecutor(ExecutorInterface e) {
+    void setExecutor(ExecutorInterface e) {
         this.executor = e;
     }
 
-    void setOrgIO(RemoteAccessInterface io) {
-        this.beamRemoteAccess = io;
+    void setBeamRemoteAccess(RemoteAccessInterface remoteAccess) {
+        this.beamRemoteAccess = remoteAccess;
     }
     
     BufferedReader reader(){
@@ -113,9 +113,9 @@ public class Console implements Runnable, ExternalIOInterface{
         try{
             if (this.beamRemoteAccess != null){
                 this.beamRemoteAccess.setDefaultIO();
-            }            
-            System.exit(0);
-        } catch(RemoteException e){}        
+            }    
+        } catch(RemoteException e){}
+        System.exit(0);
     }
     
     private void exitProgram(){
@@ -123,8 +123,8 @@ public class Console implements Runnable, ExternalIOInterface{
             if (this.beamRemoteAccess != null){
                 this.beamRemoteAccess.exit();
             }
-            System.exit(0);
-        } catch(RemoteException e){}  
+        } catch(RemoteException e){} 
+        System.exit(0);
     }
     
     private void exitProgramIfCriticalError(boolean isCritical){

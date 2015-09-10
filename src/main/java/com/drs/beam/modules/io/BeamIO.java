@@ -23,21 +23,35 @@ import java.util.List;
 public class BeamIO implements InnerIOInterface, RemoteAccessInterface {
     
     // Fields =============================================================================
-    private ExternalIOInterface externalIOEngine;
+    private static BeamIO beamIO;
     
-    private final Gui gui;
-    
+    private ExternalIOInterface externalIOEngine;    
+    private final Gui gui;    
     private boolean hasExternalIOProcessor;
     private boolean useExternalShowTaskMethod;
 
     // Constructors =======================================================================
-    public BeamIO() {        
+    private BeamIO() {        
         this.gui = Gui.getGui();
         this.hasExternalIOProcessor = false;
         this.useExternalShowTaskMethod = false;
     }
 
     // Methods ============================================================================
+    
+    public static void init(){
+        if (beamIO == null){
+            beamIO = new BeamIO();
+        }        
+    }
+    
+    public static RemoteAccessInterface getRemoteAccessInterface(){
+        return beamIO;
+    }
+    
+    public static InnerIOInterface getInnerIO(){
+        return beamIO;
+    }
         
     /*
      * Defines way to show specified Task to user according to whether 

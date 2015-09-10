@@ -21,12 +21,14 @@ import com.drs.beam.util.config.ConfigParam;
  */
 public class DataManager{
     // Fields =============================================================================
+    private static DataManager dataManager;
+    
     private TasksDao tasksDao;
     private LocationsDao locationsDao;
     private CommandsDao commandsDao;
     
     // Constructor ========================================================================
-    public DataManager(InnerIOInterface io) {
+    private DataManager(InnerIOInterface io) {
         DBInitializer initializer = new DBInitializer(io);
         try {
             Class.forName(ConfigContainer.getParam(ConfigParam.CORE_DB_DRIVER));
@@ -68,7 +70,17 @@ public class DataManager{
     }
         
     // Methods ============================================================================
-        
+    
+    public static void init(InnerIOInterface io){
+        if (dataManager == null){
+            dataManager = new DataManager(io);
+        }
+    }
+    
+    public static DataManager getDataManager(){
+        return dataManager;
+    }
+    
     public TasksDao getTasksDAO(){
         return this.tasksDao;
     }    

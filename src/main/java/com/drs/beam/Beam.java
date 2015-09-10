@@ -25,11 +25,7 @@ import java.rmi.server.UnicastRemoteObject;
  * Creates all parts of program, initializes and exports them on localhost port trough RMI.
  */
 public class Beam {
-    // Fields =============================================================================    
-    private static InnerIOInterface innerIO;
-    private static RemoteAccessInterface remoteAccess;
-    private static TaskManagerInterface taskManager;
-    private static ExecutorInterface executor;
+    // Fields =============================================================================
 
     // Constructor ========================================================================
     Beam() {
@@ -39,12 +35,12 @@ public class Beam {
    
     public static void main(String[] args) {
         ConfigContainer.parseStartArgumentsIntoConfiguration(args);
-        BeamIO io = new BeamIO();
-        Beam.innerIO = (InnerIOInterface) io;
-        Beam.remoteAccess = (RemoteAccessInterface) io;
-        DataManager dataManager = new DataManager(innerIO);
-        Beam.taskManager = new TaskManager(innerIO, dataManager);
-        Beam.executor = new Executor(innerIO, dataManager);
+        BeamIO.init();
+        InnerIOInterface innerIO = BeamIO.getInnerIO();
+        DataManager.init(innerIO);
+        DataManager dataManager = DataManager.getDataManager();
+        TaskManager.init(innerIO, dataManager);
+        Executor.init(innerIO, dataManager);
         export();
         ConfigContainer.cancel();
     }
@@ -56,20 +52,26 @@ public class Beam {
             int organizerPort = Integer.parseInt(ConfigContainer.getParam(ConfigParam.ORGANIZER_PORT));
             Registry registry = LocateRegistry.createRegistry(organizerPort);
             RemoteAccessInterface orgIOStub =
-                    (RemoteAccessInterface) UnicastRemoteObject.exportObject(remoteAccess, organizerPort);
+                    (RemoteAccessInterface) UnicastRemoteObject.exportObject(
+                            BeamIO.getRemoteAccessInterface(), 
+                            organizerPort);
 
             ExecutorInterface osExecutorStub =
-                    (ExecutorInterface) UnicastRemoteObject.exportObject(executor, organizerPort);
+                    (ExecutorInterface) UnicastRemoteObject.exportObject(
+                            Executor.getExecutor(), 
+                            organizerPort);
 
             TaskManagerInterface TaskManagerStub =
-                    (TaskManagerInterface) UnicastRemoteObject.exportObject(taskManager, organizerPort);
+                    (TaskManagerInterface) UnicastRemoteObject.exportObject(
+                            TaskManager.getTaskManager(), 
+                            organizerPort);
 
             registry.bind(ConfigContainer.getParam(ConfigParam.ORG_IO_NAME), orgIOStub);
             registry.bind(ConfigContainer.getParam(ConfigParam.EXECUTOR_NAME), osExecutorStub);
             registry.bind(ConfigContainer.getParam(ConfigParam.TASK_MANAGER_NAME), TaskManagerStub);
 
         }catch (AlreadyBoundException|RemoteException e){            
-            innerIO.informAboutException(e, true);
+            BeamIO.getInnerIO().informAboutException(e, true);
         }
     }      
 }

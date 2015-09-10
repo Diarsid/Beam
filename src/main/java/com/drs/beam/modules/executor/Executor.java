@@ -17,13 +17,15 @@ import java.util.Map;
 
 public class Executor implements ExecutorInterface {
     // Fields =============================================================================
+    private static Executor executor;
+    
     private final InnerIOInterface ioEngine;
     private final LocationsDao locationsDao;
     private final CommandsDao commandsDao;
     private final OS system;
     
     // Constructors =======================================================================
-    public Executor(InnerIOInterface io, DataManager dataManager) {
+    private Executor(InnerIOInterface io, DataManager dataManager) {
         this.ioEngine = io;
         this.locationsDao = dataManager.getLocationsDao();
         this.commandsDao = dataManager.getCommandsDao();
@@ -31,6 +33,16 @@ public class Executor implements ExecutorInterface {
     }
 
     // Methods ============================================================================
+    
+    public static void init(InnerIOInterface innerIo, DataManager dataManager){
+        if (executor == null){
+            executor = new Executor(innerIo, dataManager);
+        }
+    }
+    
+    public static Executor getExecutor(){
+        return executor;
+    }
     
     @Override
     public void open(List<String> commandParams) throws RemoteException{

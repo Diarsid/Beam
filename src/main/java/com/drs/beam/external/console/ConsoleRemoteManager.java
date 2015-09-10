@@ -61,17 +61,17 @@ public class ConsoleRemoteManager{
             Registry registry = LocateRegistry
                     .getRegistry(ConfigContainer.getParam(ConfigParam.ORGANIZER_HOST), 
                             Integer.parseInt(ConfigContainer.getParam(ConfigParam.ORGANIZER_PORT)));                
-            RemoteAccessInterface orgIO = (RemoteAccessInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.ORG_IO_NAME));
-            if(orgIO.hasExternalIOProcessor()){
+            RemoteAccessInterface remoteAccessInterface = (RemoteAccessInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.ORG_IO_NAME));
+            if(remoteAccessInterface.hasExternalIOProcessor()){
                 showProblemMessageAndClose("Organizer already has external output!");
             } else{
-                orgIO.acceptNewIOProcessor(ConfigContainer.getParam(ConfigParam.CONSOLE_NAME), 
+                remoteAccessInterface.acceptNewIOProcessor(ConfigContainer.getParam(ConfigParam.CONSOLE_NAME), 
                         ConfigContainer.getParam(ConfigParam.CONSOLE_HOST), 
                         Integer.parseInt(ConfigContainer.getParam(ConfigParam.CONSOLE_PORT)));
-                orgIO.useNativeShowTaskMethod();
-                console.setOrgIO(orgIO);
+                remoteAccessInterface.useNativeShowTaskMethod();
+                console.setBeamRemoteAccess(remoteAccessInterface);
                 console.setTaskManager((TaskManagerInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.TASK_MANAGER_NAME)));
-                console.setOsExecutor((ExecutorInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.EXECUTOR_NAME)));
+                console.setExecutor((ExecutorInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.EXECUTOR_NAME)));
             }
         } catch (NotBoundException e){  
             System.out.println(e.getMessage());
