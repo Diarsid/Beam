@@ -5,19 +5,19 @@
 
 package com.drs.beam.starter;
 
-import com.drs.beam.util.config.ConfigReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import com.drs.beam.util.config.reader.ConfigReader;
 
 /**
  *
  * @author Diarsid
  */
-public class RemoteLocator {
+class RemoteLocator {
     // Fields =============================================================================
     private final ConfigReader reader = ConfigReader.getReader();
     
@@ -41,8 +41,8 @@ public class RemoteLocator {
     boolean isBeamWorking(){
         try {
             Registry beamRegistry = LocateRegistry.getRegistry(
-                reader.getOrganizerHost(),
-                reader.getOrganizerPort());
+                reader.getBeamHost(),
+                reader.getBeamPort());
             return beamRegistry.list().length > 0;
         } catch (RemoteException re){            
             return false;
@@ -52,8 +52,8 @@ public class RemoteLocator {
     boolean isConsoleWorking(){
         try {
             Registry consoleRegistry = LocateRegistry.getRegistry(
-                reader.getConsoleHost(),
-                reader.getConsolePort());
+                reader.getSystemConsoleHost(),
+                reader.getSystemConsolePort());
             return consoleRegistry.list().length > 0;
         } catch (RemoteException re){            
             return false;

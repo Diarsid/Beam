@@ -18,12 +18,13 @@ public class ModulesLoader {
         List<String> modulesToStart = locator.defineModulesToStart();        
         if (modulesToStart.size() > 0){            
             Starter starter = Starter.getStarter();
+            starter.takeArgs(args);
             if (modulesToStart.contains("beam")){
                 starter.runBeam();
                 if (modulesToStart.contains("console")){
                     while (!locator.isBeamWorking()){
                         try {
-                        Thread.sleep(10);
+                            Thread.sleep(10);
                         } catch (InterruptedException ie) {
                             System.out.println(ie.getMessage());
                         }

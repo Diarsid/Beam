@@ -21,7 +21,6 @@ public enum ConfigParam {
     CORE_DB_URL,
     CORE_DB_NAME,
     PROGRAMS_LOCATION,
-    GUI_PLATFORM,
     IMAGES_LOCATION,
     LIBRARIES_LOCATION
 }

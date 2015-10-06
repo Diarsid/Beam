@@ -9,9 +9,10 @@ package com.drs.beam.starter;
  *
  * @author Diarsid
  */
-public interface Starter {
+interface Starter {
     public void runBeam();
-    public void runConsole();   
+    public void runConsole();
+    public void takeArgs(String[] args);
     
     public static Starter getStarter(){
         String systemName = System.getProperty("os.name").toLowerCase();

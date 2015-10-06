@@ -15,7 +15,7 @@
         </includes>
     </fileSet>
     <fileSet>
-        <directory>src/main/external-resources/config-for-jar</directory>
+        <directory>src/main/external-resources/config</directory>
         <outputDirectory>config</outputDirectory>
         <includes>
           <include>*.*</include>
