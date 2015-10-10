@@ -6,14 +6,17 @@ package com.drs.beam.server.modules.executor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import com.drs.beam.server.entities.location.Location;
 import com.drs.beam.server.entities.command.StoredExecutorCommand;
+import com.drs.beam.server.entities.location.Location;
 import com.drs.beam.server.modules.Modules;
 import com.drs.beam.server.modules.data.DataManagerModule;
-import com.drs.beam.server.modules.data.dao.commands.CommandsDao;
-import com.drs.beam.server.modules.data.dao.locations.LocationsDao;
+import com.drs.beam.server.modules.executor.handlers.CommandsHandler;
+import com.drs.beam.server.modules.executor.handlers.CommandsHandlerWorker;
+import com.drs.beam.server.modules.executor.handlers.LocationsHandler;
+import com.drs.beam.server.modules.executor.handlers.LocationsHandlerWorker;
 import com.drs.beam.server.modules.executor.os.OS;
 import com.drs.beam.server.modules.io.InnerIOModule;
 
@@ -22,15 +25,15 @@ public class Executor implements ExecutorModule{
     private static Executor executor;
     
     private final InnerIOModule ioEngine;
-    private final LocationsDao locationsDao;
-    private final CommandsDao commandsDao;
     private final OS system;
+    private final LocationsHandler locationsHandler;
+    private final CommandsHandler commandsHandler;
     
     // Constructors =======================================================================
     private Executor(InnerIOModule io, DataManagerModule data) {
         this.ioEngine = io;
-        this.locationsDao = data.getLocationsDao();
-        this.commandsDao = data.getCommandsDao();
+        this.locationsHandler = new LocationsHandlerWorker(data.getLocationsDao(), this.ioEngine);
+        this.commandsHandler = new CommandsHandlerWorker(data.getCommandsDao(), this.ioEngine);
         this.system = OS.getOS(io);
     }
 
@@ -89,79 +92,54 @@ public class Executor implements ExecutorModule{
     }
     
     @Override
-    public void call(List<String> commandParams){
+    public void call(List<String> commandNames){
         // command pattern: call [command_1] [command_2]...
-        for(int i = 1; i < commandParams.size(); i++){
-            List<StoredExecutorCommand> commands = 
-                this.commandsDao.getCommandsByName(commandParams.get(i));
-            
-            if (commands.size() < 1){
-                this.ioEngine.reportInfo("Couldn`t find such command.");
-            } else if (commands.size() == 1){
-                this.executelistOfCommands(commands.get(0).getCommands());
-            } else {
-                List<String> commandNames = new ArrayList<>();
-                for (StoredExecutorCommand c : commands){
-                    commandNames.add(c.getName());
-                }
-                int variant = this.ioEngine.resolveVariantsWithExternalIO(
-                        "There are several commands:", 
-                        commandNames
-                );
-                this.executelistOfCommands(commands.get(variant-1).getCommands());
+        StoredExecutorCommand command;
+        for(int i = 1; i < commandNames.size(); i++){
+            command = this.commandsHandler.getCommand(commandNames.get(i));
+            if (command != null){
+                this.executeCommand(command);
             }
         }   
     }
     
     @Override
     public void newCommand(List<String> commands, String commandName){
-        for(int i = 0; i < commands.size(); i++){
-            String s = commands.get(i).trim().toLowerCase();
-            commands.set(i, s);
-        }
-        commandName = commandName.trim().toLowerCase();
-        
-        this.commandsDao.saveNewCommand(new StoredExecutorCommand(commandName, commands));
+        this.commandsHandler.newCommand(commands, commandName);
     }
     
     @Override
     // location pattern: C:/path/to/target/folder
     public void newLocation(String locationPath, String locationName){
-        locationName = locationName.trim().toLowerCase();
-        locationPath = locationPath.trim().toLowerCase();
-        // if given path exists and it is actually folder, not a file
-        if (this.system.checkIfDirectoryExists(locationPath)){            
-            this.locationsDao.saveNewLocation(new Location(locationName, locationPath));
-        } 
+        if (this.system.checkIfDirectoryExists(locationPath)){
+            this.locationsHandler.newLocation(locationPath, locationName); 
+        }          
     }
         
     @Override
     public boolean deleteCommand(String commandName){
-        commandName = commandName.trim().toLowerCase();
-        return this.commandsDao.removeCommand(commandName);
+        return this.commandsHandler.deleteCommand(commandName);
     }
     
     @Override
     // location pattern: projects
     public boolean deleteLocation(String locationName){
-        locationName = locationName.trim().toLowerCase();
-        return this.locationsDao.removeLocation(locationName); 
+        return this.locationsHandler.deleteLocation(locationName);
     }  
     
     @Override
     public List<Location> getAllLocations(){
-        return this.locationsDao.getAllLocations();
+        return this.locationsHandler.getAllLocations();
     }
     
     @Override
     public List<StoredExecutorCommand> getAllCommands(){
-        return this.commandsDao.getAllCommands();
+        return this.commandsHandler.getAllCommands();
     }   
     
     @Override
     public List<String> listLocationContent(String locationName){
-        locationName = locationName.trim().toLowerCase();
-        Location location = resolveMultipleLocationsInDB(locationName);
+        Location location = this.locationsHandler.getLocation(locationName);
         if (location != null){
             List<String> locationContent = this.system.getLocationContent(location);
             if (locationContent != null){
@@ -171,32 +149,22 @@ public class Executor implements ExecutorModule{
                 return new ArrayList<>();
             }
         } else {
-            this.ioEngine.reportError("No such location.");
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
     
     @Override
-    public List<Location> getLocation(String locationName){
-        locationName = locationName.trim().toLowerCase();
-        if (locationName.contains("-")){
-            return this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
-        } else {
-            return this.locationsDao.getLocationsByName(locationName);            
-        }
+    public List<Location> getLocations(String locationName){
+        return this.locationsHandler.getLocations(locationName);
     }
     
     @Override
-    public List<StoredExecutorCommand> getCommand(String commandName){
-        commandName = commandName.trim().toLowerCase();
-        return this.commandsDao.getCommandsByName(commandName);
+    public List<StoredExecutorCommand> getCommands(String commandName){
+        return this.commandsHandler.getCommands(commandName);
     }
        
     private void openLocation(String locationName){
-        locationName = locationName.trim().toLowerCase();
-        // locationName pattern: projects
-        // location pattern: C:/path/to/my/projects
-        Location location = resolveMultipleLocationsInDB(locationName);
+        Location location = this.locationsHandler.getLocation(locationName);
         if (location != null){
             this.system.openLocation(location);
         } 
@@ -204,11 +172,7 @@ public class Executor implements ExecutorModule{
     
     private void openFileInLocation(String targetName, String locationName){
         targetName = targetName.trim().toLowerCase();
-        locationName = locationName.trim().toLowerCase();
-        // locationName pattern: proj
-        // locationName corrected into location pattern: C:/path/to/my/projects
-        
-        Location location = resolveMultipleLocationsInDB(locationName);
+        Location location = this.locationsHandler.getLocation(locationName);
         if (location != null){
             this.system.openFileInLocation(targetName, location);
         }             
@@ -216,76 +180,45 @@ public class Executor implements ExecutorModule{
     
     private void openFileInLocationWithProgram(String file, String locationName, String program){
         file = file.trim().toLowerCase();
-        locationName = locationName.trim().toLowerCase();
         program = program.trim().toLowerCase();
-        
-        Location location = resolveMultipleLocationsInDB(locationName);
+        Location location = this.locationsHandler.getLocation(locationName);
         if (location != null){
             this.system.openFileInLocationWithProgram(file, location, program);
         }    
     }
     
-    private void executelistOfCommands(List<String> list){
-            List<String> commandParams;
-            for(String commandString : list){
-                commandParams = Arrays.asList(commandString.split("\\s+"));
-                switch(commandParams.get(0)){
-                    case "open" :
-                    case "op" :
-                    case "o" : {
-                        open(commandParams);
-                        break;
-                    } 
-                    case "r" :
-                    case "run" : {
-                        run(commandParams);
-                        break;
-                    }
-                    case "call" : {
-                        call(commandParams);
-                        break;
-                    }
-                    case "start" : {
-                        start(commandParams);
-                        break;
-                    }
-                    case "stop" : {
-                        stop(commandParams);
-                        break;
-                    }
-                    default : {
-                        this.ioEngine.reportError("Unrecognizible command.");
-                    }
+    private void executeCommand(StoredExecutorCommand command){
+        List<String> commandParams;
+        for(String commandString : command.getCommands()){
+            commandParams = Arrays.asList(commandString.split("\\s+"));
+            switch(commandParams.get(0)){
+                case "open" :
+                case "op" :
+                case "o" : {
+                    this.open(commandParams);
+                    break;
+                } 
+                case "r" :
+                case "run" : {
+                    this.run(commandParams);
+                    break;
+                }
+                case "call" : {
+                    this.call(commandParams);
+                    break;
+                }
+                case "start" : {
+                    this.start(commandParams);
+                    break;
+                }
+                case "stop" : {
+                    this.stop(commandParams);
+                    break;
+                }
+                default : {
+                    this.ioEngine.reportError("Unrecognizible command.");
                 }
             }
-    }
-        
-    private Location resolveMultipleLocationsInDB(String locationName){
-        List<Location> foundLocations;
-        if (locationName.contains("-")){
-            foundLocations = this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
-        } else {
-            foundLocations = this.locationsDao.getLocationsByName(locationName);            
-        } 
-        
-        if (foundLocations.size() < 1){
-            this.ioEngine.reportInfo("Couldn`t find such location.");
-            return null;
-        } else if (foundLocations.size() == 1){
-            return foundLocations.get(0);
-        } else {
-            List<String> locationNames = new ArrayList();
-            for (Location loc : foundLocations){
-                locationNames.add(loc.getName());
-            }
-            int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
-                    "There are several locations:", 
-                    locationNames);
-            if (varNumber < 0){
-                return null;
-            } else {
-                return foundLocations.get(varNumber-1);
-            }            
         }
     }
         

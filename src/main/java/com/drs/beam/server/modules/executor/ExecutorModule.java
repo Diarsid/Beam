@@ -33,8 +33,8 @@ public interface ExecutorModule extends Module {
     List<Location> getAllLocations();
     List<StoredExecutorCommand> getAllCommands();
     
-    List<Location> getLocation(String locationName);
-    List<StoredExecutorCommand> getCommand(String commandName);
+    List<Location> getLocations(String locationName);
+    List<StoredExecutorCommand> getCommands(String commandName);
     
     boolean deleteCommand(String commandName);
     boolean deleteLocation(String locationName);

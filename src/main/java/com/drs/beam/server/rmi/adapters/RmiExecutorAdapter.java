@@ -84,12 +84,12 @@ public class RmiExecutorAdapter implements RmiExecutorInterface {
     
     @Override
     public List<Location> getLocation(String locationName) throws RemoteException{
-        return this.executorModule.getLocation(locationName);
+        return this.executorModule.getLocations(locationName);
     }
     
     @Override
     public List<StoredExecutorCommand> getCommand(String commandName)  throws RemoteException{
-        return this.executorModule.getCommand(commandName);
+        return this.executorModule.getCommands(commandName);
     }
     
     @Override

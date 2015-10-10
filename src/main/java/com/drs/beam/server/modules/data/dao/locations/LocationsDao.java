@@ -4,6 +4,7 @@
  */
 package com.drs.beam.server.modules.data.dao.locations;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import com.drs.beam.server.entities.location.Location;
@@ -14,12 +15,12 @@ import com.drs.beam.server.entities.location.Location;
  */
 public interface LocationsDao {
     
-    public List<Location> getLocationsByName(String locationName);
-    public List<Location> getLocationsByNameParts(String[] locationNameParts);
+    public List<Location> getLocationsByName(String locationName) throws SQLException;
+    public List<Location> getLocationsByNameParts(String[] locationNameParts) throws SQLException;
     
-    public void saveNewLocation(Location location);
+    public void saveNewLocation(Location location) throws SQLException;
     
-    public boolean removeLocation(String LocationName);
+    public boolean removeLocation(String LocationName) throws SQLException;
         
-    public List<Location> getAllLocations();
+    public List<Location> getAllLocations() throws SQLException;
 }

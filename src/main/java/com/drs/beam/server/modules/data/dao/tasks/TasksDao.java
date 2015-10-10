@@ -6,7 +6,7 @@ package com.drs.beam.server.modules.data.dao.tasks;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.List;
 
 import com.drs.beam.server.entities.task.Task;
 
@@ -20,10 +20,10 @@ public interface TasksDao {
     boolean deleteTaskByText(String text) throws SQLException; 
     boolean deleteTasks(int tasksSort) throws SQLException; 
         
-    ArrayList<Task>  extractFirstTasks    () throws SQLException; 
-    ArrayList<Task>  extractExpiredTasks  (LocalDateTime fromNow) throws SQLException; 
+    List<Task> extractFirstTasks () throws SQLException; 
+    List<Task> extractExpiredTasks (LocalDateTime fromNow) throws SQLException; 
    
-    LocalDateTime    getFirstTaskTime     () throws SQLException; 
-    ArrayList<Task>  getTasks            (int isActive) throws SQLException; 
-    ArrayList<Task>  getTasksByTime       (LocalDateTime firstTaskTime) throws SQLException; 
+    LocalDateTime getFirstTaskTime () throws SQLException; 
+    List<Task> getTasks (int isActive) throws SQLException; 
+    List<Task> getTasksByTime (LocalDateTime firstTaskTime) throws SQLException; 
 }

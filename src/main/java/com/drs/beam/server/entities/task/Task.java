@@ -82,11 +82,7 @@ public class Task implements Comparable<Task>, Serializable{
      * between single strings.
      */
     public String getContentForStoring(){
-        StringJoiner sj = new StringJoiner(DB_TASK_DELIMITER);
-        for (String s : this.content){
-            sj.add(s);
-        }
-        return sj.toString();
+        return String.join(DB_TASK_DELIMITER, this.content);
     }
     
     public String[] getContent(){

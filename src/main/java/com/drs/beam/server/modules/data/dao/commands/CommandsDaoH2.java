@@ -17,7 +17,6 @@ import java.util.StringJoiner;
 
 import com.drs.beam.server.entities.command.StoredExecutorCommand;
 import com.drs.beam.server.modules.data.base.DataBase;
-import com.drs.beam.server.modules.io.InnerIOModule;
 
 /**
  *
@@ -26,7 +25,6 @@ import com.drs.beam.server.modules.io.InnerIOModule;
 public class CommandsDaoH2 implements CommandsDao{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOModule ioEngine;
     
     /* 
      * SQL Table description for commands entities.
@@ -64,9 +62,8 @@ public class CommandsDaoH2 implements CommandsDao{
     private final String NO_STORED_COMMANDS = "There aren`t any commands.";
     
     // Constructors =======================================================================
-    public CommandsDaoH2(DataBase data, InnerIOModule io) {
+    public CommandsDaoH2(DataBase data) {
         this.data = data;
-        this.ioEngine = io;
     }
     
     // Methods ============================================================================
@@ -84,79 +81,72 @@ public class CommandsDaoH2 implements CommandsDao{
     }
     
     @Override
-    public List<StoredExecutorCommand> getCommandsByName(String commandName){
+    public List<StoredExecutorCommand> getCommandsByName(String commandName) throws SQLException{
         List<StoredExecutorCommand> commands = new ArrayList<>();
-        try(    Connection con = this.data.connect();
-                PreparedStatement ps = con.prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);)
-        {               
-            ps.setString(1, "%"+commandName+"%");
-            ResultSet rs = ps.executeQuery();
-            while(rs.next()){
-                String restoredCommandName = rs.getString(1);
-                String restoredCommandText = rs.getString(2);
-                StoredExecutorCommand command = new StoredExecutorCommand(
-                        restoredCommandName, 
-                        convertStoredCommandForUsing(restoredCommandText));
-                commands.add(command);
-            }
-            rs.close();
-            ps.close();            
-            return commands;
-        } catch(SQLException e){
-            this.ioEngine.reportException(e, "SQLException: get commands by name.");
-            return commands;
-        }   
-    }
-    
-    @Override
-    public void saveNewCommand(StoredExecutorCommand command){
-        try(    Connection con = this.data.connect();
-                PreparedStatement ps = con.prepareStatement(INSERT_NEW_COMMAND);){
-            ps.setString(1, command.getName());
-            ps.setString(2, convertInputCommandForStoring(command.getCommands()));
-            ps.executeUpdate();
-        } catch(SQLException e){
-            if (e.getSQLState().startsWith("23")){
-                this.ioEngine.reportInfo(COMMAND_ALREADY_EXISTS);
-            } else {
-                this.ioEngine.reportException(e, "SQLException: save command.");
-            }
+        Connection con = this.data.connect();
+        PreparedStatement ps = con.prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);
+
+        ps.setString(1, "%"+commandName+"%");
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()){
+            String restoredCommandName = rs.getString(1);
+            String restoredCommandText = rs.getString(2);
+            StoredExecutorCommand command = new StoredExecutorCommand(
+                    restoredCommandName, 
+                    convertStoredCommandForUsing(restoredCommandText));
+            commands.add(command);
         }
+        rs.close();
+        ps.close();   
+        con.close();
+        return commands;          
     }
     
     @Override
-    public boolean removeCommand(String commandName){
-        try (   Connection con = this.data.connect();
-                PreparedStatement ps = con.prepareStatement(DELETE_COMMAND_WHERE_NAME_lIKE);)
-        {
-            ps.setString(1, commandName);
-            int qty = ps.executeUpdate();
-            return (qty > 0);
-        } catch(SQLException e){
-            this.ioEngine.reportException(e, "SQLException: remove command.");
-            return false;
-        }    
+    public void saveNewCommand(StoredExecutorCommand command) throws SQLException{
+        Connection con = this.data.connect();
+        PreparedStatement ps = con.prepareStatement(INSERT_NEW_COMMAND);
+        
+        ps.setString(1, command.getName());
+        ps.setString(2, convertInputCommandForStoring(command.getCommands()));
+        ps.executeUpdate();
+        
+        ps.close();
+        con.close();
     }
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands(){
+    public boolean removeCommand(String commandName) throws SQLException{
+        Connection con = this.data.connect();
+        PreparedStatement ps = con.prepareStatement(DELETE_COMMAND_WHERE_NAME_lIKE);
+        
+        ps.setString(1, commandName);
+        int qty = ps.executeUpdate();
+
+        ps.close();
+        con.close();
+        return (qty > 0);           
+    }
+    
+    @Override
+    public List<StoredExecutorCommand> getAllCommands() throws SQLException{
         List<StoredExecutorCommand> commands = new ArrayList<>();
-        try(    Connection con = this.data.connect();
-                Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);)
-        {
-            while(rs.next()){
-                String restoredCommandName = rs.getString(1);
-                String restoredCommandText = rs.getString(2);
-                StoredExecutorCommand command = new StoredExecutorCommand(
-                        restoredCommandName, 
-                        convertStoredCommandForUsing(restoredCommandText));
-                commands.add(command);
-            }
-            return commands;
-        } catch(SQLException e){
-            this.ioEngine.reportException(e, "SQLException: get commands.");
-            return commands;
-        } 
+        Connection con = this.data.connect();
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);
+
+        while(rs.next()){
+            String restoredCommandName = rs.getString(1);
+            String restoredCommandText = rs.getString(2);
+            StoredExecutorCommand command = new StoredExecutorCommand(
+                    restoredCommandName, 
+                    convertStoredCommandForUsing(restoredCommandText));
+            commands.add(command);
+        }
+        
+        rs.close();
+        st.close();
+        con.close();
+        return commands;         
     }
 }

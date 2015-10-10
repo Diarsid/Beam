@@ -37,10 +37,10 @@ class DaoProvider {
     
     // Methods ============================================================================
     
-    TasksDao createTasksDao(DataBase db, InnerIOModule io){
+    TasksDao createTasksDao(DataBase db){
         try {
             Constructor cons = this.createDaoConstructor(this.tasksDaoClassName);
-            return (TasksDao) cons.newInstance(db, io);
+            return (TasksDao) cons.newInstance(db);
         } catch (Exception e) {
             this.ioEngine.reportExceptionAndExit(e, 
                     "DaoProvider: TasksDao instance creation failure.", 
@@ -49,10 +49,10 @@ class DaoProvider {
         }
     }
     
-    LocationsDao createLocationsDao(DataBase db, InnerIOModule io){
+    LocationsDao createLocationsDao(DataBase db){
         try {
             Constructor cons = this.createDaoConstructor(this.locationsDaoClassName);
-            return (LocationsDao) cons.newInstance(db, io);
+            return (LocationsDao) cons.newInstance(db);
         } catch (Exception e) {
             this.ioEngine.reportExceptionAndExit(e, 
                     "DaoProvider: LocationsDao instance creation failure.", 
@@ -61,10 +61,10 @@ class DaoProvider {
         }
     }
     
-    CommandsDao createCommandsDao(DataBase db, InnerIOModule io){
+    CommandsDao createCommandsDao(DataBase db){
         try {
             Constructor cons = this.createDaoConstructor(this.commandsDaoClassName);
-            return (CommandsDao) cons.newInstance(db, io);
+            return (CommandsDao) cons.newInstance(db);
         } catch (Exception e) {
             this.ioEngine.reportExceptionAndExit(e, 
                     "DaoProvider: CommandsDao instance creation failure.", 
@@ -76,7 +76,7 @@ class DaoProvider {
     private Constructor createDaoConstructor(String daoClassName){
         try {
             Class daoClass = Class.forName(daoClassName);
-            Constructor daoConstr = daoClass.getConstructor(DataBase.class, InnerIOModule.class);
+            Constructor daoConstr = daoClass.getConstructor(DataBase.class);
             return daoConstr;
         } catch (ClassNotFoundException e){
             this.ioEngine.reportExceptionAndExit(e, 

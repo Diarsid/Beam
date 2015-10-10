@@ -48,16 +48,16 @@ public class DataManager implements DataManagerModule{
     
     @Override
     public TasksDao getTasksDao(){
-        return this.daoProvider.createTasksDao(this.dataBase, this.ioEngine);
+        return this.daoProvider.createTasksDao(this.dataBase);
     }    
     
     @Override
     public LocationsDao getLocationsDao(){        
-        return this.daoProvider.createLocationsDao(this.dataBase, this.ioEngine);
+        return this.daoProvider.createLocationsDao(this.dataBase);
     }
     
     @Override
     public CommandsDao getCommandsDao(){
-        return this.daoProvider.createCommandsDao(this.dataBase, this.ioEngine);
+        return this.daoProvider.createCommandsDao(this.dataBase);
     }
 }

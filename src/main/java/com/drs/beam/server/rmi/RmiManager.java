@@ -16,11 +16,11 @@ import com.drs.beam.server.modules.Modules;
 import com.drs.beam.server.modules.executor.ExecutorModule;
 import com.drs.beam.server.modules.io.RemoteControlModule;
 import com.drs.beam.server.modules.tasks.TaskManagerModule;
-import com.drs.beam.server.rmi.adapters.RmiRemoteControlAdapter;
 import com.drs.beam.server.rmi.adapters.RmiExecutorAdapter;
+import com.drs.beam.server.rmi.adapters.RmiRemoteControlAdapter;
 import com.drs.beam.server.rmi.adapters.RmiTaskManagerAdapter;
-import com.drs.beam.server.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.server.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.server.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.server.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
@@ -81,5 +81,4 @@ public class RmiManager {
                     "Program will be closed.");
         }
     }     
-
 }
