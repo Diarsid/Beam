@@ -79,7 +79,7 @@ public class TaskManager implements TaskManagerModule {
             try {
                 this.firstTaskTime = this.tasksDao.getFirstTaskTime();
             } catch (SQLException e) {
-                this.ioEngine.reportExceptionAndExit(e, 
+                this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: get first task time.",
                     "Program will be closed.");
                 throw new ModuleInitializationException();
@@ -96,7 +96,7 @@ public class TaskManager implements TaskManagerModule {
         try {
             tasks = this.tasksDao.extractExpiredTasks(LocalDateTime.now());
         } catch (SQLException e){
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: extract expired tasks.", 
                     "Program will be closed.");
             throw new ModuleInitializationException();
@@ -133,7 +133,7 @@ public class TaskManager implements TaskManagerModule {
         try {
             tasks = this.tasksDao.extractFirstTasks();
         } catch (SQLException e){
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: extract firs tasks.", 
                     "Program will be closed.");
             throw new ModuleInitializationException();

@@ -26,10 +26,10 @@ public interface InnerIOModule extends Module{
     void reportMessage(String... info);
     
     void reportError(String... error);
-    void reportErrorAndExit(String... error);
+    void reportErrorAndExitLater(String... error);
     
     void reportException(Exception e, String... description); 
-    void reportExceptionAndExit(Exception e, String... description); 
+    void reportExceptionAndExitLater(Exception e, String... description); 
     
     int  resolveVariantsWithExternalIO(String message, List<String> variants);
     

@@ -21,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import com.drs.beam.server.modules.io.gui.Gui;
 import com.drs.beam.server.modules.io.gui.GuiWindowsController;
@@ -61,6 +62,15 @@ public class PopupWindow implements Runnable{
     @Override
     public void run() {
         Stage stage = new Stage();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                stage.close();
+                controller.minusOneActiveWindow();
+            }
+        });
+        stage.setAlwaysOnTop(true);
+        
         VBox mainVBox = new VBox(15); 
         mainVBox.setPadding(new Insets(15, 15, 15, 15));
         mainVBox.setAlignment(Pos.TOP_CENTER);

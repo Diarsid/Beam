@@ -34,7 +34,7 @@ public class DataBaseInitializer {
             con.createStatement().executeUpdate(tableInfo.getSqlScript());
             messagePool.add("Table '"+tableInfo.getTableName()+"' has been created.");
         } catch (SQLException e){
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: create table '"+tableInfo.getTableName()+" failure.",
                     "Program will be closed.");
             throw new ModuleInitializationException();

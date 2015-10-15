@@ -65,7 +65,7 @@ public class DataBaseVerifier {
             rs.close();
             return existingTables;            
         } catch (SQLException e) {
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLExceptions: get existing data base tables failure.",
                     "Program will be closed.");
             throw new ModuleInitializationException();

@@ -52,13 +52,9 @@ public class Modules {
     // Methods for proper initialization of appropriate modules ===========================
     
     /**
-     * Initializes and registers IoModule. Initializes two modules simultaneously - RemoteControlModule 
- and InnerIoModule.
- RemoteControlModule is intended for outer control over whole program behavior through RMI mechanism.
- InnerIoModule is intended for program inner output processing and managing messages 
- that appears during work in other modules and should be delivered to user with different 
- ways. It is required for all other modules. 
- IoModule does not need any other modules.
+     * Initializes and registers IoModule. Initializes three modules simultaneously - RemoteControlModule, 
+     * InnerControlModule and InnerIoModule.
+     * IoModule does not need any other modules.
      */
     public static void initIoModule(){
         BeamIO.initAndRegister();
@@ -94,7 +90,7 @@ public class Modules {
     
     /** 
      * @return Returns InnerIoModule instance that has been properly initialized and is 
-     * ready for work.
+     * ready to work.
      */
     public static InnerIOModule getInnerIOModule(){
         return (InnerIOModule) modules.get(InnerIOModule.getModuleName());
@@ -102,19 +98,23 @@ public class Modules {
     
     /**
      * @return Returns RemoteControlModule instance that has been properly initialized and is 
- ready for work.
+     * ready to work.
      */
     public static RemoteControlModule getRemoteControlModule(){
         return (RemoteControlModule) modules.get(RemoteControlModule.getModuleName());
     }
     
+    /**
+     * @return Returns InnerControlModule instance that has been properly initialized and is 
+     * ready to work.
+     */    
     public static InnerControlModule getInnerControlModule(){
         return (InnerControlModule) modules.get(InnerControlModule.getModuleName());
     }
     
     /**
      * @return Returns DataModule instance that has been properly initialized and is 
-     * ready for work.
+     * ready to work.
      */
     public static DataManagerModule getDataModule(){
         return (DataManagerModule) modules.get(DataManagerModule.getModuleName());
@@ -122,7 +122,7 @@ public class Modules {
     
     /**
      * @return Returns ExecutorModule instance that has been properly initialized and is 
-     * ready for work.
+     * ready to work.
      */
     public static ExecutorModule getExecutorModule(){
         return (ExecutorModule) modules.get(ExecutorModule.getModuleName());
@@ -130,7 +130,7 @@ public class Modules {
     
     /**
      * @return Returns TasksManagerModule instance that has been properly initialized and is 
-     * ready for work.
+     * ready to work.
      */
     public static TaskManagerModule getTasksManagerModule() {
         return (TaskManagerModule) modules.get(TaskManagerModule.getModuleName());

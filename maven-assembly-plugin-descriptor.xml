@@ -39,7 +39,7 @@
         <directory>src/main/external-resources/lib</directory>
         <outputDirectory>lib</outputDirectory>
         <includes>
-          <include>*.*</include>
+          <include>h2*.jar</include>
         </includes>    
     </fileSet>
   </fileSets>

@@ -8,6 +8,7 @@ package com.drs.beam.server.modules.data;
 
 import java.lang.reflect.Constructor;
 
+import com.drs.beam.server.modules.ModuleInitializationException;
 import com.drs.beam.server.modules.data.base.DataBase;
 import com.drs.beam.server.modules.data.dao.commands.CommandsDao;
 import com.drs.beam.server.modules.data.dao.locations.LocationsDao;
@@ -42,10 +43,10 @@ class DaoProvider {
             Constructor cons = this.createDaoConstructor(this.tasksDaoClassName);
             return (TasksDao) cons.newInstance(db);
         } catch (Exception e) {
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: TasksDao instance creation failure.", 
                     "Programm will be closed.");
-            return null;
+            throw new ModuleInitializationException();
         }
     }
     
@@ -54,10 +55,10 @@ class DaoProvider {
             Constructor cons = this.createDaoConstructor(this.locationsDaoClassName);
             return (LocationsDao) cons.newInstance(db);
         } catch (Exception e) {
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: LocationsDao instance creation failure.", 
                     "Programm will be closed.");
-            return null;
+            throw new ModuleInitializationException();
         }
     }
     
@@ -66,10 +67,10 @@ class DaoProvider {
             Constructor cons = this.createDaoConstructor(this.commandsDaoClassName);
             return (CommandsDao) cons.newInstance(db);
         } catch (Exception e) {
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: CommandsDao instance creation failure.", 
                     "Programm will be closed.");
-            return null;
+            throw new ModuleInitializationException();
         }
     }   
     
@@ -79,15 +80,15 @@ class DaoProvider {
             Constructor daoConstr = daoClass.getConstructor(DataBase.class);
             return daoConstr;
         } catch (ClassNotFoundException e){
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: Dao implementation class not found by its name.",
                     "Programm will be closed.");
             return null;
         } catch (NoSuchMethodException e){
-            this.ioEngine.reportExceptionAndExit(e, 
+            this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: Dao constructor creation failure.", 
                     "Programm will be closed.");
-            return null;
+            throw new ModuleInitializationException();
         } 
     }
 }

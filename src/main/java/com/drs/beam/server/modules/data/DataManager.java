@@ -18,13 +18,11 @@ public class DataManager implements DataManagerModule{
     // Fields =============================================================================
     private static DataManager dataManager;
     
-    private final InnerIOModule ioEngine;
     private final DataBase dataBase;
     private final DaoProvider daoProvider;
     
     // Constructor ========================================================================
     private DataManager(DataBase data, InnerIOModule io) {
-        this.ioEngine = io;
         this.dataBase = data;
         this.daoProvider = new DaoProvider(io, data.getName());
     }
@@ -36,7 +34,7 @@ public class DataManager implements DataManagerModule{
             DataBaseProvider provider = new DataBaseProvider(io);
             DataBaseVerifier verifier = new DataBaseVerifier(io);
             
-            DataBase db = provider.getDataBase(io);
+            DataBase db = provider.getDataBase();
             verifier.verifyDataBase(db);
             
             dataManager = new DataManager(db, io);

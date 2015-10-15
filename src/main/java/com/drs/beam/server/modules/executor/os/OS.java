@@ -32,14 +32,14 @@ public interface OS {
         } else if (systemName.contains("x")) {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program
-            io.reportErrorAndExit(
+            io.reportErrorAndExitLater(
                     "Program does not have OSUnix implementation yet.",
                     "Programm will be closed.");
             return null;
         } else {
             // Some error occured or there is unknown OS.
             // Terminates program
-            io.reportErrorAndExit(
+            io.reportErrorAndExitLater(
                     "Unsupported or unknown OS.", 
                     "Programm will be closed.");
             return null;

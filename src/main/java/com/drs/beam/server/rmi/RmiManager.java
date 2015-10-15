@@ -12,6 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import com.drs.beam.server.modules.ModuleInitializationException;
 import com.drs.beam.server.modules.Modules;
 import com.drs.beam.server.modules.executor.ExecutorModule;
 import com.drs.beam.server.modules.io.RemoteControlModule;
@@ -76,9 +77,10 @@ public class RmiManager {
             registry.bind(ConfigContainer.getParam(ConfigParam.TASK_MANAGER_NAME), TaskManagerStub);
 
         }catch (AlreadyBoundException|RemoteException e){            
-            Modules.getInnerIOModule().reportExceptionAndExit(e, 
+            Modules.getInnerIOModule().reportExceptionAndExitLater(e, 
                     "Export Beam.Server modules failure.",
                     "Program will be closed.");
+            throw new ModuleInitializationException();
         }
     }     
 }

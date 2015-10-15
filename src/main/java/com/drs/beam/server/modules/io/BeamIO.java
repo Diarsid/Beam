@@ -114,7 +114,7 @@ public class BeamIO implements InnerIOModule, RemoteControlModule, InnerControlM
     }
     
     @Override
-    public void reportErrorAndExit(String... error){
+    public void reportErrorAndExitLater(String... error){
         if (hasExternalIOProcessor){
             try{
                 externalIOEngine.reportError(error);
@@ -142,7 +142,7 @@ public class BeamIO implements InnerIOModule, RemoteControlModule, InnerControlM
         }    
     }
     @Override
-    public void reportExceptionAndExit(Exception e, String... description){
+    public void reportExceptionAndExitLater(Exception e, String... description){
         if (hasExternalIOProcessor){
             try {
                 externalIOEngine.reportException(e, description);
@@ -187,7 +187,7 @@ public class BeamIO implements InnerIOModule, RemoteControlModule, InnerControlM
     }
     
     private void nativeReportError(boolean critical, String[] error){
-        gui.showMessage(error);
+        gui.showError(error);
         if (critical){
             gui.exitAfterAllWindowsClosed();
         }
