@@ -6,9 +6,11 @@
 package com.drs.beam.server.modules.data;
 
 import com.drs.beam.server.modules.Module;
+import com.drs.beam.server.modules.data.base.DataBase;
 import com.drs.beam.server.modules.data.dao.commands.CommandsDao;
 import com.drs.beam.server.modules.data.dao.locations.LocationsDao;
 import com.drs.beam.server.modules.data.dao.tasks.TasksDao;
+import com.drs.beam.server.modules.io.InnerIOModule;
 
 /**
  *
@@ -21,6 +23,21 @@ public interface DataManagerModule extends Module {
     CommandsDao getCommandsDao(); 
     
     static String getModuleName(){
-        return "data";
+        return "Data Manager Module";
+    }
+    
+    static DataManagerModule buildModule(InnerIOModule ioModule){        
+        DataBaseInitializer initializer = new DataBaseInitializer(ioModule);
+        DataBaseModel dataModel = new DataBaseModel();
+        DataBaseVerifier verifier = new DataBaseVerifier(ioModule, initializer, dataModel);
+        DataBaseProvider provider = new DataBaseProvider(ioModule);
+        
+        DataBase dataBase = provider.getDataBase();
+        verifier.verifyDataBase(dataBase);
+        
+        DaoProvider daoProvider = new DaoProvider(ioModule, dataBase);
+        
+        DataManagerModule dataModule = new DataManager(dataBase, daoProvider);
+        return dataModule;
     }
 }

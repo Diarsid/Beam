@@ -9,46 +9,29 @@ package com.drs.beam.server.modules;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.drs.beam.server.modules.data.DataManager;
 import com.drs.beam.server.modules.data.DataManagerModule;
-import com.drs.beam.server.modules.executor.Executor;
 import com.drs.beam.server.modules.executor.ExecutorModule;
 import com.drs.beam.server.modules.io.BeamIO;
 import com.drs.beam.server.modules.io.InnerControlModule;
 import com.drs.beam.server.modules.io.InnerIOModule;
 import com.drs.beam.server.modules.io.RemoteControlModule;
-import com.drs.beam.server.modules.tasks.TaskManager;
 import com.drs.beam.server.modules.tasks.TaskManagerModule;
 
 /**
  *
  * @author Diarsid
  */
-public class Modules {
+public class ModulesContainer {
 // ________________________________________________________________________________________
 //                                       Fields                                            
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
     
-    private static final Map<String, Module> modules = new HashMap<>();
+    private final Map<String, Module> modules = new HashMap<>();
 
 // ________________________________________________________________________________________
 //                                       Methods                                           
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    
-    /**
-     * Method is called by Module implementation class during new module initialization 
-     * process. New Module instance will be initialized by appropriate Module implementation 
-     * class and saved in Modules. This Module instance can be retrieved later by calling 
-     * corresponding static get method.
-     *
-     * @param name      Module`s name. Stored in and can be retrieved from Module implementation
-     *                  class by calling static getModuleName() method.
-     * @param module    Module instance initialized by Module implementation class.
-     */
-    public static void registerModule(String name, Module module){
-        modules.put(name, module);
-    }
-    
+        
     // Methods for proper initialization of appropriate modules ===========================
     
     /**
@@ -56,16 +39,23 @@ public class Modules {
      * InnerControlModule and InnerIoModule.
      * IoModule does not need any other modules.
      */
-    public static void initIoModule(){
-        BeamIO.initAndRegister();
+    public void initIoModule(){
+        BeamIO io = new BeamIO();
+        this.modules.put(RemoteControlModule.getModuleName(), io);
+        this.modules.put(InnerIOModule.getModuleName(), io);
+        this.modules.put(InnerControlModule.getModuleName(), io);
     }
     
     /**
      * Initializes and registers DataModule which is responsible for interaction with data base.
      * Requires InnerIoModule.
      */
-    public static void initDataModule(){
-        DataManager.initAndRegister(Modules.getInnerIOModule());
+    public void initDataModule(){
+        InnerIOModule ioModule = this.getInnerIOModule();
+        
+        DataManagerModule dataModule = DataManagerModule.buildModule(ioModule);
+        
+        this.modules.put(DataManagerModule.getModuleName(), dataModule);
     }
     
     /**
@@ -73,8 +63,13 @@ public class Modules {
      * and calendar events.
      * Requires InnerIoModule and DataModule.
      */
-    public static void initTaskManagerModule(){
-        TaskManager.initAndRegister(Modules.getInnerIOModule(), Modules.getDataModule());
+    public void initTaskManagerModule(){
+        InnerIOModule ioModule = this.getInnerIOModule();
+        DataManagerModule dataModule = this.getDataModule();
+        
+        TaskManagerModule taskModule = TaskManagerModule.buildModule(ioModule, dataModule);
+        
+        this.modules.put(TaskManagerModule.getModuleName(), taskModule);        
     }
     
     /**
@@ -82,57 +77,70 @@ public class Modules {
      * and interacts with underlying operation system for opening files and directories.
      * Requires InnerIoModule and DataModule.
      */
-    public static void initExecutorModule(){        
-        Executor.initAndRegister(Modules.getInnerIOModule(), Modules.getDataModule());
+    public void initExecutorModule(){       
+        InnerIOModule ioModule = this.getInnerIOModule();
+        DataManagerModule dataModule = this.getDataModule();
+        
+        ExecutorModule executorModule = ExecutorModule.buildModule(ioModule, dataModule);
+        
+        this.modules.put(ExecutorModule.getModuleName(), executorModule);
     }
     
     // Methods for obtaining modules ======================================================
+    
+    private Module getModule(String moduleName){
+        if (modules.containsKey(moduleName)){
+            return modules.get(moduleName);
+        } else {            
+            throw new ModuleInitializationOrderException();
+        }
+    }
     
     /** 
      * @return Returns InnerIoModule instance that has been properly initialized and is 
      * ready to work.
      */
-    public static InnerIOModule getInnerIOModule(){
-        return (InnerIOModule) modules.get(InnerIOModule.getModuleName());
+    public InnerIOModule getInnerIOModule(){
+        return (InnerIOModule) this.getModule(InnerIOModule.getModuleName());        
     }
     
     /**
      * @return Returns RemoteControlModule instance that has been properly initialized and is 
      * ready to work.
      */
-    public static RemoteControlModule getRemoteControlModule(){
-        return (RemoteControlModule) modules.get(RemoteControlModule.getModuleName());
+    public RemoteControlModule getRemoteControlModule(){
+        return (RemoteControlModule) this.getModule(RemoteControlModule.getModuleName());
     }
     
     /**
      * @return Returns InnerControlModule instance that has been properly initialized and is 
      * ready to work.
      */    
-    public static InnerControlModule getInnerControlModule(){
-        return (InnerControlModule) modules.get(InnerControlModule.getModuleName());
+    public InnerControlModule getInnerControlModule(){
+        return (InnerControlModule) this.getModule(InnerControlModule.getModuleName());   
     }
     
     /**
      * @return Returns DataModule instance that has been properly initialized and is 
      * ready to work.
      */
-    public static DataManagerModule getDataModule(){
-        return (DataManagerModule) modules.get(DataManagerModule.getModuleName());
+    public DataManagerModule getDataModule(){
+        return (DataManagerModule) this.getModule(DataManagerModule.getModuleName());   
     }
     
     /**
      * @return Returns ExecutorModule instance that has been properly initialized and is 
      * ready to work.
      */
-    public static ExecutorModule getExecutorModule(){
-        return (ExecutorModule) modules.get(ExecutorModule.getModuleName());
+    public ExecutorModule getExecutorModule(){
+        return (ExecutorModule) this.getModule(ExecutorModule.getModuleName());   
     }
     
     /**
      * @return Returns TasksManagerModule instance that has been properly initialized and is 
      * ready to work.
      */
-    public static TaskManagerModule getTasksManagerModule() {
-        return (TaskManagerModule) modules.get(TaskManagerModule.getModuleName());
-    }
+    public TaskManagerModule getTasksManagerModule() {
+        return (TaskManagerModule) this.getModule(TaskManagerModule.getModuleName());   
+    }   
 }

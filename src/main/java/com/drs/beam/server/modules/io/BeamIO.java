@@ -9,8 +9,8 @@ import java.util.List;
 
 import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.server.entities.task.Task;
-import com.drs.beam.server.modules.Modules;
 import com.drs.beam.server.modules.io.gui.Gui;
+import com.drs.beam.server.modules.io.gui.GuiJavaFX;
 
 /*
  * Central class which is responsible for program`s output.
@@ -24,7 +24,6 @@ public class BeamIO implements InnerIOModule, RemoteControlModule, InnerControlM
 // ________________________________________________________________________________________
 //                                       Fields                                            
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    private static BeamIO beamIO;
     
     private ExternalIOInterface externalIOEngine;    
     private final Gui gui;    
@@ -34,8 +33,8 @@ public class BeamIO implements InnerIOModule, RemoteControlModule, InnerControlM
 // ________________________________________________________________________________________
 //                                     Constructor                                         
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    private BeamIO() {        
-        this.gui = Gui.getGui();
+    public BeamIO() {        
+        this.gui = GuiJavaFX.buildAndLaunchGui();
         this.hasExternalIOProcessor = false;
         this.useExternalShowTaskMethod = false;
     }
@@ -43,16 +42,7 @@ public class BeamIO implements InnerIOModule, RemoteControlModule, InnerControlM
 // ________________________________________________________________________________________
 //                                        Methods                                          
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    
-    public static void initAndRegister(){
-        if (beamIO == null){
-            beamIO = new BeamIO();
-            Modules.registerModule(RemoteControlModule.getModuleName(), beamIO);
-            Modules.registerModule(InnerIOModule.getModuleName(), beamIO);
-            Modules.registerModule(InnerControlModule.getModuleName(), beamIO);
-        }          
-    }
-            
+                
     /*
      * Defines way to show specified Task to user according to whether 
      * external output is available and should program uses that one or not.

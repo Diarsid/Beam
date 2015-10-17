@@ -14,6 +14,6 @@ public interface InnerControlModule {
     void exitAfterAllNotifications();
     
     static String getModuleName(){
-        return "innerControl";
+        return "Inner Control Module";
     }
 }

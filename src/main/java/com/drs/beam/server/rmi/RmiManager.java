@@ -13,13 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.drs.beam.server.modules.ModuleInitializationException;
-import com.drs.beam.server.modules.Modules;
-import com.drs.beam.server.modules.executor.ExecutorModule;
-import com.drs.beam.server.modules.io.RemoteControlModule;
-import com.drs.beam.server.modules.tasks.TaskManagerModule;
-import com.drs.beam.server.rmi.adapters.RmiExecutorAdapter;
-import com.drs.beam.server.rmi.adapters.RmiRemoteControlAdapter;
-import com.drs.beam.server.rmi.adapters.RmiTaskManagerAdapter;
+import com.drs.beam.server.modules.io.InnerIOModule;
 import com.drs.beam.server.rmi.interfaces.RmiExecutorInterface;
 import com.drs.beam.server.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.server.rmi.interfaces.RmiTaskManagerInterface;
@@ -33,51 +27,38 @@ import com.drs.beam.util.config.ConfigParam;
 public class RmiManager {
     // Fields =============================================================================
     
-    private static RmiRemoteControlInterface access;
-    private static RmiExecutorInterface executor;
-    private static RmiTaskManagerInterface tasks;
+    private final InnerIOModule ioEngine;
     
-    private static boolean initialized = false;
+    public RmiManager(InnerIOModule ioEngine){
+        this.ioEngine = ioEngine;
+    }
     
     // Methods ============================================================================
     
-    public static void exportModules(
-            RemoteControlModule accessModule, 
-            ExecutorModule executorModule, 
-            TaskManagerModule tasksModule) {
+    public void exportInterfaces(
+            RmiRemoteControlInterface rmiRemoteControl, 
+            RmiExecutorInterface rmiExecutor, 
+            RmiTaskManagerInterface rmiTaskManager){
         
-        if (! initialized){
-            access = new RmiRemoteControlAdapter(accessModule);
-            executor = new RmiExecutorAdapter(executorModule);
-            tasks = new RmiTaskManagerAdapter(tasksModule);
-            
-            initialized = true;
-            
-            export();
-        }        
-    }
-    
-    private static void export(){
         if (System.getSecurityManager()==null)
             System.setSecurityManager(new SecurityManager());
         try{            
             int organizerPort = Integer.parseInt(ConfigContainer.getParam(ConfigParam.ORGANIZER_PORT));
             Registry registry = LocateRegistry.createRegistry(organizerPort);
-            RmiRemoteControlInterface orgIOStub =
-                    (RmiRemoteControlInterface) UnicastRemoteObject.exportObject(access, organizerPort);
+            RmiRemoteControlInterface orgIOStub = (RmiRemoteControlInterface) UnicastRemoteObject.exportObject(rmiRemoteControl, organizerPort);
 
             RmiExecutorInterface osExecutorStub =
-                    (RmiExecutorInterface) UnicastRemoteObject.exportObject(executor, organizerPort);
+                    (RmiExecutorInterface) UnicastRemoteObject.exportObject(rmiExecutor, organizerPort);
 
             RmiTaskManagerInterface TaskManagerStub =
-                    (RmiTaskManagerInterface) UnicastRemoteObject.exportObject(tasks, organizerPort);
+                    (RmiTaskManagerInterface) UnicastRemoteObject.exportObject(rmiTaskManager, organizerPort);
 
             registry.bind(ConfigContainer.getParam(ConfigParam.ORG_IO_NAME), orgIOStub);
             registry.bind(ConfigContainer.getParam(ConfigParam.EXECUTOR_NAME), osExecutorStub);
             registry.bind(ConfigContainer.getParam(ConfigParam.TASK_MANAGER_NAME), TaskManagerStub);
 
         }catch (AlreadyBoundException|RemoteException e){            
-            Modules.getInnerIOModule().reportExceptionAndExitLater(e, 
+            ioEngine.reportExceptionAndExitLater(e, 
                     "Export Beam.Server modules failure.",
                     "Program will be closed.");
             throw new ModuleInitializationException();

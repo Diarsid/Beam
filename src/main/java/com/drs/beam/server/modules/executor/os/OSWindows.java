@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.drs.beam.server.entities.location.Location;
+import com.drs.beam.server.modules.ModuleInitializationException;
 import com.drs.beam.server.modules.io.InnerIOModule;
 import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
@@ -31,11 +32,17 @@ public class OSWindows implements OS {
 
     // Constructors =======================================================================
     public OSWindows(InnerIOModule io) {
+        this.ioEngine = io;
+        if(!Desktop.isDesktopSupported()){
+            this.ioEngine.reportErrorAndExitLater(
+                    "java.awt.Desktop is not supported.",
+                    "Program will be closed.");
+            throw new ModuleInitializationException();
+        }
         this.PROGRAMS_LOCATION = ConfigContainer.getParam(ConfigParam.PROGRAMS_LOCATION)
                 .replace("\\", "/")
                 .toLowerCase()
-                .intern();
-        this.ioEngine = io;
+                .intern();        
         this.desktop = Desktop.getDesktop();
         this.runtime = Runtime.getRuntime();
     }
@@ -43,15 +50,17 @@ public class OSWindows implements OS {
     // Methods ============================================================================
     @Override
     public void openLocation(Location location) {
-        this.runDesktopTask(location.getPath());
-        this.ioEngine.reportMessage("opening...");
+        if (this.checkIfDirectoryExists(location.getPath())){
+            this.runDesktopTask(location.getPath());
+            this.ioEngine.reportMessage("opening...");
+        }     
     }
 
     @Override
     public void openFileInLocation(String file, Location location) {
         // targetName pattern: myPr / myFil
         // corrected target name: myProject / myFile.ext or "" if not exists
-        file = this.checkNameInDirectory(file, location.getPath(), "File not found.", "Location not found.");
+        file = this.checkNameInDirectory(file, location.getPath(), "File not found.", "Location`s path is invalid.");
 
         if (file.length() > 0) {
             String path = location.getPath() + "\\" + file;
@@ -62,7 +71,7 @@ public class OSWindows implements OS {
 
     @Override
     public void openFileInLocationWithProgram(String file, Location location, String program) {
-        file = this.checkNameInDirectory(file, location.getPath(), "File not found.", "Location not found.");
+        file = this.checkNameInDirectory(file, location.getPath(), "File not found.", "Location`s path is invalid.");
         program = this.checkNameInDirectory(program, PROGRAMS_LOCATION,
                 "Program not found.", "Program`s location not found.");
 

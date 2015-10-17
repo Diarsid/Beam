@@ -37,8 +37,4 @@ public interface Gui{
     public void showError(String[] error);
     
     public void exitAfterAllWindowsClosed();
-        
-    public static Gui getGui(){
-	return GuiJavaFX.getJavaFXGui();
-    }
 }

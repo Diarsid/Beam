@@ -23,7 +23,6 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import com.drs.beam.server.modules.io.gui.Gui;
 import com.drs.beam.server.modules.io.gui.GuiWindowsController;
 
 /**
@@ -82,7 +81,7 @@ public class PopupWindow implements Runnable{
         VBox messageTextBox = new VBox();
         messageTextBox.setAlignment(Pos.TOP_LEFT);
         
-        Label picture = new Label("", new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+this.mainImage))); 
+        Label picture = new Label("", new ImageView(new Image("file:"+this.mainImage))); 
         
         Label messageLabel = new Label(); 
         messageLabel.setFont(new Font(14.0));
@@ -110,7 +109,7 @@ public class PopupWindow implements Runnable{
         Scene scene = new Scene(mainVBox);
         
         stage.setTitle(this.title);
-        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+this.iconImage));
+        stage.getIcons().add(new Image("file:"+this.iconImage));
         stage.setScene(scene);
         stage.sizeToScene();
         stage.setResizable(false);

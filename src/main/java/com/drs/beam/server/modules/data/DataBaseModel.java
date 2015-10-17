@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author Diarsid
  */
-public class DataBaseModel {
+class DataBaseModel {
     // Fields =============================================================================
     private final Map<String, TableInfo> tables;
     // Constructors =======================================================================

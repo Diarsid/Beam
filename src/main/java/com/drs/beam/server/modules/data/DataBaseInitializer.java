@@ -17,13 +17,13 @@ import com.drs.beam.server.modules.io.InnerIOModule;
  *
  * @author Diarsid
  */
-public class DataBaseInitializer {    
+class DataBaseInitializer {    
     // Fields =============================================================================  
     private final InnerIOModule ioEngine;
     
     
     // Constructors =======================================================================
-    public DataBaseInitializer(InnerIOModule io) {
+    DataBaseInitializer(InnerIOModule io) {
         this.ioEngine = io;
     }
 

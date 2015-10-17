@@ -19,7 +19,7 @@ import com.drs.beam.server.modules.io.InnerIOModule;
  *
  * @author Diarsid
  */
-public class CommandsHandlerWorker implements CommandsHandler{
+class CommandsHandlerWorker implements CommandsHandler{
     // Fields =============================================================================
     
     private final InnerIOModule ioEngine;
@@ -27,7 +27,7 @@ public class CommandsHandlerWorker implements CommandsHandler{
 
     // Constructors =======================================================================
 
-    public CommandsHandlerWorker(CommandsDao dao, InnerIOModule io) {
+    CommandsHandlerWorker(CommandsDao dao, InnerIOModule io) {
         this.ioEngine = io;
         this.dao = dao;
     }
@@ -105,7 +105,7 @@ public class CommandsHandlerWorker implements CommandsHandler{
     private StoredExecutorCommand resolveMultipleCommands(List<StoredExecutorCommand> commands){        
 
         if (commands.size() < 1){
-            this.ioEngine.reportInfo("Couldn`t find such command.");
+            this.ioEngine.reportMessage("Couldn`t find such command.");
             return null;
         } else if (commands.size() == 1){
             return commands.get(0);

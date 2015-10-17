@@ -4,12 +4,6 @@
  */
 package com.drs.beam.server.modules.io.gui.javafx;
 
-import com.drs.beam.server.modules.io.gui.Gui;
-
-import javafx.stage.Stage;
-
-import com.drs.beam.server.entities.task.Task;
-
 import java.util.StringJoiner;
 
 import javafx.event.ActionEvent;
@@ -24,6 +18,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+import com.drs.beam.server.entities.task.Task;
+import com.drs.beam.server.modules.io.gui.GuiWindowsController;
 
 /**
  *
@@ -32,16 +31,31 @@ import javafx.scene.text.Font;
 public class TaskWindow implements Runnable{
     // Fields =============================================================================
     private final Task task;
+    private final String mainImage;
+    private final String iconImage;
+    private final GuiWindowsController controller;
     
     // Constructors =======================================================================
-    public TaskWindow(Task task){    
+    public TaskWindow(Task task, String mainImage, String iconImage, GuiWindowsController controller){    
         this.task = task;
+        this.mainImage = mainImage;
+        this.iconImage = iconImage;
+        this.controller = controller;
     }
 
     // Methods ============================================================================
     @Override
     public void run() {
         Stage stage = new Stage();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                stage.close();
+                controller.minusOneActiveWindow();
+            }
+        });
+        stage.setAlwaysOnTop(true);
+        
         VBox mainVBox = new VBox(15); 
         mainVBox.setPadding(new Insets(15, 15, 15, 15));
         mainVBox.setAlignment(Pos.TOP_CENTER);
@@ -53,7 +67,7 @@ public class TaskWindow implements Runnable{
         VBox taskTextBox = new VBox();
         taskTextBox.setAlignment(Pos.TOP_LEFT);        
         
-        ImageView taskPic = new ImageView(new Image("file:"+Gui.IMAGES_LOCATION+"task.jpeg"));
+        ImageView taskPic = new ImageView(new Image("file:"+this.mainImage));
         
         Label picture = new Label("", taskPic);        
         
@@ -81,6 +95,7 @@ public class TaskWindow implements Runnable{
             @Override
             public void handle(ActionEvent event) {
                 stage.close();
+                controller.minusOneActiveWindow();
             }
         });
         
@@ -89,7 +104,7 @@ public class TaskWindow implements Runnable{
         Scene scene = new Scene(mainVBox);
         
         stage.setTitle("Task");
-        stage.getIcons().add(new Image("file:"+Gui.IMAGES_LOCATION+"task_ico.jpeg"));
+        stage.getIcons().add(new Image("file:"+this.iconImage));
         stage.setScene(scene);
         stage.sizeToScene();
         stage.setResizable(false);

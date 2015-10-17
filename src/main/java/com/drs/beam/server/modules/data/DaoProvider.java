@@ -29,7 +29,8 @@ class DaoProvider {
     
     // Constructors =======================================================================
     
-    DaoProvider(InnerIOModule io, String dbName) {
+    DaoProvider(InnerIOModule io, DataBase dataBase) {
+        String dbName = dataBase.getName();
         this.ioEngine = io;
         this.tasksDaoClassName = TasksDao.class.getCanonicalName() + dbName;
         this.locationsDaoClassName = LocationsDao.class.getCanonicalName() + dbName;

@@ -5,8 +5,8 @@
  */
 package com.drs.beam.server.modules.io;
 
-import com.drs.beam.server.modules.Module;
 import com.drs.beam.external.ExternalIOInterface;
+import com.drs.beam.server.modules.Module;
 
 /**
  *
@@ -22,6 +22,6 @@ public interface RemoteControlModule extends Module{
     void setDefaultIO();    
     
     static String getModuleName(){
-        return "access";
+        return "Remote Control Module";
     }
 }

@@ -5,9 +5,15 @@
 package com.drs.beam.server;
 
 import com.drs.beam.server.modules.ModuleInitializationException;
-import com.drs.beam.server.modules.Modules;
-import com.drs.beam.server.modules.io.InnerControlModule;
+import com.drs.beam.server.modules.ModuleInitializationOrderException;
+import com.drs.beam.server.modules.ModulesContainer;
 import com.drs.beam.server.rmi.RmiManager;
+import com.drs.beam.server.rmi.adapters.RmiExecutorAdapter;
+import com.drs.beam.server.rmi.adapters.RmiRemoteControlAdapter;
+import com.drs.beam.server.rmi.adapters.RmiTaskManagerAdapter;
+import com.drs.beam.server.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.server.rmi.interfaces.RmiRemoteControlInterface;
+import com.drs.beam.server.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.util.config.ConfigContainer;
 
 /*
@@ -23,7 +29,11 @@ import com.drs.beam.util.config.ConfigContainer;
 public class Beam {
     // Fields =============================================================================
     private static final String BEAM_CONFIG_FILE_PATH = "./config/config.xml";
-    private static InnerControlModule innerControl;
+    private static final ModulesContainer modules = new ModulesContainer();
+    
+    private static RmiRemoteControlInterface rmiRemoteControlInterface;
+    private static RmiExecutorInterface rmiExecutorInterface;
+    private static RmiTaskManagerInterface rmiTaskManagerInterface;
     
     // Constructor ========================================================================
     Beam() {
@@ -35,21 +45,19 @@ public class Beam {
     public static void main(String[] args) {        
         try {
             ConfigContainer.parseStartArgumentsIntoConfiguration(args);
-            Modules.initIoModule();
-            Beam.innerControl = Modules.getInnerControlModule();
-            Modules.initDataModule();
-            Modules.initTaskManagerModule();
-            Modules.initExecutorModule();
-            RmiManager.exportModules(
-                    Modules.getRemoteControlModule(), 
-                    Modules.getExecutorModule(), 
-                    Modules.getTasksManagerModule());
+            modules.initIoModule();
+            modules.initDataModule();
+            modules.initTaskManagerModule();
+            modules.initExecutorModule();
+            Beam.initRmiInterfaces();
+            Beam.exportRmiInterfaces();
             ConfigContainer.cancel();
+        } catch(ModuleInitializationOrderException e){
+            e.printStackTrace();
+            Beam.exitServerNow();
         } catch (ModuleInitializationException e){
             Beam.exitServerLater();
-        } catch (BeamFailureException e){
-            Beam.exitServerNow();
-        } 
+        }
     }
     
     public static String getConfigFilePath(){
@@ -61,6 +69,20 @@ public class Beam {
     }
     
     public static void exitServerLater(){
-        Beam.innerControl.exitAfterAllNotifications();
+        modules.getInnerControlModule().exitAfterAllNotifications();
+    }
+    
+    private static void initRmiInterfaces(){
+        rmiRemoteControlInterface = new RmiRemoteControlAdapter(modules.getRemoteControlModule());
+        rmiExecutorInterface = new RmiExecutorAdapter(modules.getExecutorModule());
+        rmiTaskManagerInterface = new RmiTaskManagerAdapter(modules.getTasksManagerModule());
+    }
+    
+    private static void exportRmiInterfaces(){
+        RmiManager rmiManager = new RmiManager(modules.getInnerIOModule());
+        rmiManager.exportInterfaces(
+                    rmiRemoteControlInterface, 
+                    rmiExecutorInterface, 
+                    rmiTaskManagerInterface);
     }
 }

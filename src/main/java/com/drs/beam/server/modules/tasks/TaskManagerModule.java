@@ -5,11 +5,12 @@
  */
 package com.drs.beam.server.modules.tasks;
 
-import com.drs.beam.server.entities.task.Task;
-
 import java.util.List;
 
+import com.drs.beam.server.entities.task.Task;
 import com.drs.beam.server.modules.Module;
+import com.drs.beam.server.modules.data.DataManagerModule;
+import com.drs.beam.server.modules.io.InnerIOModule;
 
 /**
  *
@@ -31,6 +32,10 @@ public interface TaskManagerModule extends Module {
     boolean  removeAllPastTasks();
     
     static String getModuleName(){
-        return "tasks";
+        return "Task Manager Module";
+    }
+    
+    static TaskManagerModule buildModule(InnerIOModule ioModule, DataManagerModule dataModule){
+        return new TaskManager(ioModule, dataModule);
     }
 }

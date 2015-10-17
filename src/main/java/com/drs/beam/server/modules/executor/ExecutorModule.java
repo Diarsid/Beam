@@ -5,13 +5,17 @@
  */
 package com.drs.beam.server.modules.executor;
 
-import com.drs.beam.server.entities.location.Location;
-import com.drs.beam.server.entities.command.StoredExecutorCommand;
-
 import java.util.List;
-import java.util.Map;
 
+import com.drs.beam.server.entities.command.StoredExecutorCommand;
+import com.drs.beam.server.entities.location.Location;
 import com.drs.beam.server.modules.Module;
+import com.drs.beam.server.modules.data.DataManagerModule;
+import com.drs.beam.server.modules.executor.handlers.CommandsHandler;
+import com.drs.beam.server.modules.executor.handlers.HandlersBuilder;
+import com.drs.beam.server.modules.executor.handlers.LocationsHandler;
+import com.drs.beam.server.modules.executor.os.OS;
+import com.drs.beam.server.modules.io.InnerIOModule;
 
 /**
  *
@@ -40,6 +44,15 @@ public interface ExecutorModule extends Module {
     boolean deleteLocation(String locationName);
     
     static String getModuleName(){
-        return "exec";
+        return "Executor Module";
+    }
+    
+    static ExecutorModule buildModule(InnerIOModule ioModule, DataManagerModule dataModule){
+        HandlersBuilder handlersBuilder = new HandlersBuilder();
+        CommandsHandler commandsHandler = handlersBuilder.buildCommandsHandler(ioModule, dataModule);
+        LocationsHandler locationsHandler = handlersBuilder.buildLocationsHandler(ioModule, dataModule);
+        OS os = OS.getOS(ioModule);
+        
+        return new Executor(ioModule, locationsHandler, commandsHandler, os);
     }
 }

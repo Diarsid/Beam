@@ -21,7 +21,7 @@ import com.drs.beam.server.modules.io.InnerIOModule;
  *
  * @author Diarsid
  */
-public class DataBaseVerifier {
+class DataBaseVerifier {
     // Fields =============================================================================
     private final DataBaseInitializer initializer;
     private final InnerIOModule ioEngine;
@@ -29,10 +29,10 @@ public class DataBaseVerifier {
     
     // Constructors =======================================================================
 
-    public DataBaseVerifier(InnerIOModule io) {
+    DataBaseVerifier(InnerIOModule io, DataBaseInitializer init, DataBaseModel model) {
         this.ioEngine = io;
-        this.initializer = new DataBaseInitializer(this.ioEngine);
-        this.dataModel = new DataBaseModel();
+        this.initializer = init;
+        this.dataModel = model;
     }    
     
     // Methods ============================================================================

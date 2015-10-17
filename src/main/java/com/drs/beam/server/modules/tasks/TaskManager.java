@@ -16,7 +16,6 @@ import com.drs.beam.server.entities.task.util.TaskVerifier;
 import com.drs.beam.server.entities.task.util.exceptions.TaskTimeFormatInvalidException;
 import com.drs.beam.server.entities.task.util.exceptions.TaskTimeInvalidException;
 import com.drs.beam.server.modules.ModuleInitializationException;
-import com.drs.beam.server.modules.Modules;
 import com.drs.beam.server.modules.data.DataManagerModule;
 import com.drs.beam.server.modules.data.dao.tasks.TasksDao;
 import com.drs.beam.server.modules.io.InnerIOModule;
@@ -32,7 +31,6 @@ import com.drs.beam.server.modules.io.InnerIOModule;
  */
 public class TaskManager implements TaskManagerModule {
     // Fields =============================================================================
-    private static TaskManager taskManager;    
     
     private final InnerIOModule ioEngine;
     private final TasksDao tasksDao;
@@ -47,24 +45,17 @@ public class TaskManager implements TaskManagerModule {
     private LocalDateTime firstTaskTime;
     
     // Constructor ========================================================================
-    private TaskManager(InnerIOModule io, DataManagerModule dataManager){
+    TaskManager(InnerIOModule io, DataManagerModule dataManager){
         this.ioEngine = io;
         this.tasksDao = dataManager.getTasksDao();
         this.lock = new Object();
         this.taskVerifier = new TaskVerifier();
         this.formatter = new TaskTimeFormatter();
         this.firstTaskTime = null;
+        this.beginWork();
     }
 
-    // Methods ============================================================================
-    
-    public static void initAndRegister(InnerIOModule io, DataManagerModule dataManager){
-        if (taskManager == null){
-            taskManager = new TaskManager(io, dataManager);
-            taskManager.beginWork();
-            Modules.registerModule(TaskManagerModule.getModuleName(), taskManager);
-        }
-    }
+    // Methods ============================================================================    
          
     LocalDateTime getFirstTaskTime(){
         return this.firstTaskTime;
@@ -74,16 +65,9 @@ public class TaskManager implements TaskManagerModule {
         return (this.firstTaskTime != null);
     }
     
-    private void refreshFirstTaskTime(){
+    private void refreshFirstTaskTime() throws SQLException{
         synchronized (this.lock){
-            try {
-                this.firstTaskTime = this.tasksDao.getFirstTaskTime();
-            } catch (SQLException e) {
-                this.ioEngine.reportExceptionAndExitLater(e, 
-                    "SQLException: get first task time.",
-                    "Program will be closed.");
-                throw new ModuleInitializationException();
-            }
+            this.firstTaskTime = this.tasksDao.getFirstTaskTime();
         }                
     }
         
@@ -95,6 +79,7 @@ public class TaskManager implements TaskManagerModule {
         List<Task> tasks;
         try {
             tasks = this.tasksDao.extractExpiredTasks(LocalDateTime.now());
+            this.refreshFirstTaskTime();
         } catch (SQLException e){
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: extract expired tasks.", 
@@ -103,8 +88,7 @@ public class TaskManager implements TaskManagerModule {
         }        
         for(Task task : tasks){
             this.performTask(task);
-        }
-        this.refreshFirstTaskTime();
+        }        
         (new Thread(new Timer(this), "Timer")).start();                  
     }
     
@@ -132,13 +116,13 @@ public class TaskManager implements TaskManagerModule {
         List<Task> tasks;
         try {
             tasks = this.tasksDao.extractFirstTasks();
+            this.refreshFirstTaskTime();
         } catch (SQLException e){
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: extract firs tasks.", 
                     "Program will be closed.");
             throw new ModuleInitializationException();
-        }
-        this.refreshFirstTaskTime();
+        }        
         for (Task task : tasks){
             this.performTask(task);
         }        

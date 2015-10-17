@@ -74,6 +74,6 @@ class DataBaseProvider {
             Thread.sleep(1000);
         } catch(InterruptedException ie){
         }
-        this.ioEngine.reportExceptionAndExitLater(e, problemDescription, "Programm will be closed.");
+        this.ioEngine.reportExceptionAndExitLater(e, problemDescription, "Program will be closed.");
     }
 }

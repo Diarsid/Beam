@@ -19,14 +19,14 @@ import com.drs.beam.server.modules.io.InnerIOModule;
  *
  * @author Diarsid
  */
-public class LocationsHandlerWorker implements LocationsHandler{
+class LocationsHandlerWorker implements LocationsHandler{
     // Fields =============================================================================
     
     private final InnerIOModule ioEngine;
     private final LocationsDao dao;
     // Constructors =======================================================================
 
-    public LocationsHandlerWorker(LocationsDao dao, InnerIOModule io) {
+    LocationsHandlerWorker(LocationsDao dao, InnerIOModule io) {
         this.ioEngine = io;
         this.dao = dao;
     }

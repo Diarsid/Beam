@@ -34,6 +34,6 @@ public interface InnerIOModule extends Module{
     int  resolveVariantsWithExternalIO(String message, List<String> variants);
     
     static String getModuleName(){
-        return "io";
+        return "Inner IO Module";
     }
 }

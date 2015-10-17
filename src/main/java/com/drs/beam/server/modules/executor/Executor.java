@@ -11,18 +11,13 @@ import java.util.List;
 
 import com.drs.beam.server.entities.command.StoredExecutorCommand;
 import com.drs.beam.server.entities.location.Location;
-import com.drs.beam.server.modules.Modules;
-import com.drs.beam.server.modules.data.DataManagerModule;
 import com.drs.beam.server.modules.executor.handlers.CommandsHandler;
-import com.drs.beam.server.modules.executor.handlers.CommandsHandlerWorker;
 import com.drs.beam.server.modules.executor.handlers.LocationsHandler;
-import com.drs.beam.server.modules.executor.handlers.LocationsHandlerWorker;
 import com.drs.beam.server.modules.executor.os.OS;
 import com.drs.beam.server.modules.io.InnerIOModule;
 
 public class Executor implements ExecutorModule{
     // Fields =============================================================================
-    private static Executor executor;
     
     private final InnerIOModule ioEngine;
     private final OS system;
@@ -30,21 +25,15 @@ public class Executor implements ExecutorModule{
     private final CommandsHandler commandsHandler;
     
     // Constructors =======================================================================
-    private Executor(InnerIOModule io, DataManagerModule data) {
+    public Executor(InnerIOModule io,
+            LocationsHandler locationsHandler, CommandsHandler commandsHandler, OS os) {
         this.ioEngine = io;
-        this.locationsHandler = new LocationsHandlerWorker(data.getLocationsDao(), this.ioEngine);
-        this.commandsHandler = new CommandsHandlerWorker(data.getCommandsDao(), this.ioEngine);
-        this.system = OS.getOS(io);
+        this.locationsHandler = locationsHandler;
+        this.commandsHandler = commandsHandler;
+        this.system = os;
     }
 
     // Methods ============================================================================
-    
-    public static void initAndRegister(InnerIOModule innerIo, DataManagerModule data){
-        if (executor == null){
-            executor = new Executor(innerIo, data);
-            Modules.registerModule(ExecutorModule.getModuleName(), executor);
-        }
-    }
     
     @Override
     public void open(List<String> commandParams){

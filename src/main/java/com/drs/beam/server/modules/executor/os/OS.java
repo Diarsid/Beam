@@ -7,6 +7,7 @@ package com.drs.beam.server.modules.executor.os;
 import java.util.List;
 
 import com.drs.beam.server.entities.location.Location;
+import com.drs.beam.server.modules.ModuleInitializationException;
 import com.drs.beam.server.modules.io.InnerIOModule;
 
 /**
@@ -33,16 +34,16 @@ public interface OS {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program
             io.reportErrorAndExitLater(
-                    "Program does not have OSUnix implementation yet.",
-                    "Programm will be closed.");
-            return null;
+                    "Program does not have OS *nix implementation yet.",
+                    "Program will be closed.");
+            throw new ModuleInitializationException();
         } else {
             // Some error occured or there is unknown OS.
             // Terminates program
             io.reportErrorAndExitLater(
                     "Unsupported or unknown OS.", 
-                    "Programm will be closed.");
-            return null;
+                    "Program will be closed.");
+            throw new ModuleInitializationException();
         }     
     }
 }
