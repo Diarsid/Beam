@@ -15,12 +15,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.drs.beam.external.ExternalIOInterface;
-import com.drs.beam.server.entities.location.Location;
-import com.drs.beam.server.entities.command.StoredExecutorCommand;
-import com.drs.beam.server.entities.task.Task;
-import com.drs.beam.server.rmi.interfaces.RmiRemoteControlInterface;
-import com.drs.beam.server.rmi.interfaces.RmiExecutorInterface;
-import com.drs.beam.server.rmi.interfaces.RmiTaskManagerInterface;
+import com.drs.beam.core.entities.Location;
+import com.drs.beam.core.entities.StoredExecutorCommand;
+import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
+import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.util.config.ConfigContainer;
 
 /*

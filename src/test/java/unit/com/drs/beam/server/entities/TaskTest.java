@@ -9,7 +9,7 @@ package unit.com.drs.beam.server.entities;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import com.drs.beam.server.entities.task.Task;
+import com.drs.beam.core.entities.Task;
 
 import org.junit.Before;
 import org.junit.Test;

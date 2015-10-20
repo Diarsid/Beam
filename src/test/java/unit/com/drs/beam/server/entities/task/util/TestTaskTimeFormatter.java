@@ -9,9 +9,9 @@ package unit.com.drs.beam.server.entities.task.util;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
-import com.drs.beam.server.entities.task.util.TaskTimeFormatter;
-import com.drs.beam.server.entities.task.util.exceptions.TaskTimeFormatInvalidException;
-import com.drs.beam.server.entities.task.util.exceptions.TaskTimeInvalidException;
+import com.drs.beam.core.entities.util.TaskTimeFormatter;
+import com.drs.beam.core.entities.util.exceptions.TaskTimeFormatInvalidException;
+import com.drs.beam.core.entities.util.exceptions.TaskTimeInvalidException;
 
 import org.junit.Before;
 import org.junit.Test;

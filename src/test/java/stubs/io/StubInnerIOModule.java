@@ -9,8 +9,8 @@ package stubs.io;
 import java.util.List;
 import java.util.Random;
 
-import com.drs.beam.server.entities.task.Task;
-import com.drs.beam.server.modules.io.InnerIOModule;
+import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.InnerIOModule;
 
 /**
  *

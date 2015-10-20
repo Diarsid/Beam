@@ -8,7 +8,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import com.drs.beam.server.entities.task.Task;
+import com.drs.beam.core.entities.Task;
 
 /*
  * Interface describes 

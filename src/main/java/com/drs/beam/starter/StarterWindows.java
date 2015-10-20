@@ -8,7 +8,7 @@ package com.drs.beam.starter;
 import java.io.IOException;
 
 import com.drs.beam.external.sysconsole.Console;
-import com.drs.beam.server.Beam;
+import com.drs.beam.core.Beam;
 import com.drs.beam.util.config.ConfigParam;
 import com.drs.beam.util.config.reader.ConfigReader;
 

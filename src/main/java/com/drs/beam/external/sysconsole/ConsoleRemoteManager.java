@@ -12,9 +12,9 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.drs.beam.external.ExternalIOInterface;
-import com.drs.beam.server.rmi.interfaces.RmiRemoteControlInterface;
-import com.drs.beam.server.rmi.interfaces.RmiExecutorInterface;
-import com.drs.beam.server.rmi.interfaces.RmiTaskManagerInterface;
+import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
+import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
 

@@ -4,7 +4,7 @@
  */
 package com.drs.beam.util.config.reader;
 
-import com.drs.beam.server.Beam;
+import com.drs.beam.core.Beam;
 
 /**
  *
