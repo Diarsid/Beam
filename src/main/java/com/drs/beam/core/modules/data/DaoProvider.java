@@ -6,15 +6,14 @@
 
 package com.drs.beam.core.modules.data;
 
-import com.drs.beam.core.modules.data.base.DataBase;
-
 import java.lang.reflect.Constructor;
 
-import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
+import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.data.base.DataBase;
 import com.drs.beam.core.modules.data.dao.commands.CommandsDao;
 import com.drs.beam.core.modules.data.dao.locations.LocationsDao;
 import com.drs.beam.core.modules.data.dao.tasks.TasksDao;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
 
 /**
  *
@@ -40,40 +39,19 @@ class DaoProvider {
     
     // Methods ============================================================================
     
-    TasksDao createTasksDao(DataBase db){
-        try {
-            Constructor cons = this.createDaoConstructor(this.tasksDaoClassName);
-            return (TasksDao) cons.newInstance(db);
-        } catch (Exception e) {
-            this.ioEngine.reportExceptionAndExitLater(e, 
-                    "DaoProvider: TasksDao instance creation failure.", 
-                    "Programm will be closed.");
-            throw new ModuleInitializationException();
-        }
+    TasksDao createTasksDao(DataBase db){        
+        Constructor cons = this.createDaoConstructor(this.tasksDaoClassName);
+        return (TasksDao) this.getNewInstance(cons, db, "TasksDao");        
     }
     
-    LocationsDao createLocationsDao(DataBase db){
-        try {
-            Constructor cons = this.createDaoConstructor(this.locationsDaoClassName);
-            return (LocationsDao) cons.newInstance(db);
-        } catch (Exception e) {
-            this.ioEngine.reportExceptionAndExitLater(e, 
-                    "DaoProvider: LocationsDao instance creation failure.", 
-                    "Programm will be closed.");
-            throw new ModuleInitializationException();
-        }
+    LocationsDao createLocationsDao(DataBase db){       
+        Constructor cons = this.createDaoConstructor(this.locationsDaoClassName);
+        return (LocationsDao) this.getNewInstance(cons, db, "LocationsDao");        
     }
     
-    CommandsDao createCommandsDao(DataBase db){
-        try {
-            Constructor cons = this.createDaoConstructor(this.commandsDaoClassName);
-            return (CommandsDao) cons.newInstance(db);
-        } catch (Exception e) {
-            this.ioEngine.reportExceptionAndExitLater(e, 
-                    "DaoProvider: CommandsDao instance creation failure.", 
-                    "Programm will be closed.");
-            throw new ModuleInitializationException();
-        }
+    CommandsDao createCommandsDao(DataBase db){        
+        Constructor cons = this.createDaoConstructor(this.commandsDaoClassName);
+        return (CommandsDao) this.getNewInstance(cons, db, "CommandsDao");        
     }   
     
     private Constructor createDaoConstructor(String daoClassName){
@@ -85,12 +63,23 @@ class DaoProvider {
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: Dao implementation class not found by its name.",
                     "Programm will be closed.");
-            return null;
+            throw new ModuleInitializationException();
         } catch (NoSuchMethodException e){
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "DaoProvider: Dao constructor creation failure.", 
                     "Programm will be closed.");
             throw new ModuleInitializationException();
         } 
+    }
+    
+    private Object getNewInstance(Constructor cons, DataBase db, String daoType){
+        try{
+            return cons.newInstance(db);
+        } catch (Exception e) {
+            this.ioEngine.reportExceptionAndExitLater(e, 
+                    "DaoProvider: "+daoType+" instance creation failure.", 
+                    "Programm will be closed.");
+            throw new ModuleInitializationException();
+        }
     }
 }

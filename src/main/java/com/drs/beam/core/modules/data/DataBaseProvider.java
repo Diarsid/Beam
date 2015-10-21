@@ -8,10 +8,10 @@ package com.drs.beam.core.modules.data;
 
 import java.lang.reflect.Constructor;
 
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.InnerIOModule;
 import com.drs.beam.core.modules.data.base.DataBase;
 import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
-import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
 
 /**
@@ -22,10 +22,12 @@ class DataBaseProvider {
     // Fields =============================================================================
     
     private final InnerIOModule ioEngine;
+    private final ConfigModule config;
     
     // Constructors =======================================================================
-    DataBaseProvider(InnerIOModule io){    
+    DataBaseProvider(InnerIOModule io, ConfigModule config){    
         this.ioEngine = io;
+        this.config = config;
     }
 
     // Methods ============================================================================
@@ -36,7 +38,7 @@ class DataBaseProvider {
     
     private void loadDriver(){
         try {
-            Class.forName(ConfigContainer.getParam(ConfigParam.CORE_DB_DRIVER));
+            Class.forName(this.config.getParameter(ConfigParam.CORE_DB_DRIVER));
         } catch (Exception e) {
             // If there is any problem during database driver loading program can not 
             // work further and must be finished.
@@ -47,8 +49,8 @@ class DataBaseProvider {
     
     private DataBase dataBaseInstantiation(){
         try {
-            String concreteDataBaseName = ConfigContainer.getParam(ConfigParam.CORE_DB_NAME);
-            String url = ConfigContainer.getParam(ConfigParam.CORE_DB_URL);
+            String concreteDataBaseName = this.config.getParameter(ConfigParam.CORE_DB_NAME);
+            String url = this.config.getParameter(ConfigParam.CORE_DB_URL);
             String dbImplementationName = 
                     DataBase.class.getCanonicalName() +
                     concreteDataBaseName;

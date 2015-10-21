@@ -5,6 +5,7 @@
  */
 package com.drs.beam.core.modules.data;
 
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.data.base.DataBase;
 import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.InnerIOModule;
@@ -15,11 +16,11 @@ import com.drs.beam.core.modules.InnerIOModule;
  */
 public interface DataManagerModuleBuilder {
     
-    static DataManagerModule buildModule(InnerIOModule ioModule){        
+    static DataManagerModule buildModule(InnerIOModule ioModule, ConfigModule configModule){        
         DataBaseInitializer initializer = new DataBaseInitializer(ioModule);
         DataBaseModel dataModel = new DataBaseModel();
         DataBaseVerifier verifier = new DataBaseVerifier(ioModule, initializer, dataModel);
-        DataBaseProvider provider = new DataBaseProvider(ioModule);
+        DataBaseProvider provider = new DataBaseProvider(ioModule, configModule);
         
         DataBase dataBase = provider.getDataBase();
         verifier.verifyDataBase(dataBase);

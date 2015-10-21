@@ -9,10 +9,12 @@ import java.util.List;
 
 import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.InnerIOModule;
 import com.drs.beam.core.modules.RemoteControlModule;
 import com.drs.beam.core.modules.io.gui.Gui;
 import com.drs.beam.core.modules.io.gui.GuiJavaFX;
+import com.drs.beam.util.config.ConfigParam;
 
 /*
  * Central class which is responsible for program`s output.
@@ -35,8 +37,8 @@ class BeamIO implements InnerIOModule, RemoteControlModule {
 // ________________________________________________________________________________________
 //                                     Constructor                                         
 // ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    BeamIO() {        
-        this.gui = GuiJavaFX.buildAndLaunchGui();
+    BeamIO(ConfigModule configModule) {        
+        this.gui = GuiJavaFX.buildAndLaunchGui(configModule.getParameter(ConfigParam.IMAGES_LOCATION));
         this.hasExternalIOProcessor = false;
         this.useExternalShowTaskMethod = false;
     }

@@ -14,9 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.drs.beam.core.entities.Location;
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.InnerIOModule;
-import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
 
 /**
@@ -33,7 +33,7 @@ public class OSWindows implements OS {
     private final Runtime runtime;
 
     // Constructors =======================================================================
-    public OSWindows(InnerIOModule io) {
+    public OSWindows(InnerIOModule io, ConfigModule config) {
         this.ioEngine = io;
         if(!Desktop.isDesktopSupported()){
             this.ioEngine.reportErrorAndExitLater(
@@ -41,7 +41,7 @@ public class OSWindows implements OS {
                     "Program will be closed.");
             throw new ModuleInitializationException();
         }
-        this.PROGRAMS_LOCATION = ConfigContainer.getParam(ConfigParam.PROGRAMS_LOCATION)
+        this.PROGRAMS_LOCATION = config.getParameter(ConfigParam.PROGRAMS_LOCATION)
                 .replace("\\", "/")
                 .toLowerCase()
                 .intern();        

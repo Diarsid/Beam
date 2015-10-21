@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.drs.beam.core.rmi.interfaces.adapters;
+package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.core.entities.Task;
@@ -17,12 +17,12 @@ import java.util.List;
  *
  * @author Diarsid
  */
-public class RmiTaskManagerAdapter implements RmiTaskManagerInterface{
+class RmiTaskManagerAdapter implements RmiTaskManagerInterface{
     // Fields =============================================================================
     private final TaskManagerModule taskManagerModule;
     // Constructors =======================================================================
     
-    public RmiTaskManagerAdapter(TaskManagerModule taskManagerModule){
+    RmiTaskManagerAdapter(TaskManagerModule taskManagerModule){
         this.taskManagerModule = taskManagerModule;
     }
 

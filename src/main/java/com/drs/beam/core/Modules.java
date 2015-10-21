@@ -5,30 +5,69 @@
  */
 package com.drs.beam.core;
 
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.TaskManagerModule;
 import com.drs.beam.core.modules.InnerIOModule;
 import com.drs.beam.core.modules.RemoteControlModule;
+import com.drs.beam.core.modules.RmiModule;
 
 /**
  *
  * @author Diarsid
  */
 public interface Modules {
+    
+    /**
+     * Initializes and registers ConfigModule which provides necessary configuration data. 
+     * Accepts main() method String[] args parameter and parses it into configuration data.
+     * 
+     * @param String[] args in following format = {"param1=value1", "param2=value2", ... "paramX=valueX"}.
+     */
+    void initConfigModule(String[] args);
+    
+    /**
+     * Initializes and registers IoModule. Initializes three modules simultaneously - RemoteControlModule,
+     * InnerControlModule and InnerIoModule.
+     * Requires ConfigModule.
+     */
+    void initIoModule();
+    
+    /**
+     * Initializes and registers DataModule which is responsible for interaction with data base.
+     * Requires InnerIoModule and ConfigModule.
+     */
+    void initDataModule();
 
     /**
-     * @return Returns DataModule instance that has been properly initialized and is
-     * ready to work.
+     * Initializes and registers ExecutorModule which is responsible for executing commands
+     * and interacts with underlying operation system for opening files and directories.
+     * Requires InnerIoModule, ConfigModule and DataModule.
      */
-    DataManagerModule getDataModule();
+    void initExecutorModule();
 
     /**
-     * @return Returns ExecutorModule instance that has been properly initialized and is
+     * Initializes and registers TaskManagerModule which is responsible for processing tasks
+     * and calendar events.
+     * Requires InnerIoModule, ConfigModule and DataModule.
+     */
+    void initTaskManagerModule();
+    
+    /**
+     * Initializes and registers RmiModule which is responsible for exporting other modules
+     * through Java RMI mechanism.
+     * Requires InnerIOModule, ConfigModule. Exports ExecutorModule, TaskManagerModule and 
+     * RemoteControlModule.
+     */
+    void initRmiModule();
+
+    /**
+     * @return Returns ConfigModule instance that has been properly initialized and is 
      * ready to work.
      */
-    ExecutorModule getExecutorModule();
-
+    ConfigModule getConfigModule();
+    
     /**
      * @return Returns InnerIoModule instance that has been properly initialized and is
      * ready to work.
@@ -40,38 +79,28 @@ public interface Modules {
      * ready to work.
      */
     RemoteControlModule getRemoteControlModule();
+    
+    /**
+     * @return Returns DataModule instance that has been properly initialized and is
+     * ready to work.
+     */
+    DataManagerModule getDataModule();
+
+    /**
+     * @return Returns ExecutorModule instance that has been properly initialized and is
+     * ready to work.
+     */
+    ExecutorModule getExecutorModule();    
 
     /**
      * @return Returns TasksManagerModule instance that has been properly initialized and is
      * ready to work.
      */
     TaskManagerModule getTasksManagerModule();
-
-    /**
-     * Initializes and registers DataModule which is responsible for interaction with data base.
-     * Requires InnerIoModule.
-     */
-    void initDataModule();
-
-    /**
-     * Initializes and registers ExecutorModule which is responsible for executing commands
-     * and interacts with underlying operation system for opening files and directories.
-     * Requires InnerIoModule and DataModule.
-     */
-    void initExecutorModule();
     
     /**
-     * Initializes and registers IoModule. Initializes three modules simultaneously - RemoteControlModule,
-     * InnerControlModule and InnerIoModule.
-     * IoModule does not need any other modules.
+     * @return Returns RmiModule instance that has been properly initialized and is
+     * ready to work.
      */
-    void initIoModule();
-
-    /**
-     * Initializes and registers TaskManagerModule which is responsible for processing tasks
-     * and calendar events.
-     * Requires InnerIoModule and DataModule.
-     */
-    void initTaskManagerModule();
-    
+    RmiModule getRmiModule();
 }

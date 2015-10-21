@@ -10,10 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.drs.beam.core.Modules;
+import com.drs.beam.core.modules.config.ConfigModuleBuilder;
 import com.drs.beam.core.modules.data.DataManagerModuleBuilder;
 import com.drs.beam.core.modules.exceptions.ModuleInitializationOrderException;
 import com.drs.beam.core.modules.executor.ExecutorModuleBuilder;
 import com.drs.beam.core.modules.io.IOBuilderProvider;
+import com.drs.beam.core.modules.rmi.RmiModuleBuilder;
 import com.drs.beam.core.modules.tasks.TaskManagerModuleBuilder;
 
 /**
@@ -41,6 +43,15 @@ class ModulesContainer implements Modules {
         
     // Methods for proper initialization of appropriate modules ===========================
     
+    @Override
+    public void initConfigModule(String[] startArgs){
+        ConfigModule configModule = ConfigModuleBuilder.buildModule();
+        
+        configModule.parseStartArgumentsIntoConfiguration(startArgs);
+        
+        this.modules.put(ConfigModule.getModuleName(), configModule);
+    }
+    
     /**
      * Initializes and registers IoModule. Initializes three modules simultaneously - RemoteControlModule, 
      * InnerControlModule and InnerIoModule.
@@ -48,7 +59,9 @@ class ModulesContainer implements Modules {
      */
     @Override
     public void initIoModule(){
-        IOBuilder ioBuilder = IOBuilderProvider.createBuilder();
+        ConfigModule configModule = this.getConfigModule();
+        
+        IOBuilder ioBuilder = IOBuilderProvider.createBuilder(configModule);
         
         this.modules.put(RemoteControlModule.getModuleName(), ioBuilder.buildRemoteControlModule());
         this.modules.put(InnerIOModule.getModuleName(), ioBuilder.buildInnerIOModule());
@@ -60,9 +73,10 @@ class ModulesContainer implements Modules {
      */
     @Override
     public void initDataModule(){
+        ConfigModule configModule = this.getConfigModule();
         InnerIOModule ioModule = this.getInnerIOModule();
         
-        DataManagerModule dataModule = DataManagerModuleBuilder.buildModule(ioModule);
+        DataManagerModule dataModule = DataManagerModuleBuilder.buildModule(ioModule, configModule);
         
         this.modules.put(DataManagerModule.getModuleName(), dataModule);
     }
@@ -91,20 +105,49 @@ class ModulesContainer implements Modules {
     public void initExecutorModule(){       
         InnerIOModule ioModule = this.getInnerIOModule();
         DataManagerModule dataModule = this.getDataModule();
+        ConfigModule configModule = this.getConfigModule();
         
-        ExecutorModule executorModule = ExecutorModuleBuilder.buildModule(ioModule, dataModule);
+        ExecutorModule executorModule = ExecutorModuleBuilder.buildModule(
+                ioModule, dataModule, configModule);
         
         this.modules.put(ExecutorModule.getModuleName(), executorModule);
     }
     
+    /**
+     * 
+     */
+    @Override
+    public void initRmiModule(){
+        InnerIOModule ioModule = this.getInnerIOModule();
+        ConfigModule configModule = this.getConfigModule();
+        ExecutorModule executorModule = this.getExecutorModule();
+        TaskManagerModule taskManagerModule = this.getTasksManagerModule();
+        RemoteControlModule remoteControlModule = this.getRemoteControlModule();
+        
+        RmiModule rmiModule = RmiModuleBuilder.buildModule(ioModule, configModule, executorModule, 
+                taskManagerModule, remoteControlModule);
+        
+        this.modules.put(RmiModule.getModuleName(), rmiModule);
+    }
+    
     // Methods for obtaining modules ======================================================
     
+    /**
+     * 
+     * @param moduleName
+     * @return 
+     */
     private Module getModule(String moduleName){
         if (modules.containsKey(moduleName)){
             return modules.get(moduleName);
         } else {            
             throw new ModuleInitializationOrderException();
         }
+    }
+    
+    @Override
+    public ConfigModule getConfigModule(){
+        return (ConfigModule) this.getModule(ConfigModule.getModuleName());
     }
     
     /** 
@@ -151,4 +194,13 @@ class ModulesContainer implements Modules {
     public TaskManagerModule getTasksManagerModule() {
         return (TaskManagerModule) this.getModule(TaskManagerModule.getModuleName());   
     }   
+    
+    /**
+     * @return Returns RmiModule instance that has been properly initialized and is 
+     * ready to work.
+     */
+    @Override
+    public RmiModule getRmiModule(){
+        return (RmiModule) this.getModule(RmiModule.getModuleName());
+    }
 }

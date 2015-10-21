@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.drs.beam.core.rmi.interfaces.adapters;
+package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
@@ -19,14 +19,14 @@ import com.drs.beam.core.entities.StoredExecutorCommand;
  *
  * @author Diarsid
  */
-public class RmiExecutorAdapter implements RmiExecutorInterface {
+class RmiExecutorAdapter implements RmiExecutorInterface {
     // Fields =============================================================================
     
     private final ExecutorModule executorModule;
     
     // Constructors =======================================================================
 
-    public RmiExecutorAdapter(ExecutorModule executorModule) {
+    RmiExecutorAdapter(ExecutorModule executorModule) {
         this.executorModule = executorModule;
     }
     

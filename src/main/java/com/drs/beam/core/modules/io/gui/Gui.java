@@ -5,8 +5,6 @@
 package com.drs.beam.core.modules.io.gui;
 
 import com.drs.beam.core.entities.Task;
-import com.drs.beam.util.config.ConfigContainer;
-import com.drs.beam.util.config.ConfigParam;
 
 /*
  * 'Native' program`s output interface.
@@ -17,7 +15,6 @@ import com.drs.beam.util.config.ConfigParam;
  * Is implemented with JavaFX or Swing technology which is choosed from config.xml.
  */
 public interface Gui{
-    public final String IMAGES_LOCATION = ConfigContainer.getParam(ConfigParam.IMAGES_LOCATION);
     
     /*
      * Method used to show user`s tasks.

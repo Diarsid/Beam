@@ -28,15 +28,26 @@ public class GuiJavaFX extends Application implements Gui, Runnable{
     }
         
     private final GuiWindowsController windowsController = new GuiWindowsController();
-    private final String taskIcon = Gui.IMAGES_LOCATION+"task_ico.jpeg";
-    private final String messageIcon = Gui.IMAGES_LOCATION+"message_ico.jpeg";
-    private final String errorIcon = Gui.IMAGES_LOCATION+"exception_ico.jpeg";
-    private final String taskImage = Gui.IMAGES_LOCATION+"task.jpeg";
-    private final String messageImage = Gui.IMAGES_LOCATION+"message.jpeg";
-    private final String errorImage = Gui.IMAGES_LOCATION+"exception.jpeg";
     
-    public static GuiJavaFX buildAndLaunchGui(){
+    private String taskIcon;
+    private String messageIcon;
+    private String errorIcon;
+    private String taskImage;
+    private String messageImage;
+    private String errorImage;
+    
+    public static GuiJavaFX buildAndLaunchGui(String imagesLocation){
+        gui.setImagesLocation(imagesLocation);
         return gui;
+    }
+    
+    private void setImagesLocation(String imagesLocation){
+        this.taskIcon = imagesLocation + "task_ico.jpeg";
+        this.messageIcon = imagesLocation + "message_ico.jpeg";
+        this.errorIcon = imagesLocation + "exception_ico.jpeg";
+        this.taskImage = imagesLocation + "task.jpeg";
+        this.messageImage = imagesLocation + "message.jpeg";
+        this.errorImage = imagesLocation + "exception.jpeg";
     }
     
     @Override

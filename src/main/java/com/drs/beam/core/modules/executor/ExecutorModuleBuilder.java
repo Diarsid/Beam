@@ -5,6 +5,7 @@
  */
 package com.drs.beam.core.modules.executor;
 
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.executor.handlers.HandlersBuilder;
@@ -17,10 +18,12 @@ import com.drs.beam.core.modules.InnerIOModule;
  */
 public interface ExecutorModuleBuilder {
     
-    static ExecutorModule buildModule(InnerIOModule ioModule, DataManagerModule dataModule){
+    static ExecutorModule buildModule(InnerIOModule ioModule, 
+            DataManagerModule dataModule, ConfigModule configModule){
+        
         CommandsHandler commandsHandler = HandlersBuilder.buildCommandsHandler(ioModule, dataModule);
         LocationsHandler locationsHandler = HandlersBuilder.buildLocationsHandler(ioModule, dataModule);
-        OS os = OSProvider.getOS(ioModule);
+        OS os = OSProvider.getOS(ioModule, configModule);
         
         return new Executor(ioModule, locationsHandler, commandsHandler, os);
     }

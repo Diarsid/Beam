@@ -214,7 +214,7 @@ public class Executor implements ExecutorModule{
         if (commandParams.size() == 2){
             this.system.runProgram(commandParams.get(1)+"-"+mark);
         } else {
-            this.ioEngine.reportError("Unrecognizable command.");
+            this.ioEngine.reportMessage("Unrecognizable command.");
         }
     }
 }

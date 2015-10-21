@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.drs.beam.core.rmi.interfaces.adapters;
+package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.core.modules.RemoteControlModule;
@@ -19,14 +19,14 @@ import java.rmi.registry.Registry;
  *
  * @author Diarsid
  */
-public class RmiRemoteControlAdapter implements RmiRemoteControlInterface{
+class RmiRemoteControlAdapter implements RmiRemoteControlInterface{
     // Fields =============================================================================
     
     private final RemoteControlModule accessModule;
     
     // Constructors =======================================================================
 
-    public RmiRemoteControlAdapter(RemoteControlModule accessModule) {
+    RmiRemoteControlAdapter(RemoteControlModule accessModule) {
         this.accessModule = accessModule;
     }
     

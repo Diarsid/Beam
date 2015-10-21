@@ -5,6 +5,7 @@
  */
 package com.drs.beam.core.modules.io;
 
+import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.IOBuilder;
 
 /**
@@ -13,8 +14,8 @@ import com.drs.beam.core.modules.IOBuilder;
  */
 public interface IOBuilderProvider {
     
-    static IOBuilder createBuilder(){
-        BeamIO io = new BeamIO();
+    static IOBuilder createBuilder(ConfigModule configModule){
+        BeamIO io = new BeamIO(configModule);
         IOBuilder ioBuilder = new IOModulesBuilder(io);
         return ioBuilder;
     }

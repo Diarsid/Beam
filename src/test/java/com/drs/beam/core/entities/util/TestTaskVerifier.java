@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package unit.com.drs.beam.server.entities.task.util;
+package com.drs.beam.core.entities.util;
 
 import com.drs.beam.core.entities.Task;
 import com.drs.beam.core.entities.util.TaskVerifier;
