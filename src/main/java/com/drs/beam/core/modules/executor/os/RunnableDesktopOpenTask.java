@@ -12,7 +12,7 @@ import java.io.IOException;
 
 import static java.awt.SystemColor.desktop;
 
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -20,9 +20,9 @@ import com.drs.beam.core.modules.InnerIOModule;
  */
 public class RunnableDesktopOpenTask implements Runnable {
     private final String target;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
 
-    RunnableDesktopOpenTask(InnerIOModule ioEngine, String target) {
+    RunnableDesktopOpenTask(IoInnerModule ioEngine, String target) {
         this.target = target;
         this.ioEngine = ioEngine;
     }

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -25,12 +25,12 @@ import com.drs.beam.core.modules.InnerIOModule;
 class DataBaseVerifier {
     // Fields =============================================================================
     private final DataBaseInitializer initializer;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     private final DataBaseModel dataModel;
     
     // Constructors =======================================================================
 
-    DataBaseVerifier(InnerIOModule io, DataBaseInitializer init, DataBaseModel model) {
+    DataBaseVerifier(IoInnerModule io, DataBaseInitializer init, DataBaseModel model) {
         this.ioEngine = io;
         this.initializer = init;
         this.dataModel = model;

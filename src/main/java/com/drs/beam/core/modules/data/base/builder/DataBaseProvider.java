@@ -9,7 +9,7 @@ package com.drs.beam.core.modules.data.base.builder;
 import java.lang.reflect.Constructor;
 
 import com.drs.beam.core.modules.ConfigModule;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DataBase;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.util.config.ConfigParam;
@@ -21,12 +21,12 @@ import com.drs.beam.util.config.ConfigParam;
 class DataBaseProvider {
     // Fields =============================================================================
     
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     private final ConfigModule config;
     private final String dataBaseClassPackage;
     
     // Constructors =======================================================================
-    DataBaseProvider(InnerIOModule io, ConfigModule config, String dataBaseClassPackage){    
+    DataBaseProvider(IoInnerModule io, ConfigModule config, String dataBaseClassPackage){    
         this.ioEngine = io;
         this.config = config;
         this.dataBaseClassPackage = dataBaseClassPackage;

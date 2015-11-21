@@ -13,23 +13,23 @@ import java.util.List;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
-import com.drs.beam.core.modules.DataManagerModule;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.DataModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DaoCommands;
 import com.drs.beam.core.modules.data.DaoLocations;
 import com.drs.beam.core.modules.data.DaoWebPages;
 
-public class Executor implements ExecutorModule{
+class ExecutorModuleWorker implements ExecutorModule{
     // Fields =============================================================================
     
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     private final OS system;
     private final DaoLocations locationsDao;
     private final DaoCommands commandsDao;
     private final DaoWebPages pagesDao;
     
     // Constructors =======================================================================
-    public Executor(InnerIOModule io, DataManagerModule dataModule, OS os) {
+    ExecutorModuleWorker(IoInnerModule io, DataModule dataModule, OS os) {
         this.ioEngine = io;
         this.locationsDao = dataModule.getLocationsDao();
         this.commandsDao = dataModule.getCommandsDao();
@@ -130,7 +130,12 @@ public class Executor implements ExecutorModule{
     @Override
     public List<StoredExecutorCommand> getAllCommands(){
         return this.commandsDao.getAllCommands();
-    }   
+    }
+    
+    @Override
+    public boolean checkPath(String path) {
+        return this.system.checkIfDirectoryExists(path);
+    }
     
     @Override
     public List<String> listLocationContent(String locationName){

@@ -94,7 +94,7 @@ public class RmiWebPageHandlerAdapter implements RmiWebPageHandlerInterface{
     public boolean editWebPageBrowser(String name, String newBrowser) throws RemoteException {
         name = name.trim().toLowerCase();
         newBrowser = newBrowser.trim().toLowerCase();
-        return this.dao.editWebPageCategory(name, newBrowser);
+        return this.dao.editWebPageBrowser(name, newBrowser);
     }
     
     @Override

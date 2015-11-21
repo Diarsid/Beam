@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.drs.beam.core.exceptions.NullDependencyInjectionException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.tasks.Task;
 import com.drs.beam.core.modules.data.DataBase;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
@@ -30,7 +30,7 @@ import com.drs.beam.core.exceptions.ModuleInitializationException;
 public class H2DaoTasks implements DaoTasks{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     
     private final String INSERT_NEW_TASK = 
             "INSERT INTO tasks (t_time, t_content, t_type, t_status) " +
@@ -84,10 +84,10 @@ public class H2DaoTasks implements DaoTasks{
     private final String ANY_SYMBOLS = "%";
     
     // Constructor ========================================================================
-    public H2DaoTasks(InnerIOModule io, DataBase dataBase){
+    public H2DaoTasks(IoInnerModule io, DataBase dataBase){
         if (io == null){
             throw new NullDependencyInjectionException(
-                    H2DaoTasks.class.getSimpleName(), InnerIOModule.class.getSimpleName());
+                    H2DaoTasks.class.getSimpleName(), IoInnerModule.class.getSimpleName());
         }
         if (dataBase == null){
             throw new NullDependencyInjectionException(

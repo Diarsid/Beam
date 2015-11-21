@@ -10,10 +10,10 @@ import java.util.List;
 
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
-import com.drs.beam.core.modules.DataManagerModule;
+import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.TaskManagerModule;
 import com.drs.beam.core.modules.data.DaoTasks;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  * Pivotal program's class to operate with tasks.
@@ -24,10 +24,10 @@ import com.drs.beam.core.modules.InnerIOModule;
  * getting them according to different criteria and so on.
  * Is responsible for initial database reading when program starts it's work.
  */
-class TaskManager implements TaskManagerModule {
+class TaskManagerModuleWorker implements TaskManagerModule {
     // Fields =============================================================================
     
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     private final DaoTasks tasksDao;
     private final Object lock;
     private final TaskVerifier taskVerifier;
@@ -40,7 +40,7 @@ class TaskManager implements TaskManagerModule {
     private LocalDateTime firstTaskTime;
     
     // Constructor ========================================================================
-    TaskManager(InnerIOModule io, DataManagerModule dataManager){
+    TaskManagerModuleWorker(IoInnerModule io, DataModule dataManager){
         this.ioEngine = io;
         this.tasksDao = dataManager.getTasksDao();
         this.lock = new Object();

@@ -5,7 +5,7 @@
 
 package com.drs.beam.core.modules.innerio.gui;
 
-import com.drs.beam.core.modules.io.Gui;
+import com.drs.beam.core.modules.innerio.Gui;
 
 import javafx.application.Application;
 import javafx.application.Platform;

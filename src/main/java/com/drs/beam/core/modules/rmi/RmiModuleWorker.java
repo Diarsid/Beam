@@ -13,10 +13,10 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.drs.beam.core.modules.ConfigModule;
-import com.drs.beam.core.modules.DataManagerModule;
+import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 import com.drs.beam.core.modules.TaskManagerModule;
@@ -31,10 +31,10 @@ import com.drs.beam.util.config.ConfigParam;
  *
  * @author Diarsid
  */
-class RmiManager implements RmiModule{
+class RmiModuleWorker implements RmiModule{
     // Fields =============================================================================
     
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     private final ConfigModule config;
     
     private final RmiTaskManagerInterface rmiTaskManagerInterface;
@@ -43,11 +43,11 @@ class RmiManager implements RmiModule{
     private final RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
     private final RmiWebPageHandlerInterface rmiWebPageHandlerInterface;
     
-    RmiManager(
+    RmiModuleWorker(
             IoModule ioModule,
-            InnerIOModule innerIoModule, 
+            IoInnerModule innerIoModule, 
             ConfigModule configModule,
-            DataManagerModule dataModule,
+            DataModule dataModule,
             ExecutorModule executorModule,
             TaskManagerModule taskManagerModule){
         
@@ -57,8 +57,10 @@ class RmiManager implements RmiModule{
         this.rmiExecutorInterface = new RmiExecutorAdapter(executorModule);
         this.rmiTaskManagerInterface = new RmiTaskManagerAdapter(taskManagerModule);
         this.rmiRemoteControlInterface = new RmiRemoteControlAdapter(ioModule);
-        this.rmiLocationsHandlerInterface = new RmiLocationsHandlerAdapter(dataModule.getLocationsDao());
-        this.rmiWebPageHandlerInterface = new RmiWebPageHandlerAdapter(dataModule.getWebPagesDao());
+        this.rmiLocationsHandlerInterface = new RmiLocationsHandlerAdapter(
+                dataModule.getLocationsDao(), executorModule);
+        this.rmiWebPageHandlerInterface = new RmiWebPageHandlerAdapter(
+                dataModule.getWebPagesDao());
     }
     
     // Methods ============================================================================

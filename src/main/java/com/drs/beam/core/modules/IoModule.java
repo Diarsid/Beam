@@ -5,12 +5,11 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.Module;
-
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import com.drs.beam.external.ExternalIOInterface;
+import com.drs.gem.injector.module.Module;
 
 /**
  *
@@ -33,8 +32,4 @@ public interface IoModule extends Module {
             throws RemoteException, NotBoundException;
     
     void exitBeam();
-    
-    static String getModuleName(){
-        return Module.class.getSimpleName();
-    }
 }

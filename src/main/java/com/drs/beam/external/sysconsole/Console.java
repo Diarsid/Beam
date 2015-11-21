@@ -704,7 +704,9 @@ public class Console implements Runnable, ExternalIOInterface{
         printUnder("set path: ");
         String location = this.reader.readLine().trim().toLowerCase();
         if (checkOnStop(location)) return;
-        this.locations.newLocation(location, name);
+        if ( this.locations.newLocation(location, name) ) {
+            this.printUnderLn("New location created.");
+        }
     }
     
     private void newTask() throws IOException{        
@@ -878,7 +880,16 @@ public class Console implements Runnable, ExternalIOInterface{
         } else if (choosed == 1){
             this.printUnderLn("Not implemented yet :(");
         } else if (choosed == 2){
-            this.printUnderLn("Not implemented yet :(");
+            this.printUnder("new path: ");
+            String newPath = this.reader.readLine().trim().toLowerCase();
+            if (checkOnStop(newPath)) {
+                return;
+            }
+            if (this.locations.editLocationPath(name, newPath)) {
+                printUnderLn("Path of "+name+" was changed.");
+            } else {
+                printUnderLn("Something is wrong: edit failed :(");
+            }
         }
     }
     

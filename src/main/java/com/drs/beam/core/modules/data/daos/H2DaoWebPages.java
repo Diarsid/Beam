@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.drs.beam.core.entities.WebPage;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DataBase;
 
 /**
@@ -27,9 +27,9 @@ import com.drs.beam.core.modules.data.DataBase;
 class H2DaoWebPages implements DaoWebPages {
     
     private final DataBase data;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
 
-    public H2DaoWebPages(InnerIOModule io, DataBase data) {
+    public H2DaoWebPages(IoInnerModule io, DataBase data) {
         this.data = data;
         this.ioEngine = io;
     }

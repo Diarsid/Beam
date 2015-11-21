@@ -8,9 +8,6 @@ import com.drs.beam.core.modules.executor.OS;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +17,7 @@ import java.util.concurrent.Executors;
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.util.config.ConfigParam;
 
 /**
@@ -32,11 +29,11 @@ public class OSWindows implements OS {
     // Fields =============================================================================
 
     private final String PROGRAMS_LOCATION;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     private final ExecutorService executorService;
 
     // Constructors =======================================================================
-    public OSWindows(InnerIOModule io, ConfigModule config) {
+    public OSWindows(IoInnerModule io, ConfigModule config) {
         this.ioEngine = io;
         if(!Desktop.isDesktopSupported()){
             this.ioEngine.reportErrorAndExitLater(

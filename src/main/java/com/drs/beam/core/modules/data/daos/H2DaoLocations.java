@@ -18,7 +18,7 @@ import java.util.List;
 
 import com.drs.beam.core.exceptions.NullDependencyInjectionException;
 import com.drs.beam.core.entities.Location;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DataBase;
 
 /**
@@ -28,7 +28,7 @@ import com.drs.beam.core.modules.data.DataBase;
 class H2DaoLocations implements DaoLocations{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     
     /* 
      * SQL Table description for locations entities.
@@ -65,6 +65,10 @@ class H2DaoLocations implements DaoLocations{
             "SELECT location_name, location_path "+
             "FROM locations " +
             "ORDER BY location_name ";
+    private final String UPDATE_PATH_WHERE_NAME_LIKE = 
+            "UPDATE locations " +
+            "SET location_path = ? " +
+            "WHERE location_name = ? ";    
     
     // Notifications
     private final String MORE_THAN_ONE_LOCATION = 
@@ -76,10 +80,10 @@ class H2DaoLocations implements DaoLocations{
     private final String NO_STORED_LOCATIONS = "There aren`t any locations.";
     
     // Constructors =======================================================================
-    H2DaoLocations(final InnerIOModule io, final DataBase data) {
+    H2DaoLocations(final IoInnerModule io, final DataBase data) {
         if (io == null){
             throw new NullDependencyInjectionException(
-                    H2DaoLocations.class.getSimpleName(), InnerIOModule.class.getSimpleName());
+                    H2DaoLocations.class.getSimpleName(), IoInnerModule.class.getSimpleName());
         }
         if (data == null){
             throw new NullDependencyInjectionException(
@@ -92,20 +96,22 @@ class H2DaoLocations implements DaoLocations{
     // Methods ============================================================================    
         
     @Override
-    public void saveNewLocation(Location location){
+    public boolean saveNewLocation(Location location){
         try(Connection con = this.data.connect();
             PreparedStatement ps = con.prepareStatement(INSERT_NEW_LOCATION);){
             
             ps.setString(1, location.getName());
             ps.setString(2, location.getPath().replace("\\", "/"));
-            ps.executeUpdate();            
-
+            int qty = ps.executeUpdate();
+            
+            return ( qty > 0 );
         } catch (SQLException e) {
             if (e.getSQLState().startsWith("23")){
                 this.ioEngine.reportMessage("Such location name already exists.");
             } else {
                 this.ioEngine.reportException(e, "SQLException: save location.");
             }
+            return false;
         }    
     }
     
@@ -186,6 +192,22 @@ class H2DaoLocations implements DaoLocations{
             return Collections.emptyList();
         } 
     }
+    
+    @Override
+    public boolean editLocationPath(String locationName, String newPath) {
+        try (Connection con = this.data.connect();
+            PreparedStatement ps = con.prepareStatement(UPDATE_PATH_WHERE_NAME_LIKE);) {
+            
+            ps.setString(1, newPath);
+            ps.setString(2, locationName);
+            
+            int qty = ps.executeUpdate();
+            return (qty > 0);
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, "SQLException: edit location's path.");
+            return false;
+        }
+    }    
     
     @Override
     public boolean removeLocation(String locationName){

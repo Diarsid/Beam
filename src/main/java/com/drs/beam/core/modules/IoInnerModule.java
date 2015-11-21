@@ -4,11 +4,10 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.Module;
-
 import java.util.List;
 
 import com.drs.beam.core.modules.tasks.Task;
+import com.drs.gem.injector.module.Module;
 
 /*
  * Interface defines methods for output within the program.
@@ -18,7 +17,7 @@ import com.drs.beam.core.modules.tasks.Task;
  * display given output infomation according to it`s 
  * types, settings and other requirements.
  */
-public interface InnerIOModule extends Module{  
+public interface IoInnerModule extends Module{  
     
     void showTask(Task task);  
     
@@ -33,8 +32,4 @@ public interface InnerIOModule extends Module{
     void reportExceptionAndExitLater(Exception e, String... description); 
     
     int  resolveVariantsWithExternalIO(String message, List<String> variants);
-    
-    static String getModuleName(){
-        return "Inner IO Module";
-    }
 }

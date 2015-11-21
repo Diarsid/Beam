@@ -16,8 +16,8 @@ import org.junit.Test;
 import static org.mockito.Mockito.*;
 
 import com.drs.beam.core.entities.Location;
-import com.drs.beam.core.modules.DataManagerModule;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.DataModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DaoCommands;
 import com.drs.beam.core.modules.data.DaoLocations;
 
@@ -26,9 +26,9 @@ import com.drs.beam.core.modules.data.DaoLocations;
  * @author Diarsid
  */
 public class ExecutorTest {
-    Executor exec;
+    ExecutorModuleWorker exec;
     
-    InnerIOModule io;
+    IoInnerModule io;
     DaoLocations locDao;
     DaoCommands comDao;
     OS os;
@@ -37,15 +37,15 @@ public class ExecutorTest {
     @Before
     public void init(){
         
-        io = mock(InnerIOModule.class);        
+        io = mock(IoInnerModule.class);        
         locDao = mock(DaoLocations.class);
         comDao = mock(DaoCommands.class);
-        DataManagerModule data = mock(DataManagerModule.class);
+        DataModule data = mock(DataModule.class);
         when(data.getCommandsDao()).thenReturn(comDao);
         when(data.getLocationsDao()).thenReturn(locDao);
         os = mock(OS.class);
         
-        exec = new Executor(io, data, os);
+        exec = new ExecutorModuleWorker(io, data, os);
     }
     
     @Test

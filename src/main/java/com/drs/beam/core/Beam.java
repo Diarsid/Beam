@@ -4,15 +4,13 @@
  */
 package com.drs.beam.core;
 
-import com.drs.beam.core.exceptions.NullDependencyInjectionException;
 import com.drs.beam.core.modules.RmiModule;
-import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.exceptions.ModuleInitializationOrderException;
 import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
 import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
+import com.drs.gem.injector.core.Container;
 
 
 /**
@@ -21,8 +19,9 @@ import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
  */
 
 public class Beam {
-    // Fields =============================================================================
+    
     private static final String BEAM_CONFIG_FILE_PATH = "./config/config.xml";
+    private static String[] configArgs;
     
     /**
      * Java RMI mechanism requires that remote objects which has been exported for
@@ -43,31 +42,21 @@ public class Beam {
     // Methods ============================================================================
    
            
-    public static void main(String[] args) {        
-        try {
-            Modules modules = new ModulesContainer();
-            modules.initConfigModule(args);
-            modules.initIoModule();
-            modules.initInnerIoModule();
-            modules.initDataModule();
-            modules.initTaskManagerModule();
-            modules.initExecutorModule();
-            modules.initRmiModule();
-            Beam.saveRmiInterfacesInStaticContext(modules.getRmiModule());
-            modules.getRmiModule().exportInterfaces();
-        } catch(ModuleInitializationOrderException e){
-            e.printStackTrace();
-            Beam.exitBeamCoreNow();
-        } catch (ModuleInitializationException e){
-            // Do nothing.
-            // Wait until all notifiacations will be readed by user.
-        } catch (NullDependencyInjectionException e){
-            // Respond on the exception.
-        }
+    public static void main(String[] args) {
+        configArgs = args;
+        Container container = Container.buildContainer(new BeamModulesDeclaration());
+        container.init();
+        RmiModule rmiModule = container.getModule(RmiModule.class);
+        Beam.saveRmiInterfacesInStaticContext(rmiModule);
+        rmiModule.exportInterfaces();        
     }
     
     public static String getConfigFilePath(){
         return Beam.BEAM_CONFIG_FILE_PATH;
+    }
+    
+    public static String[] getConfigArgs(){
+        return configArgs;
     }
     
     public static void exitBeamCoreNow(){

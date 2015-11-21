@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Random;
 
 import com.drs.beam.core.modules.tasks.Task;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
  * @author Diarsid
  */
-public class StubInnerIOModule implements InnerIOModule{
+public class StubInnerIOModule implements IoInnerModule{
     // Fields =============================================================================
     private final String stubIO = "Stub.IO > ";
 

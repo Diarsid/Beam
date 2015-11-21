@@ -71,7 +71,10 @@ class StarterWindows implements Starter{
                 .append(this.configReader.getDbDriverJar())
                 .append(semicolon)
                 // current folder classpath to get rmi.policy and config.xml
-                .append(dot);
+                .append(dot)
+                .append(semicolon)
+                .append(this.configReader.getLibrariesLocation().replace("/", "\\"))
+                .append("gem-injector-1.0.jar");
         if (loadFromJar){
             commandBuilder
                     .append(semicolon)

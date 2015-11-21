@@ -17,8 +17,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import com.drs.beam.core.modules.tasks.Task;
@@ -47,6 +49,7 @@ public class TaskWindow implements Runnable{
     @Override
     public void run() {
         Stage stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {

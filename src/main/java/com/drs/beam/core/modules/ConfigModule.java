@@ -5,8 +5,8 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.Module;
 import com.drs.beam.util.config.ConfigParam;
+import com.drs.gem.injector.module.Module;
 
 /**
  *
@@ -17,8 +17,4 @@ public interface ConfigModule extends Module{
     void parseStartArgumentsIntoConfiguration(String[] args);
     
     String getParameter(ConfigParam param);
-    
-    static String getModuleName(){
-        return "Config Module";
-    }
 }

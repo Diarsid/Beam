@@ -8,7 +8,7 @@ package com.drs.beam.core.modules.executor.os;
 import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.executor.OS;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -16,7 +16,7 @@ import com.drs.beam.core.modules.InnerIOModule;
  */
 public interface OSProvider {
     
-    static OS getOS(InnerIOModule io, ConfigModule configModule){
+    static OS getOS(IoInnerModule io, ConfigModule configModule){
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")){
             return new OSWindows(io, configModule);

@@ -15,8 +15,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import com.drs.beam.core.modules.DataManagerModule;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.DataModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DaoTasks;
 
 /**
@@ -25,20 +25,20 @@ import com.drs.beam.core.modules.data.DaoTasks;
  */
 public class TaskManagerTest {
     
-    TaskManager taskManager;
+    TaskManagerModuleWorker taskManager;
 
     @Before
     @Test
     public void testTaskManagerCreation() throws SQLException{
-        InnerIOModule io = mock(InnerIOModule.class);
-        DataManagerModule data = mock(DataManagerModule.class);
+        IoInnerModule io = mock(IoInnerModule.class);
+        DataModule data = mock(DataModule.class);
         DaoTasks dao = mock(DaoTasks.class);
         
         when(data.getTasksDao()).thenReturn(dao);
         LocalDateTime future = LocalDateTime.of(2017, 12, 30, 23, 59, 59);
         when(dao.getFirstTaskTime()).thenReturn(future);
         
-        taskManager = new TaskManager(io, data);
+        taskManager = new TaskManagerModuleWorker(io, data);
         
         assertEquals(future, taskManager.getFirstTaskTime());
     }

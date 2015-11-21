@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import com.drs.beam.core.entities.Location;
+import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.data.DaoLocations;
 import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 
@@ -21,20 +22,26 @@ class RmiLocationsHandlerAdapter implements RmiLocationsHandlerInterface{
     // Fields =============================================================================
     
     private final DaoLocations dao;
+    private final ExecutorModule executorModule;
 
     // Constructors =======================================================================
  
-    RmiLocationsHandlerAdapter(DaoLocations dao) {
+    RmiLocationsHandlerAdapter(DaoLocations dao, ExecutorModule executor) {
         this.dao = dao;
+        this.executorModule = executor;
     }
     
     // Methods ============================================================================
 
     @Override
-    public void newLocation(String locationPath, String locationName) throws RemoteException{
+    public boolean newLocation(String locationPath, String locationName) throws RemoteException{
         locationName = locationName.trim().toLowerCase();
         locationPath = locationPath.trim().toLowerCase();
-        this.dao.saveNewLocation(new Location(locationName, locationPath)); 
+        if ( this.executorModule.checkPath(locationPath)) {
+            return this.dao.saveNewLocation(new Location(locationName, locationPath)); 
+        } else {
+            return false;
+        }
     }
     
     @Override
@@ -50,6 +57,17 @@ class RmiLocationsHandlerAdapter implements RmiLocationsHandlerInterface{
         } else {
             return this.dao.getLocationsByName(locationName);            
         }
+    }
+    
+    @Override
+    public boolean editLocationPath(String name, String newPath) throws RemoteException{
+        name = name.trim().toLowerCase();
+        newPath = newPath.trim().toLowerCase();
+        if ( this.executorModule.checkPath(newPath)) {
+            return this.dao.editLocationPath(name, newPath);
+        } else {
+            return false;
+        }    
     }
     
     @Override

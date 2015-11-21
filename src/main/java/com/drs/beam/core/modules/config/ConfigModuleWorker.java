@@ -18,18 +18,14 @@ import com.drs.beam.util.config.ConfigParam;
  *
  * @author Diarsid
  */
-public class ConfigProvider implements ConfigModule{
-    // Fields =============================================================================
+class ConfigModuleWorker implements ConfigModule {
     
-    private final Map<ConfigParam, String> configurations;
+    private final Map<ConfigParam, String> configurations;    
     
-    // Constructors =======================================================================
-    ConfigProvider(){    
+    ConfigModuleWorker(){    
         this.configurations = new HashMap<>();
     }
 
-    // Methods ============================================================================
-    
     @Override
     public void parseStartArgumentsIntoConfiguration(String[] startArgs){
         if (this.configurations.isEmpty()){

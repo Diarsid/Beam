@@ -8,7 +8,7 @@ package com.drs.beam.core.modules.executor.os;
 
 import java.io.IOException;
 
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -17,9 +17,9 @@ import com.drs.beam.core.modules.InnerIOModule;
 class RunnableRuntimeCommandTask implements Runnable {
     
     private final String executableCommand;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
 
-    RunnableRuntimeCommandTask(InnerIOModule ioEngine, String executableCommand) {
+    RunnableRuntimeCommandTask(IoInnerModule ioEngine, String executableCommand) {
         this.executableCommand = executableCommand;
         this.ioEngine = ioEngine;
     }

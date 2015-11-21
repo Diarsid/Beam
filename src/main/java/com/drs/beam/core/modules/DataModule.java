@@ -5,24 +5,20 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.Module;
 import com.drs.beam.core.modules.data.DaoCommands;
 import com.drs.beam.core.modules.data.DaoLocations;
 import com.drs.beam.core.modules.data.DaoTasks;
 import com.drs.beam.core.modules.data.DaoWebPages;
+import com.drs.gem.injector.module.Module;
 
 /**
  *
  * @author Diarsid
  */
-public interface DataManagerModule extends Module {
+public interface DataModule extends Module {
     
     DaoTasks getTasksDao();    
     DaoLocations getLocationsDao();  
     DaoCommands getCommandsDao(); 
     DaoWebPages getWebPagesDao();
-    
-    static String getModuleName(){
-        return "Data Manager Module";
-    }
 }

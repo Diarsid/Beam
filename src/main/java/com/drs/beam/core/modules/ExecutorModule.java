@@ -5,12 +5,10 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.Module;
-
 import java.util.List;
 
-import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
+import com.drs.gem.injector.module.Module;
 
 /**
  *
@@ -29,13 +27,11 @@ public interface ExecutorModule extends Module {
     
     List<String> listLocationContent(String locationName);
     
+    boolean checkPath(String path);
+    
     List<StoredExecutorCommand> getAllCommands();
     
     List<StoredExecutorCommand> getCommands(String commandName);
     
     boolean deleteCommand(String commandName);
-    
-    static String getModuleName(){
-        return "Executor Module";
-    }    
 }

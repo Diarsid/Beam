@@ -14,12 +14,14 @@ import com.drs.beam.core.entities.Location;
  */
 public interface DaoLocations {
     
-    public List<Location> getLocationsByName(String locationName);
-    public List<Location> getLocationsByNameParts(String[] locationNameParts);
+    List<Location> getLocationsByName(String locationName);
+    List<Location> getLocationsByNameParts(String[] locationNameParts);
     
-    public void saveNewLocation(Location location);
+    boolean saveNewLocation(Location location);
     
-    public boolean removeLocation(String LocationName);
-        
-    public List<Location> getAllLocations();
+    boolean removeLocation(String locationName);
+    
+    boolean editLocationPath(String locationName, String newPath);
+            
+    List<Location> getAllLocations();
 }

@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package com.drs.beam.core.modules.io;
+package com.drs.beam.core.modules.innerio;
 
 import com.drs.beam.core.modules.tasks.Task;
 

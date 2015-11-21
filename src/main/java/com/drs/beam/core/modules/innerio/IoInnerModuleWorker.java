@@ -10,29 +10,28 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import com.drs.beam.core.exceptions.NullDependencyInjectionException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
-import com.drs.beam.core.modules.io.Gui;
 import com.drs.beam.core.modules.tasks.Task;
 
 /**
  *
  * @author Diarsid
  */
-class InnerIOModuleWorker implements InnerIOModule {
+class IoInnerModuleWorker implements IoInnerModule {
     
     private final IoModule io;
     private final Gui gui;
 
-    InnerIOModuleWorker(IoModule ioModule, Gui gui) {
+    IoInnerModuleWorker(IoModule ioModule, Gui gui) {
         if (ioModule == null) {
             throw new NullDependencyInjectionException(
-                    InnerIOModuleWorker.class.getSimpleName(), 
+                    IoInnerModuleWorker.class.getSimpleName(), 
                     IoModule.class.getSimpleName());
         }
         if (gui == null){
             throw new NullDependencyInjectionException(
-                    InnerIOModuleWorker.class.getSimpleName(), 
+                    IoInnerModuleWorker.class.getSimpleName(), 
                     Gui.class.getSimpleName());
         }
         this.io = ioModule;

@@ -9,24 +9,24 @@ package com.drs.beam.core.modules.data;
 import java.lang.reflect.Constructor;
 
 import com.drs.beam.core.exceptions.NullDependencyInjectionException;
-import com.drs.beam.core.modules.DataManagerModule;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.DataModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
 
 /**
  *
  * @author Diarsid
  */
-class DataManager implements DataManagerModule {
+class DataModuleWorker implements DataModule {
     
-    private final InnerIOModule ioEngine; 
+    private final IoInnerModule ioEngine; 
     private final DataBase dataBase;   
     private final String daosPackageName;
         
-    DataManager(InnerIOModule io, DataBase dataBase, String daosPackageName) {
+    DataModuleWorker(IoInnerModule io, DataBase dataBase, String daosPackageName) {
         if (dataBase == null){
             throw new NullDependencyInjectionException(
-                    DataManager.class.getSimpleName(), 
+                    DataModuleWorker.class.getSimpleName(), 
                     DataBase.class.getSimpleName());
         }
         this.dataBase = dataBase;
@@ -61,7 +61,7 @@ class DataManager implements DataManagerModule {
             String daoClassName = this.daosPackageName + this.dataBase.getName() + daoType;
             
             Class daoClass = Class.forName(daoClassName);
-            Constructor daoConstr = daoClass.getDeclaredConstructor(InnerIOModule.class, DataBase.class);
+            Constructor daoConstr = daoClass.getDeclaredConstructor(IoInnerModule.class, DataBase.class);
             daoConstr.setAccessible(true);
             
             return daoConstr.newInstance(this.ioEngine, this.dataBase);

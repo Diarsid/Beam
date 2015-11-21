@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -20,11 +20,11 @@ import com.drs.beam.core.modules.InnerIOModule;
  */
 class DataBaseInitializer {    
     // Fields =============================================================================  
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     
     
     // Constructors =======================================================================
-    DataBaseInitializer(InnerIOModule io) {
+    DataBaseInitializer(IoInnerModule io) {
         this.ioEngine = io;
     }
 

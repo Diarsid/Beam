@@ -5,11 +5,10 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.Module;
-
 import java.util.List;
 
 import com.drs.beam.core.modules.tasks.Task;
+import com.drs.gem.injector.module.Module;
 
 /**
  *
@@ -29,8 +28,4 @@ public interface TaskManagerModule extends Module {
     boolean  removeAllTasks();
     boolean  removeAllFutureTasks();
     boolean  removeAllPastTasks();
-    
-    static String getModuleName(){
-        return "Task Manager Module";
-    }
 }

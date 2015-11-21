@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -20,9 +20,9 @@ import com.drs.beam.core.modules.InnerIOModule;
 public class RunnableBrowserTask implements Runnable {
     
     private final String url;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
 
-    RunnableBrowserTask(InnerIOModule ioEngine, String url) {
+    RunnableBrowserTask(IoInnerModule ioEngine, String url) {
         this.url = url;
         this.ioEngine = ioEngine;
     }

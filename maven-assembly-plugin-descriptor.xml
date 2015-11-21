@@ -47,6 +47,7 @@
         <outputDirectory>lib</outputDirectory>
         <includes>
           <include>h2*.jar</include>
+          <include>gem-injector*.jar</include>
         </includes>    
     </fileSet>
     <fileSet>

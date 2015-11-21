@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.StringJoiner;
 
 import com.drs.beam.core.exceptions.NullDependencyInjectionException;
-import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
 import com.drs.beam.core.modules.data.DataBase;
 
@@ -30,7 +30,7 @@ import com.drs.beam.core.modules.data.DataBase;
 class H2DaoCommands implements DaoCommands{
     // Fields =============================================================================
     private final DataBase data;
-    private final InnerIOModule ioEngine;
+    private final IoInnerModule ioEngine;
     
     /* 
      * SQL Table description for commands entities.
@@ -68,11 +68,11 @@ class H2DaoCommands implements DaoCommands{
     private final String NO_STORED_COMMANDS = "There aren`t any commands.";
     
     // Constructors =======================================================================
-    H2DaoCommands(final InnerIOModule io, final DataBase data) {
+    H2DaoCommands(final IoInnerModule io, final DataBase data) {
         if (io == null){
             throw new NullDependencyInjectionException(
                     H2DaoCommands.class.getSimpleName(), 
-                    InnerIOModule.class.getSimpleName());
+                    IoInnerModule.class.getSimpleName());
         }
         if (data == null){
             throw new NullDependencyInjectionException(

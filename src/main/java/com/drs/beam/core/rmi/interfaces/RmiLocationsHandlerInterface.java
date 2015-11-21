@@ -17,11 +17,13 @@ import com.drs.beam.core.entities.Location;
  */
 public interface RmiLocationsHandlerInterface extends Remote {    
     
-    void newLocation(String locationPath, String locationName) throws RemoteException;
+    boolean newLocation(String locationPath, String locationName) throws RemoteException;
     
     List<Location> getAllLocations() throws RemoteException;
     
     List<Location> getLocations(String locationName) throws RemoteException;
+    
+    boolean editLocationPath(String name, String newPath) throws RemoteException;
     
     boolean deleteLocation(String locationName) throws RemoteException;
 }
