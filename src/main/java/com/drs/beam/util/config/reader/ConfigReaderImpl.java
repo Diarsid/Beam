@@ -97,6 +97,18 @@ class ConfigReaderImpl implements ConfigReader{
     }
     
     @Override
+    public String getLocationsHandlerName(){
+        return this.xmlReader.readElementTextContent(
+                "/configuration/rmi-info/beam/locations-rmi-name");
+    }
+    
+    @Override
+    public String getWebPagesHandlerName(){
+        return this.xmlReader.readElementTextContent(
+                "/configuration/rmi-info/beam/web-pages-rmi-name");
+    }
+    
+    @Override
     public String getSystemConsoleName(){
         return this.xmlReader.readElementTextContent(
                 "/configuration/rmi-info/beam-system-console/console-rmi-name");

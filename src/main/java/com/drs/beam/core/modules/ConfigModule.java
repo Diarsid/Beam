@@ -5,6 +5,7 @@
  */
 package com.drs.beam.core.modules;
 
+import com.drs.beam.core.Module;
 import com.drs.beam.util.config.ConfigParam;
 
 /**

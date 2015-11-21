@@ -16,11 +16,14 @@ import java.util.List;
 
 import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.core.entities.Location;
-import com.drs.beam.core.entities.StoredExecutorCommand;
-import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.modules.executor.StoredExecutorCommand;
+import com.drs.beam.core.modules.tasks.Task;
 import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
+import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 import com.drs.beam.util.config.ConfigContainer;
 
 /*
@@ -47,6 +50,8 @@ public class Console implements Runnable, ExternalIOInterface{
     private RmiTaskManagerInterface taskManager;
     private RmiExecutorInterface executor;
     private RmiRemoteControlInterface beamRemoteAccess;
+    private RmiLocationsHandlerInterface locations;
+    private RmiWebPageHandlerInterface webPages;
     
     // Constructor ========================================================================
     public Console() {
@@ -75,6 +80,14 @@ public class Console implements Runnable, ExternalIOInterface{
 
     void setBeamRemoteAccess(RmiRemoteControlInterface remoteAccess) {
         this.beamRemoteAccess = remoteAccess;
+    }
+    
+    void setLocationsHandler(RmiLocationsHandlerInterface locationsHandler){
+        this.locations = locationsHandler;
+    }
+    
+    void setWebPagesHandler(RmiWebPageHandlerInterface webPagesHandler){
+        this.webPages = webPagesHandler;
     }
     
     BufferedReader reader(){
@@ -108,8 +121,7 @@ public class Console implements Runnable, ExternalIOInterface{
         return check(input, this.helpPatterns);
     }
     
-    String format(String info){
-        int formatLength = 15;
+    String format(String info, int formatLength){        
         while(formatLength <= info.length()){
             formatLength += 10;
         }
@@ -212,6 +224,11 @@ public class Console implements Runnable, ExternalIOInterface{
                                 newCommand();
                                 break parsing;
                             }
+                            case "page" :
+                            case "web" : {
+                                newWebPage();
+                                break parsing;
+                            }
                             default : {
                                 break parsing;
                             }
@@ -239,6 +256,15 @@ public class Console implements Runnable, ExternalIOInterface{
                                 this.getLocation();
                                 break parsing;
                             } 
+                            case "web" :
+                            case "page" : {
+                                getPage();
+                                break parsing;
+                            }
+                            case "cat" :
+                            case "category" : {
+                                getPagesOfCategory();
+                            }
                             default : {
                                 break parsing;
                             }
@@ -268,10 +294,14 @@ public class Console implements Runnable, ExternalIOInterface{
                         break parsing;
                     }
                     case "exe" :
-                    case "c" :
                     case "call" : {
                         this.executor.call(params);
                         break parsing;
+                    }
+                    case "www" :
+                    case "web" :
+                    case "see" : {
+                        this.executor.openWebPage(params);
                     }
                     case "all" :
                     case "view" : {
@@ -300,11 +330,48 @@ public class Console implements Runnable, ExternalIOInterface{
                                 getCommands();
                                 break parsing;
                             }
+                            case "web" :
+                            case "page" :
+                            case "pages" : {
+                                seeAllWebPages();
+                                break parsing;
+                            }
                             default : {
                                 break parsing;
                             }
                         }                        
                     }  
+                    case "ed" :
+                    case "edit" :
+                    case "change" : {
+                        if (params.size() < 2){
+                            continue input;
+                        }
+                        switch (params.get(1)){
+                            case "page" : {
+                                editPage();
+                                break parsing;
+                            } 
+                            case "loc" :
+                            case "location" : {
+                                editLocation();
+                                break parsing;
+                            } 
+                            case "comm" : 
+                            case "command" : {
+                                editCommand();
+                                break parsing;
+                            }
+                            case "cat" :
+                            case "category" : {
+                                renameCategory();
+                                break parsing;
+                            }    
+                            default : {
+                                break parsing;
+                            }
+                        }
+                    }                        
                     case "delete" :
                     case "del" : {
                         if (params.size() < 2){
@@ -322,6 +389,10 @@ public class Console implements Runnable, ExternalIOInterface{
                             case "loc" :
                             case "location" : {
                                 deleteLocation();
+                                break parsing;
+                            }
+                            case "page" : {
+                                deleteWebPage();
                                 break parsing;
                             }
                             case "com" :
@@ -572,7 +643,7 @@ public class Console implements Runnable, ExternalIOInterface{
         this.writer.newLine();
         for(Location location : locations){
             sb.append(SPACE)
-                    .append(format(location.getName()))
+                    .append(format(location.getName(), 15))
                     .append(location.getPath());
             this.writer.write(sb.toString());
             sb = sb.delete(0, sb.length());
@@ -585,8 +656,38 @@ public class Console implements Runnable, ExternalIOInterface{
         this.writer.flush();
     }
     
+    private void printWebPages(List<WebPage> pages, boolean compressOutput) throws IOException {
+        if (pages.isEmpty()){
+            printUnderLn("There aren`t any pages.");
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        printUnderLn("Web Pages:");
+        this.writer.write(SPACE);
+        this.writer.write("==================================================");
+        this.writer.newLine();
+        for(WebPage page : pages){
+            sb.append(SPACE)
+                    .append(format(page.getName(), 17))
+                    .append(format(page.getCategory(), 10))
+                    .append(page.getUrlAddress());
+            if (compressOutput && sb.length() > 79){
+                sb.delete(76, sb.length());
+                sb.append("...");
+            }
+            this.writer.write(sb.toString());
+            sb = sb.delete(0, sb.length());
+            this.writer.newLine();
+            this.writer.flush();
+        }
+        this.writer.write(SPACE);
+        this.writer.write("==================================================");
+        this.writer.newLine();
+        this.writer.flush();
+    }
+    
     private void getLocations() throws IOException {
-        List<Location> locations = this.executor.getAllLocations();
+        List<Location> locations = this.locations.getAllLocations();
         this.printLocations(locations);
     }
     
@@ -603,7 +704,7 @@ public class Console implements Runnable, ExternalIOInterface{
         printUnder("set path: ");
         String location = this.reader.readLine().trim().toLowerCase();
         if (checkOnStop(location)) return;
-        this.executor.newLocation(location, name);
+        this.locations.newLocation(location, name);
     }
     
     private void newTask() throws IOException{        
@@ -629,6 +730,35 @@ public class Console implements Runnable, ExternalIOInterface{
         }
     }
     
+    private void newWebPage() throws IOException {
+        printUnder("name : ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)){
+            return;
+        }
+        printUnder("url : ");
+        String urlAddress = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(urlAddress)){
+            return;
+        }
+        printUnder("category : ");
+        String category = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(category)){
+            category = "common";
+        }
+        printUnder("browser : ");
+        String browser = this.reader.readLine().trim().toLowerCase();
+        if(checkOnStop(browser)){
+            browser = "default";
+        }
+        this.webPages.newWebPage(name, urlAddress, category, browser);
+    }
+    
+    private void seeAllWebPages() throws IOException{
+        List<WebPage> pages = this.webPages.getAllPages();
+        this.printWebPages(pages, true);
+    }
+    
     private void deleteLocation() throws IOException{
         printUnder("name: ");
         String name = this.reader.readLine().trim().toLowerCase();
@@ -636,10 +766,27 @@ public class Console implements Runnable, ExternalIOInterface{
             return;
         }
         if (name.length() > 0){
-            if (this.executor.deleteLocation(name)){
+            if (this.locations.deleteLocation(name)){
                 printUnderLn("Location was removed.");
             }
         }        
+    }
+    
+    private void deleteWebPage(String name){
+        
+    }
+    
+    private void deleteWebPage() throws IOException {
+        printUnder("name: ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)){
+            return;
+        }
+        if (name.length() > 0){
+            if (this.webPages.deleteWebPage(name)){
+                printUnderLn("WebPage was removed.");
+            }
+        }
     }
     
     private void deleteTask() throws IOException{        
@@ -669,6 +816,105 @@ public class Console implements Runnable, ExternalIOInterface{
         }        
     }
     
+    private void editPage() throws IOException {
+        this.printUnder("name: ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)){
+            return;
+        }
+        String[] vars = {"name", "url", "category", "browser"};
+        int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
+        if (choosed < 0){
+            return;
+        } else if (choosed == 1){
+            this.printUnder("new name: ");
+            String newName = this.reader.readLine().trim().toLowerCase();
+            if (checkOnStop(newName)){
+                return;
+            }
+            if (this.webPages.editWebPageName(name, newName)){
+                printUnderLn("Page was renamed.");
+            }
+        } else if (choosed == 2){
+            this.printUnder("new url: ");
+            String newUrl = this.reader.readLine().trim().toLowerCase();
+            if (checkOnStop(newUrl)){
+                return;
+            }
+            if (this.webPages.editWebPageUrl(name, newUrl)){
+                printUnderLn(name+ " URL was changed.");
+            }
+        } else if (choosed == 3){
+            this.printUnder("new category: ");
+            String newCategory = this.reader.readLine().trim().toLowerCase();
+            if (checkOnStop(newCategory)){
+                return;
+            }
+            if (this.webPages.editWebPageCategory(name, newCategory)){
+                printUnderLn(name+ " page category was changed.");
+            }
+        } else if (choosed == 4) {
+            this.printUnder("new browser: ");
+            String newBrowser = this.reader.readLine().trim().toLowerCase();
+            if (checkOnStop(newBrowser)) {
+                return;
+            }
+            if (this.webPages.editWebPageBrowser(name, newBrowser)) {
+                printUnderLn("New browser was assigned to "+name+".");
+            }
+        } 
+    }
+    
+    private void editLocation() throws IOException {
+        this.printUnder("name: ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)){
+            return;
+        }
+        String[] vars = {"name", "path"};
+        int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
+        if (choosed < 0){
+            return;
+        } else if (choosed == 1){
+            this.printUnderLn("Not implemented yet :(");
+        } else if (choosed == 2){
+            this.printUnderLn("Not implemented yet :(");
+        }
+    }
+    
+    private void editCommand() throws IOException {
+        this.printUnder("name: ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)){
+            return;
+        }
+        String[] vars = {"name", "commands"};
+        int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
+        if (choosed < 0){
+            return;
+        } else if (choosed == 1){
+            this.printUnderLn("Not implemented yet :(");
+        } else if (choosed == 2){
+            this.printUnderLn("Not implemented yet :(");
+        }
+    }
+    
+    private void renameCategory() throws IOException {
+        this.printUnder("category: ");
+        String category = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(category)){
+            return;
+        }
+        this.printUnder("new name: ");
+        String newCategory = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(newCategory)){
+            return;
+        }
+        if (this.webPages.renameCategory(category, newCategory)){
+            this.printUnder("Category renamed.");
+        }
+    }
+    
     private void listLocation(String locationName) throws IOException {
         List<String> locationContent = this.executor.listLocationContent(locationName);
         if (locationContent.size() > 1){
@@ -690,7 +936,29 @@ public class Console implements Runnable, ExternalIOInterface{
             return;
         }
         if (location.length() > 0){
-            this.printLocations(this.executor.getLocation(location));
+            this.printLocations(this.locations.getLocations(location));
+        }
+    }
+    
+     private void getPage() throws IOException{
+        this.printUnder("name: ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)){
+            return;
+        }
+        if (name.length() > 0){
+            this.printWebPages(this.webPages.getWebPages(name), false);
+        }
+    }
+     
+    private void getPagesOfCategory() throws IOException {
+        this.printUnder("category: ");
+        String category = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(category)){
+            return;
+        }
+        if (category.length() > 0){
+            this.printWebPages(this.webPages.getAllWebPagesOfCategory(category), false);
         }
     }
     
@@ -750,9 +1018,8 @@ public class Console implements Runnable, ExternalIOInterface{
     }
     
     @Override
-    public void reportException (Exception e, String[] description) throws RemoteException{
+    public void reportException (String[] description) throws RemoteException{
         try{
-            this.writer.newLine();
             this.printBeamErrorWithMessageLn(description);
         }catch(IOException ioe){}
     }

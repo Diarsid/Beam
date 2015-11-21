@@ -27,7 +27,7 @@ public class InputHandler {
     String inputTime() throws IOException{
         String input = "";
         while (true){
-            console.printUnder("Input time: ");
+            console.printUnder("time: ");
             input = console.reader().readLine().trim().toLowerCase();
             if (console.checkOnHelp(input)){
                 console.helpWriter().printTimeFormats();
@@ -44,7 +44,7 @@ public class InputHandler {
         ArrayList<String> taskContent = new ArrayList<>();
         // endless input loop until '.' will be entered which means end of task
         taskInput: while (true){
-            console.printUnder("Input task line: ");
+            console.printUnder("task line: ");
             taskLine = console.reader().readLine().trim();
             // symbol '.' finishes input and breaks input loop
             if ((".").equals(taskLine)){

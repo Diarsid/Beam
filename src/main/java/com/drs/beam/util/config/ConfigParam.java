@@ -9,13 +9,15 @@ package com.drs.beam.util.config;
  * @author Diarsid
  */
 public enum ConfigParam {
-    ORGANIZER_PORT,
-    ORGANIZER_HOST,
+    BEAMCORE_PORT,
+    BEAMCORE_HOST,
     CONSOLE_PORT,
     CONSOLE_HOST,
     TASK_MANAGER_NAME,
     EXECUTOR_NAME,
-    ORG_IO_NAME,
+    BEAM_ACCESS_NAME,
+    LOCATIONS_HANDLER_NAME,
+    WEB_PAGES_HANDLER_NAME,
     CONSOLE_NAME,
     CORE_DB_DRIVER,
     CORE_DB_URL,

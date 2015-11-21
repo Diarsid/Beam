@@ -1,0 +1,2 @@
+@echo off
+cmd /c start java -cp .;Beam.jar -Djava.security.policy=config\rmi.policy -Djava.rmi.server.hostname=127.0.0.1 -Xmx4m -XX:MaxHeapFreeRatio=10 -XX:MinHeapFreeRatio=10 com.drs.beam.external.sysconsole.Console TASK_MANAGER_NAME=TaskManager EXECUTOR_NAME=Executor BEAM_ACCESS_NAME=RemoteAccess LOCATIONS_HANDLER_NAME=LocationsHandler WEB_PAGES_HANDLER_NAME=WebPagesHandler BEAMCORE_HOST=127.0.0.1 BEAMCORE_PORT=43016 CONSOLE_NAME=console CONSOLE_HOST=127.0.0.1 CONSOLE_PORT=43015

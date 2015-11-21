@@ -13,15 +13,18 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.ExecutorModule;
-import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
+import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.InnerIOModule;
-import com.drs.beam.core.modules.RemoteControlModule;
+import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 import com.drs.beam.core.modules.TaskManagerModule;
 import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
+import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 import com.drs.beam.util.config.ConfigParam;
 
 /**
@@ -37,20 +40,25 @@ class RmiManager implements RmiModule{
     private final RmiTaskManagerInterface rmiTaskManagerInterface;
     private final RmiExecutorInterface rmiExecutorInterface;
     private final RmiRemoteControlInterface rmiRemoteControlInterface;
+    private final RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
+    private final RmiWebPageHandlerInterface rmiWebPageHandlerInterface;
     
     RmiManager(
-            InnerIOModule ioEngine, 
+            IoModule ioModule,
+            InnerIOModule innerIoModule, 
             ConfigModule configModule,
+            DataManagerModule dataModule,
             ExecutorModule executorModule,
-            TaskManagerModule taskManagerModule,
-            RemoteControlModule remoteControlModule){
+            TaskManagerModule taskManagerModule){
         
-        this.ioEngine = ioEngine;
+        this.ioEngine = innerIoModule;
         this.config = configModule;
         
         this.rmiExecutorInterface = new RmiExecutorAdapter(executorModule);
         this.rmiTaskManagerInterface = new RmiTaskManagerAdapter(taskManagerModule);
-        this.rmiRemoteControlInterface = new RmiRemoteControlAdapter(remoteControlModule);
+        this.rmiRemoteControlInterface = new RmiRemoteControlAdapter(ioModule);
+        this.rmiLocationsHandlerInterface = new RmiLocationsHandlerAdapter(dataModule.getLocationsDao());
+        this.rmiWebPageHandlerInterface = new RmiWebPageHandlerAdapter(dataModule.getWebPagesDao());
     }
     
     // Methods ============================================================================
@@ -69,6 +77,16 @@ class RmiManager implements RmiModule{
     public RmiRemoteControlInterface getRmiRemoteControlInterface(){
         return this.rmiRemoteControlInterface;
     }
+
+    @Override
+    public RmiLocationsHandlerInterface getRmiLocationsHandlerInterface() {
+        return rmiLocationsHandlerInterface;
+    }
+
+    @Override
+    public RmiWebPageHandlerInterface getRmiWebPageHandlerInterface() {
+        return rmiWebPageHandlerInterface;
+    }
     
     @Override
     public void exportInterfaces(){
@@ -76,23 +94,33 @@ class RmiManager implements RmiModule{
         if (System.getSecurityManager()==null)
             System.setSecurityManager(new SecurityManager());
         try{            
-            int organizerPort = Integer.parseInt(config.getParameter(ConfigParam.ORGANIZER_PORT));
-            Registry registry = LocateRegistry.createRegistry(organizerPort);
+            int beamCorePort = Integer.parseInt(config.getParameter(ConfigParam.BEAMCORE_PORT));
+            Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RmiRemoteControlInterface orgIOStub = 
                     (RmiRemoteControlInterface) UnicastRemoteObject.exportObject(
-                            this.rmiRemoteControlInterface, organizerPort);
+                            this.rmiRemoteControlInterface, beamCorePort);
 
             RmiExecutorInterface osExecutorStub =
                     (RmiExecutorInterface) UnicastRemoteObject.exportObject(
-                            this.rmiExecutorInterface, organizerPort);
+                            this.rmiExecutorInterface, beamCorePort);
 
             RmiTaskManagerInterface TaskManagerStub =
                     (RmiTaskManagerInterface) UnicastRemoteObject.exportObject(
-                            this.rmiTaskManagerInterface, organizerPort);
+                            this.rmiTaskManagerInterface, beamCorePort);
+            
+            RmiLocationsHandlerInterface LocationsHandlerStub = 
+                    (RmiLocationsHandlerInterface) UnicastRemoteObject.exportObject(
+                            this.rmiLocationsHandlerInterface, beamCorePort);
+            
+            RmiWebPageHandlerInterface WebPagesHandlerStub = 
+                    (RmiWebPageHandlerInterface) UnicastRemoteObject.exportObject(
+                            this.rmiWebPageHandlerInterface, beamCorePort);
 
-            registry.bind(config.getParameter(ConfigParam.ORG_IO_NAME), orgIOStub);
+            registry.bind(config.getParameter(ConfigParam.BEAM_ACCESS_NAME), orgIOStub);
             registry.bind(config.getParameter(ConfigParam.EXECUTOR_NAME), osExecutorStub);
             registry.bind(config.getParameter(ConfigParam.TASK_MANAGER_NAME), TaskManagerStub);
+            registry.bind(config.getParameter(ConfigParam.LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
+            registry.bind(config.getParameter(ConfigParam.WEB_PAGES_HANDLER_NAME), WebPagesHandlerStub);
 
         }catch (AlreadyBoundException|RemoteException e){            
             ioEngine.reportExceptionAndExitLater(e, 

@@ -119,10 +119,20 @@ class StarterWindows implements Starter{
                 .append(this.configReader.getExecutorName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParam.ORG_IO_NAME)
+                .append(ConfigParam.BEAM_ACCESS_NAME)
                 .append(equalSign)
                 .append(this.configReader.getAccessName())
-                .append(space);       
+                .append(space);  
+        argumentsBuilder
+                .append(ConfigParam.LOCATIONS_HANDLER_NAME)
+                .append(equalSign)
+                .append(this.configReader.getLocationsHandlerName())
+                .append(space);
+        argumentsBuilder
+                .append(ConfigParam.WEB_PAGES_HANDLER_NAME)
+                .append(equalSign)
+                .append(this.configReader.getWebPagesHandlerName())
+                .append(space);
         argumentsBuilder
                 .append(ConfigParam.IMAGES_LOCATION)
                 .append(equalSign)
@@ -134,12 +144,12 @@ class StarterWindows implements Starter{
                 .append(this.configReader.getLibrariesLocation())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParam.ORGANIZER_HOST)
+                .append(ConfigParam.BEAMCORE_HOST)
                 .append(equalSign)
                 .append(this.configReader.getBeamHost())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParam.ORGANIZER_PORT)
+                .append(ConfigParam.BEAMCORE_PORT)
                 .append(equalSign)
                 .append(this.configReader.getBeamPort())
                 .append(space);
@@ -187,17 +197,27 @@ class StarterWindows implements Starter{
                 .append(this.configReader.getExecutorName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParam.ORG_IO_NAME)
+                .append(ConfigParam.BEAM_ACCESS_NAME)
                 .append(equalSign)
                 .append(this.configReader.getAccessName())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParam.ORGANIZER_HOST)
+                .append(ConfigParam.LOCATIONS_HANDLER_NAME)
+                .append(equalSign)
+                .append(this.configReader.getLocationsHandlerName())
+                .append(space);
+        argumentsBuilder
+                .append(ConfigParam.WEB_PAGES_HANDLER_NAME)
+                .append(equalSign)
+                .append(this.configReader.getWebPagesHandlerName())
+                .append(space);
+        argumentsBuilder
+                .append(ConfigParam.BEAMCORE_HOST)
                 .append(equalSign)
                 .append(this.configReader.getBeamHost())
                 .append(space);
         argumentsBuilder
-                .append(ConfigParam.ORGANIZER_PORT)
+                .append(ConfigParam.BEAMCORE_PORT)
                 .append(equalSign)
                 .append(this.configReader.getBeamPort())
                 .append(space);

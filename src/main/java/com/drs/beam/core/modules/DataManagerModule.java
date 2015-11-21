@@ -5,9 +5,11 @@
  */
 package com.drs.beam.core.modules;
 
-import com.drs.beam.core.modules.data.dao.commands.CommandsDao;
-import com.drs.beam.core.modules.data.dao.locations.LocationsDao;
-import com.drs.beam.core.modules.data.dao.tasks.TasksDao;
+import com.drs.beam.core.Module;
+import com.drs.beam.core.modules.data.DaoCommands;
+import com.drs.beam.core.modules.data.DaoLocations;
+import com.drs.beam.core.modules.data.DaoTasks;
+import com.drs.beam.core.modules.data.DaoWebPages;
 
 /**
  *
@@ -15,9 +17,10 @@ import com.drs.beam.core.modules.data.dao.tasks.TasksDao;
  */
 public interface DataManagerModule extends Module {
     
-    TasksDao getTasksDao();    
-    LocationsDao getLocationsDao();  
-    CommandsDao getCommandsDao(); 
+    DaoTasks getTasksDao();    
+    DaoLocations getLocationsDao();  
+    DaoCommands getCommandsDao(); 
+    DaoWebPages getWebPagesDao();
     
     static String getModuleName(){
         return "Data Manager Module";

@@ -4,9 +4,11 @@
  */
 package com.drs.beam.core.modules;
 
+import com.drs.beam.core.Module;
+
 import java.util.List;
 
-import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.tasks.Task;
 
 /*
  * Interface defines methods for output within the program.

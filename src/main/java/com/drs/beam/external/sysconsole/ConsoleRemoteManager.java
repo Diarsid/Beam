@@ -14,7 +14,9 @@ import java.rmi.server.UnicastRemoteObject;
 import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
+import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 import com.drs.beam.util.config.ConfigContainer;
 import com.drs.beam.util.config.ConfigParam;
 
@@ -60,9 +62,9 @@ public class ConsoleRemoteManager{
             System.setSecurityManager(new SecurityManager());
         try{
             Registry registry = LocateRegistry
-                    .getRegistry(ConfigContainer.getParam(ConfigParam.ORGANIZER_HOST), 
-                            Integer.parseInt(ConfigContainer.getParam(ConfigParam.ORGANIZER_PORT)));                
-            RmiRemoteControlInterface remoteAccessInterface = (RmiRemoteControlInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.ORG_IO_NAME));
+                    .getRegistry(ConfigContainer.getParam(ConfigParam.BEAMCORE_HOST), 
+                            Integer.parseInt(ConfigContainer.getParam(ConfigParam.BEAMCORE_PORT)));                
+            RmiRemoteControlInterface remoteAccessInterface = (RmiRemoteControlInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.BEAM_ACCESS_NAME));
             if(remoteAccessInterface.hasExternalIOProcessor()){
                 showProblemMessageAndClose("Organizer already has external output!");
             } else{
@@ -73,6 +75,8 @@ public class ConsoleRemoteManager{
                 console.setBeamRemoteAccess(remoteAccessInterface);
                 console.setTaskManager((RmiTaskManagerInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.TASK_MANAGER_NAME)));
                 console.setExecutor((RmiExecutorInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.EXECUTOR_NAME)));
+                console.setLocationsHandler((RmiLocationsHandlerInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.LOCATIONS_HANDLER_NAME)));
+                console.setWebPagesHandler((RmiWebPageHandlerInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.WEB_PAGES_HANDLER_NAME)));
             }
         } catch (NotBoundException e){  
             System.out.println(e.getMessage());

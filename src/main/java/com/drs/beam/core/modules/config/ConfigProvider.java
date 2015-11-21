@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.drs.beam.core.modules.ConfigModule;
-import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.exceptions.ModuleInitializationOrderException;
+import com.drs.beam.core.exceptions.ModuleInitializationException;
+import com.drs.beam.core.exceptions.ModuleInitializationOrderException;
 import com.drs.beam.util.config.ConfigParam;
 
 /**

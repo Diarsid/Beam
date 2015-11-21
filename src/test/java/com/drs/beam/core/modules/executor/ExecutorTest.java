@@ -16,7 +16,10 @@ import org.junit.Test;
 import static org.mockito.Mockito.*;
 
 import com.drs.beam.core.entities.Location;
+import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.data.DaoCommands;
+import com.drs.beam.core.modules.data.DaoLocations;
 
 /**
  *
@@ -26,20 +29,23 @@ public class ExecutorTest {
     Executor exec;
     
     InnerIOModule io;
-    LocationsHandler locHandler;
-    CommandsHandler comHandler;
+    DaoLocations locDao;
+    DaoCommands comDao;
     OS os;
     
     @Test
     @Before
     public void init(){
         
-        io = mock(InnerIOModule.class);
-        locHandler = mock(LocationsHandler.class);
-        comHandler = mock(CommandsHandler.class);
+        io = mock(InnerIOModule.class);        
+        locDao = mock(DaoLocations.class);
+        comDao = mock(DaoCommands.class);
+        DataManagerModule data = mock(DataManagerModule.class);
+        when(data.getCommandsDao()).thenReturn(comDao);
+        when(data.getLocationsDao()).thenReturn(locDao);
         os = mock(OS.class);
         
-        exec = new Executor(io, locHandler, comHandler, os);
+        exec = new Executor(io, data, os);
     }
     
     @Test
@@ -47,16 +53,12 @@ public class ExecutorTest {
         String[] a = {"open", "location"};
         List<String> commandParams = Arrays.asList(a);
         
-        // stub appropriate methods
-        Location loc = mock(Location.class);
-        when(locHandler.getLocation("location")).thenReturn(loc);
         
         // test invocation 
         exec.open(commandParams);
         
         // verify workflow
-        verify(locHandler).getLocation("location");
-        verify(os).openLocation(loc);
+        verify(locDao).getLocationsByName("location");
     }
     
     @Test
@@ -64,16 +66,11 @@ public class ExecutorTest {
         String[] a = {"open", "file", "in", "location"};
         List<String> commandParams = Arrays.asList(a);
         
-        // stub appropriate methods
-        Location loc = mock(Location.class);
-        when(locHandler.getLocation("location")).thenReturn(loc);
-        
         // test invocation 
         exec.open(commandParams);
         
         // verify workflow
-        verify(locHandler).getLocation("location");
-        verify(os).openFileInLocation("file", loc);
+        verify(locDao).getLocationsByName("location");
     }
     
     @Test
@@ -81,16 +78,12 @@ public class ExecutorTest {
         String[] a = {"open", "file", "in", "location", "with", "program"};
         List<String> commandParams = Arrays.asList(a);
         
-        // stub appropriate methods
-        Location loc = mock(Location.class);
-        when(locHandler.getLocation("location")).thenReturn(loc);
         
         // test invocation 
         exec.open(commandParams);
         
         // verify workflow
-        verify(locHandler).getLocation("location");
-        verify(os).openFileInLocationWithProgram("file", loc, "program");
+        verify(locDao).getLocationsByName("location");
     }
 
     @Test
@@ -152,8 +145,8 @@ public class ExecutorTest {
         
         exec.call(commandParams);
         
-        verify(comHandler).getCommand("command1");
-        verify(comHandler).getCommand("command2");
+        verify(comDao).getCommandsByName("command1");
+        verify(comDao).getCommandsByName("command2");
     }
 
     @Test
@@ -161,22 +154,12 @@ public class ExecutorTest {
         String[] a = {"open location", "run program"};
         List<String> commands = Arrays.asList(a);
         
+        StoredExecutorCommand command = new StoredExecutorCommand("command", commands);
         exec.newCommand(commands, "command");
         
-        verify(comHandler).newCommand(commands, "command");
+        verify(comDao).saveNewCommand(command);
     }
 
-    @Test
-    public void testNewLocation() {
-        String locPath = "path/to/dir";
-        String locName = "dir";
-                
-        when(os.checkIfDirectoryExists(locPath)).thenReturn(true);
-        
-        exec.newLocation(locPath, locName);
-        
-        verify(locHandler).newLocation(locPath, locName);
-    }
 
     @Test
     public void testDeleteCommand() {
@@ -184,66 +167,21 @@ public class ExecutorTest {
         
         exec.deleteCommand(commandName);
         
-        verify(comHandler).deleteCommand(commandName);
-    }
-
-    @Test
-    public void testDeleteLocation() {
-        String locationName = "loc_name";
-        
-        exec.deleteLocation(locationName);
-        
-        verify(locHandler).deleteLocation(locationName);
-    }
-
-    @Test
-    public void testGetAllLocations() {
-        exec.getAllLocations();
-        
-        verify(locHandler).getAllLocations();
+        verify(comDao).removeCommand(commandName);
     }
 
     @Test
     public void testGetAllCommands() {
         exec.getAllCommands();
         
-        verify(comHandler).getAllCommands();
-    }
-
-    @Test
-    public void testListLocationContent() {
-        String locationName = "loc_name";
-        String locationPath = "path/to/some/dir";
-        
-        List<String> locContent = new ArrayList<>();
-        locContent.add("file_1");
-        locContent.add("file_2");
-        locContent.add("directory");
-        
-        Location loc = new Location(locationName, locationPath);
-        when(locHandler.getLocation(locationName)).thenReturn(loc);
-        when(os.getLocationContent(loc)).thenReturn(locContent);
-        
-        List<String> locContentCopy = exec.listLocationContent(locationName);
-        
-        Assert.assertEquals(locContentCopy, locContent);
-        
-        verify(locHandler).getLocation(loc.getName());
-        verify(os).getLocationContent(loc);
-    }
-
-    @Test
-    public void testGetLocations() {
-        exec.getLocations("some_loc_name");
-        
-        verify(locHandler).getLocations("some_loc_name");
+        verify(comDao).getAllCommands();
     }
 
     @Test
     public void testGetCommands() {
         exec.getCommands("comm_name");
         
-        verify(comHandler).getCommands("comm_name");
+        verify(comDao).getCommandsByName("comm_name");
     }
     
 }

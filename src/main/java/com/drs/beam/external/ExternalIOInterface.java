@@ -8,7 +8,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.tasks.Task;
 
 /*
  * Interface describes 
@@ -20,7 +20,7 @@ public interface ExternalIOInterface extends Remote {
     void reportInfo (String... info) throws RemoteException; 
     void reportMessage (String... message) throws RemoteException;
     void reportError (String... error) throws RemoteException;
-    void reportException (Exception e, String... description) throws RemoteException;
+    void reportException (String... description) throws RemoteException;
     
     void exitExternalIO() throws RemoteException;
     

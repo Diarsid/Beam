@@ -8,9 +8,9 @@ package com.drs.beam.core;
 import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.ExecutorModule;
-import com.drs.beam.core.modules.TaskManagerModule;
 import com.drs.beam.core.modules.InnerIOModule;
-import com.drs.beam.core.modules.RemoteControlModule;
+import com.drs.beam.core.modules.TaskManagerModule;
+import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 
 /**
@@ -23,16 +23,22 @@ public interface Modules {
      * Initializes and registers ConfigModule which provides necessary configuration data. 
      * Accepts main() method String[] args parameter and parses it into configuration data.
      * 
-     * @param String[] args in following format = {"param1=value1", "param2=value2", ... "paramX=valueX"}.
+     * @param args in following format = {"param1=value1", "param2=value2", ... "paramX=valueX"}.
      */
     void initConfigModule(String[] args);
     
     /**
-     * Initializes and registers IoModule. Initializes three modules simultaneously - RemoteControlModule,
-     * InnerControlModule and InnerIoModule.
-     * Requires ConfigModule.
+     * Initializes and registers IoModule which is responsible for interaction with
+     * external IO through through RMI using ExternalIOInterface.
      */
     void initIoModule();
+    
+    /**
+     * Initializes and registers InnerIOModule that is used by other modules to perform
+     * output and interaction with user. 
+     * Requires IoModule and ConfigModule.
+     */
+    void initInnerIoModule();
     
     /**
      * Initializes and registers DataModule which is responsible for interaction with data base.
@@ -69,17 +75,17 @@ public interface Modules {
     ConfigModule getConfigModule();
     
     /**
+     * @return IoModule instance that has been properly initialized and is
+     * ready to work.
+     */
+    IoModule getIoModule();
+    
+    /**
      * @return Returns InnerIoModule instance that has been properly initialized and is
      * ready to work.
      */
     InnerIOModule getInnerIOModule();
-
-    /**
-     * @return Returns RemoteControlModule instance that has been properly initialized and is
-     * ready to work.
-     */
-    RemoteControlModule getRemoteControlModule();
-    
+        
     /**
      * @return Returns DataModule instance that has been properly initialized and is
      * ready to work.

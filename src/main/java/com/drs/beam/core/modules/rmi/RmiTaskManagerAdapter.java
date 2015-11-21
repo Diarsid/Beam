@@ -7,7 +7,7 @@
 package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.tasks.Task;
 import com.drs.beam.core.modules.TaskManagerModule;
 
 import java.rmi.RemoteException;

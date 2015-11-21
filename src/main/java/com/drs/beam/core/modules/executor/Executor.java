@@ -11,24 +11,29 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.drs.beam.core.entities.StoredExecutorCommand;
 import com.drs.beam.core.entities.Location;
+import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.data.DaoCommands;
+import com.drs.beam.core.modules.data.DaoLocations;
+import com.drs.beam.core.modules.data.DaoWebPages;
 
 public class Executor implements ExecutorModule{
     // Fields =============================================================================
     
     private final InnerIOModule ioEngine;
     private final OS system;
-    private final LocationsHandler locationsHandler;
-    private final CommandsHandler commandsHandler;
+    private final DaoLocations locationsDao;
+    private final DaoCommands commandsDao;
+    private final DaoWebPages pagesDao;
     
     // Constructors =======================================================================
-    public Executor(InnerIOModule io,
-            LocationsHandler locationsHandler, CommandsHandler commandsHandler, OS os) {
+    public Executor(InnerIOModule io, DataManagerModule dataModule, OS os) {
         this.ioEngine = io;
-        this.locationsHandler = locationsHandler;
-        this.commandsHandler = commandsHandler;
+        this.locationsDao = dataModule.getLocationsDao();
+        this.commandsDao = dataModule.getCommandsDao();
+        this.pagesDao = dataModule.getWebPagesDao();
         this.system = os;
     }
 
@@ -84,7 +89,7 @@ public class Executor implements ExecutorModule{
         // command pattern: call [command_1] [command_2]...
         StoredExecutorCommand command;
         for(int i = 1; i < commandNames.size(); i++){
-            command = this.commandsHandler.getCommand(commandNames.get(i));
+            command = this.getCommand(commandNames.get(i));
             if (command != null){
                 this.executeCommand(command);
             }
@@ -92,42 +97,44 @@ public class Executor implements ExecutorModule{
     }
     
     @Override
-    public void newCommand(List<String> commands, String commandName){
-        this.commandsHandler.newCommand(commands, commandName);
+    public void openWebPage(List<String> commandParams){
+        if (commandParams.contains("with") || commandParams.contains("w")){
+            this.openWebPageWithGivenBrowser(commandParams);
+        } else {
+            this.openWebPages(commandParams);
+        }
     }
     
     @Override
-    // location pattern: C:/path/to/target/folder
-    public void newLocation(String locationPath, String locationName){
-        if (this.system.checkIfDirectoryExists(locationPath)){
-            this.locationsHandler.newLocation(locationPath, locationName); 
-        }          
-    }
+    public void newCommand(List<String> commands, String commandName){
+        for(int i = 0; i < commands.size(); i++){
+            String s = commands.get(i).trim().toLowerCase();
+            if (s.equals("call") || s.equals("exe")){
+                this.ioEngine.reportMessage(
+                        "'call' and 'exe' is not permitted to use.",
+                        "It can cause cyclical execution.");
+                return;
+            }
+            commands.set(i, s);
+        }
+        commandName = commandName.trim().toLowerCase();
+        this.commandsDao.saveNewCommand(new StoredExecutorCommand(commandName, commands));
+    }    
         
     @Override
     public boolean deleteCommand(String commandName){
-        return this.commandsHandler.deleteCommand(commandName);
-    }
-    
-    @Override
-    // location pattern: projects
-    public boolean deleteLocation(String locationName){
-        return this.locationsHandler.deleteLocation(locationName);
-    }  
-    
-    @Override
-    public List<Location> getAllLocations(){
-        return this.locationsHandler.getAllLocations();
-    }
+        commandName = commandName.trim().toLowerCase();
+        return this.commandsDao.removeCommand(commandName);
+    }    
     
     @Override
     public List<StoredExecutorCommand> getAllCommands(){
-        return this.commandsHandler.getAllCommands();
+        return this.commandsDao.getAllCommands();
     }   
     
     @Override
     public List<String> listLocationContent(String locationName){
-        Location location = this.locationsHandler.getLocation(locationName);
+        Location location = this.getLocation(locationName);
         if (location != null){
             List<String> locationContent = this.system.getLocationContent(location);
             if (locationContent != null){
@@ -142,17 +149,13 @@ public class Executor implements ExecutorModule{
     }
     
     @Override
-    public List<Location> getLocations(String locationName){
-        return this.locationsHandler.getLocations(locationName);
-    }
-    
-    @Override
     public List<StoredExecutorCommand> getCommands(String commandName){
-        return this.commandsHandler.getCommands(commandName);
+        commandName = commandName.trim().toLowerCase();
+        return this.commandsDao.getCommandsByName(commandName);
     }
        
     private void openLocation(String locationName){
-        Location location = this.locationsHandler.getLocation(locationName);
+        Location location = this.getLocation(locationName);
         if (location != null){
             this.system.openLocation(location);
         } 
@@ -160,7 +163,7 @@ public class Executor implements ExecutorModule{
     
     private void openFileInLocation(String targetName, String locationName){
         targetName = targetName.trim().toLowerCase();
-        Location location = this.locationsHandler.getLocation(locationName);
+        Location location = this.getLocation(locationName);
         if (location != null){
             this.system.openFileInLocation(targetName, location);
         }             
@@ -169,7 +172,7 @@ public class Executor implements ExecutorModule{
     private void openFileInLocationWithProgram(String file, String locationName, String program){
         file = file.trim().toLowerCase();
         program = program.trim().toLowerCase();
-        Location location = this.locationsHandler.getLocation(locationName);
+        Location location = this.getLocation(locationName);
         if (location != null){
             this.system.openFileInLocationWithProgram(file, location, program);
         }    
@@ -217,4 +220,142 @@ public class Executor implements ExecutorModule{
             this.ioEngine.reportMessage("Unrecognizable command.");
         }
     }
+    
+    private Location getLocation(String locationName){
+        locationName = locationName.trim().toLowerCase();
+        List<Location> foundLocations;
+        
+        if (locationName.contains("-")){
+            foundLocations = this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
+        } else {
+            foundLocations = this.locationsDao.getLocationsByName(locationName);            
+        }
+        
+        if (foundLocations.size() < 1){
+            this.ioEngine.reportMessage("Couldn`t find such location.");
+            return null;
+        } else if (foundLocations.size() == 1){
+            return foundLocations.get(0);
+        } else { 
+            return this.resolveMultipleLocations(foundLocations);
+        }
+    }
+    
+    private Location resolveMultipleLocations(List<Location> foundLocations){
+        List<String> locationNames = new ArrayList();
+        for (Location loc : foundLocations){
+            locationNames.add(loc.getName());
+        }
+        int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
+                "There are several locations:", 
+                locationNames);
+        if (varNumber < 0){
+            return null;
+        } else {
+            return foundLocations.get(varNumber-1);
+        }
+    }
+    
+    
+    private StoredExecutorCommand getCommand(String name){        
+        name = name.trim().toLowerCase();
+        List<StoredExecutorCommand> commands = this.commandsDao.getCommandsByName(name);    
+        
+        if (commands.size() < 1){
+            this.ioEngine.reportMessage("Couldn`t find such command.");
+            return null;
+        } else if (commands.size() == 1){
+            return commands.get(0);
+        } else {
+            List<String> commandNames = new ArrayList<>();
+            for (StoredExecutorCommand c : commands){
+                commandNames.add(c.getName());
+            }
+            int variant = this.ioEngine.resolveVariantsWithExternalIO(
+                    "There are several commands:", 
+                    commandNames
+            );
+            
+            if (variant < 0){
+                return null;
+            } else {
+                return commands.get(variant-1);
+            }            
+        }
+    }
+    
+    private void openWebPages(List<String> commandParams){
+        // command pattern: see [webPage_1] [webPage_2]...
+        WebPage page;
+        for (int i = 1; i < commandParams.size(); i++){            
+            page = this.getWebPage(commandParams.get(i));
+            if (page != null){
+                if (page.useDefaultBrowser()){
+                    this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
+                } else {
+                    this.system.openUrlWithGivenBrowser(page.getUrlAddress(), page.getBrowser());
+                }
+            }
+        }
+    }
+    
+    private void openWebPageWithGivenBrowser(List<String> commandParams){
+        // command pattern: see [webPage] with|w [browserName]
+        if (commandParams.size() > 3 && commandParams.get(2).contains("w")){
+            WebPage page = this.getWebPage(commandParams.get(1));
+            String browserName = commandParams.get(3);
+            if (page != null){
+                if (browserName.equals("default") || browserName.equals("def")){
+                    this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
+                    this.pagesDao.editWebPageBrowser(page.getName(), "default");
+                } else {
+                    this.system.openUrlWithGivenBrowser(page.getUrlAddress(), browserName);
+                    String[] vars = {"yes", "no"};
+                    int choosed = this.ioEngine.resolveVariantsWithExternalIO(
+                            "Use given browser always for this page?", 
+                            Arrays.asList(vars));
+                    if (choosed == 1){
+                        if (this.pagesDao.editWebPageBrowser(page.getName(), browserName)){
+                            this.ioEngine.reportMessage("Get it.");
+                        }                   
+                    }
+                }                
+            }
+        } else {
+            this.ioEngine.reportMessage("Unrecognizale command.");
+        }
+    }
+    
+    private WebPage getWebPage(String name){
+        name = name.trim().toLowerCase();
+        List<WebPage> pages;
+        if (name.contains("-")){
+            pages = this.pagesDao.getWebPagesByNameParts(name.split("-"));
+        } else {
+            pages = this.pagesDao.getWebPagesByName(name);
+        }
+        return resolveMultiplePages(pages);
+    }
+    
+    private WebPage resolveMultiplePages(List<WebPage> pages){
+        if (pages.size() == 1){
+            return pages.get(0);
+        } else if (pages.isEmpty()){
+            this.ioEngine.reportMessage("Couldn`t find such page.");
+            return null;
+        } else {
+            List<String> pageNames = new ArrayList<>();
+            for (WebPage wp : pages){
+                pageNames.add(wp.getName());
+            }
+            int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
+                    "There are several pages:", pageNames);
+            
+            if (choosedVariant < 0){
+                return null;
+            } else {
+                return pages.get(choosedVariant-1);
+            } 
+        }
+    }    
 }

@@ -6,9 +6,10 @@
 package com.drs.beam.core.modules.data;
 
 import com.drs.beam.core.modules.ConfigModule;
-import com.drs.beam.core.modules.data.base.DataBase;
 import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.InnerIOModule;
+import com.drs.beam.core.modules.data.base.builder.DataBaseBuilder;
+import com.drs.beam.core.modules.data.daos.DaosInfo;
 
 /**
  *
@@ -16,18 +17,14 @@ import com.drs.beam.core.modules.InnerIOModule;
  */
 public interface DataManagerModuleBuilder {
     
-    static DataManagerModule buildModule(InnerIOModule ioModule, ConfigModule configModule){        
-        DataBaseInitializer initializer = new DataBaseInitializer(ioModule);
-        DataBaseModel dataModel = new DataBaseModel();
-        DataBaseVerifier verifier = new DataBaseVerifier(ioModule, initializer, dataModel);
-        DataBaseProvider provider = new DataBaseProvider(ioModule, configModule);
-        
-        DataBase dataBase = provider.getDataBase();
-        verifier.verifyDataBase(dataBase);
-        
-        DaoProvider daoProvider = new DaoProvider(ioModule, dataBase);
-        
-        DataManagerModule dataModule = new DataManager(dataBase, daoProvider);
+    static DataManagerModule buildModule(InnerIOModule ioModule, ConfigModule configModule){ 
+        DataBase dataBase = DataBaseBuilder.buildDataBase(ioModule, configModule);
+        // obtain dao implementations package name.
+        // "my.package.with.database.DataBaseInfo" -> "my.package.with.database."
+        String daosPackageName = DaosInfo.class
+                .getCanonicalName()
+                .replace(DaosInfo.class.getSimpleName(), "");
+        DataManagerModule dataModule = new DataManager(ioModule, dataBase, daosPackageName);
         return dataModule;
     }
 }

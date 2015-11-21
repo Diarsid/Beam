@@ -22,5 +22,9 @@ public interface OS {
     void openFileInLocationWithProgram(String file, Location location, String program);
     void runProgram(String program);
     
-    List<String> getLocationContent(Location location);   
+    List<String> getLocationContent(Location location); 
+    
+    void openUrlWithDefaultBrowser(String name);
+    
+    void openUrlWithGivenBrowser(String urlAddress, String browserName);
 }

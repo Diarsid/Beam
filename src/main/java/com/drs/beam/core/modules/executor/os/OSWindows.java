@@ -9,13 +9,17 @@ import com.drs.beam.core.modules.executor.OS;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.modules.ConfigModule;
-import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
+import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.InnerIOModule;
 import com.drs.beam.util.config.ConfigParam;
 
@@ -29,8 +33,7 @@ public class OSWindows implements OS {
 
     private final String PROGRAMS_LOCATION;
     private final InnerIOModule ioEngine;
-    private final Desktop desktop;
-    private final Runtime runtime;
+    private final ExecutorService executorService;
 
     // Constructors =======================================================================
     public OSWindows(InnerIOModule io, ConfigModule config) {
@@ -44,29 +47,34 @@ public class OSWindows implements OS {
         this.PROGRAMS_LOCATION = config.getParameter(ConfigParam.PROGRAMS_LOCATION)
                 .replace("\\", "/")
                 .toLowerCase()
-                .intern();        
-        this.desktop = Desktop.getDesktop();
-        this.runtime = Runtime.getRuntime();
+                .intern();      
+        this.executorService = Executors.newFixedThreadPool(3);
     }
 
     // Methods ============================================================================
     @Override
     public void openLocation(Location location) {
         if (this.checkIfDirectoryExists(location.getPath())){
-            this.runDesktopTask(location.getPath());
+            this.executorService.execute(
+                    new RunnableDesktopOpenTask(
+                            this.ioEngine,
+                            location.getPath()));
             this.ioEngine.reportMessage("opening...");
         }     
     }
 
     @Override
-    public void openFileInLocation(String file, Location location) {
+    public void openFileInLocation(String target, Location location) {
         // targetName pattern: myPr / myFil
         // corrected target name: myProject / myFile.ext or "" if not exists
-        file = this.checkNameInDirectory(file, location.getPath(), "File not found.", "Location`s path is invalid.");
+        target = this.checkNameInDirectory(target, location.getPath(), 
+                "File not found.", "Location`s path is invalid.");
 
-        if (file.length() > 0) {
-            String path = location.getPath() + "\\" + file;
-            this.runDesktopTask(path);
+        if (target.length() > 0) {
+            this.executorService.execute(
+                    new RunnableDesktopOpenTask(
+                            this.ioEngine,
+                            location.getPath() + "\\" + target));
             this.ioEngine.reportMessage("opening...");
         }
     }
@@ -88,18 +96,8 @@ public class OSWindows implements OS {
                     .append(location.getPath().replace("/", "\\"))
                     .append("\\")
                     .append(file);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        runtime.exec(commandBuilder.toString());
-                    } catch (IOException e) {
-                        ioEngine.reportException(e, "IOException: open file with program.");
-                    } catch (IllegalArgumentException argumentException) {
-                        ioEngine.reportError("Unknown target");
-                    }
-                }
-            }).start();
+            this.executorService.execute(
+                    new RunnableRuntimeCommandTask(this.ioEngine, commandBuilder.toString()));
             this.ioEngine.reportMessage("running...");
         }
     }
@@ -112,8 +110,10 @@ public class OSWindows implements OS {
                 "Program not found.", "Program`s location not found.");
 
         if (program.length() > 0) {
-            String path = PROGRAMS_LOCATION + "\\" + program;
-            this.runDesktopTask(path);
+            this.executorService.execute(
+                    new RunnableDesktopOpenTask(
+                            this.ioEngine,
+                            PROGRAMS_LOCATION + "\\" + program));
             this.ioEngine.reportMessage("running...");
         }
     }
@@ -152,6 +152,35 @@ public class OSWindows implements OS {
         } else {
             this.ioEngine.reportError("This location does not exists or is not a directory.");
             return null;
+        }
+    }
+    
+    @Override
+    public void openUrlWithDefaultBrowser(String urlAddress){
+        this.executorService.execute(
+                new RunnableBrowserTask(this.ioEngine, urlAddress));
+        this.ioEngine.reportMessage("browse...");
+    }
+    
+    @Override
+    public void openUrlWithGivenBrowser(String urlAddress, String browserName){
+        browserName = this.checkNameInDirectory(
+                browserName+"-browser", PROGRAMS_LOCATION, 
+                "Browser not found.", "Program`s location not found.");
+        if (browserName.length() > 0){
+            StringBuilder commandBuilder = new StringBuilder();
+            commandBuilder
+                    .append("cmd /c start ")
+                    .append(PROGRAMS_LOCATION.replace("/", "\\"))
+                    .append("\\")
+                    .append(browserName)
+                    .append(" ")
+                    .append(urlAddress);
+            this.executorService.execute(
+                    new RunnableRuntimeCommandTask(this.ioEngine, commandBuilder.toString()));
+            this.ioEngine.reportMessage("browse...");
+        } else {
+            this.ioEngine.reportMessage("Check browser in programs location or try with another browser.");
         }
     }
 
@@ -195,11 +224,10 @@ public class OSWindows implements OS {
     }
 
     private List<String> findItemsInDirectoryByNameParts(File directory, String nameToFind, List<String> foundItems) {
-        List<String> fileNameFragments = Arrays.asList(nameToFind.split("-"));
         boolean containsAllFragments;
         for (String file : directory.list()) {
             containsAllFragments = true;
-            for (String nameFragment : fileNameFragments) {
+            for (String nameFragment : Arrays.asList(nameToFind.split("-"))) {
                 if (!file.toLowerCase().contains(nameFragment)) {
                     containsAllFragments = false;
                     break;
@@ -226,20 +254,5 @@ public class OSWindows implements OS {
         } else {
             return "";
         }
-    }
-
-    private void runDesktopTask(String target) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    desktop.open(new File(target));
-                } catch (IOException e) {
-                    ioEngine.reportException(e, "IOException: open target path with Desktop.");
-                } catch (IllegalArgumentException argumentException) {
-                    ioEngine.reportError("Unknown target");
-                }
-            }
-        }).start();
     }
 }

@@ -7,7 +7,7 @@ package com.drs.beam.core.modules.executor.os;
 
 import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.executor.OS;
-import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
+import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.InnerIOModule;
 
 /**

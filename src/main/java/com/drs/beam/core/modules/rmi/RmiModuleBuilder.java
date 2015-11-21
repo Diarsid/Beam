@@ -6,9 +6,10 @@
 package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.InnerIOModule;
-import com.drs.beam.core.modules.RemoteControlModule;
+import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 import com.drs.beam.core.modules.TaskManagerModule;
 
@@ -19,11 +20,14 @@ import com.drs.beam.core.modules.TaskManagerModule;
 public interface RmiModuleBuilder {
     
     static RmiModule buildModule(
-            InnerIOModule ioModule, 
+            IoModule ioModule,
+            InnerIOModule innerIoModule, 
             ConfigModule configModule,
+            DataManagerModule dataModule,
             ExecutorModule executorModule,
-            TaskManagerModule taskManagerModule,
-            RemoteControlModule remoteControlModule){
-        return new RmiManager(ioModule, configModule, executorModule, taskManagerModule, remoteControlModule);
+            TaskManagerModule taskManagerModule){
+        
+        return new RmiManager(ioModule, innerIoModule, configModule, 
+                dataModule, executorModule, taskManagerModule);
     }
 }

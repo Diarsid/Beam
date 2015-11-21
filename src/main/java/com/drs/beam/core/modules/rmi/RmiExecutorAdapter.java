@@ -13,7 +13,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import com.drs.beam.core.entities.Location;
-import com.drs.beam.core.entities.StoredExecutorCommand;
+import com.drs.beam.core.modules.executor.StoredExecutorCommand;
 
 /**
  *
@@ -63,8 +63,8 @@ class RmiExecutorAdapter implements RmiExecutorInterface {
     }
     
     @Override
-    public void newLocation(String locationPath, String locationName) throws RemoteException{
-        this.executorModule.newLocation(locationPath, locationName);
+    public void openWebPage(List<String> commandParams) throws RemoteException{
+        this.executorModule.openWebPage(commandParams);
     }
     
     @Override
@@ -73,18 +73,8 @@ class RmiExecutorAdapter implements RmiExecutorInterface {
     }
     
     @Override
-    public List<Location> getAllLocations() throws RemoteException{
-        return this.executorModule.getAllLocations();
-    }
-    
-    @Override
     public List<StoredExecutorCommand> getAllCommands() throws RemoteException{
         return this.executorModule.getAllCommands();
-    }
-    
-    @Override
-    public List<Location> getLocation(String locationName) throws RemoteException{
-        return this.executorModule.getLocations(locationName);
     }
     
     @Override
@@ -95,10 +85,5 @@ class RmiExecutorAdapter implements RmiExecutorInterface {
     @Override
     public boolean deleteCommand(String commandName) throws RemoteException{
         return this.executorModule.deleteCommand(commandName);
-    }
-    
-    @Override
-    public boolean deleteLocation(String locationName) throws RemoteException{
-        return this.executorModule.deleteLocation(locationName);
     }
 }

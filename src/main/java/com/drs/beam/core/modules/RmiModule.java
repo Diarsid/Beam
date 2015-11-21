@@ -5,9 +5,12 @@
  */
 package com.drs.beam.core.modules;
 
+import com.drs.beam.core.Module;
 import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
+import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
+import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 
 /**
  *
@@ -20,6 +23,10 @@ public interface RmiModule extends Module {
     RmiTaskManagerInterface getRmiTaskManagerInterface();
     
     RmiRemoteControlInterface getRmiRemoteControlInterface();
+    
+    RmiWebPageHandlerInterface getRmiWebPageHandlerInterface();
+    
+    RmiLocationsHandlerInterface getRmiLocationsHandlerInterface();
     
     void exportInterfaces();
     

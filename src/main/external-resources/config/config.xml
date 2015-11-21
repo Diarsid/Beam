@@ -41,12 +41,14 @@
     -->
     <rmi-info>        
         <beam-system-console host="127.0.0.1" port="43015">
-            <console-rmi-name>console</console-rmi-name>
+              <console-rmi-name>console</console-rmi-name>
         </beam-system-console>
         <beam host="127.0.0.1" port="43016">
-            <task-manager-rmi-name>TaskManager</task-manager-rmi-name>
-            <executor-rmi-name>Executor</executor-rmi-name>
-            <access-rmi-name>RemoteAccess</access-rmi-name>                      
+              <access-rmi-name>RemoteAccess</access-rmi-name>
+              <task-manager-rmi-name>TaskManager</task-manager-rmi-name>
+              <executor-rmi-name>Executor</executor-rmi-name>
+              <locations-rmi-name>LocationsHandler</locations-rmi-name>
+              <web-pages-rmi-name>WebPagesHandler</web-pages-rmi-name>
         </beam>        
     </rmi-info>
     
@@ -55,12 +57,6 @@
     </logging> 
         
     <ui>
-        <!--    
-            options for inner node (case insensitive):
-            - "JavaFX"
-            - "Swing"
-        -->
-        <inner>JavaFX</inner>  
         <external>system_console</external>      
     </ui>
     
@@ -91,6 +87,7 @@
         </core>       
     </databases>                              
 </configuration>
+
 
 
 

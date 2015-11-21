@@ -4,21 +4,15 @@
  */
 package com.drs.beam.core.modules.tasks;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Collections;
 import java.util.List;
 
-import com.drs.beam.core.entities.Task;
-import com.drs.beam.core.entities.util.TaskTimeFormatter;
-import com.drs.beam.core.entities.util.TaskVerifier;
-import com.drs.beam.core.entities.util.exceptions.TaskTimeFormatInvalidException;
-import com.drs.beam.core.entities.util.exceptions.TaskTimeInvalidException;
+import com.drs.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
+import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
 import com.drs.beam.core.modules.DataManagerModule;
 import com.drs.beam.core.modules.TaskManagerModule;
-import com.drs.beam.core.modules.data.dao.tasks.TasksDao;
-import com.drs.beam.core.modules.exceptions.ModuleInitializationException;
+import com.drs.beam.core.modules.data.DaoTasks;
 import com.drs.beam.core.modules.InnerIOModule;
 
 /**
@@ -34,7 +28,7 @@ class TaskManager implements TaskManagerModule {
     // Fields =============================================================================
     
     private final InnerIOModule ioEngine;
-    private final TasksDao tasksDao;
+    private final DaoTasks tasksDao;
     private final Object lock;
     private final TaskVerifier taskVerifier;
     private final TaskTimeFormatter formatter;
@@ -66,7 +60,7 @@ class TaskManager implements TaskManagerModule {
         return (this.firstTaskTime != null);
     }
     
-    private void refreshFirstTaskTime() throws SQLException{
+    private void refreshFirstTaskTime(){
         synchronized (this.lock){
             this.firstTaskTime = this.tasksDao.getFirstTaskTime();
         }                
@@ -77,16 +71,9 @@ class TaskManager implements TaskManagerModule {
      * after a period of it`s inactivity.
      */
     private void beginWork(){
-        List<Task> tasks;
-        try {
-            tasks = this.tasksDao.extractExpiredTasks(LocalDateTime.now());
-            this.refreshFirstTaskTime();
-        } catch (SQLException e){
-            this.ioEngine.reportExceptionAndExitLater(e, 
-                    "SQLException: extract expired tasks.", 
-                    "Program will be closed.");
-            throw new ModuleInitializationException();
-        }        
+        List<Task> tasks = this.tasksDao.extractExpiredTasks(LocalDateTime.now());
+        this.refreshFirstTaskTime();
+                
         for(Task task : tasks){
             this.performTask(task);
         }        
@@ -114,16 +101,8 @@ class TaskManager implements TaskManagerModule {
     
     // method to perform task, when it's time comes
     void performFirstTask(){
-        List<Task> tasks;
-        try {
-            tasks = this.tasksDao.extractFirstTasks();
-            this.refreshFirstTaskTime();
-        } catch (SQLException e){
-            this.ioEngine.reportExceptionAndExitLater(e, 
-                    "SQLException: extract firs tasks.", 
-                    "Program will be closed.");
-            throw new ModuleInitializationException();
-        }        
+        List<Task> tasks = this.tasksDao.extractFirstTasks();
+        this.refreshFirstTaskTime();        
         for (Task task : tasks){
             this.performTask(task);
         }        
@@ -149,9 +128,7 @@ class TaskManager implements TaskManagerModule {
             this.ioEngine.reportMessage("Time verifying: Wrong characters have been inputted!");
         } catch (DateTimeParseException e){
             this.ioEngine.reportMessage("Time verifying: Wrong time format.");
-        } catch (SQLException e) {
-            this.ioEngine.reportException(e, "SQLException: task saving.");
-        }   
+        }  
     }
     
     @Override
@@ -165,34 +142,17 @@ class TaskManager implements TaskManagerModule {
     
     @Override
     public List<Task> getFutureTasks(){
-        // value 1 defines that only future tasks are required.
-        try {
-            return this.tasksDao.getTasks(1);
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: get future tasks.");
-            return Collections.emptyList();
-        }
+        return this.tasksDao.getActualTasks();
     }
     
     @Override
     public List<Task> getPastTasks(){        
-        // value -1 defines that only past tasks are required.
-        try {
-            return this.tasksDao.getTasks(-1);
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: get past tasks.");
-            return Collections.emptyList();
-        }    
+        return this.tasksDao.getNonActualTasks();  
     }
     
     @Override
     public List<Task> getFirstTask(){
-        try {
-            return this.tasksDao.getTasksByTime(this.firstTaskTime);
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: get tasks by time.");
-            return Collections.emptyList();
-        }        
+        return this.tasksDao.getTasksByTime(this.firstTaskTime);
     }
     
     @Override
@@ -202,49 +162,29 @@ class TaskManager implements TaskManagerModule {
             return false;
         }
         
-        try {
-            boolean result = this.tasksDao.deleteTaskByText(text);
-            this.refreshFirstTaskTime();
-            return result;
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: delete tasks by text.");
-            return false;
-        }            
+        boolean result = this.tasksDao.deleteTaskByText(text);
+        this.refreshFirstTaskTime();
+        return result;                    
     }
     
     @Override
     public boolean removeAllTasks(){
-        try {
-            boolean result = this.tasksDao.deleteTasks(0);
-            this.refreshFirstTaskTime();
-            return result;
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: delete all tasks.");
-            return false;
-        }
+        boolean result = this.tasksDao.deleteAllTasks();
+        this.refreshFirstTaskTime();
+        return result;
     }
     
     @Override
     public boolean removeAllFutureTasks(){
-        try {
-            boolean result = this.tasksDao.deleteTasks(1);
-            this.refreshFirstTaskTime();
-            return result;
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: delete future tasks.");
-            return false;
-        }
+        boolean result = this.tasksDao.deleteActualTasks();
+        this.refreshFirstTaskTime();
+        return result;
     }
     
     @Override
     public boolean removeAllPastTasks(){
-        try {
-            boolean result = this.tasksDao.deleteTasks(-1);
-            this.refreshFirstTaskTime();
-            return result;
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: delete past tasks.");
-            return false;
-        }
+        boolean result = this.tasksDao.deleteNonActualTasks();
+        this.refreshFirstTaskTime();
+        return result;
     }
 }

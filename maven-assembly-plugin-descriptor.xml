@@ -15,6 +15,13 @@
         </includes>
     </fileSet>
     <fileSet>
+        <directory>src/main/external-resources</directory>
+        <outputDirectory>/</outputDirectory>
+        <includes>
+          <include>*.bat</include>
+        </includes>
+    </fileSet>
+    <fileSet>
         <directory>src/main/external-resources/config</directory>
         <outputDirectory>config</outputDirectory>
         <includes>
@@ -41,6 +48,10 @@
         <includes>
           <include>h2*.jar</include>
         </includes>    
+    </fileSet>
+    <fileSet>
+        <directory>src/main/java</directory>
+        <outputDirectory>src</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>

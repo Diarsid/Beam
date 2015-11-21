@@ -9,7 +9,7 @@ package stubs.io;
 import java.util.List;
 import java.util.Random;
 
-import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.tasks.Task;
 import com.drs.beam.core.modules.InnerIOModule;
 
 /**

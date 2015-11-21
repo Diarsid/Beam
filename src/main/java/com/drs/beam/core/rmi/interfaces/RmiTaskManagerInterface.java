@@ -4,8 +4,8 @@
  */
 package com.drs.beam.core.rmi.interfaces;
 
-import com.drs.beam.core.entities.Task;
-import com.drs.beam.core.entities.Task;
+import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.Task;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
