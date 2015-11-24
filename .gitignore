@@ -1,4 +1,6 @@
 /nbactions.xml
 /desktop.ini
 /target/
+/dev_private/
 /src/main/external-resources/lib/
+/GitBash*
