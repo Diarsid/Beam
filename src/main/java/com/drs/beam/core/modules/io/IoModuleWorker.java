@@ -95,7 +95,8 @@ class IoModuleWorker implements IoModule {
         }).start();
     }
     
-    boolean isExternalProcessorActive(){
+    @Override
+    public boolean isExternalProcessorActive() {
         try {            
             externalIOEngine.isActive();
             return true;

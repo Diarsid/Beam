@@ -65,7 +65,7 @@ public class ConsoleRemoteManager{
                     .getRegistry(ConfigContainer.getParam(ConfigParam.BEAMCORE_HOST), 
                             Integer.parseInt(ConfigContainer.getParam(ConfigParam.BEAMCORE_PORT)));                
             RmiRemoteControlInterface remoteAccessInterface = (RmiRemoteControlInterface) registry.lookup(ConfigContainer.getParam(ConfigParam.BEAM_ACCESS_NAME));
-            if(remoteAccessInterface.hasExternalIOProcessor()){
+            if(remoteAccessInterface.isExternalIoProcessorActive()){
                 showProblemMessageAndClose("Organizer already has external output!");
             } else{
                 remoteAccessInterface.acceptNewIOProcessor(ConfigContainer.getParam(ConfigParam.CONSOLE_NAME), 

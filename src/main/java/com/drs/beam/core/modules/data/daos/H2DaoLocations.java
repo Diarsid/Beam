@@ -199,7 +199,7 @@ class H2DaoLocations implements DaoLocations{
             PreparedStatement ps = con.prepareStatement(UPDATE_PATH_WHERE_NAME_LIKE);) {
             
             ps.setString(1, newPath);
-            ps.setString(2, locationName);
+            ps.setString(2, locationName.replace("\\", "/"));
             
             int qty = ps.executeUpdate();
             return (qty > 0);

@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
  * to force program to exit or change it`s behavior regarding it`s output activity.
  */
 public interface RmiRemoteControlInterface extends Remote {
-    boolean hasExternalIOProcessor() throws RemoteException;
+    boolean isExternalIoProcessorActive() throws RemoteException;
     void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort)
             throws RemoteException, NotBoundException;
     void useExternalShowTaskMethod() throws RemoteException;

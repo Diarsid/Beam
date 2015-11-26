@@ -17,6 +17,8 @@ import com.drs.gem.injector.module.Module;
  */
 public interface IoModule extends Module {
     
+    public boolean isExternalProcessorActive();
+    
     boolean hasExternalIOProcessor();    
     boolean useExternalShowTaskMethod();
     

@@ -31,8 +31,8 @@ class RmiRemoteControlAdapter implements RmiRemoteControlInterface{
     // Methods ============================================================================
     
     @Override
-    public boolean hasExternalIOProcessor() throws RemoteException{
-        return this.ioModule.hasExternalIOProcessor();
+    public boolean isExternalIoProcessorActive() throws RemoteException{
+        return this.ioModule.isExternalProcessorActive();
     }
     
     @Override
