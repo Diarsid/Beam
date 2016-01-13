@@ -17,8 +17,8 @@ import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 import com.drs.beam.core.modules.TaskManagerModule;
 import com.drs.gem.injector.core.Declaration;
-import com.drs.gem.injector.core.ModuleDeclaration;
-import com.drs.gem.injector.core.ModuleType;
+import com.drs.gem.injector.core.GemModuleDeclaration;
+import com.drs.gem.injector.core.GemModuleType;
 
 /**
  *
@@ -30,43 +30,43 @@ class BeamModulesDeclaration implements Declaration {
     }
     
     @Override
-    public Set<ModuleDeclaration> getDeclaredModules(){
-        Set<ModuleDeclaration> modules = new HashSet<>();
+    public Set<GemModuleDeclaration> getDeclaredModules(){
+        Set<GemModuleDeclaration> modules = new HashSet<>();
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 ConfigModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.config.ConfigModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 DataModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.data.DataModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 ExecutorModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.executor.ExecutorModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 IoModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.io.IoModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 IoInnerModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.innerio.IoInnerModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 RmiModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.rmi.RmiModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
-        modules.add(new ModuleDeclaration(
+        modules.add(new GemModuleDeclaration(
                 TaskManagerModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.tasks.TaskManagerModuleWorker",
-                ModuleType.SINGLETON));
+                GemModuleType.SINGLETON));
         
         return modules;
     }

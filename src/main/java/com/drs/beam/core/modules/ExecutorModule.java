@@ -8,13 +8,13 @@ package com.drs.beam.core.modules;
 import java.util.List;
 
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
-import com.drs.gem.injector.module.Module;
+import com.drs.gem.injector.module.GemModule;
 
 /**
  *
  * @author Diarsid
  */
-public interface ExecutorModule extends Module {
+public interface ExecutorModule extends GemModule {
         
     void open(List<String> commandParams);
     void run(List<String> commandParams);

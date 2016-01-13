@@ -9,13 +9,13 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import com.drs.beam.external.ExternalIOInterface;
-import com.drs.gem.injector.module.Module;
+import com.drs.gem.injector.module.GemModule;
 
 /**
  *
  * @author Diarsid
  */
-public interface IoModule extends Module {
+public interface IoModule extends GemModule {
     
     public boolean isExternalProcessorActive();
     

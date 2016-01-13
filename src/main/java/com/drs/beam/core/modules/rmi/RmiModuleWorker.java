@@ -31,7 +31,7 @@ import com.drs.beam.util.config.ConfigParam;
  *
  * @author Diarsid
  */
-class RmiModuleWorker implements RmiModule{
+class RmiModuleWorker implements RmiModule {
     // Fields =============================================================================
     
     private final IoInnerModule ioEngine;
@@ -49,34 +49,34 @@ class RmiModuleWorker implements RmiModule{
             ConfigModule configModule,
             DataModule dataModule,
             ExecutorModule executorModule,
-            TaskManagerModule taskManagerModule){
+            TaskManagerModule taskManagerModule) {
         
         this.ioEngine = innerIoModule;
         this.config = configModule;
         
-        this.rmiExecutorInterface = new RmiExecutorAdapter(executorModule);
-        this.rmiTaskManagerInterface = new RmiTaskManagerAdapter(taskManagerModule);
-        this.rmiRemoteControlInterface = new RmiRemoteControlAdapter(ioModule);
-        this.rmiLocationsHandlerInterface = new RmiLocationsHandlerAdapter(
+        this.rmiExecutorInterface = new RmiAdapterForExecutor(executorModule);
+        this.rmiTaskManagerInterface = new RmiAdapterForTaskManager(taskManagerModule);
+        this.rmiRemoteControlInterface = new RmiAdapterForRemoteControl(ioModule);
+        this.rmiLocationsHandlerInterface = new RmiAdapterForLocationsHandler(
                 dataModule.getLocationsDao(), executorModule);
-        this.rmiWebPageHandlerInterface = new RmiWebPageHandlerAdapter(
+        this.rmiWebPageHandlerInterface = new RmiAdapterForWebPageHandler(
                 dataModule.getWebPagesDao());
     }
     
     // Methods ============================================================================
     
     @Override
-    public RmiExecutorInterface getRmiExecutorInterface(){
+    public RmiExecutorInterface getRmiExecutorInterface() {
         return this.rmiExecutorInterface;
     }
     
     @Override
-    public RmiTaskManagerInterface getRmiTaskManagerInterface(){
+    public RmiTaskManagerInterface getRmiTaskManagerInterface() {
         return this.rmiTaskManagerInterface;
     }
     
     @Override
-    public RmiRemoteControlInterface getRmiRemoteControlInterface(){
+    public RmiRemoteControlInterface getRmiRemoteControlInterface() {
         return this.rmiRemoteControlInterface;
     }
 
@@ -91,11 +91,11 @@ class RmiModuleWorker implements RmiModule{
     }
     
     @Override
-    public void exportInterfaces(){
+    public void exportInterfaces() {
         
         if (System.getSecurityManager()==null)
             System.setSecurityManager(new SecurityManager());
-        try{            
+        try {            
             int beamCorePort = Integer.parseInt(config.getParameter(ConfigParam.BEAMCORE_PORT));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RmiRemoteControlInterface orgIOStub = 
@@ -124,7 +124,7 @@ class RmiModuleWorker implements RmiModule{
             registry.bind(config.getParameter(ConfigParam.LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
             registry.bind(config.getParameter(ConfigParam.WEB_PAGES_HANDLER_NAME), WebPagesHandlerStub);
 
-        }catch (AlreadyBoundException|RemoteException e){            
+        } catch (AlreadyBoundException|RemoteException e) {            
             ioEngine.reportExceptionAndExitLater(e, 
                     "Export Beam.Server modules failure.",
                     "Program will be closed.");

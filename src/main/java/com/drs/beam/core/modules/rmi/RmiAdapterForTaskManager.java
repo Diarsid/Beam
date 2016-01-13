@@ -17,12 +17,12 @@ import java.util.List;
  *
  * @author Diarsid
  */
-class RmiTaskManagerAdapter implements RmiTaskManagerInterface{
+class RmiAdapterForTaskManager implements RmiTaskManagerInterface{
     // Fields =============================================================================
     private final TaskManagerModule taskManagerModule;
     // Constructors =======================================================================
     
-    RmiTaskManagerAdapter(TaskManagerModule taskManagerModule){
+    RmiAdapterForTaskManager(TaskManagerModule taskManagerModule){
         this.taskManagerModule = taskManagerModule;
     }
 

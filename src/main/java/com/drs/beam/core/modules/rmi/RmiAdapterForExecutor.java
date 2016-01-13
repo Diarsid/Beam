@@ -19,14 +19,14 @@ import com.drs.beam.core.modules.executor.StoredExecutorCommand;
  *
  * @author Diarsid
  */
-class RmiExecutorAdapter implements RmiExecutorInterface {
+class RmiAdapterForExecutor implements RmiExecutorInterface {
     // Fields =============================================================================
     
     private final ExecutorModule executorModule;
     
     // Constructors =======================================================================
 
-    RmiExecutorAdapter(ExecutorModule executorModule) {
+    RmiAdapterForExecutor(ExecutorModule executorModule) {
         this.executorModule = executorModule;
     }
     

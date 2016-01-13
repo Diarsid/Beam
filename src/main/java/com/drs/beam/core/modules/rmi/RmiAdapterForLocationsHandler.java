@@ -18,7 +18,7 @@ import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
  *
  * @author Diarsid
  */
-class RmiLocationsHandlerAdapter implements RmiLocationsHandlerInterface{
+class RmiAdapterForLocationsHandler implements RmiLocationsHandlerInterface{
     // Fields =============================================================================
     
     private final DaoLocations dao;
@@ -26,7 +26,7 @@ class RmiLocationsHandlerAdapter implements RmiLocationsHandlerInterface{
 
     // Constructors =======================================================================
  
-    RmiLocationsHandlerAdapter(DaoLocations dao, ExecutorModule executor) {
+    RmiAdapterForLocationsHandler(DaoLocations dao, ExecutorModule executor) {
         this.dao = dao;
         this.executorModule = executor;
     }

@@ -8,13 +8,13 @@ package com.drs.beam.core.modules;
 import java.util.List;
 
 import com.drs.beam.core.modules.tasks.Task;
-import com.drs.gem.injector.module.Module;
+import com.drs.gem.injector.module.GemModule;
 
 /**
  *
  * @author Diarsid
  */
-public interface TaskManagerModule extends Module {
+public interface TaskManagerModule extends GemModule {
         
     void createNewTask(String time, String[] task);
     

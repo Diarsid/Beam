@@ -17,14 +17,14 @@ import com.drs.beam.core.modules.IoModule;
  *
  * @author Diarsid
  */
-class RmiRemoteControlAdapter implements RmiRemoteControlInterface{
+class RmiAdapterForRemoteControl implements RmiRemoteControlInterface{
     // Fields =============================================================================
     
     private final IoModule ioModule;
     
     // Constructors =======================================================================
 
-    RmiRemoteControlAdapter(IoModule ioModule) {
+    RmiAdapterForRemoteControl(IoModule ioModule) {
         this.ioModule = ioModule;
     }
     

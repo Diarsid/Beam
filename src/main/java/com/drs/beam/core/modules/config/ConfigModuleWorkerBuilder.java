@@ -8,13 +8,13 @@ package com.drs.beam.core.modules.config;
 
 import com.drs.beam.core.Beam;
 import com.drs.beam.core.modules.ConfigModule;
-import com.drs.gem.injector.module.ModuleBuilder;
+import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
  *
  * @author Diarsid
  */
-class ConfigModuleWorkerBuilder implements ModuleBuilder<ConfigModule> {
+class ConfigModuleWorkerBuilder implements GemModuleBuilder<ConfigModule> {
     
     ConfigModuleWorkerBuilder() {
     }

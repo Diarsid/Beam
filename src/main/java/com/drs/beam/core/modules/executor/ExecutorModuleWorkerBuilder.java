@@ -11,13 +11,13 @@ import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.executor.os.OSProvider;
-import com.drs.gem.injector.module.ModuleBuilder;
+import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
  *
  * @author Diarsid
  */
-class ExecutorModuleWorkerBuilder implements ModuleBuilder<ExecutorModule> {
+class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     private final DataModule dataModule;
     private final IoInnerModule ioInnerModule;

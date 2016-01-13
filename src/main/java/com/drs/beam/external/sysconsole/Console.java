@@ -90,6 +90,15 @@ public class Console implements Runnable, ExternalIOInterface{
         this.webPages = webPagesHandler;
     }
     
+    String readConsole() throws IOException{
+        String info = this.reader.readLine().trim().toLowerCase();
+        if ( checkOnStop(info) ){
+            return "";
+        } else {
+            return info;
+        }
+    }
+    
     BufferedReader reader(){
         return this.reader;
     }
@@ -161,7 +170,7 @@ public class Console implements Runnable, ExternalIOInterface{
     private boolean confirmAction(String actionDescription) throws IOException{
         this.printBeamWithMessageLn(actionDescription);
         this.printUnder("yes / no : ");
-        String response = this.reader.readLine().trim().toLowerCase();
+        String response = this.readConsole();
         return checkOnYes(response);
     }
     
@@ -942,10 +951,7 @@ public class Console implements Runnable, ExternalIOInterface{
     
     private void getLocation() throws IOException{
         this.printUnder("name: ");
-        String location = this.reader.readLine().trim().toLowerCase();
-        if (checkOnStop(location)){
-            return;
-        }
+        String location = this.readConsole();
         if (location.length() > 0){
             this.printLocations(this.locations.getLocations(location));
         }
@@ -953,10 +959,7 @@ public class Console implements Runnable, ExternalIOInterface{
     
      private void getPage() throws IOException{
         this.printUnder("name: ");
-        String name = this.reader.readLine().trim().toLowerCase();
-        if (checkOnStop(name)){
-            return;
-        }
+        String name = this.readConsole();
         if (name.length() > 0){
             this.printWebPages(this.webPages.getWebPages(name), false);
         }
@@ -964,10 +967,7 @@ public class Console implements Runnable, ExternalIOInterface{
      
     private void getPagesOfCategory() throws IOException {
         this.printUnder("category: ");
-        String category = this.reader.readLine().trim().toLowerCase();
-        if (checkOnStop(category)){
-            return;
-        }
+        String category = this.readConsole();
         if (category.length() > 0){
             this.printWebPages(this.webPages.getAllWebPagesOfCategory(category), false);
         }
@@ -975,10 +975,7 @@ public class Console implements Runnable, ExternalIOInterface{
     
     private void getCommand() throws IOException {
         this.printUnder("name: ");
-        String commandName = this.reader.readLine().trim().toLowerCase();
-        if (checkOnStop(commandName)){
-            return;
-        }
+        String commandName = this.readConsole();
         if (commandName.length() > 0){            
             List<StoredExecutorCommand> commands = this.executor.getCommand(commandName);
             this.printCommands(commands);

@@ -9,13 +9,13 @@ import com.drs.beam.core.modules.data.DaoCommands;
 import com.drs.beam.core.modules.data.DaoLocations;
 import com.drs.beam.core.modules.data.DaoTasks;
 import com.drs.beam.core.modules.data.DaoWebPages;
-import com.drs.gem.injector.module.Module;
+import com.drs.gem.injector.module.GemModule;
 
 /**
  *
  * @author Diarsid
  */
-public interface DataModule extends Module {
+public interface DataModule extends GemModule {
     
     DaoTasks getTasksDao();    
     DaoLocations getLocationsDao();  

@@ -11,13 +11,13 @@ import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.innerio.gui.GuiJavaFX;
 import com.drs.beam.util.config.ConfigParam;
-import com.drs.gem.injector.module.ModuleBuilder;
+import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
  *
  * @author Diarsid
  */
-class IoInnerModuleWorkerBuilder implements ModuleBuilder<IoInnerModule>{
+class IoInnerModuleWorkerBuilder implements GemModuleBuilder<IoInnerModule>{
     
     private final IoModule ioOuterModule;
     private final ConfigModule configModule;

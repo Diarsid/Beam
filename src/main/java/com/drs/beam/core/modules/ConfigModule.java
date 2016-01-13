@@ -6,13 +6,13 @@
 package com.drs.beam.core.modules;
 
 import com.drs.beam.util.config.ConfigParam;
-import com.drs.gem.injector.module.Module;
+import com.drs.gem.injector.module.GemModule;
 
 /**
  *
  * @author Diarsid
  */
-public interface ConfigModule extends Module{
+public interface ConfigModule extends GemModule{
     
     void parseStartArgumentsIntoConfiguration(String[] args);
     

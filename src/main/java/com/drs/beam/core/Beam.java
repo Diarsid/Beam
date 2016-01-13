@@ -11,6 +11,7 @@ import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 import com.drs.gem.injector.core.Container;
+import com.drs.gem.injector.core.GemInjector;
 
 
 /**
@@ -44,11 +45,12 @@ public class Beam {
            
     public static void main(String[] args) {
         configArgs = args;
-        Container container = Container.buildContainer(new BeamModulesDeclaration());
+        Container container = GemInjector.buildContainer("main", new BeamModulesDeclaration());
         container.init();
-        RmiModule rmiModule = container.getModule(RmiModule.class);
-        Beam.saveRmiInterfacesInStaticContext(rmiModule);
-        rmiModule.exportInterfaces();        
+        //RmiModule rmiModule = container.getModule(RmiModule.class);
+        //Beam.saveRmiInterfacesInStaticContext(rmiModule);
+        //rmiModule.exportInterfaces();      
+        GemInjector.clear();
     }
     
     public static String getConfigFilePath(){

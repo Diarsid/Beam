@@ -7,7 +7,7 @@ package com.drs.beam.core.modules;
 import java.util.List;
 
 import com.drs.beam.core.modules.tasks.Task;
-import com.drs.gem.injector.module.Module;
+import com.drs.gem.injector.module.GemModule;
 
 /*
  * Interface defines methods for output within the program.
@@ -17,7 +17,7 @@ import com.drs.gem.injector.module.Module;
  * display given output infomation according to it`s 
  * types, settings and other requirements.
  */
-public interface IoInnerModule extends Module{  
+public interface IoInnerModule extends GemModule{  
     
     void showTask(Task task);  
     

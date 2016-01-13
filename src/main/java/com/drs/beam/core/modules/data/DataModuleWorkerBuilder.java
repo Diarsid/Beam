@@ -11,13 +11,13 @@ import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.base.builder.DataBaseBuilder;
 import com.drs.beam.core.modules.data.daos.DaosInfo;
-import com.drs.gem.injector.module.ModuleBuilder;
+import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
  *
  * @author Diarsid
  */
-class DataModuleWorkerBuilder implements ModuleBuilder<DataModule> {
+class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
     private final IoInnerModule ioInnerModule;
     private final ConfigModule configModule;

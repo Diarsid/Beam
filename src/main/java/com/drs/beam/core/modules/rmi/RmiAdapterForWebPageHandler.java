@@ -17,13 +17,13 @@ import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
  *
  * @author Diarsid
  */
-public class RmiWebPageHandlerAdapter implements RmiWebPageHandlerInterface{
+public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     // Fields =============================================================================
 
     private final DaoWebPages dao;
     
     // Constructors =======================================================================
-    public RmiWebPageHandlerAdapter(DaoWebPages dao) {
+    public RmiAdapterForWebPageHandler(DaoWebPages dao) {
         this.dao = dao;
     }
     // Methods ============================================================================
