@@ -110,6 +110,18 @@ public class InputHandler {
             String input;
             while (true){
                 this.console.printUnder("choose: ");
+                Thread listener = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        
+                    }
+                });
+                Thread timer = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        
+                    }
+                });
                 input = this.console.reader().readLine();
                 if (this.console.checkOnStop(input)){
                     return -1;

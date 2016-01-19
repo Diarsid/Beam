@@ -6,11 +6,11 @@
 
 package com.drs.beam.core.modules.tasks;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-import com.drs.beam.core.modules.tasks.Task;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
 
@@ -33,10 +33,12 @@ class TaskTimeFormatter {
      */
     LocalDateTime ofFormat(String timeString, boolean mustBeFuture) 
             throws 
+            DateTimeException,
             DateTimeParseException, 
             NumberFormatException, 
             TaskTimeInvalidException, 
-            TaskTimeFormatInvalidException{
+            TaskTimeFormatInvalidException {
+        
         LocalDateTime time = null;
         // get length of incoming string to define it's format
         parsing: switch (timeString.length()){

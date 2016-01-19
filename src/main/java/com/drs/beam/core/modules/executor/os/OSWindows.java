@@ -55,7 +55,7 @@ public class OSWindows implements OS {
             this.executorService.execute(
                     new RunnableDesktopOpenTask(
                             this.ioEngine,
-                            location.getPath()));
+                            location.getPath()));            
             this.ioEngine.reportMessage("opening...");
         }     
     }

@@ -32,6 +32,7 @@ public class ExecutorTest {
     DaoLocations locDao;
     DaoCommands comDao;
     OS os;
+    IntelligentResolver intell;
     
     @Test
     @Before
@@ -44,8 +45,9 @@ public class ExecutorTest {
         when(data.getCommandsDao()).thenReturn(comDao);
         when(data.getLocationsDao()).thenReturn(locDao);
         os = mock(OS.class);
+        intell = mock(IntelligentResolver.class);
         
-        exec = new ExecutorModuleWorker(io, data, os);
+        exec = new ExecutorModuleWorker(io, data, intell, os);
     }
     
     @Test

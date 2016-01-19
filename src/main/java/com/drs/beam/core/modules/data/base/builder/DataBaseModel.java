@@ -16,9 +16,8 @@ import java.util.Map;
  * @author Diarsid
  */
 class DataBaseModel {
-    // Fields =============================================================================
+    
     private final Map<String, TableInfo> tables;
-    // Constructors =======================================================================
 
     DataBaseModel() {
         this.tables = new HashMap<>();
@@ -59,6 +58,14 @@ class DataBaseModel {
                 "page_browser   VARCHAR(10)     NOT NULL)",
                 5);
         this.tables.put(webPages.name, webPages);
+        
+        TableInfo commandChoices = new TableInfo(
+                "command_choices", 
+                "CREATE TABLE command_choices (" +
+                "choice_id      INTEGER         NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "command        VARCHAR(100)    NOT NULL, " +
+                "choice         VARCHAR(30)     NOT NULL)",
+                3);
     }
     
     // Methods ============================================================================

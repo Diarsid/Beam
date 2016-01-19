@@ -4,6 +4,7 @@
  */
 package com.drs.beam.core.modules.tasks;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -128,7 +129,9 @@ class TaskManagerModuleWorker implements TaskManagerModule {
             this.ioEngine.reportMessage("Time verifying: Wrong characters have been inputted!");
         } catch (DateTimeParseException e){
             this.ioEngine.reportMessage("Time verifying: Wrong time format.");
-        }  
+        } catch (DateTimeException e) {
+            this.ioEngine.reportMessage("Time verifying: Invalid dates out of range.");
+        } 
     }
     
     @Override

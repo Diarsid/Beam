@@ -34,6 +34,9 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     @Override
     public ExecutorModule buildModule() {        
         OS os = OSProvider.getOS(this.ioInnerModule, this.configModule);
-        return new ExecutorModuleWorker(this.ioInnerModule, this.dataModule, os);
+        IntelligentResolver intell = 
+                new IntelligentResolver(this.dataModule, this.ioInnerModule);
+        return new ExecutorModuleWorker(
+                this.ioInnerModule, this.dataModule, intell, os);
     }
 }

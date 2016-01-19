@@ -44,12 +44,10 @@ public class Beam {
    
            
     public static void main(String[] args) {
+        System.out.println("begin...");
         configArgs = args;
         Container container = GemInjector.buildContainer("main", new BeamModulesDeclaration());
         container.init();
-        //RmiModule rmiModule = container.getModule(RmiModule.class);
-        //Beam.saveRmiInterfacesInStaticContext(rmiModule);
-        //rmiModule.exportInterfaces();      
         GemInjector.clear();
     }
     

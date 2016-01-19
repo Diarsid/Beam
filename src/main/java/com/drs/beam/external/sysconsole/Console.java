@@ -931,7 +931,7 @@ public class Console implements Runnable, ExternalIOInterface{
             return;
         }
         if (this.webPages.renameCategory(category, newCategory)){
-            this.printUnder("Category renamed.");
+            this.printUnderLn("Category renamed.");
         }
     }
     

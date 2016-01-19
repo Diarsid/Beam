@@ -23,14 +23,17 @@ class ExecutorModuleWorker implements ExecutorModule{
     // Fields =============================================================================
     
     private final IoInnerModule ioEngine;
+    private final IntelligentResolver intell;
     private final OS system;
     private final DaoLocations locationsDao;
     private final DaoCommands commandsDao;
-    private final DaoWebPages pagesDao;
+    private final DaoWebPages pagesDao;     
     
     // Constructors =======================================================================
-    ExecutorModuleWorker(IoInnerModule io, DataModule dataModule, OS os) {
+    ExecutorModuleWorker(
+            IoInnerModule io, DataModule dataModule, IntelligentResolver i, OS os) {
         this.ioEngine = io;
+        this.intell = i;
         this.locationsDao = dataModule.getLocationsDao();
         this.commandsDao = dataModule.getCommandsDao();
         this.pagesDao = dataModule.getWebPagesDao();
@@ -98,7 +101,9 @@ class ExecutorModuleWorker implements ExecutorModule{
     
     @Override
     public void openWebPage(List<String> commandParams){
-        if (commandParams.contains("with") || commandParams.contains("w")){
+        if (commandParams.contains("with") || 
+                commandParams.contains("w") || 
+                commandParams.contains("in")) {
             this.openWebPageWithGivenBrowser(commandParams);
         } else {
             this.openWebPages(commandParams);
@@ -211,6 +216,15 @@ class ExecutorModuleWorker implements ExecutorModule{
                     this.stop(commandParams);
                     break;
                 }
+                case "see" :
+                case "www" : {
+                    this.openWebPage(commandParams);
+                    break;
+                }
+                case "pause" : {
+                    this.pauseCommandExecution(commandParams);
+                    break;
+                }
                 default : {
                     this.ioEngine.reportError("Unrecognizible command.");
                 }
@@ -306,10 +320,12 @@ class ExecutorModuleWorker implements ExecutorModule{
     
     private void openWebPageWithGivenBrowser(List<String> commandParams){
         // command pattern: see [webPage] with|w [browserName]
-        if (commandParams.size() > 3 && commandParams.get(2).contains("w")){
+        if (commandParams.size() > 3 && 
+                (commandParams.get(2).contains("w") || 
+                commandParams.get(2).contains("in") )){
             WebPage page = this.getWebPage(commandParams.get(1));
             String browserName = commandParams.get(3);
-            if (page != null){
+            if (page != null) {
                 if (browserName.equals("default") || browserName.equals("def")){
                     this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
                     this.pagesDao.editWebPageBrowser(page.getName(), "default");
@@ -363,4 +379,21 @@ class ExecutorModuleWorker implements ExecutorModule{
             } 
         }
     }    
+    
+    private void pauseCommandExecution(List<String> commandParams) {
+        // default value for pause. It will be used in no other value has been 
+        // specified explicitly.
+        int pause = 5000;
+        try {
+            // if after 'pause' there are an argument 
+            // that contains numbers 0-9 only
+            if ( (commandParams.size() > 1) && (commandParams.get(1).matches("\\d+")) ) {
+                pause = Integer.parseInt(commandParams.get(1));
+            }
+            this.ioEngine.reportMessage("pause " + (pause/1000) + " sec...");
+            Thread.sleep(pause);
+        } catch (InterruptedException e) {
+            // nothing to do with it.
+        }
+    }
 }

@@ -17,7 +17,7 @@ import com.drs.gem.injector.module.GemModule;
  * display given output infomation according to it`s 
  * types, settings and other requirements.
  */
-public interface IoInnerModule extends GemModule{  
+public interface IoInnerModule extends GemModule {  
     
     void showTask(Task task);  
     

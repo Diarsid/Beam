@@ -25,7 +25,7 @@ import com.drs.beam.core.modules.data.DataBase;
  *
  * @author Diarsid
  */
-class H2DaoLocations implements DaoLocations{
+class H2DaoLocations implements DaoLocations {
     // Fields =============================================================================
     private final DataBase data;
     private final IoInnerModule ioEngine;

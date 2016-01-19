@@ -54,6 +54,11 @@ class DataModuleWorker implements DataModule {
         return (DaoWebPages) this.assembleConcreteDao(DaoWebPages.class);
     }
     
+    @Override
+    public DaoIntellChoice getIntellChoiceDao() {
+        return (DaoIntellChoice) this.assembleConcreteDao(DaoIntellChoice.class);
+    }
+    
     private Object assembleConcreteDao(Class daoInterface){
         try {
             
