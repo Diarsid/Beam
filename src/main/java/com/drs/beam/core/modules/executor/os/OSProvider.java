@@ -9,6 +9,7 @@ import com.drs.beam.core.modules.ConfigModule;
 import com.drs.beam.core.modules.executor.OS;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.IoInnerModule;
+import com.drs.beam.core.modules.executor.IntelligentResolver;
 
 /**
  *

@@ -12,7 +12,7 @@ import com.drs.gem.injector.module.GemModule;
  *
  * @author Diarsid
  */
-public interface ConfigModule extends GemModule{
+public interface ConfigModule extends GemModule {
     
     void parseStartArgumentsIntoConfiguration(String[] args);
     

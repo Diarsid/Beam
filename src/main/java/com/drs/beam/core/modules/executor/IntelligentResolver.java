@@ -8,6 +8,7 @@ package com.drs.beam.core.modules.executor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.IoInnerModule;
@@ -17,7 +18,7 @@ import com.drs.beam.core.modules.data.DaoIntellChoice;
  *
  * @author Diarsid
  */
-class IntelligentResolver {
+public class IntelligentResolver {
     
     private final IoInnerModule ioEngine;
     private final DaoIntellChoice choiceDao;
@@ -32,7 +33,7 @@ class IntelligentResolver {
         this.choiceDao = data.getIntellChoiceDao();
     }
     
-    int resolve(
+    public int resolve(
             String question, String command, List<String> variants) {        
         
         if ( this.active ) {
@@ -54,7 +55,7 @@ class IntelligentResolver {
             return this.askIoAndRememberChoice(question, command, variants);
         } else {
             if ( variants.contains(choice) ) {
-                return variants.indexOf(choice);
+                return variants.indexOf(choice)+1;
             } else {
                 return this.askIoAndRememberChoice(question, command, variants);
             }
@@ -81,10 +82,14 @@ class IntelligentResolver {
                 medium = medium + variants.get(i).length();
             }
             medium = (medium - maxLength - minLength) / (variants.size() - 2);
-            if ( (minLength*1.0 / medium ) > 0.7 ) {
+            if ( (minLength*1.0 / medium ) > 0.6 ) {
                 return "";
             } else {
-                return min;
+                if (min.length() > 1) {
+                    return min;
+                } else {
+                    return "";
+                }                
             }
         } else {
             if (variants.get(0).length() > variants.get(1).length()) {
@@ -98,33 +103,15 @@ class IntelligentResolver {
             } else {
                 return "";
             }
-            if ((minLength * 1.0 / maxLength) > 0.7) {
+            if ((minLength * 1.0 / maxLength) > 0.6) {
                 return "";
             } else {
-                return min;
+                if (min.length() > 1) {
+                    return min;
+                } else {
+                    return "";
+                }
             }
-        }
-    }
-    
-    void setActive(boolean isActive) {
-        this.active = isActive;
-    }
-    
-    void setAskUserToRememberHisChoice(boolean askUser) {
-        this.shouldAskUser = askUser;
-    }
-    
-    boolean deleteMem(String command) {
-        List<String> commands = this.choiceDao.getCommandsInChoicesLike(command);
-        if ( commands.isEmpty() ) {
-            this.ioEngine.reportMessage("There is no such command in memory.");
-            return false;
-        } else if ( commands.size() > 1 ) {
-            int delete = this.ioEngine.resolveVariantsWithExternalIO(
-                    "Which command delete from memory?", commands);
-            return this.choiceDao.deleteChoiceForCommand(commands.get(delete-1));
-        } else {
-            return this.choiceDao.deleteChoiceForCommand(command);
         }
     }
     
@@ -133,18 +120,62 @@ class IntelligentResolver {
         
         int choiceNumber = 
                 this.ioEngine.resolveVariantsWithExternalIO(question, variants);
-        if ( this.shouldAskUser ) {
-            List<String> yesOrNo = new ArrayList<>();
-            yesOrNo.add("yes");
-            yesOrNo.add("no");
-            int remember = this.ioEngine.resolveVariantsWithExternalIO(
-                    "remember your choice for this command?", yesOrNo);
-            if ( remember == 1 ) {
+        if ( choiceNumber > -1 ) {
+            if ( this.shouldAskUser ) {
+                List<String> yesOrNo = new ArrayList<>();
+                yesOrNo.add("yes");
+                yesOrNo.add("no");
+                int remember = this.ioEngine.resolveVariantsWithExternalIO(
+                        "remember your choice for this command?", yesOrNo);
+                if ( remember == 1 ) {
+                    this.choiceDao.newChoice(command, variants.get(choiceNumber-1));
+                }
+            } else {
                 this.choiceDao.newChoice(command, variants.get(choiceNumber-1));
             }
-        } else {
-            this.choiceDao.newChoice(command, variants.get(choiceNumber-1));
         }
         return choiceNumber;
+    }
+    
+    Map<String, String> getAllChoices() {
+        return this.choiceDao.getAllChoices();
+    }
+    
+    void setActive(boolean isActive) {
+        this.active = isActive;
+        if ( isActive ) {
+            this.ioEngine.reportMessage("Intelligent command resolving enabled.");
+        } else {
+            this.ioEngine.reportMessage("Intelligent command resolving disabled.");
+        }
+    }
+    
+    void setAskUserToRememberHisChoice(boolean askUser) {
+        this.shouldAskUser = askUser;
+        if ( askUser ) {
+            this.ioEngine.reportMessage("I will ask before remembering your choice.");
+        } else {
+            this.ioEngine.reportMessage("I will NOT ask before remembering your choice.");
+        }        
+    }
+    
+    boolean deleteMem(String command) {
+        List<String> commands = this.choiceDao.getChoicesLike(command);
+        if ( commands.isEmpty() ) {
+            this.ioEngine.reportMessage("There is no such command in memory.");
+            return false;
+        } else if ( commands.size() > 1 ) {
+            int delete = this.ioEngine.resolveVariantsWithExternalIO(
+                    "Which command delete from memory?", commands);
+            if (delete > 0) {
+                String del = commands.get(delete-1);
+                del = del.substring(0, del.indexOf("-> ")).trim();                
+                return this.choiceDao.deleteChoiceForCommand(del);
+            } else {
+                return false;
+            }            
+        } else {
+            return this.choiceDao.deleteChoiceForCommand(command+"%");
+        }
     }
 }

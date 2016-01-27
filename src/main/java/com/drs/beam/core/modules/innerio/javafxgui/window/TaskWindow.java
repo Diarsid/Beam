@@ -81,7 +81,7 @@ class TaskWindow extends BeamWindow implements Runnable {
         taskTextBox.getChildren().addAll(taskTimeLabel, taskTextLabel);
         hBox.getChildren().addAll(picture, taskTextBox);
         
-        mainVBox.getChildren().addAll(hBox, newOkButton());
+        mainVBox.getChildren().addAll(hBox, newOkButton("Done"));
         
         return mainVBox;
     }

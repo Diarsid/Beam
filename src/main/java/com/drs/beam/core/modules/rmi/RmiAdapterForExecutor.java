@@ -11,6 +11,7 @@ import com.drs.beam.core.rmi.interfaces.RmiExecutorInterface;
 
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
@@ -85,5 +86,25 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     @Override
     public boolean deleteCommand(String commandName) throws RemoteException{
         return this.executorModule.deleteCommand(commandName);
+    }
+    
+    @Override
+    public void setIntelligentActive(boolean isActive) throws RemoteException {
+        this.executorModule.setIntelligentActive(isActive);
+    } 
+    
+    @Override
+    public boolean deleteMem(String command) throws RemoteException {
+        return this.executorModule.deleteMem(command);
+    }     
+    
+    @Override
+    public void setAskUserToRememberHisChoice(boolean askUser) throws RemoteException {
+        this.executorModule.setAskUserToRememberHisChoice(askUser);
+    } 
+    
+    @Override
+    public Map<String, String> getAllChoices() throws RemoteException {
+        return this.executorModule.getAllChoices();
     }
 }

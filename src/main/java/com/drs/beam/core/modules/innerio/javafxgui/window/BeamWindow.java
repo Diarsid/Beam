@@ -116,8 +116,8 @@ abstract class BeamWindow {
         return this.provider;
     }
     
-    Button newOkButton() {
-        Button button = new Button("OK");    
+    Button newOkButton(String text) {
+        Button button = new Button(text);    
         button.setStyle(provider.getCommonButtonStyle());
         button.setMinWidth(100);
         button.setMinHeight(30);

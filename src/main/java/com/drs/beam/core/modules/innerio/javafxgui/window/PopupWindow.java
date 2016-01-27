@@ -99,7 +99,7 @@ class PopupWindow extends BeamWindow implements Runnable {
         messageTextBox.getChildren().addAll(messageLabel);
         hBox.getChildren().addAll(picture, messageTextBox);
         
-        mainVBox.getChildren().addAll(hBox, newOkButton());  
+        mainVBox.getChildren().addAll(hBox, newOkButton("OK"));  
         return mainVBox;
     }
 }

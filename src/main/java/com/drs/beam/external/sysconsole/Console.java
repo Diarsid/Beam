@@ -13,6 +13,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.core.entities.Location;
@@ -43,8 +44,8 @@ public class Console implements Runnable, ExternalIOInterface{
     private final String SPACE =    "       ";
     private final String ERROR =    "Beam error > ";
     
-    private final String[] yesPatterns = {"y", "+", "yes", "ye"};
-    private final String[] stopPatterns = {".", "", "s", " "};
+    private final String[] yesPatterns = {"y", "+", "yes", "ye", "true", "enable"};
+    private final String[] stopPatterns = {".", "", "s", " ", "-", "false", "disable"};
     private final String[] helpPatterns = {"h", "help", "hlp", "hp"};
     
     private RmiTaskManagerInterface taskManager;
@@ -333,6 +334,11 @@ public class Console implements Runnable, ExternalIOInterface{
                                 getLocations();
                                 break parsing;
                             }
+                            case "mem" :
+                            case "choices" : {
+                                getAllChoices();
+                                break parsing;
+                            }
                             case "comm" :
                             case "comms" :    
                             case "commands" : {
@@ -404,6 +410,11 @@ public class Console implements Runnable, ExternalIOInterface{
                                 deleteWebPage();
                                 break parsing;
                             }
+                            case "mem" :
+                            case "memory" : {
+                                deleteMem();
+                                break parsing;
+                            }                                
                             case "com" :
                             case "comm" :
                             case "command" : {
@@ -482,15 +493,60 @@ public class Console implements Runnable, ExternalIOInterface{
                         }
                     }
                     case "clear" : {
-                        if (params.size() < 2){
+                        if (params.size() < 2) {
                             continue input;
                         }
-                        switch (params.get(1)){
+                        switch (params.get(1)) {
                             case "tasks" : {
-                                this.taskManager.removeAllPastTasks();
+                                if (this.taskManager.removeAllPastTasks()) {
+                                    printUnderLn("Past tasks removed.");
+                                }
                             }
                             default : {
                                 break parsing;
+                            }
+                        }
+                    }
+                    case "set" : {
+                        if (params.size() < 2) {
+                            continue input;
+                        }
+                        switch (params.get(1)) {
+                            case "intell" :
+                            case "intel" : {
+                                if (params.size() < 3) {
+                                    continue input;
+                                }
+                                switch (params.get(2)) {
+                                    case "ask" : {
+                                        if (params.size() < 4) {
+                                            continue input;
+                                        }
+                                        if (this.checkOnYes(params.get(3))) {
+                                            this.executor.setAskUserToRememberHisChoice(true);
+                                            break parsing;
+                                        }
+                                        if (this.checkOnStop(params.get(3))) {
+                                            this.executor.setAskUserToRememberHisChoice(false);
+                                            break parsing;
+                                        }
+                                        break parsing;
+                                    }
+                                    case "active" : {
+                                        if (params.size() < 4) {
+                                            continue input;
+                                        }
+                                        if (this.checkOnYes(params.get(3))) {
+                                            this.executor.setIntelligentActive(true);
+                                            break parsing;
+                                        }
+                                        if (this.checkOnStop(params.get(3))) {
+                                            this.executor.setIntelligentActive(false);
+                                            break parsing;
+                                        }
+                                        break parsing;
+                                    }
+                                }
                             }
                         }
                     }
@@ -695,6 +751,32 @@ public class Console implements Runnable, ExternalIOInterface{
         this.writer.flush();
     }
     
+    private void printChoices(Map<String, String> choices) throws IOException {
+        if (choices.isEmpty()) {
+            printUnderLn("There aren't any command choices.");
+            return;
+        } 
+        StringBuilder sb = new StringBuilder();
+        printUnderLn("Choices: ");
+        this.writer.write(SPACE);
+        this.writer.write("==================================================");
+        this.writer.newLine();
+        for (Map.Entry<String, String> entry : choices.entrySet()) {
+            sb.append(SPACE)
+                    .append(format(entry.getKey(), 30))
+                    .append("choice--> ")
+                    .append(entry.getValue());
+            this.writer.write(sb.toString());
+            sb = sb.delete(0, sb.length());
+            this.writer.newLine();
+            this.writer.flush();
+        }
+        this.writer.write(SPACE);
+        this.writer.write("==================================================");
+        this.writer.newLine();
+        this.writer.flush();
+    }
+    
     private void getLocations() throws IOException {
         List<Location> locations = this.locations.getAllLocations();
         this.printLocations(locations);
@@ -770,6 +852,10 @@ public class Console implements Runnable, ExternalIOInterface{
         this.printWebPages(pages, true);
     }
     
+    private void getAllChoices() throws IOException {
+        this.printChoices(this.executor.getAllChoices());
+    }
+    
     private void deleteLocation() throws IOException{
         printUnder("name: ");
         String name = this.reader.readLine().trim().toLowerCase();
@@ -805,7 +891,7 @@ public class Console implements Runnable, ExternalIOInterface{
         // stop deletion if text input was incorrect or stopped
         if ( deleted.length() > 0 ){
             if (this.taskManager.deleteTaskByText(deleted)){
-                printBeamWithMessageLn("Task has been deleted.");
+                printUnderLn("Task has been deleted.");
             }                                    
         }
     }
@@ -825,6 +911,19 @@ public class Console implements Runnable, ExternalIOInterface{
                 printUnderLn("Command was removed.");
             }
         }        
+    }
+    
+    private void deleteMem() throws IOException {
+        this.printUnder("command choice in memory: ");
+        String name = this.reader.readLine().trim().toLowerCase();
+        if (checkOnStop(name)) {
+            return;
+        }
+        if ( ! name.isEmpty() ) { 
+            if ( this.executor.deleteMem(name) ) {
+                printUnderLn("Choice removed from memory.");
+            }
+        }
     }
     
     private void editPage() throws IOException {

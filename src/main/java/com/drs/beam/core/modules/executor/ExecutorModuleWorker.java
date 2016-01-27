@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
@@ -19,17 +20,16 @@ import com.drs.beam.core.modules.data.DaoCommands;
 import com.drs.beam.core.modules.data.DaoLocations;
 import com.drs.beam.core.modules.data.DaoWebPages;
 
-class ExecutorModuleWorker implements ExecutorModule{
-    // Fields =============================================================================
+class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
     private final IntelligentResolver intell;
     private final OS system;
     private final DaoLocations locationsDao;
     private final DaoCommands commandsDao;
-    private final DaoWebPages pagesDao;     
+    private final DaoWebPages pagesDao;        
+    private final List<String> command;
     
-    // Constructors =======================================================================
     ExecutorModuleWorker(
             IoInnerModule io, DataModule dataModule, IntelligentResolver i, OS os) {
         this.ioEngine = io;
@@ -38,33 +38,37 @@ class ExecutorModuleWorker implements ExecutorModule{
         this.commandsDao = dataModule.getCommandsDao();
         this.pagesDao = dataModule.getWebPagesDao();
         this.system = os;
+        this.command = new ArrayList<>();
     }
-
-    // Methods ============================================================================
     
     @Override
-    public void open(List<String> commandParams){
-        try{
-            if (commandParams.contains("in")){
-                if (commandParams.contains("with")){
+    public void open(List<String> commandParams) {
+        command.addAll(commandParams);
+        try {
+            if (commandParams.contains("in")) {
+                if (commandParams.contains("with")) {
                     // command pattern: open [file] in [location] with [program]
                     this.openFileInLocationWithProgram(
                             commandParams.get(1), 
                             commandParams.get(3),
-                            commandParams.get(5));
+                            commandParams.get(5),
+                            String.join(" ", commandParams));
                 } else {
                     // command pattern: open [file|folder] in [location]
                     this.openFileInLocation(
                             commandParams.get(1), 
-                            commandParams.get(3));
+                            commandParams.get(3),
+                            String.join(" ", commandParams));
                 }
             } else {
                 // command pattern: open [location]
-                this.openLocation(commandParams.get(1));
+                this.openLocation(commandParams.get(1), 
+                        String.join(" ", commandParams));
             }
         } catch (IndexOutOfBoundsException indexException) {
             this.ioEngine.reportError("Unrecognizable command.");
         }
+        command.clear();
     }
     
     @Override
@@ -88,13 +92,15 @@ class ExecutorModuleWorker implements ExecutorModule{
     }
     
     @Override
-    public void call(List<String> commandNames){
+    public void call(List<String> commandParams) {
         // command pattern: call [command_1] [command_2]...
-        StoredExecutorCommand command;
-        for(int i = 1; i < commandNames.size(); i++){
-            command = this.getCommand(commandNames.get(i));
-            if (command != null){
-                this.executeCommand(command);
+        StoredExecutorCommand storedCommand;
+        StringBuilder sb = new StringBuilder();
+        for(int i = 1; i < commandParams.size(); i++) {
+            sb.append(commandParams.get(0)).append(" ").append(commandParams.get(i));
+            storedCommand = this.getCommand(commandParams.get(i), sb.toString());
+            if (storedCommand != null) {
+                this.executeCommand(storedCommand);
             }
         }   
     }
@@ -144,7 +150,7 @@ class ExecutorModuleWorker implements ExecutorModule{
     
     @Override
     public List<String> listLocationContent(String locationName){
-        Location location = this.getLocation(locationName);
+        Location location = this.getLocation(locationName, "list "+locationName);
         if (location != null){
             List<String> locationContent = this.system.getLocationContent(location);
             if (locationContent != null){
@@ -164,25 +170,27 @@ class ExecutorModuleWorker implements ExecutorModule{
         return this.commandsDao.getCommandsByName(commandName);
     }
        
-    private void openLocation(String locationName){
-        Location location = this.getLocation(locationName);
+    private void openLocation(String locationName, String command){
+        Location location = this.getLocation(locationName, command);
         if (location != null){
             this.system.openLocation(location);
         } 
     }
     
-    private void openFileInLocation(String targetName, String locationName){
+    private void openFileInLocation(
+            String targetName, String locationName, String command){
         targetName = targetName.trim().toLowerCase();
-        Location location = this.getLocation(locationName);
+        Location location = this.getLocation(locationName, command);
         if (location != null){
             this.system.openFileInLocation(targetName, location);
         }             
     }
     
-    private void openFileInLocationWithProgram(String file, String locationName, String program){
+    private void openFileInLocationWithProgram(
+            String file, String locationName, String program, String command){
         file = file.trim().toLowerCase();
         program = program.trim().toLowerCase();
-        Location location = this.getLocation(locationName);
+        Location location = this.getLocation(locationName, command);
         if (location != null){
             this.system.openFileInLocationWithProgram(file, location, program);
         }    
@@ -240,7 +248,7 @@ class ExecutorModuleWorker implements ExecutorModule{
         }
     }
     
-    private Location getLocation(String locationName){
+    private Location getLocation(String locationName, String command){
         locationName = locationName.trim().toLowerCase();
         List<Location> foundLocations;
         
@@ -256,18 +264,24 @@ class ExecutorModuleWorker implements ExecutorModule{
         } else if (foundLocations.size() == 1){
             return foundLocations.get(0);
         } else { 
-            return this.resolveMultipleLocations(foundLocations);
+            return this.resolveMultipleLocations(foundLocations, command);
         }
     }
     
-    private Location resolveMultipleLocations(List<Location> foundLocations){
+    private Location resolveMultipleLocations(
+            List<Location> foundLocations, String command) {
+        
         List<String> locationNames = new ArrayList();
         for (Location loc : foundLocations){
             locationNames.add(loc.getName());
         }
-        int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
+        int varNumber = this.intell.resolve(
                 "There are several locations:", 
+                command, 
                 locationNames);
+        //int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
+        //        "There are several locations:", 
+        //        locationNames);
         if (varNumber < 0){
             return null;
         } else {
@@ -276,7 +290,7 @@ class ExecutorModuleWorker implements ExecutorModule{
     }
     
     
-    private StoredExecutorCommand getCommand(String name){        
+    private StoredExecutorCommand getCommand(String name, String command){        
         name = name.trim().toLowerCase();
         List<StoredExecutorCommand> commands = this.commandsDao.getCommandsByName(name);    
         
@@ -290,10 +304,14 @@ class ExecutorModuleWorker implements ExecutorModule{
             for (StoredExecutorCommand c : commands){
                 commandNames.add(c.getName());
             }
-            int variant = this.ioEngine.resolveVariantsWithExternalIO(
+            int variant = this.intell.resolve(
                     "There are several commands:", 
-                    commandNames
-            );
+                    command, 
+                    commandNames);
+            //int variant = this.ioEngine.resolveVariantsWithExternalIO(
+            //        "There are several commands:", 
+            //        commandNames
+            //);
             
             if (variant < 0){
                 return null;
@@ -306,8 +324,10 @@ class ExecutorModuleWorker implements ExecutorModule{
     private void openWebPages(List<String> commandParams){
         // command pattern: see [webPage_1] [webPage_2]...
         WebPage page;
-        for (int i = 1; i < commandParams.size(); i++){            
-            page = this.getWebPage(commandParams.get(i));
+        StringBuilder command = new StringBuilder();
+        for (int i = 1; i < commandParams.size(); i++) {
+            command.append(commandParams.get(0)).append(" ").append(commandParams.get(i));
+            page = this.getWebPage(commandParams.get(i), command.toString());
             if (page != null){
                 if (page.useDefaultBrowser()){
                     this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
@@ -322,8 +342,10 @@ class ExecutorModuleWorker implements ExecutorModule{
         // command pattern: see [webPage] with|w [browserName]
         if (commandParams.size() > 3 && 
                 (commandParams.get(2).contains("w") || 
-                commandParams.get(2).contains("in") )){
-            WebPage page = this.getWebPage(commandParams.get(1));
+                commandParams.get(2).contains("in") )) {
+            WebPage page = this.getWebPage(
+                    commandParams.get(1),
+                    String.join(" ", commandParams.subList(0, 2)));
             String browserName = commandParams.get(3);
             if (page != null) {
                 if (browserName.equals("default") || browserName.equals("def")){
@@ -347,7 +369,7 @@ class ExecutorModuleWorker implements ExecutorModule{
         }
     }
     
-    private WebPage getWebPage(String name){
+    private WebPage getWebPage(String name, String command){
         name = name.trim().toLowerCase();
         List<WebPage> pages;
         if (name.contains("-")){
@@ -355,10 +377,10 @@ class ExecutorModuleWorker implements ExecutorModule{
         } else {
             pages = this.pagesDao.getWebPagesByName(name);
         }
-        return resolveMultiplePages(pages);
+        return resolveMultiplePages(pages, command);
     }
     
-    private WebPage resolveMultiplePages(List<WebPage> pages){
+    private WebPage resolveMultiplePages(List<WebPage> pages, String command){
         if (pages.size() == 1){
             return pages.get(0);
         } else if (pages.isEmpty()){
@@ -369,8 +391,12 @@ class ExecutorModuleWorker implements ExecutorModule{
             for (WebPage wp : pages){
                 pageNames.add(wp.getName());
             }
-            int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
-                    "There are several pages:", pageNames);
+            int choosedVariant = this.intell.resolve(
+                    "There are several pages:", 
+                    command, 
+                    pageNames);
+            //int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
+            //        "There are several pages:", pageNames);
             
             if (choosedVariant < 0){
                 return null;
@@ -395,5 +421,25 @@ class ExecutorModuleWorker implements ExecutorModule{
         } catch (InterruptedException e) {
             // nothing to do with it.
         }
+    }
+    
+    @Override
+    public void setIntelligentActive(boolean isActive) {
+        this.intell.setActive(isActive);
+    }  
+    
+    @Override
+    public boolean deleteMem(String command) {
+        return this.intell.deleteMem(command);
+    }     
+    
+    @Override
+    public void setAskUserToRememberHisChoice(boolean askUser) {
+        this.intell.setAskUserToRememberHisChoice(askUser);
+    }  
+    
+    @Override
+    public Map<String, String> getAllChoices() {
+        return this.intell.getAllChoices();
     }
 }

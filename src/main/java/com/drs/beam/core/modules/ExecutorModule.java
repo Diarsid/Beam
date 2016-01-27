@@ -6,6 +6,7 @@
 package com.drs.beam.core.modules;
 
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
 import com.drs.gem.injector.module.GemModule;
@@ -34,4 +35,9 @@ public interface ExecutorModule extends GemModule {
     List<StoredExecutorCommand> getCommands(String commandName);
     
     boolean deleteCommand(String commandName);
+    
+    void setIntelligentActive(boolean isActive);    
+    boolean deleteMem(String command);    
+    void setAskUserToRememberHisChoice(boolean askUser);
+    Map<String, String> getAllChoices();
 }

@@ -66,6 +66,7 @@ class DataBaseModel {
                 "command        VARCHAR(100)    NOT NULL, " +
                 "choice         VARCHAR(30)     NOT NULL)",
                 3);
+        this.tables.put(commandChoices.name, commandChoices);
     }
     
     // Methods ============================================================================

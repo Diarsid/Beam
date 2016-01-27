@@ -12,7 +12,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.exceptions.NullDependencyInjectionException;
 import com.drs.beam.core.modules.IoInnerModule;
@@ -59,6 +61,10 @@ class H2DaoIntellChoice implements DaoIntellChoice {
     private final String SELECT_ALL_CHOICES = 
             "SELECT command, choice " +
             "FROM command_choices";
+    private final String SELECT_ALL_WHERE_COMMAND_NAME_LIKE = 
+            "SELECT command, choice " +
+            "FROM command_choices " +
+            "WHERE command LIKE ? ";
     private final String SELECT_CHOICE_WHERE_COMMAND_NAME_LIKE = 
             "SELECT choice " +
             "FROM command_choices " +
@@ -71,6 +77,26 @@ class H2DaoIntellChoice implements DaoIntellChoice {
             "WHERE command LIKE ? ";
     
     @Override
+    public Map<String, String> getAllChoices() {
+        try (Connection con = this.data.connect();
+                PreparedStatement ps = con.prepareStatement(SELECT_ALL_CHOICES)) {
+            
+            ResultSet rs = ps.executeQuery();
+            Map<String, String> choices = new HashMap<>();
+            while ( rs.next() ) {
+                choices.put(
+                        rs.getString(1), 
+                        rs.getString(2));
+            }
+            return choices;            
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, 
+                    "SQLException: get choice for command: ");
+            return Collections.emptyMap();
+        }
+    }
+    
+    @Override
     public String getChoiceFor(String command){
         try (Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(
@@ -78,9 +104,11 @@ class H2DaoIntellChoice implements DaoIntellChoice {
             
             ps.setString(1, command);
             ResultSet rs = ps.executeQuery();
-            rs.next();
-            return rs.getString(1);
-            
+            if (rs.next()) {
+                return rs.getString(1);
+            } else {
+                return "";
+            }
         } catch (SQLException e) {
             this.ioEngine.reportException(e, 
                     "SQLException: get choice for command: "+command);
@@ -89,16 +117,19 @@ class H2DaoIntellChoice implements DaoIntellChoice {
     }
     
     @Override
-    public List<String> getCommandsInChoicesLike(String command){
+    public List<String> getChoicesLike(String command){
         try (Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(
-                        SELECT_CHOICE_WHERE_COMMAND_NAME_LIKE)) {
+                        SELECT_ALL_WHERE_COMMAND_NAME_LIKE)) {
             
             List<String> commands = new ArrayList<>();
             ps.setString(1, "%"+command+"%");
             ResultSet rs = ps.executeQuery();
+            StringBuilder sb = new StringBuilder();
             while(rs.next()) {
-                commands.add(rs.getString(1));
+                sb.append(rs.getString(1)).append(" -> ").append(rs.getString(2));
+                commands.add(sb.toString());
+                sb.delete(0, sb.length());
             }
             return commands;
         } catch (SQLException e) {

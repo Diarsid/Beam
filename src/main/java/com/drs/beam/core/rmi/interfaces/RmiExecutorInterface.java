@@ -7,6 +7,7 @@ package com.drs.beam.core.rmi.interfaces;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
 
@@ -32,4 +33,8 @@ public interface RmiExecutorInterface extends Remote {
     
     boolean deleteCommand(String commandName) throws RemoteException;
     
+    void setIntelligentActive(boolean isActive) throws RemoteException;  
+    boolean deleteMem(String command) throws RemoteException;    
+    void setAskUserToRememberHisChoice(boolean askUser) throws RemoteException; 
+    Map<String, String> getAllChoices() throws RemoteException;
 }

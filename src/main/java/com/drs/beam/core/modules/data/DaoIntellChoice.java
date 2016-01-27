@@ -6,6 +6,7 @@
 package com.drs.beam.core.modules.data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -15,7 +16,9 @@ public interface DaoIntellChoice {
     
     String getChoiceFor(String command);
     
-    List<String> getCommandsInChoicesLike(String command);
+    List<String> getChoicesLike(String command);
+    
+    Map<String, String> getAllChoices();
     
     boolean deleteChoiceForCommand(String command);
     
