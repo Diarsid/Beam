@@ -12,7 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
@@ -25,7 +25,7 @@ import com.drs.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
-import com.drs.beam.util.config.ConfigParam;
+import com.drs.beam.shared.modules.config.Config;
 
 /**
  *
@@ -96,7 +96,7 @@ class RmiModuleWorker implements RmiModule {
         if (System.getSecurityManager()==null)
             System.setSecurityManager(new SecurityManager());
         try {            
-            int beamCorePort = Integer.parseInt(config.getParameter(ConfigParam.BEAMCORE_PORT));
+            int beamCorePort = Integer.parseInt(config.get(Config.CORE_PORT));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RmiRemoteControlInterface orgIOStub = 
                     (RmiRemoteControlInterface) UnicastRemoteObject.exportObject(
@@ -118,11 +118,11 @@ class RmiModuleWorker implements RmiModule {
                     (RmiWebPageHandlerInterface) UnicastRemoteObject.exportObject(
                             this.rmiWebPageHandlerInterface, beamCorePort);
 
-            registry.bind(config.getParameter(ConfigParam.BEAM_ACCESS_NAME), orgIOStub);
-            registry.bind(config.getParameter(ConfigParam.EXECUTOR_NAME), osExecutorStub);
-            registry.bind(config.getParameter(ConfigParam.TASK_MANAGER_NAME), TaskManagerStub);
-            registry.bind(config.getParameter(ConfigParam.LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
-            registry.bind(config.getParameter(ConfigParam.WEB_PAGES_HANDLER_NAME), WebPagesHandlerStub);
+            registry.bind(config.get(Config.BEAM_ACCESS_NAME), orgIOStub);
+            registry.bind(config.get(Config.EXECUTOR_NAME), osExecutorStub);
+            registry.bind(config.get(Config.TASK_MANAGER_NAME), TaskManagerStub);
+            registry.bind(config.get(Config.LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
+            registry.bind(config.get(Config.WEB_PAGES_HANDLER_NAME), WebPagesHandlerStub);
 
         } catch (AlreadyBoundException|RemoteException e) {            
             ioEngine.reportExceptionAndExitLater(e, 

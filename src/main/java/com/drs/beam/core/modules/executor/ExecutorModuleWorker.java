@@ -4,8 +4,6 @@
  */
 package com.drs.beam.core.modules.executor;
 
-import com.drs.beam.core.modules.ExecutorModule;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +13,7 @@ import java.util.Map;
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
 import com.drs.beam.core.modules.DataModule;
+import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DaoCommands;
 import com.drs.beam.core.modules.data.DaoLocations;
@@ -324,10 +323,10 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void openWebPages(List<String> commandParams){
         // command pattern: see [webPage_1] [webPage_2]...
         WebPage page;
-        StringBuilder command = new StringBuilder();
+        StringBuilder commandBuilder = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
-            command.append(commandParams.get(0)).append(" ").append(commandParams.get(i));
-            page = this.getWebPage(commandParams.get(i), command.toString());
+            commandBuilder.append(commandParams.get(0)).append(" ").append(commandParams.get(i));
+            page = this.getWebPage(commandParams.get(i), commandBuilder.toString());
             if (page != null){
                 if (page.useDefaultBrowser()){
                     this.system.openUrlWithDefaultBrowser(page.getUrlAddress());

@@ -38,7 +38,7 @@ class RmiAdapterForRemoteControl implements RmiRemoteControlInterface{
     @Override
     public void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort) 
             throws RemoteException, NotBoundException{
-        
+        System.out.println(consoleHost + " " + consolePort);
         this.ioModule.acceptNewExternalIOProcessor(consoleRmiName, consoleHost, consolePort);
     }
     

@@ -9,7 +9,7 @@ package com.drs.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.IoInnerModule;
@@ -35,7 +35,7 @@ class BeamModulesDeclaration implements Declaration {
         
         modules.add(new GemModuleDeclaration(
                 ConfigModule.class.getCanonicalName(), 
-                "com.drs.beam.core.modules.config.ConfigModuleWorker",
+                "com.drs.beam.shared.modules.config.ConfigModuleWorker",
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(

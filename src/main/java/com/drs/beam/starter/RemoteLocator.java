@@ -11,22 +11,21 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.drs.beam.util.config.reader.ConfigReader;
+import com.drs.beam.shared.modules.ConfigModule;
+import com.drs.beam.shared.modules.config.Config;
 
 /**
  *
  * @author Diarsid
  */
 class RemoteLocator {
-    // Fields =============================================================================
-    private final ConfigReader reader = ConfigReader.getReader();
     
-    // Constructors =======================================================================
-    RemoteLocator() {
+    private final ConfigModule config;
+    
+    RemoteLocator(ConfigModule config) {
+        this.config = config;
     }    
     
-    // Methods ============================================================================
-        
     List<String> defineModulesToStart(){
         List<String> modules = new ArrayList<>();
         if (!isBeamWorking()){
@@ -41,8 +40,8 @@ class RemoteLocator {
     boolean isBeamWorking(){
         try {
             Registry beamRegistry = LocateRegistry.getRegistry(
-                reader.getBeamHost(),
-                reader.getBeamPort());
+                    config.get(Config.CORE_HOST),
+                    Integer.parseInt(config.get(Config.CORE_PORT)));
             return beamRegistry.list().length > 0;
         } catch (RemoteException re){            
             return false;
@@ -52,8 +51,8 @@ class RemoteLocator {
     boolean isConsoleWorking(){
         try {
             Registry consoleRegistry = LocateRegistry.getRegistry(
-                reader.getSystemConsoleHost(),
-                reader.getSystemConsolePort());
+                config.get(Config.SYS_CONSOLE_HOST),
+                Integer.parseInt(config.get(Config.SYS_CONSOLE_PORT)));
             return consoleRegistry.list().length > 0;
         } catch (RemoteException re){            
             return false;

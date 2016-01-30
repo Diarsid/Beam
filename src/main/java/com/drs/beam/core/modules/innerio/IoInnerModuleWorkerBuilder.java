@@ -6,11 +6,11 @@
 
 package com.drs.beam.core.modules.innerio;
 
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.innerio.javafxgui.JavaFXGuiLauncher;
-import com.drs.beam.util.config.ConfigParam;
+import com.drs.beam.shared.modules.config.Config;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
@@ -30,10 +30,9 @@ class IoInnerModuleWorkerBuilder implements GemModuleBuilder<IoInnerModule>{
     @Override
     public IoInnerModule buildModule(){
         //Gui gui = GuiJavaFX.buildAndLaunchGui(
-        //        configModule.getParameter(ConfigParam.IMAGES_LOCATION));
+        //        configModule.get(Config.IMAGES_LOCATION));
         JavaFXGuiLauncher launcher = new JavaFXGuiLauncher();
-        Gui gui = launcher.buildGui(
-                configModule.getParameter(ConfigParam.IMAGES_LOCATION));
+        Gui gui = launcher.buildGui(configModule.get(Config.IMAGES_LOCATION));
         return new IoInnerModuleWorker(ioOuterModule, gui);
     }
 }

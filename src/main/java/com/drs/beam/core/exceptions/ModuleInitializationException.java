@@ -10,11 +10,13 @@ package com.drs.beam.core.exceptions;
  *
  * @author Diarsid
  */
-public class ModuleInitializationException extends RuntimeException{
-    // Fields =============================================================================
+public class ModuleInitializationException extends RuntimeException {
+    
+    public ModuleInitializationException() {
+        super();
+    }
 
-    // Constructors =======================================================================
-
-    // Methods ============================================================================
-
+    public ModuleInitializationException(String message) {
+        super(message);
+    }
 }

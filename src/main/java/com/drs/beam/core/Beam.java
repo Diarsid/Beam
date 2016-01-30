@@ -21,9 +21,6 @@ import com.drs.gem.injector.core.GemInjector;
 
 public class Beam {
     
-    private static final String BEAM_CONFIG_FILE_PATH = "./config/config.xml";
-    private static String[] configArgs;
-    
     /**
      * Java RMI mechanism requires that remote objects which has been exported for
      * usage by other JVM were saved in static variables.
@@ -36,27 +33,16 @@ public class Beam {
     private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
     private static RmiWebPageHandlerInterface rmiWebPageHandlerInterface;
     
-    // Constructor ========================================================================
-    Beam() {
-    }
-
-    // Methods ============================================================================
-   
+    
+    private Beam() {
+    }    
            
     public static void main(String[] args) {
-        System.out.println("begin...");
-        configArgs = args;
-        Container container = GemInjector.buildContainer("main", new BeamModulesDeclaration());
-        container.init();
+        System.out.println("[Beam::main] Initialization begins...");
+        GemInjector.buildContainer("Beam.core", new BeamModulesDeclaration());
+        GemInjector.getContainer("Beam.core").init();
         GemInjector.clear();
-    }
-    
-    public static String getConfigFilePath(){
-        return Beam.BEAM_CONFIG_FILE_PATH;
-    }
-    
-    public static String[] getConfigArgs(){
-        return configArgs;
+        System.out.println("[Beam::main] Initialization end.");
     }
     
     public static void exitBeamCoreNow(){

@@ -5,7 +5,7 @@
  */
 package com.drs.beam.core.modules.data.base.builder;
 
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DataBase;
 import com.drs.beam.core.modules.data.base.DataBasesInfo;

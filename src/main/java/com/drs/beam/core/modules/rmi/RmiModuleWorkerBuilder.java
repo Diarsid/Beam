@@ -7,7 +7,7 @@
 package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.core.Beam;
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.IoInnerModule;

@@ -1,29 +1,34 @@
 /*
- * project: Beam
- * author: Diarsid
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
+
 package com.drs.beam.starter;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 
 /**
  *
  * @author Diarsid
  */
-interface Starter {
-    public void runBeam();
-    public void runConsole();
-    public void takeArgs(String[] args);
+class Starter {
     
-    public static Starter getStarter(){
-        String systemName = System.getProperty("os.name").toLowerCase();
-        if (systemName.contains("win")){
-            return new StarterWindows();
-        } else if (systemName.contains("x")){
-            return null;
-        } else {
-            System.out.println("Unknown OS.");
-            System.exit(1);
-            return null;
-        }
+    private final ScriptProvider scripts;
+    private final Desktop desktop;
+    
+    Starter(ScriptProvider sp) {
+        this.scripts = sp;
+        this.desktop = Desktop.getDesktop();
+    }
+    
+    void runBeam() throws IOException {
+        this.desktop.open(this.scripts.getBeamCoreScript());
+    }
+    
+    void runConsole() throws IOException {
+        this.desktop.open(this.scripts.getBeamSysConsoleScript());
     }
 }

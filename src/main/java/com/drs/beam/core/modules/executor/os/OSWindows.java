@@ -15,10 +15,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.drs.beam.core.entities.Location;
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.IoInnerModule;
-import com.drs.beam.util.config.ConfigParam;
+import com.drs.beam.shared.modules.config.Config;
 
 /**
  *
@@ -41,7 +41,7 @@ public class OSWindows implements OS {
                     "Program will be closed.");
             throw new ModuleInitializationException();
         }
-        this.PROGRAMS_LOCATION = config.getParameter(ConfigParam.PROGRAMS_LOCATION)
+        this.PROGRAMS_LOCATION = config.get(Config.PROGRAMS_LOCATION)
                 .replace("\\", "/")
                 .toLowerCase()
                 .intern();      

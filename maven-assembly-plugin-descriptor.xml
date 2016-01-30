@@ -9,16 +9,17 @@
   <fileSets>
     <fileSet>
         <directory>target</directory>
-        <outputDirectory>/</outputDirectory>
+        <outputDirectory>/bin</outputDirectory>
         <includes>
           <include>*.jar</include>
         </includes>
     </fileSet>
     <fileSet>
-        <directory>src/main/external-resources</directory>
-        <outputDirectory>/</outputDirectory>
+        <directory>src/main/external-resources/bin</directory>
+        <outputDirectory>bin</outputDirectory>
         <includes>
           <include>*.bat</include>
+          <include>*.sh</include>
         </includes>
     </fileSet>
     <fileSet>

@@ -8,11 +8,11 @@ package com.drs.beam.core.modules.data.base.builder;
 
 import java.lang.reflect.Constructor;
 
-import com.drs.beam.core.modules.ConfigModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DataBase;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.util.config.ConfigParam;
+import com.drs.beam.shared.modules.config.Config;
 
 /**
  *
@@ -40,7 +40,7 @@ class DataBaseProvider {
     
     private void loadDriver(){
         try {
-            Class.forName(this.config.getParameter(ConfigParam.CORE_DB_DRIVER));
+            Class.forName(this.config.get(Config.CORE_JDBC_DRIVER));
         } catch (Exception e) {
             // If there is any problem during database driver loading program can not 
             // work further and must be finished.
@@ -51,8 +51,10 @@ class DataBaseProvider {
     
     private DataBase dataBaseInstantiation(){
         try {
-            String concreteDataBaseName = this.config.getParameter(ConfigParam.CORE_DB_NAME);
-            String url = this.config.getParameter(ConfigParam.CORE_DB_URL);
+            String concreteDataBaseName = this.config.get(Config.CORE_DB_NAME);
+            String url = 
+                    this.config.get(Config.CORE_JDBC_URL) +
+                    this.config.get(Config.CORE_DB_LOCATION);
             String dbImplementationName = this.dataBaseClassPackage + concreteDataBaseName;
             Class dbImplementationClass = Class.forName(dbImplementationName);
             Constructor dbImplementationConstructor = 

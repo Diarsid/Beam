@@ -14,8 +14,9 @@ import com.drs.beam.core.modules.tasks.Task;
  * Interface describes 
  */
 public interface ExternalIOInterface extends Remote {    
-    void isActive            ()              throws RemoteException;
-    void showTask            (Task task)      throws RemoteException;
+    
+    void isActive () throws RemoteException;
+    void showTask (Task task) throws RemoteException;
     
     void reportInfo (String... info) throws RemoteException; 
     void reportMessage (String... message) throws RemoteException;

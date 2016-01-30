@@ -13,6 +13,7 @@
     
     <build>
         <plugins>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -27,6 +28,8 @@
                         </manifest>
                     </archive>
                     <excludes>
+                        <exclude>bin/**</exclude>
+                        <exclude>*.sh</exclude>
                         <exclude>*.bat</exclude>
                         <exclude>data/**</exclude>
                         <exclude>lib/**</exclude>
@@ -34,7 +37,31 @@
                         <exclude>**/*.netbeans_automatic_build</exclude>
                     </excludes>
                 </configuration>
+            </plugin>            
+            
+            
+            <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.7</version>
+            <executions>
+                <execution>
+                    <id>copy-resources</id>
+                    <phase>validate</phase>
+                    <goals>
+                      <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${basedir}/target/classes</outputDirectory>
+                        <resources>          
+                            <resource>
+                                <directory>src/main/external-resources</directory>
+                            </resource>
+                        </resources>              
+                    </configuration>            
+                </execution>
+            </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -55,6 +82,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -68,7 +96,7 @@
                 </executions>
                 <configuration>
                     <executable>java</executable>
-                    <workingDirectory>target/classes</workingDirectory>
+                    <workingDirectory>target/classes/bin</workingDirectory>
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath/>
@@ -76,6 +104,7 @@
                     </arguments>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -95,6 +124,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -102,6 +132,7 @@
                 <configuration>
                 </configuration>
             </plugin>
+            
             <plugin>  
                 <groupId>org.codehaus.mojo</groupId>  
                 <artifactId>cobertura-maven-plugin</artifactId>  
@@ -124,12 +155,11 @@
                     </dependency>  
                 </dependencies>  
             </plugin>
+            
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/external-resources</directory>
-            </resource>
-        </resources>
+        
+        <outputDirectory>target/classes/bin</outputDirectory>
+        
     </build>    
     
     <dependencies>
