@@ -6,59 +6,59 @@
 
 package com.drs.beam.core.modules.rmi;
 
-import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
-
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import com.drs.beam.core.modules.IoModule;
+import com.drs.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 
 /**
- *
+ * Remote adapter for interaction with Beam core IO system.
+ * 
+ * Is responsible for accepting new remote ExternalIO objects and
+ * managing them.
+ * 
  * @author Diarsid
  */
-class RmiAdapterForRemoteControl implements RmiRemoteControlInterface{
-    // Fields =============================================================================
+class RmiAdapterForRemoteControl implements RmiRemoteControlInterface {
     
     private final IoModule ioModule;
     
-    // Constructors =======================================================================
-
     RmiAdapterForRemoteControl(IoModule ioModule) {
         this.ioModule = ioModule;
     }
-    
-    // Methods ============================================================================
-    
+        
     @Override
-    public boolean isExternalIoProcessorActive() throws RemoteException{
+    public boolean isExternalIoProcessorActive() throws RemoteException {
         return this.ioModule.isExternalProcessorActive();
     }
     
     @Override
-    public void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort) 
-            throws RemoteException, NotBoundException{
-        System.out.println(consoleHost + " " + consolePort);
-        this.ioModule.acceptNewExternalIOProcessor(consoleRmiName, consoleHost, consolePort);
+    public void acceptNewIOProcessor
+            (String consoleRmiName, String consoleHost, int consolePort) 
+            throws RemoteException, NotBoundException {
+        
+        this.ioModule.acceptNewExternalIOProcessor
+                (consoleRmiName, consoleHost, consolePort);
     }
     
     @Override
-    public void useExternalShowTaskMethod() throws RemoteException{
+    public void useExternalShowTaskMethod() throws RemoteException {
         this.ioModule.useExternalShowTaskMethod();
     }
     
     @Override
-    public void useNativeShowTaskMethod() throws RemoteException{
+    public void useNativeShowTaskMethod() throws RemoteException {
         this.ioModule.setUseNativeShowTaskMethod();
     }
     
     @Override
-    public void exit() throws RemoteException{
+    public void exit() throws RemoteException {
         this.ioModule.exitBeam();
     }
     
     @Override
-    public void setDefaultIO() throws RemoteException{
+    public void setDefaultIO() throws RemoteException {
         this.ioModule.resetIoToDefault();
     }
 }

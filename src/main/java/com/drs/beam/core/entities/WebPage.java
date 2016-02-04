@@ -1,6 +1,7 @@
 package com.drs.beam.core.entities;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 
 /*
@@ -19,30 +20,48 @@ public class WebPage implements Serializable {
     // Fields =============================================================================
     
     private final String name;
+    private final String shortcuts;
     private final String urlAddress;
-    private final String category;
+    private final WebPagePlacement placement;
+    private final String directory;
     private final String browser;
     
     // Constructors =======================================================================
     
-    public WebPage(String name, String urlAddress, String category, String browser) {
+    public WebPage(
+            String name, 
+            String shortcuts,             
+            String urlAddress, 
+            WebPagePlacement placement,
+            String directory, 
+            String browser) {
+        
         this.name = name;
+        this.shortcuts = shortcuts;
         this.urlAddress = urlAddress;
-        this.category = category;
+        this.placement = placement;
+        this.directory = directory;
         this.browser = browser;
     }
 
-    // Methods ============================================================================
     public String getName() {
         return name;
+    }
+
+    public String getShortcuts() {
+        return shortcuts;
     }
 
     public String getUrlAddress() {
         return urlAddress;
     }
 
-    public String getCategory() {
-        return category;
+    public WebPagePlacement getPlacement() {
+        return placement;
+    }
+
+    public String getDirectory() {
+        return directory;
     }
 
     public String getBrowser() {
@@ -54,17 +73,14 @@ public class WebPage implements Serializable {
     }
 
     @Override
-    public String toString() {
-        return "WebPage{" + "name=" + name + ", urlAddress=" + urlAddress + ", category=" + category + ", browser=" + browser + '}';
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
-        hash = 43 * hash + Objects.hashCode(this.name);
-        hash = 43 * hash + Objects.hashCode(this.urlAddress);
-        hash = 43 * hash + Objects.hashCode(this.category);
-        hash = 43 * hash + Objects.hashCode(this.browser);
+        hash = 53 * hash + Objects.hashCode(this.name);
+        hash = 53 * hash + Objects.hashCode(this.shortcuts);
+        hash = 53 * hash + Objects.hashCode(this.urlAddress);
+        hash = 53 * hash + Objects.hashCode(this.placement);
+        hash = 53 * hash + Objects.hashCode(this.directory);
+        hash = 53 * hash + Objects.hashCode(this.browser);
         return hash;
     }
 
@@ -80,10 +96,16 @@ public class WebPage implements Serializable {
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
+        if (!Objects.equals(this.shortcuts, other.shortcuts)) {
+            return false;
+        }
         if (!Objects.equals(this.urlAddress, other.urlAddress)) {
             return false;
         }
-        if (!Objects.equals(this.category, other.category)) {
+        if (this.placement != other.placement) {
+            return false;
+        }
+        if (!Objects.equals(this.directory, other.directory)) {
             return false;
         }
         if (!Objects.equals(this.browser, other.browser)) {

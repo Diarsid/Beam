@@ -53,10 +53,12 @@ class DataBaseModel {
                 "CREATE TABLE web_pages (" +
                 "page_id        INTEGER         NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                 "page_name      VARCHAR(20)     NOT NULL, " +
+                "page_shortcuts VARCHAR(20)     NOT NULL, " + 
                 "page_url       VARCHAR(300)    NOT NULL, " +
-                "page_category  VARCHAR(20)     NOT NULL, " +
+                "page_placement VARCHAR(9)      NOT NULL, " +
+                "page_directory VARCHAR(100)     NOT NULL, " +
                 "page_browser   VARCHAR(10)     NOT NULL)",
-                5);
+                7);
         this.tables.put(webPages.name, webPages);
         
         TableInfo commandChoices = new TableInfo(

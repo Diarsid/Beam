@@ -26,6 +26,7 @@ public enum Config {
     CORE_DB_NAME ("/configuration/databases/core/db-name"),
     PROGRAMS_LOCATION ("/configuration/resources/programs"),
     IMAGES_LOCATION ("/configuration/resources/images"),
+    NOTES_LOCATION ("/configuration/resources/notes"),
     LIBRARIES_LOCATION ("/configuration/resources/libraries"),
     CLASSPATH_CORE ("/configuration/classpath/beam-core/element"),
     CLASSPATH_SYS_CONSOLE ("/configuration/classpath/beam-system-console/element"),

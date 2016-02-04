@@ -8,14 +8,15 @@ package com.drs.beam.external.sysconsole.modules.workers;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.entities.WebPagePlacement;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
 import com.drs.beam.core.modules.tasks.Task;
-import com.drs.beam.external.ExternalIOInterface;
 import com.drs.beam.external.sysconsole.modules.BeamCoreAccessModule;
 import com.drs.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import com.drs.beam.external.sysconsole.modules.ConsolePrinterModule;
@@ -31,6 +32,8 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     private final ConsolePrinterModule printer;
     private final ConsoleReaderModule reader;
     private final InputHandler input;
+    private final List<String> placements;
+    private final List<String> pageEditVars;
     
     private final Object readerLock;
     
@@ -45,6 +48,16 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.beam = be;
         this.input = ih;
         this.readerLock = new Object();
+        this.placements = new ArrayList<>();
+        this.placements.add("webpanel");
+        this.placements.add("bookmarks");
+        this.pageEditVars = new ArrayList<>();
+        this.pageEditVars.add("name");
+        this.pageEditVars.add("shortcuts");
+        this.pageEditVars.add("url");
+        this.pageEditVars.add("directory");
+        this.pageEditVars.add("browser");
+        
     }
     
     // ------------------- External IO Interface methods -----------------------
@@ -117,14 +130,14 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public String waitForNewCommand() throws IOException {
-        synchronized (readerLock) {
+        synchronized (this.readerLock) {
             return this.reader.read();
         }
     }
     
     @Override
     public void newLoop() throws IOException {
-        printer.printBeam();
+        this.printer.printBeam();
     }
     
     @Override
@@ -139,19 +152,19 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void getCommands() throws IOException{
+    public void getCommands() throws IOException {
         List<StoredExecutorCommand> commands = this.beam.executor().getAllCommands();
         this.printer.printCommands(commands);
     }    
     
     @Override
-    public void newLocation() throws IOException{        
-        printer.printUnder("set name: ");
+    public void newLocation() throws IOException {        
+        this.printer.printUnder("set name: ");
         String name = this.reader.read();
         if (name.isEmpty()) {
             return;
         }
-        printer.printUnder("set path: ");
+        this.printer.printUnder("set path: ");
         String location = this.reader.read();
         if (location.isEmpty()) {
             return;
@@ -162,7 +175,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void newTask() throws IOException{        
+    public void newTask() throws IOException {        
         String newTime = this.input.inputTime();
         if (newTime.isEmpty()) {
             return;
@@ -177,14 +190,14 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void newCommand() throws IOException{
+    public void newCommand() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if (name.isEmpty()){
+        if (name.isEmpty()) {
             return;
         } 
         List<String> commands = this.input.inputCommands();
-        if (commands.size() > 0){
+        if (commands.size() > 0) {
             this.beam.executor().newCommand(commands, name);
         }
     }
@@ -193,30 +206,56 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void newWebPage() throws IOException {
         this.printer.printUnder("name : ");
         String name = this.reader.read();
-        if (name.isEmpty()){
+        if (name.isEmpty()) {
             return;
         }
+        this.printer.printUnder("shortcuts : ");
+        String shortcuts = this.reader.read();
         this.printer.printUnder("url : ");
         String urlAddress = this.reader.read();
-        if (urlAddress.isEmpty()){
+        if (urlAddress.isEmpty()) {
             return;
         }
-        this.printer.printUnder("category : ");
+        WebPagePlacement placement = this.askForPlacement();
+        if (placement == null) {
+            return;
+        }
+        this.printer.printUnder("directory : ");
         String category = this.reader.read();
-        if (category.isEmpty()){
+        if (category.isEmpty()) {
             category = "common";
         }
         this.printer.printUnder("browser : ");
         String browser = this.reader.read();
-        if(browser.isEmpty()){
+        if(browser.isEmpty()) {
             browser = "default";
         }
-        this.beam.webPages().newWebPage(name, urlAddress, category, browser);
+        this.beam.webPages().newWebPage(
+                name, shortcuts, urlAddress, placement, category, browser);
     }
     
     @Override
-    public void seeAllWebPages() throws IOException{
-        List<WebPage> pages = this.beam.webPages().getAllPages();
+    public void getAllWebPages() throws IOException {
+        WebPagePlacement placement = this.askForPlacement();
+        if (placement == null) {
+            return;
+        } 
+        List<WebPage> pages = this.beam.webPages()
+                .getAllPagesInPlacement(placement);
+        this.printer.printWebPages(pages, true);
+    }
+    
+    @Override
+    public void getAllWebPanelPages() throws IOException {
+        List<WebPage> pages = this.beam.webPages()
+                .getAllPagesInPlacement(WebPagePlacement.WEBPANEL);
+        this.printer.printWebPages(pages, true);
+    }
+    
+    @Override
+    public void getAllBookmarksPages() throws IOException {
+        List<WebPage> pages = this.beam.webPages()
+                .getAllPagesInPlacement(WebPagePlacement.BOOKMARKS);
         this.printer.printWebPages(pages, true);
     }
     
@@ -226,21 +265,18 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void deleteLocation() throws IOException{
+    public void deleteLocation() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if (name.isEmpty()){
-            return;
-        }
-        if (name.length() > 0){
-            if (this.beam.locations().deleteLocation(name)){
+        if ( !name.isEmpty() ) {
+            if (this.beam.locations().deleteLocation(name)) {
                 this.printer.printUnderLn("Location was removed.");
             }
         }        
     }
     
     @Override
-    public void deleteWebPage(String name){
+    public void deleteWebPage(String name) {
         
     }
     
@@ -248,22 +284,19 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void deleteWebPage() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if (name.isEmpty()){
-            return;
-        }
-        if (name.length() > 0){
-            if (this.beam.webPages().deleteWebPage(name)){
+        if ( !name.isEmpty() ) {
+            if (this.beam.webPages().deleteWebPage(name)) {
                 this.printer.printUnderLn("WebPage was removed.");
             }
         }
     }
     
     @Override
-    public void deleteTask() throws IOException{        
+    public void deleteTask() throws IOException {        
         String deleted = input.inputTextToDelete();
         // stop deletion if text input was incorrect or stopped
-        if ( deleted.length() > 0 ){
-            if (this.beam.taskManager().deleteTaskByText(deleted)){
+        if ( deleted.length() > 0 ) {
+            if (this.beam.taskManager().deleteTaskByText(deleted)) {
                 this.printer.printUnderLn("Task has been deleted.");
             }                                    
         }
@@ -278,11 +311,11 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void deleteCommand() throws IOException{
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if (name.isEmpty()){
+        if (name.isEmpty()) {
             return;
         }
-        if (name.length() > 0){
-            if (this.beam.executor().deleteCommand(name)){
+        if (name.length() > 0) {
+            if (this.beam.executor().deleteCommand(name)) {
                 this.printer.printUnderLn("Command was removed.");
             }
         }        
@@ -309,11 +342,11 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if (name.isEmpty()){
             return;
         }
-        String[] vars = {"name", "url", "category", "browser"};
-        int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
-        if (choosed < 0){
+        
+        int choosed = this.input.chooseVariants("edit: ", this.pageEditVars);
+        if (choosed < 0) {
             return;
-        } else if (choosed == 1){
+        } else if (choosed == 1) {
             this.printer.printUnder("new name: ");
             String newName = this.reader.read();
             if (newName.isEmpty()){
@@ -322,25 +355,34 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             if (this.beam.webPages().editWebPageName(name, newName)){
                 this.printer.printUnderLn("Page was renamed.");
             }
-        } else if (choosed == 2){
+        } else if (choosed == 2) {
+            this.printer.printUnder("new shortcuts: ");
+            String newShorts = this.reader.read();
+            if (newShorts.isEmpty()) {
+                return;
+            }
+            if (this.beam.webPages().editWebPageShortcuts(name, newShorts)){
+                this.printer.printUnderLn("Shortcuts was changed.");
+            }
+        } else if (choosed == 3) {
             this.printer.printUnder("new url: ");
             String newUrl = this.reader.read();
-            if (newUrl.isEmpty()){
+            if (newUrl.isEmpty()) {
                 return;
             }
             if (this.beam.webPages().editWebPageUrl(name, newUrl)){
-                this.printer.printUnderLn(name+ " URL was changed.");
-            }
-        } else if (choosed == 3){
-            this.printer.printUnder("new category: ");
-            String newCategory = this.reader.read();
-            if (newCategory.isEmpty()){
-                return;
-            }
-            if (this.beam.webPages().editWebPageCategory(name, newCategory)){
-                this.printer.printUnderLn(name+ " page category was changed.");
+                this.printer.printUnderLn("URL was changed.");
             }
         } else if (choosed == 4) {
+            this.printer.printUnder("new directory: ");
+            String newDirectoReady = this.reader.read();
+            if (newDirectoReady.isEmpty()) {
+                return;
+            }
+            if (this.beam.webPages().editWebPageDirectory(name, newDirectoReady)){
+                this.printer.printUnderLn("directory was changed.");
+            }
+        } else if (choosed == 5) {
             this.printer.printUnder("new browser: ");
             String newBrowser = this.reader.read();
             if (newBrowser.isEmpty()) {
@@ -350,6 +392,27 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 this.printer.printUnderLn("New browser was assigned to "+name+".");
             }
         } 
+    }
+    
+    @Override
+    public void movePageToDirectoryAndPlacement() throws IOException {
+        this.printer.printUnder("name: ");
+        String name = this.reader.read();
+        if (name.isEmpty()){
+            return;
+        }
+        this.printer.printUnder("new directory : ");
+        String newDir = this.reader.read();
+        if ( newDir.isEmpty() ) {
+            return;
+        }
+        WebPagePlacement placement = this.askForPlacement();
+        if ( placement == null ) {
+            return;
+        }
+        if ( this.beam.webPages().moveWebPageTo(name, newDir, placement)) {
+            this.printer.printUnderLn("Page was moved.");
+        }
     }
     
     @Override
@@ -363,9 +426,9 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
         if (choosed < 0){
             return;
-        } else if (choosed == 1){
+        } else if (choosed == 1) {
             this.printer.printUnderLn("Not implemented yet :(");
-        } else if (choosed == 2){
+        } else if (choosed == 2) {
             this.printer.printUnder("new path: ");
             String newPath = this.reader.read();
             if (newPath.isEmpty()) {
@@ -383,34 +446,39 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void editCommand() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if (name.isEmpty()){
+        if (name.isEmpty()) {
             return;
         }
         String[] vars = {"name", "commands"};
         int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
         if (choosed < 0){
             return;
-        } else if (choosed == 1){
+        } else if (choosed == 1) {
             this.printer.printUnderLn("Not implemented yet :(");
-        } else if (choosed == 2){
+        } else if (choosed == 2) {
             this.printer.printUnderLn("Not implemented yet :(");
         }
     }
     
     @Override
-    public void renameCategory() throws IOException {
-        this.printer.printUnder("category: ");
-        String category = this.reader.read();
-        if (category.isEmpty()){
+    public void renameDirectory() throws IOException {
+        WebPagePlacement placement = this.askForPlacement();
+        if (placement == null) {
+            return;
+        } 
+        this.printer.printUnder("directory: ");
+        String directory = this.reader.read();
+        if (directory.isEmpty()) {
             return;
         }
         this.printer.printUnder("new name: ");
-        String newCategory = this.reader.read();
-        if (newCategory.isEmpty()){
+        String newDirectory = this.reader.read();
+        if (newDirectory.isEmpty()) {
             return;
         }
-        if (this.beam.webPages().renameCategory(category, newCategory)){
-            this.printer.printUnderLn("Category renamed.");
+        if (this.beam.webPages().renameDirectory(
+                directory, newDirectory, placement)) {
+            this.printer.printUnderLn("Directory renamed.");
         }
     }
     
@@ -424,30 +492,34 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void getLocation() throws IOException{
+    public void getLocation() throws IOException {
         this.printer.printUnder("name: ");
         String location = this.reader.read();
-        if (location.length() > 0){
+        if ( !location.isEmpty() ) {
             this.printer.printLocations(this.beam.locations().getLocations(location));
         }
     }
     
     @Override
-    public void getPage() throws IOException{
+    public void getPage() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if (name.length() > 0){
+        if ( !name.isEmpty() ) {
             this.printer.printWebPages(this.beam.webPages().getWebPages(name), false);
         }
     }
      
     @Override
-    public void getPagesOfCategory() throws IOException {
-        this.printer.printUnder("category: ");
-        String category = this.reader.read();
-        if (category.length() > 0){
+    public void getPagesInDirectoryAndPlacement() throws IOException {
+        WebPagePlacement placement = this.askForPlacement();
+        if (placement == null) {
+            return;
+        } 
+        this.printer.printUnder("directory: ");
+        String directory = this.reader.read();
+        if ( !directory.isEmpty() ) {
             this.printer.printWebPages(
-                    this.beam.webPages().getAllWebPagesOfCategory(category), 
+                    this.beam.webPages().getAllWebPagesInDirectoryAndPlacement(directory, placement), 
                     false);
         }
     }
@@ -456,7 +528,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void getCommand() throws IOException {
         this.printer.printUnder("name: ");
         String commandName = this.reader.read();
-        if (commandName.length() > 0) {
+        if ( !commandName.isEmpty() ) {
             this.printer.printCommands(
                     this.beam.executor().getCommand(commandName));
         }
@@ -556,7 +628,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             if (this.beam.remoteControl() != null) {
                 this.beam.remoteControl().exit();
             }
-        } catch(RemoteException e){} 
+        } catch(RemoteException e) {} 
         System.exit(0);
     }
     
@@ -580,5 +652,31 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void setIntelligentActive(String yesOrNo) throws IOException {
         boolean yes = this.input.checkOnYes(yesOrNo);
         this.beam.executor().setIntelligentActive(yes);
+    }
+    
+    @Override
+    public void openNotes() throws IOException {
+        this.beam.executor().openNotes();
+    }
+    
+    @Override
+    public void openNote(List<String> command) throws IOException {
+        this.beam.executor().openNote(command);
+    }
+    
+    @Override
+    public void newNote(List<String> params) throws IOException {
+        this.beam.executor().newNote(params);
+    }
+    
+    private WebPagePlacement askForPlacement() {
+        int choice = this.input.chooseVariants("placement : ", this.placements);
+        if ( choice == 1 ) {
+            return WebPagePlacement.WEBPANEL;
+        } else if ( choice == 2 ) {
+            return WebPagePlacement.BOOKMARKS;
+        } else {
+            return null;
+        }
     }
 }

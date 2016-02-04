@@ -23,7 +23,7 @@ public class ModulesLoader {
         RemoteLocator locator = new RemoteLocator(config);
         List<String> modulesToStart = locator.defineModulesToStart();        
         if ( modulesToStart.size() > 0 ) {
-            ScriptProvider scripts = new ScriptProvider(config);
+            ScriptProvider scripts = new ScriptProvider(config, false);
             scripts.processScripts();
             Starter starter = new Starter(scripts);
             if (modulesToStart.contains("beam")) {

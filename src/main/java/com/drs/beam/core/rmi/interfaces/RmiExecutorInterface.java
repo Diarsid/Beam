@@ -37,4 +37,8 @@ public interface RmiExecutorInterface extends Remote {
     boolean deleteMem(String command) throws RemoteException;    
     void setAskUserToRememberHisChoice(boolean askUser) throws RemoteException; 
     Map<String, String> getAllChoices() throws RemoteException;
+    
+    void newNote(List<String> commandParams) throws RemoteException;
+    void openNotes() throws RemoteException;
+    void openNote(List<String> commandParams) throws RemoteException;
 }

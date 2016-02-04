@@ -116,41 +116,40 @@ public class InputHandler {
         return commands;
     }
     
-    int chooseVariants(String message, List<String> variants){
+    int chooseVariants(String message, List<String> variants) {
         int choosed = -1;
-        StringJoiner variantsPrinter;
-        try{
+        StringBuilder variantsPrinter = new StringBuilder();
+        try {
             this.printer.printUnderLn(message);
-            for (int i = 0; i < variants.size(); i++){
-                variantsPrinter = new StringJoiner("");
+            for (int i = 0; i < variants.size(); i++) {
                 variantsPrinter
-                        .add(String.valueOf(i+1))
-                        .add(" : ")
-                        .add(variants.get(i));
+                        .append(String.valueOf(i+1))
+                        .append(" : ")
+                        .append(variants.get(i));
                 this.printer.printSpaceLn(variantsPrinter.toString());
-                variantsPrinter = null;
+                variantsPrinter.delete(0, variantsPrinter.length());
             } 
             String input;
-            while (true){
+            while (true) {
                 this.printer.printUnder("choose: ");
                 input = this.reader.read();
-                if (input.isEmpty()){
+                if (input.isEmpty()) {
                     return -1;
                 }
-                try{
+                try {
                     choosed = Integer.parseInt(input);
-                    if (0 < choosed && choosed <= variants.size()){
+                    if (0 < choosed && choosed <= variants.size()) {
                         break;
                     } else {
                         this.printer.printUnderLn("Out of variants range.");
                         continue;
                     }
-                } catch (NumberFormatException nfe){
+                } catch (NumberFormatException nfe) {
                     this.printer.printUnderLn("Not a number.");
                     continue;
                 }
             }
-        }catch(IOException ioe){}        
+        } catch (IOException ioe) {}        
         return choosed;
     }
     

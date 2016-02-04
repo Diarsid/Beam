@@ -9,13 +9,13 @@ package com.drs.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 import com.drs.beam.core.modules.TaskManagerModule;
+import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.gem.injector.core.Declaration;
 import com.drs.gem.injector.core.GemModuleDeclaration;
 import com.drs.gem.injector.core.GemModuleType;

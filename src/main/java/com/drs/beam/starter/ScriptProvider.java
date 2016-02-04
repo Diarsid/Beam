@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.drs.beam.core.Beam;
+import com.drs.beam.core.exceptions.TemporaryCodeException;
 import com.drs.beam.external.sysconsole.SysConsole;
 import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.shared.modules.config.Config;
@@ -28,6 +29,7 @@ import com.drs.beam.shared.modules.config.Config;
 class ScriptProvider {
     
     private final ConfigModule config;
+    private final boolean track;
     
     private final String beamCoreRunScriptFile = "./Beam.core_run";
     private final String beamSysConsoleRunScriptFile = "./Beam.sysconsole_run";    
@@ -35,30 +37,42 @@ class ScriptProvider {
     private Path coreScript;
     private Path sysConsoleScript;
     
-    ScriptProvider(ConfigModule config) {
+    ScriptProvider(ConfigModule config, boolean track) {
         this.config = config;
+        this.track = track;
     }
     
-    void processScripts() {
+    void processScripts() {        
         String ext = getSystemScriptsExtension();
         this.coreScript = Paths.get(this.beamCoreRunScriptFile + ext);
         this.sysConsoleScript = Paths.get(this.beamSysConsoleRunScriptFile + ext);
         
         try {
             if ( !Files.exists(this.coreScript) ) {
-                this.writeCoreScript();
+                this.track(" > core script does not exist.");
+                this.writeCoreScript();                
             }
             if ( !Files.exists(this.sysConsoleScript) ) {
-                this.writeSysConsoleScript();
+                this.track(" > system console script does not exist."); 
+                this.writeSysConsoleScript();                
             }
             if ( !this.coreScriptNotActual() ) {
+                this.track(" > core script is not up to date."); 
                 this.writeCoreScript();
             }
             if ( !this.sysConsoleScriptNotActual() ) {
+                this.track(" > system console script is not up to date.");
                 this.writeSysConsoleScript();
-            }
+            }            
+            track("All scripts are up to date.");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    
+    private void track(String trackInfo) {
+        if (track) {
+            System.out.println(trackInfo);
         }
     }
     
@@ -68,15 +82,26 @@ class ScriptProvider {
         
         int configHashCode = jvmOptions.hashCode() + coreClasspath.hashCode();
         
-        List<String> scriptLines = new ArrayList<>();
-        scriptLines.add(":: configuration hashcode [" + configHashCode + "]");
-        scriptLines.add("");
-        scriptLines.add("@echo off");
-        scriptLines.add(
-                "cmd /c start javaw -cp .;" + 
-                coreClasspath + 
-                " -Djava.security.policy=.\\..\\config\\rmi.policy -Djava.rmi.server.hostname=127.0.0.1 " + 
-                jvmOptions + " " + Beam.class.getCanonicalName());
+        List<String> scriptLines;
+        
+        String systemName = System.getProperty("os.name").toLowerCase();
+        if (systemName.contains("win")){
+            scriptLines = this.writeCoreCMDScript(
+                    configHashCode, 
+                    coreClasspath, 
+                    jvmOptions, 
+                    Beam.class.getCanonicalName());
+        } else if (systemName.contains("x") || systemName.contains("u")){
+            scriptLines = this.writeCoreShellScript(
+                    configHashCode, 
+                    coreClasspath, 
+                    jvmOptions, 
+                    Beam.class.getCanonicalName());
+        } else {
+            System.out.println("Unknown OS.");
+            System.exit(1);
+            return;
+        }
         
         Files.write(this.coreScript, 
                 scriptLines, 
@@ -84,17 +109,34 @@ class ScriptProvider {
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING,
                 StandardOpenOption.WRITE);
+        
+        if (track) { System.out.println(" > core script created."); }
     }
     
-    private void writeCoreCMDScript(String con) {
+    private List<String> writeCoreCMDScript(
+            int configHashCode, 
+            String coreClassPath, 
+            String jvmOptions, 
+            String className) {
         
+        List<String> scriptLines = new ArrayList<>();
+        scriptLines.add(":: configuration hashcode [" + configHashCode + "]");
+        scriptLines.add("");
+        scriptLines.add("@echo off");
+        scriptLines.add(
+                "cmd /c start javaw -cp .;" + 
+                coreClassPath + 
+                " -Djava.security.policy=.\\..\\config\\rmi.policy -Djava.rmi.server.hostname=127.0.0.1 " + 
+                jvmOptions + " " + className);
+        
+        return scriptLines;
     }
-            
-    private void writeSysConsoleScript() throws IOException {
-        String jvmOptions = config.get(Config.JVM_SYS_CONSOLE_OPTIONS);
-        String coreClasspath = config.get(Config.CLASSPATH_SYS_CONSOLE).replace(" ", ";");
-        
-        int configHashCode = jvmOptions.hashCode() + coreClasspath.hashCode();
+    
+    private List<String> writeSysConsoleCMDScript(
+            int configHashCode, 
+            String consoleClasspath, 
+            String jvmOptions, 
+            String className) {
         
         List<String> scriptLines = new ArrayList<>();
         scriptLines.add(":: configuration hashcode [" + configHashCode + "]");
@@ -102,9 +144,59 @@ class ScriptProvider {
         scriptLines.add("@echo off");
         scriptLines.add(
                 "cmd /c start java -cp .;" + 
-                coreClasspath + 
+                consoleClasspath + 
                 " -Djava.security.policy=.\\..\\config\\rmi.policy -Djava.rmi.server.hostname=127.0.0.1 " + 
-                jvmOptions + " " + SysConsole.class.getCanonicalName());
+                jvmOptions + " " + className);
+        
+        return scriptLines;
+    }
+    
+    private List<String> writeCoreShellScript(
+            int configHashCode, 
+            String coreClasspath, 
+            String jvmOptions, 
+            String className) {
+        
+        // not implemented yet.
+        throw new TemporaryCodeException("Shell script creation not implemented.");
+    }
+    
+    private List<String> writeSysConsoleShellScript(
+            int configHashCode, 
+            String consoleClassPath, 
+            String jvmOptions, 
+            String className) {
+        
+        // not implemented yet.
+        throw new TemporaryCodeException("Shell script creation not implemented.");
+    }
+            
+    private void writeSysConsoleScript() throws IOException {
+        String jvmOptions = config.get(Config.JVM_SYS_CONSOLE_OPTIONS);
+        String consoleClasspath = config.get(Config.CLASSPATH_SYS_CONSOLE).replace(" ", ";");
+        
+        int configHashCode = jvmOptions.hashCode() + consoleClasspath.hashCode();
+        
+        List<String> scriptLines;
+        
+        String systemName = System.getProperty("os.name").toLowerCase();
+        if (systemName.contains("win")){
+            scriptLines = this.writeSysConsoleCMDScript(
+                    configHashCode, 
+                    consoleClasspath, 
+                    jvmOptions, 
+                    SysConsole.class.getCanonicalName());
+        } else if (systemName.contains("x") || systemName.contains("u")){
+            scriptLines = this.writeSysConsoleShellScript(
+                    configHashCode, 
+                    consoleClasspath, 
+                    jvmOptions, 
+                    SysConsole.class.getCanonicalName());
+        } else {
+            System.out.println("Unknown OS.");
+            System.exit(1);
+            return;
+        }
         
         Files.write(this.sysConsoleScript, 
                 scriptLines, 
@@ -112,6 +204,8 @@ class ScriptProvider {
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING,
                 StandardOpenOption.WRITE);
+        
+        if (track) { System.out.println(" > system console script created."); }
     }
     
     private boolean coreScriptNotActual() throws IOException {

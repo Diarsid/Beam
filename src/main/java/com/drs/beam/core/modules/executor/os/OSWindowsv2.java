@@ -9,28 +9,39 @@ import com.drs.beam.core.modules.executor.OS;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiPredicate;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.IoInnerModule;
+import com.drs.beam.core.modules.tasks.Task;
 import com.drs.beam.shared.modules.config.Config;
 
 /**
  *
  * @author Diarsid
  */
-public class OSWindows implements OS {
+public class OSWindowsv2 implements OS {
 
     // Fields =============================================================================
 
@@ -39,7 +50,7 @@ public class OSWindows implements OS {
     private final ExecutorService executorService;
 
     // Constructors =======================================================================
-    public OSWindows(IoInnerModule io, ConfigModule config) {
+    public OSWindowsv2(IoInnerModule io, ConfigModule config) {
         this.ioEngine = io;
         if(!Desktop.isDesktopSupported()){
             this.ioEngine.reportErrorAndExitLater(
@@ -77,7 +88,7 @@ public class OSWindows implements OS {
             this.executorService.execute(
                     new RunnableDesktopOpenTask(
                             this.ioEngine,
-                            location.getPath() + "\\" + target));
+                            location.getPath() + "/" + target));
             this.ioEngine.reportMessage("opening...");
         }
     }
@@ -193,15 +204,11 @@ public class OSWindows implements OS {
             String noTargetMessage,
             String noLocationMessage) {
 
-        File dir = new File(location);
-        if (dir.exists() && dir.isDirectory()) {
+        Path dir = Paths.get(location);
+        if (Files.exists(dir) && Files.isDirectory(dir)) {
             List<String> foundItems = new ArrayList<>();
 
-            if (targetName.contains("-")) {
-                this.findItemsInDirectoryByNameParts(dir, targetName, foundItems);
-            } else {
-                this.findItemsInDirectoryByName(dir, targetName, foundItems);
-            }
+            this.findInTree(dir, targetName, foundItems);
 
             if (foundItems.size() == 1) {
                 return foundItems.get(0);
@@ -216,29 +223,65 @@ public class OSWindows implements OS {
             return "";
         }
     }
-
-    private void findItemsInDirectoryByName(File directory, String nameToFind, List<String> foundItems) {
-        for (String element : directory.list()) {
-            if (element.toLowerCase().contains(nameToFind)) {
-                foundItems.add(element);
-            }
+    
+    private void findInTree(Path root, String nameToFind, List<String> foundItems) {
+        try { 
+            
+            Files.walkFileTree(
+                    root, 
+                    EnumSet.of(FileVisitOption.FOLLOW_LINKS), 
+                    2, 
+                    new SimpleFileVisitor<Path>() {
+                
+                @Override 
+                public FileVisitResult preVisitDirectory(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                    
+                    return checkPath(root, file, nameToFind, foundItems);
+                }        
+                        
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                    
+                    return checkPath(root, file, nameToFind, foundItems);
+                }
+            });
+            
+        } catch (AccessDeniedException e ) {
+            this.ioEngine.reportError("Access to file is denied, stream stoped.");
+        } catch (IOException e ) {
+            this.ioEngine.reportError("Error occured in Files.find(...);");
         }
     }
-
-    private void findItemsInDirectoryByNameParts(File directory, String nameToFind, List<String> foundItems) {
-        boolean containsAllFragments;
-        for (String file : directory.list()) {
-            containsAllFragments = true;
-            for (String nameFragment : Arrays.asList(nameToFind.split("-"))) {
-                if (!file.toLowerCase().contains(nameFragment)) {
-                    containsAllFragments = false;
-                    break;
-                }
+    
+    private FileVisitResult checkPath(
+            Path root, Path file, String nameToFind, List<String> foundItems) {
+        
+        String fileName;
+        if ( file.getNameCount() > 0 ) {
+            fileName = file.getFileName().toString().toLowerCase();
+        } else {
+            fileName = file.toString();
+        }
+        if ( fileName.contains("desktop.ini") ) {
+            return CONTINUE;
+        }
+        if ( nameToFind.contains("-") ) {
+            for (String fragment : Arrays.asList(nameToFind.split("-"))) {
+                if (!fileName.contains(fragment)) {
+                    return CONTINUE;
+                }                
             }
-            if (containsAllFragments) {
-                foundItems.add(file);
+            foundItems.add(root.relativize(file).toString().replace("\\", "/"));
+            return CONTINUE;
+        } else {
+            if (fileName.contains(nameToFind)) {
+                foundItems.add(root.relativize(file).toString().replace("\\", "/"));
             }
         }
+
+        return CONTINUE;
     }
 
     private String chooseOneVariantFrom(List<String> variants) {

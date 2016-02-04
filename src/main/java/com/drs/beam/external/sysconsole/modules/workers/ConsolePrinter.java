@@ -37,7 +37,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     private final BufferedWriter writer;
     
     ConsolePrinter() {
-        this.writer = new BufferedWriter(new OutputStreamWriter(System.out));
+        this.writer = new BufferedWriter(System.console().writer());
     }
     
     private String format(String info, int formatLength){        
@@ -238,9 +238,9 @@ class ConsolePrinter implements ConsolePrinterModule {
         this.writer.newLine();
         for(WebPage page : pages){
             sb.append(SPACE)
-                    .append(format(page.getName(), 17))
-                    .append(format(page.getCategory(), 10))
-                    .append(page.getUrlAddress());
+                    .append(format(page.getName(), 18))
+                    .append(format(page.getShortcuts(), 10))
+                    .append(page.getDirectory());
             if (compressOutput && sb.length() > 79){
                 sb.delete(76, sb.length());
                 sb.append("...");

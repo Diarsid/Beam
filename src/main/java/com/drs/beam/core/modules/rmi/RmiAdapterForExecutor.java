@@ -21,70 +21,71 @@ import com.drs.beam.core.modules.executor.StoredExecutorCommand;
  * @author Diarsid
  */
 class RmiAdapterForExecutor implements RmiExecutorInterface {
-    // Fields =============================================================================
     
     private final ExecutorModule executorModule;
-    
-    // Constructors =======================================================================
 
     RmiAdapterForExecutor(ExecutorModule executorModule) {
         this.executorModule = executorModule;
     }
     
-    // Methods ============================================================================
-    
     @Override
-    public void open(List<String> commandParams) throws RemoteException{
+    public void open(List<String> commandParams) throws RemoteException {
         this.executorModule.open(commandParams);
     }
     
     @Override
-    public void run(List<String> commandParams) throws RemoteException{
+    public void run(List<String> commandParams) throws RemoteException {
         this.executorModule.run(commandParams);
     }
     
     @Override
-    public void call(List<String> commandParams) throws RemoteException{
+    public void call(List<String> commandParams) throws RemoteException {
         this.executorModule.call(commandParams);
     }
     
     @Override
-    public void start(List<String> commandParams) throws RemoteException{
+    public void start(List<String> commandParams) throws RemoteException {
         this.executorModule.start(commandParams);
     }
     
     @Override
-    public void stop(List<String> commandParams) throws RemoteException{
+    public void stop(List<String> commandParams) throws RemoteException {
         this.executorModule.stop(commandParams);
     }
     
     @Override
-    public void newCommand(List<String> command, String commandName) throws RemoteException{
+    public void newCommand(List<String> command, String commandName) 
+            throws RemoteException {
+        
         this.executorModule.newCommand(command, commandName);
     }
     
     @Override
-    public void openWebPage(List<String> commandParams) throws RemoteException{
+    public void openWebPage(List<String> commandParams) throws RemoteException {
         this.executorModule.openWebPage(commandParams);
     }
     
     @Override
-    public List<String> listLocationContent(String locationName) throws RemoteException{
+    public List<String> listLocationContent(String locationName) 
+            throws RemoteException {
+        
         return this.executorModule.listLocationContent(locationName);
     }
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands() throws RemoteException{
+    public List<StoredExecutorCommand> getAllCommands() throws RemoteException {
         return this.executorModule.getAllCommands();
     }
     
     @Override
-    public List<StoredExecutorCommand> getCommand(String commandName)  throws RemoteException{
+    public List<StoredExecutorCommand> getCommand(String commandName) 
+            throws RemoteException {
+        
         return this.executorModule.getCommands(commandName);
     }
     
     @Override
-    public boolean deleteCommand(String commandName) throws RemoteException{
+    public boolean deleteCommand(String commandName) throws RemoteException {
         return this.executorModule.deleteCommand(commandName);
     }
     
@@ -99,7 +100,9 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     }     
     
     @Override
-    public void setAskUserToRememberHisChoice(boolean askUser) throws RemoteException {
+    public void setAskUserToRememberHisChoice(boolean askUser) 
+            throws RemoteException {
+        
         this.executorModule.setAskUserToRememberHisChoice(askUser);
     } 
     
@@ -107,4 +110,19 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     public Map<String, String> getAllChoices() throws RemoteException {
         return this.executorModule.getAllChoices();
     }
+    
+    @Override
+    public void newNote(List<String> commandParams) throws RemoteException {
+        this.executorModule.newNote(commandParams);
+    }
+    
+    @Override
+    public void openNotes() throws RemoteException {
+        this.executorModule.openNotes();
+    }
+    
+    @Override
+    public  void openNote(List<String> commandParams) throws RemoteException {
+        this.executorModule.openNote(commandParams);
+    }    
 }

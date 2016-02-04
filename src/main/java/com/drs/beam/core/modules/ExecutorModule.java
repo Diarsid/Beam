@@ -40,4 +40,8 @@ public interface ExecutorModule extends GemModule {
     boolean deleteMem(String command);    
     void setAskUserToRememberHisChoice(boolean askUser);
     Map<String, String> getAllChoices();
+    
+    void newNote(List<String> commandParams);
+    void openNotes();
+    void openNote(List<String> commandParams);
 }

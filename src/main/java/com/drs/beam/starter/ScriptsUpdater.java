@@ -15,7 +15,7 @@ import com.drs.beam.shared.modules.config.ConfigModuleWorkerBuilder;
  */
 class ScriptsUpdater {
     
-    ScriptsUpdater() {
+    private ScriptsUpdater() {
     }
     
     public static void main(String[] args) {
@@ -23,8 +23,15 @@ class ScriptsUpdater {
         ConfigModuleWorkerBuilder confBuilder = new ConfigModuleWorkerBuilder();
         ConfigModule config = confBuilder.buildModule();
         System.out.println("Configuration reading...");
-        ScriptProvider scripts = new ScriptProvider(config);
+        ScriptProvider scripts = new ScriptProvider(config, true);
         scripts.processScripts();
-        System.out.println("Scripts updated.");
+        pause();
+    }
+    
+    static void pause() {
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+        }
     }
 }

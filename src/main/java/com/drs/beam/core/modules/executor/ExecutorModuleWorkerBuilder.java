@@ -6,11 +6,13 @@
 
 package com.drs.beam.core.modules.executor;
 
+import com.drs.beam.core.entities.Location;
 import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.ExecutorModule;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.executor.os.OSProvider;
+import com.drs.beam.shared.modules.config.Config;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
@@ -35,8 +37,12 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     public ExecutorModule buildModule() {        
         IntelligentResolver intell = 
                 new IntelligentResolver(this.dataModule, this.ioInnerModule);
-        OS os = OSProvider.getOS(this.ioInnerModule, this.configModule);        
+        OS os = OSProvider.getOS(this.ioInnerModule, this.configModule); 
+        Location notes = new Location(
+                "notes", 
+                this.configModule.get(Config.NOTES_LOCATION));
+        
         return new ExecutorModuleWorker(
-                this.ioInnerModule, this.dataModule, intell, os);
+                this.ioInnerModule, this.dataModule, intell, os, notes);
     }
 }

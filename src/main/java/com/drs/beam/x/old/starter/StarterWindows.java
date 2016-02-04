@@ -7,7 +7,6 @@ package com.drs.beam.x.old.starter;
 
 import java.io.IOException;
 
-import com.drs.beam.x.old.external.sysconsole.Console;
 import com.drs.beam.core.Beam;
 import com.drs.beam.shared.modules.config.Config;
 //import com.drs.beam.starter.Starter;
@@ -183,7 +182,7 @@ class StarterWindows {
                 .append("-Djava.rmi.server.hostname=").append(this.configReader.getSystemConsoleHost())
                 .append(this.configReader.getJvmOptionsForSystemConsole())
                 .append(space)
-                .append(Console.class.getCanonicalName())
+                //.append(Console.class.getCanonicalName())
                 .append(space)
                 .append(buildArgumentsForConsole()); 
         return commandBuilder.toString();

@@ -25,7 +25,7 @@ class ConsoleReader implements ConsoleReaderModule {
     private final String[] helpPatterns = {"h", "help", "hlp", "hp"};
     
     ConsoleReader() {
-        this.reader = new BufferedReader(new InputStreamReader(System.in));
+        this.reader = new BufferedReader(System.console().reader());
     }
     
     @Override

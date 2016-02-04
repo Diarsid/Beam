@@ -38,11 +38,9 @@ public class Beam {
     }    
            
     public static void main(String[] args) {
-        System.out.println("[Beam::main] Initialization begins...");
         GemInjector.buildContainer("Beam.core", new BeamModulesDeclaration());
         GemInjector.getContainer("Beam.core").init();
         GemInjector.clear();
-        System.out.println("[Beam::main] Initialization end.");
     }
     
     public static void exitBeamCoreNow(){

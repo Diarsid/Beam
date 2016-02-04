@@ -46,8 +46,9 @@ public class ExecutorTest {
         when(data.getLocationsDao()).thenReturn(locDao);
         os = mock(OS.class);
         intell = mock(IntelligentResolver.class);
+        Location notes = mock(Location.class);
         
-        exec = new ExecutorModuleWorker(io, data, intell, os);
+        exec = new ExecutorModuleWorker(io, data, intell, os, notes);
     }
     
     @Test

@@ -36,6 +36,8 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     void editLocation() throws IOException;
 
     void editPage() throws IOException;
+    
+    void movePageToDirectoryAndPlacement() throws IOException;
 
     void getAllChoices() throws IOException;
 
@@ -49,7 +51,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
 
     void getPage() throws IOException;
 
-    void getPagesOfCategory() throws IOException;
+    void getPagesInDirectoryAndPlacement() throws IOException;
 
     void listLocation(String locationName) throws IOException;
 
@@ -67,9 +69,13 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
 
     void printHelp() throws IOException;
 
-    void renameCategory() throws IOException;
+    void renameDirectory() throws IOException;
+    
+    void getAllWebPages() throws IOException;
 
-    void seeAllWebPages() throws IOException;
+    void getAllWebPanelPages() throws IOException;
+    
+    void getAllBookmarksPages() throws IOException;
 
     String waitForNewCommand() throws IOException;
     
@@ -110,4 +116,10 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     void setAskUserToRememberHisChoice(String yesOrNo) throws IOException; 
     
     void setIntelligentActive(String yesOrNo) throws IOException;    
+    
+    void openNotes() throws IOException;
+    
+    void openNote(List<String> command) throws IOException;
+    
+    void newNote(List<String> command) throws IOException;
 }

@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.entities.WebPagePlacement;
 import com.drs.beam.core.modules.data.DaoWebPages;
 import com.drs.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 
@@ -29,12 +30,21 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     // Methods ============================================================================
     
     @Override
-    public void newWebPage(String name, String urlAddress, String category, String browser) throws RemoteException {
+    public void newWebPage(
+            String name,
+            String shortcuts, 
+            String urlAddress, 
+            WebPagePlacement placement, 
+            String directory, 
+            String browser) 
+            throws RemoteException {
+        
         name = name.trim().toLowerCase();
         urlAddress = urlAddress.trim().toLowerCase();
-        category = category.trim().toLowerCase();
+        directory = directory.trim().toLowerCase();
         browser = browser.trim().toLowerCase();
-        this.dao.saveWebPage(new WebPage(name, urlAddress, category, browser));
+        this.dao.saveWebPage(new WebPage(
+                name, shortcuts, urlAddress, placement, directory, browser));
     }
     
     @Override
@@ -44,19 +54,25 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     }
     
     @Override
-    public List<String> getAllCategories() throws RemoteException {
-        return this.dao.getAllCategories();
+    public List<String> getAllDirectoriesInPlacement(WebPagePlacement placement)
+            throws RemoteException {
+        
+        return this.dao.getAllDirectoriesInPlacement(placement);
     }
     
     @Override
-    public List<WebPage> getAllPages() throws RemoteException {
-        return this.dao.getAllWebPages();
+    public List<WebPage> getAllPagesInPlacement(WebPagePlacement placement) 
+            throws RemoteException {
+        
+        return this.dao.getAllWebPagesInPlacement(placement);
     }   
     
     @Override
-    public List<WebPage> getAllWebPagesOfCategory(String category) throws RemoteException {
-        category = category.trim().toLowerCase();
-        return this.dao.getAllWebPagesOfCategory(category);
+    public List<WebPage> getAllWebPagesInDirectoryAndPlacement(
+            String directory, WebPagePlacement placement) throws RemoteException {
+        
+        directory = directory.trim().toLowerCase();
+        return this.dao.getAllWebPagesInDirectoryAndPlacement(directory, placement);
     }
     
     @Override
@@ -70,10 +86,21 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     }
     
     @Override
-    public boolean editWebPageName(String name, String newName) throws RemoteException {
+    public boolean editWebPageName(String name, String newName) 
+            throws RemoteException {
+        
         name = name.trim().toLowerCase();
         newName = newName.trim().toLowerCase();
         return this.dao.editWebPageName(name, newName);
+    }
+    
+    @Override
+    public boolean editWebPageShortcuts(String name, String newShorts) 
+            throws RemoteException {
+        
+        name = name.trim().toLowerCase();
+        newShorts = newShorts.trim().toLowerCase();
+        return this.dao.editWebPageName(name, newShorts);
     }
     
     @Override
@@ -84,10 +111,10 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     }
     
     @Override
-    public boolean editWebPageCategory(String name, String newCategory) throws RemoteException {
+    public boolean editWebPageDirectory(String name, String newDirectory) throws RemoteException {
         name = name.trim().toLowerCase();
-        newCategory = newCategory.trim().toLowerCase();
-        return this.dao.editWebPageCategory(name, newCategory);
+        newDirectory = newDirectory.trim().toLowerCase();
+        return this.dao.editWebPageDirectory(name, newDirectory);
     }
     
     @Override
@@ -98,9 +125,21 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     }
     
     @Override
-    public boolean renameCategory(String category, String newCategory) throws RemoteException {
-        category = category.trim().toLowerCase();
-        newCategory = newCategory.trim().toLowerCase();
-        return this.dao.renameCategory(category, newCategory);
+    public boolean renameDirectory(
+            String directory, String newDirectory, WebPagePlacement placement) 
+            throws RemoteException {
+        
+        directory = directory.trim().toLowerCase();
+        newDirectory = newDirectory.trim().toLowerCase();
+        return this.dao.renameDirectoryInPlacement(directory, newDirectory, placement);
+    }
+    
+    @Override
+    public boolean moveWebPageTo
+            (String pageName, String newDirectory, WebPagePlacement placement)
+            throws RemoteException {
+                
+        return this.dao.moveWebPageToPlacementAndDirectory
+                (pageName, newDirectory, placement);
     }
 }

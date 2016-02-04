@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.entities.WebPagePlacement;
 
 /**
  *
@@ -19,22 +20,29 @@ public interface DaoWebPages {
     
     boolean deleteWebPage(String name);
     
-    List<WebPage> getAllWebPages();
+    List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement);
     
     List<WebPage> getWebPagesByName(String name);
     List<WebPage> getWebPagesByNameParts(String[] nameParts);
     
-    List<WebPage> getAllWebPagesOfCategory(String category);
+    List<WebPage> getAllWebPagesInDirectoryAndPlacement(
+            String directory, WebPagePlacement placement);
     
-    List<String> getAllCategories();    
+    List<String> getAllDirectoriesInPlacement(WebPagePlacement placement);    
     
     boolean editWebPageName(String name, String newName);
     
+    boolean editWebPageShortcuts(String name, String newShortcuts);
+    
     boolean editWebPageUrl(String name, String newUrl);
     
-    boolean editWebPageCategory(String name, String newCategory);
+    boolean editWebPageDirectory(String name, String newCategory);
     
     boolean editWebPageBrowser(String name, String newBrowser);
     
-    boolean renameCategory(String category, String newCategory);
+    boolean renameDirectoryInPlacement(
+            String category, String newCategory, WebPagePlacement placement);
+    
+    boolean moveWebPageToPlacementAndDirectory(
+            String pageName, String newDirectory, WebPagePlacement placement);
 }

@@ -49,7 +49,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     case "+" :
                     case "new" : {
                         if (params.size() < 2){
-                            continue input;
+                            break parsing;
                         }                        
                         switch (params.get(1)){
                             case "loc" :
@@ -78,6 +78,11 @@ class ConsoleListener implements ConsoleListenerModule {
                             default : {
                                 break parsing;
                             }
+                            case "n" :
+                            case "note" : {
+                                this.dispatcher.newNote(params);
+                                break parsing;                               
+                            }
                         }
                     }
                     case "li" :
@@ -88,10 +93,10 @@ class ConsoleListener implements ConsoleListenerModule {
                         break parsing;
                     }
                     case "get" : {
-                        if (params.size() < 2){
-                            continue input;
+                        if (params.size() < 2) {
+                            break parsing;
                         }                        
-                        switch (params.get(1)){
+                        switch (params.get(1)) {
                             case "comm" :
                             case "command" : {
                                 this.dispatcher.getCommand();
@@ -104,12 +109,32 @@ class ConsoleListener implements ConsoleListenerModule {
                             } 
                             case "web" :
                             case "page" : {
-                                this.dispatcher.getPage();
-                                break parsing;
+                                if (params.size() < 3){
+                                    this.dispatcher.getPage();
+                                    break parsing;
+                                }
+                                switch (params.get(2)) {
+                                    case "dir" :
+                                    case "directory" : {
+                                        this.dispatcher.getPagesInDirectoryAndPlacement();
+                                        break parsing;
+                                    }    
+                                }
                             }
                             case "cat" :
                             case "category" : {
-                                this.dispatcher.getPagesOfCategory();
+                                this.dispatcher.getPagesInDirectoryAndPlacement();
+                                break parsing;
+                            }
+                            case "webpanel" :
+                            case "panel" : {
+                                this.dispatcher.getAllWebPanelPages();
+                                break parsing;
+                            }
+                            case "marks" :
+                            case "bookmarks" : {
+                                this.dispatcher.getAllBookmarksPages();
+                                break parsing;
                             }
                             default : {
                                 break parsing;
@@ -148,13 +173,28 @@ class ConsoleListener implements ConsoleListenerModule {
                     case "web" :
                     case "see" : {
                         this.dispatcher.openWebPage(params);
+                        break parsing;
                     }
+                    case "n" :
+                    case "note" : {
+                        if (params.size() < 2) {
+                            this.dispatcher.openNotes();
+                            break parsing;
+                        } else {
+                            this.dispatcher.openNote(params);
+                            break parsing;
+                        }                        
+                    }                        
+                    case "notes" : {                        
+                        this.dispatcher.openNotes();
+                        break parsing;
+                    }                    
                     case "all" :
                     case "view" : {
-                        if (params.size() < 2){
-                            continue input;
+                        if (params.size() < 2) {
+                            break parsing;
                         }                        
-                        switch (params.get(1)){
+                        switch (params.get(1)) {
                             case "tasks" :
                             case "future" : {                                
                                 this.dispatcher.printActualTasks();                                
@@ -184,7 +224,7 @@ class ConsoleListener implements ConsoleListenerModule {
                             case "web" :
                             case "page" :
                             case "pages" : {
-                                this.dispatcher.seeAllWebPages();
+                                this.dispatcher.getAllWebPages();
                                 break parsing;
                             }
                             default : {
@@ -195,8 +235,8 @@ class ConsoleListener implements ConsoleListenerModule {
                     case "ed" :
                     case "edit" :
                     case "change" : {
-                        if (params.size() < 2){
-                            continue input;
+                        if (params.size() < 2) {
+                            break parsing;
                         }
                         switch (params.get(1)){
                             case "page" : {
@@ -213,20 +253,31 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.editCommand();
                                 break parsing;
                             }
-                            case "cat" :
-                            case "category" : {
-                                this.dispatcher.renameCategory();
+                            case "dir" :
+                            case "directory" : {
+                                this.dispatcher.renameDirectory();
                                 break parsing;
                             }    
                             default : {
                                 break parsing;
                             }
                         }
-                    }                        
+                    } 
+                    case "move" : {
+                        if (params.size() < 2) {
+                            break parsing;
+                        }
+                        switch (params.get(1)){
+                            case "page" : {
+                                this.dispatcher.movePageToDirectoryAndPlacement();
+                                break parsing;
+                            }
+                        }
+                    }
                     case "delete" :
                     case "del" : {
                         if (params.size() < 2){
-                            continue input;
+                            break parsing;
                         }                        
                         switch (params.get(1)){
                             case "task" : {
@@ -259,7 +310,7 @@ class ConsoleListener implements ConsoleListenerModule {
                             }
                             case "all" : {
                                 if (params.size() < 3) {
-                                    continue input;
+                                    break parsing;
                                 }
                                 switch (params.get(2)) {
                                     case "tasks" : {
@@ -297,13 +348,13 @@ class ConsoleListener implements ConsoleListenerModule {
                             }
                         }                        
                     }
-                    case "exit" :{
+                    case "exit" : {
                         this.dispatcher.exitDialog();
                         break parsing;
                     }
                     case "use" : {
                         if (params.size() < 2){
-                            continue input;
+                            break parsing;
                         }                        
                         switch (params.get(1)){
                             case "native" : {
@@ -322,7 +373,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "clear" : {
                         if (params.size() < 2) {
-                            continue input;
+                            break parsing;
                         }
                         switch (params.get(1)) {
                             case "tasks" : {
@@ -335,18 +386,18 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "set" : {
                         if (params.size() < 2) {
-                            continue input;
+                            break parsing;
                         }
                         switch (params.get(1)) {
                             case "intell" :
                             case "intel" : {
                                 if (params.size() < 3) {
-                                    continue input;
+                                    break parsing;
                                 }
                                 switch (params.get(2)) {
                                     case "ask" : {
                                         if (params.size() < 4) {
-                                            continue input;
+                                            break parsing;
                                         }
                                         this.dispatcher.setAskUserToRememberHisChoice(params.get(3));
                                         break parsing;
@@ -360,7 +411,10 @@ class ConsoleListener implements ConsoleListenerModule {
                                     }
                                 }
                             }
-                        }
+                            default : {
+                                break parsing;
+                            }
+                        } 
                     }
                     default : {
                         break parsing;

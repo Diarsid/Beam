@@ -28,9 +28,14 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final DaoCommands commandsDao;
     private final DaoWebPages pagesDao;        
     private final List<String> command;
+    private final Location notes;
     
     ExecutorModuleWorker(
-            IoInnerModule io, DataModule dataModule, IntelligentResolver i, OS os) {
+            IoInnerModule io, 
+            DataModule dataModule, 
+            IntelligentResolver i, 
+            OS os,
+            Location notes) {
         this.ioEngine = io;
         this.intell = i;
         this.locationsDao = dataModule.getLocationsDao();
@@ -38,6 +43,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         this.pagesDao = dataModule.getWebPagesDao();
         this.system = os;
         this.command = new ArrayList<>();
+        this.notes = notes;
     }
     
     @Override
@@ -371,7 +377,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private WebPage getWebPage(String name, String command){
         name = name.trim().toLowerCase();
         List<WebPage> pages;
-        if (name.contains("-")){
+        if (name.contains("-")) {
             pages = this.pagesDao.getWebPagesByNameParts(name.split("-"));
         } else {
             pages = this.pagesDao.getWebPagesByName(name);
@@ -379,15 +385,15 @@ class ExecutorModuleWorker implements ExecutorModule {
         return resolveMultiplePages(pages, command);
     }
     
-    private WebPage resolveMultiplePages(List<WebPage> pages, String command){
-        if (pages.size() == 1){
+    private WebPage resolveMultiplePages(List<WebPage> pages, String command) {
+        if (pages.size() == 1) {
             return pages.get(0);
-        } else if (pages.isEmpty()){
+        } else if (pages.isEmpty()) {
             this.ioEngine.reportMessage("Couldn`t find such page.");
             return null;
         } else {
             List<String> pageNames = new ArrayList<>();
-            for (WebPage wp : pages){
+            for (WebPage wp : pages) {
                 pageNames.add(wp.getName());
             }
             int choosedVariant = this.intell.resolve(
@@ -397,7 +403,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             //int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
             //        "There are several pages:", pageNames);
             
-            if (choosedVariant < 0){
+            if (choosedVariant < 0) {
                 return null;
             } else {
                 return pages.get(choosedVariant-1);
@@ -441,4 +447,27 @@ class ExecutorModuleWorker implements ExecutorModule {
     public Map<String, String> getAllChoices() {
         return this.intell.getAllChoices();
     }
+    
+    @Override
+    public void newNote(List<String> commandParams) {
+        if (commandParams.size() > 2) {
+            String name = String.join(" ", commandParams.subList(2, commandParams.size()));
+            this.system.createAndOpenTxtFileIn(name, this.notes);
+        } else {
+            this.system.createAndOpenTxtFileIn("", this.notes);
+        }
+    }
+    
+    @Override
+    public void openNotes() {
+        this.system.openLocation(this.notes);
+    }
+    
+    @Override
+    public void openNote(List<String> commandParams) {
+        for (int i = 1; i < commandParams.size(); i++) {
+            this.system.openFileInLocation(commandParams.get(i), this.notes);
+        }
+    }
+    
 }

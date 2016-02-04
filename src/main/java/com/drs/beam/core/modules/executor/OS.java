@@ -27,4 +27,6 @@ public interface OS {
     void openUrlWithDefaultBrowser(String name);
     
     void openUrlWithGivenBrowser(String urlAddress, String browserName);
+    
+    void createAndOpenTxtFileIn(String name, Location location);
 }

@@ -28,7 +28,7 @@ public class RunnableDesktopOpenTask implements Runnable {
     @Override
     public void run() {
         try {
-            Desktop.getDesktop().open(new File(target));
+            Desktop.getDesktop().open(new File(target));            
         } catch (IOException e) {
             ioEngine.reportException(e, "Run task with Desktop -> IOException: given path may be invalid.");
         } catch (IllegalArgumentException argumentException) {

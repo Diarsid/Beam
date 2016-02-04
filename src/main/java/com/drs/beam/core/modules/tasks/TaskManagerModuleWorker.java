@@ -26,7 +26,6 @@ import com.drs.beam.core.modules.IoInnerModule;
  * Is responsible for initial database reading when program starts it's work.
  */
 class TaskManagerModuleWorker implements TaskManagerModule {
-    // Fields =============================================================================
     
     private final IoInnerModule ioEngine;
     private final DaoTasks tasksDao;
@@ -38,10 +37,9 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     // It is usually updated after every CRUD operation with tasks in data storage 
     // through refreshFirstTaskTime() method and observed by Timer instance 
     // to execute appropriate tasks in time.
-    private LocalDateTime firstTaskTime;
+    private LocalDateTime firstTaskTime;    
     
-    // Constructor ========================================================================
-    TaskManagerModuleWorker(IoInnerModule io, DataModule dataManager){
+    TaskManagerModuleWorker(IoInnerModule io, DataModule dataManager) {
         this.ioEngine = io;
         this.tasksDao = dataManager.getTasksDao();
         this.lock = new Object();
@@ -53,7 +51,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
 
     // Methods ============================================================================    
          
-    LocalDateTime getFirstTaskTime(){
+    LocalDateTime getFirstTaskTime() {
         return this.firstTaskTime;
     }
     
@@ -61,7 +59,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         return (this.firstTaskTime != null);
     }
     
-    private void refreshFirstTaskTime(){
+    private void refreshFirstTaskTime() {
         synchronized (this.lock){
             this.firstTaskTime = this.tasksDao.getFirstTaskTime();
         }                
@@ -71,7 +69,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
      * Method for initial database reading when program starts it's work 
      * after a period of it`s inactivity.
      */
-    private void beginWork(){
+    private void beginWork() {
         List<Task> tasks = this.tasksDao.extractExpiredTasks(LocalDateTime.now());
         this.refreshFirstTaskTime();
                 
