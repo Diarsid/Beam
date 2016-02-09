@@ -25,7 +25,9 @@ class Timer implements Runnable {
     // Methods ============================================================================
     @Override
     public void run(){
+        /*
         try{
+            
             // endless loop for work
             while (true){
                 // check if there are any tasks to watch their alarm time
@@ -33,7 +35,7 @@ class Timer implements Runnable {
                     // compare current time with the earliest task's time.
                     if  (LocalDateTime.now().isAfter(taskManager.getFirstTaskTime())){
                         // If first task`s time comes perform it's task
-                        taskManager.performFirstTask();
+                        taskManager.performFirstTasks();
                     }
                     // pause
                     Thread.sleep(300);
@@ -42,5 +44,6 @@ class Timer implements Runnable {
                 Thread.sleep(300);
             }
         } catch (InterruptedException e){}
+        */
     }
 }

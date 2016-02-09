@@ -8,6 +8,7 @@ package com.drs.beam.core.modules.tasks;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,12 +34,15 @@ public class TaskManagerTest {
         IoInnerModule io = mock(IoInnerModule.class);
         DataModule data = mock(DataModule.class);
         DaoTasks dao = mock(DaoTasks.class);
+        TaskTimeFormatter formatter = mock(TaskTimeFormatter.class);
+        Object lock = mock(Object.class);
+        ScheduledThreadPoolExecutor executor = mock(ScheduledThreadPoolExecutor.class);
         
         when(data.getTasksDao()).thenReturn(dao);
         LocalDateTime future = LocalDateTime.of(2017, 12, 30, 23, 59, 59);
         when(dao.getFirstTaskTime()).thenReturn(future);
         
-        taskManager = new TaskManagerModuleWorker(io, data);
+        taskManager = new TaskManagerModuleWorker(io, dao, formatter, lock, executor);
         
         assertEquals(future, taskManager.getFirstTaskTime());
     }

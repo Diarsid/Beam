@@ -72,7 +72,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
                 this.beamRemoteAccess.acceptNewIOProcessor(config.get(Config.SYS_CONSOLE_NAME), 
                         config.get(Config.SYS_CONSOLE_HOST), 
                         Integer.parseInt(config.get(Config.SYS_CONSOLE_PORT)));
-                this.beamRemoteAccess.useNativeShowTaskMethod();                
+                this.beamRemoteAccess.setUseNativeShowTaskMethod();                
             }
             
         } catch (AlreadyBoundException abe) {

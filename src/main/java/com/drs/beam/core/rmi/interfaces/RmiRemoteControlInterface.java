@@ -17,8 +17,8 @@ public interface RmiRemoteControlInterface extends Remote {
     boolean isExternalIoProcessorActive() throws RemoteException;
     void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort)
             throws RemoteException, NotBoundException;
-    void useExternalShowTaskMethod() throws RemoteException;
-    void useNativeShowTaskMethod() throws RemoteException;
+    boolean setUseExternalShowTaskMethod() throws RemoteException;
+    boolean setUseNativeShowTaskMethod() throws RemoteException;
     void exit() throws RemoteException;
     void setDefaultIO() throws RemoteException;
 }

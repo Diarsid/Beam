@@ -27,7 +27,7 @@ class ConsoleListener implements ConsoleListenerModule {
     }
     
     @Override
-    public void run(){
+    public void run() {
         String command;
         List<String> params = new ArrayList<>(); 
         input: while (true) {
@@ -62,9 +62,15 @@ class ConsoleListener implements ConsoleListenerModule {
                                 break parsing;
                             }
                             case "event" : {
-                                this.dispatcher.newEvent();
+                                this.dispatcher.newScheduledEvent();
                                 break parsing;
                             }
+                            case "rem" :
+                            case "remind" :
+                            case "reminder" : {
+                                this.dispatcher.newReminder();
+                                break parsing;
+                            }                            
                             case "comm" :
                             case "command" : {
                                 this.dispatcher.newCommand();
@@ -119,22 +125,46 @@ class ConsoleListener implements ConsoleListenerModule {
                                         this.dispatcher.getPagesInDirectoryAndPlacement();
                                         break parsing;
                                     }    
+                                    default: {
+                                        break parsing;
+                                    }
                                 }
-                            }
-                            case "cat" :
-                            case "category" : {
-                                this.dispatcher.getPagesInDirectoryAndPlacement();
-                                break parsing;
                             }
                             case "webpanel" :
                             case "panel" : {
-                                this.dispatcher.getAllWebPanelPages();
-                                break parsing;
+                                if (params.size() < 3){
+                                    this.dispatcher.getAllWebPanelPages();
+                                    break parsing;
+                                }
+                                switch (params.get(2)) {
+                                    case "dir" :
+                                    case "directory" : {
+                                        this.dispatcher.getPagesOfPanelDirectory();
+                                        break parsing;
+                                    }    
+                                    default: {
+                                        break parsing;
+                                    }
+                                }                                
                             }
+                            case "bookm" :
+                            case "bmarks" :
                             case "marks" :
                             case "bookmarks" : {
-                                this.dispatcher.getAllBookmarksPages();
-                                break parsing;
+                                if (params.size() < 3){
+                                    this.dispatcher.getAllBookmarksPages();
+                                    break parsing;
+                                }
+                                switch (params.get(2)) {
+                                    case "dir" :
+                                    case "directory" : {
+                                        this.dispatcher.getPagesOfBookmarksDirectory();
+                                        break parsing;
+                                    }    
+                                    default: {
+                                        break parsing;
+                                    }
+                                }                                
                             }
                             default : {
                                 break parsing;
@@ -352,25 +382,6 @@ class ConsoleListener implements ConsoleListenerModule {
                         this.dispatcher.exitDialog();
                         break parsing;
                     }
-                    case "use" : {
-                        if (params.size() < 2){
-                            break parsing;
-                        }                        
-                        switch (params.get(1)){
-                            case "native" : {
-                                this.dispatcher.useNativeShowTaskMethod();
-                                break parsing;
-                            }
-                            case "ext" :
-                            case "external" : {
-                                this.dispatcher.useExternalShowTaskMethod();
-                                break parsing;
-                            }
-                            default : {
-                                break parsing;
-                            }
-                        }
-                    }
                     case "clear" : {
                         if (params.size() < 2) {
                             break parsing;
@@ -404,12 +415,47 @@ class ConsoleListener implements ConsoleListenerModule {
                                     }
                                     case "active" : {
                                         if (params.size() < 4) {
-                                            continue input;
+                                            break parsing;
                                         }
                                         this.dispatcher.setIntelligentActive(params.get(3));
                                         break parsing;
                                     }
+                                    default: {
+                                        break parsing;
+                                    }
                                 }
+                            }
+                            case "task" : {
+                                if (params.size() < 3) {
+                                    break parsing;
+                                }
+                                switch (params.get(2)) {
+                                    case "use" : {
+                                        if (params.size() < 4) {
+                                            break parsing;
+                                        }
+                                        switch (params.get(3)) {
+                                            case "external" :
+                                            case "cons" :
+                                            case "console" :
+                                            case "ext" : {
+                                                this.dispatcher.useExternalShowTaskMethod();
+                                                break parsing;
+                                            }
+                                            case "native" :
+                                            case "core" : {
+                                                this.dispatcher.useNativeShowTaskMethod();
+                                                break parsing;
+                                            }
+                                            default: {
+                                                break parsing;
+                                            }
+                                        }   
+                                    }
+                                    default : {
+                                        break parsing;
+                                    }
+                                }                                
                             }
                             default : {
                                 break parsing;

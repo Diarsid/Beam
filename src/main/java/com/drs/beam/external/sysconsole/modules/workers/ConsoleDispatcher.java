@@ -10,17 +10,29 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
 import com.drs.beam.core.entities.WebPagePlacement;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
+import com.drs.beam.core.modules.tasks.TaskType;
+import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
 import com.drs.beam.external.sysconsole.modules.BeamCoreAccessModule;
 import com.drs.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import com.drs.beam.external.sysconsole.modules.ConsolePrinterModule;
 import com.drs.beam.external.sysconsole.modules.ConsoleReaderModule;
+
+import static com.drs.beam.core.entities.WebPagePlacement.BOOKMARKS;
+import static com.drs.beam.core.entities.WebPagePlacement.WEBPANEL;
+import static com.drs.beam.core.modules.tasks.TaskType.DAILY;
+import static com.drs.beam.core.modules.tasks.TaskType.HOURLY;
+import static com.drs.beam.core.modules.tasks.TaskType.MONTHLY;
+import static com.drs.beam.core.modules.tasks.TaskType.USUAL;
+import static com.drs.beam.core.modules.tasks.TaskType.YEARLY;
 
 /**
  *
@@ -34,6 +46,8 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     private final InputHandler input;
     private final List<String> placements;
     private final List<String> pageEditVars;
+    private final List<String> reminderTypes;
+    private final List<String> eventTypes;
     
     private final Object readerLock;
     
@@ -57,7 +71,12 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.pageEditVars.add("url");
         this.pageEditVars.add("directory");
         this.pageEditVars.add("browser");
-        
+        this.reminderTypes = new ArrayList<>();
+        this.reminderTypes.add("hourly reminder");
+        this.reminderTypes.add("daily reminder");
+        this.eventTypes = new ArrayList<>();
+        this.eventTypes.add("monthly event");
+        this.eventTypes.add("yearly event");
     }
     
     // ------------------- External IO Interface methods -----------------------
@@ -71,7 +90,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void showTask (Task task) throws RemoteException {
+    public void showTask (TaskMessage task) throws RemoteException {
         try {
             this.printer.showTask(task);
         } catch (IOException e) {}
@@ -181,14 +200,91 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             return;
         }
         String[] newTask = this.input.inputTask();
-        this.beam.taskManager().createNewTask(newTime, newTask);
+        this.beam.taskManager().createNewTask(
+                USUAL, 
+                newTime, 
+                newTask, 
+                Collections.emptySet(), 
+                Collections.emptySet());
     }
     
     @Override
-    public void newEvent() throws IOException{
+    public void newReminder() throws IOException {
+        int typeChoice = this.input.chooseVariants(
+                "reminder type:", this.reminderTypes);
+        TaskType type;
+        if ( typeChoice == 1 ) {
+            type = HOURLY;
+        } else if ( typeChoice == 2 ) {
+            type = DAILY;
+        } else {
+            return;
+        }
         
+        Set<Integer> activeHours;
+        Set<Integer> activeDays;
+        try {
+            if ( DAILY.equals(type) ) {
+                activeDays = this.input.inputAllowedDays();
+                activeHours = Collections.emptySet();
+                if ( activeDays.isEmpty() ) {
+                    return;
+                }
+            } else if ( HOURLY.equals(type) ) {
+                activeDays = this.input.inputAllowedDays();
+                activeHours = this.input.inputAllowedHours();
+                if ( activeDays.isEmpty() || activeHours.isEmpty() ) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        } catch (NumberFormatException e) {
+            this.printer.printUnderLn("Non-number characters.");
+            return;
+        } catch (TaskTimeInvalidException e) {
+            this.printer.printUnderLn(e.getMessage());
+            return;
+        }
+        
+        String newTime = this.input.inputTime();
+        if (newTime.isEmpty()) {
+            return;
+        }
+        String[] newTask = this.input.inputTask();
+        this.beam.taskManager().createNewTask(
+                type, 
+                newTime, 
+                newTask, 
+                activeDays, 
+                activeHours);
     }
     
+    @Override
+    public void newScheduledEvent() throws IOException {
+        int typeChoice = this.input.chooseVariants(
+                "event type: ", this.eventTypes);
+        TaskType type;
+        if ( typeChoice == 1 ) {
+            type = TaskType.MONTHLY;
+        } else if ( typeChoice == 2 ) {
+            type = TaskType.YEARLY;
+        } else {
+            return;
+        }
+        String newTime = this.input.inputTime();
+        if (newTime.isEmpty()) {
+            return;
+        }
+        String[] newTask = this.input.inputTask();
+        this.beam.taskManager().createNewTask(
+                type, 
+                newTime, 
+                newTask, 
+                Collections.emptySet(), 
+                Collections.emptySet());
+    }
+        
     @Override
     public void newCommand() throws IOException {
         this.printer.printUnder("name: ");
@@ -248,14 +344,14 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     @Override
     public void getAllWebPanelPages() throws IOException {
         List<WebPage> pages = this.beam.webPages()
-                .getAllPagesInPlacement(WebPagePlacement.WEBPANEL);
+                .getAllPagesInPlacement(WEBPANEL);
         this.printer.printWebPages(pages, true);
     }
     
     @Override
     public void getAllBookmarksPages() throws IOException {
         List<WebPage> pages = this.beam.webPages()
-                .getAllPagesInPlacement(WebPagePlacement.BOOKMARKS);
+                .getAllPagesInPlacement(BOOKMARKS);
         this.printer.printWebPages(pages, true);
     }
     
@@ -496,7 +592,8 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.printer.printUnder("name: ");
         String location = this.reader.read();
         if ( !location.isEmpty() ) {
-            this.printer.printLocations(this.beam.locations().getLocations(location));
+            this.printer.printLocations(
+                    this.beam.locations().getLocations(location));
         }
     }
     
@@ -505,7 +602,8 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
         if ( !name.isEmpty() ) {
-            this.printer.printWebPages(this.beam.webPages().getWebPages(name), false);
+            this.printer.printWebPages(
+                    this.beam.webPages().getWebPages(name), false);
         }
     }
      
@@ -519,7 +617,32 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         String directory = this.reader.read();
         if ( !directory.isEmpty() ) {
             this.printer.printWebPages(
-                    this.beam.webPages().getAllWebPagesInDirectoryAndPlacement(directory, placement), 
+                    this.beam.webPages().getAllWebPagesInDirectoryAndPlacement(
+                            directory, placement), 
+                    false);
+        }
+    }
+    
+    @Override
+    public void getPagesOfPanelDirectory() throws IOException {
+        this.printer.printUnder("directory: ");
+        String directory = this.reader.read();
+        if ( !directory.isEmpty() ) {
+            this.printer.printWebPages(
+                    this.beam.webPages().getAllWebPagesInDirectoryAndPlacement(
+                            directory, WEBPANEL), 
+                    false);
+        }
+    }
+    
+    @Override
+    public void getPagesOfBookmarksDirectory() throws IOException {
+        this.printer.printUnder("directory: ");
+        String directory = this.reader.read();
+        if ( !directory.isEmpty() ) {
+            this.printer.printWebPages(
+                    this.beam.webPages().getAllWebPagesInDirectoryAndPlacement(
+                            directory, BOOKMARKS), 
                     false);
         }
     }
@@ -619,7 +742,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 Thread.sleep(1000);
             } catch (Exception e) {
             }
-            exitProgram();
+            this.exitProgram();
         }
     }
     
@@ -634,12 +757,16 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public void useNativeShowTaskMethod() throws IOException {
-        this.beam.remoteControl().useNativeShowTaskMethod();
+        if (this.beam.remoteControl().setUseNativeShowTaskMethod()) {
+            this.printer.printUnderLn("CONSOLE: core will use NATIVE show task method.");
+        }
     }
     
     @Override
     public void useExternalShowTaskMethod() throws IOException {
-        this.beam.remoteControl().useExternalShowTaskMethod();
+        if (this.beam.remoteControl().setUseExternalShowTaskMethod()) {
+            this.printer.printUnderLn("CONSOLE: core will use CONSOLE show task method.");
+        }        
     }
     
     @Override
@@ -672,9 +799,9 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     private WebPagePlacement askForPlacement() {
         int choice = this.input.chooseVariants("placement : ", this.placements);
         if ( choice == 1 ) {
-            return WebPagePlacement.WEBPANEL;
+            return WEBPANEL;
         } else if ( choice == 2 ) {
-            return WebPagePlacement.BOOKMARKS;
+            return BOOKMARKS;
         } else {
             return null;
         }

@@ -12,6 +12,9 @@ import java.sql.SQLException;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 
+import com.drs.beam.core.modules.data.HandledTransactSQLException;
+import com.drs.beam.core.modules.data.JdbcTransaction;
+
 /*
  * Connects with H2 database using org.h2.jdbcx.JdbcConnectionPool pool.
  * Is used by TasksDAO to get connections froom connection pool.
@@ -38,5 +41,12 @@ class H2 implements DataBase{
     @Override
     public String getName(){
         return this.dataBaseName;
+    }
+    
+    @Override
+    public JdbcTransaction beginTransaction() {        
+        JdbcTransactionWrapper transaction = new JdbcTransactionWrapper();
+        transaction.connectTo(this);
+        return transaction;
     }
 }

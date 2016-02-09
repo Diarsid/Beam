@@ -71,18 +71,20 @@ class IoModuleWorker implements IoModule {
     }
     
     @Override
-    public boolean useExternalShowTaskMethod(){
+    public boolean useExternalShowTaskMethod(){        
         return this.useExternalShowTaskMethod;
     }
     
     @Override
-    public void setUseExternalShowTaskMethod(){
-        useExternalShowTaskMethod = true;
+    public boolean setUseExternalShowTaskMethod(){
+        this.useExternalShowTaskMethod = true;
+        return true;
     }
     
     @Override
-    public void setUseNativeShowTaskMethod(){
-        useExternalShowTaskMethod = false;
+    public boolean setUseNativeShowTaskMethod(){
+        this.useExternalShowTaskMethod = false;
+        return true;
     } 
     
     @Override

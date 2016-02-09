@@ -10,5 +10,12 @@ package com.drs.beam.core.modules.tasks.exceptions;
  *
  * @author Diarsid
  */
-public class TaskTimeInvalidException extends Exception{
+public class TaskTimeInvalidException extends RuntimeException {
+
+    public TaskTimeInvalidException() {
+    }
+
+    public TaskTimeInvalidException(String message) {
+        super(message);
+    }
 }

@@ -36,8 +36,8 @@ class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         String daosPackageName = DaosInfo.class
                 .getCanonicalName()
                 .replace(DaosInfo.class.getSimpleName(), "");
-        DataModule dataModule = 
-                new DataModuleWorker(this.ioInnerModule, dataBase, daosPackageName);
+        DataModule dataModule = new DataModuleWorker(
+                this.ioInnerModule, dataBase, daosPackageName);
         
         return dataModule;        
     }

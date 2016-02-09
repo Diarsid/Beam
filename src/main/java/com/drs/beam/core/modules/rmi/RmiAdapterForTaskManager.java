@@ -7,29 +7,33 @@
 package com.drs.beam.core.modules.rmi;
 
 import com.drs.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 import com.drs.beam.core.modules.TaskManagerModule;
 
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Set;
+
+import com.drs.beam.core.modules.tasks.TaskType;
 
 /**
  *
  * @author Diarsid
  */
-class RmiAdapterForTaskManager implements RmiTaskManagerInterface{
-    // Fields =============================================================================
-    private final TaskManagerModule taskManagerModule;
-    // Constructors =======================================================================
+class RmiAdapterForTaskManager implements RmiTaskManagerInterface {
     
-    RmiAdapterForTaskManager(TaskManagerModule taskManagerModule){
+    private final TaskManagerModule taskManagerModule;
+        
+    RmiAdapterForTaskManager(TaskManagerModule taskManagerModule) {
         this.taskManagerModule = taskManagerModule;
     }
-
-    // Methods ============================================================================
+    
     @Override
-    public void createNewTask(String time, String[] task) throws RemoteException {
-        this.taskManagerModule.createNewTask(time, task);
+    public boolean createNewTask(TaskType type, String time, String[] task, 
+            Set<Integer> days, Set<Integer> hours) 
+            throws RemoteException {
+        
+        return this.taskManagerModule.createNewTask(type, time, task, days, hours);
     }
     
     @Override
@@ -38,17 +42,17 @@ class RmiAdapterForTaskManager implements RmiTaskManagerInterface{
     }
     
     @Override
-    public List<Task> getFutureTasks() throws RemoteException{
+    public List<TaskMessage> getFutureTasks() throws RemoteException{
         return this.taskManagerModule.getFutureTasks();
     }
     
     @Override
-    public List<Task> getPastTasks() throws RemoteException{
+    public List<TaskMessage> getPastTasks() throws RemoteException{
         return this.taskManagerModule.getPastTasks();
     }
     
     @Override
-    public List<Task> getFirstTask() throws RemoteException{
+    public List<TaskMessage> getFirstTask() throws RemoteException{
         return this.taskManagerModule.getFirstTask();
     }
     
@@ -71,4 +75,16 @@ class RmiAdapterForTaskManager implements RmiTaskManagerInterface{
     public boolean  removeAllPastTasks() throws RemoteException{
         return this.taskManagerModule.removeAllPastTasks();
     }
+    
+    /*
+    @Override
+    public boolean suspendTask(String text) throws RemoteException {
+        return this.taskManagerModule.suspendTask(text);
+    }
+    
+    @Override
+    public boolean activateSuspendedTask(String text) throws RemoteException {
+        return this.taskManagerModule.activateSuspendedTask(text);
+    }
+    */
 }

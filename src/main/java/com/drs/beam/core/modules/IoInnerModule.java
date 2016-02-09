@@ -6,7 +6,7 @@ package com.drs.beam.core.modules;
 
 import java.util.List;
 
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 import com.drs.gem.injector.module.GemModule;
 
 /*
@@ -19,7 +19,7 @@ import com.drs.gem.injector.module.GemModule;
  */
 public interface IoInnerModule extends GemModule {  
     
-    void showTask(Task task);  
+    void showTask(TaskMessage task);  
     
     void reportInfo(String... info);
     

@@ -26,10 +26,12 @@ class DataBaseModel {
                 "CREATE TABLE tasks (" +
                 "t_id       INTEGER         NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                 "t_time     CHARACTER(16)   NOT NULL, " +
-                "t_content  VARCHAR(200)    NOT NULL, " +
-                "t_type     VARCHAR(5)      NOT NULL," +
-                "t_status   BOOLEAN         NOT NULL)",
-                5);
+                "t_content  VARCHAR         NOT NULL, " +
+                "t_type     VARCHAR(7)      NOT NULL, " +
+                "t_status   BOOLEAN         NOT NULL, " +
+                "t_hours    VARCHAR         NOT NULL, " +
+                "t_days     VARCHAR         NOT NULL) ",
+                7);
         this.tables.put(tasks.name, tasks);
         
         TableInfo locations = new TableInfo(

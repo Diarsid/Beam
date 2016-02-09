@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 
 import com.drs.beam.core.modules.innerio.Gui;
 import com.drs.beam.core.modules.innerio.javafxgui.window.WindowsBuilderWorker;
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /*
  * Main class for JavaFX based GUI.
@@ -39,7 +39,7 @@ class GuiJavaFX extends Application implements Gui {
     }
     
     @Override
-    public void showTask(Task task) {
+    public void showTask(TaskMessage task) {
         Runnable window = this.windowsBuilder.newTaskWindow(
                 task,                    
                 this.settingsProvider,

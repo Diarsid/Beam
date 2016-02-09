@@ -16,5 +16,7 @@ public interface DataBase {
     
     Connection connect() throws SQLException;
     
+    JdbcTransaction beginTransaction();
+    
     String getName();
 }

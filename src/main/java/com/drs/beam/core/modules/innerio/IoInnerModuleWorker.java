@@ -13,6 +13,7 @@ import com.drs.beam.core.exceptions.NullDependencyInjectionException;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /**
  *
@@ -39,7 +40,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public void showTask(Task task){
+    public void showTask(TaskMessage task){
         if (this.io.hasExternalIOProcessor() && io.useExternalShowTaskMethod()){
             try{
                 this.io.getExternalIOEngine().showTask(task);
@@ -160,7 +161,7 @@ class IoInnerModuleWorker implements IoInnerModule {
      *
      * 'Native' output methods use JavaFX GUI to reportInfo user about events, errors etc.
      */
-    private void nativeShowTask(Task task){                
+    private void nativeShowTask(TaskMessage task){                
         gui.showTask(task);        
     }
 

@@ -5,16 +5,28 @@
 package com.drs.beam.core.modules.tasks;
 
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.drs.beam.core.exceptions.ModuleInitializationException;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
-import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.TaskManagerModule;
 import com.drs.beam.core.modules.data.DaoTasks;
 import com.drs.beam.core.modules.IoInnerModule;
+import com.drs.beam.core.modules.tasks.exceptions.TaskTypeInvalidException;
+
+import static com.drs.beam.core.modules.tasks.TaskType.DAILY;
+import static com.drs.beam.core.modules.tasks.TaskType.HOURLY;
+        
+
 
 /**
  * Pivotal program's class to operate with tasks.
@@ -29,163 +41,307 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     
     private final IoInnerModule ioEngine;
     private final DaoTasks tasksDao;
-    private final Object lock;
-    private final TaskVerifier taskVerifier;
+    private final Object taskExecutionLock;
+    
     private final TaskTimeFormatter formatter;
     
-    // Time of expiration of the earliest task.
-    // It is usually updated after every CRUD operation with tasks in data storage 
-    // through refreshFirstTaskTime() method and observed by Timer instance 
-    // to execute appropriate tasks in time.
-    private LocalDateTime firstTaskTime;    
+    private final ScheduledThreadPoolExecutor scheduler;    
     
-    TaskManagerModuleWorker(IoInnerModule io, DataModule dataManager) {
+    TaskManagerModuleWorker(
+            IoInnerModule io,
+            DaoTasks tasks,
+            TaskTimeFormatter formatter,
+            Object lock,
+            ScheduledThreadPoolExecutor sheduler) {
+        
         this.ioEngine = io;
-        this.tasksDao = dataManager.getTasksDao();
-        this.lock = new Object();
-        this.taskVerifier = new TaskVerifier();
-        this.formatter = new TaskTimeFormatter();
-        this.firstTaskTime = null;
-        this.beginWork();
+        this.tasksDao = tasks;
+        this.taskExecutionLock = lock;
+        this.formatter = formatter;
+        this.scheduler = sheduler;
     }
-
-    // Methods ============================================================================    
-         
+    
+    // TO DELETE
     LocalDateTime getFirstTaskTime() {
-        return this.firstTaskTime;
+        return this.tasksDao.getFirstTaskTime();
     }
     
-    boolean isAnyTasks(){
-        return (this.firstTaskTime != null);
-    }
-    
-    private void refreshFirstTaskTime() {
-        synchronized (this.lock){
-            this.firstTaskTime = this.tasksDao.getFirstTaskTime();
-        }                
+    // TO DELETE
+    boolean isAnyTasks() {
+        return (this.scheduler.getQueue().size() != 0);
     }
         
     /*
      * Method for initial database reading when program starts it's work 
      * after a period of it`s inactivity.
      */
-    private void beginWork() {
-        List<Task> tasks = this.tasksDao.extractExpiredTasks(LocalDateTime.now());
-        this.refreshFirstTaskTime();
+    void beginWork() {
+        synchronized (this.taskExecutionLock) {
+            LocalDateTime firstScheduled = this.tasksDao.getFirstTaskTime();
+            if ( firstScheduled == null ) {
+                throw new ModuleInitializationException("FirstTime obtained from " + 
+                        "database during TaskModuleManagerWorker::beginWork() " + 
+                        "is NULL.");
+            }
+            // If firstScheduled obtained from database is LocalDateTime.MIN
+            // it means that there are no any active tasks to schedule them
+            // for execution.
+            if ( ! LocalDateTime.MIN.equals(firstScheduled) ) {
+                long inactivePeriod = Duration.between(
+                        firstScheduled, LocalDateTime.now())
+                        .toMinutes();
                 
-        for(Task task : tasks){
-            this.performTask(task);
-        }        
-        (new Thread(new Timer(this), "Timer")).start();                  
+                if ( inactivePeriod <= 60 ) {
+                    this.processObtainedTasksAndUpdateTimer(
+                            this.tasksDao.getExpiredTasks(LocalDateTime.now()));
+                } else if ( (60 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
+                    // If lag is longer than one hour but no
+                    // longer than day, do not show hourly 
+                    // tasks that was expired while program
+                    // or system was inactive, just update them.
+                    this.processObtainedTasksWithoutHourlyAndUpdateTimer(
+                            this.tasksDao.getExpiredTasks(LocalDateTime.now()));
+                } else {
+                    // if lag is longer than one day, do not 
+                    // show both hourly and daily tasks that 
+                    // was expired while program or system was
+                    // inactive, just update them.
+                    this.processObtainedTasksWithoutHourlyDailyAndUpdateTimer(
+                            this.tasksDao.getExpiredTasks(LocalDateTime.now()));
+                }
+            }
+        }
     }
-    
-    private void performTask(Task task){
-        // Implies there can be more than two task types in future and they can have
-        // different ways to be executed.
-        executing: switch(task.getType()){
-            case (Task.USUAL_TASK) : {
-                this.ioEngine.showTask(task);
-                break executing;
-            }
-            case (Task.CALENDAR_EVENT) : {
-                this.ioEngine.showTask(task);
-                break executing;                
-            }
-            // case (Task.SOME_OTHER_TYPE) : { }
-            default : {
-                this.ioEngine.reportError("Unknown task`s type.");
-            }
-        } 
-    }      
     
     // method to perform task, when it's time comes
-    void performFirstTask(){
-        List<Task> tasks = this.tasksDao.extractFirstTasks();
-        this.refreshFirstTaskTime();        
-        for (Task task : tasks){
-            this.performTask(task);
-        }        
+    private void performFirstTasks() {
+        synchronized (this.taskExecutionLock) {
+            this.processObtainedTasksAndUpdateTimer(
+                    this.tasksDao.getFirstTasks());
+        }
     }
     
-    // Methods implements RmiTaskManagerInterface interface -----------------------------------------
-    @Override
-    public void createNewTask(String timeString, String[] task){
-        try {
-            LocalDateTime time = this.formatter.ofFormat(timeString, true);
-            boolean taskValid = this.taskVerifier.verifyTaskOnForbiddenChars(task);
-            if (taskValid){
-                this.tasksDao.saveTask(new Task(Task.USUAL_TASK, time, task));                    
-                this.refreshFirstTaskTime();
+    private void performFirstTasksExceptHourlyTasks() {
+        synchronized (this.taskExecutionLock) {
+            this.processObtainedTasksWithoutHourlyAndUpdateTimer(
+                    this.tasksDao.getFirstTasks());
+        }
+    }
+    
+    private void performFirstTasksExceptHourlyAndDailyTasks() {
+        synchronized (this.taskExecutionLock) {
+            this.processObtainedTasksWithoutHourlyDailyAndUpdateTimer(
+                    this.tasksDao.getFirstTasks());
+        }
+    }
+    
+    private void processObtainedTasksWithoutHourlyDailyAndUpdateTimer(
+            List<Task> tasks) {
+        
+        for (int i = 0; i < tasks.size(); i++) {
+            if ( HOURLY.equals(tasks.get(i).getType()) 
+                    || DAILY.equals(tasks.get(i).getType())) {
+                
+                // do not show neither hourly nor daily tasks, just
+                // update them to set actual time of future execution.
+                tasks.get(i).modifyAccordingToType();
             } else {
-                this.ioEngine.reportMessage("Text verifying: Forbidden characters '~}' was inputted!");
+                this.ioEngine.showTask(tasks.get(i).generateMessage());
+                tasks.get(i).modifyAccordingToType();
             }
-        } catch (TaskTimeFormatInvalidException e){
+        }
+        this.updateTimer(this.tasksDao.updateTasksAndGetNextFirstTime(tasks));
+    }
+    
+    private void processObtainedTasksWithoutHourlyAndUpdateTimer(List<Task> tasks) {
+        for (int i = 0; i < tasks.size(); i++) {
+            if ( HOURLY.equals(tasks.get(i).getType())) {
+                // do not show hourly tasks, only update 
+                // them to set actual time of future execution.
+                tasks.get(i).modifyAccordingToType();
+            } else {
+                this.ioEngine.showTask(tasks.get(i).generateMessage());
+                tasks.get(i).modifyAccordingToType();
+            }
+        }
+        this.updateTimer(this.tasksDao.updateTasksAndGetNextFirstTime(tasks));
+    }  
+    
+    private void processObtainedTasksAndUpdateTimer(List<Task> tasks) { 
+        for (int i = 0; i < tasks.size(); i++) {
+            this.ioEngine.showTask(tasks.get(i).generateMessage());
+            tasks.get(i).modifyAccordingToType();
+        }
+        this.updateTimer(this.tasksDao.updateTasksAndGetNextFirstTime(tasks));
+    }
+    
+    private boolean updateTimer(LocalDateTime newTime) {
+        synchronized (this.taskExecutionLock) {            
+            if ( scheduler.getQueue().size() > 0 ) {
+                for (Runnable r : scheduler.getQueue()) {
+                    scheduler.remove(r);
+                }
+            }                
+            // if there was no error and all previous operations
+            // have been perfrormed properly...
+            if ( newTime != null ) {
+                // if there is new LocalDateTime to update scheduler, update it;
+                // if time == LocalDateTime.MIN it means that there are no
+                // actual tasks and there is no need to update scheduler, but
+                // all operations have been performed properly.
+                if ( ! newTime.equals(LocalDateTime.MIN) ) {
+                    //System.out.println("[UPDATE TIMER] timer scheduling new task... ");
+                    this.scheduler.schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                // get the lag between time that was scheduled
+                                // and actual execution time. 
+                                // If system was inactive or program was 
+                                // shutdown this lag may be large.
+                                long inactivePeriod = 
+                                        Duration.between(
+                                                newTime, 
+                                                LocalDateTime.now())
+                                                .toMinutes();
+                                //System.out.println("[TIMER: RUN] inactivePeriod = " + inactivePeriod);
+                                if ( inactivePeriod <= 60 ) {
+                                    performFirstTasks();
+                                } else if ( (60 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
+                                    // If lag is longer than one hour but no
+                                    // longer than day, do not show hourly 
+                                    // tasks that was expired while program
+                                    // or system was inactive, just update them.
+                                    performFirstTasksExceptHourlyTasks();
+                                } else {
+                                    // if lag is longer than one day, do not 
+                                    // show both hourly and daily tasks that 
+                                    // was expired while program or system was
+                                    // inactive, just update them.
+                                    performFirstTasksExceptHourlyAndDailyTasks();
+                                }
+                            }
+                        }, 
+                        this.getTimeForScheduling(newTime), 
+                        TimeUnit.MILLISECONDS);
+                    //System.out.println("[UPDATE TIMER] timer runnables state: " + scheduler.getQueue().size());
+                }
+                // all operations have been performed properly so return TRUE
+                return true;
+            } else {
+                // NULL was returned that means that some errors have been
+                // occured during SQL or task processing
+                return false;
+            }
+        }
+    }       
+    
+    private long getTimeForScheduling(LocalDateTime futureTime) {        
+        return Duration.between(LocalDateTime.now(), futureTime).toMillis();
+    }
+    
+    @Override
+    public boolean createNewTask(TaskType type, String time, String[] task, 
+            Set<Integer> days, Set<Integer> hours) {
+        
+        try {
+            //System.out.println("[CREATE NEW TASK]");
+            LocalDateTime taskTime = this.formatter.ofFormat(time, true);            
+            LocalDateTime newTime = this.tasksDao
+                    .addTask(Task.newTask(type, taskTime, task, days, hours));
+            
+            if (newTime == null) {
+                this.ioEngine.reportError(
+                        "Task was not saved.",
+                        "Something has gone wrong :(");
+                return false;
+            }
+            return this.updateTimer(newTime);
+        } catch (TaskTypeInvalidException e) {
+            this.ioEngine.reportMessage("Invalid task type: " + e.getMessage());
+        } catch (TaskTimeFormatInvalidException e) {
             this.ioEngine.reportMessage("Time verifying: Unrecognizable time format.");
-        } catch (TaskTimeInvalidException e){
+        } catch (TaskTimeInvalidException e) {
             this.ioEngine.reportMessage("Time verifying: Given time is past. It must be future!");
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             this.ioEngine.reportMessage("Time verifying: Wrong characters have been inputted!");
-        } catch (DateTimeParseException e){
+        } catch (DateTimeParseException e) {
             this.ioEngine.reportMessage("Time verifying: Wrong time format.");
         } catch (DateTimeException e) {
             this.ioEngine.reportMessage("Time verifying: Invalid dates out of range.");
         } 
+        return false;
     }
     
     @Override
-    public String getFirstAlarmTime(){
-        if (this.firstTaskTime != null){
-            return this.formatter.outputTimePatternFormat(this.firstTaskTime);
+    public String getFirstAlarmTime() {
+        LocalDateTime first = this.tasksDao.getFirstTaskTime();
+        if (first != null) {
+            if ( LocalDateTime.MIN.equals(first) ) {
+                return "there aren't tasks now.";            
+            } else {
+                return this.formatter.outputTimePatternFormat(first);
+            }
         } else {
-            return "there aren't tasks now.";
-        }
+            return "";
+        }        
     }
     
     @Override
-    public List<Task> getFutureTasks(){
+    public List<TaskMessage> getFutureTasks() {
         return this.tasksDao.getActualTasks();
     }
     
     @Override
-    public List<Task> getPastTasks(){        
+    public List<TaskMessage> getPastTasks() {        
         return this.tasksDao.getNonActualTasks();  
     }
     
     @Override
-    public List<Task> getFirstTask(){
-        return this.tasksDao.getTasksByTime(this.firstTaskTime);
+    public List<TaskMessage> getFirstTask() {
+        return this.tasksDao.getFirstTasks()
+                .stream()
+                .map(Task::generateMessage)
+                .collect(Collectors.toList());
     }
     
     @Override
-    public boolean deleteTaskByText(String text){         
-        if (!this.taskVerifier.verifyTextOnForbiddenChars(text)){
-            this.ioEngine.reportError("Text verifying: Forbidden characters '~}' was inputted!");
-            return false;
+    public boolean deleteTaskByText(String text) {   
+        return this.updateTimer(this.tasksDao.deleteTaskByText(text));                    
+    }
+    
+    @Override
+    public boolean removeAllTasks() {
+        return this.updateTimer(this.tasksDao.deleteAllTasks());
+    }
+    
+    @Override
+    public boolean removeAllFutureTasks() {
+        return this.updateTimer(this.tasksDao.deleteActualTasks());
+    }
+    
+    @Override
+    public boolean removeAllPastTasks() {
+        return this.updateTimer(this.tasksDao.deleteNonActualTasks());
+    }
+    
+    /*
+    @Override
+    public boolean suspendTask(String text) {
+        List<Task> suspendableTasks = this.tasksDao.getSuspendableTasks();
+        if ( suspendableTasks.size() > 1 ) {
+            List<String> taskStrings = new ArrayList<>();
+            for (Task task : suspendableTasks) {
+                taskStrings.add(task.getContent()[0]);
+            }
+            int choice = this.ioEngine.resolveVariantsWithExternalIO(
+                    "Which task to suspend?", taskStrings);
         }
+        this.updateTimer(this.tasksDao.suspendTask());
+    }
+    
+    @Override
+    public boolean activateSuspendedTask(String text) {
         
-        boolean result = this.tasksDao.deleteTaskByText(text);
-        this.refreshFirstTaskTime();
-        return result;                    
     }
-    
-    @Override
-    public boolean removeAllTasks(){
-        boolean result = this.tasksDao.deleteAllTasks();
-        this.refreshFirstTaskTime();
-        return result;
-    }
-    
-    @Override
-    public boolean removeAllFutureTasks(){
-        boolean result = this.tasksDao.deleteActualTasks();
-        this.refreshFirstTaskTime();
-        return result;
-    }
-    
-    @Override
-    public boolean removeAllPastTasks(){
-        boolean result = this.tasksDao.deleteNonActualTasks();
-        this.refreshFirstTaskTime();
-        return result;
-    }
+    */
 }

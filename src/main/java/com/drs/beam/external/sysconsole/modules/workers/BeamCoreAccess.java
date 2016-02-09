@@ -51,7 +51,7 @@ class BeamCoreAccess implements BeamCoreAccessModule {
     
     @Override
     public RmiRemoteControlInterface remoteControl() { 
-        return this.remoteControl;
+        return this.remoteControl;        
     }
     
     @Override

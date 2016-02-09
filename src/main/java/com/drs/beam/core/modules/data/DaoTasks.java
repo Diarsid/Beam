@@ -9,28 +9,33 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoTasks {  
-    void saveTask(Task task); 
+public interface DaoTasks { 
     
-    boolean deleteTaskByText(String text); 
+    String DB_TIME_PATTERN = "uuuu-MM-dd HH:mm";
     
-    boolean deleteAllTasks();
-    boolean deleteActualTasks();
-    boolean deleteNonActualTasks();
+    LocalDateTime addTask(Task task); 
+    
+    LocalDateTime deleteTaskByText(String text); 
+    
+    LocalDateTime deleteAllTasks();
+    LocalDateTime deleteActualTasks();
+    LocalDateTime deleteNonActualTasks();
         
-    List<Task> extractFirstTasks (); 
-    List<Task> extractExpiredTasks (LocalDateTime fromNow); 
+    List<Task> getFirstTasks(); 
+    List<Task> getExpiredTasks(LocalDateTime fromNow); 
+    LocalDateTime updateTasksAndGetNextFirstTime(List<Task> tasksToUpdate);
    
-    LocalDateTime getFirstTaskTime (); 
+    LocalDateTime getFirstTaskTime(); 
     
-    List<Task> getAllTasks ();
-    List<Task> getNonActualTasks ();
-    List<Task> getActualTasks ();
+    List<TaskMessage> getAllTasks();
+    List<TaskMessage> getNonActualTasks();
+    List<TaskMessage> getActualTasks();
     
-    List<Task> getTasksByTime (LocalDateTime firstTaskTime); 
+    List<TaskMessage> getTasksByTime(LocalDateTime firstTaskTime); 
 }

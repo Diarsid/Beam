@@ -52,18 +52,24 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     void getPage() throws IOException;
 
     void getPagesInDirectoryAndPlacement() throws IOException;
+    
+    void getPagesOfPanelDirectory() throws IOException;
+    
+    void getPagesOfBookmarksDirectory() throws IOException;
 
     void listLocation(String locationName) throws IOException;
 
-    void newCommand() throws IOException;
-
-    void newEvent() throws IOException;
-
+    void newCommand() throws IOException;    
+    
     void newLocation() throws IOException;
 
     void newLoop() throws IOException;
 
     void newTask() throws IOException;
+    
+    void newReminder() throws IOException;
+
+    void newScheduledEvent() throws IOException;
 
     void newWebPage() throws IOException;
 

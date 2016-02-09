@@ -6,10 +6,17 @@ package com.drs.beam.core.modules.tasks;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.drs.beam.core.exceptions.TemporaryCodeException;
+
+import static com.drs.beam.core.modules.tasks.TaskType.DAILY;
+import static com.drs.beam.core.modules.tasks.TaskType.HOURLY;
+import static com.drs.beam.core.modules.tasks.TaskType.MONTHLY;
+import static com.drs.beam.core.modules.tasks.TaskType.USUAL;
+import static com.drs.beam.core.modules.tasks.TaskType.YEARLY;
 
 /*
  * Class describes different tasks user able to set.
@@ -22,123 +29,208 @@ import java.util.StringJoiner;
  * is performed it remains in database but has now status FALSE. Tasks of all statuses  
  * can be removed by they status TRUE or FALSE.
  * 
- * Task`s objects can have one of types:
- * USUAL_TASK - means this is disposable task, which will be executed just once an
- * than it will change his status to FALSE.
- * CALENDAR_EVENT - means this task is not disposable and it will be performed once 
- * per a year in it`s time during current year. Once task is performed his status 
- * remains TRUE but it`s next execution time increases by 1 year.
  */
-public class Task implements Comparable<Task>, Serializable{
-// ________________________________________________________________________________________
-//                                       Fields                                            
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+public class Task implements Comparable<Task>, Serializable {
     
     public static final String OUTPUT_TIME_PATTERN = "HH:mm (dd-MM-uuuu)";
-    public static final String DB_TIME_PATTERN = "uuuu-MM-dd HH:mm";
-    public static final String CALENDAR_EVENT = "event";
-    public static final String USUAL_TASK = "task";
-    public static final String DB_TASK_DELIMITER = "~}";
     
-    private final LocalDateTime time;
+    private final int id;
+    private LocalDateTime time;
     private final String[] content;
-    private final String type;
+    private boolean activeStatus;
+    private final TaskType type;
+    private final Set<Integer> activeHours;
+    private final Set<Integer> activeDays;
     
-// ________________________________________________________________________________________
-//                                      Constructor                                        
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+    public static Task restoreTask(
+            int id, 
+            TaskType type, 
+            LocalDateTime time, 
+            String[] content, 
+            boolean status, 
+            Integer[] days, 
+            Integer[] hours) {
+        
+        return new Task(id, type, time, content, status, 
+                new HashSet<>(Arrays.asList(days)),
+                new HashSet<>(Arrays.asList(hours)));
+    }
     
-    public Task(String type, LocalDateTime time, String[] content) {
+    public static Task newTask(TaskType type, LocalDateTime time, String[] content, 
+            Set<Integer> days, Set<Integer> hours) {
+        
+        return new Task(type, time, content, days, hours);
+    }
+        
+    private Task(TaskType type, LocalDateTime time, String[] content, 
+            Set<Integer> days, Set<Integer> hours) {
+                
+        this.id = -1;
+        this.type = type;
+        this.time = time;
+        this.content = content;        
+        this.activeStatus = true;
+        this.activeHours = hours;
+        this.activeDays = days;
+    }
+    
+    private Task(int id, TaskType type, LocalDateTime time, String[] content, 
+            boolean status, Set<Integer> days, Set<Integer> hours) {
+        
+        this.id = id;
         this.type = type;
         this.time = time;
         this.content = content;
+        this.activeStatus = status;
+        this.activeHours = hours;
+        this.activeDays = days;
     }
     
-    public Task(String type, LocalDateTime time, String contentString) {
-        this.type = type;
-        this.time = time;
-        this.content = contentString.split(Task.DB_TASK_DELIMITER);
+    
+    
+    TaskMessage generateMessage() {
+        return new TaskMessage(
+                this.time,
+                this.content);
     }
 
-// ________________________________________________________________________________________
-//                                       Methods                                           
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-    
+    public static String getOUTPUT_TIME_PATTERN() {
+        return OUTPUT_TIME_PATTERN;
+    }
+
+    public int getId() {
+        return id;
+    }
+
     public LocalDateTime getTime() {
-        return this.time;
-    }
-    
-    public String getTimeOutputString(){
-        return this.time.format(DateTimeFormatter.ofPattern(OUTPUT_TIME_PATTERN));
-    }   
-    
-    public String getTimeDBString(){
-        return this.time.format(DateTimeFormatter.ofPattern(DB_TIME_PATTERN));
-    }
-    
-    /*
-     * Converts content as String[] into one String in order to write it into one TEXT 
-     * database field. Uses StringJoiner object with char sequence '~}' as a delimiter 
-     * between single strings.
-     */
-    public String getContentForStoring(){
-        return String.join(DB_TASK_DELIMITER, this.content);
-    }
-    
-    public String[] getContent(){
-        return this.content;
-    }
-    
-    public String getType(){
-        return this.type;
-    }    
-    
-    @Override
-    public int compareTo(Task task){
-      if (this.time.isBefore(task.time)) 
-          return -1;
-      else if (this.time.isAfter(task.time))
-          return 1;
-      else
-          return 0;      
+        return time;
     }
 
-    @Override
-    public String toString(){
-        StringJoiner sj = new StringJoiner(" ");
-        for (String s : this.content){
-            sj.add(s);
-        }
-        return sj.toString();
+    public String[] getContent() {
+        return content;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 17 * hash + Objects.hashCode(this.time);
-        hash = 17 * hash + Arrays.deepHashCode(this.content);
-        hash = 17 * hash + Objects.hashCode(this.type);
-        return hash;
+    public boolean getStatus() {
+        return activeStatus;
     }
 
+    public TaskType getType() {
+        return type;
+    }
+
+    public Integer[] getActiveHours() {
+        return activeHours.toArray(new Integer[activeHours.size()]);
+    }
+
+    public Integer[] getActiveDays() {
+        return activeDays.toArray(new Integer[activeDays.size()]);
+    }
+    
+    void modifyAccordingToType() {
+        typeSwitch: switch (this.type) {
+            case USUAL : {
+                // if task is usual one-off task, it will be only 
+                // disabled and stored in DB as non-active past task.
+                this.activeStatus = false;
+                break typeSwitch;
+            }                
+            case MONTHLY : {
+                // if task is monthly, its time should be reseted to
+                // + 1 month from its current time and stored in DB.
+                this.time = this.time.plusMonths(1);
+                break typeSwitch;
+            }
+            case YEARLY : {
+                // if task is yearly, its time should be reseted to
+                // + 1 year from its current time and stored in DB.
+                this.time = this.time.plusYears(1);
+                break typeSwitch;
+            }
+            case HOURLY : {
+                // if task is hourly, it can be performed only at 
+                // hours and days that have been permitted for this
+                // particular task during its creation.
+                //
+                // If new execution time of this task does not 
+                // contained in list of permitted days it will be
+                // postponed to the next day with 0 hour and verified again.
+                //
+                // If new execution time of this task does not 
+                // contained in list of permitted hours it will be 
+                // postponed to the next hour and verified again.
+                this.time = this.time.plusHours(1);
+                if (this.time.isBefore(LocalDateTime.now())) {
+                    this.time = LocalDateTime.now().withMinute(this.time.getMinute());
+                    if (this.time.isBefore(LocalDateTime.now())) {
+                        this.time = this.time.plusHours(1);
+                    }
+                }
+                boolean dayIsLegal = this.activeDays.contains(
+                        this.time.getDayOfWeek().getValue());
+                boolean hourIsLegal = this.activeHours.contains(
+                        this.time.getHour());
+                
+                while ( ( ! dayIsLegal) || (! hourIsLegal) ) {
+                    while ( ! dayIsLegal ) {
+                        this.time = this.time.plusDays(1).withHour(0);
+                        dayIsLegal = this.activeDays.contains(
+                                this.time.getDayOfWeek().getValue());
+                    }
+                    while ( ! hourIsLegal ) {
+                        this.time = time.plusHours(1);
+                        hourIsLegal = this.activeHours.contains(
+                                this.time.getHour());
+                    }
+                }                                
+                break typeSwitch;
+            } 
+            case DAILY : {
+                // if task is daily, it can be performed only at 
+                // days that have been permitted for this
+                // particular task during its creation.
+                //
+                // If new execution time of this task does not 
+                // contained in list of permitted days it will be
+                // postponed to the next day with and verified again.
+                this.time = this.time.plusDays(1);
+                if (this.time.isBefore(LocalDateTime.now())) {
+                    this.time = LocalDateTime.now()
+                            .withHour(this.time.getHour())
+                            .withMinute(this.time.getMinute());
+                    if (this.time.isBefore(LocalDateTime.now())) {
+                        this.time = this.time.plusDays(1);
+                    }
+                }
+                boolean dayIsLegal = this.activeDays.contains(
+                        this.time.getDayOfWeek().getValue());
+                
+                while ( ! dayIsLegal ) {
+                    this.time = this.time.plusDays(1);
+                    dayIsLegal = this.activeDays.contains(
+                            this.time.getDayOfWeek().getValue());
+                }
+                break typeSwitch;
+            }
+            default: {
+                // It seems that this block is actualy unreachable now.
+                // So I can even devide by zero!
+                int zero = 42 - 42;
+                int numberOfGod = 42 / zero;
+                // ... and throw some pretty exceptions!
+                throw new TemporaryCodeException();
+            }
+        }
+    }
+    
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public int compareTo(Task task) {
+        if (this.time.isBefore(task.time)) {
+            return -1;
+        } else if (this.time.isAfter(task.time)) {
+            return 1;
+        } else {
+            return 0;  
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Task other = (Task) obj;
-        if (!Objects.equals(this.time, other.time)) {
-            return false;
-        }
-        if (!Arrays.deepEquals(this.content, other.content)) {
-            return false;
-        }
-        if (!Objects.equals(this.type, other.type)) {
-            return false;
-        }
-        return true;
-    }    
+    }
 }

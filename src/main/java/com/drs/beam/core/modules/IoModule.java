@@ -22,8 +22,8 @@ public interface IoModule extends GemModule {
     boolean hasExternalIOProcessor();    
     boolean useExternalShowTaskMethod();
     
-    void setUseExternalShowTaskMethod();
-    void setUseNativeShowTaskMethod();
+    boolean setUseExternalShowTaskMethod();
+    boolean setUseNativeShowTaskMethod();
     
     ExternalIOInterface getExternalIOEngine();
     

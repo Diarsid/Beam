@@ -7,8 +7,9 @@ package com.drs.beam.external.sysconsole.modules.workers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
+import java.util.Set;
 
+import com.drs.beam.core.modules.tasks.ExecutionTime;
 import com.drs.beam.external.sysconsole.modules.ConsolePrinterModule;
 import com.drs.beam.external.sysconsole.modules.ConsoleReaderModule;
 
@@ -162,5 +163,40 @@ public class InputHandler {
         } else {
             return checkOnYes(response);
         }
+    }
+    
+    Set<Integer> inputAllowedDays() throws IOException, NumberFormatException {
+        this.printer.printUnder("days of week (1-7, inclusive): ");
+        String days = this.reader.read();
+        ExecutionTime schedule = new ExecutionTime();
+        for (String day : days.split("\\s+")) {
+            if ( day.contains("-")) {
+                schedule.includeDaysOfWeekBetween(
+                        Character.getNumericValue(day.charAt(0)), 
+                        Character.getNumericValue(day.charAt(2)));
+            } else {
+                schedule.includeDayOfWeek(Integer.parseInt(day));
+            }
+        }
+        return schedule.aggregateDays();
+    }
+    
+    Set<Integer> inputAllowedHours() throws IOException, NumberFormatException {
+        this.printer.printUnder("hours of day (0-24, exclusive): ");
+        String hours = this.reader.read();
+        ExecutionTime schedule = new ExecutionTime();
+        for (String hour : hours.split("\\s+")) {
+            if ( hour.contains("-")) {
+                int fromHourInclusive = Integer.parseInt(
+                        hour.substring(0, hour.indexOf("-")));
+                int toHourExclusive = Integer.parseInt(
+                        hour.substring(hour.indexOf("-")+1));
+                schedule.includeHoursOfDayBetween(
+                        fromHourInclusive, toHourExclusive);
+            } else {
+                schedule.includeHourOfDay(Integer.parseInt(hour));
+            }
+        }
+        return schedule.aggregateHours();
     }
 }
