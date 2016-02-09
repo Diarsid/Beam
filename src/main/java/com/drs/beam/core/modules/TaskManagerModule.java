@@ -5,9 +5,12 @@
  */
 package com.drs.beam.core.modules;
 
+import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Set;
 
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
+import com.drs.beam.core.modules.tasks.TaskType;
 import com.drs.gem.injector.module.GemModule;
 
 /**
@@ -15,17 +18,23 @@ import com.drs.gem.injector.module.GemModule;
  * @author Diarsid
  */
 public interface TaskManagerModule extends GemModule {
-        
-    void createNewTask(String time, String[] task);
+    
+    boolean createNewTask(TaskType type, String time, String[] task, 
+            Set<Integer> days, Set<Integer> hours);
     
     String           getFirstAlarmTime();
-    List<Task>   getFutureTasks();
-    List<Task>   getPastTasks();
-    List<Task>   getFirstTask();
+    List<TaskMessage>   getFutureTasks();
+    List<TaskMessage>   getPastTasks();
+    List<TaskMessage>   getFirstTask();
     
     boolean  deleteTaskByText(String text);
 
     boolean  removeAllTasks();
     boolean  removeAllFutureTasks();
     boolean  removeAllPastTasks();
+    
+    /*
+    boolean suspendTask(String text);
+    boolean activateSuspendedTask(String text);
+    */
 }

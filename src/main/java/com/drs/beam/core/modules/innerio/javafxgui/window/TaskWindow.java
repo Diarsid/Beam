@@ -19,6 +19,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /**
  *
@@ -26,10 +27,10 @@ import com.drs.beam.core.modules.tasks.Task;
  */
 class TaskWindow extends BeamWindow implements Runnable {
     
-    private final Task task;
+    private final TaskMessage task;
     
     TaskWindow(
-            Task task,
+            TaskMessage task,
             WindowController controller,
             WindowSettingsProvider provider) { 
         
@@ -65,7 +66,7 @@ class TaskWindow extends BeamWindow implements Runnable {
         
         Label taskTimeLabel = new Label();
         taskTimeLabel.setStyle(fontCSS());
-        taskTimeLabel.setText(task.getTimeOutputString());
+        taskTimeLabel.setText(task.getTime());
         taskTimeLabel.setPadding(new Insets(0, 0, 8, 0));
         
         Label taskTextLabel = new Label(); 

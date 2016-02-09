@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import com.drs.beam.core.modules.data.DaoTasks;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
 
@@ -18,14 +19,11 @@ import com.drs.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
  *
  * @author Diarsid
  */
-class TaskTimeFormatter {
-    
-    // Constructors =======================================================================
+class TaskTimeFormatter {    
     
     TaskTimeFormatter() { 
     }
-
-    // Methods ============================================================================
+    
     /*
      * Parses LocalDateTime according to appropriate format.
      * Boolean mustBeFuture == true means parsed time value 
@@ -42,12 +40,12 @@ class TaskTimeFormatter {
         LocalDateTime time = null;
         // get length of incoming string to define it's format
         parsing: switch (timeString.length()){
-            // time format: dd-MM-uuuu HH:mm - 16 chars
+            // time format: uuuu-MM-dd HH:mm - 16 chars
             // full format
             case (16) : {                    
                 time = LocalDateTime.parse(
                         timeString,
-                        DateTimeFormatter.ofPattern(Task.DB_TIME_PATTERN));
+                        DateTimeFormatter.ofPattern(DaoTasks.DB_TIME_PATTERN));
                 break parsing;
             }
             // time format: +MM - 3 chars

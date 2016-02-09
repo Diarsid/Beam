@@ -4,7 +4,7 @@
  */
 package com.drs.beam.core.modules.innerio;
 
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /*
  * 'Native' program`s output interface.
@@ -19,7 +19,7 @@ public interface Gui{
     /*
      * Method used to show user`s tasks.
      */
-    public void showTask(Task task);
+    public void showTask(TaskMessage task);
     
     /*
      * Used to show program`s messages, typically errors, warnings or notifications.

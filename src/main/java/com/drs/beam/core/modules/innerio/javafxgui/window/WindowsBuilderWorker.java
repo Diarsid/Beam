@@ -9,7 +9,7 @@ package com.drs.beam.core.modules.innerio.javafxgui.window;
 import com.drs.beam.core.modules.innerio.javafxgui.WindowController;
 import com.drs.beam.core.modules.innerio.javafxgui.WindowSettingsProvider;
 import com.drs.beam.core.modules.innerio.javafxgui.WindowsBuilder;
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /**
  *
@@ -42,7 +42,7 @@ public class WindowsBuilderWorker implements WindowsBuilder {
     
     @Override
     public Runnable newTaskWindow(
-            Task task, 
+            TaskMessage task, 
             WindowSettingsProvider provider, 
             WindowController controller) {
         

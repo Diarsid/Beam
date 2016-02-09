@@ -709,3 +709,7 @@ WHERE page_name LIKE '%book%' [42122-176]
 	at org.h2.server.web.WebThread.process(WebThread.java:168)
 	at org.h2.server.web.WebThread.run(WebThread.java:94)
 	at java.lang.Thread.run(Thread.java:745)
+02-09 15:27:26 jdbc[4]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "DROP TABLES[*] TASKS "; ожидалось "TABLE, INDEX, USER, SEQUENCE, CONSTANT, TRIGGER, VIEW, ROLE, ALIAS, SCHEMA, ALL, DOMAIN, TYPE, DATATYPE, AGGREGATE"
+Syntax error in SQL statement "DROP TABLES[*] TASKS "; expected "TABLE, INDEX, USER, SEQUENCE, CONSTANT, TRIGGER, VIEW, ROLE, ALIAS, SCHEMA, ALL, DOMAIN, TYPE, DATATYPE, AGGREGATE"; SQL statement:
+drop tables tasks [42001-176]

@@ -12,6 +12,10 @@ package com.drs.beam.core.exceptions;
  */
 public class TemporaryCodeException extends RuntimeException {
     
+    public TemporaryCodeException() {
+        super();
+    }
+    
     public TemporaryCodeException(String message) {
         super(message);
     }

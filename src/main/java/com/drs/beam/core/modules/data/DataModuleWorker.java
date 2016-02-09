@@ -23,8 +23,11 @@ class DataModuleWorker implements DataModule {
     private final DataBase dataBase;   
     private final String daosPackageName;
         
-    DataModuleWorker(IoInnerModule io, DataBase dataBase, String daosPackageName) {
-        if (dataBase == null){
+    DataModuleWorker(
+            IoInnerModule io,
+            DataBase dataBase,
+            String daosPackageName) {
+        if (dataBase == null) {
             throw new NullDependencyInjectionException(
                     DataModuleWorker.class.getSimpleName(), 
                     DataBase.class.getSimpleName());
@@ -63,10 +66,14 @@ class DataModuleWorker implements DataModule {
         try {
             
             String daoType = daoInterface.getSimpleName();
-            String daoClassName = this.daosPackageName + this.dataBase.getName() + daoType;
+            String daoClassName = 
+                    this.daosPackageName + 
+                    this.dataBase.getName() + 
+                    daoType;
             
             Class daoClass = Class.forName(daoClassName);
-            Constructor daoConstr = daoClass.getDeclaredConstructor(IoInnerModule.class, DataBase.class);
+            Constructor daoConstr = daoClass.getDeclaredConstructor(
+                    IoInnerModule.class, DataBase.class);
             daoConstr.setAccessible(true);
             
             return daoConstr.newInstance(this.ioEngine, this.dataBase);

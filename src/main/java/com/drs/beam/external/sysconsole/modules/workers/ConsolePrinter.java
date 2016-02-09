@@ -8,7 +8,6 @@ package com.drs.beam.external.sysconsole.modules.workers;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.Map;
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 import com.drs.beam.external.sysconsole.modules.ConsolePrinterModule;
 
 /**
@@ -123,7 +122,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printTasks(String label, List<Task> tasks) throws IOException{
+    public void printTasks(String label, List<TaskMessage> tasks) throws IOException{
         if (tasks.isEmpty()) {
             printUnderLn(label+" there aren`t any tasks.");
             return;
@@ -132,10 +131,10 @@ class ConsolePrinter implements ConsolePrinterModule {
         this.writer.write(SPACE);
         this.writer.write("=========================");
         this.writer.newLine();
-        for(Task task : tasks){
+        for(TaskMessage task : tasks){
             this.writer.newLine();
             this.writer.write(SPACE);
-            this.writer.write("| " + task.getTimeOutputString());
+            this.writer.write("| " + task.getTime());
             this.writer.newLine();
             for (String s : task.getContent()){
                 this.writer.write(SPACE);
@@ -322,10 +321,10 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void showTask(Task task) throws IOException {
+    public void showTask(TaskMessage task) throws IOException {
         this.writer.newLine();
         this.writer.write(SPACE);
-        this.writer.write("| " + task.getTimeOutputString());
+        this.writer.write("| " + task.getTime());
         this.writer.newLine();
         for (String s : task.getContent()){
             this.writer.write(SPACE);

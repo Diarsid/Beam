@@ -43,13 +43,13 @@ class RmiAdapterForRemoteControl implements RmiRemoteControlInterface {
     }
     
     @Override
-    public void useExternalShowTaskMethod() throws RemoteException {
-        this.ioModule.useExternalShowTaskMethod();
+    public boolean setUseExternalShowTaskMethod() throws RemoteException {
+        return this.ioModule.setUseExternalShowTaskMethod();
     }
     
     @Override
-    public void useNativeShowTaskMethod() throws RemoteException {
-        this.ioModule.setUseNativeShowTaskMethod();
+    public boolean setUseNativeShowTaskMethod() throws RemoteException {
+        return this.ioModule.setUseNativeShowTaskMethod();
     }
     
     @Override

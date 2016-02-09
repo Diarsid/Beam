@@ -12,7 +12,7 @@ import java.util.Map;
 import com.drs.beam.core.entities.Location;
 import com.drs.beam.core.entities.WebPage;
 import com.drs.beam.core.modules.executor.StoredExecutorCommand;
-import com.drs.beam.core.modules.tasks.Task;
+import com.drs.beam.core.modules.tasks.TaskMessage;
 import com.drs.gem.injector.module.GemModule;
 
 /**
@@ -45,7 +45,7 @@ public interface ConsolePrinterModule extends GemModule {
 
     void printSpaceLn(String s) throws IOException;
 
-    void printTasks(String label, List<Task> tasks) throws IOException;
+    void printTasks(String label, List<TaskMessage> tasks) throws IOException;
 
     void printUnder(String s) throws IOException;
 
@@ -57,5 +57,5 @@ public interface ConsolePrinterModule extends GemModule {
     
     void exitMessage() throws IOException;
     
-    void showTask(Task task) throws IOException;
+    void showTask(TaskMessage task) throws IOException;
 }
