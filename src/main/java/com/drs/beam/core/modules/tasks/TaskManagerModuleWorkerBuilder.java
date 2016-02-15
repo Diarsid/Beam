@@ -31,12 +31,13 @@ class TaskManagerModuleWorkerBuilder implements GemModuleBuilder<TaskManagerModu
     @Override
     public TaskManagerModule buildModule() {
         TaskTimeFormatter formatter = new TaskTimeFormatter();
-        Object lock = new Object();
-        ScheduledThreadPoolExecutor sheduler = new ScheduledThreadPoolExecutor(1);
-        sheduler.setMaximumPoolSize(1);
+        Object execLock = new Object();
+        Object notifyLock = new Object();
+        ScheduledThreadPoolExecutor sheduler = new ScheduledThreadPoolExecutor(2);
+        sheduler.setMaximumPoolSize(2);
         
         TaskManagerModuleWorker taskManager = new TaskManagerModuleWorker(
-                this.ioEngine, this.tasksDao, formatter, lock, sheduler);
+                this.ioEngine, this.tasksDao, formatter, execLock, notifyLock, sheduler);
         
         taskManager.beginWork();
         return taskManager;

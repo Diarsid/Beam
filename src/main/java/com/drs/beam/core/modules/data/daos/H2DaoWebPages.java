@@ -386,7 +386,7 @@ class H2DaoWebPages implements DaoWebPages {
 
             return (qty > 0);            
         } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: update web page name.");
+            this.ioEngine.reportException(e, "SQLException: update web page shortcuts.");
             return false;
         }
     }

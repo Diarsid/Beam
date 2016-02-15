@@ -5,12 +5,13 @@
 package com.drs.beam.core.modules.tasks;
 
 import java.time.DateTimeException;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -25,40 +26,60 @@ import com.drs.beam.core.modules.tasks.exceptions.TaskTypeInvalidException;
 
 import static com.drs.beam.core.modules.tasks.TaskType.DAILY;
 import static com.drs.beam.core.modules.tasks.TaskType.HOURLY;
-        
-
 
 /**
- * Pivotal program's class to operate with tasks.
- * Interacts with and logically connects program's database, input, output and time 
- * watching of active tasks. Defines the earliest task time for Timer to watch it's 
- * time to perform it first. Defines the sequence of actions which should be logically 
- * performed by program during it`s working with tasks, storing them to database, 
- * getting them according to different criteria and so on.
- * Is responsible for initial database reading when program starts it's work.
+ * Pivotal program's class intended to operate with tasks.
+ * 
+ * Interacts with and logically connects program's database, the way 
+ * tasks are executed, scheduling of every next time of tasks execution.
+ * 
+ * Defines the logical sequence of actions that should be 
+ * performed while tasks are executed, updated and other types of 
+ * operation with tasks are performed.
+ * 
+ * Initially reads tasks from database when program starts it's work.
  */
 class TaskManagerModuleWorker implements TaskManagerModule {
     
     private final IoInnerModule ioEngine;
-    private final DaoTasks tasksDao;
+    private final DaoTasks tasksDao;    
+    private final TaskTimeFormatter formatter;    
+    private final ScheduledThreadPoolExecutor scheduler;        
     private final Object taskExecutionLock;
+    private final Object notificationLock;
     
-    private final TaskTimeFormatter formatter;
+    // contains the reference to Runnable scheduled in
+    // this.scheduler for now and represents execution 
+    // the earliest task.
+    // Is refreshed every time when task or tasks are 
+    // being executed.
+    // Can be null, if there are no any tasks.
+    private ScheduledFuture currentExecution;
     
-    private final ScheduledThreadPoolExecutor scheduler;    
+    // contains  the reference to Runnable scheduled in
+    // this.scheduler for now and represents time 
+    // of user notification about weekly and monthly tasks;
+    // Is refreshed every time when notification are 
+    // being executed.
+    private ScheduledFuture currentNotification;
     
     TaskManagerModuleWorker(
             IoInnerModule io,
             DaoTasks tasks,
             TaskTimeFormatter formatter,
-            Object lock,
+            Object executionLock,
+            Object notificationLock,
             ScheduledThreadPoolExecutor sheduler) {
         
         this.ioEngine = io;
-        this.tasksDao = tasks;
-        this.taskExecutionLock = lock;
+        this.tasksDao = tasks;        
         this.formatter = formatter;
         this.scheduler = sheduler;
+        this.taskExecutionLock = executionLock;
+        this.notificationLock = notificationLock;
+        this.scheduler.setRemoveOnCancelPolicy(true);
+        this.currentExecution = null;
+        this.currentNotification = null;
     }
     
     // TO DELETE
@@ -73,7 +94,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         
     /*
      * Method for initial database reading when program starts it's work 
-     * after a period of it`s inactivity.
+     * after a period of it's inactivity.
      */
     void beginWork() {
         synchronized (this.taskExecutionLock) {
@@ -111,9 +132,110 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                 }
             }
         }
+        synchronized (this.notificationLock) {
+            this.scheduleNextRegularTasksSurvey();
+        }        
     }
     
-    // method to perform task, when it's time comes
+    /**
+     * Program notifies its user about every non-hourly and 
+     * non-daily tasks that have been scheduled earlier.
+     * It notifies user about upcoming tasks in two cases - 
+     * at every Monday and at every 1-st day of month.
+     * 
+     * This method schedules new time when user should be notified  
+     * about tasks that will be executed during upcoming month or 
+     * week which has just begun.
+     * 
+     * Set time of new notification to next Monday, 12:00:00:000 or
+     * to next month's first day, 12:00:00:000, depending on which
+     * time is earlier.
+     */
+    private void scheduleNextRegularTasksSurvey() {
+        synchronized (this.notificationLock) {
+            // if there is older notification have been scheduled
+            // clear them.
+            if ( this.currentNotification != null && !this.currentNotification.isDone() ) {
+                this.currentNotification.cancel(false);
+                this.currentNotification = null;
+            }
+            // get time of next Monday, 12:00:00:000
+            LocalDateTime nextWeekBegining = LocalDateTime.now()
+                    .withHour(12)
+                    .withMinute(0)
+                    .withSecond(0)
+                    .withNano(0)
+                    .plusWeeks(1)
+                    .with(DayOfWeek.MONDAY);
+            
+            // get time of next month's first day, 12:00:00:000
+            LocalDateTime nextMonthBeginning = LocalDateTime.now()
+                    .withHour(12)
+                    .withMinute(0)
+                    .withSecond(0)
+                    .withNano(0)
+                    .plusMonths(1)
+                    .withDayOfMonth(1);
+            // what happens earlier - begining of the next week or 
+            // of the next month
+            Runnable nextNotification;
+            LocalDateTime nextNotificationTime;
+            if ( nextWeekBegining.isBefore(nextMonthBeginning) ) {
+                nextNotificationTime = nextWeekBegining;
+                nextNotification = new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyUserAboutThisWeekTasks(nextWeekBegining);
+                            }
+                        };
+            } else {
+                nextNotificationTime = nextMonthBeginning;
+                nextNotification = new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyUserAboutThisMonthTasks(nextMonthBeginning);
+                            }
+                        };
+            }
+            this.currentNotification = this.scheduler.schedule( 
+                    nextNotification,
+                    this.getMillisFromNowToTime(nextNotificationTime), 
+                    TimeUnit.MILLISECONDS);
+        }
+    }
+    
+    private void notifyUserAboutThisMonthTasks(LocalDateTime nextMonthBeginning) {
+        synchronized (this.notificationLock) {
+            List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
+                    nextMonthBeginning.minusMonths(1), nextMonthBeginning);            
+            if (tasks.isEmpty()) {
+                this.ioEngine.reportInfo("Montly notification: there aren't any tasks!");
+            } else {
+                this.ioEngine.reportInfo("Montly notification: this month tasks notification have been shown!");
+                for (TaskMessage task : tasks) {
+                    this.ioEngine.showTask(task);
+                }
+            }
+            this.scheduleNextRegularTasksSurvey();
+        }
+    }
+    
+    private void notifyUserAboutThisWeekTasks(LocalDateTime nextWeekBeginning) {
+        synchronized (this.notificationLock) {
+            List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
+                    nextWeekBeginning.minusWeeks(1), nextWeekBeginning);            
+            if (tasks.isEmpty()) {
+                this.ioEngine.reportInfo("Weekly notification: there aren't any tasks!");
+            } else {
+                this.ioEngine.reportInfo("Weekly notification: this month tasks notification have been shown!");
+                for (TaskMessage task : tasks) {
+                    this.ioEngine.showTask(task);
+                }
+            }
+            this.scheduleNextRegularTasksSurvey();
+        }
+    }
+    
     private void performFirstTasks() {
         synchronized (this.taskExecutionLock) {
             this.processObtainedTasksAndUpdateTimer(
@@ -177,10 +299,12 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     
     private boolean updateTimer(LocalDateTime newTime) {
         synchronized (this.taskExecutionLock) {            
-            if ( scheduler.getQueue().size() > 0 ) {
-                for (Runnable r : scheduler.getQueue()) {
-                    scheduler.remove(r);
-                }
+            if ( this.currentExecution != null && !this.currentExecution.isDone() ) {
+                this.currentExecution.cancel(false);
+                // task is executing now, so there is no need
+                // to keep reference on its ScheduledFuture 
+                // to cancel it.
+                this.currentExecution = null;
             }                
             // if there was no error and all previous operations
             // have been perfrormed properly...
@@ -191,9 +315,10 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                 // all operations have been performed properly.
                 if ( ! newTime.equals(LocalDateTime.MIN) ) {
                     //System.out.println("[UPDATE TIMER] timer scheduling new task... ");
+                    this.currentExecution =
                     this.scheduler.schedule(new Runnable() {
                             @Override
-                            public void run() {
+                            public void run() {                                
                                 // get the lag between time that was scheduled
                                 // and actual execution time. 
                                 // If system was inactive or program was 
@@ -204,9 +329,9 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                                                 LocalDateTime.now())
                                                 .toMinutes();
                                 //System.out.println("[TIMER: RUN] inactivePeriod = " + inactivePeriod);
-                                if ( inactivePeriod <= 60 ) {
+                                if ( inactivePeriod <= 45 ) {
                                     performFirstTasks();
-                                } else if ( (60 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
+                                } else if ( (45 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
                                     // If lag is longer than one hour but no
                                     // longer than day, do not show hourly 
                                     // tasks that was expired while program
@@ -221,9 +346,11 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                                 }
                             }
                         }, 
-                        this.getTimeForScheduling(newTime), 
+                        this.getMillisFromNowToTime(newTime), 
                         TimeUnit.MILLISECONDS);
                     //System.out.println("[UPDATE TIMER] timer runnables state: " + scheduler.getQueue().size());
+                } else {
+                    this.currentExecution = null;
                 }
                 // all operations have been performed properly so return TRUE
                 return true;
@@ -235,7 +362,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         }
     }       
     
-    private long getTimeForScheduling(LocalDateTime futureTime) {        
+    private long getMillisFromNowToTime(LocalDateTime futureTime) {        
         return Duration.between(LocalDateTime.now(), futureTime).toMillis();
     }
     

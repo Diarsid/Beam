@@ -60,6 +60,14 @@ class H2DaoTasks implements DaoTasks {
             "SELECT t_id, t_time, t_content, t_type, t_status, t_days, t_hours " +
             "FROM tasks " + 
             "WHERE (t_time <= ?) AND (t_status IS TRUE)";
+    private final String SELECT_NON_NOURLY_AND_NON_DAILY_TASKS_BETWEEN_DATES = 
+            "SELECT t_time, t_content " +
+            "FROM tasks " +
+            "WHERE (t_time >= ?) AND " + 
+            "       (t_time < ?) AND " + 
+            "       (t_status IS TRUE) AND " + 
+            "       (t_type IS NOT 'HOURLY') AND " + 
+            "       (t_type IS NOT 'DAILY')";
     private final String SELECT_ALL_TASKS = 
             "SELECT t_id, t_time, t_content, t_type, t_status, t_days, t_hours " +
             "FROM tasks";
@@ -594,6 +602,41 @@ class H2DaoTasks implements DaoTasks {
                     "Incorrect usage of JdbcTransaction: " +
                     "database connection is NULL.");
             return null;
+        }
+    }
+    
+    @Override
+    public List<TaskMessage> getCalendarTasksBetweenDates(
+            LocalDateTime from, LocalDateTime to) {
+        
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement ps = transact.getPreparedStatement(
+                    SELECT_NON_NOURLY_AND_NON_DAILY_TASKS_BETWEEN_DATES);
+            ps.setString(1, this.timeToString(from));
+            ps.setString(2, this.timeToString(to));
+            
+            ResultSet rs = transact.executePreparedStatementQuery(ps);
+            
+            List<TaskMessage> tasks = new ArrayList<>();
+            while ( rs.next() ) {
+                tasks.add(new TaskMessage(
+                        this.parseTime(rs.getString("t_time")),
+                        this.contentToArray(rs.getString("t_content")))
+                );
+            }
+            
+            transact.commitThemAll();
+            Collections.sort(tasks);
+            return tasks;
+        } catch (HandledTransactSQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: get all calendar tasks between dates.");
+            return Collections.emptyList();
+        } catch (SQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: get all calendar tasks between dates.");
+            return Collections.emptyList();
         }
     }
 }

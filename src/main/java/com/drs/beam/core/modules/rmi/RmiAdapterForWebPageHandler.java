@@ -100,7 +100,7 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
         
         name = name.trim().toLowerCase();
         newShorts = newShorts.trim().toLowerCase();
-        return this.dao.editWebPageName(name, newShorts);
+        return this.dao.editWebPageShortcuts(name, newShorts);
     }
     
     @Override

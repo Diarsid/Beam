@@ -38,4 +38,6 @@ public interface DaoTasks {
     List<TaskMessage> getActualTasks();
     
     List<TaskMessage> getTasksByTime(LocalDateTime firstTaskTime); 
+    
+    List<TaskMessage> getCalendarTasksBetweenDates(LocalDateTime from, LocalDateTime to);
 }
