@@ -5,6 +5,8 @@
  */
 package com.drs.beam.core.modules.innerio.javafxgui;
 
+import java.util.List;
+
 import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /**
@@ -15,16 +17,22 @@ public interface WindowsBuilder {
     
     Runnable newMessageWindow(
             String[] message,
-            WindowSettingsProvider provider, 
+            WindowResourcesProvider provider, 
             WindowController controller);
     
     Runnable newErrorWindow(
             String[] message,
-            WindowSettingsProvider provider, 
+            WindowResourcesProvider provider, 
             WindowController controller);
     
     Runnable newTaskWindow(
             TaskMessage task, 
-            WindowSettingsProvider provider, 
+            WindowResourcesProvider provider, 
+            WindowController controller);
+    
+    Runnable newNotificationWindow(
+            String period,
+            List<TaskMessage> tasks, 
+            WindowResourcesProvider provider, 
             WindowController controller);
 }

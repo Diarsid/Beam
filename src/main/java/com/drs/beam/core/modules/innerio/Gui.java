@@ -4,6 +4,8 @@
  */
 package com.drs.beam.core.modules.innerio;
 
+import java.util.List;
+
 import com.drs.beam.core.modules.tasks.TaskMessage;
 
 /*
@@ -20,6 +22,11 @@ public interface Gui{
      * Method used to show user`s tasks.
      */
     public void showTask(TaskMessage task);
+    
+    /*
+     * Method to show bunch of tasks to user.
+     */
+    public void showTasks(String description, List<TaskMessage> tasks);
     
     /*
      * Used to show program`s messages, typically errors, warnings or notifications.

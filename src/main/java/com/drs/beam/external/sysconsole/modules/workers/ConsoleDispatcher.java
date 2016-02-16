@@ -245,6 +245,9 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         } catch (TaskTimeInvalidException e) {
             this.printer.printUnderLn(e.getMessage());
             return;
+        } catch (StringIndexOutOfBoundsException e) {
+            this.printer.printUnderLn("Input is invalid.");
+            return;
         }
         
         String newTime = this.input.inputTime();

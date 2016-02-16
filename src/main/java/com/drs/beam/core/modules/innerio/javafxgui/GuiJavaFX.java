@@ -5,6 +5,8 @@
 
 package com.drs.beam.core.modules.innerio.javafxgui;
 
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -21,12 +23,12 @@ import com.drs.beam.core.modules.tasks.TaskMessage;
 class GuiJavaFX extends Application implements Gui {
         
     private final WindowController windowsController;  
-    private final WindowSettingsProvider settingsProvider;
+    private final WindowResourcesProvider settingsProvider;
     private final WindowsBuilder windowsBuilder;
     
     public GuiJavaFX(String imagesLocation) {
         this.windowsController = new WindowController();
-        this.settingsProvider = new WindowSettingsProvider(imagesLocation);
+        this.settingsProvider = new WindowResourcesProvider(imagesLocation);
         this.windowsBuilder = new WindowsBuilderWorker();
     }
     
@@ -42,6 +44,16 @@ class GuiJavaFX extends Application implements Gui {
     public void showTask(TaskMessage task) {
         Runnable window = this.windowsBuilder.newTaskWindow(
                 task,                    
+                this.settingsProvider,
+                this.windowsController);
+        Platform.runLater(window);
+    }
+    
+    @Override
+    public void showTasks(String period, List<TaskMessage> tasks) {
+        Runnable window = this.windowsBuilder.newNotificationWindow(
+                period,
+                tasks,
                 this.settingsProvider,
                 this.windowsController);
         Platform.runLater(window);

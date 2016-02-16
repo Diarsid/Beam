@@ -2,7 +2,7 @@ package com.drs.beam.core.modules.innerio.javafxgui.window;
 
 import com.drs.beam.core.modules.innerio.javafxgui.WindowController;
 import com.drs.beam.core.modules.innerio.javafxgui.WindowPosition;
-import com.drs.beam.core.modules.innerio.javafxgui.WindowSettingsProvider;
+import com.drs.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -31,11 +31,11 @@ abstract class BeamWindow {
     
     private Stage stage;
     private final WindowController controller;
-    private final WindowSettingsProvider provider;
+    private final WindowResourcesProvider resources;
     
-    BeamWindow(WindowController c, WindowSettingsProvider p) {
+    BeamWindow(WindowController c, WindowResourcesProvider p) {
         this.controller = c;
-        this.provider = p;
+        this.resources = p;
     }
     
     void prepareStage() {
@@ -72,10 +72,11 @@ abstract class BeamWindow {
     
     final void setContent(Pane contentPane) {
         Pane main = new Pane();
+        main.setId("main");
         main.getChildren().add(contentPane);
-        main.setStyle(provider.getWindowStyle());
         Scene scene = new Scene(main);
         scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().add(resources.getPathToCssFile());
         this.stage.setScene(scene);
         this.stage.sizeToScene();
     }
@@ -97,28 +98,15 @@ abstract class BeamWindow {
     }
     
     DropShadow buttonShadow() {
-        return this.provider.getButtonShadow();
+        return this.resources.getButtonShadow();
     }
     
-    String buttonHoverCSS() {
-        return this.provider.getOnHoverButtonStyle();
-    }
-    
-    String buttonIdleCSS() {
-        return this.provider.getCommonButtonStyle();
-    }
-    
-    String fontCSS() {
-        return this.provider.getTextStyle();
-    }
-    
-    WindowSettingsProvider settings() {
-        return this.provider;
+    WindowResourcesProvider settings() {
+        return this.resources;
     }
     
     Button newOkButton(String text) {
         Button button = new Button(text);    
-        button.setStyle(provider.getCommonButtonStyle());
         button.setMinWidth(100);
         button.setMinHeight(30);
         button.setOnAction(new EventHandler<ActionEvent>() {
@@ -131,15 +119,13 @@ abstract class BeamWindow {
         button.setOnMouseEntered(new EventHandler<MouseEvent> () {
             @Override
             public void handle(MouseEvent event) {                
-                button.setEffect(provider.getButtonShadow());
-                button.setStyle(provider.getOnHoverButtonStyle());
+                button.setEffect(resources.getButtonShadow());
             }
         });
         
         button.setOnMouseExited(new EventHandler<MouseEvent> () {
             @Override
             public void handle(MouseEvent event) {
-                button.setStyle(provider.getCommonButtonStyle());
                 button.setEffect(null);
             }
         });

@@ -19,7 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import com.drs.beam.core.modules.innerio.javafxgui.WindowSettingsProvider;
+import com.drs.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
 
 /**
  *
@@ -33,7 +33,7 @@ class PopupWindow extends BeamWindow implements Runnable {
     PopupWindow(
             String title,
             String[] message, 
-            WindowSettingsProvider provider, 
+            WindowResourcesProvider provider, 
             WindowController controller) {
         
         super(controller, provider);
@@ -90,7 +90,6 @@ class PopupWindow extends BeamWindow implements Runnable {
         }
         
         Label messageLabel = new Label(); 
-        messageLabel.setStyle(fontCSS());
         messageLabel.setWrapText(true);
         messageLabel.setPadding(new Insets(0, 0, 0, 0));
         

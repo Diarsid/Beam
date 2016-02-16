@@ -5,7 +5,7 @@
 package com.drs.beam.core.modules.innerio.javafxgui.window;
 
 import com.drs.beam.core.modules.innerio.javafxgui.WindowController;
-import com.drs.beam.core.modules.innerio.javafxgui.WindowSettingsProvider;
+import com.drs.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
 
 import java.util.StringJoiner;
 
@@ -32,7 +32,7 @@ class TaskWindow extends BeamWindow implements Runnable {
     TaskWindow(
             TaskMessage task,
             WindowController controller,
-            WindowSettingsProvider provider) { 
+            WindowResourcesProvider provider) { 
         
         super(controller, provider);
         this.task = task;
@@ -65,12 +65,10 @@ class TaskWindow extends BeamWindow implements Runnable {
         Label picture = new Label("", taskPic);        
         
         Label taskTimeLabel = new Label();
-        taskTimeLabel.setStyle(fontCSS());
         taskTimeLabel.setText(task.getTime());
         taskTimeLabel.setPadding(new Insets(0, 0, 8, 0));
         
         Label taskTextLabel = new Label(); 
-        taskTextLabel.setStyle(fontCSS());
         taskTextLabel.setPadding(new Insets(0, 0, 0, 20));
         
         StringJoiner joiner = new StringJoiner("\n");

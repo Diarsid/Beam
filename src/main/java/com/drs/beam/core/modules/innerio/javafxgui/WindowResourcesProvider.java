@@ -13,7 +13,7 @@ import javafx.scene.paint.Color;
  *
  * @author Diarsid
  */
-public class WindowSettingsProvider {
+public class WindowResourcesProvider {
     
     private final String taskImageURL;
     private final String taskIconURL;
@@ -23,7 +23,7 @@ public class WindowSettingsProvider {
     private final String errorIconURL;
     
     
-    WindowSettingsProvider(String imagesLocation) {
+    WindowResourcesProvider(String imagesLocation) {
         this.taskIconURL = imagesLocation + "task_ico.png";
         this.messageIconURL = imagesLocation + "message_ico.png";
         this.errorIconURL = imagesLocation + "exception_ico.png";
@@ -32,41 +32,8 @@ public class WindowSettingsProvider {
         this.errorImageURL = imagesLocation + "exception.png";
     }
     
-    public String getCommonButtonStyle() {
-        return                 
-                "-fx-background-color: white; " +
-                "-fx-background-radius: 7px; " +
-                "-fx-font: 14px \"Arial Black\"; " +
-                "-fx-text-fill: #4CBF13; " +
-                "-fx-border-radius: 11px; " + 
-                "-fx-border-color: #FFD500; " +
-                "-fx-border-width: 2px; ";
-    }
-    
-    public String getOnHoverButtonStyle() {
-        return        
-                "-fx-background-color: yellow; " +
-                "-fx-background-radius: 7px; " +
-                "-fx-font: 14px \"Arial Black\"; " +
-                "-fx-text-fill: #51CC14; " +
-                "-fx-border-radius: 11px; " + 
-                "-fx-border-color: #FFD500; " +
-                "-fx-border-width: 2px; ";
-    }
-    
-    public String getTextStyle() {
-        return  
-                "-fx-text-fill: #3D990F; " +
-                "-fx-font: 14px arial;";
-    }
-    
-    public String getWindowStyle() {
-        return 
-                "-fx-background-color: white; " +
-                "-fx-background-radius: 11px; "+
-                "-fx-border-color: orange; " +
-                "-fx-border-width: 3px; " +
-                "-fx-border-radius: 10px; ";
+    public String getPathToCssFile() {
+        return "file:./../config/BeamWindow.css";
     }
     
     public String getTaskImageURL() {
