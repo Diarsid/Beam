@@ -134,6 +134,13 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         }
         synchronized (this.notificationLock) {
             this.scheduleNextRegularTasksSurvey();
+            LocalDateTime thisWeekBeginning =  LocalDateTime.now()
+                    .withHour(12)
+                    .withMinute(0)
+                    .withSecond(0)
+                    .withNano(0)
+                    .with(DayOfWeek.MONDAY);
+            this.notifyUserAboutThisWeekTasks(thisWeekBeginning);
         }        
     }
     
@@ -159,8 +166,9 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                 this.currentNotification.cancel(false);
                 this.currentNotification = null;
             }
+            
             // get time of next Monday, 12:00:00:000
-            LocalDateTime nextWeekBegining = LocalDateTime.now()
+            LocalDateTime nextWeekBeginning = LocalDateTime.now()
                     .withHour(12)
                     .withMinute(0)
                     .withSecond(0)
@@ -177,15 +185,16 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                     .plusMonths(1)
                     .withDayOfMonth(1);
             // what happens earlier - begining of the next week or 
-            // of the next month
+            // of the next month            
+            
             Runnable nextNotification;
             LocalDateTime nextNotificationTime;
-            if ( nextWeekBegining.isBefore(nextMonthBeginning) ) {
-                nextNotificationTime = nextWeekBegining;
+            if ( nextWeekBeginning.isBefore(nextMonthBeginning) ) {
+                nextNotificationTime = nextWeekBeginning;
                 nextNotification = new Runnable() {
                             @Override
                             public void run() {
-                                notifyUserAboutThisWeekTasks(nextWeekBegining);
+                                notifyUserAboutThisWeekTasks(nextWeekBeginning);
                             }
                         };
             } else {
@@ -204,34 +213,20 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         }
     }
     
-    private void notifyUserAboutThisMonthTasks(LocalDateTime nextMonthBeginning) {
+    private void notifyUserAboutThisMonthTasks(LocalDateTime monthBeginning) {
         synchronized (this.notificationLock) {
             List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
-                    nextMonthBeginning.minusMonths(1), nextMonthBeginning);            
-            if (tasks.isEmpty()) {
-                this.ioEngine.reportInfo("Montly notification: there aren't any tasks!");
-            } else {
-                this.ioEngine.reportInfo("Montly notification: this month tasks notification have been shown!");
-                for (TaskMessage task : tasks) {
-                    this.ioEngine.showTask(task);
-                }
-            }
+                    monthBeginning, monthBeginning.plusMonths(1));            
+            this.ioEngine.showTasksNotification("month", tasks);
             this.scheduleNextRegularTasksSurvey();
         }
     }
     
-    private void notifyUserAboutThisWeekTasks(LocalDateTime nextWeekBeginning) {
+    private void notifyUserAboutThisWeekTasks(LocalDateTime weekBeginning) {
         synchronized (this.notificationLock) {
             List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
-                    nextWeekBeginning.minusWeeks(1), nextWeekBeginning);            
-            if (tasks.isEmpty()) {
-                this.ioEngine.reportInfo("Weekly notification: there aren't any tasks!");
-            } else {
-                this.ioEngine.reportInfo("Weekly notification: this month tasks notification have been shown!");
-                for (TaskMessage task : tasks) {
-                    this.ioEngine.showTask(task);
-                }
-            }
+                    weekBeginning, weekBeginning.plusWeeks(1));            
+            this.ioEngine.showTasksNotification("week", tasks);
             this.scheduleNextRegularTasksSurvey();
         }
     }

@@ -21,6 +21,8 @@ public interface IoInnerModule extends GemModule {
     
     void showTask(TaskMessage task);  
     
+    void showTasksNotification(String periodOfNotification, List<TaskMessage> tasks);
+    
     void reportInfo(String... info);
     
     void reportMessage(String... info);

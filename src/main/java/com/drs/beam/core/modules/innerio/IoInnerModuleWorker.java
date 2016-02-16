@@ -30,7 +30,7 @@ class IoInnerModuleWorker implements IoInnerModule {
                     IoInnerModuleWorker.class.getSimpleName(), 
                     IoModule.class.getSimpleName());
         }
-        if (gui == null){
+        if (gui == null) {
             throw new NullDependencyInjectionException(
                     IoInnerModuleWorker.class.getSimpleName(), 
                     Gui.class.getSimpleName());
@@ -40,16 +40,40 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public void showTask(TaskMessage task){
-        if (this.io.hasExternalIOProcessor() && io.useExternalShowTaskMethod()){
-            try{
+    public void showTask(TaskMessage task) {
+        if (this.io.hasExternalIOProcessor() && io.useExternalShowTaskMethod()) {
+            try {
                 this.io.getExternalIOEngine().showTask(task);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 this.io.resetIoToDefault();
                 this.nativeShowTask(task);
             }
         } else {
             this.nativeShowTask(task);
+        }
+    }
+    
+    @Override
+    public void showTasksNotification(String periodOfNotification, List<TaskMessage> tasks) {
+        if (this.io.hasExternalIOProcessor() && io.useExternalShowTaskMethod()) {
+            try {
+                if ( tasks.isEmpty() ) {
+                    this.io.getExternalIOEngine().reportInfo(
+                            "There are no tasks scheduled in this " +
+                                periodOfNotification + ".");
+                } else {
+                    this.io.getExternalIOEngine().reportInfo(
+                                periodOfNotification + " tasks:");
+                    for (TaskMessage task : tasks) {                        
+                        this.io.getExternalIOEngine().showTask(task);
+                    }
+                }                
+            } catch (RemoteException e) {
+                this.io.resetIoToDefault();
+                this.nativeShowTasksNotification(periodOfNotification, tasks);
+            }
+        } else {
+            this.nativeShowTasksNotification(periodOfNotification, tasks);
         }
     }
     
@@ -163,6 +187,12 @@ class IoInnerModuleWorker implements IoInnerModule {
      */
     private void nativeShowTask(TaskMessage task){                
         gui.showTask(task);        
+    }
+    
+    private void nativeShowTasksNotification(
+            String periodOfNotification, List<TaskMessage> tasks) {
+        
+        gui.showTasks(periodOfNotification, tasks);
     }
 
     private void nativeReportMessage(String[] info){

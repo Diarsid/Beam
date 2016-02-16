@@ -72,10 +72,11 @@ abstract class BeamWindow {
     
     final void setContent(Pane contentPane) {
         Pane main = new Pane();
+        main.setId("main");
         main.getChildren().add(contentPane);
-        main.setStyle(provider.getWindowStyle());
         Scene scene = new Scene(main);
         scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().add(provider.getPathToCssFile());
         this.stage.setScene(scene);
         this.stage.sizeToScene();
     }
@@ -100,25 +101,12 @@ abstract class BeamWindow {
         return this.provider.getButtonShadow();
     }
     
-    String buttonHoverCSS() {
-        return this.provider.getOnHoverButtonStyle();
-    }
-    
-    String buttonIdleCSS() {
-        return this.provider.getCommonButtonStyle();
-    }
-    
-    String fontCSS() {
-        return this.provider.getTextStyle();
-    }
-    
     WindowSettingsProvider settings() {
         return this.provider;
     }
     
     Button newOkButton(String text) {
         Button button = new Button(text);    
-        button.setStyle(provider.getCommonButtonStyle());
         button.setMinWidth(100);
         button.setMinHeight(30);
         button.setOnAction(new EventHandler<ActionEvent>() {
@@ -132,14 +120,12 @@ abstract class BeamWindow {
             @Override
             public void handle(MouseEvent event) {                
                 button.setEffect(provider.getButtonShadow());
-                button.setStyle(provider.getOnHoverButtonStyle());
             }
         });
         
         button.setOnMouseExited(new EventHandler<MouseEvent> () {
             @Override
             public void handle(MouseEvent event) {
-                button.setStyle(provider.getCommonButtonStyle());
                 button.setEffect(null);
             }
         });

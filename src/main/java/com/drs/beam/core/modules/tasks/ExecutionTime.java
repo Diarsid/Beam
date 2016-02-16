@@ -105,7 +105,7 @@ public class ExecutionTime {
         for (Integer hourNumber : givenHours) {
             if (hourNumber < 0 || hourNumber > 24 ) {
                 throw new TaskTimeInvalidException(
-                        "hour cannot be less than 0 or more than 23.");
+                        "Hour cannot be less than 0 or more than 23.");
             }
         }
     }
@@ -114,7 +114,7 @@ public class ExecutionTime {
         for (Integer dayNumber : givenDays) {
             if (dayNumber < 1 || dayNumber > 7 ) {
                 throw new TaskTimeInvalidException(
-                        "day cannot be less than 1 or more than 7.");
+                        "Day cannot be less than 1 or more than 7.");
             }
         }
     }

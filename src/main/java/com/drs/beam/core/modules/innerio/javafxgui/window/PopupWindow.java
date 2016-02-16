@@ -90,7 +90,6 @@ class PopupWindow extends BeamWindow implements Runnable {
         }
         
         Label messageLabel = new Label(); 
-        messageLabel.setStyle(fontCSS());
         messageLabel.setWrapText(true);
         messageLabel.setPadding(new Insets(0, 0, 0, 0));
         

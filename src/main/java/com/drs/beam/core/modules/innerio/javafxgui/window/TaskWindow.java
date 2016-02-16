@@ -65,12 +65,10 @@ class TaskWindow extends BeamWindow implements Runnable {
         Label picture = new Label("", taskPic);        
         
         Label taskTimeLabel = new Label();
-        taskTimeLabel.setStyle(fontCSS());
         taskTimeLabel.setText(task.getTime());
         taskTimeLabel.setPadding(new Insets(0, 0, 8, 0));
         
         Label taskTextLabel = new Label(); 
-        taskTextLabel.setStyle(fontCSS());
         taskTextLabel.setPadding(new Insets(0, 0, 0, 20));
         
         StringJoiner joiner = new StringJoiner("\n");

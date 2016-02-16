@@ -6,6 +6,8 @@
 
 package com.drs.beam.core.modules.innerio.javafxgui.window;
 
+import java.util.List;
+
 import com.drs.beam.core.modules.innerio.javafxgui.WindowController;
 import com.drs.beam.core.modules.innerio.javafxgui.WindowSettingsProvider;
 import com.drs.beam.core.modules.innerio.javafxgui.WindowsBuilder;
@@ -47,5 +49,15 @@ public class WindowsBuilderWorker implements WindowsBuilder {
             WindowController controller) {
         
         return new TaskWindow(task, controller, provider);
+    }
+    
+    @Override
+    public Runnable newNotificationWindow(
+            String period,
+            List<TaskMessage> tasks, 
+            WindowSettingsProvider provider, 
+            WindowController controller) {
+        
+        return new TasksNotificationWindow(period, tasks, controller, provider);
     }
 }
