@@ -43,13 +43,13 @@ class TaskWindow extends BeamWindow implements Runnable {
         prepareStage();
         setContent(createMainContent());
         setTitle("Task");
-        setIconUrl(settings().getTaskIconURL());
+        setIconUrl(resources().getTaskIconURL());
         showThis();
     }    
     
     private Pane createMainContent() {
         VBox mainVBox = new VBox(15); 
-        mainVBox.setPadding(new Insets(15, 15, 15, 15));
+        mainVBox.setPadding(new Insets(15, 15, 0, 15));
         mainVBox.setAlignment(Pos.TOP_CENTER);
         
         HBox hBox = new HBox(15);
@@ -60,7 +60,7 @@ class TaskWindow extends BeamWindow implements Runnable {
         taskTextBox.setAlignment(Pos.TOP_LEFT);        
         
         ImageView taskPic = 
-                new ImageView(new Image("file:"+settings().getTaskImageURL()));
+                new ImageView(new Image("file:"+resources().getTaskImageURL()));
         
         Label picture = new Label("", taskPic);        
         

@@ -49,6 +49,9 @@
         <includes>
           <include>h2*.jar</include>
           <include>gem-injector*.jar</include>
+          <include>javax.servlet*.jar</include>
+          <include>*jetty*.jar</include>
+          <include>json-simple*.jar</include>
         </includes>    
     </fileSet>
     <fileSet>

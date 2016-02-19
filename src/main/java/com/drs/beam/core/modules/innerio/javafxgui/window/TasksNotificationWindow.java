@@ -50,13 +50,13 @@ class TasksNotificationWindow extends BeamWindow implements Runnable {
         prepareStage();
         setContent(createMainContent());
         setTitle("Task");
-        setIconUrl(settings().getTaskIconURL());
+        setIconUrl(resources().getTaskIconURL());
         showThis();
     }    
     
     private Pane createMainContent() {
         VBox mainVBox = new VBox(15); 
-        mainVBox.setPadding(new Insets(15, 11, 15, 15));
+        mainVBox.setPadding(new Insets(15, 13, 0, 15));
         mainVBox.setAlignment(Pos.TOP_CENTER);
         
         HBox hBox = new HBox(15);
@@ -64,7 +64,7 @@ class TasksNotificationWindow extends BeamWindow implements Runnable {
         hBox.setAlignment(Pos.CENTER_LEFT);        
         
         ImageView taskPic = 
-                new ImageView(new Image("file:"+settings().getTaskImageURL()));  
+                new ImageView(new Image("file:"+resources().getTaskImageURL()));  
         Label picture = new Label("", taskPic);  
           
         if ( this.tasks.isEmpty() ) {

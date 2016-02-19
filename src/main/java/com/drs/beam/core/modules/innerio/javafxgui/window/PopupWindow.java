@@ -55,16 +55,16 @@ class PopupWindow extends BeamWindow implements Runnable {
         setContent(createMainContent());
         setTitle(this.title); 
         if (title.equals("Error")) {
-            setIconUrl(settings().getErrorIconURL());
+            setIconUrl(resources().getErrorIconURL());
         } else {
-            setIconUrl(settings().getMessageIconURL());
+            setIconUrl(resources().getMessageIconURL());
         }
         showThis();
     }    
     
     private Pane createMainContent() {
         VBox mainVBox = new VBox(15); 
-        mainVBox.setPadding(new Insets(15, 15, 15, 15));
+        mainVBox.setPadding(new Insets(15, 15, 0, 15));
         mainVBox.setAlignment(Pos.TOP_CENTER);
         
         HBox hBox = new HBox(15);
@@ -80,13 +80,13 @@ class PopupWindow extends BeamWindow implements Runnable {
                     new Label("", 
                             new ImageView(
                                     new Image(
-                                            "file:"+settings().getErrorImageURL()))); 
+                                            "file:"+resources().getErrorImageURL()))); 
         } else {
             picture = 
                     new Label("", 
                             new ImageView(
                                     new Image(
-                                            "file:"+settings().getMessageImageURL()))); 
+                                            "file:"+resources().getMessageImageURL()))); 
         }
         
         Label messageLabel = new Label(); 

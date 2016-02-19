@@ -11,7 +11,7 @@
     -fx-border-radius: 10px;
 }
 
-.button {
+#ok-button.button {
     -fx-background-color: white;
     -fx-background-radius: 7px; 
     -fx-font: 14px "Arial Black";
@@ -21,7 +21,24 @@
     -fx-border-width: 2px;
 }
 
-.button:hover {
+#on-top-toggle-button-off {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5px; 
+    -fx-border-radius: 7px;
+    -fx-border-color: #FFD500;
+    -fx-border-width: 2px;
+}
+
+#on-top-toggle-button-on {
+    -fx-background-color: #BEFFA6;
+    -fx-background-radius: 7px; 
+    -fx-background-insets: 2px;
+    -fx-border-radius: 7px;
+    -fx-border-color: #FFD500;
+    -fx-border-width: 2px;
+}
+
+#ok-button.button:hover {
     -fx-background-color: yellow;
     -fx-text-fill: #51CC14;
 }
