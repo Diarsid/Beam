@@ -6,7 +6,9 @@
 
 package com.drs.beam.core.modules.web;
 
+import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.WebModule;
+import com.drs.beam.shared.modules.ConfigModule;
 
 /**
  *
@@ -14,6 +16,9 @@ import com.drs.beam.core.modules.WebModule;
  */
 class WebModuleWorker implements WebModule {
     
-    WebModuleWorker() {
+    private final BeamServletContainer server;
+    
+    WebModuleWorker(BeamServletContainer server) {
+       this.server = server;
     }
 }

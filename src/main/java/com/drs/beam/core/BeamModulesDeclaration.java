@@ -15,6 +15,7 @@ import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.IoModule;
 import com.drs.beam.core.modules.RmiModule;
 import com.drs.beam.core.modules.TaskManagerModule;
+import com.drs.beam.core.modules.WebModule;
 import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.gem.injector.core.Declaration;
 import com.drs.gem.injector.core.GemModuleDeclaration;
@@ -66,6 +67,11 @@ class BeamModulesDeclaration implements Declaration {
         modules.add(new GemModuleDeclaration(
                 TaskManagerModule.class.getCanonicalName(), 
                 "com.drs.beam.core.modules.tasks.TaskManagerModuleWorker",
+                GemModuleType.SINGLETON));
+        
+        modules.add(new GemModuleDeclaration(
+                WebModule.class.getCanonicalName(), 
+                "com.drs.beam.core.modules.web.WebModuleWorker", 
                 GemModuleType.SINGLETON));
         
         return modules;

@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.drs.beam.core.modules.web.engine;
+package com.drs.beam.core.modules.web;
 
 /**
  *
  * @author Diarsid
  */
-public interface WebEngine {
-    
+public interface BeamServletContainer {
+            
+    void startServer();
 }
