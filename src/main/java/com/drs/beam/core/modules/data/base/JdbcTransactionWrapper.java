@@ -200,7 +200,7 @@ class JdbcTransactionWrapper implements JdbcTransaction {
     * and rethrow SQLException into main execution method to stop it.
     */
     @Override
-    public ResultSet executePreparedStatementQuery(PreparedStatement ps) 
+    public ResultSet executePreparedQuery(PreparedStatement ps) 
             throws HandledTransactSQLException {
         
         try {

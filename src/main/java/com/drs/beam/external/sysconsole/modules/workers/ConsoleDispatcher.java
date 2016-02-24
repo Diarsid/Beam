@@ -69,7 +69,6 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.pageEditVars.add("name");
         this.pageEditVars.add("shortcuts");
         this.pageEditVars.add("url");
-        this.pageEditVars.add("directory");
         this.pageEditVars.add("browser");
         this.reminderTypes = new ArrayList<>();
         this.reminderTypes.add("hourly reminder");
@@ -473,15 +472,6 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 this.printer.printUnderLn("URL was changed.");
             }
         } else if (choosed == 4) {
-            this.printer.printUnder("new directory: ");
-            String newDirectoReady = this.reader.read();
-            if (newDirectoReady.isEmpty()) {
-                return;
-            }
-            if (this.beam.webPages().editWebPageDirectory(name, newDirectoReady)){
-                this.printer.printUnderLn("directory was changed.");
-            }
-        } else if (choosed == 5) {
             this.printer.printUnder("new browser: ");
             String newBrowser = this.reader.read();
             if (newBrowser.isEmpty()) {
@@ -490,7 +480,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             if (this.beam.webPages().editWebPageBrowser(name, newBrowser)) {
                 this.printer.printUnderLn("New browser was assigned to "+name+".");
             }
-        } 
+        }
     }
     
     @Override

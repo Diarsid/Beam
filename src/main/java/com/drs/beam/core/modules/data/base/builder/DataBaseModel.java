@@ -58,7 +58,7 @@ class DataBaseModel {
                 "page_shortcuts VARCHAR(20)     NOT NULL, " + 
                 "page_url       VARCHAR(300)    NOT NULL, " +
                 "page_placement VARCHAR(9)      NOT NULL, " +
-                "page_directory VARCHAR(100)     NOT NULL, " +
+                "page_directory VARCHAR(100)    NOT NULL, " +
                 "page_browser   VARCHAR(10)     NOT NULL)",
                 7);
         this.tables.put(webPages.name, webPages);
@@ -71,38 +71,48 @@ class DataBaseModel {
                 "choice         VARCHAR(30)     NOT NULL)",
                 3);
         this.tables.put(commandChoices.name, commandChoices);
+        
+        TableInfo directories = new TableInfo(
+                "directories",
+                "CREATE TABLE directories (" +
+                "dir_name       VARCHAR(100)    NOT NULL, " +
+                "dir_order      INTEGER         NOT NULL, " + 
+                "dir_placement  VARCHAR(9)      NOT NULL, " +
+                "primary key(dir_name, dir_placement))",
+                3);
+        this.tables.put(directories.name, directories);
     }
     
     // Methods ============================================================================
     
-    List<String> getTableNames(){
+    List<String> getTableNames() {
         return new ArrayList<>(this.tables.keySet());
     }
     
-    TableInfo getTable(String name){
+    TableInfo getTable(String name) {
         return this.tables.get(name);
     }
     
-    class TableInfo{
+    class TableInfo {
         private final String name;
         private final String creationSqlScript;
         private final int columnsQty;
         
-        private TableInfo(String name, String script, int columnsQty){
+        private TableInfo(String name, String script, int columnsQty) {
             this.name = name;
             this.creationSqlScript = script;
             this.columnsQty = columnsQty;
         }
         
-        String getTableName(){
+        String getTableName() {
             return this.name;
         }
         
-        String getSqlScript(){
+        String getSqlScript() {
             return this.creationSqlScript;
         }
         
-        int getColQty(){
+        int getColQty() {
             return this.columnsQty;
         }
     }

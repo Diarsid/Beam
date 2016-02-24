@@ -4,10 +4,10 @@
  */
 package com.drs.beam.core.modules.data;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.entities.WebPageDirectory;
 import com.drs.beam.core.entities.WebPagePlacement;
 
 /**
@@ -36,13 +36,22 @@ public interface DaoWebPages {
     
     boolean editWebPageUrl(String name, String newUrl);
     
-    boolean editWebPageDirectory(String name, String newCategory);
-    
     boolean editWebPageBrowser(String name, String newBrowser);
     
     boolean renameDirectoryInPlacement(
-            String category, String newCategory, WebPagePlacement placement);
+            String directory, String newDirectory, WebPagePlacement placement);
     
     boolean moveWebPageToPlacementAndDirectory(
             String pageName, String newDirectory, WebPagePlacement placement);
+    
+    boolean deleteDirectoryAndPages(WebPageDirectory dir);
+    
+    boolean createEmptyDirectoryWithDefaultOrder(
+            WebPagePlacement place, String name);
+    
+    WebPageDirectory getDirectoryExact(WebPagePlacement place, String name);
+    
+    List<WebPageDirectory> getAllDirectoriesIn(WebPagePlacement place);
+    
+    boolean changeDirectoryOrder(WebPagePlacement place, String name, int newOrder);
 }

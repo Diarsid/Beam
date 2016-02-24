@@ -11,13 +11,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.drs.beam.core.entities.WebPage;
+import com.drs.beam.core.entities.WebPageDirectory;
 import com.drs.beam.core.entities.WebPagePlacement;
 import com.drs.beam.core.modules.IoInnerModule;
 import com.drs.beam.core.modules.data.DaoWebPages;
 import com.drs.beam.core.modules.data.DataBase;
+import com.drs.beam.core.modules.data.HandledTransactSQLException;
+import com.drs.beam.core.modules.data.JdbcTransaction;
 
 /**
  *
@@ -95,11 +100,7 @@ class H2DaoWebPages implements DaoWebPages {
     private final String UPDATE_PAGE_URL_WHERE_PAGE_NAME = 
             "UPDATE web_pages " +
             "SET page_url = ? " + 
-            "WHERE page_name LIKE ?";
-    private final String UPDATE_PAGE_DIRECTORY_WHERE_PAGE_NAME = 
-            "UPDATE web_pages " +
-            "SET page_directory = ?" + 
-            "WHERE page_name LIKE ? ";
+            "WHERE page_name LIKE ?";;
     private final String UPDATE_PAGE_BROWSER_WHERE_PAGE_NAME = 
             "UPDATE web_pages " +
             "SET page_browser = ?" + 
@@ -108,26 +109,94 @@ class H2DaoWebPages implements DaoWebPages {
             "UPDATE web_pages " +
             "SET page_directory = ?" + 
             "WHERE (page_directory LIKE ? ) AND (page_placement LIKE ? ) ";
-    private final String UPDATE_PAGE_PLACEMENT_WHERE_PAGE_NAME = 
+    private final String UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_WHERE_PAGE_NAME_IS = 
             "UPDATE web_pages " +
-            "SET page_placement = ? " +
-            "WHERE page_name LIKE ? ";
-    
+            "SET page_directory = ?, page_placement = ? " +
+            "WHERE page_name IS ? ";
+    private final String DELETE_FROM_DIRS_WHERE_DIR_NAME_AND_PLACEMENT_IS = 
+            "DELETE FROM directories " +
+            "WHERE ( dir_name IS ? ) AND ( dir_placement is ? ) ";
+    private final String DELETE_PAGES_WHERE_DIR_NAME_AND_PLACEMENT_IS = 
+            "DELETE FROM web_pages " +
+            "WHERE ( page_directory IS ? ) AND ( page_placement IS ? )";
+    private final String INSERT_NEW_DIR_IN_DIRS = 
+            "INSERT INTO directories (dir_name, dir_placement, dir_order) " +
+            "VALUES (?, ?, ("
+            + "SELECT (MAX(dir_order)+1) "
+            + "FROM directories "
+            + "WHERE dir_placement IS ?) "
+            + ") ";
+    private final String SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS = 
+            "SELECT COUNT(dir_name) " +
+            "FROM directories " +
+            "WHERE ( dir_name IS ? ) AND ( dir_placement IS ? )";
+    private final String SELECT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS = 
+            "SELECT dir_name, dir_order, dir_placement " +
+            "FROM directories " + 
+            "WHERE ( dir_name IS ? ) AND (dir_placement IS ? ) ";
+    private final String SELECT_ALL_DIRS_IN_DIRS_WHERE_PLACE_IS = 
+            "SELECT dir_name, dir_order, dir_placement " +
+            "FROM directories " + 
+            "WHERE dir_placement IS ? ";
+    private final String SELECT_MAX_ORDER_IN_PLACE = 
+            "SELECT MAX(dir_name) " +
+            "FROM directories " +
+            "WHERE dir_placement IS ? ";
+    private final String SELECT_ALL_DIRS_IN_DIRS_IN_PLACE_WHERE_ORDER_HIGHER_THAN = 
+            "SELECT dir_name, dir_order " +
+            "FROM directories " +
+            "WHERE ( order >= ? ) AND ( dir_placement IS ? ) ";
+    private final String UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS = 
+            "UPDATE directories " +
+            "SET dir_order = ? " +
+            "WHERE ( dir_name = ? ) AND ( dir_placement IS ? ) ";
+    private final String UPDATE_DIR_NAME_WHERE_DIR_AND_PLACE_IS = 
+            "UPDATE directories " +
+            "SET dir_name = ? " +
+            "WHERE ( dir_name = ? ) AND ( dir_placement IS ? ) ";
+            
     @Override
     public void saveWebPage(WebPage page) {
-        try (Connection con = data.connect();
-           PreparedStatement ps = con.prepareStatement(INSERT_NEW_PAGE)) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement insertPage = transact.getPreparedStatement(INSERT_NEW_PAGE);
             
-            ps.setString(1, page.getName());
-            ps.setString(2, page.getShortcuts());
-            ps.setString(3, page.getUrlAddress());
-            ps.setString(4, page.getPlacement().name());
-            ps.setString(5, page.getDirectory());
-            ps.setString(6, page.getBrowser());
-            ps.executeUpdate();
+            insertPage.setString(1, page.getName());
+            insertPage.setString(2, page.getShortcuts());
+            insertPage.setString(3, page.getUrlAddress());
+            insertPage.setString(4, page.getPlacement().name());
+            insertPage.setString(5, page.getDirectory());
+            insertPage.setString(6, page.getBrowser());
             
-        } catch (SQLException e) {
+            transact.executePreparedUpdate(insertPage);
+            
+            PreparedStatement dirExists = transact.getPreparedStatement(
+                    SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS);
+            dirExists.setString(1, page.getName());
+            dirExists.setString(2, page.getPlacement().name());
+            ResultSet existResult = transact.executePreparedQuery(dirExists);
+            existResult.first();
+            int exists = existResult.getInt(1);
+            if (exists == 0) {
+                PreparedStatement insertNewDir = transact.getPreparedStatement(
+                        INSERT_NEW_DIR_IN_DIRS);
+                insertNewDir.setString(1, page.getDirectory());
+                insertNewDir.setString(2, page.getPlacement().name());
+                insertNewDir.setString(3, page.getPlacement().name());
+                transact.executePreparedUpdate(insertNewDir);
+            }
+            
+            transact.commitThemAll();
+        } catch (HandledTransactSQLException e) { 
             this.ioEngine.reportException(e, "SQLException: web page saving.");
+        } catch (SQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: web page saving.");
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
         }
     }
     
@@ -407,6 +476,7 @@ class H2DaoWebPages implements DaoWebPages {
         }
     }
     
+    /*
     @Override
     public boolean editWebPageDirectory(String name, String newDirectory) {
         try(Connection con = data.connect();
@@ -422,6 +492,7 @@ class H2DaoWebPages implements DaoWebPages {
             return false;
         }
     }
+    */
     
     @Override
     public boolean editWebPageBrowser(String name, String newBrowser){
@@ -441,15 +512,23 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public boolean renameDirectoryInPlacement(
-            String category, String newCategory, WebPagePlacement placement) {
+            String directory, String newDirectory, WebPagePlacement placement) {
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(UPDATE_PAGE_DIRECTORY_WHERE_DIRECTORY_AND_PLACEMENT)) {
+                PreparedStatement updateDirInPage = con.prepareStatement(
+                    UPDATE_PAGE_DIRECTORY_WHERE_DIRECTORY_AND_PLACEMENT);
+                PreparedStatement updateDirInDirs = con.prepareStatement(
+                        UPDATE_DIR_NAME_WHERE_DIR_AND_PLACE_IS)) {
             
-            ps.setString(1, newCategory);
-            ps.setString(2, category);
-            ps.setString(3, placement.name());
-            int qty = ps.executeUpdate();
-
+            updateDirInPage.setString(1, newDirectory);
+            updateDirInPage.setString(2, directory);
+            updateDirInPage.setString(3, placement.name());
+            int qty = updateDirInPage.executeUpdate();
+            
+            updateDirInDirs.setString(1, newDirectory);
+            updateDirInDirs.setString(2, directory);
+            updateDirInDirs.setString(3, placement.name());
+            qty = qty + updateDirInDirs.executeUpdate();
+            
             return (qty > 0); 
         } catch (SQLException e){
             this.ioEngine.reportException(e, "SQLException: update web page browser.");
@@ -461,27 +540,236 @@ class H2DaoWebPages implements DaoWebPages {
     public boolean moveWebPageToPlacementAndDirectory(
             String pageName, String newDirectory, WebPagePlacement placement) {
         
-        try(Connection con = data.connect();
-            PreparedStatement psPlacement = 
-                    con.prepareStatement(UPDATE_PAGE_PLACEMENT_WHERE_PAGE_NAME);
-            PreparedStatement psDir = 
-                    con.prepareStatement(UPDATE_PAGE_DIRECTORY_WHERE_PAGE_NAME)) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement dirExists = transact.getPreparedStatement(
+                    SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS);
+            dirExists.setString(1, newDirectory);
+            dirExists.setString(2, placement.name());
+            ResultSet existResult = transact.executePreparedQuery(dirExists);
+            existResult.first();
+            int exists = existResult.getInt(1);
+            if (exists == 0) {
+                PreparedStatement insertNewDir = transact.getPreparedStatement(
+                        INSERT_NEW_DIR_IN_DIRS);
+                insertNewDir.setString(1, newDirectory);
+                insertNewDir.setString(2, placement.name());
+                insertNewDir.setString(3, placement.name());
+                transact.executePreparedUpdate(insertNewDir);
+            }
             
-            con.setAutoCommit(false);
+            PreparedStatement updatePage = transact.getPreparedStatement(
+                    UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_WHERE_PAGE_NAME_IS);
             
-            psPlacement.setString(1, placement.name());
-            psPlacement.setString(2, pageName);
-            int qtyPlace = psPlacement.executeUpdate();
+            updatePage.setString(1, newDirectory);
+            updatePage.setString(2, placement.name());
+            updatePage.setString(3, pageName);
             
-            psDir.setString(1, newDirectory);
-            psDir.setString(2, pageName);
-            int qtyDir = psDir.executeUpdate();
+            int qty = transact.executePreparedUpdate(updatePage);
             
-            con.commit();
+            transact.commitThemAll();
             
-            return ( (qtyPlace + qtyDir) > 0); 
+            return ( qty > 0); 
+        } catch (HandledTransactSQLException e) { 
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
         } catch (SQLException e) {
-            this.ioEngine.reportException(e, "SQLException: update web page category.");
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean deleteDirectoryAndPages(WebPageDirectory dir) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement deleteFromDirs = transact.getPreparedStatement(
+                    DELETE_FROM_DIRS_WHERE_DIR_NAME_AND_PLACEMENT_IS);
+            deleteFromDirs.setString(1, dir.getName());
+            deleteFromDirs.setString(2, dir.getPlacement().name());
+            int qty = transact.executePreparedUpdate(deleteFromDirs);
+            
+            PreparedStatement deletePagesInDir = transact.getPreparedStatement(
+                    DELETE_PAGES_WHERE_DIR_NAME_AND_PLACEMENT_IS);
+            deletePagesInDir.setString(1, dir.getName());
+            deletePagesInDir.setString(2, dir.getPlacement().name());
+            qty = qty + transact.executePreparedUpdate(deletePagesInDir);
+            
+            transact.commitThemAll();
+            
+            return ( qty > 0 );
+            
+        } catch (HandledTransactSQLException e) { 
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (SQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean createEmptyDirectoryWithDefaultOrder(WebPagePlacement place, String name) {
+        try (Connection con = this.data.connect();
+                PreparedStatement ps = con.prepareStatement(INSERT_NEW_DIR_IN_DIRS)) {
+            
+            ps.setString(1, name);
+            ps.setString(2, place.name());
+            ps.setString(3, place.name());
+            
+            return ( ps.executeUpdate() > 0) ;
+        } catch (SQLException e) {
+            this.ioEngine.reportError("Directory creation failure.");
+            return false;
+        }
+    }
+    
+    @Override
+    public WebPageDirectory getDirectoryExact(WebPagePlacement place, String name) {
+        ResultSet rs = null;
+        try (Connection con = this.data.connect();
+                PreparedStatement ps = con.prepareStatement(
+                        SELECT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS)) {
+            
+            ps.setString(1, name);
+            ps.setString(2, place.name());
+            rs = ps.executeQuery();
+            if (rs.first()) {
+                return new WebPageDirectory(
+                        rs.getString("dir_name"), 
+                        WebPagePlacement.valueOf(rs.getString("dir_placement")), 
+                        Integer.parseInt(rs.getString("dir_order"))
+                );
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            this.ioEngine.reportError("Directory selection failure.");
+            return null;
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException se) {
+                    this.ioEngine.reportExceptionAndExitLater(se, 
+                        "Unknown problem in WebPagesDao.getDirectoryExact:",
+                        "ResultSet close exception.",
+                        " ",
+                        "Program will be closed.");
+                }
+            }
+        }
+    }
+    
+    @Override
+    public List<WebPageDirectory> getAllDirectoriesIn(WebPagePlacement place) {
+        ResultSet rs = null;
+        try (Connection con = this.data.connect();
+                PreparedStatement ps = con.prepareStatement(
+                        SELECT_ALL_DIRS_IN_DIRS_WHERE_PLACE_IS);) {
+            
+            ps.setString(1, place.name());
+            rs = ps.executeQuery();
+            List<WebPageDirectory> dirs = new ArrayList<>();
+            while (rs.next()) {
+                dirs.add(new WebPageDirectory(
+                        rs.getString("dir_name"), 
+                        WebPagePlacement.valueOf(rs.getString("dir_placement")), 
+                        Integer.parseInt(rs.getString("dir_order"))
+                )
+                );
+            }
+            Collections.sort(dirs);
+            return dirs;
+        } catch (SQLException e) {
+            this.ioEngine.reportError("Directory selection failure.");
+            return Collections.emptyList();
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException se) {
+                    this.ioEngine.reportExceptionAndExitLater(se, 
+                        "Unknown problem in WebPagesDao.getAllDirectoriesIn:",
+                        "ResultSet close exception.",
+                        " ",
+                        "Program will be closed.");
+                }
+            }
+        }
+    }
+    
+    @Override
+    public boolean changeDirectoryOrder(WebPagePlacement place, String name, int newOrder) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement maxOrderStmnt = transact.getPreparedStatement(SELECT_MAX_ORDER_IN_PLACE);
+            maxOrderStmnt.setString(1, place.name());
+            ResultSet maxOrderResultSet = transact.executePreparedQuery(maxOrderStmnt);
+            maxOrderResultSet.first();
+            int maxOrder = maxOrderResultSet.getInt(1);
+            if ( maxOrder > newOrder ) {
+                transact.rollbackAllAndReleaseResources();
+                return false;
+            }            
+            
+            PreparedStatement selectDirsWithHigherOrder = transact.getPreparedStatement(
+                    SELECT_ALL_DIRS_IN_DIRS_IN_PLACE_WHERE_ORDER_HIGHER_THAN);
+            selectDirsWithHigherOrder.setInt(1, newOrder);
+            selectDirsWithHigherOrder.setString(2, place.name());
+            ResultSet higherDirs = transact
+                    .executePreparedQuery(selectDirsWithHigherOrder);
+            Map<Integer, String> dirs = new HashMap<>();
+            while (higherDirs.next()) {
+                dirs.put(
+                        higherDirs.getInt("dir_order"), 
+                        higherDirs.getString("dir_name"));
+            }
+            PreparedStatement updateOrder;
+            int qty = 0;
+            for (Map.Entry<Integer, String> entry : dirs.entrySet()) {
+                updateOrder = transact.getPreparedStatement(
+                        UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS);
+                updateOrder.setInt(1, entry.getKey()+1);
+                updateOrder.setString(2, entry.getValue());
+                updateOrder.setString(3, place.name());
+                qty = qty + transact.executePreparedUpdate(updateOrder);
+            }
+            updateOrder = transact.getPreparedStatement(
+                    UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS);
+            updateOrder.setInt(1, newOrder);
+            updateOrder.setString(2, name);
+            updateOrder.setString(3, place.name());
+            qty = qty + transact.executePreparedUpdate(updateOrder);
+            
+            transact.commitThemAll();
+            return ( qty > 0 );
+        } catch (HandledTransactSQLException e) { 
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (SQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
             return false;
         }
     }

@@ -616,7 +616,7 @@ class H2DaoTasks implements DaoTasks {
             ps.setString(1, this.timeToString(from));
             ps.setString(2, this.timeToString(to));
             
-            ResultSet rs = transact.executePreparedStatementQuery(ps);
+            ResultSet rs = transact.executePreparedQuery(ps);
             
             List<TaskMessage> tasks = new ArrayList<>();
             while ( rs.next() ) {

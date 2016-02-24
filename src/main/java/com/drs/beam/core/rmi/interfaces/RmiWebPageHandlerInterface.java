@@ -46,10 +46,7 @@ public interface RmiWebPageHandlerInterface extends Remote {
             throws RemoteException;
     
     boolean editWebPageUrl(String name, String newUrl) throws RemoteException;
-    
-    boolean editWebPageDirectory(String name, String newCategory) 
-            throws RemoteException;
-    
+        
     boolean editWebPageBrowser(String name, String newBrowser) 
             throws RemoteException;
     

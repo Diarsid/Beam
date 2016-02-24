@@ -301,6 +301,14 @@ class ConsoleListener implements ConsoleListenerModule {
                             case "page" : {
                                 this.dispatcher.movePageToDirectoryAndPlacement();
                                 break parsing;
+                            } 
+                            case "dir" :
+                            case "directory" : {
+                                //this.dispatcher.editDirectory();
+                                break parsing;
+                            }
+                            default : {
+                                break parsing;
                             }
                         }
                     }

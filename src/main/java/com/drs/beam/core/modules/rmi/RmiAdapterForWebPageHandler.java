@@ -109,14 +109,7 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
         newUrl = newUrl.trim().toLowerCase();
         return this.dao.editWebPageUrl(name, newUrl);
     }
-    
-    @Override
-    public boolean editWebPageDirectory(String name, String newDirectory) throws RemoteException {
-        name = name.trim().toLowerCase();
-        newDirectory = newDirectory.trim().toLowerCase();
-        return this.dao.editWebPageDirectory(name, newDirectory);
-    }
-    
+        
     @Override
     public boolean editWebPageBrowser(String name, String newBrowser) throws RemoteException {
         name = name.trim().toLowerCase();

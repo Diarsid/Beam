@@ -30,7 +30,7 @@ public interface JdbcTransaction {
      * If operation fails - make rollback, close all resources
      * and rethrow SQLException into main execution method to stop it.
      */
-    ResultSet executePreparedStatementQuery(PreparedStatement ps) 
+    ResultSet executePreparedQuery(PreparedStatement ps) 
             throws HandledTransactSQLException;
 
     /*
