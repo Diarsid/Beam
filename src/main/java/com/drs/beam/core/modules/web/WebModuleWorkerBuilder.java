@@ -6,8 +6,10 @@
 
 package com.drs.beam.core.modules.web;
 
+import com.drs.beam.core.modules.DataModule;
 import com.drs.beam.core.modules.WebModule;
-import com.drs.beam.core.modules.web.engines.JettyServletContainer;
+import com.drs.beam.core.modules.web.engines.JettyServletContainerProvider;
+import com.drs.beam.core.modules.web.resources.ResourcesProviderWorker;
 import com.drs.beam.shared.modules.ConfigModule;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -18,16 +20,19 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     
     private final ConfigModule config;
+    private final DataModule data;
     
-    WebModuleWorkerBuilder(ConfigModule config) {
+    WebModuleWorkerBuilder(ConfigModule config, DataModule data) {
         this.config = config;
+        this.data = data;
     }
     
     @Override
     public WebModule buildModule() {
-        BeamServletContainer server = new JettyServletContainer(config);
-        server.startServer();
-        WebModule webModule = new WebModuleWorker(server);
-        return webModule;
+        ResourcesProvider resources = new ResourcesProviderWorker(this.data);
+        ServletContainerProvider provider = 
+                new JettyServletContainerProvider(this.config, resources);
+       
+        return new WebModuleWorker(provider.buildAndStartServer());
     }
 }

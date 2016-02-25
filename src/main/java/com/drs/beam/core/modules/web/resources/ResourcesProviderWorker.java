@@ -6,8 +6,15 @@
 
 package com.drs.beam.core.modules.web.resources;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.Filter;
+import javax.servlet.http.HttpServlet;
+
 import com.drs.beam.core.modules.DataModule;
-import com.drs.beam.core.modules.data.DaoWebPages;
 import com.drs.beam.core.modules.web.ResourcesProvider;
 
 /**
@@ -18,7 +25,21 @@ public class ResourcesProviderWorker implements ResourcesProvider {
     
     private final DataModule data;
     
-    ResourcesProviderWorker(DataModule data) {
+    public ResourcesProviderWorker(DataModule data) {
         this.data = data;
+    }
+    
+    @Override
+    public Map<String, HttpServlet> getServlets() {
+        Map<String, HttpServlet> servlets = new HashMap<>();
+        
+        HttpServlet serv = new AllDirectoriesServlet(data.getWebPagesDao());
+        servlets.put("/resources/webpanel/dirs", serv);
+        return servlets;
+    }
+    
+    @Override
+    public Set<Filter> getFilters() {
+        return null;
     }
 }

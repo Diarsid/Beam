@@ -16,9 +16,9 @@ import com.drs.beam.shared.modules.ConfigModule;
  */
 class WebModuleWorker implements WebModule {
     
-    private final BeamServletContainer server;
+    private final ServletContainer server;
     
-    WebModuleWorker(BeamServletContainer server) {
+    WebModuleWorker(ServletContainer server) {
        this.server = server;
     }
 }

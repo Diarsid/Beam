@@ -31,6 +31,7 @@ public enum Config {
     WEB_LOCAL_PORT ("/configuration/web/local-address", "port"),
     WEB_INTERNET_HOST ("/configuration/web/internet-address", "host"),
     WEB_INTERNET_PORT ("/configuration/web/internet-address", "port"),
+    WEB_BEAM_CORE_CONTEXT_PATH("/configuration/web/context-path"),
     LIBRARIES_LOCATION ("/configuration/resources/libraries"),
     CLASSPATH_CORE ("/configuration/classpath/beam-core/element"),
     CLASSPATH_SYS_CONSOLE ("/configuration/classpath/beam-system-console/element"),

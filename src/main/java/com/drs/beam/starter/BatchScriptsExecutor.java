@@ -14,12 +14,12 @@ import java.io.IOException;
  *
  * @author Diarsid
  */
-class Starter {
+class BatchScriptsExecutor {
     
-    private final ScriptProvider scripts;
+    private final BatchScriptsProvider scripts;
     private final Desktop desktop;
     
-    Starter(ScriptProvider sp) {
+    BatchScriptsExecutor(BatchScriptsProvider sp) {
         this.scripts = sp;
         this.desktop = Desktop.getDesktop();
     }

@@ -6,15 +6,24 @@
 
 package com.drs.beam.core.modules.web.engines;
 
-import org.eclipse.jetty.server.Connector;
+import java.util.EnumSet;
+import java.util.HashSet;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.http.HttpServlet;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import com.drs.beam.core.exceptions.ModuleInitializationException;
-import com.drs.beam.core.modules.web.BeamServletContainer;
+import com.drs.beam.core.modules.web.ServletContainer;
 import com.drs.beam.shared.modules.ConfigModule;
-import com.drs.beam.shared.modules.config.Config;
 
+import static com.drs.beam.shared.modules.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
 import static com.drs.beam.shared.modules.config.Config.WEB_LOCAL_HOST;
 import static com.drs.beam.shared.modules.config.Config.WEB_LOCAL_PORT;
 import static com.drs.beam.shared.modules.config.Config.WEB_INTERNET_HOST;
@@ -24,25 +33,39 @@ import static com.drs.beam.shared.modules.config.Config.WEB_INTERNET_PORT;
  *
  * @author Diarsid
  */
-public class JettyServletContainer implements BeamServletContainer {
+class JettyServletContainer implements ServletContainer {
     
-    private Server jetty;
+    private final Server jettyServer;
+    private final ServletContextHandler jettyContext;
+    private final String internetConnector;
+    private final String localConnector;
     
-    public JettyServletContainer(ConfigModule config) {        
-        this.jetty = new Server();
-                
+    JettyServletContainer(ConfigModule config) {     
+        this.internetConnector = "internet_jetty_connector";
+        this.localConnector = "localhost_jetty_connector";
+        this.jettyServer = new Server();
+        this.jettyContext = new ServletContextHandler(
+                ServletContextHandler.NO_SESSIONS);
+        
+        this.configureServerAddresses(config);
+        this.configureServerContext(config);
+    }
+    
+    private void configureServerAddresses(ConfigModule config) {
         try {
             if (    ! config.get(WEB_LOCAL_HOST).isEmpty() ||
                     ! config.get(WEB_LOCAL_PORT).isEmpty()) {
                 this.addInetAddress(
                         config.get(WEB_LOCAL_HOST), 
-                        Integer.parseInt(config.get(WEB_LOCAL_PORT)));
+                        Integer.parseInt(config.get(WEB_LOCAL_PORT)),
+                        this.localConnector);
             }
             if (    ! config.get(WEB_INTERNET_HOST).isEmpty() ||
                     ! config.get(WEB_INTERNET_PORT).isEmpty()) {
                 this.addInetAddress(
                         config.get(WEB_INTERNET_HOST), 
-                        Integer.parseInt(config.get(WEB_INTERNET_PORT)));
+                        Integer.parseInt(config.get(WEB_INTERNET_PORT)),
+                        this.internetConnector);
             }
         } catch (NumberFormatException e) {
             throw new ModuleInitializationException(
@@ -50,25 +73,50 @@ public class JettyServletContainer implements BeamServletContainer {
         }
     }
     
-    private void addInetAddress(String host, int port) {
-        ServerConnector connector = new ServerConnector(this.jetty);
+    private void addInetAddress(String host, int port, String connectorName) {
+        ServerConnector connector = new ServerConnector(this.jettyServer);
         connector.setHost(host);
         connector.setPort(port);
+        connector.setName(connectorName);
         connector.setIdleTimeout(5000);
-        this.jetty.addConnector(connector);
+        this.jettyServer.addConnector(connector);
+    }
+    
+    private void configureServerContext(ConfigModule config) {
+        this.jettyContext.setContextPath(config.get(WEB_BEAM_CORE_CONTEXT_PATH));
+        this.jettyServer.setHandler(this.jettyContext);
     }
     
     @Override 
     public void startServer() { 
-        if ( this.jetty.getConnectors().length < 1 ) {
+        if ( this.jettyServer.getConnectors().length < 1 ) {
             throw new ModuleInitializationException(
                     "Jetty ServerConnectors have not been set.");
         }
         try {
-            this.jetty.start();
+            this.jettyServer.start();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ModuleInitializationException(
                     "It is impossible to start Jetty Server.");
         } 
+    }
+    
+    @Override
+    public void addServlet(HttpServlet servlet, String servletUrlMapping) {
+        this.jettyContext.addServlet(new ServletHolder(servlet), servletUrlMapping);
+    }
+    
+    @Override
+    public void addFilter(
+            Filter filter, 
+            String filterUrlMapping, 
+            DispatcherType t1, 
+            DispatcherType... types) {
+        
+        this.jettyContext.addFilter(
+                new FilterHolder(filter), 
+                filterUrlMapping, 
+                EnumSet.of(t1, types));
     }
 }

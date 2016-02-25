@@ -9,7 +9,7 @@ package com.drs.beam.core.modules.web;
  *
  * @author Diarsid
  */
-public interface BeamServletContainer {
-            
-    void startServer();
+public interface ServletContainerProvider {
+    
+    ServletContainer buildAndStartServer();
 }

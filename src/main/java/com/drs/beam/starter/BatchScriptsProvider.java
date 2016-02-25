@@ -26,7 +26,7 @@ import com.drs.beam.shared.modules.config.Config;
  *
  * @author Diarsid
  */
-class ScriptProvider {
+class BatchScriptsProvider {
     
     private final ConfigModule config;
     private final boolean track;
@@ -37,7 +37,7 @@ class ScriptProvider {
     private Path coreScript;
     private Path sysConsoleScript;
     
-    ScriptProvider(ConfigModule config, boolean track) {
+    BatchScriptsProvider(ConfigModule config, boolean track) {
         this.config = config;
         this.track = track;
     }

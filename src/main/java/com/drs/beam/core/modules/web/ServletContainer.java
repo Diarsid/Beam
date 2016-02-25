@@ -5,9 +5,7 @@
  */
 package com.drs.beam.core.modules.web;
 
-import java.util.Map;
-import java.util.Set;
-
+import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServlet;
 
@@ -15,9 +13,15 @@ import javax.servlet.http.HttpServlet;
  *
  * @author Diarsid
  */
-public interface ResourcesProvider {
+public interface ServletContainer {
+            
+    void startServer();
     
-    Map<String, HttpServlet> getServlets();
+    void addServlet(HttpServlet servlet, String servletUrlMapping);
     
-    Set<Filter> getFilters();
+    void addFilter(
+            Filter filter, 
+            String filterUrlMapping, 
+            DispatcherType t1, 
+            DispatcherType... types);
 }

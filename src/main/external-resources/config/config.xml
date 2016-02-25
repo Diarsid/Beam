@@ -32,11 +32,14 @@
             <element>Beam.jar</element>
             <element>./../lib/h2-1.3.176.jar</element>
             <element>./../lib/gem-injector-1.0.jar</element>
+            <element>./../lib/json-simple-1.1.1.jar</element>
             <element>./../lib/javax.servlet-api-3.1.0.jar</element>
             <element>./../lib/jetty-http-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-io-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-server-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-util-9.3.6.v20151106.jar</element>
+            <element>./../lib/jetty-servlet-9.3.6.v20151106.jar</element>
+            <element>./../lib/jetty-security-9.3.6.v20151106.jar</element>
         </beam-core>
         <beam-system-console>
             <element>Beam.jar</element>
@@ -102,6 +105,7 @@
     <web>
          <local-address host="127.0.0.1" port="35001"/>
          <internet-address host="192.168.1.33" port="35002"/>
+         <context-path>/beam/web</context-path>
     </web>
     
     <!--
@@ -129,6 +133,14 @@
         </core>       
     </databases>                              
 </configuration>
+
+
+
+
+
+
+
+
 
 
 

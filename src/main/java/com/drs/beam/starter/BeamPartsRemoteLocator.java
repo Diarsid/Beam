@@ -18,11 +18,11 @@ import com.drs.beam.shared.modules.config.Config;
  *
  * @author Diarsid
  */
-class RemoteLocator {
+class BeamPartsRemoteLocator {
     
     private final ConfigModule config;
     
-    RemoteLocator(ConfigModule config) {
+    BeamPartsRemoteLocator(ConfigModule config) {
         this.config = config;
     }    
     

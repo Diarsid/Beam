@@ -4,9 +4,11 @@
  * and open the template in the editor.
  */
 
-package com.drs.beam.core.modules.web.resources.directories;
+package com.drs.beam.core.modules.web.resources;
 
 import javax.servlet.http.HttpServlet;
+
+import com.drs.beam.core.modules.data.DaoWebPages;
 
 /**
  *
@@ -14,7 +16,9 @@ import javax.servlet.http.HttpServlet;
  */
 class SingleDirectoryServlet extends HttpServlet {
     
-    // non-arguments constructor required by servlet container
-    SingleDirectoryServlet() {
+    private final DaoWebPages webDao;    
+    
+    SingleDirectoryServlet(DaoWebPages webDao) {
+        this.webDao = webDao;
     }
 }

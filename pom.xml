@@ -24,7 +24,7 @@
                         <manifest>
                             <addClasspath>false</addClasspath>
                             <!-- <classpathPrefix>lib/</classpathPrefix> -->
-                            <!-- <mainClass>com.drs.beam.starter.ModulesLoader</mainClass> -->
+                            <!-- <mainClass>com.drs.beam.starter.BeamPartsLoader</mainClass> -->
                         </manifest>
                     </archive>
                     <excludes>
@@ -100,7 +100,7 @@
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath/>
-                        <argument>com.drs.beam.starter.ModulesLoader</argument>
+                        <argument>com.drs.beam.starter.BeamPartsLoader</argument>
                     </arguments>
                 </configuration>
             </plugin>
@@ -217,6 +217,18 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
+            <version>9.3.6.v20151106</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>9.3.6.v20151106</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
             <version>9.3.6.v20151106</version>
         </dependency>
         

@@ -15,17 +15,17 @@ import com.drs.beam.shared.modules.config.ConfigModuleWorkerBuilder;
  *
  * @author Diarsid
  */
-public class ModulesLoader {
+public class BeamPartsLoader {
     
     public static void main(String[] args) throws IOException {
         ConfigModuleWorkerBuilder confBuilder = new ConfigModuleWorkerBuilder();
         ConfigModule config = confBuilder.buildModule();        
-        RemoteLocator locator = new RemoteLocator(config);
+        BeamPartsRemoteLocator locator = new BeamPartsRemoteLocator(config);
         List<String> modulesToStart = locator.defineModulesToStart();        
         if ( modulesToStart.size() > 0 ) {
-            ScriptProvider scripts = new ScriptProvider(config, false);
+            BatchScriptsProvider scripts = new BatchScriptsProvider(config, false);
             scripts.processScripts();
-            Starter starter = new Starter(scripts);
+            BatchScriptsExecutor starter = new BatchScriptsExecutor(scripts);
             if (modulesToStart.contains("beam")) {
                 starter.runBeam();
                 if (modulesToStart.contains("console")) {
