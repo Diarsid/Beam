@@ -24,7 +24,7 @@
                         <manifest>
                             <addClasspath>false</addClasspath>
                             <!-- <classpathPrefix>lib/</classpathPrefix> -->
-                            <!-- <mainClass>com.drs.beam.starter.BeamPartsLoader</mainClass> -->
+                            <!-- <mainClass>diarsid.beam.starter.BeamPartsLoader</mainClass> -->
                         </manifest>
                     </archive>
                     <excludes>
@@ -100,7 +100,7 @@
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath/>
-                        <argument>com.drs.beam.starter.BeamPartsLoader</argument>
+                        <argument>diarsid.beam.starter.BeamPartsLoader</argument>
                     </arguments>
                 </configuration>
             </plugin>
