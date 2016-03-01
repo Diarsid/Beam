@@ -28,6 +28,9 @@ public interface TaskManagerModule extends GemModule {
     List<TaskMessage>   getPastTasks();
     List<TaskMessage>   getFirstTask();
     
+    List<TaskMessage>   getActualReminders();
+    List<TaskMessage>   getActualEvents();
+    
     boolean  deleteTaskByText(String text);
 
     boolean  removeAllTasks();

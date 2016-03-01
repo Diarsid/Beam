@@ -37,6 +37,9 @@ public interface DaoTasks {
     List<TaskMessage> getNonActualTasks();
     List<TaskMessage> getActualTasks();
     
+    List<TaskMessage> getActualEvents();
+    List<TaskMessage> getActualReminders();
+    
     List<TaskMessage> getTasksByTime(LocalDateTime firstTaskTime); 
     
     List<TaskMessage> getCalendarTasksBetweenDates(LocalDateTime from, LocalDateTime to);

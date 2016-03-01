@@ -131,9 +131,9 @@ abstract class BeamWindow {
         button.getStyleClass().add("button");
         button.setMinWidth(100);
         button.setMinHeight(30);
-        button.setOnAction(new EventHandler<ActionEvent>() {
+        button.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(ActionEvent event) {
+            public void handle(MouseEvent event) {
                 closeThis();
             }
         });     
@@ -162,9 +162,9 @@ abstract class BeamWindow {
         button.setMaxSize(14, 14);
         button.setAlignment(Pos.CENTER_RIGHT);
         
-        button.setOnAction(new EventHandler<ActionEvent>() {
+        button.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(ActionEvent event) {
+            public void handle(MouseEvent event) {
                 if ( stage.isAlwaysOnTop() ) {
                     stage.setAlwaysOnTop(false);
                     onTopControllerButton.setId("on-top-toggle-button-off");

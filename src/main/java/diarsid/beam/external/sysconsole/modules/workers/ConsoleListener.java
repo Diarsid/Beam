@@ -230,6 +230,16 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.printActualTasks();                                
                                 break parsing;
                             }
+                            case "events" : {                                
+                                this.dispatcher.printActualEvents();                                
+                                break parsing;
+                            }
+                            case "rem" :
+                            case "rems" :
+                            case "reminders" : {
+                                this.dispatcher.printActualReminders();
+                                break parsing;
+                            }
                             case "past" : {
                                 this.dispatcher.printPastTasks();
                                 break parsing;

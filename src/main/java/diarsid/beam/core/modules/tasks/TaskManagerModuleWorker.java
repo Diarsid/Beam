@@ -17,16 +17,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
-
 import diarsid.beam.core.modules.TaskManagerModule;
-
 import diarsid.beam.core.modules.data.DaoTasks;
-
 import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.tasks.exceptions.TaskTypeInvalidException;
 
 import static diarsid.beam.core.modules.tasks.TaskType.DAILY;
@@ -117,10 +112,10 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                         firstScheduled, LocalDateTime.now())
                         .toMinutes();
                 
-                if ( inactivePeriod <= 60 ) {
+                if ( inactivePeriod <= 30 ) {
                     this.processObtainedTasksAndUpdateTimer(
                             this.tasksDao.getExpiredTasks(LocalDateTime.now()));
-                } else if ( (60 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
+                } else if ( (30 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
                     // If lag is longer than one hour but no
                     // longer than day, do not show hourly 
                     // tasks that was expired while program
@@ -421,6 +416,16 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     @Override
     public List<TaskMessage> getPastTasks() {        
         return this.tasksDao.getNonActualTasks();  
+    }
+    
+    @Override
+    public List<TaskMessage> getActualReminders() {
+        return this.tasksDao.getActualReminders();
+    }
+    
+    @Override
+    public List<TaskMessage> getActualEvents() {
+        return this.tasksDao.getActualEvents();
     }
     
     @Override

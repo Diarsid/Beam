@@ -6,16 +6,13 @@
 
 package diarsid.beam.core.modules.rmi;
 
-import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-
-import diarsid.beam.core.modules.tasks.TaskMessage;
-
-import diarsid.beam.core.modules.TaskManagerModule;
-
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
+import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
+import diarsid.beam.core.modules.tasks.TaskMessage;
+import diarsid.beam.core.modules.TaskManagerModule;
 import diarsid.beam.core.modules.tasks.TaskType;
 
 /**
@@ -39,42 +36,51 @@ class RmiAdapterForTaskManager implements RmiTaskManagerInterface {
     }
     
     @Override
-    public String getFirstAlarmTime() throws RemoteException{
+    public String getFirstAlarmTime() throws RemoteException {
         return this.taskManagerModule.getFirstAlarmTime();
     }
     
     @Override
-    public List<TaskMessage> getFutureTasks() throws RemoteException{
+    public List<TaskMessage> getFutureTasks() throws RemoteException {
         return this.taskManagerModule.getFutureTasks();
     }
     
     @Override
-    public List<TaskMessage> getPastTasks() throws RemoteException{
+    public List<TaskMessage> getPastTasks() throws RemoteException {
         return this.taskManagerModule.getPastTasks();
     }
     
     @Override
-    public List<TaskMessage> getFirstTask() throws RemoteException{
+    public List<TaskMessage> getFirstTask() throws RemoteException {
         return this.taskManagerModule.getFirstTask();
     }
     
     @Override
-    public boolean deleteTaskByText(String text) throws RemoteException{
+    public List<TaskMessage> getScheduledReminders() throws RemoteException {
+        return this.taskManagerModule.getActualReminders();
+    }
+    @Override
+    public List<TaskMessage> getScheduledEvents() throws RemoteException {
+        return this.taskManagerModule.getActualEvents();
+    }
+    
+    @Override
+    public boolean deleteTaskByText(String text) throws RemoteException {
         return this.taskManagerModule.deleteTaskByText(text);
     }
 
     @Override
-    public boolean removeAllTasks() throws RemoteException{
+    public boolean removeAllTasks() throws RemoteException {
         return this.taskManagerModule.removeAllTasks();
     }
     
     @Override
-    public boolean  removeAllFutureTasks() throws RemoteException{
+    public boolean  removeAllFutureTasks() throws RemoteException {
         return this.taskManagerModule.removeAllFutureTasks();
     }
     
     @Override
-    public boolean  removeAllPastTasks() throws RemoteException{
+    public boolean  removeAllPastTasks() throws RemoteException {
         return this.taskManagerModule.removeAllPastTasks();
     }
     

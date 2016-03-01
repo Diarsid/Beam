@@ -19,18 +19,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-
 import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.tasks.Task;
-
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
-
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 
@@ -79,7 +74,15 @@ class H2DaoTasks implements DaoTasks {
     private final String SELECT_ACTUAL_TASKS = 
             "SELECT t_id, t_time, t_content, t_type, t_status, t_days, t_hours " +
             "FROM tasks " + 
-            "WHERE t_status IS TRUE";
+            "WHERE (t_status IS TRUE) AND (t_type IS 'USUAL')";
+    private final String SELECT_ACTUAL_REMINDERS = 
+            "SELECT t_id, t_time, t_content, t_type, t_status, t_days, t_hours " +
+            "FROM tasks " + 
+            "WHERE (t_status IS TRUE) AND ( (t_type IS 'HOURLY') OR (t_type IS 'DAILY') )";
+    private final String SELECT_ACTUAL_EVENTS = 
+            "SELECT t_id, t_time, t_content, t_type, t_status, t_days, t_hours " +
+            "FROM tasks " + 
+            "WHERE (t_status IS TRUE) AND ( (t_type IS 'MONTHLY') OR (t_type IS 'YEARLY') )";
     private final String SELECT_NON_ACTUAL_TASKS = 
             "SELECT t_id, t_time, t_content, t_type, t_status, t_days, t_hours " +
             "FROM tasks " + 
@@ -417,6 +420,54 @@ class H2DaoTasks implements DaoTasks {
         } catch (SQLException e) {
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "SQLException: get non-actual tasks.", 
+                    "Program will be closed.");
+            return Collections.emptyList();
+        }
+    }
+    
+    @Override
+    public List<TaskMessage> getActualReminders() {
+        try (Connection con = this.data.connect();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(SELECT_ACTUAL_REMINDERS)) {
+            
+            List<TaskMessage> reminders = new ArrayList<>();
+            while ( rs.next() ) {
+                reminders.add(new TaskMessage(
+                        this.parseTime(rs.getString("t_time")),
+                        this.contentToArray(rs.getString("t_content")))
+                );
+            }
+            Collections.sort(reminders);
+            return reminders;
+            
+        } catch (SQLException e) {
+            this.ioEngine.reportExceptionAndExitLater(e, 
+                    "SQLException: get actual reminders.", 
+                    "Program will be closed.");
+            return Collections.emptyList();
+        }
+    }
+    
+    @Override
+    public List<TaskMessage> getActualEvents() {
+        try (Connection con = this.data.connect();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(SELECT_ACTUAL_EVENTS)) {
+            
+            List<TaskMessage> events = new ArrayList<>();
+            while ( rs.next() ) {
+                events.add(new TaskMessage(
+                        this.parseTime(rs.getString("t_time")),
+                        this.contentToArray(rs.getString("t_content")))
+                );
+            }
+            Collections.sort(events);
+            return events;
+            
+        } catch (SQLException e) {
+            this.ioEngine.reportExceptionAndExitLater(e, 
+                    "SQLException: get actual reminders.", 
                     "Program will be closed.");
             return Collections.emptyList();
         }

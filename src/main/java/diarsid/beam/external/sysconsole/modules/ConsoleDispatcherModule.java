@@ -106,6 +106,10 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     
     void printActualTasks() throws IOException; 
     
+    void printActualEvents() throws IOException; 
+    
+    void printActualReminders() throws IOException; 
+    
     boolean confirmAction(String question) throws IOException; 
     
     void removeAllTasks() throws IOException; 

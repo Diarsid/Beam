@@ -17,14 +17,10 @@ import java.util.Set;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
-
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
-
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
-
 import diarsid.beam.external.sysconsole.modules.BeamCoreAccessModule;
 import diarsid.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
@@ -34,9 +30,7 @@ import static diarsid.beam.core.entities.WebPagePlacement.BOOKMARKS;
 import static diarsid.beam.core.entities.WebPagePlacement.WEBPANEL;
 import static diarsid.beam.core.modules.tasks.TaskType.DAILY;
 import static diarsid.beam.core.modules.tasks.TaskType.HOURLY;
-import static diarsid.beam.core.modules.tasks.TaskType.MONTHLY;
 import static diarsid.beam.core.modules.tasks.TaskType.USUAL;
-import static diarsid.beam.core.modules.tasks.TaskType.YEARLY;
 
 /**
  *
@@ -702,6 +696,20 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.printer.printTasks(
                 "Future tasks:", 
                 this.beam.taskManager().getFutureTasks());
+    }
+    
+    @Override
+    public void printActualEvents() throws IOException {
+        this.printer.printTasks(
+                "Events:", 
+                this.beam.taskManager().getScheduledEvents());
+    }
+    
+    @Override
+    public void printActualReminders() throws IOException {
+        this.printer.printTasks(
+                "Reminders:", 
+                this.beam.taskManager().getScheduledReminders());
     }
     
     @Override

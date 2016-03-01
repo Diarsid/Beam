@@ -24,6 +24,9 @@ public interface RmiTaskManagerInterface extends Remote{
     List<TaskMessage>   getPastTasks()      throws RemoteException;
     List<TaskMessage>   getFirstTask()      throws RemoteException;
     
+    List<TaskMessage>   getScheduledReminders()    throws RemoteException;
+    List<TaskMessage>   getScheduledEvents()    throws RemoteException;
+    
     boolean  deleteTaskByText(String text) throws RemoteException;
 
     boolean  removeAllTasks()        throws RemoteException;
