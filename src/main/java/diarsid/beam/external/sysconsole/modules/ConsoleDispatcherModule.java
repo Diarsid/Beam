@@ -132,5 +132,5 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     
     void openNote(List<String> command) throws IOException;
     
-    void newNote(List<String> command) throws IOException;
+    //void newNote(List<String> command) throws IOException;
 }

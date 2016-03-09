@@ -81,13 +81,15 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.newWebPage();
                                 break parsing;
                             }
-                            default : {
-                                break parsing;
-                            }
+                            /*
                             case "n" :
                             case "note" : {
                                 this.dispatcher.newNote(params);
                                 break parsing;                               
+                            }
+                            */
+                            default : {
+                                break parsing;
                             }
                         }
                     }

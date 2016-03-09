@@ -17,7 +17,7 @@ public interface OS {
     boolean checkIfDirectoryExists(String directory);
     
     void openLocation(Location location);
-    void openFileInLocation(String file, Location location);
+    boolean openFileInLocation(String file, Location location);
     
     void openFileInLocationWithProgram(String file, Location location, String program);
     void runProgram(String program);

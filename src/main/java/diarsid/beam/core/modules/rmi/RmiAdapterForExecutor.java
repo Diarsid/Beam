@@ -113,10 +113,12 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
         return this.executorModule.getAllChoices();
     }
     
+    /*
     @Override
     public void newNote(List<String> commandParams) throws RemoteException {
         this.executorModule.newNote(commandParams);
     }
+    */
     
     @Override
     public void openNotes() throws RemoteException {

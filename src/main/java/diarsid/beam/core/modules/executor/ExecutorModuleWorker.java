@@ -450,6 +450,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         return this.intell.getAllChoices();
     }
     
+    /*
     @Override
     public void newNote(List<String> commandParams) {
         if (commandParams.size() > 2) {
@@ -459,6 +460,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             this.system.createAndOpenTxtFileIn("", this.notes);
         }
     }
+    */
     
     @Override
     public void openNotes() {
@@ -467,8 +469,13 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void openNote(List<String> commandParams) {
-        for (int i = 1; i < commandParams.size(); i++) {
-            this.system.openFileInLocation(commandParams.get(i), this.notes);
+        if (commandParams.size() < 2) {
+            this.system.createAndOpenTxtFileIn("", this.notes);
+        } else {
+            String name = String.join(" ", commandParams.subList(1, commandParams.size()));
+            if ( ! this.system.openFileInLocation(name, this.notes)) {
+                this.system.createAndOpenTxtFileIn(name, this.notes);
+            }
         }
     }
     

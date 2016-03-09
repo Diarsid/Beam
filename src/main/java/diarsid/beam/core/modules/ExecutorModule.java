@@ -42,7 +42,7 @@ public interface ExecutorModule extends GemModule {
     void setAskUserToRememberHisChoice(boolean askUser);
     Map<String, String> getAllChoices();
     
-    void newNote(List<String> commandParams);
+    //void newNote(List<String> commandParams);
     void openNotes();
     void openNote(List<String> commandParams);
 }

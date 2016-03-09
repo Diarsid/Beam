@@ -838,10 +838,12 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.beam.executor().openNote(command);
     }
     
+    /*
     @Override
     public void newNote(List<String> params) throws IOException {
         this.beam.executor().newNote(params);
     }
+    */
     
     private WebPagePlacement askForPlacement() {
         int choice = this.input.chooseVariants("placement : ", this.placements);

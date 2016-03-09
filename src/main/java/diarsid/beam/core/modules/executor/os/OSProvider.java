@@ -24,7 +24,7 @@ public interface OSProvider {
     static OS getOS(IoInnerModule io, ConfigModule configModule){
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")){
-            return new OSWindowsv2(io, configModule);
+            return new OSWindows(io, configModule);
         } else if (systemName.contains("x")) {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program
