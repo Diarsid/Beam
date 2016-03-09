@@ -11,11 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
@@ -102,16 +98,7 @@ class H2DaoWebPages implements DaoWebPages {
     private final String SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR = 
             "SELECT MAX(page_order) " +
             "FROM web_pages " +
-            "WHERE (page_placement IS ? ) AND (page_directory IS ?)";
-    private final String SELECT_PAGES_ID_IN_DIR_IN_PLACE_WHERE_ORDER_HIGHER_THAN = 
-            "SELECT page_id, page_order " +
-            "FROM web_pages " +
-            "WHERE "
-            + "(page_placement IS ? ) "
-            + " AND "
-            + "(page_directory IS ? ) "
-            + " AND "
-            + "( page_order >= ? ) ";
+            "WHERE (page_placement IS ? ) AND (page_directory IS ?)";    
     private final String DELETE_PAGES_WHERE_NAME_LIKE = 
             "DELETE FROM web_pages " +
             "WHERE page_name LIKE ?";
@@ -143,11 +130,7 @@ class H2DaoWebPages implements DaoWebPages {
     private final String UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_AND_ORDER_WHERE_PAGE_NAME_IS = 
             "UPDATE web_pages " +
             "SET page_directory = ?, page_placement = ?, page_order = ? " +
-            "WHERE page_name IS ? ";
-    private final String UPDATE_PAGE_ORDER_WHERE_PAGE_ID_IS = 
-            "UPDATE web_pages " +
-            "SET page_order = ? " +
-            "WHERE page_id IS ? ";
+            "WHERE page_name IS ? ";    
     private final String UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS = 
             "UPDATE web_pages " +
             "SET page_order = ? " +
@@ -179,18 +162,14 @@ class H2DaoWebPages implements DaoWebPages {
             "SELECT MAX(dir_order) " +
             "FROM directories " +
             "WHERE dir_placement IS ? ";
-    private final String SELECT_ALL_DIRS_IN_DIRS_IN_PLACE_WHERE_ORDER_HIGHER_THAN = 
-            "SELECT dir_name, dir_order " +
-            "FROM directories " +
-            "WHERE ( dir_order >= ? ) AND ( dir_placement IS ? ) ";
     private final String UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS = 
             "UPDATE directories " +
             "SET dir_order = ? " +
-            "WHERE ( dir_name = ? ) AND ( dir_placement IS ? ) ";
+            "WHERE ( dir_name IS ? ) AND ( dir_placement IS ? ) ";
     private final String UPDATE_DIR_NAME_WHERE_DIR_AND_PLACE_IS = 
             "UPDATE directories " +
             "SET dir_name = ? " +
-            "WHERE ( dir_name = ? ) AND ( dir_placement IS ? ) ";
+            "WHERE ( dir_name IS ? ) AND ( dir_placement IS ? ) ";
             
     @Override
     public boolean saveWebPage(WebPage page) {
@@ -201,9 +180,8 @@ class H2DaoWebPages implements DaoWebPages {
             dirExists.setString(1, page.getDirectory());
             dirExists.setString(2, page.getPlacement().name());
             ResultSet existResult = transact.executePreparedQuery(dirExists);
-            existResult.first();
-            int exists = existResult.getInt(1);            
-            if (exists == 0) {
+            existResult.first();  
+            if (existResult.getInt(1) == 0) {
                 
                 PreparedStatement maxDirOrderStmnt = 
                         transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
@@ -240,10 +218,8 @@ class H2DaoWebPages implements DaoWebPages {
             transact.commitThemAll();
             return (qty > 0);
         } catch (HandledTransactSQLException e) {
-            e.printStackTrace();
             this.ioEngine.reportException(e, "SQLException: web page saving.");
         } catch (SQLException e) {
-            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: web page saving.");
         } catch (NullPointerException e) {
@@ -296,7 +272,6 @@ class H2DaoWebPages implements DaoWebPages {
             return pages;
         } catch (SQLException e){
             this.ioEngine.reportException(e, "SQLException: get all web pages.");
-            e.printStackTrace();
             return Collections.emptyList();
         } finally {
             if (rs != null) {
@@ -605,66 +580,86 @@ class H2DaoWebPages implements DaoWebPages {
         
         JdbcTransaction transact = this.data.beginTransaction();
         try {
-            PreparedStatement maxOrderStmnt = transact.getPreparedStatement(
-                    SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
-            maxOrderStmnt.setString(1, place.name());
-            maxOrderStmnt.setString(2, dir);
-            ResultSet maxOrderResultSet = transact.executePreparedQuery(maxOrderStmnt);
-            maxOrderResultSet.first();
-            int maxOrder = maxOrderResultSet.getInt(1);
-            if ( maxOrder < newOrder ) {
-                newOrder = maxOrder + 1;
-            }            
-            
-            PreparedStatement pagesWithHigherOrder = transact.getPreparedStatement(
-                    SELECT_PAGES_ID_IN_DIR_IN_PLACE_WHERE_ORDER_HIGHER_THAN);            
-            pagesWithHigherOrder.setString(1, place.name());            
-            pagesWithHigherOrder.setString(2, dir);
-            pagesWithHigherOrder.setInt(3, newOrder);
-            ResultSet higherPages = transact.executePreparedQuery(pagesWithHigherOrder);
-            Map<Integer, Integer> pagesToUpdate = new HashMap<>();
-            while (higherPages.next()) {
-                pagesToUpdate.put(
-                        higherPages.getInt("page_id"), 
-                        higherPages.getInt("page_order"));
+            PreparedStatement ps = transact.getPreparedStatement(
+                    SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE);            
+            ps.setString(1, dir);
+            ps.setString(2, place.name());            
+            ResultSet pagesRs = transact.executePreparedQuery(ps);
+            List<WebPage> pages = new ArrayList<>();
+            while (pagesRs.next()) {
+                pages.add(WebPage.restorePage(
+                        pagesRs.getString("page_name"),
+                        pagesRs.getString("page_shortcuts"), 
+                        pagesRs.getString("page_url"),
+                        WebPagePlacement.valueOf(pagesRs.getString("page_placement")),
+                        pagesRs.getString("page_directory"),
+                        pagesRs.getInt("page_order"),
+                        pagesRs.getInt("dir_order"),
+                        pagesRs.getString("page_browser")
+                ));
             }
             
-            PreparedStatement updateOrder;
+            if (newOrder > pages.size()) {
+                newOrder = pages.size();
+            }
+            WebPage movedPage = null;
+            for (WebPage page : pages) {
+                if (page.getName().equals(name)) {
+                    movedPage = page;
+                    break;
+                }
+            }
+            if ( movedPage == null ) {
+                return false;
+            }
+            int oldOrder = movedPage.getPageOrder();
+            if (newOrder < oldOrder) {
+                int oldOrderPageIndex = pages.indexOf(movedPage);
+                for (int i = newOrder - 1; i < oldOrderPageIndex; i++) {
+                    pages.get(i).setOrder(pages.get(i).getPageOrder() + 1);
+                }                
+                pages.get(oldOrderPageIndex).setOrder(newOrder);
+            } else if (oldOrder < newOrder) {
+                int oldOrderPageIndex = pages.indexOf(movedPage);
+                for (int i = oldOrderPageIndex + 1; i < newOrder; i++) {
+                    pages.get(i).setOrder(pages.get(i).getPageOrder() - 1);
+                }                
+                pages.get(oldOrderPageIndex).setOrder(newOrder);
+            } else {
+                return true;
+            }
+            Collections.sort(pages);
+            for (int i = 0; i < pages.size(); i++) {
+                pages.get(i).setOrder(i + 1);
+            }
+            
+            PreparedStatement updatePageOrderSt;
             int qty = 0;
-            for (Map.Entry<Integer, Integer> entry : pagesToUpdate.entrySet()) {
-                updateOrder = transact.getPreparedStatement(
-                        UPDATE_PAGE_ORDER_WHERE_PAGE_ID_IS);
-                updateOrder.setInt(1, entry.getValue()+1);
-                updateOrder.setInt(2, entry.getKey());
-                qty = qty + transact.executePreparedUpdate(updateOrder);
-            }
-            updateOrder = transact.getPreparedStatement(
+            for (WebPage updPage : pages) {
+                updatePageOrderSt = transact.getPreparedStatement(
                     UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS);
-            updateOrder.setInt(1, newOrder);
-            updateOrder.setString(2, name);
-            updateOrder.setString(3, dir);
-            updateOrder.setString(4, place.name());
-            qty = qty + transact.executePreparedUpdate(updateOrder);
+                updatePageOrderSt.setInt(1, updPage.getPageOrder());
+                updatePageOrderSt.setString(2, updPage.getName());
+                updatePageOrderSt.setString(3, updPage.getDirectory());
+                updatePageOrderSt.setString(4, updPage.getPlacement().name());
+                qty = qty + transact.executePreparedUpdate(updatePageOrderSt);
+            }
             
             transact.commitThemAll();
             return ( qty > 0 );
             
         } catch (HandledTransactSQLException e) { 
-            e.printStackTrace();
             this.ioEngine.reportException(e, "SQLException: .");
-            return false;
         } catch (SQLException e) {
-            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: .");
-            return false;
         } catch (NullPointerException e) {
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
                     "Incorrect usage of JdbcTransaction: " +
-                    "database connection is NULL.");
-            return false;
+                    "database connection is NULL.");            
         }
+        return false;
     }
     
     @Override
@@ -716,21 +711,17 @@ class H2DaoWebPages implements DaoWebPages {
             
             return ( qty > 0); 
         } catch (HandledTransactSQLException e) { 
-            e.printStackTrace();
             this.ioEngine.reportException(e, "SQLException: .");
-            return false;
         } catch (SQLException e) {
-            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: .");
-            return false;
         } catch (NullPointerException e) {
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
                     "Incorrect usage of JdbcTransaction: " +
                     "database connection is NULL.");
-            return false;
         }
+        return false;
     }
     
     @Override
@@ -883,59 +874,78 @@ class H2DaoWebPages implements DaoWebPages {
     @Override
     public boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder) {
         JdbcTransaction transact = this.data.beginTransaction();
-        try {
-            PreparedStatement maxOrderStmnt = transact.getPreparedStatement(
-                    SELECT_MAX_DIR_ORDER_IN_PLACE);
-            maxOrderStmnt.setString(1, place.name());
-            ResultSet maxOrderResultSet = transact.executePreparedQuery(maxOrderStmnt);
-            maxOrderResultSet.first();
-            int maxOrder = maxOrderResultSet.getInt(1);
-            if ( maxOrder < newOrder ) {
-                newOrder = maxOrder + 1;
-            }            
+        try {      
             
-            PreparedStatement selectDirsWithHigherOrder = transact.getPreparedStatement(
-                    SELECT_ALL_DIRS_IN_DIRS_IN_PLACE_WHERE_ORDER_HIGHER_THAN);
-            selectDirsWithHigherOrder.setInt(1, newOrder);
-            selectDirsWithHigherOrder.setString(2, place.name());
-            ResultSet higherDirs = transact
-                    .executePreparedQuery(selectDirsWithHigherOrder);
-            Map<Integer, String> dirs = new HashMap<>();
-            while (higherDirs.next()) {
-                dirs.put(
-                        higherDirs.getInt("dir_order"), 
-                        higherDirs.getString("dir_name"));
+            PreparedStatement ps = transact.getPreparedStatement(
+                    SELECT_ALL_DIRS_IN_DIRS_WHERE_PLACE_IS);
+            ps.setString(1, place.name());            
+            ResultSet dirsRs = transact.executePreparedQuery(ps);
+            List<WebPageDirectory> dirs = new ArrayList<>();
+            while (dirsRs.next()) {
+                dirs.add(new WebPageDirectory(
+                        dirsRs.getString("dir_name"), 
+                        WebPagePlacement.valueOf(dirsRs.getString("dir_placement")), 
+                        Integer.parseInt(dirsRs.getString("dir_order"))
+                )
+                );
             }
-            PreparedStatement updateOrder;
+            
+            if (newOrder > dirs.size()) {
+                newOrder = dirs.size();
+            }
+            WebPageDirectory movedDir = null;
+            for (WebPageDirectory dir : dirs) {
+                if (dir.getName().equals(name)) {
+                    movedDir = dir;
+                    break;
+                }
+            }
+            if ( movedDir == null ) {
+                return false;
+            }
+            int oldOrder = movedDir.getOrder();
+            if (newOrder < oldOrder) {
+                int oldOrderPageIndex = dirs.indexOf(movedDir);
+                for (int i = newOrder - 1; i < oldOrderPageIndex; i++) {
+                    dirs.get(i).setOrder(dirs.get(i).getOrder() + 1);
+                }                
+                dirs.get(oldOrderPageIndex).setOrder(newOrder);
+            } else if (oldOrder < newOrder) {
+                int oldOrderPageIndex = dirs.indexOf(movedDir);
+                for (int i = oldOrderPageIndex + 1; i < newOrder; i++) {
+                    dirs.get(i).setOrder(dirs.get(i).getOrder() - 1);
+                }                
+                dirs.get(oldOrderPageIndex).setOrder(newOrder);
+            } else {
+                return true;
+            }
+            Collections.sort(dirs);
+            for (int i = 0; i < dirs.size(); i++) {
+                dirs.get(i).setOrder(i + 1);
+            }
+            
+            PreparedStatement updatePageOrderSt;
             int qty = 0;
-            for (Map.Entry<Integer, String> entry : dirs.entrySet()) {
-                updateOrder = transact.getPreparedStatement(
-                        UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS);
-                updateOrder.setInt(1, entry.getKey()+1);
-                updateOrder.setString(2, entry.getValue());
-                updateOrder.setString(3, place.name());
-                qty = qty + transact.executePreparedUpdate(updateOrder);
-            }
-            updateOrder = transact.getPreparedStatement(
+            for (WebPageDirectory updDir : dirs) {
+                updatePageOrderSt = transact.getPreparedStatement(
                     UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS);
-            updateOrder.setInt(1, newOrder);
-            updateOrder.setString(2, name);
-            updateOrder.setString(3, place.name());
-            qty = qty + transact.executePreparedUpdate(updateOrder);
+                updatePageOrderSt.setInt(1, updDir.getOrder());
+                updatePageOrderSt.setString(2, updDir.getName());
+                updatePageOrderSt.setString(3, updDir.getPlacement().name());
+                qty = qty + transact.executePreparedUpdate(updatePageOrderSt);
+            }
             
             transact.commitThemAll();
             return ( qty > 0 );
-        } catch (HandledTransactSQLException e) { 
-            e.printStackTrace();
+            
+        } catch (HandledTransactSQLException e) {
             this.ioEngine.reportException(e, "SQLException: .");
             return false;
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {            
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: .");
             return false;
         } catch (NullPointerException e) {
-            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
                     "Incorrect usage of JdbcTransaction: " +

@@ -8,6 +8,9 @@ package diarsid.beam.core.entities;
 
 import java.util.Objects;
 
+import static diarsid.beam.core.entities.WebPagePlacement.BOOKMARKS;
+import static diarsid.beam.core.entities.WebPagePlacement.WEBPANEL;
+
 /**
  *
  * @author Diarsid
@@ -30,15 +33,19 @@ public class WebPageDirectory implements Comparable<WebPageDirectory> {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public WebPagePlacement getPlacement() {
-        return placement;
+        return this.placement;
     }
 
     public int getOrder() {
-        return order;
+        return this.order;
+    }
+    
+    public void setOrder(int newOrder) {
+        this.order = newOrder;
     }
 
     @Override
@@ -73,12 +80,18 @@ public class WebPageDirectory implements Comparable<WebPageDirectory> {
     
     @Override
     public int compareTo(WebPageDirectory dir) {
-        if (this.order < dir.order) {
+        if (this.placement.equals(BOOKMARKS) && dir.placement.equals(WEBPANEL)) {
             return -1;
-        } else if (this.order > dir.order) {
+        } else if (this.placement.equals(WEBPANEL) && dir.placement.equals(BOOKMARKS)) {
             return 1;
         } else {
-            return 0;  
-        }
+            if (this.order < dir.order) {
+                return -1;
+            } else if (this.order > dir.order) {
+                return 1;
+            } else {
+                return 0;  
+            }
+        }    
     }
 }

@@ -22,10 +22,11 @@ public class WebPage implements Serializable, Comparable<WebPage> {
     private final String shortcuts;
     private final String urlAddress;
     private final WebPagePlacement placement;
-    private final String directory;
-    private final int pageInDirectoryOrder;
+    private final String directory;    
     private final int directoryOrder;
     private final String browser;
+    
+    private int pageInDirectoryOrder;
         
     private WebPage(
             String name, 
@@ -93,7 +94,7 @@ public class WebPage implements Serializable, Comparable<WebPage> {
         return this.directory;
     }
     
-    public int getPageOrderInDirectory() {
+    public int getPageOrder() {
         return this.pageInDirectoryOrder;
     }
     
@@ -103,6 +104,10 @@ public class WebPage implements Serializable, Comparable<WebPage> {
 
     public String getBrowser() {
         return this.browser;
+    }
+    
+    public void setOrder(int newOrder) {
+        this.pageInDirectoryOrder = newOrder;
     }
     
     public boolean useDefaultBrowser() {
