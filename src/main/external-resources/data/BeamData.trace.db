@@ -713,3 +713,57 @@ WHERE page_name LIKE '%book%' [42122-176]
 org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "DROP TABLES[*] TASKS "; ожидалось "TABLE, INDEX, USER, SEQUENCE, CONSTANT, TRIGGER, VIEW, ROLE, ALIAS, SCHEMA, ALL, DOMAIN, TYPE, DATATYPE, AGGREGATE"
 Syntax error in SQL statement "DROP TABLES[*] TASKS "; expected "TABLE, INDEX, USER, SEQUENCE, CONSTANT, TRIGGER, VIEW, ROLE, ALIAS, SCHEMA, ALL, DOMAIN, TYPE, DATATYPE, AGGREGATE"; SQL statement:
 drop tables tasks [42001-176]
+03-09 15:41:32 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "ALTER TABLE WEB_PAGES ADD COLUMN (PAGE_ORDER INTEGER -[*]1 NOT NULL) "; ожидалось "(, FOR, UNSIGNED, NOT, NULL, AS, DEFAULT, GENERATED, NOT, NULL, AUTO_INCREMENT, BIGSERIAL, SERIAL, IDENTITY, NULL_TO_DEFAULT, SEQUENCE, SELECTIVITY, COMMENT, ,, )"
+Syntax error in SQL statement "ALTER TABLE WEB_PAGES ADD COLUMN (PAGE_ORDER INTEGER -[*]1 NOT NULL) "; expected "(, FOR, UNSIGNED, NOT, NULL, AS, DEFAULT, GENERATED, NOT, NULL, AUTO_INCREMENT, BIGSERIAL, SERIAL, IDENTITY, NULL_TO_DEFAULT, SEQUENCE, SELECTIVITY, COMMENT, ,, )"; SQL statement:
+ALTER TABLE web_pages ADD COLUMN (page_order INTEGER -1 NOT NULL) [42001-176]
+03-09 15:42:34 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "ALTER TABLE WEB_PAGES ADD COLUMN (PAGE_ORDER INTEGER, -[*]1, NOT NULL) "; ожидалось "identifier"
+Syntax error in SQL statement "ALTER TABLE WEB_PAGES ADD COLUMN (PAGE_ORDER INTEGER, -[*]1, NOT NULL) "; expected "identifier"; SQL statement:
+ALTER TABLE web_pages ADD COLUMN (page_order INTEGER, -1, NOT NULL) [42001-176]
+03-09 15:42:44 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "ALTER TABLE WEB_PAGES ADD COLUMN ('page_order'[*] INTEGER, -1, NOT NULL) "; ожидалось "identifier"
+Syntax error in SQL statement "ALTER TABLE WEB_PAGES ADD COLUMN ('page_order'[*] INTEGER, -1, NOT NULL) "; expected "identifier"; SQL statement:
+ALTER TABLE web_pages ADD COLUMN ('page_order' INTEGER, -1, NOT NULL) [42001-176]
+03-09 15:45:03 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Неизвестный тип данных: "("
+Unknown data type: "("; SQL statement:
+ALTER TABLE web_pages ADD COLUMN page_order (INTEGER, -1, NOT NULL) [50004-176]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:344)
+	at org.h2.message.DbException.get(DbException.java:178)
+	at org.h2.message.DbException.get(DbException.java:154)
+	at org.h2.command.Parser.parseColumnWithType(Parser.java:3963)
+	at org.h2.command.Parser.parseColumnForTable(Parser.java:3826)
+	at org.h2.command.Parser.parseAlterTableAddColumn(Parser.java:5481)
+	at org.h2.command.Parser.parseAlterTable(Parser.java:5274)
+	at org.h2.command.Parser.parseAlter(Parser.java:4689)
+	at org.h2.command.Parser.parsePrepared(Parser.java:333)
+	at org.h2.command.Parser.parse(Parser.java:306)
+	at org.h2.command.Parser.parse(Parser.java:278)
+	at org.h2.command.Parser.prepareCommand(Parser.java:243)
+	at org.h2.engine.Session.prepareLocal(Session.java:442)
+	at org.h2.engine.Session.prepareCommand(Session.java:384)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1188)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:172)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:160)
+	at org.h2.server.web.WebApp.getResult(WebApp.java:1391)
+	at org.h2.server.web.WebApp.query(WebApp.java:1064)
+	at org.h2.server.web.WebApp$1.next(WebApp.java:1026)
+	at org.h2.server.web.WebApp$1.next(WebApp.java:1013)
+	at org.h2.server.web.WebThread.process(WebThread.java:168)
+	at org.h2.server.web.WebThread.run(WebThread.java:94)
+	at java.lang.Thread.run(Thread.java:745)
+03-09 15:45:12 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "ALTER TABLE WEB_PAGES ADD COLUMN PAGE_ORDER INTEGER,[*] -1, NOT NULL "
+Syntax error in SQL statement "ALTER TABLE WEB_PAGES ADD COLUMN PAGE_ORDER INTEGER,[*] -1, NOT NULL "; SQL statement:
+ALTER TABLE web_pages ADD COLUMN page_order INTEGER, -1, NOT NULL [42000-176]
+03-09 15:45:27 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "ALTER TABLE WEB_PAGES ADD COLUMN PAGE_ORDER INTEGER -[*]1 NOT NULL "
+Syntax error in SQL statement "ALTER TABLE WEB_PAGES ADD COLUMN PAGE_ORDER INTEGER -[*]1 NOT NULL "; SQL statement:
+ALTER TABLE web_pages ADD COLUMN page_order INTEGER -1 NOT NULL [42000-176]
+03-09 17:25:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Ошибка преобразования данных при конвертации "wh"
+Data conversion error converting "wh" [22018-176]
+03-09 17:27:53 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Ошибка преобразования данных при конвертации "wh"
+Data conversion error converting "wh" [22018-176]

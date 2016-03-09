@@ -12,8 +12,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
@@ -40,47 +42,76 @@ class H2DaoWebPages implements DaoWebPages {
     
     /* 
      * SQL Table illustration for webPages entities.
-     *  +----------------------------------------------------------------------------------------------------------------------------+
-     *  | web_pages                                                                                                                  |
-     *  +----------+------------+-----------------+------------------------------+----------------+------------------+---------------+
-     *  | page_id  | page_name  | page_shortcuts  | page_url                     | page_placement | page_directory   | page_browser  |
-     *  +----------+------------+-----------------+------------------------------+----------------+------------------+---------------+
-     *  | 123      | facebook   | fb fboo faceb   |https://www.facebook.com...   | webpanel       | social           | default       |
-     *  +----------+------------+-----------------+------------------------------+----------------+------------------+---------------+
-     *  | 451      | wiki       |                 |https://en.wikipedia.org      | webpanel       | common           | firefox       |
-     *  +----------+------------+-----------------+------------------------------+----------------+------------------+---------------+
-     *  | 324      | java_blog  | bl jbl          |https://some.java.blog...     | bookmarks      | java/blogs/misc  | chrome        |
-     *  +----------+------------+-----------------+------------------------------+----------------+------------------+---------------+ 
+     *  +-----------------------------------------------------------------------------------------------------------------------------------------+
+     *  | web_pages                                                                                                                               |
+     *  +----------+------------+-----------------+------------------------------+----------------+------------------+------------+---------------+
+     *  | page_id  | page_name  | page_shortcuts  | page_url                     | page_placement | page_directory   | page_order | page_browser  |
+     *  +----------+------------+-----------------+------------------------------+----------------+------------------+------------+---------------+
+     *  | 123      | facebook   | fb fboo faceb   |https://www.facebook.com...   | webpanel       | common           |     1      | default       |
+     *  +----------+------------+-----------------+------------------------------+----------------+------------------+------------+---------------+
+     *  | 451      | wiki       |                 |https://en.wikipedia.org      | webpanel       | common           |     2      | firefox       |
+     *  +----------+------------+-----------------+------------------------------+----------------+------------------+------------+---------------+
+     *  | 324      | java_blog  | bl jbl          |https://some.java.blog...     | bookmarks      | java/blogs/misc  |     1      | chrome        |
+     *  +----------+------------+-----------------+------------------------------+----------------+------------------+------------+---------------+ 
      */
         
-    private final String SELECT_ALL_PAGES_WHERE_PLACEMENT = 
-            "SELECT page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
-            "FROM web_pages " +
+    private final String SELECT_ALL_PAGES_JOIN_DIRS_WHERE_PLACEMENT = 
+            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "FROM web_pages p " +
+            "INNER JOIN directories d ON "
+            + "(p.page_directory = d.dir_name) "
+            + "AND "
+            + "(p.page_placement = d.dir_placement) " +
             "WHERE page_placement LIKE ? " +
-            "ORDER BY page_directory, page_name";
-    private final String SELECT_ALL_PAGES_WHERE_DIRECTORY_AND_PLACEMENT_LIKE = 
-            "SELECT page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
-            "FROM web_pages " +
+            "ORDER BY dir_order, page_order";
+    private final String SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE = 
+            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "FROM web_pages p " +
+            "INNER JOIN directories d ON "
+            + "(p.page_directory = d.dir_name) "
+            + "AND "
+            + "(p.page_placement = d.dir_placement) " +
             "WHERE (page_directory LIKE ? ) AND (page_placement LIKE ? ) " +
-            "ORDER BY page_directory, page_name";
-    private final String SELECT_PAGES_WHERE_NAME_OR_SHORT_LIKE = 
-            "SELECT page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
-            "FROM web_pages " +
+            "ORDER BY dir_order, page_order";
+    private final String SELECT_PAGES_JOIN_DIRS_WHERE_NAME_OR_SHORT_LIKE = 
+            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "FROM web_pages p " +
+            "INNER JOIN directories d ON "
+            + "(p.page_directory = d.dir_name) "
+            + "AND "
+            + "(p.page_placement = d.dir_placement) " +
             "WHERE (page_name LIKE ?) OR (page_shortcuts LIKE ?) " + 
-            "ORDER BY page_directory, page_name ";
-    private final String SELECT_PAGES_WHERE = 
-            "SELECT page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
-            "FROM web_pages " +
+            "ORDER BY dir_order, page_order ";
+    private final String SELECT_PAGES_JOIN_DIRS_WHERE = 
+            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "FROM web_pages p " +
+            "INNER JOIN directories d ON "
+            + "(p.page_directory = d.dir_name) "
+            + "AND "
+            + "(p.page_placement = d.dir_placement) " +
             "WHERE ";
     private final String NAME_LIKE_NAMEPART = 
-            "page_name LIKE ? ";
+            " page_name LIKE ? ";
     private final String AND = 
             " AND ";
-    private final String ORDER_BY_DIRECTORY_AND_NAME = 
-            "ORDER BY page_directory, page_name ";
+    private final String ORDER_BY_DIR_AND_PAGE_ORDERS = 
+            "ORDER BY dir_order, page_order ";
     private final String INSERT_NEW_PAGE = 
-            "INSERT INTO web_pages (page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser) " +
-            "VALUES (?, ?, ?, ?, ?, ?)";
+            "INSERT INTO web_pages (page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser, page_order) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?)";           
+    private final String SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR = 
+            "SELECT MAX(page_order) " +
+            "FROM web_pages " +
+            "WHERE (page_placement IS ? ) AND (page_directory IS ?)";
+    private final String SELECT_PAGES_ID_IN_DIR_IN_PLACE_WHERE_ORDER_HIGHER_THAN = 
+            "SELECT page_id, page_order " +
+            "FROM web_pages " +
+            "WHERE "
+            + "(page_placement IS ? ) "
+            + " AND "
+            + "(page_directory IS ? ) "
+            + " AND "
+            + "( page_order >= ? ) ";
     private final String DELETE_PAGES_WHERE_NAME_LIKE = 
             "DELETE FROM web_pages " +
             "WHERE page_name LIKE ?";
@@ -109,25 +140,31 @@ class H2DaoWebPages implements DaoWebPages {
             "UPDATE web_pages " +
             "SET page_directory = ?" + 
             "WHERE (page_directory LIKE ? ) AND (page_placement LIKE ? ) ";
-    private final String UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_WHERE_PAGE_NAME_IS = 
+    private final String UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_AND_ORDER_WHERE_PAGE_NAME_IS = 
             "UPDATE web_pages " +
-            "SET page_directory = ?, page_placement = ? " +
+            "SET page_directory = ?, page_placement = ?, page_order = ? " +
             "WHERE page_name IS ? ";
+    private final String UPDATE_PAGE_ORDER_WHERE_PAGE_ID_IS = 
+            "UPDATE web_pages " +
+            "SET page_order = ? " +
+            "WHERE page_id IS ? ";
+    private final String UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS = 
+            "UPDATE web_pages " +
+            "SET page_order = ? " +
+            "WHERE ( page_name IS ? ) "
+            + "AND ( page_directory IS ? ) "
+            + "AND ( page_placement IS ? ) ";
     private final String DELETE_FROM_DIRS_WHERE_DIR_NAME_AND_PLACEMENT_IS = 
             "DELETE FROM directories " +
             "WHERE ( dir_name IS ? ) AND ( dir_placement is ? ) ";
     private final String DELETE_PAGES_WHERE_DIR_NAME_AND_PLACEMENT_IS = 
             "DELETE FROM web_pages " +
             "WHERE ( page_directory IS ? ) AND ( page_placement IS ? )";
-    private final String INSERT_NEW_DIR_IN_DIRS = 
+    private final String INSERT_NEW_DIR = 
             "INSERT INTO directories (dir_name, dir_placement, dir_order) " +
-            "VALUES (?, ?, ("
-            + "SELECT (MAX(dir_order)+1) "
-            + "FROM directories "
-            + "WHERE dir_placement IS ?) "
-            + ") ";
+            "VALUES (?, ?, ?)";
     private final String SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS = 
-            "SELECT COUNT(dir_name) " +
+            "SELECT COUNT(dir_name) as count " +
             "FROM directories " +
             "WHERE ( dir_name IS ? ) AND ( dir_placement IS ? )";
     private final String SELECT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS = 
@@ -138,14 +175,14 @@ class H2DaoWebPages implements DaoWebPages {
             "SELECT dir_name, dir_order, dir_placement " +
             "FROM directories " + 
             "WHERE dir_placement IS ? ";
-    private final String SELECT_MAX_ORDER_IN_PLACE = 
-            "SELECT MAX(dir_name) " +
+    private final String SELECT_MAX_DIR_ORDER_IN_PLACE = 
+            "SELECT MAX(dir_order) " +
             "FROM directories " +
             "WHERE dir_placement IS ? ";
     private final String SELECT_ALL_DIRS_IN_DIRS_IN_PLACE_WHERE_ORDER_HIGHER_THAN = 
             "SELECT dir_name, dir_order " +
             "FROM directories " +
-            "WHERE ( order >= ? ) AND ( dir_placement IS ? ) ";
+            "WHERE ( dir_order >= ? ) AND ( dir_placement IS ? ) ";
     private final String UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS = 
             "UPDATE directories " +
             "SET dir_order = ? " +
@@ -156,40 +193,57 @@ class H2DaoWebPages implements DaoWebPages {
             "WHERE ( dir_name = ? ) AND ( dir_placement IS ? ) ";
             
     @Override
-    public void saveWebPage(WebPage page) {
+    public boolean saveWebPage(WebPage page) {
         JdbcTransaction transact = this.data.beginTransaction();
-        try {
-            PreparedStatement insertPage = transact.getPreparedStatement(INSERT_NEW_PAGE);
+        try { 
+            PreparedStatement dirExists = transact.getPreparedStatement(
+                    SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS);
+            dirExists.setString(1, page.getDirectory());
+            dirExists.setString(2, page.getPlacement().name());
+            ResultSet existResult = transact.executePreparedQuery(dirExists);
+            existResult.first();
+            int exists = existResult.getInt(1);            
+            if (exists == 0) {
+                
+                PreparedStatement maxDirOrderStmnt = 
+                        transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
+                maxDirOrderStmnt.setString(1, page.getPlacement().name());
+                ResultSet maxOrderResultSet = transact.executePreparedQuery(maxDirOrderStmnt);
+                maxOrderResultSet.first();
+                int maxDirOrder = maxOrderResultSet.getInt(1);
+                
+                PreparedStatement insertNewDir = transact.getPreparedStatement(
+                        INSERT_NEW_DIR);
+                insertNewDir.setString(1, page.getDirectory());
+                insertNewDir.setString(2, page.getPlacement().name());
+                insertNewDir.setInt(3, maxDirOrder+1);
+                transact.executePreparedUpdate(insertNewDir);
+            }
             
+            PreparedStatement maxPageOrder = transact.getPreparedStatement(SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
+            maxPageOrder.setString(1, page.getPlacement().name());
+            maxPageOrder.setString(2, page.getDirectory());
+            ResultSet maxPageOrderRs = transact.executePreparedQuery(maxPageOrder);
+            maxPageOrderRs.first();
+            int pageOrder = maxPageOrderRs.getInt(1);
+            
+            PreparedStatement insertPage = transact.getPreparedStatement(INSERT_NEW_PAGE);            
             insertPage.setString(1, page.getName());
             insertPage.setString(2, page.getShortcuts());
             insertPage.setString(3, page.getUrlAddress());
             insertPage.setString(4, page.getPlacement().name());
             insertPage.setString(5, page.getDirectory());
             insertPage.setString(6, page.getBrowser());
-            
-            transact.executePreparedUpdate(insertPage);
-            
-            PreparedStatement dirExists = transact.getPreparedStatement(
-                    SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS);
-            dirExists.setString(1, page.getName());
-            dirExists.setString(2, page.getPlacement().name());
-            ResultSet existResult = transact.executePreparedQuery(dirExists);
-            existResult.first();
-            int exists = existResult.getInt(1);
-            if (exists == 0) {
-                PreparedStatement insertNewDir = transact.getPreparedStatement(
-                        INSERT_NEW_DIR_IN_DIRS);
-                insertNewDir.setString(1, page.getDirectory());
-                insertNewDir.setString(2, page.getPlacement().name());
-                insertNewDir.setString(3, page.getPlacement().name());
-                transact.executePreparedUpdate(insertNewDir);
-            }
+            insertPage.setInt(7, pageOrder+1);            
+            int qty = transact.executePreparedUpdate(insertPage);
             
             transact.commitThemAll();
-        } catch (HandledTransactSQLException e) { 
+            return (qty > 0);
+        } catch (HandledTransactSQLException e) {
+            e.printStackTrace();
             this.ioEngine.reportException(e, "SQLException: web page saving.");
         } catch (SQLException e) {
+            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: web page saving.");
         } catch (NullPointerException e) {
@@ -198,6 +252,7 @@ class H2DaoWebPages implements DaoWebPages {
                     "Incorrect usage of JdbcTransaction: " +
                     "database connection is NULL.");
         }
+        return false;
     }
     
     @Override
@@ -219,19 +274,21 @@ class H2DaoWebPages implements DaoWebPages {
     public List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement) {
         ResultSet rs = null;
         try(Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_WHERE_PLACEMENT)) {
+            PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_JOIN_DIRS_WHERE_PLACEMENT)) {
             
             ps.setString(1, placement.name());
             
             rs = ps.executeQuery();
             List<WebPage> pages = new ArrayList<>();
             while (rs.next()){
-                pages.add(new WebPage(
+                pages.add(WebPage.restorePage(
                         rs.getString("page_name"),
                         rs.getString("page_shortcuts"), 
                         rs.getString("page_url"),
                         WebPagePlacement.valueOf(rs.getString("page_placement")),
                         rs.getString("page_directory"),
+                        rs.getInt("page_order"),
+                        rs.getInt("dir_order"),
                         rs.getString("page_browser")
                 ));
             }
@@ -260,7 +317,7 @@ class H2DaoWebPages implements DaoWebPages {
     public List<WebPage> getWebPagesByName(String name) {
         ResultSet rs = null;
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_PAGES_WHERE_NAME_OR_SHORT_LIKE)) {
+            PreparedStatement ps = con.prepareStatement(SELECT_PAGES_JOIN_DIRS_WHERE_NAME_OR_SHORT_LIKE)) {
             
             ps.setString(1, "%"+name+"%");
             ps.setString(2, "%"+name+"%");
@@ -268,12 +325,14 @@ class H2DaoWebPages implements DaoWebPages {
             rs = ps.executeQuery();
             List<WebPage> pages = new ArrayList<>();
             while (rs.next()) {
-                pages.add(new WebPage(
+                pages.add(WebPage.restorePage(
                         rs.getString("page_name"),
                         rs.getString("page_shortcuts"), 
                         rs.getString("page_url"),
                         WebPagePlacement.valueOf(rs.getString("page_placement")),
-                        rs.getString("page_directory"),
+                        rs.getString("page_directory"),                        
+                        rs.getInt("page_order"),
+                        rs.getInt("dir_order"),
                         rs.getString("page_browser")
                 ));
             }
@@ -301,11 +360,11 @@ class H2DaoWebPages implements DaoWebPages {
         int partsQty = nameParts.length;
         if (partsQty > 0){
             StringBuilder queryBuilder = new StringBuilder();
-            queryBuilder.append(SELECT_PAGES_WHERE).append(NAME_LIKE_NAMEPART);
+            queryBuilder.append(SELECT_PAGES_JOIN_DIRS_WHERE).append(NAME_LIKE_NAMEPART);
             for (int i = 1; i < partsQty; i++){
                 queryBuilder.append(AND).append(NAME_LIKE_NAMEPART);
             }
-            queryBuilder.append(ORDER_BY_DIRECTORY_AND_NAME);
+            queryBuilder.append(ORDER_BY_DIR_AND_PAGE_ORDERS);
             ResultSet rs = null;
             try(Connection con = data.connect();
                PreparedStatement ps = con.prepareStatement(queryBuilder.toString())) {
@@ -315,12 +374,14 @@ class H2DaoWebPages implements DaoWebPages {
                 rs = ps.executeQuery();
                 List<WebPage> pages = new ArrayList<>();
                 while (rs.next()) {
-                    pages.add(new WebPage(
+                    pages.add(WebPage.restorePage(
                             rs.getString("page_name"),
                             rs.getString("page_shortcuts"), 
                             rs.getString("page_url"),
                             WebPagePlacement.valueOf(rs.getString("page_placement")),
                             rs.getString("page_directory"),
+                            rs.getInt("page_order"),
+                            rs.getInt("dir_order"),
                             rs.getString("page_browser")
                     ));
                 }
@@ -351,7 +412,7 @@ class H2DaoWebPages implements DaoWebPages {
             String directory, WebPagePlacement placement) {
         ResultSet rs = null;
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_WHERE_DIRECTORY_AND_PLACEMENT_LIKE)) {
+            PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE)) {
             
             if (placement.equals(WebPagePlacement.BOOKMARKS)) {
                 // if BOOKMARKS than full name of directory 
@@ -369,12 +430,14 @@ class H2DaoWebPages implements DaoWebPages {
             rs = ps.executeQuery();
             List<WebPage> pages = new ArrayList<>();
             while (rs.next()) {
-                pages.add(new WebPage(
+                pages.add(WebPage.restorePage(
                         rs.getString("page_name"),
                         rs.getString("page_shortcuts"), 
                         rs.getString("page_url"),
                         WebPagePlacement.valueOf(rs.getString("page_placement")),
                         rs.getString("page_directory"),
+                        rs.getInt("page_order"),
+                        rs.getInt("dir_order"),
                         rs.getString("page_browser")
                 ));
             }
@@ -511,7 +574,7 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
-    public boolean renameDirectoryInPlacement(
+    public boolean editDirectoryNameInPlacement(
             String directory, String newDirectory, WebPagePlacement placement) {
         try (Connection con = data.connect();
                 PreparedStatement updateDirInPage = con.prepareStatement(
@@ -537,6 +600,74 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
+    public boolean editWebPageOrder(
+            String name, String dir, WebPagePlacement place, int newOrder) {
+        
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement maxOrderStmnt = transact.getPreparedStatement(
+                    SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
+            maxOrderStmnt.setString(1, place.name());
+            maxOrderStmnt.setString(2, dir);
+            ResultSet maxOrderResultSet = transact.executePreparedQuery(maxOrderStmnt);
+            maxOrderResultSet.first();
+            int maxOrder = maxOrderResultSet.getInt(1);
+            if ( maxOrder < newOrder ) {
+                newOrder = maxOrder + 1;
+            }            
+            
+            PreparedStatement pagesWithHigherOrder = transact.getPreparedStatement(
+                    SELECT_PAGES_ID_IN_DIR_IN_PLACE_WHERE_ORDER_HIGHER_THAN);            
+            pagesWithHigherOrder.setString(1, place.name());            
+            pagesWithHigherOrder.setString(2, dir);
+            pagesWithHigherOrder.setInt(3, newOrder);
+            ResultSet higherPages = transact.executePreparedQuery(pagesWithHigherOrder);
+            Map<Integer, Integer> pagesToUpdate = new HashMap<>();
+            while (higherPages.next()) {
+                pagesToUpdate.put(
+                        higherPages.getInt("page_id"), 
+                        higherPages.getInt("page_order"));
+            }
+            
+            PreparedStatement updateOrder;
+            int qty = 0;
+            for (Map.Entry<Integer, Integer> entry : pagesToUpdate.entrySet()) {
+                updateOrder = transact.getPreparedStatement(
+                        UPDATE_PAGE_ORDER_WHERE_PAGE_ID_IS);
+                updateOrder.setInt(1, entry.getValue()+1);
+                updateOrder.setInt(2, entry.getKey());
+                qty = qty + transact.executePreparedUpdate(updateOrder);
+            }
+            updateOrder = transact.getPreparedStatement(
+                    UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS);
+            updateOrder.setInt(1, newOrder);
+            updateOrder.setString(2, name);
+            updateOrder.setString(3, dir);
+            updateOrder.setString(4, place.name());
+            qty = qty + transact.executePreparedUpdate(updateOrder);
+            
+            transact.commitThemAll();
+            return ( qty > 0 );
+            
+        } catch (HandledTransactSQLException e) { 
+            e.printStackTrace();
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
+            return false;
+        }
+    }
+    
+    @Override
     public boolean moveWebPageToPlacementAndDirectory(
             String pageName, String newDirectory, WebPagePlacement placement) {
         
@@ -550,20 +681,34 @@ class H2DaoWebPages implements DaoWebPages {
             existResult.first();
             int exists = existResult.getInt(1);
             if (exists == 0) {
+                PreparedStatement maxDirOrderStmnt = 
+                        transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
+                maxDirOrderStmnt.setString(1, placement.name());
+                ResultSet maxOrderResultSet = transact.executePreparedQuery(maxDirOrderStmnt);
+                maxOrderResultSet.first();
+                int maxDirOrder = maxOrderResultSet.getInt(1);
+                
                 PreparedStatement insertNewDir = transact.getPreparedStatement(
-                        INSERT_NEW_DIR_IN_DIRS);
+                        INSERT_NEW_DIR);
                 insertNewDir.setString(1, newDirectory);
                 insertNewDir.setString(2, placement.name());
-                insertNewDir.setString(3, placement.name());
+                insertNewDir.setInt(3, maxDirOrder+1);
                 transact.executePreparedUpdate(insertNewDir);
             }
             
-            PreparedStatement updatePage = transact.getPreparedStatement(
-                    UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_WHERE_PAGE_NAME_IS);
+            PreparedStatement maxPageOrder = transact.getPreparedStatement(SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
+            maxPageOrder.setString(1, placement.name());
+            maxPageOrder.setString(2, newDirectory);
+            ResultSet maxPageOrderRs = transact.executePreparedQuery(maxPageOrder);
+            maxPageOrderRs.first();
+            int pageOrder = maxPageOrderRs.getInt(1);
             
+            PreparedStatement updatePage = transact.getPreparedStatement(
+                    UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_AND_ORDER_WHERE_PAGE_NAME_IS);            
             updatePage.setString(1, newDirectory);
             updatePage.setString(2, placement.name());
-            updatePage.setString(3, pageName);
+            updatePage.setInt(3, pageOrder+1);
+            updatePage.setString(4, pageName);
             
             int qty = transact.executePreparedUpdate(updatePage);
             
@@ -571,9 +716,11 @@ class H2DaoWebPages implements DaoWebPages {
             
             return ( qty > 0); 
         } catch (HandledTransactSQLException e) { 
+            e.printStackTrace();
             this.ioEngine.reportException(e, "SQLException: .");
             return false;
         } catch (SQLException e) {
+            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: .");
             return false;
@@ -624,16 +771,36 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public boolean createEmptyDirectoryWithDefaultOrder(WebPagePlacement place, String name) {
-        try (Connection con = this.data.connect();
-                PreparedStatement ps = con.prepareStatement(INSERT_NEW_DIR_IN_DIRS)) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement maxDirOrderStmnt = 
+                        transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
+                maxDirOrderStmnt.setString(1, place.name());
+                ResultSet maxOrderResultSet = transact.executePreparedQuery(maxDirOrderStmnt);
+                maxOrderResultSet.first();
+                int maxDirOrder = maxOrderResultSet.getInt(1);
             
-            ps.setString(1, name);
-            ps.setString(2, place.name());
-            ps.setString(3, place.name());
+            PreparedStatement inserDir = transact.getPreparedStatement(INSERT_NEW_DIR);
+            inserDir.setString(1, name);
+            inserDir.setString(2, place.name());
+            inserDir.setInt(3, maxDirOrder+1);
+            int changed = transact.executePreparedUpdate(inserDir);
             
-            return ( ps.executeUpdate() > 0) ;
+            transact.commitThemAll();
+            
+            return ( changed > 0) ;
+        } catch (HandledTransactSQLException e) { 
+            this.ioEngine.reportException(e, "SQLException: Empty directory creation failure.");
+            return false;
         } catch (SQLException e) {
-            this.ioEngine.reportError("Directory creation failure.");
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+            return false;
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
             return false;
         }
     }
@@ -714,17 +881,17 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
-    public boolean changeDirectoryOrder(WebPagePlacement place, String name, int newOrder) {
+    public boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder) {
         JdbcTransaction transact = this.data.beginTransaction();
         try {
-            PreparedStatement maxOrderStmnt = transact.getPreparedStatement(SELECT_MAX_ORDER_IN_PLACE);
+            PreparedStatement maxOrderStmnt = transact.getPreparedStatement(
+                    SELECT_MAX_DIR_ORDER_IN_PLACE);
             maxOrderStmnt.setString(1, place.name());
             ResultSet maxOrderResultSet = transact.executePreparedQuery(maxOrderStmnt);
             maxOrderResultSet.first();
             int maxOrder = maxOrderResultSet.getInt(1);
-            if ( maxOrder > newOrder ) {
-                transact.rollbackAllAndReleaseResources();
-                return false;
+            if ( maxOrder < newOrder ) {
+                newOrder = maxOrder + 1;
             }            
             
             PreparedStatement selectDirsWithHigherOrder = transact.getPreparedStatement(
@@ -759,13 +926,16 @@ class H2DaoWebPages implements DaoWebPages {
             transact.commitThemAll();
             return ( qty > 0 );
         } catch (HandledTransactSQLException e) { 
+            e.printStackTrace();
             this.ioEngine.reportException(e, "SQLException: .");
             return false;
         } catch (SQLException e) {
+            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: .");
             return false;
         } catch (NullPointerException e) {
+            e.printStackTrace();
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
                     "Incorrect usage of JdbcTransaction: " +

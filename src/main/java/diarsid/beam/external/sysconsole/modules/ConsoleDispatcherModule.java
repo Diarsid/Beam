@@ -76,7 +76,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
 
     void printHelp() throws IOException;
 
-    void renameDirectory() throws IOException;
+    void editDirectory() throws IOException;
     
     void getAllWebPages() throws IOException;
 

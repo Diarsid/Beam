@@ -16,7 +16,7 @@ import diarsid.beam.core.entities.WebPagePlacement;
  */
 public interface DaoWebPages {
     
-    void saveWebPage(WebPage page);
+    boolean saveWebPage(WebPage page);
     
     boolean deleteWebPage(String name);
     
@@ -38,7 +38,10 @@ public interface DaoWebPages {
     
     boolean editWebPageBrowser(String name, String newBrowser);
     
-    boolean renameDirectoryInPlacement(
+    boolean editWebPageOrder(
+            String name, String dir, WebPagePlacement place, int newOrder);
+    
+    boolean editDirectoryNameInPlacement(
             String directory, String newDirectory, WebPagePlacement placement);
     
     boolean moveWebPageToPlacementAndDirectory(
@@ -53,5 +56,5 @@ public interface DaoWebPages {
     
     List<WebPageDirectory> getAllDirectoriesIn(WebPagePlacement place);
     
-    boolean changeDirectoryOrder(WebPagePlacement place, String name, int newOrder);
+    boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder);
 }

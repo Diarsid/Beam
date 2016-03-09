@@ -59,8 +59,9 @@ class DataBaseModel {
                 "page_url       VARCHAR(300)    NOT NULL, " +
                 "page_placement VARCHAR(9)      NOT NULL, " +
                 "page_directory VARCHAR(100)    NOT NULL, " +
+                "page_order     INTEGER         NOT NULL, " +
                 "page_browser   VARCHAR(10)     NOT NULL)",
-                7);
+                8);
         this.tables.put(webPages.name, webPages);
         
         TableInfo commandChoices = new TableInfo(

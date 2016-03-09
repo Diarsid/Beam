@@ -295,7 +295,7 @@ class ConsoleListener implements ConsoleListenerModule {
                             }
                             case "dir" :
                             case "directory" : {
-                                this.dispatcher.renameDirectory();
+                                this.dispatcher.editDirectory();
                                 break parsing;
                             }    
                             default : {

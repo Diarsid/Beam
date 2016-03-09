@@ -229,7 +229,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     
     @Override
     public void printWebPages(List<WebPage> pages, boolean compressOutput) throws IOException {
-        if (pages.isEmpty()){
+        if (pages.isEmpty()) {
             printUnderLn("There aren`t any pages.");
             return;
         }
@@ -240,10 +240,11 @@ class ConsolePrinter implements ConsolePrinterModule {
         this.writer.newLine();
         for(WebPage page : pages){
             sb.append(SPACE)
-                    .append(format(page.getName(), 18))
-                    .append(format(page.getShortcuts(), 10))
-                    .append(page.getDirectory());
-            if (compressOutput && sb.length() > 79){
+                    .append(format(page.getName(), 20))
+                    .append(page.getDirectory())
+                    .append("::")
+                    .append(page.getPlacement().name().toLowerCase());
+            if (compressOutput && sb.length() > 79) {
                 sb.delete(76, sb.length());
                 sb.append("...");
             }

@@ -18,7 +18,7 @@ import diarsid.beam.core.entities.WebPagePlacement;
  */
 public interface RmiWebPageHandlerInterface extends Remote {
     
-    void newWebPage(
+    boolean newWebPage(
             String name,
             String shortcuts, 
             String urlAddress, 
@@ -50,8 +50,15 @@ public interface RmiWebPageHandlerInterface extends Remote {
     boolean editWebPageBrowser(String name, String newBrowser) 
             throws RemoteException;
     
+    boolean editWebPageOrder(
+            String name, String dir, WebPagePlacement place, int newOrder) 
+            throws RemoteException;
+    
     boolean renameDirectory(
             String directory, String newDirectory, WebPagePlacement placement) 
+            throws RemoteException;
+    
+    boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder)
             throws RemoteException;
     
     boolean moveWebPageTo

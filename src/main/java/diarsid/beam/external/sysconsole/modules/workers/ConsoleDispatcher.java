@@ -44,6 +44,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     private final InputHandler input;
     private final List<String> placements;
     private final List<String> pageEditVars;
+    private final List<String> dirEditVars;
     private final List<String> reminderTypes;
     private final List<String> eventTypes;
     
@@ -67,7 +68,11 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.pageEditVars.add("name");
         this.pageEditVars.add("shortcuts");
         this.pageEditVars.add("url");
+        this.pageEditVars.add("order");
         this.pageEditVars.add("browser");
+        this.dirEditVars = new ArrayList<>();
+        this.dirEditVars.add("name");
+        this.dirEditVars.add("order");
         this.reminderTypes = new ArrayList<>();
         this.reminderTypes.add("hourly reminder");
         this.reminderTypes.add("daily reminder");
@@ -326,8 +331,10 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if(browser.isEmpty()) {
             browser = "default";
         }
-        this.beam.webPages().newWebPage(
-                name, shortcuts, urlAddress, placement, category, browser);
+        if (this.beam.webPages().newWebPage(
+                name, shortcuts, urlAddress, placement, category, browser)) {
+            this.printer.printUnderLn("New page has been created.");
+        }
     }
     
     @Override
@@ -470,6 +477,25 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 this.printer.printUnderLn("URL was changed.");
             }
         } else if (choosed == 4) {
+            WebPagePlacement place = this.askForPlacement();
+            if (place == null) {
+                return;
+            }
+            this.printer.printUnder("directory: ");
+            String dir = this.reader.read();
+            if (dir.isEmpty()) {
+                return;
+            }                        
+            try {
+                this.printer.printUnder("new order: ");
+                int newOrder = Integer.parseInt(this.reader.read());
+                if (newOrder > 0) {
+                    this.beam.webPages().editWebPageOrder(name, dir, place, newOrder);
+                }
+            } catch (NumberFormatException e) {
+                this.printer.printUnderLn("Wrong number.");
+            }   
+        } else if (choosed == 5) {
             this.printer.printUnder("new browser: ");
             String newBrowser = this.reader.read();
             if (newBrowser.isEmpty()) {
@@ -538,7 +564,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         }
         String[] vars = {"name", "commands"};
         int choosed = this.input.chooseVariants("edit: ", Arrays.asList(vars));
-        if (choosed < 0){
+        if (choosed < 0) {
             return;
         } else if (choosed == 1) {
             this.printer.printUnderLn("Not implemented yet :(");
@@ -548,7 +574,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void renameDirectory() throws IOException {
+    public void editDirectory() throws IOException {
         WebPagePlacement placement = this.askForPlacement();
         if (placement == null) {
             return;
@@ -558,14 +584,30 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if (directory.isEmpty()) {
             return;
         }
-        this.printer.printUnder("new name: ");
-        String newDirectory = this.reader.read();
-        if (newDirectory.isEmpty()) {
+        
+        int choosed = this.input.chooseVariants("edit: ", this.dirEditVars);
+        if (choosed < 0) {
             return;
-        }
-        if (this.beam.webPages().renameDirectory(
-                directory, newDirectory, placement)) {
-            this.printer.printUnderLn("Directory renamed.");
+        } else if (choosed == 1) {
+            this.printer.printUnder("new name: ");
+            String newDirectory = this.reader.read();
+            if (newDirectory.isEmpty()) {
+                return;
+            }
+            if (this.beam.webPages().renameDirectory(
+                    directory, newDirectory, placement)) {
+                this.printer.printUnderLn("Directory renamed.");
+            }
+        } else if (choosed == 2) {            
+            this.printer.printUnder("new order: ");
+            try {
+                int newOrder = Integer.parseInt(this.reader.read());
+                if (newOrder > 0) {
+                    this.beam.webPages().editDirectoryOrder(placement, directory, newOrder);
+                }
+            } catch (NumberFormatException e) {
+                this.printer.printUnderLn("Wrong number.");
+            }
         }
     }
     

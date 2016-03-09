@@ -32,7 +32,7 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     // Methods ============================================================================
     
     @Override
-    public void newWebPage(
+    public boolean newWebPage(
             String name,
             String shortcuts, 
             String urlAddress, 
@@ -45,7 +45,7 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
         urlAddress = urlAddress.trim().toLowerCase();
         directory = directory.trim().toLowerCase();
         browser = browser.trim().toLowerCase();
-        this.dao.saveWebPage(new WebPage(
+        return this.dao.saveWebPage(WebPage.newPage(
                 name, shortcuts, urlAddress, placement, directory, browser));
     }
     
@@ -113,10 +113,19 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     }
         
     @Override
-    public boolean editWebPageBrowser(String name, String newBrowser) throws RemoteException {
+    public boolean editWebPageBrowser(String name, String newBrowser) 
+            throws RemoteException {
+        
         name = name.trim().toLowerCase();
         newBrowser = newBrowser.trim().toLowerCase();
         return this.dao.editWebPageBrowser(name, newBrowser);
+    }
+    
+    @Override
+    public boolean editWebPageOrder(
+            String name, String dir, WebPagePlacement place, int newOrder) 
+            throws RemoteException {
+        return this.dao.editWebPageOrder(name, dir, place, newOrder);
     }
     
     @Override
@@ -126,7 +135,12 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
         
         directory = directory.trim().toLowerCase();
         newDirectory = newDirectory.trim().toLowerCase();
-        return this.dao.renameDirectoryInPlacement(directory, newDirectory, placement);
+        return this.dao.editDirectoryNameInPlacement(directory, newDirectory, placement);
+    }
+    
+    @Override
+    public boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder) {
+        return this.dao.editDirectoryOrder(place, name, newOrder);
     }
     
     @Override
