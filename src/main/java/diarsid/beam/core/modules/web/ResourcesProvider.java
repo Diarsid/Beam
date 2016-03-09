@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServlet;
  */
 public interface ResourcesProvider {
     
-    Map<String, HttpServlet> getServlets();
+    Set<ServletData> getServlets();
     
     Set<Filter> getFilters();
 }

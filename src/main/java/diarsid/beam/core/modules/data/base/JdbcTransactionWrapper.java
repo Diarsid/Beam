@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
@@ -27,7 +26,7 @@ import diarsid.beam.core.modules.data.JdbcTransaction;
  * properly treatment with opened Connection, ResultSets and Statements.
  * 
  * It is implied that all Statements, PreparedStatements and ResultSets 
- * are obtained using this object's methods.
+ * are obtained using this object methods.
  * 
  * @author Diarsid
  */
@@ -50,7 +49,6 @@ class JdbcTransactionWrapper implements JdbcTransaction {
         try {
             this.con = data.connect();
             this.con.setAutoCommit(false);
-            //System.out.println("[TRANSACTION] : connect + disable autocommit");
         } catch (SQLException e) {
             // There is no sense to do anything further 
             // if connection attempt or auto commit 
@@ -69,8 +67,7 @@ class JdbcTransactionWrapper implements JdbcTransaction {
     @Override
     public void commitThemAll() {
         try {
-            this.con.commit();   
-            //System.out.println("[TRANSACTION] : commit");
+            this.con.commit();
         } catch (SQLException e) {
             try {
                 this.con.rollback();
@@ -122,7 +119,7 @@ class JdbcTransactionWrapper implements JdbcTransaction {
     private void closeConnectionAnyway() {
         try {
             this.con.close();
-            //System.out.println("[TRANSACTION] : close");
+            this.con = null;
         } catch (SQLException e) {
             throw new WorkflowBrokenException(
                     "It is impossible to close the database connection. " +

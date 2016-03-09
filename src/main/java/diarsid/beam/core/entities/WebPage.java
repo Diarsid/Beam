@@ -17,7 +17,6 @@ import java.util.Objects;
  * @author Diarsid
  */
 public class WebPage implements Serializable {
-    // Fields =============================================================================
     
     private final String name;
     private final String shortcuts;
@@ -25,9 +24,7 @@ public class WebPage implements Serializable {
     private final WebPagePlacement placement;
     private final String directory;
     private final String browser;
-    
-    // Constructors =======================================================================
-    
+        
     public WebPage(
             String name, 
             String shortcuts,             

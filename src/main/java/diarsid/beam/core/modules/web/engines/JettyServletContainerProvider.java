@@ -34,9 +34,7 @@ public class JettyServletContainerProvider implements ServletContainerProvider {
     @Override
     public ServletContainer buildAndStartServer() {
         JettyServletContainer jetty = new JettyServletContainer(this.config);        
-        for (Map.Entry<String, HttpServlet> entry : this.resources.getServlets().entrySet()) {
-            jetty.addServlet(entry.getValue(), entry.getKey());
-        }
+        jetty.addServlets(this.resources.getServlets());
         jetty.startServer();
         return jetty;
     }

@@ -26,23 +26,21 @@ import diarsid.beam.core.modules.data.DaoWebPages;
  *
  * @author Diarsid
  */
-class AllPagesInDirectoryServlet extends HttpServlet {
+class TestServlet extends HttpServlet {
     
-    private final DaoWebPages webDao;
+    private final DaoWebPages webDao;    
     
-    AllPagesInDirectoryServlet(DaoWebPages webDao) {
+    TestServlet(DaoWebPages webDao) {
         this.webDao = webDao;
     }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException { 
-        
-        String path = request.getRequestURL().toString();
-        System.out.println("ALL PAGES IN DIR pathInfo = " + path);
+              
         List<WebPage> pages = this.webDao.getAllWebPagesInDirectoryAndPlacement(
-                this.extractDirectoryFromPath(path), 
-                WebPagePlacement.valueOf(this.extractPlacementFromPath(path)));
+                "common",
+                WebPagePlacement.WEBPANEL);
         JSONObject answer = new JSONObject();
         JSONArray pagesArray = new JSONArray();
         JSONObject pageJSONObject;
@@ -52,25 +50,13 @@ class AllPagesInDirectoryServlet extends HttpServlet {
             pageJSONObject.put("url", page.getUrlAddress());
             pagesArray.add(pageJSONObject);
         }
-        answer.put("webpages", pagesArray);
+        answer.put("TEST_SERVLET_RESPONSE", pagesArray);
         
         PrintWriter writer = response.getWriter();
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(200);
         response.setContentType("application/json");
+        response.setCharacterEncoding(null);
         writer.write(answer.toString());       
-        writer.close();    
-    }
-    
-    private String extractPlacementFromPath(String path) {
-        return path.substring(
-                path.lastIndexOf("resources/") + "resources/".length(), 
-                path.indexOf("/dirs"))
-                .toUpperCase();
-    }
-    
-    private String extractDirectoryFromPath(String path) {
-        return path.substring(
-                path.lastIndexOf("dirs/") + "dirs/".length(),
-                path.indexOf("/pages"));
+        writer.close();
     }
 }

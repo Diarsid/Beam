@@ -105,7 +105,7 @@
     <web>
          <local-address host="127.0.0.1" port="35001"/>
          <internet-address host="192.168.1.33" port="35002"/>
-         <context-path>/beam/web</context-path>
+         <context-path>/beam/core</context-path>
     </web>
     
     <!--
@@ -133,6 +133,7 @@
         </core>       
     </databases>                              
 </configuration>
+
 
 
 

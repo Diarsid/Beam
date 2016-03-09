@@ -168,10 +168,12 @@ abstract class BeamWindow {
                 if ( stage.isAlwaysOnTop() ) {
                     stage.setAlwaysOnTop(false);
                     onTopControllerButton.setId("on-top-toggle-button-off");
-                    waitAndRestoreOnTop();
+                    //waitAndRestoreOnTop();      
+                    throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(60);
                 } else {
                     stage.setAlwaysOnTop(true);
-                    onTopControllerButton.setId("on-top-toggle-button-on");               
+                    onTopControllerButton.setId("on-top-toggle-button-on");  
+                    stopWindowOnTopThrowing();
                 }                               
             }
         }); 
@@ -207,5 +209,28 @@ abstract class BeamWindow {
             });
             this.onTopRestoring.play();
         }        
+    }
+    
+    private void throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(int seconds) {
+        if ( onTopRestoring != null && onTopRestoring.getStatus().equals(RUNNING)) {
+            this.onTopRestoring.playFromStart();
+        } else {
+            this.onTopRestoring = new PauseTransition(Duration.seconds(seconds));
+            this.onTopRestoring.setOnFinished(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    stage.setAlwaysOnTop(true);                    
+                    stage.setAlwaysOnTop(false);
+                    onTopRestoring.playFromStart();
+                }
+            });
+            this.onTopRestoring.play();
+        } 
+    }
+    
+    private void stopWindowOnTopThrowing() {
+        if ( onTopRestoring != null && onTopRestoring.getStatus().equals(RUNNING)) {
+            this.onTopRestoring.stop();
+        } 
     }
 }

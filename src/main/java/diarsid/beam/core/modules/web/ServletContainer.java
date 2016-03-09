@@ -5,9 +5,10 @@
  */
 package diarsid.beam.core.modules.web;
 
+import java.util.Set;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
-import javax.servlet.http.HttpServlet;
 
 /**
  *
@@ -17,7 +18,7 @@ public interface ServletContainer {
             
     void startServer();
     
-    void addServlet(HttpServlet servlet, String servletUrlMapping);
+    void addServlets(Set<ServletData> servlets);
     
     void addFilter(
             Filter filter, 

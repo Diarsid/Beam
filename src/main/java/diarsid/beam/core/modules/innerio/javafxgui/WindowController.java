@@ -58,7 +58,7 @@ public class WindowController {
     public WindowPosition getNewWindowPosition() {
         synchronized (windowCounterLock) {
             this.activeWindowsCounter++;
-            return determineNewWindowPosition();
+            return this.determineNewWindowPosition();
         }
     }
     
@@ -69,12 +69,12 @@ public class WindowController {
         if ( this.activeWindowsCounter == 1 ) {
             return new WindowPosition(0, 0); 
         } else { 
-            double newX = lastWindowX + xShift;
-            double newY = lastWindowY + yShift;
+            double newX = this.lastWindowX + this.xShift;
+            double newY = this.lastWindowY + this.yShift;
             // if x or y coordinates of new window are to close to the  
             // right bottom screen corner, new windows begin appearing in the 
             // top left corner in point 100:100.
-            if ( (newX > xLimit) || (newY > yLimit) ) {
+            if ( (newX > this.xLimit) || (newY > this.yLimit) ) {
                 newX = 100.0;
                 newY = 100.0;
             }
@@ -99,8 +99,8 @@ public class WindowController {
     
     private void checkIfClearLastPosition() {
         if ( this.activeWindowsCounter == 0 ) {
-            lastWindowX = 0;
-            lastWindowY = 0;
+            this.lastWindowX = 0;
+            this.lastWindowY = 0;
         } 
     }
     

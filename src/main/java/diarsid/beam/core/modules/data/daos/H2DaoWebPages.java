@@ -18,13 +18,11 @@ import java.util.Map;
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
-
-import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
+import diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -78,7 +76,7 @@ class H2DaoWebPages implements DaoWebPages {
             "page_name LIKE ? ";
     private final String AND = 
             " AND ";
-    private final String ODER_BY_DIRECTORY_AND_NAME = 
+    private final String ORDER_BY_DIRECTORY_AND_NAME = 
             "ORDER BY page_directory, page_name ";
     private final String INSERT_NEW_PAGE = 
             "INSERT INTO web_pages (page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser) " +
@@ -307,7 +305,7 @@ class H2DaoWebPages implements DaoWebPages {
             for (int i = 1; i < partsQty; i++){
                 queryBuilder.append(AND).append(NAME_LIKE_NAMEPART);
             }
-            queryBuilder.append(ODER_BY_DIRECTORY_AND_NAME);
+            queryBuilder.append(ORDER_BY_DIRECTORY_AND_NAME);
             ResultSet rs = null;
             try(Connection con = data.connect();
                PreparedStatement ps = con.prepareStatement(queryBuilder.toString())) {
