@@ -6,10 +6,8 @@
 
 package diarsid.beam.core.modules.web;
 
-import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.WebModule;
 
-import diarsid.beam.shared.modules.ConfigModule;
 
 /**
  *

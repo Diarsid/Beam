@@ -19,7 +19,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import diarsid.beam.core.entities.WebPageDirectory;
-import diarsid.beam.core.entities.WebPagePlacement;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 /**
@@ -29,17 +28,21 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 class AllDirectoriesServlet extends HttpServlet {
     
     private final DaoWebPages webDao;
+    private final PathResolver resolver;
     
-    AllDirectoriesServlet(DaoWebPages webDao) {
+    AllDirectoriesServlet(DaoWebPages webDao, PathResolver resolver) {
         this.webDao = webDao;
+        this.resolver = resolver;
     }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        String path = this.resolver.getNormalizedPath(request);
+        
         List<WebPageDirectory> dirs = this.webDao.getAllDirectoriesIn(
-                WebPagePlacement.valueOf(this.extractPlacementFromPath(request.getRequestURL().toString())));
+                this.resolver.extractPlacementBeforeDirectory(path));
         JSONArray directoriesArray = new JSONArray();
         JSONObject directoryObj;
         for (WebPageDirectory dir : dirs) {
@@ -56,12 +59,5 @@ class AllDirectoriesServlet extends HttpServlet {
         response.setContentType("application/json");
         writer.write(answer.toString());       
         writer.close();
-    }
-    
-    private String extractPlacementFromPath(String path) {
-        return path.substring(
-                path.lastIndexOf("resources/") + "resources/".length(), 
-                path.indexOf("/dirs"))
-                .toUpperCase();
     }
 }

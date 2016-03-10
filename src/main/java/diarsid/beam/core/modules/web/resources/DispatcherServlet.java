@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.web.resources;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,19 +26,20 @@ class DispatcherServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
                 throws ServletException, IOException {
-        
-        long start = System.currentTimeMillis();
+                
         String dispatchedServletName = RestResources
                 .getDispatchedServletNameOfResource(req.getPathInfo());
-        System.out.println("[DISPATCHET SERVLET] PathInfo: " + req.getPathInfo());
+        
+        System.out.println("[DISPATCHER SERVLET] PathInfo: " + req.getPathInfo());
+        System.out.println("[DISPATCHER SERVLET] dispatch name: " + dispatchedServletName);
+        
         if ( dispatchedServletName.isEmpty() ) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             PrintWriter writer = resp.getWriter();
             resp.setContentType("text/plain");
             writer.write("unspecified url.");       
             writer.close();
-        } else {
-            System.out.println("[DISPATCHET SERVLET] dispatch name: " + dispatchedServletName);
+        } else {            
             this.getServletContext()
                     .getNamedDispatcher(dispatchedServletName)
                     .forward(req, resp);
@@ -52,8 +52,5 @@ class DispatcherServlet extends HttpServlet {
             writer.write("REST Servlet dispatch logic error.");       
             writer.close();
         } 
-        
-        long end = System.currentTimeMillis();
-        System.out.println("Servlet working time = " + (end-start));
     }
 }

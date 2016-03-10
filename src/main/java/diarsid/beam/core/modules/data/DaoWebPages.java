@@ -23,7 +23,11 @@ public interface DaoWebPages {
     List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement);
     
     List<WebPage> getWebPagesByName(String name);
+    
     List<WebPage> getWebPagesByNameParts(String[] nameParts);
+    
+    List<WebPage> getWebPagesByNameInDirAndPlace(
+            String name, String dir, WebPagePlacement place);
     
     List<WebPage> getAllWebPagesInDirectoryAndPlacement(
             String directory, WebPagePlacement placement);

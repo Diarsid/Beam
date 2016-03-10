@@ -13,11 +13,15 @@ import javax.servlet.Filter;
 import javax.servlet.http.HttpServlet;
 
 import diarsid.beam.core.modules.DataModule;
-
+import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletData;
 
-import static diarsid.beam.core.modules.web.resources.RestResources.*;
+import static diarsid.beam.core.modules.web.resources.RestResources.ALL_PAGES_IN_DIR_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResources.DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResources.DIR_FROM_DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResources.PAGE_FROM_DIR_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResources.ROOT;
 
 /**
  *
@@ -42,23 +46,49 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 ROOT.servletName(), 
                 ROOT.servletMapping()));
         
-        HttpServlet directoriesServlet = new AllDirectoriesServlet(data.getWebPagesDao());
+        HttpServlet directoriesServlet = new AllDirectoriesServlet(
+                this.produceDao(),
+                this.producePathResolver()
+                );
         this.servlets.add(new ServletData(
                 directoriesServlet, 
                 DIRS_IN_PLACEMENT.servletName(), 
                 DIRS_IN_PLACEMENT.servletMapping()));
         
-        HttpServlet singleDirServlet = new SingleDirectoryServlet(data.getWebPagesDao());
+        HttpServlet singleDirServlet = new SingleDirectoryServlet(
+                this.produceDao(),
+                this.producePathResolver()
+                );
         this.servlets.add(new ServletData(
                 singleDirServlet, 
                 DIR_FROM_DIRS_IN_PLACEMENT.servletName(), 
                 DIR_FROM_DIRS_IN_PLACEMENT.servletMapping()));
         
-        HttpServlet pageInDirServlet = new AllPagesInDirectoryServlet(data.getWebPagesDao());
+        HttpServlet pageInDirServlet = new AllPagesInDirectoryServlet(
+                this.produceDao(),
+                this.producePathResolver()
+                );
         this.servlets.add(new ServletData(
                 pageInDirServlet, 
                 ALL_PAGES_IN_DIR_IN_PLACEMENT.servletName(), 
-                ALL_PAGES_IN_DIR_IN_PLACEMENT.servletMapping()));        
+                ALL_PAGES_IN_DIR_IN_PLACEMENT.servletMapping()));  
+        
+        HttpServlet singlePageServlet = new SinglePageInDirectoryServlet(
+                this.produceDao(),
+                this.producePathResolver()
+                );
+        this.servlets.add(new ServletData(
+                singlePageServlet, 
+                PAGE_FROM_DIR_IN_PLACEMENT.servletName(), 
+                PAGE_FROM_DIR_IN_PLACEMENT.servletMapping()));
+    }
+    
+    private DaoWebPages produceDao() {
+        return this.data.getWebPagesDao();
+    }
+    
+    private PathResolver producePathResolver() {
+        return new PathResolver();
     }
     
     @Override

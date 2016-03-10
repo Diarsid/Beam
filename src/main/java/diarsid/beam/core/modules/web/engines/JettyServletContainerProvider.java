@@ -6,10 +6,6 @@
 
 package diarsid.beam.core.modules.web.engines;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServlet;
-
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletContainer;
 import diarsid.beam.core.modules.web.ServletContainerProvider;

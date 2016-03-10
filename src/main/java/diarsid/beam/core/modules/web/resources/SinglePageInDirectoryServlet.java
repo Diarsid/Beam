@@ -19,7 +19,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import diarsid.beam.core.entities.WebPage;
-import diarsid.beam.core.entities.WebPagePlacement;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 /**
@@ -29,8 +28,10 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 class SinglePageInDirectoryServlet extends HttpServlet {
     
     private final DaoWebPages webDao;
+    private final PathResolver resolver;
     
-    SinglePageInDirectoryServlet(DaoWebPages webDao) {
+    SinglePageInDirectoryServlet(DaoWebPages webDao, PathResolver resolver) {
+        this.resolver = resolver;
         this.webDao = webDao;
     }
     
@@ -38,11 +39,12 @@ class SinglePageInDirectoryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException { 
         
-        String path = request.getRequestURL().toString();
-        
-        List<WebPage> pages = this.webDao.getAllWebPagesInDirectoryAndPlacement(
-                this.extractDirectoryFromPath(path), 
-                WebPagePlacement.valueOf(this.extractPlacementFromPath(path)));
+        String path = this.resolver.getNormalizedPath(request);
+                
+        List<WebPage> pages = this.webDao.getWebPagesByNameInDirAndPlace(
+                this.resolver.extractPage(path),
+                this.resolver.extractDirectoryBeforePages(path), 
+                this.resolver.extractPlacementBeforeDirectory(path));
         JSONObject answer = new JSONObject();
         
         if (pages.size() == 1) {
@@ -65,17 +67,5 @@ class SinglePageInDirectoryServlet extends HttpServlet {
         response.setContentType("application/json");
         writer.write(answer.toString());       
         writer.close();    
-    }
-    
-    private String extractPlacementFromPath(String path) {
-        return path.substring(
-                path.lastIndexOf("resources/") + "resources/".length(), 
-                path.indexOf("/dirs"))
-                .toUpperCase();
-    }
-    
-    private String extractDirectoryFromPath(String path) {
-        return path.substring(
-                path.lastIndexOf("dirs/") + "dirs/".length());
     }
 }

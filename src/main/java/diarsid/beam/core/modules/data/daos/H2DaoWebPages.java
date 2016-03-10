@@ -16,11 +16,11 @@ import java.util.List;
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
+import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
-import diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *
@@ -78,6 +78,14 @@ class H2DaoWebPages implements DaoWebPages {
             + "(p.page_placement = d.dir_placement) " +
             "WHERE (page_name LIKE ?) OR (page_shortcuts LIKE ?) " + 
             "ORDER BY dir_order, page_order ";
+    private final String SELECT_PAGES_JOIN_DIRS_WHERE_PAGE_AND_DIR_AND_PLACE_IS = 
+            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "FROM web_pages p " +
+            "INNER JOIN directories d ON "
+            + "(p.page_directory = d.dir_name) "
+            + "AND "
+            + "(p.page_placement = d.dir_placement) " +
+            "WHERE (page_name IS ? ) AND (page_directory IS ? ) AND (page_placement IS ? ) ";
     private final String SELECT_PAGES_JOIN_DIRS_WHERE = 
             "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
             "FROM web_pages p " +
@@ -380,6 +388,50 @@ class H2DaoWebPages implements DaoWebPages {
         } else {
             return Collections.emptyList();
         }
+    }
+    
+    @Override
+    public List<WebPage> getWebPagesByNameInDirAndPlace(
+            String name, String dir, WebPagePlacement place) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            PreparedStatement getDir = transact.getPreparedStatement(
+                    SELECT_PAGES_JOIN_DIRS_WHERE_PAGE_AND_DIR_AND_PLACE_IS);
+            getDir.setString(1, name);
+            getDir.setString(2, dir);
+            getDir.setString(3, place.name());
+            ResultSet dirRs = transact.executePreparedQuery(getDir);
+            
+            List<WebPage> pages = new ArrayList<>();
+            while ( dirRs.next() ) {
+                    pages.add(WebPage.restorePage(
+                            dirRs.getString("page_name"),
+                            dirRs.getString("page_shortcuts"), 
+                            dirRs.getString("page_url"),
+                            WebPagePlacement.valueOf(dirRs.getString("page_placement")),
+                            dirRs.getString("page_directory"),
+                            dirRs.getInt("page_order"),
+                            dirRs.getInt("dir_order"),
+                            dirRs.getString("page_browser")
+                    ));
+            }
+            
+            transact.commitThemAll();
+            
+            return pages;
+            
+        } catch (HandledTransactSQLException e) { 
+            this.ioEngine.reportException(e, "SQLException: .");
+        } catch (SQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");            
+        }
+        return Collections.emptyList();
     }
     
     @Override
