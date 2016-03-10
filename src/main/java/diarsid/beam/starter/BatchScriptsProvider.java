@@ -128,9 +128,9 @@ class BatchScriptsProvider {
         scriptLines.add("");
         scriptLines.add("@echo off");
         scriptLines.add(
-                "cmd /c start javaw -cp .;" + 
+                "cmd /c start java -cp .;" + 
                 coreClassPath + 
-                " -Djava.security.policy=.\\..\\config\\rmi.policy -Djava.rmi.server.hostname=127.0.0.1 " + 
+                " -Djava.rmi.server.hostname=127.0.0.1 " + 
                 jvmOptions + " " + className);
         
         return scriptLines;
@@ -149,7 +149,7 @@ class BatchScriptsProvider {
         scriptLines.add(
                 "cmd /c start java -cp .;" + 
                 consoleClasspath + 
-                " -Djava.security.policy=.\\..\\config\\rmi.policy -Djava.rmi.server.hostname=127.0.0.1 " + 
+                " -Djava.rmi.server.hostname=127.0.0.1 " + 
                 jvmOptions + " " + className);
         
         return scriptLines;

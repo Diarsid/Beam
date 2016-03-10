@@ -58,9 +58,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
     
     @Override
     public void exportAndConnectToCore(ExternalIOInterface external) {
-        if ( System.getSecurityManager() == null ) {
-            System.setSecurityManager(new SecurityManager());
-        }    
+        
         try {
             // exporting external object
             int port = Integer.parseInt(config.get(Config.SYS_CONSOLE_PORT));
@@ -93,9 +91,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
     
     @Override
     public void loadBeamCoreInterfaces() {
-        if ( System.getSecurityManager() == null ) {
-            System.setSecurityManager(new SecurityManager());
-        }
+        
         try {
             this.beamCoreRegistry = LocateRegistry
                     .getRegistry(config.get(Config.CORE_HOST), 

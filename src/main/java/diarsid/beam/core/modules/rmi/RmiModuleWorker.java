@@ -16,18 +16,15 @@ import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RmiModule;
 import diarsid.beam.core.modules.TaskManagerModule;
-
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
-
 import diarsid.beam.shared.modules.config.Config;
 
 /**
@@ -94,10 +91,8 @@ class RmiModuleWorker implements RmiModule {
     }
     
     @Override
-    public void exportInterfaces() {
+    public void exportInterfaces() {        
         
-        if (System.getSecurityManager()==null)
-            System.setSecurityManager(new SecurityManager());
         try {            
             int beamCorePort = Integer.parseInt(config.get(Config.CORE_PORT));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);

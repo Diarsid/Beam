@@ -8,6 +8,7 @@ package diarsid.beam.external.sysconsole.modules.workers;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,13 @@ class ConsolePrinter implements ConsolePrinterModule {
     private final BufferedWriter writer;
     
     ConsolePrinter() {
-        this.writer = new BufferedWriter(System.console().writer());
+        BufferedWriter bufferedWriter = null;
+        try {
+            bufferedWriter = new BufferedWriter(System.console().writer());
+        } catch (NullPointerException e) {
+            bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out));
+        }
+        this.writer = bufferedWriter;
     }
     
     private String format(String info, int formatLength){        
