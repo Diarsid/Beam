@@ -26,7 +26,8 @@ public interface RmiWebPageHandlerInterface extends Remote {
             String directory, 
             String browser) throws RemoteException;
         
-    boolean deleteWebPage(String name) throws RemoteException;
+    boolean deleteWebPage(String name, String dir, WebPagePlacement place) 
+            throws RemoteException;
     
     List<String> getAllDirectoriesInPlacement(WebPagePlacement placement) 
             throws RemoteException;

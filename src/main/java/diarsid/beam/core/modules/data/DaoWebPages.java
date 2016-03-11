@@ -18,7 +18,7 @@ public interface DaoWebPages {
     
     boolean saveWebPage(WebPage page);
     
-    boolean deleteWebPage(String name);
+    boolean deleteWebPage(String name, String dir, WebPagePlacement placement);
     
     List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement);
     
@@ -53,7 +53,7 @@ public interface DaoWebPages {
     
     boolean deleteDirectoryAndPages(WebPageDirectory dir);
     
-    boolean createEmptyDirectoryWithDefaultOrder(
+    boolean createEmptyDirectory(
             WebPagePlacement place, String name);
     
     WebPageDirectory getDirectoryExact(WebPagePlacement place, String name);

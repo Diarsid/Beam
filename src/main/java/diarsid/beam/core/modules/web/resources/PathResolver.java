@@ -54,8 +54,32 @@ class PathResolver {
                 path.indexOf("/pages"));
     }
     
+    String extractDirectoryBeforeFields(String path) {
+        return path.substring(
+                path.lastIndexOf("dirs/") + "dirs/".length(),
+                path.indexOf("/"));
+    }
+    
     String extractPage(String path) {
         return path.substring(
                 path.lastIndexOf("pages/") + "pages/".length());
+    }
+    
+    String extractPageBeforeField(String path) {
+        return path.substring(
+                path.lastIndexOf("pages/") + "pages/".length(),
+                path.lastIndexOf("/"));
+    }
+    
+    String extractPageField(String path) {
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+    
+    String extractDirectoryField(String path) {
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+    
+    boolean check(String entity) {
+        return entity.matches("[a-zA-Z0-9-_>\\s]+");
     }
 }

@@ -387,10 +387,20 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void deleteWebPage() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
-        if ( !name.isEmpty() ) {
-            if (this.beam.webPages().deleteWebPage(name)) {
-                this.printer.printUnderLn("WebPage was removed.");
-            }
+        if ( name.isEmpty() ) {
+            return;
+        }
+        this.printer.printUnder("directory: ");
+        String dir = this.reader.read();
+        if ( dir.isEmpty() ) {
+            return;
+        }
+        WebPagePlacement place = this.askForPlacement();
+        if ( place == null ) {
+            return;
+        }
+        if (this.beam.webPages().deleteWebPage(name, dir, place)) {
+            this.printer.printUnderLn("WebPage was removed.");
         }
     }
     

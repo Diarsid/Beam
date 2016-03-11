@@ -19,7 +19,9 @@ import diarsid.beam.core.modules.web.ServletData;
 
 import static diarsid.beam.core.modules.web.resources.RestResources.ALL_PAGES_IN_DIR_IN_PLACEMENT;
 import static diarsid.beam.core.modules.web.resources.RestResources.DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResources.DIR_FIELDS_FROM_DIRS_IN_PLACEMENT;
 import static diarsid.beam.core.modules.web.resources.RestResources.DIR_FROM_DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResources.PAGE_FIELDS_FROM_DIR_IN_PLACEMENT;
 import static diarsid.beam.core.modules.web.resources.RestResources.PAGE_FROM_DIR_IN_PLACEMENT;
 import static diarsid.beam.core.modules.web.resources.RestResources.ROOT;
 
@@ -81,6 +83,23 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 singlePageServlet, 
                 PAGE_FROM_DIR_IN_PLACEMENT.servletName(), 
                 PAGE_FROM_DIR_IN_PLACEMENT.servletMapping()));
+        
+        HttpServlet fieldsServlet = new PageFieldsServlet(
+                this.produceDao(),
+                this.producePathResolver()
+                );
+        this.servlets.add(new ServletData(
+                fieldsServlet,
+                PAGE_FIELDS_FROM_DIR_IN_PLACEMENT.servletName(),
+                PAGE_FIELDS_FROM_DIR_IN_PLACEMENT.servletMapping()));
+        
+        HttpServlet dirFieldsServlet = new DirectoryFieldsServlet(
+                this.produceDao(), 
+                this.producePathResolver());
+        this.servlets.add(new ServletData(
+                dirFieldsServlet,
+                DIR_FIELDS_FROM_DIRS_IN_PLACEMENT.servletName(),
+                DIR_FIELDS_FROM_DIRS_IN_PLACEMENT.servletMapping()));
     }
     
     private DaoWebPages produceDao() {

@@ -7,7 +7,6 @@
 package diarsid.beam.core.modules.web.resources;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.simple.JSONObject;
 
 import diarsid.beam.core.entities.WebPageDirectory;
+import diarsid.beam.core.entities.WebPagePlacement;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 /**
@@ -46,12 +46,30 @@ class SingleDirectoryServlet extends HttpServlet {
         if ( dir != null ) {            
             answer.put("name", dir.getName());
             answer.put("ordering", dir.getOrder());
-        }       
+        }    
         
-        PrintWriter writer = response.getWriter();
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
-        writer.write(answer.toString());       
-        writer.close();    
+        response.getWriter().write(answer.toString());       
+        response.getWriter().close();    
+    }    
+    
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String path = this.resolver.getNormalizedPath(request);
+        String dir = this.resolver.extractDirectory(path);
+        WebPagePlacement place = 
+                this.resolver.extractPlacementBeforeDirectory(path);
+        
+        WebPageDirectory dirToDelete = new WebPageDirectory(dir, place);
+        if ( this.webDao.deleteDirectoryAndPages(dirToDelete) ) {
+            response.setStatus(HttpServletResponse.SC_OK);    
+            response.getWriter().close();
+        } else {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);    
+            response.getWriter().close();
+        }
     }
 }

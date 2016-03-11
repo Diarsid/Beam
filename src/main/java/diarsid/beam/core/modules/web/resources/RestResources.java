@@ -28,6 +28,10 @@ enum RestResources {
             "singleDirInDirs",
             "/resources/{placement}/dirs/{dir_name}",
             "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+"),
+    DIR_FIELDS_FROM_DIRS_IN_PLACEMENT (
+            "dirFields",
+            "/resources/{placement}/dirs/{dir_name}/{dir_field}",
+            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/(name|order)"),
     ALL_PAGES_IN_DIR_IN_PLACEMENT (
             "pagesInDir",
             "/resources/{placement}/dirs/{dir_name}/pages",
@@ -35,11 +39,11 @@ enum RestResources {
     PAGE_FROM_DIR_IN_PLACEMENT (
             "singlePageInDir",
             "/resources/{placement}/dirs/{dir_name}/pages/{page_name}",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages/[a-zA-Z0-9-_\\s]+"),
-    FIELDS_PAGE_FROM_DIR_IN_PLACEMENT (
-            "singlePageInDir",
+            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages/[a-zA-Z0-9-_>\\s]+"),
+    PAGE_FIELDS_FROM_DIR_IN_PLACEMENT (
+            "pageFields",
             "/resources/{placement}/dirs/{dir_name}/pages/{page_name}/{page_field}",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages/[a-zA-Z0-9-_\\s]+/(name|url|directory|directory_and_placement|order)");
+            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages/[a-zA-Z0-9-_>\\s]+/(name|url|directory_and_placement|order)");
     
     private RestResources(String servlet, String mapping, String regexp) {
         this.urlMapping = mapping;

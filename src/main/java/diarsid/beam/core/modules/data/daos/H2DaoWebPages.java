@@ -107,9 +107,11 @@ class H2DaoWebPages implements DaoWebPages {
             "SELECT MAX(page_order) " +
             "FROM web_pages " +
             "WHERE (page_placement IS ? ) AND (page_directory IS ?)";    
-    private final String DELETE_PAGES_WHERE_NAME_LIKE = 
+    private final String DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS = 
             "DELETE FROM web_pages " +
-            "WHERE page_name LIKE ?";
+            "WHERE ( page_name IS ? ) "
+            + "AND ( page_directory IS ? ) "
+            + "AND ( page_placement IS ? ) ";
     private final String SELECT_ALL_DIRECTORIES_WHERE_PLACEMENT = 
             "SELECT DISTINCT page_directory "+
             "FROM web_pages " +
@@ -240,11 +242,13 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
-    public boolean deleteWebPage(String name) {
+    public boolean deleteWebPage(String name, String dir, WebPagePlacement place) {
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(DELETE_PAGES_WHERE_NAME_LIKE);) {
+            PreparedStatement ps = con.prepareStatement(DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS);) {
             
             ps.setString(1, name);
+            ps.setString(2, dir);
+            ps.setString(3, place.name());
             int qty = ps.executeUpdate();
 
             return (qty > 0);
@@ -813,7 +817,7 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
-    public boolean createEmptyDirectoryWithDefaultOrder(WebPagePlacement place, String name) {
+    public boolean createEmptyDirectory(WebPagePlacement place, String name) {
         JdbcTransaction transact = this.data.beginTransaction();
         try {
             PreparedStatement maxDirOrderStmnt = 

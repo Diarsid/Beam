@@ -11,25 +11,20 @@ import java.util.List;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-
 import diarsid.beam.core.modules.data.DaoWebPages;
-
 import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 
 /**
  *
  * @author Diarsid
  */
-public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
-    // Fields =============================================================================
+public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
 
     private final DaoWebPages dao;
     
-    // Constructors =======================================================================
     public RmiAdapterForWebPageHandler(DaoWebPages dao) {
         this.dao = dao;
     }
-    // Methods ============================================================================
     
     @Override
     public boolean newWebPage(
@@ -42,17 +37,25 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
             throws RemoteException {
         
         name = name.trim().toLowerCase();
+        if ( ! name.matches("[a-zA-Z0-9-_>\\s]+")) {
+            return false;
+        }
         urlAddress = urlAddress.trim().toLowerCase();
         directory = directory.trim().toLowerCase();
+        if ( ! directory.matches("[a-zA-Z0-9-_>\\s]+")) {
+            return false;
+        }
         browser = browser.trim().toLowerCase();
         return this.dao.saveWebPage(WebPage.newPage(
                 name, shortcuts, urlAddress, placement, directory, browser));
     }
     
     @Override
-    public boolean deleteWebPage(String name) throws RemoteException {
+    public boolean deleteWebPage(String name, String dir, WebPagePlacement place) 
+            throws RemoteException {
+        
         name = name.trim().toLowerCase();
-        return this.dao.deleteWebPage(name);
+        return this.dao.deleteWebPage(name, dir, place);
     }
     
     @Override
@@ -93,6 +96,9 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
         
         name = name.trim().toLowerCase();
         newName = newName.trim().toLowerCase();
+        if ( ! newName.matches("[a-zA-Z0-9-_>\\s]+")) {
+            return false;
+        }
         return this.dao.editWebPageName(name, newName);
     }
     
@@ -135,6 +141,9 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
         
         directory = directory.trim().toLowerCase();
         newDirectory = newDirectory.trim().toLowerCase();
+        if ( ! newDirectory.matches("[a-zA-Z0-9-_>\\s]+")) {
+            return false;
+        }
         return this.dao.editDirectoryNameInPlacement(directory, newDirectory, placement);
     }
     
@@ -147,7 +156,10 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface{
     public boolean moveWebPageTo
             (String pageName, String newDirectory, WebPagePlacement placement)
             throws RemoteException {
-                
+        
+        if ( ! newDirectory.matches("[a-zA-Z0-9-_>\\s]+")) {
+            return false;
+        }        
         return this.dao.moveWebPageToPlacementAndDirectory
                 (pageName, newDirectory, placement);
     }
