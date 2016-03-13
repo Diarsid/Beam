@@ -56,7 +56,7 @@ class AllDirectoriesServlet extends HttpServlet {
             directoriesArray.add(directoryObj);
         }
         JSONObject answer = new JSONObject();
-        answer.put("webpanel_directories", directoriesArray);
+        answer.put("directories", directoriesArray);
         
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");

@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
 
@@ -33,21 +32,14 @@ import diarsid.beam.core.modules.data.JdbcTransaction;
 class JdbcTransactionWrapper implements JdbcTransaction {    
     
     private final Set<ResultSet> resultSets;
-    private final Set<Statement> statements;
-    
+    private final Set<Statement> statements;    
     private Connection con;
     
-    JdbcTransactionWrapper() {
+    JdbcTransactionWrapper(Connection con) {
         this.resultSets = new HashSet<>();
         this.statements = new HashSet<>();
-    }
-    
-   /*
-    * Attempt to connect with DataBase.
-    */
-    void connectTo(DataBase data) {
         try {
-            this.con = data.connect();
+            this.con = con;
             this.con.setAutoCommit(false);
         } catch (SQLException e) {
             // There is no sense to do anything further 

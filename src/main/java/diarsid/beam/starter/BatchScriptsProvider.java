@@ -17,13 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.Beam;
-
 import diarsid.beam.core.exceptions.TemporaryCodeException;
-
 import diarsid.beam.external.sysconsole.SysConsole;
-
 import diarsid.beam.shared.modules.ConfigModule;
-
 import diarsid.beam.shared.modules.config.Config;
 
 /**
@@ -128,7 +124,7 @@ class BatchScriptsProvider {
         scriptLines.add("");
         scriptLines.add("@echo off");
         scriptLines.add(
-                "cmd /c start java -cp .;" + 
+                "cmd /c start javaw -cp .;" + 
                 coreClassPath + 
                 " -Djava.rmi.server.hostname=127.0.0.1 " + 
                 jvmOptions + " " + className);
