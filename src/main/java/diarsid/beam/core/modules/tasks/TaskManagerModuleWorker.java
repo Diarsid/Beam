@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
-import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
+import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.TaskManagerModule;
 import diarsid.beam.core.modules.data.DaoTasks;
-import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
+import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTypeInvalidException;
 
 import static diarsid.beam.core.modules.tasks.TaskType.DAILY;
@@ -225,7 +225,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     private void notifyUserAboutThisWeekTasks(LocalDateTime weekBeginning) {
         synchronized (this.notificationLock) {
             List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
-                    weekBeginning, weekBeginning.plusWeeks(1));            
+                    weekBeginning, weekBeginning.plusWeeks(1));  
             this.ioEngine.showTasksNotification("week", tasks);
             this.scheduleNextRegularTasksSurvey();
         }

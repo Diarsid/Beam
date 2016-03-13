@@ -6,20 +6,18 @@
 
 package diarsid.beam.core.modules.innerio.javafxgui.window;
 
-import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
-
 import java.util.StringJoiner;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import diarsid.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
 
 /**
  *
@@ -33,10 +31,10 @@ class PopupWindow extends BeamWindow implements Runnable {
     PopupWindow(
             String title,
             String[] message, 
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller) {
         
-        super(controller, provider);
+        super(resources, controller);
         this.title = title;
         this.message = message;
     }
@@ -55,9 +53,9 @@ class PopupWindow extends BeamWindow implements Runnable {
         setContent(createMainContent());
         setTitle(this.title); 
         if (title.equals("Error")) {
-            setIconUrl(resources().getErrorIconURL());
+            setErrorIcon();
         } else {
-            setIconUrl(resources().getMessageIconURL());
+            setMessageIcon();
         }
         showThis();
     }    
@@ -76,17 +74,9 @@ class PopupWindow extends BeamWindow implements Runnable {
         
         Label picture;
         if (title.equals("Error")) {
-            picture = 
-                    new Label("", 
-                            new ImageView(
-                                    new Image(
-                                            "file:"+resources().getErrorImageURL()))); 
+            picture = new Label("", new ImageView(getErrorImage())); 
         } else {
-            picture = 
-                    new Label("", 
-                            new ImageView(
-                                    new Image(
-                                            "file:"+resources().getMessageImageURL()))); 
+            picture = new Label("", new ImageView(getMessageImage())); 
         }
         
         Label messageLabel = new Label(); 

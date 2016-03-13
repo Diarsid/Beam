@@ -17,22 +17,22 @@ public interface WindowsBuilder {
     
     Runnable newMessageWindow(
             String[] message,
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller);
     
     Runnable newErrorWindow(
             String[] message,
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller);
     
     Runnable newTaskWindow(
             TaskMessage task, 
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller);
     
     Runnable newNotificationWindow(
             String period,
             List<TaskMessage> tasks, 
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller);
 }

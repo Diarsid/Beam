@@ -4,21 +4,18 @@
  */
 package diarsid.beam.core.modules.innerio.javafxgui.window;
 
-import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
-import diarsid.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
-
 import java.util.StringJoiner;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import diarsid.beam.core.modules.tasks.Task;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 /**
@@ -31,10 +28,10 @@ class TaskWindow extends BeamWindow implements Runnable {
     
     TaskWindow(
             TaskMessage task,
-            WindowController controller,
-            WindowResourcesProvider provider) { 
+            WindowController controller, 
+            WindowResources resources) { 
         
-        super(controller, provider);
+        super(resources, controller);
         this.task = task;
     }
     
@@ -43,7 +40,7 @@ class TaskWindow extends BeamWindow implements Runnable {
         prepareStage();
         setContent(createMainContent());
         setTitle("Task");
-        setIconUrl(resources().getTaskIconURL());
+        setTaskIcon();
         showThis();
     }    
     
@@ -57,12 +54,9 @@ class TaskWindow extends BeamWindow implements Runnable {
         hBox.setAlignment(Pos.CENTER_LEFT);
         
         VBox taskTextBox = new VBox();
-        taskTextBox.setAlignment(Pos.TOP_LEFT);        
+        taskTextBox.setAlignment(Pos.TOP_LEFT);   
         
-        ImageView taskPic = 
-                new ImageView(new Image("file:"+resources().getTaskImageURL()));
-        
-        Label picture = new Label("", taskPic);        
+        Label picture = new Label("", new ImageView(getTaskImage()));        
         
         Label taskTimeLabel = new Label();
         taskTimeLabel.setText(task.getTime());

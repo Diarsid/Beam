@@ -9,9 +9,8 @@ package diarsid.beam.core.modules.innerio.javafxgui.window;
 import java.util.List;
 
 import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
-import diarsid.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowsBuilder;
-
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 /**
@@ -26,39 +25,39 @@ public class WindowsBuilderWorker implements WindowsBuilder {
     @Override
     public Runnable newMessageWindow(
             String[] message,
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller) {
         
         return new PopupWindow(
-            "Message", message, provider, controller);
+            "Message", message, resources, controller);
     }
     
     @Override
     public Runnable newErrorWindow(
             String[] message,
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller) {
         
         return new PopupWindow(
-            "Error", message, provider, controller);
+            "Error", message, resources, controller);
     }
     
     @Override
     public Runnable newTaskWindow(
             TaskMessage task, 
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller) {
         
-        return new TaskWindow(task, controller, provider);
+        return new TaskWindow(task, controller, resources);
     }
     
     @Override
     public Runnable newNotificationWindow(
             String period,
             List<TaskMessage> tasks, 
-            WindowResourcesProvider provider, 
+            WindowResources resources, 
             WindowController controller) {
         
-        return new TasksNotificationWindow(period, tasks, controller, provider);
+        return new TasksNotificationWindow(period, tasks, controller, resources);
     }
 }

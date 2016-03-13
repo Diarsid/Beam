@@ -15,15 +15,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
-import diarsid.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
-
+import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 
@@ -40,8 +38,8 @@ class TasksNotificationWindow extends BeamWindow implements Runnable {
             String period,
             List<TaskMessage> tasks,
             WindowController c, 
-            WindowResourcesProvider p) {
-        super(c, p);
+            WindowResources resources) {
+        super(resources, c);
         this.period = period;
         this.tasks = tasks;
     }
@@ -51,7 +49,7 @@ class TasksNotificationWindow extends BeamWindow implements Runnable {
         prepareStage();
         setContent(createMainContent());
         setTitle("Task");
-        setIconUrl(resources().getTaskIconURL());
+        setTaskIcon();
         showThis();
     }    
     
@@ -64,9 +62,7 @@ class TasksNotificationWindow extends BeamWindow implements Runnable {
         hBox.setMinWidth(300);
         hBox.setAlignment(Pos.CENTER_LEFT);        
         
-        ImageView taskPic = 
-                new ImageView(new Image("file:"+resources().getTaskImageURL()));  
-        Label picture = new Label("", taskPic);  
+        Label picture = new Label("", new ImageView(getTaskImage()));  
           
         if ( this.tasks.isEmpty() ) {
             Label noTasksLabel = new Label();

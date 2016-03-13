@@ -1,11 +1,6 @@
 package diarsid.beam.core.modules.innerio.javafxgui.window;
 
 import javafx.animation.PauseTransition;
-
-import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
-import diarsid.beam.core.modules.innerio.javafxgui.WindowPosition;
-import diarsid.beam.core.modules.innerio.javafxgui.WindowResourcesProvider;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -23,6 +18,10 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
+import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowPosition;
+import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
+
 import static javafx.animation.Animation.Status.RUNNING;
 
 /*
@@ -38,15 +37,15 @@ import static javafx.animation.Animation.Status.RUNNING;
 abstract class BeamWindow {    
     
     private final WindowController controller;
-    private final WindowResourcesProvider resources;
+    private final WindowResources resources;
     
     private Stage stage;
     private Button onTopControllerButton;
     private PauseTransition onTopRestoring;
     
-    BeamWindow(WindowController c, WindowResourcesProvider p) {
+    BeamWindow(WindowResources resources, WindowController c) {
+        this.resources = resources;
         this.controller = c;
-        this.resources = p;
     }
     
     void prepareStage() {
@@ -109,16 +108,20 @@ abstract class BeamWindow {
         this.stage.setTitle(title);
     }
     
-    final void setIconUrl(String iconUrl) {
-        this.stage.getIcons().add(new Image("file:"+iconUrl));
+    final void setErrorIcon() {
+        this.stage.getIcons().add(this.resources.getErrorIconImage());
     }
     
-    DropShadow buttonShadow() {
+    final void setTaskIcon() {
+        this.stage.getIcons().add(this.resources.getTaskIconImage());
+    }
+    
+    final void setMessageIcon() {
+        this.stage.getIcons().add(this.resources.getMessageIconImage());
+    }
+    
+    final DropShadow buttonShadow() {
         return this.resources.getButtonShadow();
-    }
-    
-    WindowResourcesProvider resources() {
-        return this.resources;
     }
     
     final Button getOnTopControlButton() {
@@ -233,4 +236,16 @@ abstract class BeamWindow {
             this.onTopRestoring.stop();
         } 
     }
+    
+    final Image getErrorImage() {
+        return this.resources.getErrorImage();
+    } 
+    
+    final Image getTaskImage() {
+        return this.resources.getTaskImage();
+    } 
+        
+    final Image getMessageImage() {
+        return this.resources.getMessageImage();
+    } 
 }
