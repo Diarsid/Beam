@@ -13,7 +13,7 @@
 
 #ok-button.button {
     -fx-background-color: white;
-    -fx-background-radius: 7px; 
+    -fx-background-radius: 11px; 
     -fx-font: 14px "Arial Black";
     -fx-text-fill: #4CBF13;
     -fx-border-radius: 11px;

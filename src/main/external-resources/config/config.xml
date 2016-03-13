@@ -13,7 +13,6 @@
             <option>-Xmx25m</option>
             <option>-XX:MaxHeapFreeRatio=10</option>
             <option>-XX:MinHeapFreeRatio=10</option>
-            <option>-XX:+UseG1GC</option>
         </beam-core>
         <beam-system-console>
             <option>-Xms3m</option>
@@ -133,6 +132,7 @@
         </core>       
     </databases>                              
 </configuration>
+
 
 
 
