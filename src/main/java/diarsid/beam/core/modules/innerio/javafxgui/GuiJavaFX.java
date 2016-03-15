@@ -5,7 +5,9 @@
 
 package diarsid.beam.core.modules.innerio.javafxgui;
 
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -35,6 +37,7 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     
     private final WindowController windowsController;  
     private final WindowsBuilder windowsBuilder;
+    private final Queue<ReusableTaskWindow> taskWindows;
     
     private Image taskImage;
     private Image taskIcon;
@@ -48,6 +51,7 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     public GuiJavaFX(String imagesLocation) {
         this.windowsController = new WindowController();
         this.windowsBuilder = new WindowsBuilderWorker();
+        this.taskWindows = new ArrayDeque<>();
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -78,22 +82,31 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     }
     
     @Override
-    public void showTask(TaskMessage task) {
-        Runnable window = this.windowsBuilder.newTaskWindow(
-                task,                    
-                this,
-                this.windowsController);
-        Platform.runLater(window);
+    public void showTask(TaskMessage task) {              
+        synchronized (this.taskWindows) {            
+            if ( this.taskWindows.isEmpty() ) {
+                Runnable window;
+                window = this.windowsBuilder.newTaskWindow(
+                        task,                    
+                        this,
+                        this.windowsController);
+                Platform.runLater(window);
+            } else {
+                ReusableTaskWindow reusabelWindow = this.taskWindows.poll();
+                reusabelWindow.reuseWithNewTask(task);
+                Platform.runLater(reusabelWindow);
+            }
+        }        
     }
     
     @Override
-    public void showTasks(String period, List<TaskMessage> tasks) {
+    public void showTasks(String period, List<TaskMessage> tasks) {         
         Runnable window = this.windowsBuilder.newNotificationWindow(
                 period,
                 tasks,
                 this,
                 this.windowsController);
-        Platform.runLater(window);
+        Platform.runLater(window);        
     }
     
     @Override
@@ -117,6 +130,13 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     @Override
     public void exitAfterAllWindowsClosed() {
         this.windowsController.setExitAfterAllWindowsClosed();
+    }
+    
+    @Override
+    public void addTaskWindowToReusable(ReusableTaskWindow window) {
+        synchronized ( this.taskWindows ) {
+            this.taskWindows.offer(window);
+        }        
     }
     
     @Override

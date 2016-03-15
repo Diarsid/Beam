@@ -18,6 +18,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
+import diarsid.beam.core.modules.innerio.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowPosition;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
@@ -56,14 +57,14 @@ abstract class BeamWindow {
         this.stage.setMinWidth(300);
         this.stage.setMinHeight(200);
         this.stage.setResizable(false);
+        this.setActionOnClose();
     }
         
     private void setActionOnClose() {
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                stage.close();
-                controller.windowClosed();
+                closeThis();
             }
         });
     }
@@ -77,8 +78,14 @@ abstract class BeamWindow {
     }    
         
     final void closeThis() {
-        this.stage.close();
+        this.stage.hide();
+        stage.setAlwaysOnTop(true);
+        onTopControllerButton.setId("on-top-toggle-button-on");  
+        this.stopWindowOnTopThrowing();
         this.controller.windowClosed();
+        if ( this.getClass().equals(TaskWindow.class) ) {
+            this.resources.addTaskWindowToReusable( (ReusableTaskWindow) this );
+        }        
     }
     
     final void setContent(Pane contentPane) {
@@ -92,15 +99,13 @@ abstract class BeamWindow {
         Scene scene = new Scene(main);
         scene.setFill(Color.TRANSPARENT);
         scene.getStylesheets().add(this.resources.getPathToCssFile());
-        this.stage.setScene(scene);
-        this.stage.sizeToScene();
+        this.stage.setScene(scene);        
     }
     
     final void showThis() {
-        this.setActionOnClose();        
+        this.stage.sizeToScene();
         this.setPosition();
-        
-        this.stage.show();
+        this.stage.show();        
         this.controller.reportLastWindowPosition(stage.getX(), stage.getY());
     }
     

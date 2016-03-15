@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
+import diarsid.beam.core.modules.innerio.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
 import diarsid.beam.core.modules.tasks.TaskMessage;
@@ -22,9 +23,13 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
  *
  * @author Diarsid
  */
-class TaskWindow extends BeamWindow implements Runnable {
+class TaskWindow extends BeamWindow implements Runnable, ReusableTaskWindow {
     
-    private final TaskMessage task;
+    private Label taskTimeLabel;
+    private Label taskTextLabel;    
+    private String taskText;
+    private String taskTime;    
+    private boolean alreadyInitAndCanBeReused;
     
     TaskWindow(
             TaskMessage task,
@@ -32,17 +37,48 @@ class TaskWindow extends BeamWindow implements Runnable {
             WindowResources resources) { 
         
         super(resources, controller);
-        this.task = task;
+        this.taskTime = task.getTime();
+        StringJoiner joiner = new StringJoiner("\n");
+        for(String s : task.getContent()){
+            joiner.add(s);
+        }
+        this.taskText = joiner.toString();
+        this.alreadyInitAndCanBeReused = false;
     }
     
     @Override
     public void run() {  
+        if ( ! this.alreadyInitAndCanBeReused ) {
+            this.initWindowObject();
+        } else {
+            this.reuseThisWindowObject();
+        }
+    }
+    
+    @Override
+    public void reuseWithNewTask(TaskMessage task) {
+        this.taskTime = task.getTime();
+        StringJoiner joiner = new StringJoiner("\n");
+        for(String s : task.getContent()){
+            joiner.add(s);
+        }
+        this.taskText = joiner.toString();
+    }
+    
+    private void initWindowObject() {
         prepareStage();
         setContent(createMainContent());
         setTitle("Task");
         setTaskIcon();
         showThis();
-    }    
+        this.alreadyInitAndCanBeReused = true;        
+    }
+    
+    private void reuseThisWindowObject() {
+        this.taskTextLabel.setText(this.taskText);
+        this.taskTimeLabel.setText(this.taskTime);
+        showThis();
+    }
     
     private Pane createMainContent() {
         VBox mainVBox = new VBox(15); 
@@ -58,20 +94,15 @@ class TaskWindow extends BeamWindow implements Runnable {
         
         Label picture = new Label("", new ImageView(getTaskImage()));        
         
-        Label taskTimeLabel = new Label();
-        taskTimeLabel.setText(task.getTime());
-        taskTimeLabel.setPadding(new Insets(0, 0, 8, 0));
+        this.taskTimeLabel = new Label();
+        this.taskTimeLabel.setText(this.taskTime);
+        this.taskTimeLabel.setPadding(new Insets(0, 0, 8, 0));
         
-        Label taskTextLabel = new Label(); 
-        taskTextLabel.setPadding(new Insets(0, 0, 0, 20));
+        this.taskTextLabel = new Label(); 
+        this.taskTextLabel.setPadding(new Insets(0, 0, 0, 20));
+        this.taskTextLabel.setText(this.taskText);
         
-        StringJoiner joiner = new StringJoiner("\n");
-        for(String s : task.getContent()){
-            joiner.add(s);
-        }
-        taskTextLabel.setText(joiner.toString());
-        
-        taskTextBox.getChildren().addAll(taskTimeLabel, taskTextLabel);
+        taskTextBox.getChildren().addAll(this.taskTimeLabel, this.taskTextLabel);
         hBox.getChildren().addAll(picture, taskTextBox);
         
         mainVBox.getChildren().addAll(hBox, newOkButton("Done"));

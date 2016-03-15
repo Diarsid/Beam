@@ -28,5 +28,7 @@ public interface WindowResources {
 
     Image getTaskIconImage();
 
-    Image getTaskImage();    
+    Image getTaskImage(); 
+    
+    void addTaskWindowToReusable(ReusableTaskWindow window);
 }
