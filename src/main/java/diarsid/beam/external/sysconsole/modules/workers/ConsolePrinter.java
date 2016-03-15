@@ -15,11 +15,8 @@ import java.util.Map;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
-
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
-
 import diarsid.beam.core.modules.tasks.TaskMessage;
-
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 
 /**
@@ -257,6 +254,28 @@ class ConsolePrinter implements ConsolePrinterModule {
             }
             this.writer.write(sb.toString());
             sb = sb.delete(0, sb.length());
+            this.writer.newLine();
+            this.writer.flush();
+        }
+        this.writer.write(SPACE);
+        this.writer.write("==================================================");
+        this.writer.newLine();
+        this.writer.flush();
+    }
+    
+    @Override
+    public void printDirs(List<String> dirs) throws IOException {
+        if (dirs.isEmpty()) {
+            printUnderLn("There aren't any directories.");
+            return;
+        }
+        this.writer.write(SPACE);
+        this.writer.write("==================================================");
+        this.writer.newLine();
+        this.writer.flush();
+        for (String dir : dirs) {
+            this.writer.write(SPACE);
+            this.writer.write(dir);
             this.writer.newLine();
             this.writer.flush();
         }

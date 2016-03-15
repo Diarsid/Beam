@@ -11,9 +11,7 @@ import java.util.Map;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
-
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
-
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 import com.drs.gem.injector.module.GemModule;
@@ -53,6 +51,8 @@ public interface ConsolePrinterModule extends GemModule {
     void printUnder(String s) throws IOException;
 
     void printUnderLn(String s) throws IOException;
+    
+    void printDirs(List<String> dirs) throws IOException;
 
     void printWebPages(List<WebPage> pages, boolean compressOutput) throws IOException;
     

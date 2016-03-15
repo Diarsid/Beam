@@ -143,7 +143,11 @@ class ConsoleListener implements ConsoleListenerModule {
                                     case "directory" : {
                                         this.dispatcher.getPagesOfPanelDirectory();
                                         break parsing;
-                                    }    
+                                    }   
+                                    case "dirs" : {
+                                        this.dispatcher.getAllWebPanelDirs();
+                                        break parsing;
+                                    }
                                     default: {
                                         break parsing;
                                     }
@@ -162,11 +166,19 @@ class ConsoleListener implements ConsoleListenerModule {
                                     case "directory" : {
                                         this.dispatcher.getPagesOfBookmarksDirectory();
                                         break parsing;
-                                    }    
+                                    }  
+                                    case "dirs" : {
+                                        this.dispatcher.getAllBookmarkDirs();
+                                        break parsing;
+                                    }
                                     default: {
                                         break parsing;
                                     }
                                 }                                
+                            }
+                            case "dirs" : {
+                                this.dispatcher.getAllDirs();
+                                break parsing;
                             }
                             default : {
                                 break parsing;

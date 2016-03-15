@@ -47,20 +47,26 @@ class SinglePageInDirectoryServlet extends HttpServlet {
                 this.resolver.extractPlacementBeforeDirectory(path));
         JSONObject answer = new JSONObject();
         
-        if (pages.size() == 1) {
+        if ( pages.size() == 1 ) {
             answer.put("name", pages.get(0).getName());
+            answer.put("order", pages.get(0).getPageOrder());
             answer.put("url", pages.get(0).getUrlAddress());
-        } else {
+        } else if ( pages.size() > 1 ) {
             JSONArray pagesArray = new JSONArray();
             JSONObject pageJSONObject;
             for (WebPage page : pages) {
                 pageJSONObject = new JSONObject();
                 pageJSONObject.put("name", page.getName());
+                pageJSONObject.put("order", pages.get(0).getPageOrder());
                 pageJSONObject.put("url", page.getUrlAddress());
                 pagesArray.add(pageJSONObject);
             }
             answer.put("webpages", pagesArray);
-        }          
+        } else {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setContentType("application/json");       
+            response.getWriter().close();
+        }         
         
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");

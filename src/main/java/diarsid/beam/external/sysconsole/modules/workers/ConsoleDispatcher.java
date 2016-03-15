@@ -363,6 +363,31 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
+    public void getAllBookmarkDirs() throws IOException {
+        List<String> dirs = this.beam.webPages()
+                .getAllDirectoriesInPlacement(BOOKMARKS);
+        this.printer.printDirs(dirs);
+    }
+    
+    @Override
+    public void getAllWebPanelDirs() throws IOException {
+        List<String> dirs = this.beam.webPages()
+                .getAllDirectoriesInPlacement(WEBPANEL);
+        this.printer.printDirs(dirs);
+    }
+    
+    @Override
+    public void getAllDirs() throws IOException {
+        List<String> dirs = this.beam.webPages()
+                .getAllDirectoriesInPlacement(WEBPANEL);
+        dirs.add(0, "> WebPanel: ");
+        dirs.add("> Bookmarks: ");
+        dirs.addAll(this.beam.webPages()
+                .getAllDirectoriesInPlacement(BOOKMARKS));
+        this.printer.printDirs(dirs);
+    }
+    
+    @Override
     public void getAllChoices() throws IOException {
         this.printer.printChoices(this.beam.executor().getAllChoices());
     }

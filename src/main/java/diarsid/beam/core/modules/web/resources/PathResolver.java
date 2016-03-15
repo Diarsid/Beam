@@ -57,7 +57,7 @@ class PathResolver {
     String extractDirectoryBeforeFields(String path) {
         return path.substring(
                 path.lastIndexOf("dirs/") + "dirs/".length(),
-                path.indexOf("/"));
+                path.lastIndexOf("/"));
     }
     
     String extractPage(String path) {
@@ -80,6 +80,10 @@ class PathResolver {
     }
     
     boolean check(String entity) {
-        return entity.matches("[a-zA-Z0-9-_>\\s]+");
+        if (entity != null) {
+            return entity.matches("[a-zA-Z0-9-_>\\s]+");
+        } else {
+            return false;
+        }
     }
 }

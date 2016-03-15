@@ -83,7 +83,13 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     void getAllWebPanelPages() throws IOException;
     
     void getAllBookmarksPages() throws IOException;
-
+    
+    void getAllBookmarkDirs() throws IOException;
+    
+    void getAllWebPanelDirs() throws IOException;
+    
+    void getAllDirs() throws IOException;
+            
     String waitForNewCommand() throws IOException;
     
     void closeConsole() throws IOException;
