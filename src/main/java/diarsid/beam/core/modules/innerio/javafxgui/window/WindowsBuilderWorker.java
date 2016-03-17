@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.innerio.javafxgui.window;
 
 import java.util.List;
 
+import diarsid.beam.core.modules.innerio.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowController;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowResources;
 import diarsid.beam.core.modules.innerio.javafxgui.WindowsBuilder;
@@ -43,7 +44,7 @@ public class WindowsBuilderWorker implements WindowsBuilder {
     }
     
     @Override
-    public Runnable newTaskWindow(
+    public ReusableTaskWindow newTaskWindow(
             TaskMessage task, 
             WindowResources resources, 
             WindowController controller) {

@@ -25,7 +25,7 @@ public interface WindowsBuilder {
             WindowResources resources, 
             WindowController controller);
     
-    Runnable newTaskWindow(
+    ReusableTaskWindow newTaskWindow(
             TaskMessage task, 
             WindowResources resources, 
             WindowController controller);

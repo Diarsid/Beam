@@ -5,9 +5,8 @@
 
 package diarsid.beam.core.modules.innerio.javafxgui;
 
-import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Queue;
+import java.util.PriorityQueue;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -22,9 +21,11 @@ import diarsid.beam.core.modules.innerio.javafxgui.window.WindowsBuilderWorker;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 /*
- * Main class for JavaFX based GUI.
- * Used as 'JavaFX Application Thread'. 
- * Runs appropriate windows for task, message or exception.
+ * Main class for JavaFX based gui.
+ * 
+ * Serve as connection point with Java FX Application Thread
+ * trough encapsulated Platform.runLater() calls. Therefore all
+ * window classes used by this program, must implement Runnable. 
  */
 public class GuiJavaFX extends Application implements Gui, WindowResources {
     
@@ -34,10 +35,10 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
         new JFXPanel();
         Platform.setImplicitExit(false);
     }
-    
+    private final String pathToCssFile = "file:./../config/BeamWindow.css";
     private final WindowController windowsController;  
     private final WindowsBuilder windowsBuilder;
-    private final Queue<ReusableTaskWindow> taskWindows;
+    private final PriorityQueue<ReusableTaskWindow> taskWindows;
     
     private Image taskImage;
     private Image taskIcon;
@@ -51,7 +52,11 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     public GuiJavaFX(String imagesLocation) {
         this.windowsController = new WindowController();
         this.windowsBuilder = new WindowsBuilderWorker();
-        this.taskWindows = new ArrayDeque<>();
+        this.taskWindows = new PriorityQueue<>();
+        // any work with Java FX objects is possible
+        // only within Java FX Application Thread, so
+        // it is necessary to init them in run() {...}
+        // that will be executed inside Java FX platform.
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -82,48 +87,38 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     }
     
     @Override
-    public void showTask(TaskMessage task) {              
-        synchronized (this.taskWindows) {            
+    public void showTask(TaskMessage task) { 
+        ReusableTaskWindow window;
+        synchronized ( this.taskWindows ) {            
             if ( this.taskWindows.isEmpty() ) {
-                Runnable window;
                 window = this.windowsBuilder.newTaskWindow(
-                        task,                    
-                        this,
-                        this.windowsController);
-                Platform.runLater(window);
+                        task, (WindowResources) this, this.windowsController);
             } else {
-                ReusableTaskWindow reusabelWindow = this.taskWindows.poll();
-                reusabelWindow.reuseWithNewTask(task);
-                Platform.runLater(reusabelWindow);
+                window = this.taskWindows.poll();
+                window.reuseWithNewTask(task);
             }
-        }        
+        }
+        Platform.runLater(window);
     }
     
     @Override
     public void showTasks(String period, List<TaskMessage> tasks) {         
         Runnable window = this.windowsBuilder.newNotificationWindow(
-                period,
-                tasks,
-                this,
-                this.windowsController);
+                period, tasks, (WindowResources) this, this.windowsController);
         Platform.runLater(window);        
     }
     
     @Override
     public void showMessage(String[] message) {
         Runnable window = this.windowsBuilder.newMessageWindow(
-                message, 
-                this,
-                this.windowsController);
+                message, (WindowResources) this, this.windowsController);
         Platform.runLater(window);
     } 
     
     @Override
     public void showError(String[] error) {
         Runnable window = this.windowsBuilder.newErrorWindow(
-                error, 
-                this,
-                this.windowsController);
+                error, (WindowResources) this, this.windowsController);
         Platform.runLater(window);
     }
     
@@ -176,6 +171,6 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     
     @Override
     public String getPathToCssFile() {
-        return "file:./../config/BeamWindow.css";
+        return this.pathToCssFile;
     }
 }

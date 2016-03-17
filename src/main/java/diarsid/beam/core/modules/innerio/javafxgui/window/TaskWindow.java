@@ -23,7 +23,7 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
  *
  * @author Diarsid
  */
-class TaskWindow extends BeamWindow implements Runnable, ReusableTaskWindow {
+class TaskWindow extends BeamWindow implements ReusableTaskWindow {
     
     private Label taskTimeLabel;
     private Label taskTextLabel;    

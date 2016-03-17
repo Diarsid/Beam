@@ -35,7 +35,7 @@ import static javafx.animation.Animation.Status.RUNNING;
  *
  * @author Diarsid
  */
-abstract class BeamWindow {    
+abstract class BeamWindow implements Comparable<BeamWindow> {    
     
     private final WindowController controller;
     private final WindowResources resources;
@@ -57,24 +57,13 @@ abstract class BeamWindow {
         this.stage.setMinWidth(300);
         this.stage.setMinHeight(200);
         this.stage.setResizable(false);
-        this.setActionOnClose();
-    }
         
-    private void setActionOnClose() {
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
                 closeThis();
             }
         });
-    }
-    
-    private void setPosition() {
-        WindowPosition position = controller.getNewWindowPosition();
-        if ( position.getX() != 0 ) {
-            this.stage.setX(position.getX());
-            this.stage.setY(position.getY());
-        }
     }    
         
     final void closeThis() {
@@ -86,6 +75,21 @@ abstract class BeamWindow {
         if ( this.getClass().equals(TaskWindow.class) ) {
             this.resources.addTaskWindowToReusable( (ReusableTaskWindow) this );
         }        
+    }    
+    
+    final void showThis() {
+        WindowPosition position = controller.getNewWindowPosition();
+        System.out.println();
+        System.out.println("Previous position - X: " + stage.getX() + ", Y: " + stage.getY());
+        if ( (position.getX() != 0) && (Double.isNaN(this.stage.getX())) ) {
+            this.stage.setX(position.getX());
+            this.stage.setY(position.getY());
+        } 
+        System.out.println("New position - X: " + position.getX() + ", Y: " + position.getY());
+        this.stage.sizeToScene();
+        this.stage.show();        
+        this.controller.reportLastWindowPosition(stage.getX(), stage.getY());
+        System.out.println("Actual position - X: " + stage.getX() + ", Y: " + stage.getY());
     }
     
     final void setContent(Pane contentPane) {
@@ -100,14 +104,7 @@ abstract class BeamWindow {
         scene.setFill(Color.TRANSPARENT);
         scene.getStylesheets().add(this.resources.getPathToCssFile());
         this.stage.setScene(scene);        
-    }
-    
-    final void showThis() {
-        this.stage.sizeToScene();
-        this.setPosition();
-        this.stage.show();        
-        this.controller.reportLastWindowPosition(stage.getX(), stage.getY());
-    }
+    }    
     
     final void setTitle(String title) {
         this.stage.setTitle(title);
@@ -175,6 +172,7 @@ abstract class BeamWindow {
             public void handle(MouseEvent event) {
                 if ( stage.isAlwaysOnTop() ) {
                     stage.setAlwaysOnTop(false);
+                    stage.toBack();
                     onTopControllerButton.setId("on-top-toggle-button-off");
                     //waitAndRestoreOnTop();      
                     throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(60);
@@ -227,7 +225,7 @@ abstract class BeamWindow {
             this.onTopRestoring.setOnFinished(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
-                    stage.setAlwaysOnTop(true);                    
+                    stage.setAlwaysOnTop(true);
                     stage.setAlwaysOnTop(false);
                     onTopRestoring.playFromStart();
                 }
@@ -253,4 +251,17 @@ abstract class BeamWindow {
     final Image getMessageImage() {
         return this.resources.getMessageImage();
     } 
+    
+    @Override
+    public int compareTo(BeamWindow other) {
+        double thisSum = this.stage.getX() + this.stage.getY();
+        double otherSum = other.stage.getX() + other.stage.getY();
+        if ( thisSum < otherSum ) {
+            return -1;
+        } else if ( thisSum > otherSum ) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }

@@ -11,7 +11,7 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
  *
  * @author Diarsid
  */
-public interface ReusableTaskWindow extends Runnable {
+public interface ReusableTaskWindow extends Runnable  {
     
     void reuseWithNewTask(TaskMessage task);
 }
