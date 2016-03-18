@@ -34,11 +34,13 @@ class BatchScriptsProvider {
     private final String beamSysConsoleRunScriptFile = "./Beam.sysconsole_run";    
     private final String beamShellLoaderScript = "./Beam.shell-loader_run";
     private final String beamBatchLoaderScript = "./Beam.loader_run";
+    private final String beamSystemPathScript = "./beam";
     
     private Path coreScript;
     private Path sysConsoleScript;
     private Path shellLoaderScript;
     private Path batchLoaderScript;
+    private Path systemPathScript;
     
     BatchScriptsProvider(ConfigModule config, boolean track) {
         this.config = config;
@@ -47,15 +49,17 @@ class BatchScriptsProvider {
     }
     
     void processScripts() {        
-        String ext = getSystemScriptsExtension();
+        String ext = this.getSystemScriptsExtension();
         
         this.coreScript = Paths.get(this.beamCoreRunScriptFile + ext);
         this.sysConsoleScript = Paths.get(this.beamSysConsoleRunScriptFile + ext);
         this.shellLoaderScript = Paths.get(this.beamShellLoaderScript + ext);
-        this.batchLoaderScript = Paths.get(this.beamBatchLoaderScript + ext);        
+        this.batchLoaderScript = Paths.get(this.beamBatchLoaderScript + ext);       
+        this.systemPathScript = Paths.get(this.beamSystemPathScript + ext);
         
         try {
             this.writeBatchLoaderScript();
+            this.writeSystemPathLoaderScript();
             if ( !Files.exists(this.coreScript) ) {
                 this.track(" > core script does not exist.");
                 this.writeCoreScript();                
@@ -100,6 +104,31 @@ class BatchScriptsProvider {
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING,
                 StandardOpenOption.WRITE);
+    }
+    
+    private void writeSystemPathLoaderScript() throws IOException {
+        String pathToBinaries = this.systemPathScript.getParent().toAbsolutePath().normalize().toString();
+        String pathToScript = this.shellLoaderScript.toAbsolutePath().normalize().toString();
+        List<String> scriptLines;
+        
+        String systemName = System.getProperty("os.name").toLowerCase();
+        if (systemName.contains("win")){
+            scriptLines = this.scriptsComposer.composeSystemPathCMDScript(
+                    pathToBinaries, 
+                    pathToScript);
+        } else if (systemName.contains("x") || systemName.contains("u")){
+            scriptLines = this.scriptsComposer.composeSystemPathShellScript(
+                    pathToBinaries, 
+                    pathToScript);
+        } else {
+            System.out.println("Unknown OS.");
+            System.exit(1);
+            return;
+        }
+        
+        this.createScriptFile(this.systemPathScript, scriptLines);        
+        
+        if (track) { System.out.println(" > system path script created."); }
     }
     
     private void writeBatchLoaderScript() throws IOException {

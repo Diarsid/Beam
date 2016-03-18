@@ -14,6 +14,8 @@ import diarsid.beam.core.entities.WebPagePlacement;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 
+import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
+
 /**
  *
  * @author Diarsid
@@ -37,12 +39,15 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
             throws RemoteException {
         
         name = name.trim().toLowerCase();
-        if ( ! name.matches("[a-zA-Z0-9-_>\\s]+")) {
+        if ( ! name.matches(WEB_NAME_REGEXP)) {
             return false;
+        }
+        if ( name.endsWith("/") ) {
+            name = name.substring(0, name.length()-1);
         }
         urlAddress = urlAddress.trim().toLowerCase();
         directory = directory.trim().toLowerCase();
-        if ( ! directory.matches("[a-zA-Z0-9-_>\\s]+")) {
+        if ( ! directory.matches(WEB_NAME_REGEXP)) {
             return false;
         }
         browser = browser.trim().toLowerCase();

@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.modules.web.resources;
 
+import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
+
 /**
  *
  * @author Diarsid
@@ -27,23 +29,23 @@ enum RestResources {
     DIR_FROM_DIRS_IN_PLACEMENT (
             "singleDirInDirs",
             "/resources/{placement}/dirs/{dir_name}",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+"),
+            "/resources/(webpanel|bookmarks)/dirs/"+WEB_NAME_REGEXP),
     DIR_FIELDS_FROM_DIRS_IN_PLACEMENT (
             "dirFields",
             "/resources/{placement}/dirs/{dir_name}/{dir_field}",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/(name|order)"),
+            "/resources/(webpanel|bookmarks)/dirs/"+WEB_NAME_REGEXP+"/(name|order)"),
     ALL_PAGES_IN_DIR_IN_PLACEMENT (
             "pagesInDir",
             "/resources/{placement}/dirs/{dir_name}/pages",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages"),
+            "/resources/(webpanel|bookmarks)/dirs/"+WEB_NAME_REGEXP+"/pages"),
     PAGE_FROM_DIR_IN_PLACEMENT (
             "singlePageInDir",
             "/resources/{placement}/dirs/{dir_name}/pages/{page_name}",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages/[a-zA-Z0-9-_>\\s]+"),
+            "/resources/(webpanel|bookmarks)/dirs/"+WEB_NAME_REGEXP+"/pages/"+WEB_NAME_REGEXP),
     PAGE_FIELDS_FROM_DIR_IN_PLACEMENT (
             "pageFields",
             "/resources/{placement}/dirs/{dir_name}/pages/{page_name}/{page_field}",
-            "/resources/(webpanel|bookmarks)/dirs/[a-zA-Z0-9-_>\\s]+/pages/[a-zA-Z0-9-_>\\s]+/(name|url|directory_and_placement|order)");
+            "/resources/(webpanel|bookmarks)/dirs/"+WEB_NAME_REGEXP+"/pages/"+WEB_NAME_REGEXP+"/(name|url|directory_and_placement|order)");
     
     private RestResources(String servlet, String mapping, String regexp) {
         this.urlMapping = mapping;

@@ -18,6 +18,8 @@ import static diarsid.beam.core.entities.WebPagePlacement.WEBPANEL;
  */
 public class WebPage implements Serializable, Comparable<WebPage> {
     
+    public final static String WEB_NAME_REGEXP = "[a-zA-Z0-9-_\\.>\\s]+";
+    
     private final String name;
     private final String shortcuts;
     private final String urlAddress;

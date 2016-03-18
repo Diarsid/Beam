@@ -89,6 +89,19 @@ class BatchSrciptsComposer {
         
         return scriptLines;
     }
+    
+    List<String> composeSystemPathCMDScript(String pathBinaries, String pathScript) {
+        List<String> scriptLines = new ArrayList<>();
+        scriptLines.add("@echo off");
+        scriptLines.add("echo loading...");
+        scriptLines.add("echo.");
+        scriptLines.add("@echo off");
+        scriptLines.add("set OLDDIR=%cd%");
+        scriptLines.add("cd /D " + pathBinaries.replace("/", "\\"));
+        scriptLines.add("call " + pathScript.replace("/", "\\"));
+        scriptLines.add("cd /D %OLDDIR%");
+        return scriptLines;
+    }
      
     List<String> composeCoreShellScript(
             int configHashCode, 
@@ -121,6 +134,13 @@ class BatchSrciptsComposer {
     }
     
     List<String> composeBatchLoaderShellScript(
+            String loaderClasspath, String className) {
+        
+        // not implemented yet.
+        throw new TemporaryCodeException("Shell script creation not implemented.");
+    }
+    
+    List<String> composeSystemPathShellScript(
             String loaderClasspath, String className) {
         
         // not implemented yet.

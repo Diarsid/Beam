@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import diarsid.beam.core.entities.WebPagePlacement;
 
+import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
+
 /**
  *
  * @author Diarsid
@@ -81,7 +83,7 @@ class PathResolver {
     
     boolean check(String entity) {
         if (entity != null) {
-            return entity.matches("[a-zA-Z0-9-_>\\s]+");
+            return entity.matches(WEB_NAME_REGEXP);
         } else {
             return false;
         }
