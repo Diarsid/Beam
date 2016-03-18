@@ -13,11 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.core.exceptions.TemporaryCodeException;
 import diarsid.beam.external.sysconsole.SysConsole;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
@@ -30,31 +28,45 @@ class BatchScriptsProvider {
     
     private final ConfigModule config;
     private final boolean track;
+    private final BatchSrciptsComposer scriptsComposer;
     
     private final String beamCoreRunScriptFile = "./Beam.core_run";
     private final String beamSysConsoleRunScriptFile = "./Beam.sysconsole_run";    
+    private final String beamShellLoaderScript = "./Beam.shell-loader_run";
+    private final String beamBatchLoaderScript = "./Beam.loader_run";
     
     private Path coreScript;
     private Path sysConsoleScript;
+    private Path shellLoaderScript;
+    private Path batchLoaderScript;
     
     BatchScriptsProvider(ConfigModule config, boolean track) {
         this.config = config;
         this.track = track;
+        this.scriptsComposer = new BatchSrciptsComposer();
     }
     
     void processScripts() {        
         String ext = getSystemScriptsExtension();
+        
         this.coreScript = Paths.get(this.beamCoreRunScriptFile + ext);
         this.sysConsoleScript = Paths.get(this.beamSysConsoleRunScriptFile + ext);
+        this.shellLoaderScript = Paths.get(this.beamShellLoaderScript + ext);
+        this.batchLoaderScript = Paths.get(this.beamBatchLoaderScript + ext);        
         
         try {
+            this.writeBatchLoaderScript();
             if ( !Files.exists(this.coreScript) ) {
                 this.track(" > core script does not exist.");
                 this.writeCoreScript();                
             }
             if ( !Files.exists(this.sysConsoleScript) ) {
-                this.track(" > system console script does not exist."); 
-                this.writeSysConsoleScript();                
+                this.track(" > separate system console script does not exist."); 
+                this.writeSeparateSysConsoleScript();                
+            }
+            if ( !Files.exists(this.shellLoaderScript)) {
+                this.track(" > shell loader script does not exist.");
+                this.writeShellLoaderScript();
             }
             if ( !this.coreScriptNotActual() ) {
                 this.track(" > core script is not up to date."); 
@@ -62,8 +74,12 @@ class BatchScriptsProvider {
             }
             if ( !this.sysConsoleScriptNotActual() ) {
                 this.track(" > system console script is not up to date.");
-                this.writeSysConsoleScript();
-            }            
+                this.writeSeparateSysConsoleScript();
+            }  
+            if ( !this.shellLoaderScriptNotActual() ) {
+                this.track(" > shell loader script is not up to date.");
+                this.writeShellLoaderScript();
+            }
             track("All scripts are up to date.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,6 +92,40 @@ class BatchScriptsProvider {
         }
     }
     
+    private void createScriptFile(Path script, List<String> lines) 
+            throws IOException {
+        
+        Files.write(script, lines, 
+                StandardCharsets.UTF_8, 
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE);
+    }
+    
+    private void writeBatchLoaderScript() throws IOException {
+        String loaderClasspath = ".;.\\..\\lib\\gem-injector-1.0.jar;Beam.jar";
+        List<String> scriptLines;
+        
+        String systemName = System.getProperty("os.name").toLowerCase();
+        if (systemName.contains("win")){
+            scriptLines = this.scriptsComposer.composeBatchLoaderCMDScript(
+                    loaderClasspath, 
+                    BeamPartsBatchLoader.class.getCanonicalName());
+        } else if (systemName.contains("x") || systemName.contains("u")){
+            scriptLines = this.scriptsComposer.composeBatchLoaderShellScript(
+                    loaderClasspath, 
+                    BeamPartsBatchLoader.class.getCanonicalName());
+        } else {
+            System.out.println("Unknown OS.");
+            System.exit(1);
+            return;
+        }
+        
+        this.createScriptFile(this.batchLoaderScript, scriptLines);        
+        
+        if (track) { System.out.println(" > batch loader script created."); }
+    }
+    
     private void writeCoreScript() throws IOException {
         String jvmOptions = config.get(Config.JVM_CORE_OPTIONS);
         String coreClasspath = config.get(Config.CLASSPATH_CORE).replace(" ", ";");
@@ -86,13 +136,13 @@ class BatchScriptsProvider {
         
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")){
-            scriptLines = this.writeCoreCMDScript(
+            scriptLines = this.scriptsComposer.composeCoreCMDScript(
                     configHashCode, 
                     coreClasspath, 
                     jvmOptions, 
                     Beam.class.getCanonicalName());
         } else if (systemName.contains("x") || systemName.contains("u")){
-            scriptLines = this.writeCoreShellScript(
+            scriptLines = this.scriptsComposer.composeCoreShellScript(
                     configHashCode, 
                     coreClasspath, 
                     jvmOptions, 
@@ -103,75 +153,12 @@ class BatchScriptsProvider {
             return;
         }
         
-        Files.write(this.coreScript, 
-                scriptLines, 
-                StandardCharsets.UTF_8, 
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE);
+        this.createScriptFile(this.coreScript, scriptLines);       
         
         if (track) { System.out.println(" > core script created."); }
-    }
-    
-    private List<String> writeCoreCMDScript(
-            int configHashCode, 
-            String coreClassPath, 
-            String jvmOptions, 
-            String className) {
-        
-        List<String> scriptLines = new ArrayList<>();
-        scriptLines.add(":: configuration hashcode [" + configHashCode + "]");
-        scriptLines.add("");
-        scriptLines.add("@echo off");
-        scriptLines.add(
-                "cmd /c start javaw -cp .;" + 
-                coreClassPath + 
-                " -Djava.rmi.server.hostname=127.0.0.1 " + 
-                jvmOptions + " " + className);
-        
-        return scriptLines;
-    }
-    
-    private List<String> writeSysConsoleCMDScript(
-            int configHashCode, 
-            String consoleClasspath, 
-            String jvmOptions, 
-            String className) {
-        
-        List<String> scriptLines = new ArrayList<>();
-        scriptLines.add(":: configuration hashcode [" + configHashCode + "]");
-        scriptLines.add("");
-        scriptLines.add("@echo off");
-        scriptLines.add(
-                "cmd /c start java -cp .;" + 
-                consoleClasspath + 
-                " -Djava.rmi.server.hostname=127.0.0.1 " + 
-                jvmOptions + " " + className);
-        
-        return scriptLines;
-    }
-    
-    private List<String> writeCoreShellScript(
-            int configHashCode, 
-            String coreClasspath, 
-            String jvmOptions, 
-            String className) {
-        
-        // not implemented yet.
-        throw new TemporaryCodeException("Shell script creation not implemented.");
-    }
-    
-    private List<String> writeSysConsoleShellScript(
-            int configHashCode, 
-            String consoleClassPath, 
-            String jvmOptions, 
-            String className) {
-        
-        // not implemented yet.
-        throw new TemporaryCodeException("Shell script creation not implemented.");
-    }
+    }  
             
-    private void writeSysConsoleScript() throws IOException {
+    private void writeSeparateSysConsoleScript() throws IOException {
         String jvmOptions = config.get(Config.JVM_SYS_CONSOLE_OPTIONS);
         String consoleClasspath = config.get(Config.CLASSPATH_SYS_CONSOLE).replace(" ", ";");
         
@@ -181,13 +168,13 @@ class BatchScriptsProvider {
         
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")){
-            scriptLines = this.writeSysConsoleCMDScript(
+            scriptLines = this.scriptsComposer.composeSysConsoleCMDScript(
                     configHashCode, 
                     consoleClasspath, 
                     jvmOptions, 
                     SysConsole.class.getCanonicalName());
         } else if (systemName.contains("x") || systemName.contains("u")){
-            scriptLines = this.writeSysConsoleShellScript(
+            scriptLines = this.scriptsComposer.composeSysConsoleShellScript(
                     configHashCode, 
                     consoleClasspath, 
                     jvmOptions, 
@@ -198,14 +185,41 @@ class BatchScriptsProvider {
             return;
         }
         
-        Files.write(this.sysConsoleScript, 
-                scriptLines, 
-                StandardCharsets.UTF_8, 
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING,
-                StandardOpenOption.WRITE);
+        this.createScriptFile(this.sysConsoleScript, scriptLines);        
         
-        if (track) { System.out.println(" > system console script created."); }
+        if (track) { System.out.println(" > separate system console script created."); }
+    }
+    
+    private void writeShellLoaderScript() throws IOException {
+        String jvmOptions = config.get(Config.JVM_SYS_CONSOLE_OPTIONS);
+        String consoleClasspath = config.get(Config.CLASSPATH_SYS_CONSOLE).replace(" ", ";");
+        
+        int configHashCode = jvmOptions.hashCode() + consoleClasspath.hashCode();
+        
+        List<String> scriptLines;
+        
+        String systemName = System.getProperty("os.name").toLowerCase();
+        if (systemName.contains("win")){
+            scriptLines = this.scriptsComposer.composeShellLoaderCMDScript(
+                    configHashCode, 
+                    consoleClasspath, 
+                    jvmOptions, 
+                    BeamPartsShellLoader.class.getCanonicalName());
+        } else if (systemName.contains("x") || systemName.contains("u")){
+            scriptLines = this.scriptsComposer.composeShellLoaderShellScript(
+                    configHashCode, 
+                    consoleClasspath, 
+                    jvmOptions, 
+                    BeamPartsShellLoader.class.getCanonicalName());
+        } else {
+            System.out.println("Unknown OS.");
+            System.exit(1);
+            return;
+        }
+        
+        this.createScriptFile(this.shellLoaderScript, scriptLines);        
+        
+        if (track) { System.out.println(" > shell loader script created."); }
     }
     
     private boolean coreScriptNotActual() throws IOException {
@@ -214,13 +228,7 @@ class BatchScriptsProvider {
         
         int configHashCode = jvmOptions.hashCode() + coreClasspath.hashCode();
         
-        String firstLine = Files.readAllLines(this.coreScript).get(0);
-        
-        int scriptHashCode = Integer.parseInt(firstLine.substring(
-                firstLine.indexOf("[")+1,
-                firstLine.indexOf("]")));
-        
-        return (configHashCode == scriptHashCode);
+        return this.isThisScriptActual(this.coreScript, configHashCode);
     }
     
     private boolean sysConsoleScriptNotActual() throws IOException {
@@ -229,7 +237,22 @@ class BatchScriptsProvider {
         
         int configHashCode = jvmOptions.hashCode() + coreClasspath.hashCode();
         
-        String firstLine = Files.readAllLines(this.sysConsoleScript).get(0);
+        return this.isThisScriptActual(this.sysConsoleScript, configHashCode);
+    }
+    
+    private boolean shellLoaderScriptNotActual() throws IOException {
+        String jvmOptions = config.get(Config.JVM_SYS_CONSOLE_OPTIONS);
+        String coreClasspath = config.get(Config.CLASSPATH_SYS_CONSOLE).replace(" ", ";");
+        
+        int configHashCode = jvmOptions.hashCode() + coreClasspath.hashCode();
+        
+        return this.isThisScriptActual(this.shellLoaderScript, configHashCode);        
+    }
+    
+    private boolean isThisScriptActual(Path script, int configHashCode) 
+            throws IOException {
+        
+        String firstLine = Files.readAllLines(script).get(0);
         
         int scriptHashCode = Integer.parseInt(firstLine.substring(
                 firstLine.indexOf("[")+1,

@@ -12,6 +12,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
@@ -20,15 +21,11 @@ import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 import diarsid.beam.external.ExternalIOInterface;
-
 import diarsid.beam.external.sysconsole.exceptions.InterfacesLoadException;
 import diarsid.beam.external.sysconsole.exceptions.RmiException;
-
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 import diarsid.beam.external.sysconsole.modules.RmiConsoleManagerModule;
-
 import diarsid.beam.shared.modules.ConfigModule;
-
 import diarsid.beam.shared.modules.config.Config;
 
 /**
@@ -77,14 +74,13 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
                 this.beamRemoteAccess.setUseNativeShowTaskMethod();                
             }
             
+        } catch(ExportException e) {
+            showProblemMessageAndClose("Console export: this port already in use.");
         } catch (AlreadyBoundException abe) {
-            abe.printStackTrace();
             showProblemMessageAndClose("Console export failure: AlreadyBoundException");
         } catch (NotBoundException e) {
-            e.printStackTrace();
             showProblemMessageAndClose("Connecting to Organizer failure: NotBoundException");
-        } catch (RemoteException re) {       
-            re.printStackTrace();
+        } catch (RemoteException re) {
             showProblemMessageAndClose("Console export failure: RemoteException");
         }
     }

@@ -9,14 +9,16 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.shared.modules.ConfigModule;
-
 import diarsid.beam.shared.modules.config.ConfigModuleWorkerBuilder;
 
 /**
  *
  * @author Diarsid
  */
-public class BeamPartsLoader {
+public class BeamPartsBatchLoader {
+    
+    private BeamPartsBatchLoader() {        
+    }
     
     public static void main(String[] args) throws IOException {
         ConfigModuleWorkerBuilder confBuilder = new ConfigModuleWorkerBuilder();
