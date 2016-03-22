@@ -30,7 +30,7 @@ public interface DaoWebPages {
             String name, String dir, WebPagePlacement place);
     
     List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String directory, WebPagePlacement placement);
+            String dir, WebPagePlacement placement, boolean dirStrictMatch);
     
     List<String> getAllDirectoriesInPlacement(WebPagePlacement placement);    
     

@@ -55,6 +55,14 @@ class TaskWindow extends BeamWindow implements ReusableTaskWindow {
         }
     }
     
+    /* 
+     * This method does not perform in Java FX Application Thread, 
+     * thus it cannot work with any Java FX API and nodes.
+     * 
+     * It sets only this object String private fields which will be 
+     * used later to set new values for Java FX Labels by
+     * reuseThisWindowObject() invocation. 
+     */
     @Override
     public void reuseWithNewTask(TaskMessage task) {
         this.taskTime = task.getTime();

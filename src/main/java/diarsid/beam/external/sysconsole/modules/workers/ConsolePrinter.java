@@ -111,11 +111,32 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printSpaceLn(String s) throws IOException{
-        this.writer.write(SPACE);
-        this.writer.write(s);
-        this.writer.newLine();
-        this.writer.flush();
+    public void printSpaceLn(String s) throws IOException {
+        int screenLength = 68;
+        if ( s.length() < screenLength ) {
+            this.writer.write(SPACE);        
+            this.writer.write(s);
+            this.writer.newLine();
+            this.writer.flush();
+        } else {
+            this.writer.write(SPACE);
+            this.writer.write(s.substring(0, screenLength));
+            this.writer.newLine();
+            this.writer.flush();
+            int qty = s.length() / screenLength;
+            for (int i = 2; i <= qty; i ++) {
+                this.writer.write(SPACE);
+                this.writer.write("    ");
+                this.writer.write(s.substring(((i-1) * screenLength), i * screenLength));
+                this.writer.newLine();
+                this.writer.flush();
+            }
+            this.writer.write(SPACE);   
+            this.writer.write("    ");
+            this.writer.write(s.substring((qty * screenLength), s.length()));
+            this.writer.newLine();
+            this.writer.flush();
+        } 
     }
     
     @Override

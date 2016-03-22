@@ -440,21 +440,25 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String directory, WebPagePlacement placement) {
+            String dir, WebPagePlacement placement, boolean dirStrictMatch) {
         ResultSet rs = null;
         try (Connection con = data.connect();
             PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE)) {
             
-            if (placement.equals(WebPagePlacement.BOOKMARKS)) {
-                // if BOOKMARKS than full name of directory 
-                // must be specified: 
-                // "java" -> "blogs/java" NOT "blogs/java/another/subdir"
-                ps.setString(1, "%"+directory);
+            if ( dirStrictMatch ) {
+                ps.setString(1, dir);
             } else {
-                // if WEBPANEL than only part of directory
-                // name is sufficient to select: 
-                // "com" -> "common"
-                ps.setString(1, "%"+directory+"%");
+                if (placement.equals(WebPagePlacement.BOOKMARKS)) {
+                    // if BOOKMARKS than full name of directory 
+                    // must be specified: 
+                    // "java" -> "blogs/java" NOT "blogs/java/another/subdir"
+                    ps.setString(1, "%"+dir);
+                } else {
+                    // if WEBPANEL than only part of directory
+                    // name is sufficient to select: 
+                    // "com" -> "common"
+                    ps.setString(1, "%"+dir+"%");
+                }
             }
             ps.setString(2, placement.name());
             

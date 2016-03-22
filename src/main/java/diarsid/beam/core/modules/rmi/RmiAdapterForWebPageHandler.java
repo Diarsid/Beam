@@ -82,7 +82,19 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
             String directory, WebPagePlacement placement) throws RemoteException {
         
         directory = directory.trim().toLowerCase();
-        return this.dao.getAllWebPagesInDirectoryAndPlacement(directory, placement);
+        // third parameter that is set to FALSE means that dao will not search
+        // directory in strict mode:
+        // - if FALSE dao will search any dirs containing given String 
+        //   'directory' param;
+        // - if TRUE dao will search dirs that matches given String 
+        //   'directory' param exactly;
+        // TRUE is used in web access to database in order to provide only
+        // precise data through REST web API. Because this method will be used
+        // mostly with external access program that needs more flexible and less
+        // precise behavior, it is set to FALSE here. It allows user to get 
+        // more data using less strict queries.
+        return this.dao.getAllWebPagesInDirectoryAndPlacement(
+                directory, placement, false);
     }
     
     @Override

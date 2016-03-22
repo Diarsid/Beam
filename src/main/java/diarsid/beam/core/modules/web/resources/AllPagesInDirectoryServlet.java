@@ -49,7 +49,8 @@ class AllPagesInDirectoryServlet extends HttpServlet {
         System.out.println("ALL PAGES IN DIR pathInfo = " + path);
         List<WebPage> pages = this.webDao.getAllWebPagesInDirectoryAndPlacement(
                 this.resolver.extractDirectoryBeforePages(path), 
-                this.resolver.extractPlacementBeforeDirectory(path));
+                this.resolver.extractPlacementBeforeDirectory(path),
+                true);
         JSONObject answer = new JSONObject();
         JSONArray pagesArray = new JSONArray();
         JSONObject pageJSONObject;

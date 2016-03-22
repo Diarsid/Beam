@@ -80,16 +80,13 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
     final void showThis() {
         WindowPosition position = controller.getNewWindowPosition();
         System.out.println();
-        System.out.println("Previous position - X: " + stage.getX() + ", Y: " + stage.getY());
         if ( (position.getX() != 0) && (Double.isNaN(this.stage.getX())) ) {
             this.stage.setX(position.getX());
             this.stage.setY(position.getY());
         } 
-        System.out.println("New position - X: " + position.getX() + ", Y: " + position.getY());
         this.stage.sizeToScene();
         this.stage.show();        
         this.controller.reportLastWindowPosition(stage.getX(), stage.getY());
-        System.out.println("Actual position - X: " + stage.getX() + ", Y: " + stage.getY());
     }
     
     final void setContent(Pane contentPane) {
@@ -175,7 +172,7 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
                     stage.toBack();
                     onTopControllerButton.setId("on-top-toggle-button-off");
                     //waitAndRestoreOnTop();      
-                    throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(60);
+                    throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(120);
                 } else {
                     stage.setAlwaysOnTop(true);
                     onTopControllerButton.setId("on-top-toggle-button-on");  
