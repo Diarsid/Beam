@@ -12,10 +12,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RmiModule;
@@ -24,7 +23,8 @@ import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
+import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
+import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
 /**
@@ -32,7 +32,6 @@ import diarsid.beam.shared.modules.config.Config;
  * @author Diarsid
  */
 class RmiModuleWorker implements RmiModule {
-    // Fields =============================================================================
     
     private final IoInnerModule ioEngine;
     private final ConfigModule config;
@@ -41,13 +40,13 @@ class RmiModuleWorker implements RmiModule {
     private final RmiExecutorInterface rmiExecutorInterface;
     private final RmiRemoteControlInterface rmiRemoteControlInterface;
     private final RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
-    private final RmiWebPageHandlerInterface rmiWebPageHandlerInterface;
+    private final RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;
     
     RmiModuleWorker(
             IoModule ioModule,
             IoInnerModule innerIoModule, 
             ConfigModule configModule,
-            DataModule dataModule,
+            HandlerManagerModule handlers,
             ExecutorModule executorModule,
             TaskManagerModule taskManagerModule) {
         
@@ -58,12 +57,10 @@ class RmiModuleWorker implements RmiModule {
         this.rmiTaskManagerInterface = new RmiAdapterForTaskManager(taskManagerModule);
         this.rmiRemoteControlInterface = new RmiAdapterForRemoteControl(ioModule);
         this.rmiLocationsHandlerInterface = new RmiAdapterForLocationsHandler(
-                dataModule.getLocationsDao(), executorModule);
-        this.rmiWebPageHandlerInterface = new RmiAdapterForWebPageHandler(
-                dataModule.getWebPagesDao());
+                handlers.getLocationsHandler());
+        this.rmiWebPageHandlerInterface = new RmiAdapterForWebPagesHandler(
+                handlers.getWebPagesHandler());
     }
-    
-    // Methods ============================================================================
     
     @Override
     public RmiExecutorInterface getRmiExecutorInterface() {
@@ -86,7 +83,7 @@ class RmiModuleWorker implements RmiModule {
     }
 
     @Override
-    public RmiWebPageHandlerInterface getRmiWebPageHandlerInterface() {
+    public RmiWebPagesHandlerInterface getRmiWebPageHandlerInterface() {
         return rmiWebPageHandlerInterface;
     }
     
@@ -112,8 +109,8 @@ class RmiModuleWorker implements RmiModule {
                     (RmiLocationsHandlerInterface) UnicastRemoteObject.exportObject(
                             this.rmiLocationsHandlerInterface, beamCorePort);
             
-            RmiWebPageHandlerInterface WebPagesHandlerStub = 
-                    (RmiWebPageHandlerInterface) UnicastRemoteObject.exportObject(
+            RmiWebPagesHandlerInterface WebPagesHandlerStub = 
+                    (RmiWebPagesHandlerInterface) UnicastRemoteObject.exportObject(
                             this.rmiWebPageHandlerInterface, beamCorePort);
 
             registry.bind(config.get(Config.BEAM_ACCESS_NAME), orgIOStub);

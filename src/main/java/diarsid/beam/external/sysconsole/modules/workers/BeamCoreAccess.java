@@ -10,8 +10,7 @@ import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
-
+import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 import diarsid.beam.external.sysconsole.modules.BeamCoreAccessModule;
 
 /**
@@ -24,14 +23,14 @@ class BeamCoreAccess implements BeamCoreAccessModule {
     private final RmiExecutorInterface executor;
     private final RmiRemoteControlInterface remoteControl;
     private final RmiLocationsHandlerInterface locations;
-    private final RmiWebPageHandlerInterface webPages;
+    private final RmiWebPagesHandlerInterface webPages;
     
     BeamCoreAccess(
             RmiTaskManagerInterface taskManager,
             RmiExecutorInterface executor,
             RmiRemoteControlInterface remoteControl,
             RmiLocationsHandlerInterface locations,
-            RmiWebPageHandlerInterface webPages) {
+            RmiWebPagesHandlerInterface webPages) {
         
         this.taskManager = taskManager;
         this.executor = executor;
@@ -61,7 +60,7 @@ class BeamCoreAccess implements BeamCoreAccessModule {
     }
     
     @Override
-    public RmiWebPageHandlerInterface webPages() { 
+    public RmiWebPagesHandlerInterface webPages() { 
         return this.webPages;
     }    
 }

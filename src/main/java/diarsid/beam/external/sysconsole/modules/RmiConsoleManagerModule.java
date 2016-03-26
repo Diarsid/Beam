@@ -9,7 +9,7 @@ import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
+import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
 import diarsid.beam.external.ExternalIOInterface;
 
@@ -28,5 +28,5 @@ public interface RmiConsoleManagerModule extends GemModule {
     RmiLocationsHandlerInterface getLocationsHandler();
     RmiRemoteControlInterface getRemoteControl();
     RmiTaskManagerInterface getTaskManager();
-    RmiWebPageHandlerInterface getWebPageHandler();
+    RmiWebPagesHandlerInterface getWebPageHandler();
 }

@@ -4,8 +4,6 @@
  */
 package diarsid.beam.core.modules.executor.os;
 
-import diarsid.beam.core.modules.executor.OS;
-
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +27,7 @@ import java.util.concurrent.Executors;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
@@ -40,13 +39,10 @@ import static java.nio.file.FileVisitResult.CONTINUE;
  */
 public class OSWindows implements OS {
 
-    // Fields =============================================================================
-
     private final String PROGRAMS_LOCATION;
     private final IoInnerModule ioEngine;
     private final ExecutorService executorService;
 
-    // Constructors =======================================================================
     public OSWindows(IoInnerModule io, ConfigModule config) {
         this.ioEngine = io;
         if(!Desktop.isDesktopSupported()){
@@ -62,7 +58,6 @@ public class OSWindows implements OS {
         this.executorService = Executors.newFixedThreadPool(3);
     }
 
-    // Methods ============================================================================
     @Override
     public void openLocation(Location location) {
         if (this.checkIfDirectoryExists(location.getPath())){
@@ -149,24 +144,28 @@ public class OSWindows implements OS {
     @Override
     public List<String> getLocationContent(Location location) {
         File dir = new File(location.getPath());
-        if (dir.exists() && dir.isDirectory()) {
-            File[] list = dir.listFiles();
-            List<String> content = new ArrayList<>();
-            int folderIndex = 0;
-            for (File file : list) {
-                if (file.isDirectory()) {
-                    content.add(folderIndex, " [_] " + file.getName());
-                    folderIndex++;
-                } else {
-                    content.add("  o  " + file.getName());
-                }
-            }
-            content.remove("  o  desktop.ini");
-            return content;
-        } else {
-            this.ioEngine.reportError("This location does not exists or is not a directory.");
+        if ( ! dir.exists() ) {
+            this.ioEngine.reportError("This path does not exist.");
             return null;
         }
+        if ( ! dir.isDirectory() ) {
+            this.ioEngine.reportError("This location is not a directory.");
+            return null;
+        }
+        
+        File[] list = dir.listFiles();
+        List<String> content = new ArrayList<>();
+        int folderIndex = 0;
+        for (File file : list) {
+            if (file.isDirectory()) {
+                content.add(folderIndex, " [_] " + file.getName());
+                folderIndex++;
+            } else {
+                content.add("  o  " + file.getName());
+            }
+        }
+        content.remove("  o  desktop.ini");
+        return content;        
     }
     
     @Override

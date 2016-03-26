@@ -9,7 +9,7 @@ import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
+import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
 import com.drs.gem.injector.module.GemModule;
 
@@ -23,5 +23,5 @@ public interface BeamCoreAccessModule extends GemModule {
     RmiLocationsHandlerInterface locations();
     RmiRemoteControlInterface remoteControl();
     RmiTaskManagerInterface taskManager();
-    RmiWebPageHandlerInterface webPages();
+    RmiWebPagesHandlerInterface webPages();
 }

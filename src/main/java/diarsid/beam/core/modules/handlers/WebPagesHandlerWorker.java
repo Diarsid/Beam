@@ -4,15 +4,14 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.rmi;
+package diarsid.beam.core.modules.handlers;
 
-import java.rmi.RemoteException;
 import java.util.List;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
+import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoWebPages;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
 
 import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
 
@@ -20,23 +19,24 @@ import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
  *
  * @author Diarsid
  */
-public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
-
-    private final DaoWebPages dao;
+class WebPagesHandlerWorker implements WebPagesHandler {
     
-    public RmiAdapterForWebPageHandler(DaoWebPages dao) {
+    private final DaoWebPages dao;
+    private final IoInnerModule ioEngine;
+    
+    WebPagesHandlerWorker(IoInnerModule io, DaoWebPages dao) {
+        this.ioEngine = io;
         this.dao = dao;
     }
     
     @Override
-    public boolean newWebPage(
+    public boolean saveWebPage(
             String name,
             String shortcuts, 
             String urlAddress, 
             WebPagePlacement placement, 
             String directory, 
-            String browser) 
-            throws RemoteException {
+            String browser) {
         
         name = name.trim().toLowerCase();
         if ( ! name.matches(WEB_NAME_REGEXP)) {
@@ -56,49 +56,32 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
     }
     
     @Override
-    public boolean deleteWebPage(String name, String dir, WebPagePlacement place) 
-            throws RemoteException {
-        
+    public boolean deleteWebPage(String name, String dir, WebPagePlacement place) {        
         name = name.trim().toLowerCase();
         return this.dao.deleteWebPage(name, dir, place);
     }
     
     @Override
-    public List<String> getAllDirectoriesInPlacement(WebPagePlacement placement)
-            throws RemoteException {
-        
+    public List<String> getAllDirectoriesInPlacement(WebPagePlacement placement) {        
         return this.dao.getAllDirectoriesInPlacement(placement);
     }
     
     @Override
-    public List<WebPage> getAllPagesInPlacement(WebPagePlacement placement) 
-            throws RemoteException {
-        
+    public List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement) {        
         return this.dao.getAllWebPagesInPlacement(placement);
     }   
     
     @Override
     public List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String directory, WebPagePlacement placement) throws RemoteException {
+            String directory, WebPagePlacement placement, boolean strict) {
         
         directory = directory.trim().toLowerCase();
-        // third parameter that is set to FALSE means that dao will not search
-        // directory in strict mode:
-        // - if FALSE dao will search any dirs containing given String 
-        //   'directory' param;
-        // - if TRUE dao will search dirs that matches given String 
-        //   'directory' param exactly;
-        // TRUE is used in web access to database in order to provide only
-        // precise data through REST web API. Because this method will be used
-        // mostly with external access program that needs more flexible and less
-        // precise behavior, it is set to FALSE here. It allows user to get 
-        // more data using less strict queries.
         return this.dao.getAllWebPagesInDirectoryAndPlacement(
-                directory, placement, false);
+                directory, placement, strict);
     }
     
     @Override
-    public List<WebPage> getWebPages(String name) throws RemoteException {
+    public List<WebPage> getWebPages(String name) {
         name = name.trim().toLowerCase();
         if (name.contains("-")){
             return this.dao.getWebPagesByNameParts(name.split("-"));
@@ -108,36 +91,34 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
     }
     
     @Override
-    public boolean editWebPageName(String name, String newName) 
-            throws RemoteException {
-        
+    public boolean editWebPageName(String name, String newName) {        
         name = name.trim().toLowerCase();
         newName = newName.trim().toLowerCase();
-        if ( ! newName.matches("[a-zA-Z0-9-_>\\s]+")) {
+        if ( ! newName.matches(WEB_NAME_REGEXP)) {
             return false;
+        }
+        if ( newName.endsWith("/") ) {
+            newName = newName.substring(0, name.length()-1);
         }
         return this.dao.editWebPageName(name, newName);
     }
     
     @Override
-    public boolean editWebPageShortcuts(String name, String newShorts) 
-            throws RemoteException {
-        
+    public boolean editWebPageShortcuts(String name, String newShorts) {        
         name = name.trim().toLowerCase();
         newShorts = newShorts.trim().toLowerCase();
         return this.dao.editWebPageShortcuts(name, newShorts);
     }
     
     @Override
-    public boolean editWebPageUrl(String name, String newUrl) throws RemoteException {
+    public boolean editWebPageUrl(String name, String newUrl) {
         name = name.trim().toLowerCase();
         newUrl = newUrl.trim().toLowerCase();
         return this.dao.editWebPageUrl(name, newUrl);
     }
         
     @Override
-    public boolean editWebPageBrowser(String name, String newBrowser) 
-            throws RemoteException {
+    public boolean editWebPageBrowser(String name, String newBrowser) {
         
         name = name.trim().toLowerCase();
         newBrowser = newBrowser.trim().toLowerCase();
@@ -146,35 +127,34 @@ public class RmiAdapterForWebPageHandler implements RmiWebPageHandlerInterface {
     
     @Override
     public boolean editWebPageOrder(
-            String name, String dir, WebPagePlacement place, int newOrder) 
-            throws RemoteException {
+            String name, String dir, WebPagePlacement place, int newOrder) {
         return this.dao.editWebPageOrder(name, dir, place, newOrder);
     }
     
     @Override
     public boolean renameDirectory(
-            String directory, String newDirectory, WebPagePlacement placement) 
-            throws RemoteException {
+            String directory, String newDirectory, WebPagePlacement placement) {
         
         directory = directory.trim().toLowerCase();
         newDirectory = newDirectory.trim().toLowerCase();
-        if ( ! newDirectory.matches("[a-zA-Z0-9-_>\\s]+")) {
+        if ( ! newDirectory.matches(WEB_NAME_REGEXP)) {
             return false;
         }
         return this.dao.editDirectoryNameInPlacement(directory, newDirectory, placement);
     }
     
     @Override
-    public boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder) {
+    public boolean editDirectoryOrder(
+            WebPagePlacement place, String name, int newOrder) {
+        
         return this.dao.editDirectoryOrder(place, name, newOrder);
     }
     
     @Override
     public boolean moveWebPageTo
-            (String pageName, String newDirectory, WebPagePlacement placement)
-            throws RemoteException {
+            (String pageName, String newDirectory, WebPagePlacement placement) {
         
-        if ( ! newDirectory.matches("[a-zA-Z0-9-_>\\s]+")) {
+        if ( ! newDirectory.matches(WEB_NAME_REGEXP)) {
             return false;
         }        
         return this.dao.moveWebPageToPlacementAndDirectory

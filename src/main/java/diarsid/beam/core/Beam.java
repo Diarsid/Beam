@@ -10,7 +10,7 @@ import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
+import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
 import com.drs.gem.injector.core.GemInjector;
 
@@ -32,7 +32,7 @@ public class Beam {
     private static RmiExecutorInterface rmiExecutorInterface;
     private static RmiTaskManagerInterface rmiTaskManagerInterface;
     private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
-    private static RmiWebPageHandlerInterface rmiWebPageHandlerInterface;
+    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;
     
     
     private Beam() {

@@ -19,7 +19,7 @@ import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPageHandlerInterface;
+import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 import diarsid.beam.external.ExternalIOInterface;
 import diarsid.beam.external.sysconsole.exceptions.InterfacesLoadException;
 import diarsid.beam.external.sysconsole.exceptions.RmiException;
@@ -41,7 +41,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
     private RmiExecutorInterface executor;
     private RmiRemoteControlInterface beamRemoteAccess;
     private RmiLocationsHandlerInterface locations;
-    private RmiWebPageHandlerInterface webPages;
+    private RmiWebPagesHandlerInterface webPages;
     
     private Registry beamCoreRegistry;
     
@@ -105,7 +105,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
             this.locations = (RmiLocationsHandlerInterface) 
                     this.beamCoreRegistry.lookup(config.get(Config.LOCATIONS_HANDLER_NAME));
             
-            this.webPages = (RmiWebPageHandlerInterface) 
+            this.webPages = (RmiWebPagesHandlerInterface) 
                     this.beamCoreRegistry.lookup(config.get(Config.WEB_PAGES_HANDLER_NAME));
             
             this.interfacesLoaded = true;
@@ -171,7 +171,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
     }
     
     @Override
-    public RmiWebPageHandlerInterface getWebPageHandler() {
+    public RmiWebPagesHandlerInterface getWebPageHandler() {
         if ( this.interfacesLoaded ) {
             return this.webPages;
         } 

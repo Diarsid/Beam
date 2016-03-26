@@ -16,7 +16,7 @@ import diarsid.beam.core.entities.WebPagePlacement;
  *
  * @author Diarsid
  */
-public interface RmiWebPageHandlerInterface extends Remote {
+public interface RmiWebPagesHandlerInterface extends Remote {
     
     boolean newWebPage(
             String name,

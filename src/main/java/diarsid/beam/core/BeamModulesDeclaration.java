@@ -11,12 +11,12 @@ import java.util.Set;
 
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RmiModule;
 import diarsid.beam.core.modules.TaskManagerModule;
 import diarsid.beam.core.modules.WebModule;
-
 import diarsid.beam.shared.modules.ConfigModule;
 
 import com.drs.gem.injector.core.Declaration;
@@ -74,6 +74,11 @@ class BeamModulesDeclaration implements Declaration {
         modules.add(new GemModuleDeclaration(
                 WebModule.class.getCanonicalName(), 
                 "diarsid.beam.core.modules.web.WebModuleWorker", 
+                GemModuleType.SINGLETON));
+        
+        modules.add(new GemModuleDeclaration(
+                HandlerManagerModule.class.getCanonicalName(), 
+                "diarsid.beam.core.modules.handlers.HandlerManager", 
                 GemModuleType.SINGLETON));
         
         return modules;

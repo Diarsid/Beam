@@ -10,73 +10,48 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import diarsid.beam.core.entities.Location;
-
-import diarsid.beam.core.modules.ExecutorModule;
-
-import diarsid.beam.core.modules.data.DaoLocations;
-
+import diarsid.beam.core.modules.handlers.LocationsHandler;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 
 /**
  *
  * @author Diarsid
  */
-class RmiAdapterForLocationsHandler implements RmiLocationsHandlerInterface{
-    // Fields =============================================================================
+class RmiAdapterForLocationsHandler implements RmiLocationsHandlerInterface {
     
-    private final DaoLocations dao;
-    private final ExecutorModule executorModule;
-
-    // Constructors =======================================================================
+    private final LocationsHandler locationHandler;
  
-    RmiAdapterForLocationsHandler(DaoLocations dao, ExecutorModule executor) {
-        this.dao = dao;
-        this.executorModule = executor;
+    RmiAdapterForLocationsHandler(LocationsHandler locHandler) {
+        this.locationHandler = locHandler;
     }
-    
-    // Methods ============================================================================
-
     @Override
-    public boolean newLocation(String locationPath, String locationName) throws RemoteException{
-        locationName = locationName.trim().toLowerCase();
-        locationPath = locationPath.trim().toLowerCase();
-        if ( this.executorModule.checkPath(locationPath)) {
-            return this.dao.saveNewLocation(new Location(locationName, locationPath)); 
-        } else {
-            return false;
-        }
+    public boolean newLocation(String locationPath, String locationName) 
+            throws RemoteException {
+        
+        return this.locationHandler.newLocation(locationName, locationPath);
     }
     
     @Override
     public List<Location> getAllLocations() throws RemoteException{
-        return this.dao.getAllLocations();
+        return this.locationHandler.getAllLocations();
     }
     
     @Override
-    public List<Location> getLocations(String locationName) throws RemoteException{
-        locationName = locationName.trim().toLowerCase();
-        if (locationName.contains("-")){
-            return this.dao.getLocationsByNameParts(locationName.split("-"));            
-        } else {
-            return this.dao.getLocationsByName(locationName);            
-        }
+    public List<Location> getLocations(String locationName) 
+            throws RemoteException {
+        
+        return this.locationHandler.getLocations(locationName);        
     }
     
     @Override
-    public boolean editLocationPath(String name, String newPath) throws RemoteException{
-        name = name.trim().toLowerCase();
-        newPath = newPath.trim().toLowerCase();
-        if ( this.executorModule.checkPath(newPath)) {
-            return this.dao.editLocationPath(name, newPath);
-        } else {
-            return false;
-        }    
+    public boolean editLocationPath(String name, String newPath) 
+            throws RemoteException {
+        
+        return this.locationHandler.editLocationPath(name, newPath);
     }
     
     @Override
-    public boolean deleteLocation(String locationName) throws RemoteException{
-        locationName = locationName.trim().toLowerCase();
-        return this.dao.removeLocation(locationName);
+    public boolean deleteLocation(String locationName) throws RemoteException {
+        return this.locationHandler.deleteLocation(locationName); 
     }
-
 }
