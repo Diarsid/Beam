@@ -45,7 +45,7 @@ public interface DaoWebPages {
     boolean editWebPageOrder(
             String name, String dir, WebPagePlacement place, int newOrder);
     
-    boolean editDirectoryNameInPlacement(
+    boolean renameDirectoryInPlacement(
             String directory, String newDirectory, WebPagePlacement placement);
     
     boolean moveWebPageToPlacementAndDirectory(

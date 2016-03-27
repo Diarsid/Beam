@@ -21,9 +21,7 @@ import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.data.DaoWebPages;
-
-import static diarsid.beam.core.entities.WebPage.newPage;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 
 /**
  *
@@ -31,12 +29,12 @@ import static diarsid.beam.core.entities.WebPage.newPage;
  */
 class AllPagesInDirectoryServlet extends HttpServlet {
     
-    private final DaoWebPages webDao;
+    private final WebPagesHandler pagesHandler;
     private final PathResolver resolver;  
     private final JSONParser json;
     
-    AllPagesInDirectoryServlet(DaoWebPages webDao, PathResolver resolver) {
-        this.webDao = webDao;
+    AllPagesInDirectoryServlet(WebPagesHandler handler, PathResolver resolver) {
+        this.pagesHandler = handler;
         this.resolver = resolver;
         this.json = new JSONParser();
     }
@@ -47,7 +45,7 @@ class AllPagesInDirectoryServlet extends HttpServlet {
         
         String path = this.resolver.getNormalizedPath(request);
         System.out.println("ALL PAGES IN DIR pathInfo = " + path);
-        List<WebPage> pages = this.webDao.getAllWebPagesInDirectoryAndPlacement(
+        List<WebPage> pages = this.pagesHandler.getAllWebPagesInDirectoryAndPlacement(
                 this.resolver.extractDirectoryBeforePages(path), 
                 this.resolver.extractPlacementBeforeDirectory(path),
                 true);
@@ -109,14 +107,14 @@ class AllPagesInDirectoryServlet extends HttpServlet {
                 return;
             }
             
-            WebPage page = newPage(
+            boolean created = this.pagesHandler.saveWebPage(
                     name, 
                     shortcuts, 
                     url, 
                     place, 
                     directory,
                     "default");
-            if ( this.webDao.saveWebPage(page) ) {
+            if ( created ) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.setContentType("application/json");
                 response.addHeader("Location", path + "/" + name);

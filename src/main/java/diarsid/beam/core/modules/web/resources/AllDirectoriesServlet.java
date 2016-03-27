@@ -21,7 +21,7 @@ import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 
 /**
  *
@@ -29,12 +29,12 @@ import diarsid.beam.core.modules.data.DaoWebPages;
  */
 class AllDirectoriesServlet extends HttpServlet {
     
-    private final DaoWebPages webDao;
+    private final WebPagesHandler pagesHandler;
     private final PathResolver resolver;
     private final JSONParser json;
     
-    AllDirectoriesServlet(DaoWebPages webDao, PathResolver resolver) {
-        this.webDao = webDao;
+    AllDirectoriesServlet(WebPagesHandler handler, PathResolver resolver) {
+        this.pagesHandler = handler;
         this.resolver = resolver;
         this.json = new JSONParser();
     }
@@ -45,7 +45,7 @@ class AllDirectoriesServlet extends HttpServlet {
         
         String path = this.resolver.getNormalizedPath(request);
         
-        List<WebPageDirectory> dirs = this.webDao.getAllDirectoriesIn(
+        List<WebPageDirectory> dirs = this.pagesHandler.getAllDirectoriesIn(
                 this.resolver.extractPlacementBeforeDirectory(path));
         JSONArray directoriesArray = new JSONArray();
         JSONObject directoryObj;
@@ -89,7 +89,7 @@ class AllDirectoriesServlet extends HttpServlet {
                 return;
             }
             
-            if ( this.webDao.createEmptyDirectory(place, dir) ) {
+            if ( this.pagesHandler.createEmptyDirectory(place, dir) ) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.setContentType("application/json");
                 response.addHeader("Location", path + "/" + dir);

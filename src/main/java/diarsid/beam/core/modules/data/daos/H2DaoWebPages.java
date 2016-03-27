@@ -52,7 +52,9 @@ class H2DaoWebPages implements DaoWebPages {
      */
         
     private final String SELECT_ALL_PAGES_JOIN_DIRS_WHERE_PLACEMENT = 
-            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "SELECT "
+            + "page_name, page_order, dir_order, page_shortcuts, "
+            + "page_url, page_placement, page_directory, page_browser " +
             "FROM web_pages p " +
             "INNER JOIN directories d ON "
             + "(p.page_directory = d.dir_name) "
@@ -61,7 +63,9 @@ class H2DaoWebPages implements DaoWebPages {
             "WHERE page_placement LIKE ? " +
             "ORDER BY dir_order, page_order";
     private final String SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE = 
-            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "SELECT "
+            + "page_name, page_order, dir_order, page_shortcuts, "
+            + "page_url, page_placement, page_directory, page_browser " +
             "FROM web_pages p " +
             "INNER JOIN directories d ON "
             + "(p.page_directory = d.dir_name) "
@@ -70,7 +74,9 @@ class H2DaoWebPages implements DaoWebPages {
             "WHERE (page_directory LIKE ? ) AND (page_placement LIKE ? ) " +
             "ORDER BY dir_order, page_order";
     private final String SELECT_PAGES_JOIN_DIRS_WHERE_NAME_OR_SHORT_LIKE = 
-            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "SELECT "
+            + "page_name, page_order, dir_order, page_shortcuts, "
+            + "page_url, page_placement, page_directory, page_browser " +
             "FROM web_pages p " +
             "INNER JOIN directories d ON "
             + "(p.page_directory = d.dir_name) "
@@ -79,15 +85,21 @@ class H2DaoWebPages implements DaoWebPages {
             "WHERE (page_name LIKE ?) OR (page_shortcuts LIKE ?) " + 
             "ORDER BY dir_order, page_order ";
     private final String SELECT_PAGES_JOIN_DIRS_WHERE_PAGE_AND_DIR_AND_PLACE_IS = 
-            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "SELECT "
+            + "page_name, page_order, dir_order, page_shortcuts, "
+            + "page_url, page_placement, page_directory, page_browser " +
             "FROM web_pages p " +
             "INNER JOIN directories d ON "
             + "(p.page_directory = d.dir_name) "
             + "AND "
             + "(p.page_placement = d.dir_placement) " +
-            "WHERE (page_name IS ? ) AND (page_directory IS ? ) AND (page_placement IS ? ) ";
+            "WHERE (page_name IS ? ) "
+            + "AND (page_directory IS ? ) "
+            + "AND (page_placement IS ? ) ";
     private final String SELECT_PAGES_JOIN_DIRS_WHERE = 
-            "SELECT page_name, page_order, dir_order, page_shortcuts, page_url, page_placement, page_directory, page_browser " +
+            "SELECT "
+            + "page_name, page_order, dir_order, page_shortcuts, "
+            + "page_url, page_placement, page_directory, page_browser " +
             "FROM web_pages p " +
             "INNER JOIN directories d ON "
             + "(p.page_directory = d.dir_name) "
@@ -101,7 +113,9 @@ class H2DaoWebPages implements DaoWebPages {
     private final String ORDER_BY_DIR_AND_PAGE_ORDERS = 
             "ORDER BY dir_order, page_order ";
     private final String INSERT_NEW_PAGE = 
-            "INSERT INTO web_pages (page_name, page_shortcuts, page_url, page_placement, page_directory, page_browser, page_order) " +
+            "INSERT INTO web_pages "
+            + "(page_name, page_shortcuts, page_url, page_placement, "
+            + "page_directory, page_browser, page_order) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?)";           
     private final String SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR = 
             "SELECT MAX(page_order) " +
@@ -191,12 +205,14 @@ class H2DaoWebPages implements DaoWebPages {
             dirExists.setString(2, page.getPlacement().name());
             ResultSet existResult = transact.executePreparedQuery(dirExists);
             existResult.first();  
-            if (existResult.getInt(1) == 0) {
+            if ( existResult.getInt(1) == 0 ) {
                 
                 PreparedStatement maxDirOrderStmnt = 
-                        transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
+                        transact.getPreparedStatement(
+                                SELECT_MAX_DIR_ORDER_IN_PLACE);
                 maxDirOrderStmnt.setString(1, page.getPlacement().name());
-                ResultSet maxOrderResultSet = transact.executePreparedQuery(maxDirOrderStmnt);
+                ResultSet maxOrderResultSet = 
+                        transact.executePreparedQuery(maxDirOrderStmnt);
                 maxOrderResultSet.first();
                 int maxDirOrder = maxOrderResultSet.getInt(1);
                 
@@ -208,14 +224,16 @@ class H2DaoWebPages implements DaoWebPages {
                 transact.executePreparedUpdate(insertNewDir);
             }
             
-            PreparedStatement maxPageOrder = transact.getPreparedStatement(SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
+            PreparedStatement maxPageOrder = transact
+                    .getPreparedStatement(SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
             maxPageOrder.setString(1, page.getPlacement().name());
             maxPageOrder.setString(2, page.getDirectory());
             ResultSet maxPageOrderRs = transact.executePreparedQuery(maxPageOrder);
             maxPageOrderRs.first();
             int pageOrder = maxPageOrderRs.getInt(1);
             
-            PreparedStatement insertPage = transact.getPreparedStatement(INSERT_NEW_PAGE);            
+            PreparedStatement insertPage = transact
+                    .getPreparedStatement(INSERT_NEW_PAGE);            
             insertPage.setString(1, page.getName());
             insertPage.setString(2, page.getShortcuts());
             insertPage.setString(3, page.getUrlAddress());
@@ -226,7 +244,7 @@ class H2DaoWebPages implements DaoWebPages {
             int qty = transact.executePreparedUpdate(insertPage);
             
             transact.commitThemAll();
-            return (qty > 0);
+            return ( qty > 0 );
         } catch (HandledTransactSQLException e) {
             this.ioEngine.reportException(e, "SQLException: web page saving.");
         } catch (SQLException e) {
@@ -244,14 +262,15 @@ class H2DaoWebPages implements DaoWebPages {
     @Override
     public boolean deleteWebPage(String name, String dir, WebPagePlacement place) {
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS);) {
+            PreparedStatement ps = con.prepareStatement(
+                    DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS);) {
             
             ps.setString(1, name);
             ps.setString(2, dir);
             ps.setString(3, place.name());
             int qty = ps.executeUpdate();
 
-            return (qty > 0);
+            return ( qty > 0 );
         } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: web page deleting.");
             return false;
@@ -262,13 +281,14 @@ class H2DaoWebPages implements DaoWebPages {
     public List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement) {
         ResultSet rs = null;
         try(Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_JOIN_DIRS_WHERE_PLACEMENT)) {
+            PreparedStatement ps = con.prepareStatement(
+                    SELECT_ALL_PAGES_JOIN_DIRS_WHERE_PLACEMENT)) {
             
             ps.setString(1, placement.name());
             
             rs = ps.executeQuery();
             List<WebPage> pages = new ArrayList<>();
-            while (rs.next()){
+            while ( rs.next() ) {
                 pages.add(WebPage.restorePage(
                         rs.getString("page_name"),
                         rs.getString("page_shortcuts"), 
@@ -282,7 +302,7 @@ class H2DaoWebPages implements DaoWebPages {
             }
             
             return pages;
-        } catch (SQLException e){
+        } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: get all web pages.");
             return Collections.emptyList();
         } finally {
@@ -304,14 +324,15 @@ class H2DaoWebPages implements DaoWebPages {
     public List<WebPage> getWebPagesByName(String name) {
         ResultSet rs = null;
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_PAGES_JOIN_DIRS_WHERE_NAME_OR_SHORT_LIKE)) {
+            PreparedStatement ps = con.prepareStatement(
+                    SELECT_PAGES_JOIN_DIRS_WHERE_NAME_OR_SHORT_LIKE)) {
             
             ps.setString(1, "%"+name+"%");
             ps.setString(2, "%"+name+"%");
             
             rs = ps.executeQuery();
             List<WebPage> pages = new ArrayList<>();
-            while (rs.next()) {
+            while ( rs.next() ) {
                 pages.add(WebPage.restorePage(
                         rs.getString("page_name"),
                         rs.getString("page_shortcuts"), 
@@ -345,22 +366,27 @@ class H2DaoWebPages implements DaoWebPages {
     @Override
     public List<WebPage> getWebPagesByNameParts(String[] nameParts){
         int partsQty = nameParts.length;
-        if (partsQty > 0){
+        if ( partsQty > 0 ) {
             StringBuilder queryBuilder = new StringBuilder();
-            queryBuilder.append(SELECT_PAGES_JOIN_DIRS_WHERE).append(NAME_LIKE_NAMEPART);
+            queryBuilder
+                    .append(SELECT_PAGES_JOIN_DIRS_WHERE)
+                    .append(NAME_LIKE_NAMEPART);
             for (int i = 1; i < partsQty; i++){
-                queryBuilder.append(AND).append(NAME_LIKE_NAMEPART);
+                queryBuilder
+                        .append(AND)
+                        .append(NAME_LIKE_NAMEPART);
             }
             queryBuilder.append(ORDER_BY_DIR_AND_PAGE_ORDERS);
+            
             ResultSet rs = null;
             try(Connection con = data.connect();
                PreparedStatement ps = con.prepareStatement(queryBuilder.toString())) {
-                for (int j = 0; j < partsQty; j++){
+                for (int j = 0; j < partsQty; j++) {
                     ps.setString(j+1, "%"+nameParts[j]+"%");
                 }
                 rs = ps.executeQuery();
                 List<WebPage> pages = new ArrayList<>();
-                while (rs.next()) {
+                while ( rs.next() ) {
                     pages.add(WebPage.restorePage(
                             rs.getString("page_name"),
                             rs.getString("page_shortcuts"), 
@@ -373,12 +399,12 @@ class H2DaoWebPages implements DaoWebPages {
                     ));
                 }
                 return pages;
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 this.ioEngine.reportException(e, "SQLException: get web page by name parts.");
                 return Collections.emptyList();
             } finally {
-                if (rs != null){
-                    try{
+                if ( rs != null ) {
+                    try { 
                         rs.close();
                     } catch (SQLException se){
                         this.ioEngine.reportExceptionAndExitLater(se, 
@@ -443,7 +469,8 @@ class H2DaoWebPages implements DaoWebPages {
             String dir, WebPagePlacement placement, boolean dirStrictMatch) {
         ResultSet rs = null;
         try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE)) {
+            PreparedStatement ps = con.prepareStatement(
+                    SELECT_ALL_PAGES_JOIN_DIRS_WHERE_DIRECTORY_AND_PLACEMENT_LIKE)) {
             
             if ( dirStrictMatch ) {
                 ps.setString(1, dir);
@@ -464,7 +491,7 @@ class H2DaoWebPages implements DaoWebPages {
             
             rs = ps.executeQuery();
             List<WebPage> pages = new ArrayList<>();
-            while (rs.next()) {
+            while ( rs.next() ) {
                 pages.add(WebPage.restorePage(
                         rs.getString("page_name"),
                         rs.getString("page_shortcuts"), 
@@ -481,7 +508,7 @@ class H2DaoWebPages implements DaoWebPages {
           this.ioEngine.reportException(e, "SQLException: get web pages of category.");
             return Collections.emptyList();
         } finally {
-            if (rs != null) {
+            if ( rs != null ) {
                 try {
                     rs.close();
                 } catch (SQLException se) {
@@ -499,12 +526,13 @@ class H2DaoWebPages implements DaoWebPages {
     public List<String> getAllDirectoriesInPlacement(WebPagePlacement placement) {
         ResultSet rs = null;
         try(Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_ALL_DIRECTORIES_WHERE_PLACEMENT);) {
+            PreparedStatement ps = con.prepareStatement(
+                    SELECT_ALL_DIRECTORIES_WHERE_PLACEMENT);) {
             
             ps.setString(1, placement.name());
             rs = ps.executeQuery();
             List<String> directories = new ArrayList<>();
-            while (rs.next()) {
+            while ( rs.next() ) {
                 directories.add(rs.getString(1));
             }
             return directories;
@@ -512,7 +540,7 @@ class H2DaoWebPages implements DaoWebPages {
             this.ioEngine.reportException(e, "SQLException: get all web page categories.");
             return Collections.emptyList();
         } finally {
-            if (rs != null) {
+            if ( rs != null ) {
                 try {
                     rs.close();
                 } catch (SQLException se) {
@@ -535,7 +563,7 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(2, name);
             int qty = ps.executeUpdate();
 
-            return (qty > 0);            
+            return ( qty > 0 );            
         } catch (SQLException e){
             this.ioEngine.reportException(e, "SQLException: update web page name.");
             return false;
@@ -551,7 +579,7 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(2, name);
             int qty = ps.executeUpdate();
 
-            return (qty > 0);            
+            return ( qty > 0 );            
         } catch (SQLException e){
             this.ioEngine.reportException(e, "SQLException: update web page shortcuts.");
             return false;
@@ -567,7 +595,7 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(2, name);
             int qty = ps.executeUpdate();
 
-            return (qty > 0); 
+            return ( qty > 0 ); 
         } catch (SQLException e){
             this.ioEngine.reportException(e, "SQLException: update web page URL.");
             return false;
@@ -595,7 +623,8 @@ class H2DaoWebPages implements DaoWebPages {
     @Override
     public boolean editWebPageBrowser(String name, String newBrowser){
         try(Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(UPDATE_PAGE_BROWSER_WHERE_PAGE_NAME)) {
+            PreparedStatement ps = con.prepareStatement(
+                    UPDATE_PAGE_BROWSER_WHERE_PAGE_NAME)) {
             
             ps.setString(1, newBrowser);
             ps.setString(2, name);
@@ -609,7 +638,7 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
-    public boolean editDirectoryNameInPlacement(
+    public boolean renameDirectoryInPlacement(
             String directory, String newDirectory, WebPagePlacement placement) {
         try (Connection con = data.connect();
                 PreparedStatement updateDirInPage = con.prepareStatement(
@@ -646,7 +675,8 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(2, place.name());            
             ResultSet pagesRs = transact.executePreparedQuery(ps);
             List<WebPage> pages = new ArrayList<>();
-            while (pagesRs.next()) {
+            
+            while ( pagesRs.next() ) {
                 pages.add(WebPage.restorePage(
                         pagesRs.getString("page_name"),
                         pagesRs.getString("page_shortcuts"), 
@@ -659,12 +689,12 @@ class H2DaoWebPages implements DaoWebPages {
                 ));
             }
             
-            if (newOrder > pages.size()) {
+            if ( newOrder > pages.size() ) {
                 newOrder = pages.size();
             }
             WebPage movedPage = null;
-            for (WebPage page : pages) {
-                if (page.getName().equals(name)) {
+            for ( WebPage page : pages ) {
+                if ( page.getName().equals(name) ) {
                     movedPage = page;
                     break;
                 }
@@ -673,29 +703,17 @@ class H2DaoWebPages implements DaoWebPages {
                 return false;
             }
             int oldOrder = movedPage.getPageOrder();
-            if (newOrder < oldOrder) {
-                int oldOrderPageIndex = pages.indexOf(movedPage);
-                for (int i = newOrder - 1; i < oldOrderPageIndex; i++) {
-                    pages.get(i).setOrder(pages.get(i).getPageOrder() + 1);
-                }                
-                pages.get(oldOrderPageIndex).setOrder(newOrder);
-            } else if (oldOrder < newOrder) {
-                int oldOrderPageIndex = pages.indexOf(movedPage);
-                for (int i = oldOrderPageIndex + 1; i < newOrder; i++) {
-                    pages.get(i).setOrder(pages.get(i).getPageOrder() - 1);
-                }                
-                pages.get(oldOrderPageIndex).setOrder(newOrder);
-            } else {
+            if ( newOrder == oldOrder ) {
                 return true;
             }
-            Collections.sort(pages);
-            for (int i = 0; i < pages.size(); i++) {
-                pages.get(i).setOrder(i + 1);
-            }
+            int movedPageIndex = pages.indexOf(movedPage);            
+            
+            this.changePagesOrderAccordingToNewOrder(
+                    oldOrder, newOrder, movedPageIndex, pages);
             
             PreparedStatement updatePageOrderSt;
             int qty = 0;
-            for (WebPage updPage : pages) {
+            for ( WebPage updPage : pages ) {
                 updatePageOrderSt = transact.getPreparedStatement(
                     UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS);
                 updatePageOrderSt.setInt(1, updPage.getPageOrder());
@@ -722,6 +740,26 @@ class H2DaoWebPages implements DaoWebPages {
         return false;
     }
     
+    private void changePagesOrderAccordingToNewOrder(
+            int oldOrder, int newOrder, int movedPageIndex, List<WebPage> pages) {
+        
+        if ( newOrder < oldOrder ) {                
+            for (int i = newOrder - 1; i < movedPageIndex; i++) {
+                pages.get(i).setOrder(pages.get(i).getPageOrder() + 1);
+            }                
+            pages.get(movedPageIndex).setOrder(newOrder);
+        } else if ( oldOrder < newOrder ) {
+            for (int i = movedPageIndex + 1; i < newOrder; i++) {
+                pages.get(i).setOrder(pages.get(i).getPageOrder() - 1);
+            }                
+            pages.get(movedPageIndex).setOrder(newOrder);
+        } 
+        Collections.sort(pages);
+        for (int i = 0; i < pages.size(); i++) {
+            pages.get(i).setOrder(i + 1);
+        }
+    }
+    
     @Override
     public boolean moveWebPageToPlacementAndDirectory(
             String pageName, String newDirectory, WebPagePlacement placement) {
@@ -734,12 +772,13 @@ class H2DaoWebPages implements DaoWebPages {
             dirExists.setString(2, placement.name());
             ResultSet existResult = transact.executePreparedQuery(dirExists);
             existResult.first();
-            int exists = existResult.getInt(1);
-            if (exists == 0) {
+            if ( existResult.getInt(1) == 0 ) {
                 PreparedStatement maxDirOrderStmnt = 
-                        transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
+                        transact.getPreparedStatement(
+                                SELECT_MAX_DIR_ORDER_IN_PLACE);
                 maxDirOrderStmnt.setString(1, placement.name());
-                ResultSet maxOrderResultSet = transact.executePreparedQuery(maxDirOrderStmnt);
+                ResultSet maxOrderResultSet = transact
+                        .executePreparedQuery(maxDirOrderStmnt);
                 maxOrderResultSet.first();
                 int maxDirOrder = maxOrderResultSet.getInt(1);
                 
@@ -751,7 +790,8 @@ class H2DaoWebPages implements DaoWebPages {
                 transact.executePreparedUpdate(insertNewDir);
             }
             
-            PreparedStatement maxPageOrder = transact.getPreparedStatement(SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
+            PreparedStatement maxPageOrder = transact.getPreparedStatement(
+                    SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
             maxPageOrder.setString(1, placement.name());
             maxPageOrder.setString(2, newDirectory);
             ResultSet maxPageOrderRs = transact.executePreparedQuery(maxPageOrder);
@@ -769,7 +809,7 @@ class H2DaoWebPages implements DaoWebPages {
             
             transact.commitThemAll();
             
-            return ( qty > 0); 
+            return ( qty > 0 ); 
         } catch (HandledTransactSQLException e) { 
             this.ioEngine.reportException(e, "SQLException: .");
         } catch (SQLException e) {
@@ -827,7 +867,8 @@ class H2DaoWebPages implements DaoWebPages {
             PreparedStatement maxDirOrderStmnt = 
                         transact.getPreparedStatement(SELECT_MAX_DIR_ORDER_IN_PLACE);
                 maxDirOrderStmnt.setString(1, place.name());
-                ResultSet maxOrderResultSet = transact.executePreparedQuery(maxDirOrderStmnt);
+                ResultSet maxOrderResultSet = transact
+                        .executePreparedQuery(maxDirOrderStmnt);
                 maxOrderResultSet.first();
                 int maxDirOrder = maxOrderResultSet.getInt(1);
             
@@ -841,7 +882,8 @@ class H2DaoWebPages implements DaoWebPages {
             
             return ( changed > 0) ;
         } catch (HandledTransactSQLException e) { 
-            this.ioEngine.reportException(e, "SQLException: Empty directory creation failure.");
+            this.ioEngine.reportException(e, 
+                    "SQLException: Empty directory creation failure.");
             return false;
         } catch (SQLException e) {
             transact.rollbackAllAndReleaseResources();
@@ -866,7 +908,7 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(1, name);
             ps.setString(2, place.name());
             rs = ps.executeQuery();
-            if (rs.first()) {
+            if ( rs.first() ) {
                 return new WebPageDirectory(
                         rs.getString("dir_name"), 
                         WebPagePlacement.valueOf(rs.getString("dir_placement")), 
@@ -879,7 +921,7 @@ class H2DaoWebPages implements DaoWebPages {
             this.ioEngine.reportError("Directory selection failure.");
             return null;
         } finally {
-            if (rs != null) {
+            if ( rs != null ) {
                 try {
                     rs.close();
                 } catch (SQLException se) {
@@ -903,7 +945,8 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(1, place.name());
             rs = ps.executeQuery();
             List<WebPageDirectory> dirs = new ArrayList<>();
-            while (rs.next()) {
+            
+            while ( rs.next() ) {
                 dirs.add(new WebPageDirectory(
                         rs.getString("dir_name"), 
                         WebPagePlacement.valueOf(rs.getString("dir_placement")), 
@@ -917,7 +960,7 @@ class H2DaoWebPages implements DaoWebPages {
             this.ioEngine.reportError("Directory selection failure.");
             return Collections.emptyList();
         } finally {
-            if (rs != null) {
+            if ( rs != null ) {
                 try {
                     rs.close();
                 } catch (SQLException se) {
@@ -941,7 +984,8 @@ class H2DaoWebPages implements DaoWebPages {
             ps.setString(1, place.name());            
             ResultSet dirsRs = transact.executePreparedQuery(ps);
             List<WebPageDirectory> dirs = new ArrayList<>();
-            while (dirsRs.next()) {
+            
+            while ( dirsRs.next() ) {
                 dirs.add(new WebPageDirectory(
                         dirsRs.getString("dir_name"), 
                         WebPagePlacement.valueOf(dirsRs.getString("dir_placement")), 
@@ -964,25 +1008,12 @@ class H2DaoWebPages implements DaoWebPages {
                 return false;
             }
             int oldOrder = movedDir.getOrder();
-            if (newOrder < oldOrder) {
-                int oldOrderPageIndex = dirs.indexOf(movedDir);
-                for (int i = newOrder - 1; i < oldOrderPageIndex; i++) {
-                    dirs.get(i).setOrder(dirs.get(i).getOrder() + 1);
-                }                
-                dirs.get(oldOrderPageIndex).setOrder(newOrder);
-            } else if (oldOrder < newOrder) {
-                int oldOrderPageIndex = dirs.indexOf(movedDir);
-                for (int i = oldOrderPageIndex + 1; i < newOrder; i++) {
-                    dirs.get(i).setOrder(dirs.get(i).getOrder() - 1);
-                }                
-                dirs.get(oldOrderPageIndex).setOrder(newOrder);
-            } else {
+            if ( newOrder == oldOrder ) {
                 return true;
             }
-            Collections.sort(dirs);
-            for (int i = 0; i < dirs.size(); i++) {
-                dirs.get(i).setOrder(i + 1);
-            }
+            int movedDirIndex = dirs.indexOf(movedDir);            
+            
+            this.changeDirectoriesOrder(newOrder, oldOrder, dirs, movedDirIndex);
             
             PreparedStatement updatePageOrderSt;
             int qty = 0;
@@ -1011,6 +1042,26 @@ class H2DaoWebPages implements DaoWebPages {
                     "Incorrect usage of JdbcTransaction: " +
                     "database connection is NULL.");
             return false;
+        }
+    }
+    
+    private void changeDirectoriesOrder(
+            int newOrder, int oldOrder, List<WebPageDirectory> dirs, int movedDirIndex) {
+        
+        if (newOrder < oldOrder) {                
+            for (int i = newOrder - 1; i < movedDirIndex; i++) {
+                dirs.get(i).setOrder(dirs.get(i).getOrder() + 1);
+            }                
+            dirs.get(movedDirIndex).setOrder(newOrder);
+        } else if (oldOrder < newOrder) {
+            for (int i = movedDirIndex + 1; i < newOrder; i++) {
+                dirs.get(i).setOrder(dirs.get(i).getOrder() - 1);
+            }                
+            dirs.get(movedDirIndex).setOrder(newOrder);
+        }
+        Collections.sort(dirs);
+        for (int i = 0; i < dirs.size(); i++) {
+            dirs.get(i).setOrder(i + 1);
         }
     }
 }

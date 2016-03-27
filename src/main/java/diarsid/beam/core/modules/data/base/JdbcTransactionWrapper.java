@@ -22,7 +22,7 @@ import diarsid.beam.core.modules.data.JdbcTransaction;
  * Transaction wrapper class to tackle with JDBC transactions.
  * 
  * Wrap and hides the Connection to the database. Concerns about 
- * properly treatment with opened Connection, ResultSets and Statements.
+ * proper treatment with opened Connection, ResultSets and Statements.
  * 
  * It is implied that all Statements, PreparedStatements and ResultSets 
  * are obtained using this object methods.

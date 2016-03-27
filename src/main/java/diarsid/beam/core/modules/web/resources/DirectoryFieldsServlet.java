@@ -18,7 +18,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 
 /**
  *
@@ -26,12 +26,12 @@ import diarsid.beam.core.modules.data.DaoWebPages;
  */
 class DirectoryFieldsServlet extends HttpServlet {
     
-    private final DaoWebPages webDao;
+    private final WebPagesHandler pagesHandler;
     private final PathResolver resolver;
     private final JSONParser json;
     
-    DirectoryFieldsServlet(DaoWebPages dao, PathResolver res) {
-        this.webDao = dao;
+    DirectoryFieldsServlet(WebPagesHandler handler, PathResolver res) {
+        this.pagesHandler = handler;
         this.resolver = res;
         this.json = new JSONParser();
     }
@@ -63,7 +63,7 @@ class DirectoryFieldsServlet extends HttpServlet {
                         return;
                     }
                     
-                    if ( this.webDao.editDirectoryNameInPlacement(
+                    if ( this.pagesHandler.renameDirectoryInPlacement(
                             dirName, newName, place) ) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
@@ -89,7 +89,7 @@ class DirectoryFieldsServlet extends HttpServlet {
                     }
                     int newOrder = Integer.parseInt(newOrderStr);
                     
-                    if ( this.webDao.editDirectoryOrder(place, dirName, newOrder) ) {
+                    if ( this.pagesHandler.editDirectoryOrder(place, dirName, newOrder) ) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
                         return;

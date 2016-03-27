@@ -6,13 +6,10 @@
 
 package diarsid.beam.core.modules.web;
 
-import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.WebModule;
-
 import diarsid.beam.core.modules.web.engines.JettyServletContainerProvider;
-
 import diarsid.beam.core.modules.web.resources.ResourcesProviderWorker;
-
 import diarsid.beam.shared.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
@@ -24,16 +21,16 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     
     private final ConfigModule config;
-    private final DataModule data;
+    private final HandlerManagerModule handlers;
     
-    WebModuleWorkerBuilder(ConfigModule config, DataModule data) {
+    WebModuleWorkerBuilder(ConfigModule config, HandlerManagerModule handlers) {
         this.config = config;
-        this.data = data;
+        this.handlers = handlers;
     }
     
     @Override
     public WebModule buildModule() {
-        ResourcesProvider resources = new ResourcesProviderWorker(this.data);
+        ResourcesProvider resources = new ResourcesProviderWorker(this.handlers);
         ServletContainerProvider provider = 
                 new JettyServletContainerProvider(this.config, resources);
        

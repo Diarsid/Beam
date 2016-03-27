@@ -9,16 +9,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -31,8 +27,6 @@ import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
-
 /**
  *
  * @author Diarsid
@@ -42,6 +36,7 @@ public class OSWindows implements OS {
     private final String PROGRAMS_LOCATION;
     private final IoInnerModule ioEngine;
     private final ExecutorService executorService;
+    private final SearchFileVisitor searchVisitor;
 
     public OSWindows(IoInnerModule io, ConfigModule config) {
         this.ioEngine = io;
@@ -56,6 +51,7 @@ public class OSWindows implements OS {
                 .toLowerCase()
                 .intern();      
         this.executorService = Executors.newFixedThreadPool(3);
+        this.searchVisitor = new SearchFileVisitor(this.ioEngine);
     }
 
     @Override
@@ -140,7 +136,7 @@ public class OSWindows implements OS {
             return true;
         }
     }
-
+    
     @Override
     public List<String> getLocationContent(Location location) {
         File dir = new File(location.getPath());
@@ -229,58 +225,15 @@ public class OSWindows implements OS {
             Files.walkFileTree(
                     root, 
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS), 
-                    2, 
-                    new SimpleFileVisitor<Path>() {
-                
-                @Override 
-                public FileVisitResult preVisitDirectory(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                    
-                    return checkPath(root, file, nameToFind, foundItems);
-                }        
-                        
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                    
-                    return checkPath(root, file, nameToFind, foundItems);
-                }
-            });
+                    2,
+                    this.searchVisitor.set(root, nameToFind, foundItems));
             
+            this.searchVisitor.clear();
         } catch (AccessDeniedException e ) {
             this.ioEngine.reportError("Access to file is denied, stream stoped.");
         } catch (IOException e ) {
             this.ioEngine.reportError("Error occured in Files.find(...);");
         }
-    }
-    
-    private FileVisitResult checkPath(
-            Path root, Path file, String nameToFind, List<String> foundItems) {
-        
-        String fileName;
-        if ( file.getNameCount() > 0 ) {
-            fileName = file.getFileName().toString().toLowerCase();
-        } else {
-            fileName = file.toString();
-        }
-        if ( fileName.contains("desktop.ini") ) {
-            return CONTINUE;
-        }
-        if ( nameToFind.contains("-") ) {
-            for (String fragment : Arrays.asList(nameToFind.split("-"))) {
-                if (!fileName.contains(fragment)) {
-                    return CONTINUE;
-                }                
-            }
-            foundItems.add(root.relativize(file).toString().replace("\\", "/"));
-            return CONTINUE;
-        } else {
-            if (fileName.contains(nameToFind)) {
-                foundItems.add(root.relativize(file).toString().replace("\\", "/"));
-            }
-        }
-
-        return CONTINUE;
     }
 
     private String chooseOneVariantFrom(List<String> variants) {

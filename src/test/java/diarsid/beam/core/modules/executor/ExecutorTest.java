@@ -5,28 +5,24 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.modules.executor.IntelligentResolver;
-import diarsid.beam.core.modules.executor.OS;
-import diarsid.beam.core.modules.executor.ExecutorModuleWorker;
-import diarsid.beam.core.modules.executor.StoredExecutorCommand;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
-
 import diarsid.beam.core.entities.Location;
-
 import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoLocations;
+import diarsid.beam.core.modules.handlers.LocationsHandler;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -48,14 +44,18 @@ public class ExecutorTest {
         io = mock(IoInnerModule.class);        
         locDao = mock(DaoLocations.class);
         comDao = mock(DaoCommands.class);
+        LocationsHandler locHandler = mock(LocationsHandler.class);
+        WebPagesHandler pagesHandler = mock(WebPagesHandler.class);
+        HandlerManagerModule handlers = mock(HandlerManagerModule.class);
+        when(handlers.getLocationsHandler()).thenReturn(locHandler);
+        when(handlers.getWebPagesHandler()).thenReturn(pagesHandler);
         DataModule data = mock(DataModule.class);
         when(data.getCommandsDao()).thenReturn(comDao);
-        when(data.getLocationsDao()).thenReturn(locDao);
         os = mock(OS.class);
         intell = mock(IntelligentResolver.class);
         Location notes = mock(Location.class);
         
-        exec = new ExecutorModuleWorker(io, data, intell, os, notes);
+        exec = new ExecutorModuleWorker(io, comDao, handlers, intell, os, notes);
     }
     
     @Test

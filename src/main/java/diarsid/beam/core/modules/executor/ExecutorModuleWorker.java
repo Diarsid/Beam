@@ -12,37 +12,36 @@ import java.util.Map;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
-
-import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.data.DaoCommands;
-import diarsid.beam.core.modules.data.DaoLocations;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.handlers.LocationsHandler;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 
 class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
     private final IntelligentResolver intell;
     private final OS system;
-    private final DaoLocations locationsDao;
+    private final LocationsHandler locationsHandler;
     private final DaoCommands commandsDao;
-    private final DaoWebPages pagesDao;        
+    private final WebPagesHandler pagesHandler;        
     private final List<String> command;
     private final Location notes;
     
     ExecutorModuleWorker(
             IoInnerModule io, 
-            DataModule dataModule, 
+            DaoCommands comDao, 
+            HandlerManagerModule handlers,
             IntelligentResolver i, 
             OS os,
             Location notes) {
         this.ioEngine = io;
         this.intell = i;
-        this.locationsDao = dataModule.getLocationsDao();
-        this.commandsDao = dataModule.getCommandsDao();
-        this.pagesDao = dataModule.getWebPagesDao();
+        this.locationsHandler = handlers.getLocationsHandler();
+        this.commandsDao = comDao;
+        this.pagesHandler = handlers.getWebPagesHandler();
         this.system = os;
         this.command = new ArrayList<>();
         this.notes = notes;
@@ -247,7 +246,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
         
-    private void runMarkedProgram(String mark, List<String> commandParams){
+    private void runMarkedProgram(String mark, List<String> commandParams) {
         if (commandParams.size() == 2){
             this.system.runProgram(commandParams.get(1)+"-"+mark);
         } else {
@@ -255,15 +254,9 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
     
-    private Location getLocation(String locationName, String command){
-        locationName = locationName.trim().toLowerCase();
-        List<Location> foundLocations;
-        
-        if (locationName.contains("-")){
-            foundLocations = this.locationsDao.getLocationsByNameParts(locationName.split("-"));            
-        } else {
-            foundLocations = this.locationsDao.getLocationsByName(locationName);            
-        }
+    private Location getLocation(String locationName, String command) {        
+        List<Location> foundLocations = this.locationsHandler
+                .getLocations(locationName);        
         
         if (foundLocations.size() < 1){
             this.ioEngine.reportMessage("Couldn`t find such location.");
@@ -357,7 +350,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             if (page != null) {
                 if (browserName.equals("default") || browserName.equals("def")){
                     this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
-                    this.pagesDao.editWebPageBrowser(page.getName(), "default");
+                    this.pagesHandler.editWebPageBrowser(page.getName(), "default");
                 } else {
                     this.system.openUrlWithGivenBrowser(page.getUrlAddress(), browserName);
                     String[] vars = {"yes", "no"};
@@ -365,7 +358,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                             "Use given browser always for this page?", 
                             Arrays.asList(vars));
                     if (choosed == 1){
-                        if (this.pagesDao.editWebPageBrowser(page.getName(), browserName)){
+                        if (this.pagesHandler.editWebPageBrowser(page.getName(), browserName)){
                             this.ioEngine.reportMessage("Get it.");
                         }                   
                     }
@@ -376,15 +369,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
     
-    private WebPage getWebPage(String name, String command){
-        name = name.trim().toLowerCase();
-        List<WebPage> pages;
-        if (name.contains("-")) {
-            pages = this.pagesDao.getWebPagesByNameParts(name.split("-"));
-        } else {
-            pages = this.pagesDao.getWebPagesByName(name);
-        }
-        return resolveMultiplePages(pages, command);
+    private WebPage getWebPage(String name, String command) {
+        
+        List<WebPage> pages = this.pagesHandler.getWebPages(name);
+        return this.resolveMultiplePages(pages, command);
     }
     
     private WebPage resolveMultiplePages(List<WebPage> pages, String command) {

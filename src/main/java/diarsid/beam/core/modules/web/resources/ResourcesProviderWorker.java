@@ -12,8 +12,8 @@ import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServlet;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.HandlerManagerModule;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletData;
 
@@ -31,11 +31,11 @@ import static diarsid.beam.core.modules.web.resources.RestResources.ROOT;
  */
 public class ResourcesProviderWorker implements ResourcesProvider {
     
-    private final DataModule data;
+    private final HandlerManagerModule handlers;
     private final Set<ServletData> servlets;
     
-    public ResourcesProviderWorker(DataModule data) {
-        this.data = data;
+    public ResourcesProviderWorker(HandlerManagerModule handlers) {
+        this.handlers = handlers;
         this.servlets = new HashSet<>();
         this.assembleServlets();
     }
@@ -49,7 +49,7 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 ROOT.servletMapping()));
         
         HttpServlet directoriesServlet = new AllDirectoriesServlet(
-                this.produceDao(),
+                this.produceHandler(),
                 this.producePathResolver()
                 );
         this.servlets.add(new ServletData(
@@ -58,7 +58,7 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 DIRS_IN_PLACEMENT.servletMapping()));
         
         HttpServlet singleDirServlet = new SingleDirectoryServlet(
-                this.produceDao(),
+                this.produceHandler(),
                 this.producePathResolver()
                 );
         this.servlets.add(new ServletData(
@@ -67,7 +67,7 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 DIR_FROM_DIRS_IN_PLACEMENT.servletMapping()));
         
         HttpServlet pageInDirServlet = new AllPagesInDirectoryServlet(
-                this.produceDao(),
+                this.produceHandler(),
                 this.producePathResolver()
                 );
         this.servlets.add(new ServletData(
@@ -76,7 +76,7 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 ALL_PAGES_IN_DIR_IN_PLACEMENT.servletMapping()));  
         
         HttpServlet singlePageServlet = new SinglePageInDirectoryServlet(
-                this.produceDao(),
+                this.produceHandler(),
                 this.producePathResolver()
                 );
         this.servlets.add(new ServletData(
@@ -85,7 +85,7 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 PAGE_FROM_DIR_IN_PLACEMENT.servletMapping()));
         
         HttpServlet fieldsServlet = new PageFieldsServlet(
-                this.produceDao(),
+                this.produceHandler(),
                 this.producePathResolver()
                 );
         this.servlets.add(new ServletData(
@@ -94,7 +94,7 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 PAGE_FIELDS_FROM_DIR_IN_PLACEMENT.servletMapping()));
         
         HttpServlet dirFieldsServlet = new DirectoryFieldsServlet(
-                this.produceDao(), 
+                this.produceHandler(), 
                 this.producePathResolver());
         this.servlets.add(new ServletData(
                 dirFieldsServlet,
@@ -102,8 +102,8 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 DIR_FIELDS_FROM_DIRS_IN_PLACEMENT.servletMapping()));
     }
     
-    private DaoWebPages produceDao() {
-        return this.data.getWebPagesDao();
+    private WebPagesHandler produceHandler() {
+        return this.handlers.getWebPagesHandler();
     }
     
     private PathResolver producePathResolver() {

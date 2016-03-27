@@ -28,7 +28,7 @@ class RmiAdapterForLocationsHandler implements RmiLocationsHandlerInterface {
     public boolean newLocation(String locationPath, String locationName) 
             throws RemoteException {
         
-        return this.locationHandler.newLocation(locationName, locationPath);
+        return this.locationHandler.newLocation(locationPath, locationName);
     }
     
     @Override

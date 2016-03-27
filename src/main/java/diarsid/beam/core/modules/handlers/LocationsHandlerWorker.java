@@ -32,7 +32,7 @@ class LocationsHandlerWorker implements LocationsHandler {
     @Override
     public boolean newLocation(String locationPath, String locationName) {
         locationName = locationName.trim().toLowerCase();
-        locationPath = locationPath.trim().toLowerCase();
+        locationPath = locationPath.trim().toLowerCase();        
         if ( this.checkPath(locationPath)) {
             return this.dao.saveNewLocation(new Location(locationName, locationPath)); 
         } else {

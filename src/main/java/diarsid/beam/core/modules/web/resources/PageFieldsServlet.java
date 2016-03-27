@@ -18,7 +18,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 
 /**
  *
@@ -26,12 +26,12 @@ import diarsid.beam.core.modules.data.DaoWebPages;
  */
 class PageFieldsServlet extends HttpServlet {
     
-    private final DaoWebPages webDao;
+    private final WebPagesHandler pagesHandler;
     private final PathResolver resolver;
     private final JSONParser json;
             
-    PageFieldsServlet(DaoWebPages webDao, PathResolver resolver) {
-        this.webDao = webDao;
+    PageFieldsServlet(WebPagesHandler handler, PathResolver resolver) {
+        this.pagesHandler = handler;
         this.resolver = resolver;
         this.json = new JSONParser();
     }    
@@ -59,7 +59,7 @@ class PageFieldsServlet extends HttpServlet {
                         response.getWriter().close();
                         return;
                     }
-                    if (this.webDao.editWebPageName(page, newName)) {
+                    if (this.pagesHandler.editWebPageName(page, newName)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
                         return;
@@ -75,7 +75,7 @@ class PageFieldsServlet extends HttpServlet {
                 
                 case "url" : {
                     String newUrl = (String) newValueObj.get("url");
-                    if (this.webDao.editWebPageUrl(page, newUrl)) {
+                    if (this.pagesHandler.editWebPageUrl(page, newUrl)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
                         return;
@@ -109,8 +109,7 @@ class PageFieldsServlet extends HttpServlet {
                         response.getWriter().close();
                         return;
                     }
-                    if (this.webDao.moveWebPageToPlacementAndDirectory(
-                            page, newDir, placement)) {
+                    if (this.pagesHandler.moveWebPageTo(page, newDir, placement)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
                         return;
@@ -134,7 +133,7 @@ class PageFieldsServlet extends HttpServlet {
                         return;
                     }
                     int newOrder = Integer.parseInt(newOrderStr);
-                    if (this.webDao.editWebPageOrder(page, dir, place, newOrder)) {
+                    if (this.pagesHandler.editWebPageOrder(page, dir, place, newOrder)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
                         return;

@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.handlers;
 import java.util.List;
 
 import diarsid.beam.core.entities.WebPage;
+import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
 
 /**
@@ -28,12 +29,17 @@ public interface WebPagesHandler {
     
     List<String> getAllDirectoriesInPlacement(WebPagePlacement placement);
     
+    List<WebPageDirectory> getAllDirectoriesIn(WebPagePlacement placement);
+    
     List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement);
     
     List<WebPage> getAllWebPagesInDirectoryAndPlacement(
             String directory, WebPagePlacement placement, boolean strict);
     
     List<WebPage> getWebPages(String name);
+    
+    List<WebPage> getWebPagesByNameInDirAndPlace(
+            String name, String dir, WebPagePlacement place);
     
     boolean editWebPageName(String name, String newName);
     
@@ -46,10 +52,16 @@ public interface WebPagesHandler {
     boolean editWebPageOrder(
             String name, String dir, WebPagePlacement place, int newOrder);
     
-    boolean renameDirectory(
+    boolean renameDirectoryInPlacement(
             String directory, String newDirectory, WebPagePlacement placement);
     
     boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder);
     
     boolean moveWebPageTo(String page, String newDirectory, WebPagePlacement newPlacement);
+    
+    boolean createEmptyDirectory(WebPagePlacement place, String dirName);
+    
+    WebPageDirectory getDirectoryExact(WebPagePlacement place, String dir);
+    
+    boolean deleteDirectoryAndPages(String dir, WebPagePlacement place);
 }

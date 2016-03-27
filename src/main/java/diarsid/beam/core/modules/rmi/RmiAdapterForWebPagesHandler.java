@@ -125,7 +125,8 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
             String directory, String newDirectory, WebPagePlacement placement) 
             throws RemoteException {
                 
-        return this.webHandler.renameDirectory(directory, newDirectory, placement);
+        return this.webHandler.renameDirectoryInPlacement(
+                directory, newDirectory, placement);
     }
     
     @Override

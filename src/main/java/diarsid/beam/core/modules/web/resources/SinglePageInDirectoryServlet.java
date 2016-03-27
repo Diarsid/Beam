@@ -19,7 +19,7 @@ import org.json.simple.JSONObject;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.handlers.WebPagesHandler;
 
 /**
  *
@@ -27,12 +27,12 @@ import diarsid.beam.core.modules.data.DaoWebPages;
  */
 class SinglePageInDirectoryServlet extends HttpServlet {
     
-    private final DaoWebPages webDao;
+    private final WebPagesHandler pagesHandler;
     private final PathResolver resolver;
     
-    SinglePageInDirectoryServlet(DaoWebPages webDao, PathResolver resolver) {
+    SinglePageInDirectoryServlet(WebPagesHandler handler, PathResolver resolver) {
         this.resolver = resolver;
-        this.webDao = webDao;
+        this.pagesHandler = handler;
     }
     
     @Override
@@ -41,7 +41,7 @@ class SinglePageInDirectoryServlet extends HttpServlet {
         
         String path = this.resolver.getNormalizedPath(request);
                 
-        List<WebPage> pages = this.webDao.getWebPagesByNameInDirAndPlace(
+        List<WebPage> pages = this.pagesHandler.getWebPagesByNameInDirAndPlace(
                 this.resolver.extractPage(path),
                 this.resolver.extractDirectoryBeforePages(path), 
                 this.resolver.extractPlacementBeforeDirectory(path));
@@ -84,7 +84,7 @@ class SinglePageInDirectoryServlet extends HttpServlet {
         String dir = this.resolver.extractDirectoryBeforePages(path);
         WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
         
-        if ( this.webDao.deleteWebPage(page, dir, place)) {
+        if ( this.pagesHandler.deleteWebPage(page, dir, place)) {
             response.setStatus(HttpServletResponse.SC_OK);    
             response.getWriter().close();
         } else {
