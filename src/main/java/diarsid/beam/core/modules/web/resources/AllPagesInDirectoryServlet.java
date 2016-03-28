@@ -49,7 +49,6 @@ class AllPagesInDirectoryServlet extends HttpServlet {
                 this.resolver.extractDirectoryBeforePages(path), 
                 this.resolver.extractPlacementBeforeDirectory(path),
                 true);
-        JSONObject answer = new JSONObject();
         JSONArray pagesArray = new JSONArray();
         JSONObject pageJSONObject;
         for (WebPage page : pages) {
@@ -59,11 +58,10 @@ class AllPagesInDirectoryServlet extends HttpServlet {
             pageJSONObject.put("url", page.getUrlAddress());
             pagesArray.add(pageJSONObject);
         }
-        answer.put("webpages", pagesArray);
         
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
-        response.getWriter().write(answer.toString());       
+        response.getWriter().write(pagesArray.toString());       
         response.getWriter().close();    
     }
     

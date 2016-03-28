@@ -39,19 +39,13 @@ class SinglePageInDirectoryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException { 
         
-        String path = this.resolver.getNormalizedPath(request);
-                
+        String path = this.resolver.getNormalizedPath(request); 
         List<WebPage> pages = this.pagesHandler.getWebPagesByNameInDirAndPlace(
                 this.resolver.extractPage(path),
                 this.resolver.extractDirectoryBeforePages(path), 
-                this.resolver.extractPlacementBeforeDirectory(path));
-        JSONObject answer = new JSONObject();
+                this.resolver.extractPlacementBeforeDirectory(path));                
         
-        if ( pages.size() == 1 ) {
-            answer.put("name", pages.get(0).getName());
-            answer.put("order", pages.get(0).getPageOrder());
-            answer.put("url", pages.get(0).getUrlAddress());
-        } else if ( pages.size() > 1 ) {
+        if ( pages.size() > 0 ) {            
             JSONArray pagesArray = new JSONArray();
             JSONObject pageJSONObject;
             for (WebPage page : pages) {
@@ -61,17 +55,15 @@ class SinglePageInDirectoryServlet extends HttpServlet {
                 pageJSONObject.put("url", page.getUrlAddress());
                 pagesArray.add(pageJSONObject);
             }
-            answer.put("webpages", pagesArray);
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json");
+            response.getWriter().write(pagesArray.toString());       
+            response.getWriter().close(); 
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.setContentType("application/json");       
             response.getWriter().close();
-        }         
-        
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.getWriter().write(answer.toString());       
-        response.getWriter().close();    
+        }       
     }
     
     @Override

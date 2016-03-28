@@ -55,12 +55,10 @@ class AllDirectoriesServlet extends HttpServlet {
             directoryObj.put("ordering", dir.getOrder());
             directoriesArray.add(directoryObj);
         }
-        JSONObject answer = new JSONObject();
-        answer.put("directories", directoriesArray);
         
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
-        response.getWriter().write(answer.toString());       
+        response.getWriter().write(directoriesArray.toString());       
         response.getWriter().close();
     }
     

@@ -4,6 +4,7 @@
     
     <!--
         Java Virtual Machine (TM) options.
+        
         Change, add or remove options only in case you
         have clear understanding what you are doing.
     -->
@@ -48,34 +49,39 @@
     
     <!-- 
         Program resources (case, forward slash and backslash insentive).
-        
-        - images     Points place where all pictures used by program are
+
+        - images     Points place where all pictures used by the program are
                      placed. Do not change this entry without replacing all
-                     files in new directory.
+                     files in a new directory.
         - programs   Shortcuts, *.exe, *.bat and any other executable files
-                     placed in this directory are visible for program and
-                     could be executed by "run %filename%" command.
-        - notes      directory where plain .txt files created by "new note"
-                     command are stored.
+                     placed in this directory are visible for the program
+                     and could be executed by "run %programname%" command.
+        - notes      A directory where plain .txt files and directories
+                     could be stored, created and opened.
     -->
     <resources>
-        <images>./../data/images/</images>
+        <images>./../res/images/</images>
         <programs>D:/SOUL/Space/Program_links</programs>
         <notes>D:/content/notes</notes>
     </resources>
     
     <!--
-        Java RMI settings (case insensitive).
-        Program uses Java RMI mechanism to communicate
-        between core program and its external console. Program does not have
-        any input interface but its console.
+        Java RMI settings. (case sensitive)
+        
+        The Java RMI mechanism is used to create a connection between
+        the main program and its external console. The main program
+        does not have any other input interface but its console.
 
-        Console can be closed or restarted - it will not affect the main
-        program. Main program still work if console is closed.
+        The program console can be closed and started again - it will
+        not affect the main program. The Main program will still work
+        if the console is closed.
 
-        You are allowed to change this settings if you want, but not when
-        main program is running, because it reads them one time before start
-        its work and do not reread them later.
+        You are allowed to change these settings if you want.
+        Both main program and console read them one time before start
+        their work and do not read them again later. If these parameters
+        are changed while the main program is running and the console isn't,
+        it will be impossible to connect the console to the main program
+        until it will be terminated and started again.
     -->
     <rmi-info>        
         <beam-system-console host="127.0.0.1" port="43015">
@@ -95,11 +101,13 @@
     </logging> 
     
     <!--
-        Addresses for web access to web server embedded in beam core.
-        Provides same resources through both local and internet addresses.
-        To disable connectivity through particular address one have to
-        set both its attributes to void value "".
-        Internet address should be the valid machine IP.
+        Addresses for a web access to a web server embedded in the main
+        program.
+        Provide same web resources through both local and internet
+        addresses. In order to disable a connectivity through
+        the particular address it is required to set both address
+        attributes to value "".
+        Internet address should be the valid machine IP-address.
      -->
     <web>
          <local-address host="127.0.0.1" port="35001"/>
@@ -108,17 +116,17 @@
     </web>
     
     <!--
-        Case sensitive!     
-           
-        To provide program with specified database connection, fill 
-        subsequent properties with values apporpiate for particular Database.
-        
+        Main program database connection settings. (case sensitive)
+
+        In order to provide a specified database connection, fill
+        subsequent properties with values required for particular Database.
+
         H2 Database (Embedded mode):
             <db-name>H2</db-name>
             <db-location>./../data/BeamData</db-location>
             <jdbc-url>jdbc:h2:</jdbc-url>
             <jdbc-driver>org.h2.Driver</jdbc-driver>
-            
+
         SQLite Database (Embedded):
             Not implemented yet.
             
@@ -126,12 +134,14 @@
     <databases>
         <core>
             <db-name>H2</db-name>
-            <db-location>./../data/BeamData</db-location>
+            <db-location>./../res/data/BeamData</db-location>
             <jdbc-url>jdbc:h2:</jdbc-url>
             <jdbc-driver>org.h2.Driver</jdbc-driver>
         </core>       
     </databases>                              
 </configuration>
+
+
 
 
 

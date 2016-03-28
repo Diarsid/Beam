@@ -10,20 +10,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.Filter;
-import javax.servlet.http.HttpServlet;
 
 import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.handlers.WebPagesHandler;
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletData;
 
-import static diarsid.beam.core.modules.web.resources.RestResources.ALL_PAGES_IN_DIR_IN_PLACEMENT;
-import static diarsid.beam.core.modules.web.resources.RestResources.DIRS_IN_PLACEMENT;
-import static diarsid.beam.core.modules.web.resources.RestResources.DIR_FIELDS_FROM_DIRS_IN_PLACEMENT;
-import static diarsid.beam.core.modules.web.resources.RestResources.DIR_FROM_DIRS_IN_PLACEMENT;
-import static diarsid.beam.core.modules.web.resources.RestResources.PAGE_FIELDS_FROM_DIR_IN_PLACEMENT;
-import static diarsid.beam.core.modules.web.resources.RestResources.PAGE_FROM_DIR_IN_PLACEMENT;
-import static diarsid.beam.core.modules.web.resources.RestResources.ROOT;
+import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.ALL_PAGES_IN_DIR_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.DIR_FIELDS_FROM_DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.DIR_FROM_DIRS_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.PAGE_FIELDS_FROM_DIR_IN_PLACEMENT;
+import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.PAGE_FROM_DIR_IN_PLACEMENT;
 
 /**
  *
@@ -37,76 +35,41 @@ public class ResourcesProviderWorker implements ResourcesProvider {
     public ResourcesProviderWorker(HandlerManagerModule handlers) {
         this.handlers = handlers;
         this.servlets = new HashSet<>();
-        this.assembleServlets();
+        
+        this.servlets.add(new ServletData(
+                new DispatcherServlet(), 
+                "dispatcher", 
+                "/*"));
+        
+        this.assembleWebPageServlets();
     }
     
-    private void assembleServlets() {
+    private void assembleWebPageServlets() {  
+                
+        this.servlets.add(DIRS_IN_PLACEMENT
+                .resourceServletData(this.newHandler(), this.newPathResolver()));        
         
-        HttpServlet restRootPathDispatcherServlet = new DispatcherServlet();
-        this.servlets.add(new ServletData(
-                restRootPathDispatcherServlet, 
-                ROOT.servletName(), 
-                ROOT.servletMapping()));
+        this.servlets.add(DIR_FROM_DIRS_IN_PLACEMENT
+                .resourceServletData(this.newHandler(), this.newPathResolver()));        
         
-        HttpServlet directoriesServlet = new AllDirectoriesServlet(
-                this.produceHandler(),
-                this.producePathResolver()
-                );
-        this.servlets.add(new ServletData(
-                directoriesServlet, 
-                DIRS_IN_PLACEMENT.servletName(), 
-                DIRS_IN_PLACEMENT.servletMapping()));
+        this.servlets.add(ALL_PAGES_IN_DIR_IN_PLACEMENT
+                .resourceServletData(this.newHandler(), this.newPathResolver()));        
         
-        HttpServlet singleDirServlet = new SingleDirectoryServlet(
-                this.produceHandler(),
-                this.producePathResolver()
-                );
-        this.servlets.add(new ServletData(
-                singleDirServlet, 
-                DIR_FROM_DIRS_IN_PLACEMENT.servletName(), 
-                DIR_FROM_DIRS_IN_PLACEMENT.servletMapping()));
+        this.servlets.add(PAGE_FROM_DIR_IN_PLACEMENT
+                .resourceServletData(this.newHandler(), this.newPathResolver()));        
         
-        HttpServlet pageInDirServlet = new AllPagesInDirectoryServlet(
-                this.produceHandler(),
-                this.producePathResolver()
-                );
-        this.servlets.add(new ServletData(
-                pageInDirServlet, 
-                ALL_PAGES_IN_DIR_IN_PLACEMENT.servletName(), 
-                ALL_PAGES_IN_DIR_IN_PLACEMENT.servletMapping()));  
+        this.servlets.add(PAGE_FIELDS_FROM_DIR_IN_PLACEMENT
+                .resourceServletData(this.newHandler(), this.newPathResolver()));        
         
-        HttpServlet singlePageServlet = new SinglePageInDirectoryServlet(
-                this.produceHandler(),
-                this.producePathResolver()
-                );
-        this.servlets.add(new ServletData(
-                singlePageServlet, 
-                PAGE_FROM_DIR_IN_PLACEMENT.servletName(), 
-                PAGE_FROM_DIR_IN_PLACEMENT.servletMapping()));
-        
-        HttpServlet fieldsServlet = new PageFieldsServlet(
-                this.produceHandler(),
-                this.producePathResolver()
-                );
-        this.servlets.add(new ServletData(
-                fieldsServlet,
-                PAGE_FIELDS_FROM_DIR_IN_PLACEMENT.servletName(),
-                PAGE_FIELDS_FROM_DIR_IN_PLACEMENT.servletMapping()));
-        
-        HttpServlet dirFieldsServlet = new DirectoryFieldsServlet(
-                this.produceHandler(), 
-                this.producePathResolver());
-        this.servlets.add(new ServletData(
-                dirFieldsServlet,
-                DIR_FIELDS_FROM_DIRS_IN_PLACEMENT.servletName(),
-                DIR_FIELDS_FROM_DIRS_IN_PLACEMENT.servletMapping()));
+        this.servlets.add(DIR_FIELDS_FROM_DIRS_IN_PLACEMENT
+                .resourceServletData(this.newHandler(), this.newPathResolver()));
     }
     
-    private WebPagesHandler produceHandler() {
+    private WebPagesHandler newHandler() {
         return this.handlers.getWebPagesHandler();
     }
     
-    private PathResolver producePathResolver() {
+    private PathResolver newPathResolver() {
         return new PathResolver();
     }
     

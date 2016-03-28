@@ -5,7 +5,6 @@
 package diarsid.beam.core;
 
 import diarsid.beam.core.modules.RmiModule;
-
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
@@ -32,8 +31,7 @@ public class Beam {
     private static RmiExecutorInterface rmiExecutorInterface;
     private static RmiTaskManagerInterface rmiTaskManagerInterface;
     private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
-    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;
-    
+    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;    
     
     private Beam() {
     }    
@@ -41,7 +39,7 @@ public class Beam {
     public static void main(String[] args) {
         GemInjector.buildContainer("Beam.core", new BeamModulesDeclaration());
         GemInjector.getContainer("Beam.core").init();
-        GemInjector.clear();
+        //GemInjector.clear();
     }
     
     public static void exitBeamCoreNow(){

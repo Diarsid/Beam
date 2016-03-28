@@ -27,30 +27,32 @@ class DispatcherServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse resp)
                 throws ServletException, IOException {
                 
-        String dispatchedServletName = RestResources
+        String dispatchedServletName = RestResourcesForWebPages
                 .getDispatchedServletNameOfResource(req.getPathInfo());
         
         System.out.println("[DISPATCHER SERVLET] PathInfo: " + req.getPathInfo());
         System.out.println("[DISPATCHER SERVLET] dispatch name: " + dispatchedServletName);
         
         if ( dispatchedServletName.isEmpty() ) {
+            
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             PrintWriter writer = resp.getWriter();
             resp.setContentType("text/plain");
             writer.write("unspecified url.");       
             writer.close();
-        } else {            
+            return;
+        } else {
+            
             this.getServletContext()
                     .getNamedDispatcher(dispatchedServletName)
                     .forward(req, resp);
-        }        
-        
-        if ( ! resp.isCommitted() ) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            PrintWriter writer = resp.getWriter();
-            resp.setContentType("text/plain");
-            writer.write("REST Servlet dispatch logic error.");       
-            writer.close();
+            
+            if ( ! resp.isCommitted() ) {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.setContentType("text/plain");
+                resp.getWriter().write("REST Servlet dispatch logic error.");       
+                resp.getWriter().close();
+            }
         } 
     }
 }
