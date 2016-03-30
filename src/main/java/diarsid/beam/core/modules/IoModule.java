@@ -7,6 +7,7 @@ package diarsid.beam.core.modules;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Set;
 
 import diarsid.beam.external.ExternalIOInterface;
 
@@ -35,4 +36,8 @@ public interface IoModule extends GemModule {
             throws RemoteException, NotBoundException;
     
     void exitBeam();
+    
+    Set<String> getPreviousConsoleCommands();
+    
+    void storeCommandsFromConsole(Set<String> commands);
 }

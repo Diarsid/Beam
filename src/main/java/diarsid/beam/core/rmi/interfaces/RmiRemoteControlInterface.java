@@ -7,6 +7,7 @@ package diarsid.beam.core.rmi.interfaces;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Set;
 
 /*
  * Interface provides methods to control main program`s flow 
@@ -14,11 +15,22 @@ import java.rmi.RemoteException;
  * to force program to exit or change it`s behavior regarding it`s output activity.
  */
 public interface RmiRemoteControlInterface extends Remote {
+    
     boolean isExternalIoProcessorActive() throws RemoteException;
-    void acceptNewIOProcessor(String consoleRmiName, String consoleHost, int consolePort)
+    
+    void acceptNewIOProcessor(
+            String consoleRmiName, String consoleHost, int consolePort)
             throws RemoteException, NotBoundException;
+    
     boolean setUseExternalShowTaskMethod() throws RemoteException;
+    
     boolean setUseNativeShowTaskMethod() throws RemoteException;
+    
     void exit() throws RemoteException;
+    
     void setDefaultIO() throws RemoteException;
+    
+    Set<String> getPreviousConsoleCommands() throws RemoteException;
+    
+    void storeCommandsFromConsole(Set<String> commands) throws RemoteException;
 }

@@ -8,9 +8,9 @@ package diarsid.beam.core.modules.rmi;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Set;
 
 import diarsid.beam.core.modules.IoModule;
-
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 
 /**
@@ -61,5 +61,15 @@ class RmiAdapterForRemoteControl implements RmiRemoteControlInterface {
     @Override
     public void setDefaultIO() throws RemoteException {
         this.ioModule.resetIoToDefault();
+    }
+    
+    @Override
+    public Set<String> getPreviousConsoleCommands() throws RemoteException {
+        return this.ioModule.getPreviousConsoleCommands();
+    }
+    
+    @Override
+    public void storeCommandsFromConsole(Set<String> commands) throws RemoteException {
+        this.ioModule.storeCommandsFromConsole(commands);
     }
 }

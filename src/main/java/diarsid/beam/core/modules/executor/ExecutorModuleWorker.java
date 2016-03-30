@@ -353,15 +353,20 @@ class ExecutorModuleWorker implements ExecutorModule {
                     this.pagesHandler.editWebPageBrowser(page.getName(), "default");
                 } else {
                     this.system.openUrlWithGivenBrowser(page.getUrlAddress(), browserName);
-                    String[] vars = {"yes", "no"};
-                    int choosed = this.ioEngine.resolveVariantsWithExternalIO(
-                            "Use given browser always for this page?", 
-                            Arrays.asList(vars));
-                    if (choosed == 1){
-                        if (this.pagesHandler.editWebPageBrowser(page.getName(), browserName)){
-                            this.ioEngine.reportMessage("Get it.");
-                        }                   
-                    }
+                    String pageBrowser = page.getBrowser();
+                    if ( pageBrowser.contains(browserName) || browserName.contains(pageBrowser) ) {
+                        return;
+                    } else {
+                        String[] vars = {"yes", "no"};
+                        int choosed = this.ioEngine.resolveVariantsWithExternalIO(
+                                "Use given browser always for this page?", 
+                                Arrays.asList(vars));
+                        if (choosed == 1){
+                            if (this.pagesHandler.editWebPageBrowser(page.getName(), browserName)){
+                                this.ioEngine.reportMessage("Get it.");
+                            }                   
+                        }
+                    }                    
                 }                
             }
         } else {

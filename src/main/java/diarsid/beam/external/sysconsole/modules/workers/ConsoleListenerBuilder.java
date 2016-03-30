@@ -25,7 +25,7 @@ class ConsoleListenerBuilder implements GemModuleBuilder<ConsoleListenerModule>{
     
     @Override
     public ConsoleListenerModule buildModule() {
-        ConsoleListenerModule listener = new ConsoleListener(dispatcher);
+        ConsoleListenerModule listener = new ConsoleListener(this.dispatcher);
         new Thread(listener).start();
         return listener;
     }
