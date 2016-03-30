@@ -17,8 +17,6 @@ import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import diarsid.beam.external.sysconsole.modules.ConsoleListenerModule;
 
-import static java.lang.Integer.MAX_VALUE;
-
 /**
  *
  * @author Diarsid
@@ -609,26 +607,50 @@ class ConsoleListener implements ConsoleListenerModule {
         }
     }
     
-    private String searchFromHash(String unknownCommand) {        
-        int shortestCommandLength = MAX_VALUE;
+    private String searchFromHash(String unknownCommand) throws IOException {  
+        List<String> choosedCommands = new ArrayList<>();
         String choosedPreviousCommand = "";
         for (String previousCommand : this.commandsHash) {
-            if ( previousCommand.contains(unknownCommand) ) {
-                if ( previousCommand.length() < shortestCommandLength ) {
-                    shortestCommandLength = previousCommand.length();
+            if ( previousCommand.contains(unknownCommand) ) {                
+                if ( choosedPreviousCommand.isEmpty() ) {
                     choosedPreviousCommand = previousCommand;
-                }
+                } else {
+                    if ( this.ifCommandActionsAreEqual(
+                            previousCommand, choosedPreviousCommand) ) {
+                        
+                        if ( previousCommand.length() < choosedPreviousCommand.length() ) {
+                            choosedPreviousCommand = previousCommand;
+                        }
+                    } else {
+                        choosedCommands.add(previousCommand);
+                    }                    
+                }                
             }
         }
-        if ( this.ifSeeCommand(choosedPreviousCommand) ) {
-            return "see " + unknownCommand;
-        } else if ( this.ifRunCommand(choosedPreviousCommand) ) {
-            return "run " + unknownCommand;
-        } else if ( this.ifCallCommand(choosedPreviousCommand) ) {
-            return "call " + unknownCommand;
+        
+        if ( ! choosedCommands.isEmpty() ) {
+            choosedCommands.add(choosedPreviousCommand);
+            int choosed = this.dispatcher.chooseVariants("Action?", choosedCommands);
+            if ( choosed > 0 ) {
+                return choosedCommands.get(choosed - 1);
+            } else {
+                return "";
+            }            
         } else {
-            return choosedPreviousCommand;
+            if ( this.ifSeeCommand(choosedPreviousCommand) ) {
+                return "see " + unknownCommand;
+            } else if ( this.ifRunCommand(choosedPreviousCommand) ) {
+                return "run " + unknownCommand;
+            } else if ( this.ifCallCommand(choosedPreviousCommand) ) {
+                return "call " + unknownCommand;
+            } else {
+                return choosedPreviousCommand;
+            }
         }
+    }
+    
+    private boolean ifCommandActionsAreEqual(String previous, String choosed) {
+        return ( previous.charAt(0) == choosed.charAt(0) );
     }
     
     private boolean ifRunCommand(String previousCommand) {

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import diarsid.beam.core.exceptions.ModuleInitializationOrderException;
-
 import diarsid.beam.shared.modules.ConfigModule;
 
 /**
@@ -40,7 +39,11 @@ class ConfigModuleWorker implements ConfigModule {
         if (this.configurations.isEmpty()){
             throw new ModuleInitializationOrderException();
         } else {
-            return this.configurations.get(param);
+            String config = this.configurations.get(param);
+            if ( config == null ) {
+                config = "";
+            }
+            return config;
         } 
     }
 

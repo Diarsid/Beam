@@ -56,7 +56,7 @@ class XmlSaxRunner extends DefaultHandler {
     public void characters(char[] ch, int start, int length)
                 throws SAXException {
         String text = String.valueOf(ch, start, length).trim();
-        if (text.length() > 0) {
+        if (text.length() >= 0) {
             if (elementsText.containsKey(elementRoot.toString())) {
                 String newContent = elementsText.get(
                         elementRoot.toString()) + " " + text;
