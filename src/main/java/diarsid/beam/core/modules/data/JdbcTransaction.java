@@ -7,7 +7,6 @@ package diarsid.beam.core.modules.data;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  *
@@ -42,6 +41,17 @@ public interface JdbcTransaction {
      * and rethrow SQLException into main execution method to stop it.
      */
     int executePreparedUpdate(PreparedStatement ps) 
+            throws HandledTransactSQLException;
+    
+    /*
+     * Execute the batch update represented by specified PreparedStatement.
+     * It is implied that it has been set with all necessary
+     * parameters inside of the loop earlier.
+     *
+     * If operation fails - make rollback, close all resources
+     * and rethrow SQLException into main execution method to stop it.
+     */
+    int executeBatchPreparedUpdate(PreparedStatement ps) 
             throws HandledTransactSQLException;
 
     /*

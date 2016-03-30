@@ -711,17 +711,17 @@ class H2DaoWebPages implements DaoWebPages {
             this.changePagesOrderAccordingToNewOrder(
                     oldOrder, newOrder, movedPageIndex, pages);
             
-            PreparedStatement updatePageOrderSt;
-            int qty = 0;
-            for ( WebPage updPage : pages ) {
-                updatePageOrderSt = transact.getPreparedStatement(
+            PreparedStatement updatePageOrderSt = transact.getPreparedStatement(
                     UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS);
+            
+            for ( WebPage updPage : pages ) {
                 updatePageOrderSt.setInt(1, updPage.getPageOrder());
                 updatePageOrderSt.setString(2, updPage.getName());
                 updatePageOrderSt.setString(3, updPage.getDirectory());
-                updatePageOrderSt.setString(4, updPage.getPlacement().name());
-                qty = qty + transact.executePreparedUpdate(updatePageOrderSt);
+                updatePageOrderSt.setString(4, updPage.getPlacement().name()); 
+                updatePageOrderSt.addBatch();
             }
+            int qty = transact.executeBatchPreparedUpdate(updatePageOrderSt);
             
             transact.commitThemAll();
             return ( qty > 0 );
@@ -1015,16 +1015,15 @@ class H2DaoWebPages implements DaoWebPages {
             
             this.changeDirectoriesOrder(newOrder, oldOrder, dirs, movedDirIndex);
             
-            PreparedStatement updatePageOrderSt;
-            int qty = 0;
-            for (WebPageDirectory updDir : dirs) {
-                updatePageOrderSt = transact.getPreparedStatement(
+            PreparedStatement updatePageOrderSt = transact.getPreparedStatement(
                     UPDATE_DIR_ORDER_WHERE_NAME_AND_PLACE_IS);
+            for (WebPageDirectory updDir : dirs) {
                 updatePageOrderSt.setInt(1, updDir.getOrder());
                 updatePageOrderSt.setString(2, updDir.getName());
                 updatePageOrderSt.setString(3, updDir.getPlacement().name());
-                qty = qty + transact.executePreparedUpdate(updatePageOrderSt);
+                updatePageOrderSt.addBatch();
             }
+            int qty = transact.executeBatchPreparedUpdate(updatePageOrderSt);
             
             transact.commitThemAll();
             return ( qty > 0 );

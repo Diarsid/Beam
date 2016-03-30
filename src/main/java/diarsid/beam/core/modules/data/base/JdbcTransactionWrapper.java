@@ -202,7 +202,7 @@ class JdbcTransactionWrapper implements JdbcTransaction {
             this.rollbackAllAndReleaseResources();
             throw new HandledTransactSQLException(e);
         }
-    }
+    }    
     
     /*
     * Execute the update represented by specified PreparedStatement.
@@ -219,6 +219,32 @@ class JdbcTransactionWrapper implements JdbcTransaction {
         try {
             this.statements.add(ps);
             return ps.executeUpdate();
+        } catch (SQLException e) {
+            this.rollbackAllAndReleaseResources();
+            throw new HandledTransactSQLException(e);
+        }
+    }
+    
+    
+    /*
+     * Execute the batch update represented by specified PreparedStatement.
+     * It is implied that it has been set with all necessary
+     * parameters inside of the loop earlier.
+     *
+     * If operation fails - make rollback, close all resources
+     * and rethrow SQLException into main execution method to stop it.
+     */
+    @Override
+    public int executeBatchPreparedUpdate(PreparedStatement ps) 
+            throws HandledTransactSQLException {
+        
+        try {
+            this.statements.add(ps);
+            int qty = 0;
+            for (Integer i : ps.executeBatch()) {
+                qty += i;
+            }
+            return qty;
         } catch (SQLException e) {
             this.rollbackAllAndReleaseResources();
             throw new HandledTransactSQLException(e);
