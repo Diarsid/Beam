@@ -51,7 +51,7 @@ class SinglePageInDirectoryServlet extends HttpServlet {
             for (WebPage page : pages) {
                 pageJSONObject = new JSONObject();
                 pageJSONObject.put("name", page.getName());
-                pageJSONObject.put("order", pages.get(0).getPageOrder());
+                pageJSONObject.put("order", page.getPageOrder());
                 pageJSONObject.put("url", page.getUrlAddress());
                 pagesArray.add(pageJSONObject);
             }

@@ -32,7 +32,7 @@ public class ExecutorTest {
     ExecutorModuleWorker exec;
     
     IoInnerModule io;
-    DaoLocations locDao;
+    LocationsHandler locHandler;
     DaoCommands comDao;
     OS os;
     IntelligentResolver intell;
@@ -42,9 +42,9 @@ public class ExecutorTest {
     public void init(){
         
         io = mock(IoInnerModule.class);        
-        locDao = mock(DaoLocations.class);
+        DaoLocations dao = mock(DaoLocations.class);
         comDao = mock(DaoCommands.class);
-        LocationsHandler locHandler = mock(LocationsHandler.class);
+        locHandler = mock(LocationsHandler.class);
         WebPagesHandler pagesHandler = mock(WebPagesHandler.class);
         HandlerManagerModule handlers = mock(HandlerManagerModule.class);
         when(handlers.getLocationsHandler()).thenReturn(locHandler);
@@ -68,7 +68,7 @@ public class ExecutorTest {
         exec.open(commandParams);
         
         // verify workflow
-        verify(locDao).getLocationsByName("location");
+        verify(locHandler).getLocations("location");
     }
     
     @Test
@@ -80,7 +80,7 @@ public class ExecutorTest {
         exec.open(commandParams);
         
         // verify workflow
-        verify(locDao).getLocationsByName("location");
+        verify(locHandler).getLocations("location");
     }
     
     @Test
@@ -93,7 +93,7 @@ public class ExecutorTest {
         exec.open(commandParams);
         
         // verify workflow
-        verify(locDao).getLocationsByName("location");
+        verify(locHandler).getLocations("location");
     }
 
     @Test
