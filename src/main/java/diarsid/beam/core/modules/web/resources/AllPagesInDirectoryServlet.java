@@ -60,6 +60,7 @@ class AllPagesInDirectoryServlet extends HttpServlet {
         }
         
         response.setStatus(HttpServletResponse.SC_OK);
+            response.setHeader("Access-Control-Allow-Origin", "*");
         response.setContentType("application/json");
         response.getWriter().write(pagesArray.toString());       
         response.getWriter().close();    
