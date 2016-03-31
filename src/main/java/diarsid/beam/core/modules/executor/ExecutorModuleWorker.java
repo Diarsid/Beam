@@ -389,7 +389,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         } else {
             List<String> pageNames = new ArrayList<>();
             for (WebPage wp : pages) {
-                pageNames.add(wp.getName());
+                pageNames.add(
+                        wp.getName() + " - " + 
+                        wp.getDirectory() + "::" + 
+                        wp.getPlacement().name().toLowerCase());
             }
             int choosedVariant = this.intell.resolve(
                     "There are several pages:", 

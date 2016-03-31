@@ -24,7 +24,7 @@ import diarsid.beam.external.sysconsole.modules.ConsoleListenerModule;
 class ConsoleListener implements ConsoleListenerModule {
     
     private final ConsoleDispatcherModule dispatcher;
-    private final Set<String> commandsHash;
+    private final Set<String> commandsCache;
     private final List<String> params;
     
     private String command;
@@ -33,9 +33,9 @@ class ConsoleListener implements ConsoleListenerModule {
     
     ConsoleListener(ConsoleDispatcherModule dispatcher) {
         this.dispatcher = dispatcher;
-        this.commandsHash = new HashSet<>();
+        this.commandsCache = new HashSet<>();
         try {
-            this.commandsHash.addAll(this.dispatcher.getCommandsFromCoreStorage());
+            this.commandsCache.addAll(this.dispatcher.getCommandsFromCoreStorage());
         } catch (IOException e) {
             throw new WorkflowBrokenException(
                     "ConsoleListener creation: it is impossible to get " + 
@@ -70,7 +70,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "close" : {
                         this.commandAccepted();
-                        this.dispatcher.dumpCommandsIntoCore(this.commandsHash);
+                        this.dispatcher.dumpCommandsIntoCore(this.commandsCache);
                         this.dispatcher.closeConsole();
                     }
                     case "+" :
@@ -489,7 +489,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "exit" : {
                         this.commandAccepted();
-                        this.dispatcher.dumpCommandsIntoCore(this.commandsHash);
+                        this.dispatcher.dumpCommandsIntoCore(this.commandsCache);
                         this.dispatcher.exitDialog();
                         break parsing;
                     }
@@ -583,13 +583,23 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                 }
                 
+                // if command has been recognized, save it in chache
                 if ( executed ) {                    
-                    this.commandsHash.add(this.command);
+                    this.commandsCache.add(this.command);
                 } else {
-                    this.command = this.searchFromHash(this.command);
+                    // else try to find command from cache that looks 
+                    // like given one
+                    this.command = this.intellSearchFromCache(this.command);
+                    // if such command has not been found, do not proceed
                     if (this.command.isEmpty()) {
+                        // algorithm will proceed if (executeCount < 2) that 
+                        // actually means it can be executed only one more 
+                        // time after first fail to recognize original given 
+                        // command
                         this.executeCount = 10;
                     } else {
+                        // if such command has been found, increment counter
+                        // and try to execute it
                         this.executeCount++;
                     }
                 }
@@ -607,26 +617,91 @@ class ConsoleListener implements ConsoleListenerModule {
         }
     }
     
-    private String searchFromHash(String unknownCommand) throws IOException {  
+    private String intellSearchFromCache(String unknownCommand) throws IOException {
+        if (unknownCommand.length() < 2) {
+            // There is no reason to search commands that matches only
+            // one letter
+            return "";
+        }
         List<String> choosedCommands = new ArrayList<>();
         String choosedPreviousCommand = "";
-        for (String previousCommand : this.commandsHash) {
-            if ( previousCommand.contains(unknownCommand) ) {                
+        
+        // character '-' separates different parts in command argument's 
+        // body. All these parts must be presented in searched target.
+        // For instance, 'jav-ol' could mean 'java_folder' but neither only 
+        // 'java' nor 'java projects'.
+        if (unknownCommand.contains("-")) {
+            // loop to iterate through the cache 
+            searchInCommandsCache:
+            for (String previousCommand : this.commandsCache) {
+                // loop to evaluate every command in cache if it contains
+                // all required parts
+                for (String requiredPart : unknownCommand.split("-")) {
+                    if ( ! previousCommand.contains(requiredPart) ) {
+                        // if currently evaluated command from cache does 
+                        // not contain this required part, begin next 
+                        // iteration with next command from cache
+                        continue searchInCommandsCache;
+                    }
+                }
+                
+                // initially set first suitable command
+                // that have been encountered
                 if ( choosedPreviousCommand.isEmpty() ) {
                     choosedPreviousCommand = previousCommand;
                 } else {
+                    // trying to chose the shortest command from cache
+                    // if there are more than one suitable command with
+                    // the same action type
                     if ( this.ifCommandActionsAreEqual(
                             previousCommand, choosedPreviousCommand) ) {
-                        
+                        // chose the shortest command among currently 
+                        // evaluated command from cache and suitable
+                        // command that has been choosed from cache during 
+                        // previous iterations
                         if ( previousCommand.length() < choosedPreviousCommand.length() ) {
                             choosedPreviousCommand = previousCommand;
                         }
                     } else {
+                        // if there are more than one suitable command in the 
+                        // old commands cache but they have different action
+                        // types, collect them in order to ask user to chose 
+                        // one that suits for him
                         choosedCommands.add(previousCommand);
                     }                    
-                }                
+                }
             }
-        }
+        } else {
+            // if command consists only from one part to be guessed
+            for (String previousCommand : this.commandsCache) {            
+                // chose from old commands cache only commands that
+                // contain new command entry
+                if ( previousCommand.contains(unknownCommand) ) {  
+                    // initially set first suitable command
+                    // that have been encountered
+                    if ( choosedPreviousCommand.isEmpty() ) {
+                        choosedPreviousCommand = previousCommand;
+                    } else {
+                        // trying to chose the shortest command from cache
+                        // if there are more than one suitable command with
+                        // the same action type
+                        if ( this.ifCommandActionsAreEqual(
+                                previousCommand, choosedPreviousCommand) ) {
+                            // chose the shortest command among two
+                            if ( previousCommand.length() < choosedPreviousCommand.length() ) {
+                                choosedPreviousCommand = previousCommand;
+                            }
+                        } else {
+                            // if there are more than one suitable command in the 
+                            // old commands cache but they have different action
+                            // types, collect them in order to ask user to chose 
+                            // one that suits for him
+                            choosedCommands.add(previousCommand);
+                        }                    
+                    }                
+                }
+            }    
+        }        
         
         if ( ! choosedCommands.isEmpty() ) {
             choosedCommands.add(choosedPreviousCommand);
