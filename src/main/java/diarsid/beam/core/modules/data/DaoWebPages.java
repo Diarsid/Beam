@@ -49,7 +49,11 @@ public interface DaoWebPages {
             String directory, String newDirectory, WebPagePlacement placement);
     
     boolean moveWebPageToPlacementAndDirectory(
-            String pageName, String newDirectory, WebPagePlacement placement);
+            String pageName, 
+            String oldDirectory, 
+            WebPagePlacement oldPlacement, 
+            String newDirectory, 
+            WebPagePlacement newPlacement);
     
     boolean deleteDirectoryAndPages(WebPageDirectory dir);
     

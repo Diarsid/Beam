@@ -34,6 +34,19 @@ class SingleDirectoryServlet extends HttpServlet {
     }
     
     @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setStatus(HttpServletResponse.SC_OK);
+                        
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Allow", "GET, DELETE, HEAD, TRACE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, DELETE, TRACE, OPTIONS");
+            
+        response.getWriter().close();    
+    }
+    
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException { 
         
@@ -67,10 +80,12 @@ class SingleDirectoryServlet extends HttpServlet {
                 this.resolver.extractPlacementBeforeDirectory(path);
         
         if ( this.pagesHandler.deleteDirectoryAndPages(dir, place) ) {
-            response.setStatus(HttpServletResponse.SC_OK);    
+            response.setStatus(HttpServletResponse.SC_OK);  
+                response.setHeader("Access-Control-Allow-Origin", "*");
             response.getWriter().close();
         } else {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);    
+            response.setHeader("Access-Control-Allow-Origin", "*");
             response.getWriter().close();
         }
     }

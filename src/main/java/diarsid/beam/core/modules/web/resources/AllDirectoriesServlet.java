@@ -19,6 +19,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
 import diarsid.beam.core.modules.handlers.WebPagesHandler;
@@ -40,19 +41,47 @@ class AllDirectoriesServlet extends HttpServlet {
     }
     
     @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setStatus(HttpServletResponse.SC_OK);
+                        
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Allow", "GET, HEAD, POST, TRACE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, POST, TRACE, OPTIONS");
+            
+        response.getWriter().close();    
+    }
+    
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         String path = this.resolver.getNormalizedPath(request);
-        
-        List<WebPageDirectory> dirs = this.pagesHandler.getAllDirectoriesIn(
-                this.resolver.extractPlacementBeforeDirectory(path));
+        WebPagePlacement place = 
+                this.resolver.extractPlacementBeforeDirectory(path);
+        List<WebPageDirectory> dirs = this.pagesHandler
+                .getAllDirectoriesIn(place);
         JSONArray directoriesArray = new JSONArray();
         JSONObject directoryObj;
+        JSONArray pagesInDirArray;
+        JSONObject singlePageInDirObj;
+        List<WebPage> pages;
         for (WebPageDirectory dir : dirs) {
             directoryObj = new JSONObject();
             directoryObj.put("name", dir.getName());
-            directoryObj.put("ordering", dir.getOrder());
+            directoryObj.put("order", dir.getOrder());
+            pages = this.pagesHandler.getAllWebPagesInDirectoryAndPlacement(
+                    dir.getName(), place, true);
+            pagesInDirArray = new JSONArray();
+            for (WebPage page : pages) {
+                singlePageInDirObj = new JSONObject();
+                singlePageInDirObj.put("order", page.getPageOrder());
+                singlePageInDirObj.put("name", page.getName());
+                singlePageInDirObj.put("url", page.getUrlAddress());
+                pagesInDirArray.add(singlePageInDirObj);
+            }
+            directoryObj.put("pages", pagesInDirArray);
             directoriesArray.add(directoryObj);
         }
         
@@ -72,7 +101,7 @@ class AllDirectoriesServlet extends HttpServlet {
             JSONObject postedDir = (JSONObject) this.json.parse(request.getReader());
             
             WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
-            String dir = (String) postedDir.get("name");
+            String dir = postedDir.get("name").toString();
             if ( dir == null ) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("text/plain");
@@ -90,7 +119,7 @@ class AllDirectoriesServlet extends HttpServlet {
             
             if ( this.pagesHandler.createEmptyDirectory(place, dir) ) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.setContentType("application/json");
+                response.setHeader("Access-Control-Allow-Origin", "*");
                 response.addHeader("Location", path + "/" + dir);
                 response.getWriter().close();
                 return;

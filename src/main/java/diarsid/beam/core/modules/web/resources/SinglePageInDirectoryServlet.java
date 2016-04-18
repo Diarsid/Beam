@@ -36,6 +36,19 @@ class SinglePageInDirectoryServlet extends HttpServlet {
     }
     
     @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setStatus(HttpServletResponse.SC_OK);
+                        
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Allow", "GET, DELETE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Methods", "GET, DELETE, OPTIONS");
+            
+        response.getWriter().close();    
+    }
+    
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException { 
         
@@ -77,10 +90,12 @@ class SinglePageInDirectoryServlet extends HttpServlet {
         WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
         
         if ( this.pagesHandler.deleteWebPage(page, dir, place)) {
-            response.setStatus(HttpServletResponse.SC_OK);    
+            response.setStatus(HttpServletResponse.SC_OK); 
+                response.setHeader("Access-Control-Allow-Origin", "*");
             response.getWriter().close();
         } else {
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);    
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);   
+                response.setHeader("Access-Control-Allow-Origin", "*");
             response.getWriter().close();
         }
     }

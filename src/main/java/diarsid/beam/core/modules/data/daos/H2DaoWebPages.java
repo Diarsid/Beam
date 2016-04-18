@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
@@ -30,10 +31,12 @@ class H2DaoWebPages implements DaoWebPages {
     
     private final DataBase data;
     private final IoInnerModule ioEngine;
+    private final Random random;
 
     H2DaoWebPages(IoInnerModule io, DataBase data) {
         this.data = data;
         this.ioEngine = io;
+        this.random = new Random();
     }
     
     /* 
@@ -115,12 +118,18 @@ class H2DaoWebPages implements DaoWebPages {
     private final String INSERT_NEW_PAGE = 
             "INSERT INTO web_pages "
             + "(page_name, page_shortcuts, page_url, page_placement, "
-            + "page_directory, page_browser, page_order) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?)";           
+            + "page_directory, page_browser, page_order, page_id) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";           
     private final String SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR = 
             "SELECT MAX(page_order) " +
             "FROM web_pages " +
-            "WHERE (page_placement IS ? ) AND (page_directory IS ?)";    
+            "WHERE (page_placement IS ? ) AND (page_directory IS ?)";   
+    private final String SELECT_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS = 
+            "SELECT page_order " + 
+            "FROM web_pages " + 
+            "WHERE ( page_name IS ? ) "
+            + "AND ( page_directory IS ? ) "
+            + "AND ( page_placement IS ? ) ";
     private final String DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS = 
             "DELETE FROM web_pages " +
             "WHERE ( page_name IS ? ) "
@@ -154,11 +163,19 @@ class H2DaoWebPages implements DaoWebPages {
     private final String UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_AND_ORDER_WHERE_PAGE_NAME_IS = 
             "UPDATE web_pages " +
             "SET page_directory = ?, page_placement = ?, page_order = ? " +
-            "WHERE page_name IS ? ";    
+            "WHERE ( page_name IS ? ) "
+            + "AND ( page_directory IS ? ) "
+            + "AND ( page_placement IS ? ) ";   
     private final String UPDATE_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS = 
             "UPDATE web_pages " +
             "SET page_order = ? " +
             "WHERE ( page_name IS ? ) "
+            + "AND ( page_directory IS ? ) "
+            + "AND ( page_placement IS ? ) ";
+    private final String UPDATE_DECREMENT_PAGES_ORDERS_WHERE_ORDER_HIGHER_THAN = 
+            "UPDATE web_pages " + 
+            "SET page_order = page_order-1 " +
+            "WHERE ( page_order > ? ) "
             + "AND ( page_directory IS ? ) "
             + "AND ( page_placement IS ? ) ";
     private final String DELETE_FROM_DIRS_WHERE_DIR_NAME_AND_PLACEMENT_IS = 
@@ -194,6 +211,10 @@ class H2DaoWebPages implements DaoWebPages {
             "UPDATE directories " +
             "SET dir_name = ? " +
             "WHERE ( dir_name IS ? ) AND ( dir_placement IS ? ) ";
+    private final String UPDATE_DIRS_DECREMENT_ORDER_WHERE_ORDER_HIGHER_THAN = 
+            "UPDATE directories " +
+            "SET dir_order = dir_order-1 " +
+            "WHERE ( dir_order > ? ) AND ( dir_placement IS ? ) ";
             
     @Override
     public boolean saveWebPage(WebPage page) {
@@ -240,13 +261,18 @@ class H2DaoWebPages implements DaoWebPages {
             insertPage.setString(4, page.getPlacement().name());
             insertPage.setString(5, page.getDirectory());
             insertPage.setString(6, page.getBrowser());
-            insertPage.setInt(7, pageOrder+1);            
+            insertPage.setInt(7, pageOrder+1);
+            insertPage.setInt(8, this.random.nextInt());
             int qty = transact.executePreparedUpdate(insertPage);
             
             transact.commitThemAll();
             return ( qty > 0 );
         } catch (HandledTransactSQLException e) {
-            this.ioEngine.reportException(e, "SQLException: web page saving.");
+            if ( e.causedByPrimaryKeyViolation() ) {
+                this.ioEngine.reportMessage("Such page already exists.");
+            } else {
+                this.ioEngine.reportException(e, "SQLException: web page saving.");
+            }            
         } catch (SQLException e) {
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportException(e, "SQLException: web page saving.");
@@ -261,20 +287,52 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public boolean deleteWebPage(String name, String dir, WebPagePlacement place) {
-        try (Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(
-                    DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS);) {
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {
+            int qty = 0;
+            int deletedOrder = -1;
+            PreparedStatement selectOrderSt = transact.getPreparedStatement(
+                    SELECT_PAGE_ORDER_WHERE_PAGE_NAME_DIR_PLACE_IS);
+            selectOrderSt.setString(1, name);
+            selectOrderSt.setString(2, dir);
+            selectOrderSt.setString(3, place.name());
+            ResultSet orderRs = transact.executePreparedQuery(selectOrderSt);
+            if ( orderRs.first() ) {
+                deletedOrder = Integer.parseInt(orderRs.getString("page_order"));
+            } else {
+                transact.commitThemAll();
+                return false;
+            }
             
-            ps.setString(1, name);
-            ps.setString(2, dir);
-            ps.setString(3, place.name());
-            int qty = ps.executeUpdate();
-
+            PreparedStatement delPageSt = transact.getPreparedStatement(
+                    DELETE_PAGES_WHERE_NAME_DIR_PLACE_IS);
+            delPageSt.setString(1, name);
+            delPageSt.setString(2, dir);
+            delPageSt.setString(3, place.name());
+            qty = qty + transact.executePreparedUpdate(delPageSt);
+            
+            PreparedStatement decrementOrdersSt = transact.getPreparedStatement(
+                    UPDATE_DECREMENT_PAGES_ORDERS_WHERE_ORDER_HIGHER_THAN);
+            decrementOrdersSt.setInt(1, deletedOrder);
+            decrementOrdersSt.setString(2, dir);
+            decrementOrdersSt.setString(3, place.name());
+            qty = qty + transact.executePreparedUpdate(decrementOrdersSt);
+            
+            transact.commitThemAll();
+            
             return ( qty > 0 );
+        } catch (HandledTransactSQLException e) { 
+            this.ioEngine.reportException(e, "SQLException: .");
         } catch (SQLException e) {
-            this.ioEngine.reportException(e, "SQLException: web page deleting.");
-            return false;
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: .");
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");            
         }
+        return false;
     }
     
     @Override
@@ -556,7 +614,7 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public boolean editWebPageName(String name, String newName) {
-        try(Connection con = data.connect();
+        try (Connection con = data.connect();
             PreparedStatement ps = con.prepareStatement(UPDATE_PAGE_NAME)) {
             
             ps.setString(1, newName);
@@ -564,15 +622,20 @@ class H2DaoWebPages implements DaoWebPages {
             int qty = ps.executeUpdate();
 
             return ( qty > 0 );            
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: update web page name.");
+        } catch (SQLException e) {
+            if ( e.getSQLState().startsWith("23") ) {
+                this.ioEngine.reportMessage(
+                        "Web page with such name already exists in this directory.");
+            } else {
+                this.ioEngine.reportException(e, "SQLException: update web page name.");
+            }            
             return false;
         }
     }
     
     @Override
     public boolean editWebPageShortcuts(String name, String newShortcuts) {
-        try(Connection con = data.connect();
+        try (Connection con = data.connect();
             PreparedStatement ps = con.prepareStatement(UPDATE_PAGE_SHORTCUTS)) {
             
             ps.setString(1, newShortcuts);
@@ -580,23 +643,25 @@ class H2DaoWebPages implements DaoWebPages {
             int qty = ps.executeUpdate();
 
             return ( qty > 0 );            
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: update web page shortcuts.");
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, 
+                    "SQLException: update web page shortcuts.");
             return false;
         }
     }
     
     @Override
     public boolean editWebPageUrl(String name, String newUrl){
-        try(Connection con = data.connect();
-            PreparedStatement ps = con.prepareStatement(UPDATE_PAGE_URL_WHERE_PAGE_NAME)) {
+        try (Connection con = data.connect();
+            PreparedStatement ps = con.prepareStatement(
+                    UPDATE_PAGE_URL_WHERE_PAGE_NAME)) {
             
             ps.setString(1, newUrl);
             ps.setString(2, name);
             int qty = ps.executeUpdate();
 
             return ( qty > 0 ); 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: update web page URL.");
             return false;
         }
@@ -622,7 +687,7 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public boolean editWebPageBrowser(String name, String newBrowser){
-        try(Connection con = data.connect();
+        try (Connection con = data.connect();
             PreparedStatement ps = con.prepareStatement(
                     UPDATE_PAGE_BROWSER_WHERE_PAGE_NAME)) {
             
@@ -631,7 +696,7 @@ class H2DaoWebPages implements DaoWebPages {
             int qty = ps.executeUpdate();
 
             return (qty > 0); 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: update web page browser.");
             return false;
         }
@@ -640,27 +705,44 @@ class H2DaoWebPages implements DaoWebPages {
     @Override
     public boolean renameDirectoryInPlacement(
             String directory, String newDirectory, WebPagePlacement placement) {
-        try (Connection con = data.connect();
-                PreparedStatement updateDirInPage = con.prepareStatement(
+        JdbcTransaction transact = this.data.beginTransaction();
+        try {         
+            int qty = 0;
+            PreparedStatement updateDirInPage = transact.getPreparedStatement(
                     UPDATE_PAGE_DIRECTORY_WHERE_DIRECTORY_AND_PLACEMENT);
-                PreparedStatement updateDirInDirs = con.prepareStatement(
-                        UPDATE_DIR_NAME_WHERE_DIR_AND_PLACE_IS)) {
-            
             updateDirInPage.setString(1, newDirectory);
             updateDirInPage.setString(2, directory);
             updateDirInPage.setString(3, placement.name());
-            int qty = updateDirInPage.executeUpdate();
+            qty = qty + transact.executePreparedUpdate(updateDirInPage);
             
+            PreparedStatement updateDirInDirs = transact.getPreparedStatement(
+                        UPDATE_DIR_NAME_WHERE_DIR_AND_PLACE_IS);
             updateDirInDirs.setString(1, newDirectory);
             updateDirInDirs.setString(2, directory);
             updateDirInDirs.setString(3, placement.name());
-            qty = qty + updateDirInDirs.executeUpdate();
+            qty = qty + transact.executePreparedUpdate(updateDirInDirs);
             
-            return (qty > 0); 
-        } catch (SQLException e){
-            this.ioEngine.reportException(e, "SQLException: update web page browser.");
-            return false;
+            transact.commitThemAll();
+            
+            return ( qty > 0 ); 
+        } catch (HandledTransactSQLException e) {
+            if ( e.causedByPrimaryKeyViolation() ) {
+                this.ioEngine.reportMessage(
+                        "Such directory already exists in " + 
+                        placement.name().toLowerCase() + ".");
+            } else {
+                this.ioEngine.reportException(e, "SQLException: rename directory.");
+            }            
+        } catch (SQLException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportException(e, "SQLException: rename directory.");
+        } catch (NullPointerException e) {
+            transact.rollbackAllAndReleaseResources();
+            this.ioEngine.reportError(
+                    "Incorrect usage of JdbcTransaction: " +
+                    "database connection is NULL.");
         }
+        return false;
     }
     
     @Override
@@ -700,10 +782,12 @@ class H2DaoWebPages implements DaoWebPages {
                 }
             }
             if ( movedPage == null ) {
+                transact.commitThemAll();
                 return false;
             }
             int oldOrder = movedPage.getPageOrder();
             if ( newOrder == oldOrder ) {
+                transact.commitThemAll();
                 return true;
             }
             int movedPageIndex = pages.indexOf(movedPage);            
@@ -762,21 +846,38 @@ class H2DaoWebPages implements DaoWebPages {
     
     @Override
     public boolean moveWebPageToPlacementAndDirectory(
-            String pageName, String newDirectory, WebPagePlacement placement) {
+            String pageName, 
+            String oldDirectory, 
+            WebPagePlacement oldPlacement, 
+            String newDirectory, 
+            WebPagePlacement newPlacement) {
         
         JdbcTransaction transact = this.data.beginTransaction();
         try {
+            PreparedStatement oldOrderSt = transact.getPreparedStatement(
+                    SELECT_PAGES_JOIN_DIRS_WHERE_PAGE_AND_DIR_AND_PLACE_IS);
+            oldOrderSt.setString(1, pageName);
+            oldOrderSt.setString(2, oldDirectory);
+            oldOrderSt.setString(3, oldPlacement.name());
+            ResultSet oldOrderRs = transact.executePreparedQuery(oldOrderSt); 
+            if ( ! oldOrderRs.first() ) {
+                transact.commitThemAll();
+                this.ioEngine.reportMessage("This page does not exists.");
+                return false;
+            }
+            int movedPageOldOrder = oldOrderRs.getInt("page_order");
+            
             PreparedStatement dirExists = transact.getPreparedStatement(
                     SELECT_COUNT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS);
             dirExists.setString(1, newDirectory);
-            dirExists.setString(2, placement.name());
+            dirExists.setString(2, newPlacement.name());
             ResultSet existResult = transact.executePreparedQuery(dirExists);
             existResult.first();
             if ( existResult.getInt(1) == 0 ) {
                 PreparedStatement maxDirOrderStmnt = 
                         transact.getPreparedStatement(
                                 SELECT_MAX_DIR_ORDER_IN_PLACE);
-                maxDirOrderStmnt.setString(1, placement.name());
+                maxDirOrderStmnt.setString(1, newPlacement.name());
                 ResultSet maxOrderResultSet = transact
                         .executePreparedQuery(maxDirOrderStmnt);
                 maxOrderResultSet.first();
@@ -785,14 +886,14 @@ class H2DaoWebPages implements DaoWebPages {
                 PreparedStatement insertNewDir = transact.getPreparedStatement(
                         INSERT_NEW_DIR);
                 insertNewDir.setString(1, newDirectory);
-                insertNewDir.setString(2, placement.name());
+                insertNewDir.setString(2, newPlacement.name());
                 insertNewDir.setInt(3, maxDirOrder+1);
                 transact.executePreparedUpdate(insertNewDir);
             }
             
             PreparedStatement maxPageOrder = transact.getPreparedStatement(
                     SELECT_MAX_PAGE_ORDER_IN_PLACE_AND_DIR);
-            maxPageOrder.setString(1, placement.name());
+            maxPageOrder.setString(1, newPlacement.name());
             maxPageOrder.setString(2, newDirectory);
             ResultSet maxPageOrderRs = transact.executePreparedQuery(maxPageOrder);
             maxPageOrderRs.first();
@@ -801,20 +902,34 @@ class H2DaoWebPages implements DaoWebPages {
             PreparedStatement updatePage = transact.getPreparedStatement(
                     UPDATE_PAGE_DIRECTORY_AND_PLACEMENT_AND_ORDER_WHERE_PAGE_NAME_IS);            
             updatePage.setString(1, newDirectory);
-            updatePage.setString(2, placement.name());
+            updatePage.setString(2, newPlacement.name());
             updatePage.setInt(3, pageOrder+1);
             updatePage.setString(4, pageName);
-            
+            updatePage.setString(5, oldDirectory);
+            updatePage.setString(6, oldPlacement.name());
             int qty = transact.executePreparedUpdate(updatePage);
+            
+            PreparedStatement decrementPagesOrder = transact
+                    .getPreparedStatement(
+                            UPDATE_DECREMENT_PAGES_ORDERS_WHERE_ORDER_HIGHER_THAN);
+            decrementPagesOrder.setInt(1, movedPageOldOrder);
+            decrementPagesOrder.setString(2, oldDirectory);
+            decrementPagesOrder.setString(3, oldPlacement.name());
+            transact.executePreparedUpdate(decrementPagesOrder);
             
             transact.commitThemAll();
             
             return ( qty > 0 ); 
         } catch (HandledTransactSQLException e) { 
-            this.ioEngine.reportException(e, "SQLException: .");
+            if ( e.causedByPrimaryKeyViolation() ) {
+                this.ioEngine.reportMessage(
+                        "Such page already exists in target directory.");
+            } else {
+                this.ioEngine.reportException(e, "SQLException: move web page.");
+            }            
         } catch (SQLException e) {
             transact.rollbackAllAndReleaseResources();
-            this.ioEngine.reportException(e, "SQLException: .");
+            this.ioEngine.reportException(e, "SQLException: move web page.");
         } catch (NullPointerException e) {
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
@@ -828,28 +943,49 @@ class H2DaoWebPages implements DaoWebPages {
     public boolean deleteDirectoryAndPages(WebPageDirectory dir) {
         JdbcTransaction transact = this.data.beginTransaction();
         try {
+            int qty = 0;
+            int deletedOrder = -1;
+            PreparedStatement getDirOrder = transact.getPreparedStatement(
+                    SELECT_DIR_IN_DIRS_WHERE_NAME_AND_PLACE_IS);
+            getDirOrder.setString(1, dir.getName());
+            getDirOrder.setString(2, dir.getPlacement().name());
+            ResultSet orderRs = transact.executePreparedQuery(getDirOrder);
+            if ( orderRs.first() ) {
+                deletedOrder = Integer.parseInt(orderRs.getString("dir_order"));
+            } else {
+                transact.commitThemAll();
+                return false;
+            }  
+            
             PreparedStatement deleteFromDirs = transact.getPreparedStatement(
                     DELETE_FROM_DIRS_WHERE_DIR_NAME_AND_PLACEMENT_IS);
             deleteFromDirs.setString(1, dir.getName());
             deleteFromDirs.setString(2, dir.getPlacement().name());
-            int qty = transact.executePreparedUpdate(deleteFromDirs);
+            qty = qty + transact.executePreparedUpdate(deleteFromDirs);
             
             PreparedStatement deletePagesInDir = transact.getPreparedStatement(
                     DELETE_PAGES_WHERE_DIR_NAME_AND_PLACEMENT_IS);
             deletePagesInDir.setString(1, dir.getName());
             deletePagesInDir.setString(2, dir.getPlacement().name());
-            qty = qty + transact.executePreparedUpdate(deletePagesInDir);
+            qty = qty + transact.executePreparedUpdate(deletePagesInDir);            
+            
+            PreparedStatement decrementOtherDirsOrder = transact
+                    .getPreparedStatement(
+                            UPDATE_DIRS_DECREMENT_ORDER_WHERE_ORDER_HIGHER_THAN);
+            decrementOtherDirsOrder.setInt(1, deletedOrder);
+            decrementOtherDirsOrder.setString(2, dir.getPlacement().name());            
+            qty = qty + transact.executePreparedUpdate(decrementOtherDirsOrder);
             
             transact.commitThemAll();
             
             return ( qty > 0 );
             
         } catch (HandledTransactSQLException e) { 
-            this.ioEngine.reportException(e, "SQLException: .");
+            this.ioEngine.reportException(e, "SQLException: delete directory.");
             return false;
         } catch (SQLException e) {
             transact.rollbackAllAndReleaseResources();
-            this.ioEngine.reportException(e, "SQLException: .");
+            this.ioEngine.reportException(e, "SQLException: delete directory.");
             return false;
         } catch (NullPointerException e) {
             transact.rollbackAllAndReleaseResources();
@@ -880,22 +1016,25 @@ class H2DaoWebPages implements DaoWebPages {
             
             transact.commitThemAll();
             
-            return ( changed > 0) ;
-        } catch (HandledTransactSQLException e) { 
-            this.ioEngine.reportException(e, 
-                    "SQLException: Empty directory creation failure.");
-            return false;
+            return ( changed > 0 ) ;
+        } catch (HandledTransactSQLException e) {
+            if ( e.causedByPrimaryKeyViolation() ) {
+                this.ioEngine.reportMessage("Such directory already exists.");  
+            } else {
+                this.ioEngine.reportException(e, 
+                        "SQLException: empty directory creation failure.");  
+            }
         } catch (SQLException e) {
             transact.rollbackAllAndReleaseResources();
-            this.ioEngine.reportException(e, "SQLException: .");
-            return false;
+            this.ioEngine.reportException(e, 
+                    "SQLException: empty directory creation failure.");
         } catch (NullPointerException e) {
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
                     "Incorrect usage of JdbcTransaction: " +
                     "database connection is NULL.");
-            return false;
         }
+        return false;
     }
     
     @Override
@@ -1005,10 +1144,12 @@ class H2DaoWebPages implements DaoWebPages {
                 }
             }
             if ( movedDir == null ) {
+                transact.commitThemAll();
                 return false;
             }
             int oldOrder = movedDir.getOrder();
             if ( newOrder == oldOrder ) {
+                transact.commitThemAll();
                 return true;
             }
             int movedDirIndex = dirs.indexOf(movedDir);            
@@ -1029,19 +1170,17 @@ class H2DaoWebPages implements DaoWebPages {
             return ( qty > 0 );
             
         } catch (HandledTransactSQLException e) {
-            this.ioEngine.reportException(e, "SQLException: .");
-            return false;
+            this.ioEngine.reportException(e, "SQLException: edit directory order.");            
         } catch (SQLException e) {            
             transact.rollbackAllAndReleaseResources();
-            this.ioEngine.reportException(e, "SQLException: .");
-            return false;
+            this.ioEngine.reportException(e, "SQLException: edit directory order.");
         } catch (NullPointerException e) {
             transact.rollbackAllAndReleaseResources();
             this.ioEngine.reportError(
                     "Incorrect usage of JdbcTransaction: " +
                     "database connection is NULL.");
-            return false;
         }
+        return false;
     }
     
     private void changeDirectoriesOrder(

@@ -28,7 +28,7 @@ class ConsoleListener implements ConsoleListenerModule {
     private final List<String> params;
     
     private String command;
-    private boolean executed;
+    private boolean commandWasExecuted;
     private int executeCount;
     
     ConsoleListener(ConsoleDispatcherModule dispatcher) {
@@ -45,7 +45,7 @@ class ConsoleListener implements ConsoleListenerModule {
     }
     
     private void commandAccepted() {
-        this.executed = true;
+        this.commandWasExecuted = true;
     }
     
     @Override
@@ -53,7 +53,7 @@ class ConsoleListener implements ConsoleListenerModule {
          
         input: while (true) {
             try {
-                this.executed = false;
+                this.commandWasExecuted = false;
                 this.executeCount = 0;
                 this.dispatcher.newLoop();
                 this.command = this.dispatcher.waitForNewCommand();
@@ -355,7 +355,7 @@ class ConsoleListener implements ConsoleListenerModule {
                         if (params.size() < 2) {
                             break parsing;
                         }
-                        switch (params.get(1)){
+                        switch (params.get(1)) {
                             case "page" : {
                                 this.commandAccepted();
                                 this.dispatcher.editPage();
@@ -431,6 +431,12 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.deleteWebPage();
                                 break parsing;
                             }
+                            case "dir" :
+                            case "directory" : {
+                                this.commandAccepted();
+                                this.dispatcher.deleteDirectory();
+                                break parsing;
+                            }    
                             case "mem" :
                             case "memory" : {
                                 this.commandAccepted();
@@ -584,7 +590,8 @@ class ConsoleListener implements ConsoleListenerModule {
                 }
                 
                 // if command has been recognized, save it in chache
-                if ( executed ) {                    
+                if ( this.commandWasExecuted && 
+                        this.isCommandNecessary(this.command)) {                    
                     this.commandsCache.add(this.command);
                 } else {
                     // else try to find command from cache that looks 
@@ -604,7 +611,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                 }
                 
-                } while ( (! executed) && (executeCount < 2) );
+                } while ( (! commandWasExecuted) && (executeCount < 2) );
                 
                 command = "";
                 params.clear();
@@ -617,7 +624,9 @@ class ConsoleListener implements ConsoleListenerModule {
         }
     }
     
-    private String intellSearchFromCache(String unknownCommand) throws IOException {
+    private String intellSearchFromCache(String unknownCommand) 
+            throws IOException {
+        
         if (unknownCommand.length() < 2) {
             // There is no reason to search commands that matches only
             // one letter
@@ -721,6 +730,21 @@ class ConsoleListener implements ConsoleListenerModule {
             } else {
                 return choosedPreviousCommand;
             }
+        }
+    }
+    
+    private boolean isCommandNecessary(String searchedCommand) {
+        if ( searchedCommand.startsWith("see") ||
+                searchedCommand.startsWith("www") ||
+                searchedCommand.startsWith("web") ||
+                searchedCommand.startsWith("o") ||
+                searchedCommand.startsWith("r") ||
+                searchedCommand.startsWith("call") ||
+                searchedCommand.startsWith("exe") ||
+                searchedCommand.startsWith("start") ) {
+            return true;
+        } else {
+            return false;
         }
     }
     

@@ -7,12 +7,10 @@
 package diarsid.beam.core.modules.web.engines;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
-import javax.servlet.http.HttpServlet;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -26,10 +24,10 @@ import diarsid.beam.core.modules.web.ServletData;
 import diarsid.beam.shared.modules.ConfigModule;
 
 import static diarsid.beam.shared.modules.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
-import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_HOST;
-import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_PORT;
 import static diarsid.beam.shared.modules.config.Config.WEB_INTERNET_HOST;
 import static diarsid.beam.shared.modules.config.Config.WEB_INTERNET_PORT;
+import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_HOST;
+import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_PORT;
 
 /**
  *
@@ -39,12 +37,12 @@ class JettyServletContainer implements ServletContainer {
     
     private final Server jettyServer;
     private final ServletContextHandler jettyContext;
-    private final String internetConnector;
-    private final String localConnector;
+    private final String internetConnectorName;
+    private final String localConnectorName;
     
     JettyServletContainer(ConfigModule config) {     
-        this.internetConnector = "internet_jetty_connector";
-        this.localConnector = "localhost_jetty_connector";
+        this.internetConnectorName = "internet_jetty_connector";
+        this.localConnectorName = "localhost_jetty_connector";
         this.jettyServer = new Server();
         
         this.jettyContext = new ServletContextHandler(
@@ -62,14 +60,14 @@ class JettyServletContainer implements ServletContainer {
                 this.addInetAddress(
                         config.get(WEB_LOCAL_HOST), 
                         Integer.parseInt(config.get(WEB_LOCAL_PORT)),
-                        this.localConnector);
+                        this.localConnectorName);
             }
             if (    ! config.get(WEB_INTERNET_HOST).isEmpty() ||
                     ! config.get(WEB_INTERNET_PORT).isEmpty()) {
                 this.addInetAddress(
                         config.get(WEB_INTERNET_HOST), 
                         Integer.parseInt(config.get(WEB_INTERNET_PORT)),
-                        this.internetConnector);
+                        this.internetConnectorName);
             }
         } catch (NumberFormatException e) {
             throw new ModuleInitializationException(
@@ -106,12 +104,12 @@ class JettyServletContainer implements ServletContainer {
     public void addServlets(Set<ServletData> servlets) {
         ServletHolder servletHolder;
         for (ServletData servletData : servlets) {
-            if (servletData.getServletName().isEmpty()) {
-                servletHolder = new ServletHolder(servletData.getServlet()); 
-            } else {
+            if ( servletData.hasRegistrationName() ) {
                 servletHolder = new ServletHolder(
                         servletData.getServletName(), 
-                        servletData.getServlet());
+                        servletData.getServlet()); 
+            } else {
+                servletHolder = new ServletHolder(servletData.getServlet());                
             }
             
             this.jettyContext.addServlet(

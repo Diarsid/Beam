@@ -130,6 +130,13 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     }
     
     @Override
+    public boolean deleteDirectory(String name, WebPagePlacement place) 
+            throws RemoteException {
+        
+        return this.webHandler.deleteDirectoryAndPages(name, place);
+    }
+    
+    @Override
     public boolean editDirectoryOrder(
             WebPagePlacement place, String name, int newOrder) 
             throws RemoteException {
@@ -139,9 +146,14 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     
     @Override
     public boolean moveWebPageTo(
-            String pageName, String newDirectory, WebPagePlacement placement)
+            String pageName, 
+            String oldDir, 
+            WebPagePlacement oldPlacement, 
+            String newDir, 
+            WebPagePlacement newPlacement) 
             throws RemoteException {        
                
-        return this.webHandler.moveWebPageTo(pageName, newDirectory, placement);
+        return this.webHandler.moveWebPageTo(
+                pageName, oldDir, oldPlacement, newDir, newPlacement);
     }
 }

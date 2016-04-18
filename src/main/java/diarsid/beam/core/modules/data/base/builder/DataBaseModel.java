@@ -53,14 +53,18 @@ class DataBaseModel {
         TableInfo webPages = new TableInfo(
                 "web_pages", 
                 "CREATE TABLE web_pages (" +
-                "page_id        INTEGER         NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                "page_name      VARCHAR(20)     NOT NULL, " +
+                "page_id        INTEGER         NOT NULL, " +
+                "page_name      VARCHAR(300)    NOT NULL, " +
                 "page_shortcuts VARCHAR(20)     NOT NULL, " + 
-                "page_url       VARCHAR(300)    NOT NULL, " +
+                "page_url       VARCHAR(1000)   NOT NULL, " +
                 "page_placement VARCHAR(9)      NOT NULL, " +
-                "page_directory VARCHAR(100)    NOT NULL, " +
+                "page_directory VARCHAR(1000)   NOT NULL, " +
                 "page_order     INTEGER         NOT NULL, " +
-                "page_browser   VARCHAR(10)     NOT NULL)",
+                "page_browser   VARCHAR(10)     NOT NULL, " +
+                "PRIMARY KEY ("
+                        + "page_name, "
+                        + "page_directory, "
+                        + "page_placement) )",
                 8);
         this.tables.put(webPages.name, webPages);
         
@@ -76,10 +80,10 @@ class DataBaseModel {
         TableInfo directories = new TableInfo(
                 "directories",
                 "CREATE TABLE directories (" +
-                "dir_name       VARCHAR(100)    NOT NULL, " +
+                "dir_name       VARCHAR(1000)   NOT NULL, " +
                 "dir_order      INTEGER         NOT NULL, " + 
                 "dir_placement  VARCHAR(9)      NOT NULL, " +
-                "primary key(dir_name, dir_placement))",
+                "PRIMARY KEY (dir_name, dir_placement))",
                 3);
         this.tables.put(directories.name, directories);
     }

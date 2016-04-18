@@ -37,6 +37,19 @@ class PageFieldsServlet extends HttpServlet {
     }    
     
     @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setStatus(HttpServletResponse.SC_OK);
+                        
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Allow", "GET, HEAD, PUT, TRACE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, PUT, TRACE, OPTIONS");
+            
+        response.getWriter().close();    
+    }
+    
+    @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -46,12 +59,13 @@ class PageFieldsServlet extends HttpServlet {
             String page = this.resolver.extractPageBeforeField(path);
             String dir = this.resolver.extractDirectoryBeforePages(path);
             WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
-            JSONObject newValueObj = (JSONObject) this.json.parse(request.getReader());
+            JSONObject newValueObj = 
+                    (JSONObject) this.json.parse(request.getReader().readLine());
             
             switch (field) {
                 
                 case "name" : {
-                    String newName = (String) newValueObj.get("name");
+                    String newName = newValueObj.get("name").toString();
                     if ( ! this.resolver.check(newName) ) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         response.setContentType("text/plain");
@@ -74,7 +88,7 @@ class PageFieldsServlet extends HttpServlet {
                 }
                 
                 case "url" : {
-                    String newUrl = (String) newValueObj.get("url");
+                    String newUrl = newValueObj.get("url").toString();
                     if (this.pagesHandler.editWebPageUrl(page, newUrl)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
@@ -90,7 +104,7 @@ class PageFieldsServlet extends HttpServlet {
                 }
                 
                 case "directory_and_placement" : {
-                    String newPlace = (String) newValueObj.get("placement");
+                    String newPlace = newValueObj.get("placement").toString();
                     WebPagePlacement placement;
                     if ( newPlace.matches("WEBPANEL|BOOKMARKS|webpanel|bookmarks") ) {
                         placement = WebPagePlacement.valueOf(newPlace.toUpperCase());
@@ -109,7 +123,8 @@ class PageFieldsServlet extends HttpServlet {
                         response.getWriter().close();
                         return;
                     }
-                    if (this.pagesHandler.moveWebPageTo(page, newDir, placement)) {
+                    if (this.pagesHandler.moveWebPageTo(
+                            page, dir, place, newDir, placement)) {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().close();
                         return;
@@ -124,17 +139,18 @@ class PageFieldsServlet extends HttpServlet {
                 }
                 
                 case "order" : {
-                    String newOrderStr = (String) newValueObj.get("order");
+                    String newOrderStr = newValueObj.get("order").toString();
                     if ( ! newOrderStr.matches("[0-9]+")) {
-                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);                        
                         response.setContentType("text/plain");
                         response.getWriter().write("Unaccaptable page order format - must contain only digits.");
                         response.getWriter().close();
                         return;
                     }
                     int newOrder = Integer.parseInt(newOrderStr);
-                    if (this.pagesHandler.editWebPageOrder(page, dir, place, newOrder)) {
+                    if (this.pagesHandler.editWebPageOrder(page, dir, place, newOrder)) {                        
                         response.setStatus(HttpServletResponse.SC_OK);
+                            response.setHeader("Access-Control-Allow-Origin", "*");
                         response.getWriter().close();
                         return;
                     } else {

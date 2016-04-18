@@ -36,6 +36,18 @@ class DirectoryFieldsServlet extends HttpServlet {
         this.json = new JSONParser();
     }
     
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setStatus(HttpServletResponse.SC_OK);
+                        
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Allow", "GET, HEAD, PUT, TRACE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, PUT, TRACE, OPTIONS");
+            
+        response.getWriter().close();    
+    }
     
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
@@ -49,12 +61,12 @@ class DirectoryFieldsServlet extends HttpServlet {
             WebPagePlacement place = 
                     this.resolver.extractPlacementBeforeDirectory(path);
             JSONObject newValueJson = 
-                    (JSONObject) this.json.parse(request.getReader());
+                    (JSONObject) this.json.parse(request.getReader().readLine());
 
             switch (fieldToPut) {
 
                 case "name" : {
-                    String newName = (String) newValueJson.get("name");
+                    String newName = newValueJson.get("name").toString();
                     if ( ! this.resolver.check(newName) ) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         response.setContentType("text/plain");
@@ -66,6 +78,7 @@ class DirectoryFieldsServlet extends HttpServlet {
                     if ( this.pagesHandler.renameDirectoryInPlacement(
                             dirName, newName, place) ) {
                         response.setStatus(HttpServletResponse.SC_OK);
+                            response.setHeader("Access-Control-Allow-Origin", "*");
                         response.getWriter().close();
                         return;
                     } else {
@@ -79,7 +92,7 @@ class DirectoryFieldsServlet extends HttpServlet {
                 }
 
                 case "order" : {
-                    String newOrderStr = (String) newValueJson.get("order");
+                    String newOrderStr = newValueJson.get("order").toString();
                     if ( ! newOrderStr.matches("[0-9]+")) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         response.setContentType("text/plain");
@@ -91,6 +104,7 @@ class DirectoryFieldsServlet extends HttpServlet {
                     
                     if ( this.pagesHandler.editDirectoryOrder(place, dirName, newOrder) ) {
                         response.setStatus(HttpServletResponse.SC_OK);
+                            response.setHeader("Access-Control-Allow-Origin", "*");
                         response.getWriter().close();
                         return;
                     } else {

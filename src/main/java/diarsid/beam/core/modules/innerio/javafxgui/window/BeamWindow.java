@@ -172,7 +172,7 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
                     stage.toBack();
                     onTopControllerButton.setId("on-top-toggle-button-off");
                     //waitAndRestoreOnTop();      
-                    throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(120);
+                    throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(300);
                 } else {
                     stage.setAlwaysOnTop(true);
                     onTopControllerButton.setId("on-top-toggle-button-on");  

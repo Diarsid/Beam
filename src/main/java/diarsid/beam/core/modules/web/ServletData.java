@@ -33,7 +33,11 @@ public class ServletData {
     public String getServletMapping() {
         return this.servletMapping;
     }
-
+    
+    public boolean hasRegistrationName() {
+        return ( ! this.servletName.isEmpty() );
+    }
+    
     public String getServletName() {
         return this.servletName;
     }

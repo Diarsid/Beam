@@ -217,15 +217,23 @@ class WebPagesHandlerWorker implements WebPagesHandler {
     }
     
     @Override
-    public boolean moveWebPageTo
-            (String pageName, String newDir, WebPagePlacement placement) {
+    public boolean moveWebPageTo(
+            String pageName, 
+            String oldDir, 
+            WebPagePlacement oldPlacement, 
+            String newDir, 
+            WebPagePlacement newPlacement) {
                 
         pageName = pageName.trim().toLowerCase();
         newDir = newDir.trim().toLowerCase();
         if ( ! newDir.matches(WEB_NAME_REGEXP) || ! pageName.matches(WEB_NAME_REGEXP)) {
             return false;
-        }        
-        return this.dao.moveWebPageToPlacementAndDirectory
-                (pageName, newDir, placement);
+        } 
+        oldDir = oldDir.trim().toLowerCase();
+        if ( ! oldDir.matches(WEB_NAME_REGEXP) || ! pageName.matches(WEB_NAME_REGEXP)) {
+            return false;
+        }
+        return this.dao.moveWebPageToPlacementAndDirectory(
+                pageName, oldDir, oldPlacement, newDir, newPlacement);
     }
 }

@@ -201,7 +201,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             return;
         }
         if ( this.beam.locations().newLocation(location, name) ) {
-            this.printer.printUnderLn("New location created.");
+            this.printer.printUnderLn("New location has been created.");
         }
     }
     
@@ -408,14 +408,9 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         String name = this.reader.read();
         if ( !name.isEmpty() ) {
             if (this.beam.locations().deleteLocation(name)) {
-                this.printer.printUnderLn("Location was removed.");
+                this.printer.printUnderLn("Location has been removed.");
             }
         }        
-    }
-    
-    @Override
-    public void deleteWebPage(String name) {
-        
     }
     
     @Override
@@ -435,7 +430,23 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             return;
         }
         if (this.beam.webPages().deleteWebPage(name, dir, place)) {
-            this.printer.printUnderLn("WebPage was removed.");
+            this.printer.printUnderLn("WebPage has been removed.");
+        }
+    }
+    
+    @Override
+    public void deleteDirectory() throws IOException {
+        this.printer.printUnder("name: ");
+        String dir = this.reader.read();
+        if ( dir.isEmpty() ) {
+            return;
+        }
+        WebPagePlacement place = this.askForPlacement();
+        if ( place == null ) {
+            return;
+        }
+        if (this.beam.webPages().deleteDirectory(dir, place)) {
+            this.printer.printUnderLn("Directory has been removed.");
         }
     }
     
@@ -464,7 +475,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         }
         if (name.length() > 0) {
             if (this.beam.executor().deleteCommand(name)) {
-                this.printer.printUnderLn("Command was removed.");
+                this.printer.printUnderLn("Command has been removed.");
             }
         }        
     }
@@ -478,7 +489,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         }
         if ( ! name.isEmpty() ) { 
             if ( this.beam.executor().deleteMem(name) ) {
-                this.printer.printUnderLn("Choice removed from memory.");
+                this.printer.printUnderLn("Choice has been removed from memory.");
             }
         }
     }
@@ -501,7 +512,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 return;
             }
             if (this.beam.webPages().editWebPageName(name, newName)){
-                this.printer.printUnderLn("Page was renamed.");
+                this.printer.printUnderLn("Page has been renamed.");
             }
         } else if (choosed == 2) {
             this.printer.printUnder("new shortcuts: ");
@@ -510,7 +521,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 return;
             }
             if (this.beam.webPages().editWebPageShortcuts(name, newShorts)){
-                this.printer.printUnderLn("Shortcuts was changed.");
+                this.printer.printUnderLn("Shortcuts has been changed.");
             }
         } else if (choosed == 3) {
             this.printer.printUnder("new url: ");
@@ -519,7 +530,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 return;
             }
             if (this.beam.webPages().editWebPageUrl(name, newUrl)){
-                this.printer.printUnderLn("URL was changed.");
+                this.printer.printUnderLn("URL has been changed.");
             }
         } else if (choosed == 4) {
             WebPagePlacement place = this.askForPlacement();
@@ -534,8 +545,14 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             try {
                 this.printer.printUnder("new order: ");
                 int newOrder = Integer.parseInt(this.reader.read());
-                if (newOrder > 0) {
-                    this.beam.webPages().editWebPageOrder(name, dir, place, newOrder);
+                if ( newOrder < 0 ) {
+                    this.printer.printUnderLn("Unacceptable order.");
+                    return;
+                } else if ( newOrder == 0 ) {
+                    newOrder = 1;
+                }
+                if (this.beam.webPages().editWebPageOrder(name, dir, place, newOrder)) {
+                    this.printer.printUnderLn("Order has been changed.");
                 }
             } catch (NumberFormatException e) {
                 this.printer.printUnderLn("Wrong number.");
@@ -547,7 +564,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 return;
             }
             if (this.beam.webPages().editWebPageBrowser(name, newBrowser)) {
-                this.printer.printUnderLn("New browser was assigned to "+name+".");
+                this.printer.printUnderLn("New browser has been assigned to "+name+".");
             }
         }
     }
@@ -559,17 +576,27 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if (name.isEmpty()){
             return;
         }
+        this.printer.printUnder("old directory : ");
+        String oldDir = this.reader.read();
+        if ( oldDir.isEmpty() ) {
+            return;
+        }
+        WebPagePlacement oldPlacement = this.askForPlacement();
+        if ( oldPlacement == null ) {
+            return;
+        }
         this.printer.printUnder("new directory : ");
         String newDir = this.reader.read();
         if ( newDir.isEmpty() ) {
             return;
         }
-        WebPagePlacement placement = this.askForPlacement();
-        if ( placement == null ) {
+        WebPagePlacement newPlacement = this.askForPlacement();
+        if ( newPlacement == null ) {
             return;
         }
-        if ( this.beam.webPages().moveWebPageTo(name, newDir, placement)) {
-            this.printer.printUnderLn("Page was moved.");
+        if ( this.beam.webPages().moveWebPageTo(
+                name, oldDir, oldPlacement, newDir, newPlacement)) {
+            this.printer.printUnderLn("Page has been moved.");
         }
     }
     

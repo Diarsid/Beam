@@ -5,8 +5,6 @@
 
 package diarsid.beam.core.modules.data.daos;
 
-import diarsid.beam.core.modules.data.DaoLocations;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,11 +14,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.entities.Location;
-
+import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
-
+import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DataBase;
 
 /**

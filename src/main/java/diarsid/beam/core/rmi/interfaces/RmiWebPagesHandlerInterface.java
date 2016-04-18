@@ -59,10 +59,17 @@ public interface RmiWebPagesHandlerInterface extends Remote {
             String directory, String newDirectory, WebPagePlacement placement) 
             throws RemoteException;
     
+    boolean deleteDirectory(
+            String directory, WebPagePlacement placement) throws RemoteException;
+    
     boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder)
             throws RemoteException;
     
-    boolean moveWebPageTo
-            (String pageName, String newDirectory, WebPagePlacement placement)
+    boolean moveWebPageTo(
+            String pageName, 
+            String oldDir, 
+            WebPagePlacement oldPlacement, 
+            String newDir, 
+            WebPagePlacement newPlacement) 
             throws RemoteException;
 }

@@ -22,9 +22,9 @@ import com.drs.gem.injector.core.GemInjector;
 public class Beam {
     
     /**
-     * Java RMI mechanism requires that remote objects which has been exported for
-     * usage by other JVM were saved in static variables.
-     * Otherwise they will be collected by GC and RMI interaction through them will 
+     * Java RMI mechanism requires that remote objects that have been exported 
+     * by this JVM for an external usage by other JVM were saved in static variables.
+     * Otherwise they will be collected by the GC and the RMI interaction through them will 
      * be impossible. Any attempt to use them after it will cause RemoteException.
      */
     private static RmiRemoteControlInterface rmiRemoteControlInterface;

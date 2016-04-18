@@ -33,9 +33,9 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
 
     void deleteTask() throws IOException;
 
-    void deleteWebPage(String name) throws IOException;
-
     void deleteWebPage() throws IOException;
+    
+    void deleteDirectory() throws IOException;
 
     void editCommand() throws IOException;
 

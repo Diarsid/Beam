@@ -326,7 +326,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         WebPage page;
         StringBuilder commandBuilder = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
-            commandBuilder.append(commandParams.get(0)).append(" ").append(commandParams.get(i));
+            commandBuilder
+                    .append(commandParams.get(0))
+                    .append(" ")
+                    .append(commandParams.get(i));
             page = this.getWebPage(commandParams.get(i), commandBuilder.toString());
             if (page != null){
                 if (page.useDefaultBrowser()){

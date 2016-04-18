@@ -17,9 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-
 import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.data.DaoIntellChoice;
 import diarsid.beam.core.modules.data.DataBase;
 
@@ -161,11 +159,16 @@ class H2DaoIntellChoice implements DaoIntellChoice {
     @Override
     public boolean newChoice(String command, String choice){
         try (Connection con = this.data.connect();
-                PreparedStatement ps = con.prepareStatement(INSERT_NEW_CHOICE)) {
+                PreparedStatement saveNew = con.prepareStatement(INSERT_NEW_CHOICE);
+                PreparedStatement deleteOld = con.prepareStatement(
+                        DELETE_CHOICE_WHERE_NAME_LIKE)) {
             
-            ps.setString(1, command);
-            ps.setString(2, choice);
-            int qty = ps.executeUpdate();
+            deleteOld.setString(1, command);
+            deleteOld.executeUpdate();
+            
+            saveNew.setString(1, command);
+            saveNew.setString(2, choice);
+            int qty = saveNew.executeUpdate();
             return (qty > 0);             
         } catch (SQLException e) {
             this.ioEngine.reportException(e, 

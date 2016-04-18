@@ -17,7 +17,9 @@ import diarsid.beam.core.modules.web.ServletData;
 import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
 
 /**
- *
+ * Enum that contains full description of WebPages related web resources. 
+ * 
+ * @see {@link ResourcesProviderWorker } for usage details.
  * @author Diarsid
  */
 enum RestResourcesForWebPages {
@@ -66,11 +68,31 @@ enum RestResourcesForWebPages {
         this.resourceServletClass = servletClass;
     }
     
+    /**
+     * Enum fields.
+     * Contain full information for each particular 
+     * resource - its mapping-model, regexp that a request should match
+     * in order to be mapped to this resource, servlet name used by 
+     * the DispatcherServlet to forward the incoming request to 
+     * this resource appropriate servlet.
+     */
     private final String resourceServletName;
     private final String urlMapping;
     private final String urlRegexp;    
     private final Class resourceServletClass;
     
+    /**
+     * Assemble and return a ServletData object for a particular resource.
+     * Objects, produced and returned by this method will be used to
+     * inject servlets into underlying servlet container serving as a
+     * server.
+     * 
+     * @param   handler     New handler instance as data source.
+     * @param   resolver    New path resolver responsible to extract
+     *                      necessary data from request path.
+     * @return  ServletData object that represents full information 
+     *                      about servlet as a representation of resource.
+     */
     ServletData resourceServletData(
             WebPagesHandler handler, PathResolver resolver) {
         
@@ -80,6 +102,14 @@ enum RestResourcesForWebPages {
                 urlMapping);
     }
     
+    /**
+     * Assemble concrete HttpServlet by a resource appropriate servlet 
+     * class name using given handler and resolver.
+     * 
+     * @param handler
+     * @param resolver
+     * @return 
+     */
     private HttpServlet servlet(WebPagesHandler handler, PathResolver resolver) {        
         try {
             Constructor cons = this.resourceServletClass
@@ -96,9 +126,26 @@ enum RestResourcesForWebPages {
         }      
     }
     
+    /**
+     * The pivotal method of this enum.
+     * 
+     * Accepts a request url and returns a registration name 
+     * of particular servlet that is responsible for serving requests 
+     * related to this requested resource.
+     * 
+     * For example, for request url such as 
+     * "host:port/app/resources/entities/123/order/5/content" 
+     * this method will return servlet name looks like:
+     * "OrderContent".
+     * 
+     * @param   requestedURL    Request url that needs to be dispatched to
+     *                          the particular servlet.
+     * @return                  Registration name of the particular servlet
+     *                          represented the requested resource.
+     */
     static String getDispatchedServletNameOfResource(String requestedURL) {
-        for (RestResourcesForWebPages resource : values()) {
-            if (requestedURL.matches(resource.urlRegexp)) {
+        for ( RestResourcesForWebPages resource : values() ) {
+            if ( requestedURL.matches(resource.urlRegexp) ) {
                 return resource.resourceServletName;
             }
         }

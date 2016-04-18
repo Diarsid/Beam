@@ -57,7 +57,12 @@ public interface WebPagesHandler {
     
     boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder);
     
-    boolean moveWebPageTo(String page, String newDirectory, WebPagePlacement newPlacement);
+    boolean moveWebPageTo(
+            String pageName, 
+            String oldDir, 
+            WebPagePlacement oldPlacement, 
+            String newDir, 
+            WebPagePlacement newPlacement);
     
     boolean createEmptyDirectory(WebPagePlacement place, String dirName);
     

@@ -12,7 +12,6 @@ import java.util.Map;
 
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
-
 import diarsid.beam.core.modules.data.DaoIntellChoice;
 
 /**

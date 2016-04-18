@@ -40,6 +40,19 @@ class AllPagesInDirectoryServlet extends HttpServlet {
     }
     
     @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setStatus(HttpServletResponse.SC_OK);
+                        
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Allow", "GET, HEAD, POST, TRACE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, POST, TRACE, OPTIONS");
+            
+        response.getWriter().close();    
+    }
+        
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException { 
         
@@ -77,9 +90,9 @@ class AllPagesInDirectoryServlet extends HttpServlet {
                     this.resolver.extractPlacementBeforeDirectory(path);
 
             JSONObject postedPage = (JSONObject) this.json.parse(request.getReader());
-            String name = (String) postedPage.get("name");
-            String shortcuts = (String) postedPage.get("shortcuts");
-            String url = (String) postedPage.get("url");
+            String name = postedPage.get("name").toString();
+            String shortcuts = "";
+            String url = postedPage.get("url").toString();
             
             if ( shortcuts == null ) {
                 shortcuts = "";
@@ -115,7 +128,7 @@ class AllPagesInDirectoryServlet extends HttpServlet {
                     "default");
             if ( created ) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.setContentType("application/json");
+                    response.setHeader("Access-Control-Allow-Origin", "*");
                 response.addHeader("Location", path + "/" + name);
                 response.getWriter().close();
                 return;
