@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.external.sysconsole.modules.ConsoleDispatcherModule;
@@ -721,15 +722,17 @@ class ConsoleListener implements ConsoleListenerModule {
                 return "";
             }            
         } else {
-            if ( this.ifSeeCommand(choosedPreviousCommand) ) {
-                return "see " + unknownCommand;
-            } else if ( this.ifRunCommand(choosedPreviousCommand) ) {
-                return "run " + unknownCommand;
-            } else if ( this.ifCallCommand(choosedPreviousCommand) ) {
-                return "call " + unknownCommand;
+            String[] parts = choosedPreviousCommand.split("\\s+");
+            StringJoiner futureCommand = new StringJoiner(" ");
+            if ( parts.length > 1 ) {
+                futureCommand.add(parts[0]).add(parts[1]);
+                if ( (parts.length > 3) && (parts[2].equals("in")) ) {
+                    futureCommand.add(parts[2]).add(parts[3]);
+                }
+                return futureCommand.toString();
             } else {
-                return choosedPreviousCommand;
-            }
+                return "";
+            }            
         }
     }
     
