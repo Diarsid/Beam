@@ -35,6 +35,9 @@
             <element>./../lib/json-simple-1.1.1.jar</element>
             <element>./../lib/javax.servlet-api-3.1.0.jar</element>
             <element>./../lib/jetty-http-9.3.6.v20151106.jar</element>
+            <element>./../lib/http2-common-9.3.6.v20151106.jar</element>
+            <element>./../lib/http2-hpack-9.3.6.v20151106.jar</element>
+            <element>./../lib/http2-server-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-io-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-server-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-util-9.3.6.v20151106.jar</element>

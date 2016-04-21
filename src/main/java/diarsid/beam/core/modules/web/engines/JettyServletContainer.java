@@ -12,6 +12,9 @@ import java.util.Set;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
+import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -76,7 +79,13 @@ class JettyServletContainer implements ServletContainer {
     }
     
     private void addInetAddress(String host, int port, String connectorName) {
-        ServerConnector connector = new ServerConnector(this.jettyServer);
+        HttpConfiguration httpConfig = new HttpConfiguration();
+        HttpConnectionFactory http1fConFactory = 
+                new HttpConnectionFactory(httpConfig);
+        HTTP2CServerConnectionFactory http2ConFactory = 
+                new HTTP2CServerConnectionFactory(httpConfig);
+        ServerConnector connector = new ServerConnector(
+                this.jettyServer, http1fConFactory, http2ConFactory);
         connector.setHost(host);
         connector.setPort(port);
         connector.setName(connectorName);

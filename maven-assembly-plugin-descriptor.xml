@@ -52,6 +52,7 @@
           <include>javax.servlet*.jar</include>
           <include>*jetty*.jar</include>
           <include>json-simple*.jar</include>
+          <include>*http2*.jar</include>
         </includes>    
     </fileSet>
     <fileSet>
