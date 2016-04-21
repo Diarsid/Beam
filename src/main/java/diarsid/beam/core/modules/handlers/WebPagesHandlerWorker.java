@@ -47,7 +47,6 @@ class WebPagesHandlerWorker implements WebPagesHandler {
         if ( name.endsWith("/") ) {
             name = name.substring(0, name.length()-1);
         }
-        urlAddress = urlAddress.trim().toLowerCase();
         directory = directory.trim().toLowerCase();
         if ( ! directory.matches(WEB_NAME_REGEXP)) {
             return false;
@@ -134,7 +133,6 @@ class WebPagesHandlerWorker implements WebPagesHandler {
     @Override
     public boolean editWebPageUrl(String name, String newUrl) {
         name = name.trim().toLowerCase();
-        newUrl = newUrl.trim().toLowerCase();
         return this.dao.editWebPageUrl(name, newUrl);
     }
         

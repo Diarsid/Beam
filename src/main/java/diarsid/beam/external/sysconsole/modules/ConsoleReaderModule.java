@@ -17,5 +17,7 @@ public interface ConsoleReaderModule extends GemModule {
     
     String read() throws IOException;
     
-    String readRaw() throws IOException;
+    String readWithoutStopChecking() throws IOException;
+    
+    String readRawLine() throws IOException;
 }

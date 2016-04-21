@@ -69,7 +69,7 @@ public class InputHandler {
         // endless input loop until '.' will be entered which means end of task
         taskInput: while (true){
             this.printer.printUnder("task line: ");
-            taskLine = this.reader.readRaw();
+            taskLine = this.reader.readWithoutStopChecking();
             // symbol '.' finishes input and breaks input loop
             if ((".").equals(taskLine)){
                 // if user doesn't specify any text
@@ -91,7 +91,7 @@ public class InputHandler {
         // begin of input loop
         inputText: while (true){
             this.printer.printUnder("Input text to delete: ");
-            text = this.reader.readRaw();
+            text = this.reader.readWithoutStopChecking();
             // symbol '.' finishes input and breaks input loop, method returns null
             if (text.equals("."))
                 break inputText;

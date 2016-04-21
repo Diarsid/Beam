@@ -100,7 +100,8 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     }
     
     @Override
-    public boolean editWebPageUrl(String name, String newUrl) throws RemoteException {
+    public boolean editWebPageUrl(String name, String newUrl) 
+            throws RemoteException {
         
         return this.webHandler.editWebPageUrl(name, newUrl);
     }

@@ -323,7 +323,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.printer.printUnder("shortcuts : ");
         String shortcuts = this.reader.read();
         this.printer.printUnder("url : ");
-        String urlAddress = this.reader.read();
+        String urlAddress = this.reader.readRawLine();
         if (urlAddress.isEmpty()) {
             return;
         }
@@ -525,7 +525,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             }
         } else if (choosed == 3) {
             this.printer.printUnder("new url: ");
-            String newUrl = this.reader.read();
+            String newUrl = this.reader.readRawLine();
             if (newUrl.isEmpty()) {
                 return;
             }

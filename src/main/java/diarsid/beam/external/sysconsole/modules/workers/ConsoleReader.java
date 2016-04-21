@@ -44,6 +44,21 @@ class ConsoleReader implements ConsoleReaderModule {
         }
     }
     
+    @Override
+    public String readWithoutStopChecking() throws IOException {
+        return this.reader.readLine().trim().toLowerCase();
+    }
+    
+    @Override
+    public String readRawLine() throws IOException {
+        String info = this.reader.readLine().trim();
+        if ( this.checkOnStop(info) ){
+            return "";
+        } else {
+            return info;
+        }
+    }
+    
     private boolean checkOnStop(String input) {
         return check(input, this.stopPatterns);
     }
@@ -55,10 +70,5 @@ class ConsoleReader implements ConsoleReaderModule {
             }
         }
         return false;
-    }
-    
-    @Override
-    public String readRaw() throws IOException {
-        return this.reader.readLine().trim().toLowerCase();
-    }
+    }   
 }
