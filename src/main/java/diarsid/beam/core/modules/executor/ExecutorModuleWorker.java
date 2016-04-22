@@ -13,35 +13,35 @@ import java.util.Map;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommands;
-import diarsid.beam.core.modules.handlers.LocationsHandler;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.data.HandlerLocations;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 
 class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
     private final IntelligentResolver intell;
     private final OS system;
-    private final LocationsHandler locationsHandler;
+    private final HandlerLocations locationsHandler;
     private final DaoCommands commandsDao;
-    private final WebPagesHandler pagesHandler;        
+    private final HandlerWebPages pagesHandler;        
     private final List<String> command;
     private final Location notes;
     
     ExecutorModuleWorker(
             IoInnerModule io, 
             DaoCommands comDao, 
-            HandlerManagerModule handlers,
+            HandlerLocations locHandler,
+            HandlerWebPages pagesHandler,
             IntelligentResolver i, 
             OS os,
             Location notes) {
         this.ioEngine = io;
         this.intell = i;
-        this.locationsHandler = handlers.getLocationsHandler();
+        this.locationsHandler = locHandler;
         this.commandsDao = comDao;
-        this.pagesHandler = handlers.getWebPagesHandler();
+        this.pagesHandler = pagesHandler;
         this.system = os;
         this.command = new ArrayList<>();
         this.notes = notes;

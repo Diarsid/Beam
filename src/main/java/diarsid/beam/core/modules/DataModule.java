@@ -7,9 +7,9 @@ package diarsid.beam.core.modules;
 
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoIntellChoice;
-import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoTasks;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.data.HandlerLocations;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 
 import com.drs.gem.injector.module.GemModule;
 
@@ -21,11 +21,11 @@ public interface DataModule extends GemModule {
     
     DaoTasks getTasksDao();    
     
-    DaoLocations getLocationsDao();  
+    HandlerLocations getLocationsHandler();  
     
     DaoCommands getCommandsDao(); 
     
-    DaoWebPages getWebPagesDao();
+    HandlerWebPages getWebPagesHandler();
     
     DaoIntellChoice getIntellChoiceDao();
 }

@@ -10,7 +10,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import diarsid.beam.core.entities.Location;
-import diarsid.beam.core.modules.handlers.LocationsHandler;
+import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 
 /**
@@ -19,9 +19,9 @@ import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
  */
 class RmiAdapterForLocationsHandler implements RmiLocationsHandlerInterface {
     
-    private final LocationsHandler locationHandler;
+    private final HandlerLocations locationHandler;
  
-    RmiAdapterForLocationsHandler(LocationsHandler locHandler) {
+    RmiAdapterForLocationsHandler(HandlerLocations locHandler) {
         this.locationHandler = locHandler;
     }
     @Override

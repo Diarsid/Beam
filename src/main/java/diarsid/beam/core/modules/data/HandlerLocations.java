@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.handlers;
+package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import diarsid.beam.core.entities.Location;
  *
  * @author Diarsid
  */
-public interface LocationsHandler {
+public interface HandlerLocations {
     
     boolean newLocation(String locationPath, String locationName);
     

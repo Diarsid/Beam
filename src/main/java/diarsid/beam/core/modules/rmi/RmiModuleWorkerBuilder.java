@@ -7,8 +7,8 @@
 package diarsid.beam.core.modules.rmi;
 
 import diarsid.beam.core.Beam;
+import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RmiModule;
@@ -26,7 +26,7 @@ class RmiModuleWorkerBuilder implements GemModuleBuilder<RmiModule> {
     private final IoModule ioModule;
     private final IoInnerModule innerIoModule;
     private final ConfigModule configModule;
-    private final HandlerManagerModule handlers;
+    private final DataModule dataModule;
     private final ExecutorModule executorModule;
     private final TaskManagerModule taskManagerModule;
     
@@ -34,14 +34,14 @@ class RmiModuleWorkerBuilder implements GemModuleBuilder<RmiModule> {
             IoModule ioModule,
             IoInnerModule innerIoModule, 
             ConfigModule configModule, 
-            HandlerManagerModule handlers,
+            DataModule dataModule,
             ExecutorModule executorModule,
             TaskManagerModule taskManagerModule){
         
         this.ioModule = ioModule;
         this.innerIoModule = innerIoModule;
         this.configModule = configModule;
-        this.handlers = handlers;
+        this.dataModule = dataModule;
         this.executorModule = executorModule;
         this.taskManagerModule = taskManagerModule;
     }
@@ -52,7 +52,7 @@ class RmiModuleWorkerBuilder implements GemModuleBuilder<RmiModule> {
                 this.ioModule, 
                 this.innerIoModule, 
                 this.configModule, 
-                this.handlers, 
+                this.dataModule, 
                 this.executorModule, 
                 this.taskManagerModule);
         Beam.saveRmiInterfacesInStaticContext(mod);

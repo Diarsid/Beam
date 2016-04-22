@@ -13,8 +13,8 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RmiModule;
@@ -46,7 +46,7 @@ class RmiModuleWorker implements RmiModule {
             IoModule ioModule,
             IoInnerModule innerIoModule, 
             ConfigModule configModule,
-            HandlerManagerModule handlers,
+            DataModule dataModule,
             ExecutorModule executorModule,
             TaskManagerModule taskManagerModule) {
         
@@ -57,9 +57,9 @@ class RmiModuleWorker implements RmiModule {
         this.rmiTaskManagerInterface = new RmiAdapterForTaskManager(taskManagerModule);
         this.rmiRemoteControlInterface = new RmiAdapterForRemoteControl(ioModule);
         this.rmiLocationsHandlerInterface = new RmiAdapterForLocationsHandler(
-                handlers.getLocationsHandler());
+                dataModule.getLocationsHandler());
         this.rmiWebPageHandlerInterface = new RmiAdapterForWebPagesHandler(
-                handlers.getWebPagesHandler());
+                dataModule.getWebPagesHandler());
     }
     
     @Override

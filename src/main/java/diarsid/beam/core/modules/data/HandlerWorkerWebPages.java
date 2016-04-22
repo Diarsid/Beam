@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.handlers;
+package diarsid.beam.core.modules.data;
+
+import diarsid.beam.core.modules.data.HandlerWebPages;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,12 +23,12 @@ import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
  *
  * @author Diarsid
  */
-class WebPagesHandlerWorker implements WebPagesHandler {
+class HandlerWorkerWebPages implements HandlerWebPages {
     
     private final DaoWebPages dao;
     private final IoInnerModule ioEngine;
     
-    WebPagesHandlerWorker(IoInnerModule io, DaoWebPages dao) {
+    HandlerWorkerWebPages(IoInnerModule io, DaoWebPages dao) {
         this.ioEngine = io;
         this.dao = dao;
     }

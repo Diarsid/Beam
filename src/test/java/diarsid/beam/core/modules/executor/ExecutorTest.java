@@ -13,12 +13,11 @@ import org.junit.Test;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.HandlerManagerModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoLocations;
-import diarsid.beam.core.modules.handlers.LocationsHandler;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.data.HandlerLocations;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,7 +31,7 @@ public class ExecutorTest {
     ExecutorModuleWorker exec;
     
     IoInnerModule io;
-    LocationsHandler locHandler;
+    HandlerLocations locHandler;
     DaoCommands comDao;
     OS os;
     IntelligentResolver intell;
@@ -44,18 +43,16 @@ public class ExecutorTest {
         io = mock(IoInnerModule.class);        
         DaoLocations dao = mock(DaoLocations.class);
         comDao = mock(DaoCommands.class);
-        locHandler = mock(LocationsHandler.class);
-        WebPagesHandler pagesHandler = mock(WebPagesHandler.class);
-        HandlerManagerModule handlers = mock(HandlerManagerModule.class);
-        when(handlers.getLocationsHandler()).thenReturn(locHandler);
-        when(handlers.getWebPagesHandler()).thenReturn(pagesHandler);
+        locHandler = mock(HandlerLocations.class);
+        HandlerWebPages pagesHandler = mock(HandlerWebPages.class);
         DataModule data = mock(DataModule.class);
         when(data.getCommandsDao()).thenReturn(comDao);
+        when(data.getWebPagesHandler()).thenReturn(pagesHandler);
         os = mock(OS.class);
         intell = mock(IntelligentResolver.class);
         Location notes = mock(Location.class);
         
-        exec = new ExecutorModuleWorker(io, comDao, handlers, intell, os, notes);
+        exec = new ExecutorModuleWorker(io, comDao, locHandler, pagesHandler, intell, os, notes);
     }
     
     @Test

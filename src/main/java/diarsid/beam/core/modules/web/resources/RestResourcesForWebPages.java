@@ -11,7 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.servlet.http.HttpServlet;
 
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.modules.web.ServletData;
 
 import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
@@ -94,7 +94,7 @@ enum RestResourcesForWebPages {
      *                      about servlet as a representation of resource.
      */
     ServletData resourceServletData(
-            WebPagesHandler handler, PathResolver resolver) {
+            HandlerWebPages handler, PathResolver resolver) {
         
         return new ServletData(
                 this.servlet(handler, resolver), 
@@ -110,11 +110,10 @@ enum RestResourcesForWebPages {
      * @param resolver
      * @return 
      */
-    private HttpServlet servlet(WebPagesHandler handler, PathResolver resolver) {        
+    private HttpServlet servlet(HandlerWebPages handler, PathResolver resolver) {        
         try {
             Constructor cons = this.resourceServletClass
-                    .getDeclaredConstructor(
-                            WebPagesHandler.class, PathResolver.class);
+                    .getDeclaredConstructor(HandlerWebPages.class, PathResolver.class);
             cons.setAccessible(true);
             return (HttpServlet) cons.newInstance(handler, resolver);
         } catch (NoSuchMethodException|

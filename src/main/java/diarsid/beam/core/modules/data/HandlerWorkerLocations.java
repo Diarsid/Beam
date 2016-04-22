@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.handlers;
+package diarsid.beam.core.modules.data;
+
+import diarsid.beam.core.modules.data.HandlerLocations;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,12 +21,12 @@ import diarsid.beam.core.modules.data.DaoLocations;
  *
  * @author Diarsid
  */
-class LocationsHandlerWorker implements LocationsHandler {
+class HandlerWorkerLocations implements HandlerLocations {
     
     private final DaoLocations dao;
     private final IoInnerModule ioEngine;
     
-    LocationsHandlerWorker(IoInnerModule io, DaoLocations dao) {
+    HandlerWorkerLocations(IoInnerModule io, DaoLocations dao) {
         this.dao = dao;
         this.ioEngine = io;
     }

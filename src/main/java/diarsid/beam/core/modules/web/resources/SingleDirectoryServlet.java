@@ -17,7 +17,7 @@ import org.json.simple.JSONObject;
 
 import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
  *
@@ -25,10 +25,10 @@ import diarsid.beam.core.modules.handlers.WebPagesHandler;
  */
 class SingleDirectoryServlet extends HttpServlet {
     
-    private final WebPagesHandler pagesHandler;
+    private final HandlerWebPages pagesHandler;
     private final PathResolver resolver;    
     
-    SingleDirectoryServlet(WebPagesHandler handler, PathResolver resolver) {
+    SingleDirectoryServlet(HandlerWebPages handler, PathResolver resolver) {
         this.pagesHandler = handler;
         this.resolver = resolver;
     }

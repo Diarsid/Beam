@@ -21,7 +21,7 @@ import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
  *
@@ -29,11 +29,11 @@ import diarsid.beam.core.modules.handlers.WebPagesHandler;
  */
 class AllPagesInDirectoryServlet extends HttpServlet {
     
-    private final WebPagesHandler pagesHandler;
+    private final HandlerWebPages pagesHandler;
     private final PathResolver resolver;  
     private final JSONParser json;
     
-    AllPagesInDirectoryServlet(WebPagesHandler handler, PathResolver resolver) {
+    AllPagesInDirectoryServlet(HandlerWebPages handler, PathResolver resolver) {
         this.pagesHandler = handler;
         this.resolver = resolver;
         this.json = new JSONParser();

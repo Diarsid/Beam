@@ -11,8 +11,8 @@ import java.util.Set;
 
 import javax.servlet.Filter;
 
-import diarsid.beam.core.modules.HandlerManagerModule;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletData;
 
@@ -29,11 +29,11 @@ import static diarsid.beam.core.modules.web.resources.RestResourcesForWebPages.P
  */
 public class ResourcesProviderWorker implements ResourcesProvider {
     
-    private final HandlerManagerModule handlers;
+    private final DataModule dataModule;
     private final Set<ServletData> servlets;
     
-    public ResourcesProviderWorker(HandlerManagerModule handlers) {
-        this.handlers = handlers;
+    public ResourcesProviderWorker(DataModule dataModule) {
+        this.dataModule = dataModule;
         this.servlets = new HashSet<>();
         
         this.servlets.add(new ServletData(
@@ -65,8 +65,8 @@ public class ResourcesProviderWorker implements ResourcesProvider {
                 .resourceServletData(this.newHandler(), this.newPathResolver()));
     }
     
-    private WebPagesHandler newHandler() {
-        return this.handlers.getWebPagesHandler();
+    private HandlerWebPages newHandler() {
+        return this.dataModule.getWebPagesHandler();
     }
     
     private PathResolver newPathResolver() {

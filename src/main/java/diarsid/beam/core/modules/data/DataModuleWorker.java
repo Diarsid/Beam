@@ -8,12 +8,10 @@ package diarsid.beam.core.modules.data;
 
 import java.lang.reflect.Constructor;
 
+import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
-
-import diarsid.beam.core.exceptions.ModuleInitializationException;
 
 /**
  *
@@ -45,8 +43,9 @@ class DataModuleWorker implements DataModule {
     }
     
     @Override
-    public DaoLocations getLocationsDao(){
-        return (DaoLocations) this.assembleConcreteDao(DaoLocations.class);    
+    public HandlerLocations getLocationsHandler(){
+        DaoLocations dao = (DaoLocations) this.assembleConcreteDao(DaoLocations.class);    
+        return new HandlerWorkerLocations(this.ioEngine, dao);
     }
     
     @Override
@@ -55,8 +54,9 @@ class DataModuleWorker implements DataModule {
     }  
     
     @Override
-    public DaoWebPages getWebPagesDao(){
-        return (DaoWebPages) this.assembleConcreteDao(DaoWebPages.class);
+    public HandlerWebPages getWebPagesHandler(){
+        DaoWebPages dao = (DaoWebPages) this.assembleConcreteDao(DaoWebPages.class);
+        return new HandlerWorkerWebPages(this.ioEngine, dao);
     }
     
     @Override

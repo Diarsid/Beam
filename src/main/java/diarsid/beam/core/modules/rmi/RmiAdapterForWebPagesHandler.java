@@ -11,7 +11,7 @@ import java.util.List;
 
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.handlers.WebPagesHandler;
+import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
 /**
@@ -20,9 +20,9 @@ import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
  */
 public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface {
 
-    private final WebPagesHandler webHandler;
+    private final HandlerWebPages webHandler;
     
-    public RmiAdapterForWebPagesHandler(WebPagesHandler handler) {
+    public RmiAdapterForWebPagesHandler(HandlerWebPages handler) {
         this.webHandler = handler;
     }
     
