@@ -29,8 +29,6 @@ public interface ExecutorModule extends GemModule {
     
     List<String> listLocationContent(String locationName);
     
-    boolean checkPath(String path);
-    
     List<StoredExecutorCommand> getAllCommands();
     
     List<StoredExecutorCommand> getCommands(String commandName);

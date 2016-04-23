@@ -150,11 +150,6 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     @Override
-    public boolean checkPath(String path) {
-        return this.system.checkIfDirectoryExists(path);
-    }
-    
-    @Override
     public List<String> listLocationContent(String locationName){
         Location location = this.getLocation(locationName, "list "+locationName);
         if (location != null){

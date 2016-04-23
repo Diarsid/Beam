@@ -14,8 +14,6 @@ import diarsid.beam.core.entities.Location;
  */
 public interface OS {
     
-    boolean checkIfDirectoryExists(String directory);
-    
     void openLocation(Location location);
     boolean openFileInLocation(String file, Location location);
     

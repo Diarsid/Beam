@@ -123,8 +123,7 @@ public class OSWindows implements OS {
         }
     }
 
-    @Override
-    public boolean checkIfDirectoryExists(String location) {
+    private boolean checkIfDirectoryExists(String location) {
         File dir = new File(location);
         if (!dir.exists()) {
             this.ioEngine.reportMessage("This path doesn`t exists.");
