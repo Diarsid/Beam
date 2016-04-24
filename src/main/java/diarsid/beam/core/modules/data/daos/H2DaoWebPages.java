@@ -253,6 +253,10 @@ class H2DaoWebPages implements DaoWebPages {
             maxPageOrderRs.first();
             int pageOrder = maxPageOrderRs.getInt(1);
             
+            int newPageId;
+            synchronized ( this ) {
+                newPageId = this.random.nextInt();
+            }
             PreparedStatement insertPage = transact
                     .getPreparedStatement(INSERT_NEW_PAGE);            
             insertPage.setString(1, page.getName());
@@ -262,7 +266,7 @@ class H2DaoWebPages implements DaoWebPages {
             insertPage.setString(5, page.getDirectory());
             insertPage.setString(6, page.getBrowser());
             insertPage.setInt(7, pageOrder+1);
-            insertPage.setInt(8, this.random.nextInt());
+            insertPage.setInt(8, newPageId);
             int qty = transact.executePreparedUpdate(insertPage);
             
             transact.commitThemAll();
