@@ -228,6 +228,7 @@ public class OSWindows implements OS {
                     this.searchVisitor.set(root, nameToFind, foundItems));
             
             this.searchVisitor.clear();
+            foundItems.remove("");
         } catch (AccessDeniedException e ) {
             this.ioEngine.reportError("Access to file is denied, stream stoped.");
         } catch (IOException e ) {
