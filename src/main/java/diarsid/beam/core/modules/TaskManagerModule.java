@@ -19,22 +19,27 @@ import diarsid.beam.core.modules.tasks.TaskType;
  */
 public interface TaskManagerModule extends StopableBeamModule {
     
-    boolean createNewTask(TaskType type, String time, String[] task, 
-            Set<Integer> days, Set<Integer> hours);
+    boolean createNewTask(
+            TaskType type, 
+            String time, 
+            String[] task, 
+            Set<Integer> days, 
+            Set<Integer> hours);
     
-    String           getFirstAlarmTime();
-    List<TaskMessage>   getFutureTasks();
-    List<TaskMessage>   getPastTasks();
-    List<TaskMessage>   getFirstTask();
+    String getFirstAlarmTime();
     
-    List<TaskMessage>   getActualReminders();
-    List<TaskMessage>   getActualEvents();
+    List<TaskMessage> getFutureTasks();
+    List<TaskMessage> getPastTasks();
+    List<TaskMessage> getFirstTask();
     
-    boolean  deleteTaskByText(String text);
+    List<TaskMessage> getActualReminders();
+    List<TaskMessage> getActualEvents();
+    
+    boolean deleteTaskByText(String text);
 
-    boolean  removeAllTasks();
-    boolean  removeAllFutureTasks();
-    boolean  removeAllPastTasks();
+    boolean removeAllTasks();
+    boolean removeAllFutureTasks();
+    boolean removeAllPastTasks();
     
     /*
     boolean suspendTask(String text);

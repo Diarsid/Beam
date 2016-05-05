@@ -20,4 +20,9 @@ class WebModuleWorker implements WebModule {
     WebModuleWorker(ServletContainer server) {
        this.server = server;
     }
+    
+    @Override
+    public void stopModule() {
+        this.server.stopServer();
+    }
 }

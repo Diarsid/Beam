@@ -6,13 +6,11 @@
 
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.os.OSProvider;
 import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.Config;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -41,17 +39,13 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
         IntelligentResolver intell = 
                 new IntelligentResolver(this.dataModule, this.ioInnerModule);
         OS os = OSProvider.getOS(this.ioInnerModule, this.configModule); 
-        Location notes = new Location(
-                "notes", 
-                this.configModule.get(Config.NOTES_LOCATION));
-        
-        return new ExecutorModuleWorker(
+        ProcessorsBuilder processorsBuilder = new ProcessorsBuilder(
                 this.ioInnerModule, 
-                this.dataModule.getCommandsDao(), 
-                this.dataModule.getLocationsHandler(), 
-                this.dataModule.getWebPagesHandler(),
+                this.dataModule, 
+                this.configModule, 
                 intell, 
-                os, 
-                notes);
+                os);        
+        return new ExecutorModuleWorker(
+                this.ioInnerModule, intell, processorsBuilder);
     }
 }

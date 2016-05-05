@@ -38,6 +38,8 @@ import static diarsid.beam.core.modules.tasks.TaskType.HOURLY;
  * operation with tasks are performed.
  * 
  * Initially reads tasks from database when program starts it's work.
+ * 
+ * @author Diarsid
  */
 class TaskManagerModuleWorker implements TaskManagerModule {
     
@@ -80,6 +82,11 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         this.scheduler.setRemoveOnCancelPolicy(true);
         this.currentExecution = null;
         this.currentNotification = null;
+    }
+    
+    @Override
+    public void stopModule() {
+        this.scheduler.shutdown();
     }
     
     // TO DELETE

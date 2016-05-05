@@ -11,11 +11,12 @@ import java.rmi.registry.Registry;
 import java.util.HashSet;
 import java.util.Set;
 
+import diarsid.beam.core.Beam;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.external.ExternalIOInterface;
 
 /*
- * Central class which is responsible for program`s output.
+ * Central class which is responsible for a program`s output.
  * 
  * Defines ways to output program`s information through InnerIOModule. This interface is
  * used by other program`s modules for informing about events, exceptions, errors, printing 
@@ -34,14 +35,22 @@ class IoModuleWorker implements IoModule {
         this.consoleCommandsDump = new HashSet<>();
     }
     
+    @Override
+    public void stopModule() {
+        try {
+            externalIOEngine.exitExternalIO();
+        } catch (RemoteException e) {
+            this.resetIoToDefault();
+        }        
+    }
     
     @Override
-    public ExternalIOInterface getExternalIOEngine(){
+    public ExternalIOInterface getExternalIOEngine() {
         return this.externalIOEngine;
     }
     
     @Override      
-    public void resetIoToDefault(){
+    public void resetIoToDefault() {
         hasExternalIOProcessor = false;
         useExternalShowTaskMethod = false;
         externalIOEngine = null;
@@ -55,7 +64,7 @@ class IoModuleWorker implements IoModule {
     @Override
     public void acceptNewExternalIOProcessor(
             String consoleRmiName, String consoleHost, int consolePort) 
-            throws RemoteException, NotBoundException{
+            throws RemoteException, NotBoundException {
         
         Registry registry = 
                 LocateRegistry.getRegistry(consoleHost, consolePort);
@@ -70,33 +79,33 @@ class IoModuleWorker implements IoModule {
      * already has a reference to external object implements ExternalIOInterface
      */
     @Override
-    public boolean hasExternalIOProcessor(){
+    public boolean hasExternalIOProcessor() {
         return this.hasExternalIOProcessor;
     }
     
     @Override
-    public boolean useExternalShowTaskMethod(){        
+    public boolean useExternalShowTaskMethod() {        
         return this.useExternalShowTaskMethod;
     }
     
     @Override
-    public boolean setUseExternalShowTaskMethod(){
+    public boolean setUseExternalShowTaskMethod() {
         this.useExternalShowTaskMethod = true;
         return true;
     }
     
     @Override
-    public boolean setUseNativeShowTaskMethod(){
+    public boolean setUseNativeShowTaskMethod() {
         this.useExternalShowTaskMethod = false;
         return true;
     } 
     
     @Override
-    public void exitBeam(){
-        new Thread(new Runnable(){
+    public void exitBeam() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                System.exit(0);
+                Beam.exitBeamCoreNow();
             }
         }).start();
     }
@@ -106,7 +115,7 @@ class IoModuleWorker implements IoModule {
         try {            
             externalIOEngine.isActive();
             return true;
-        } catch (RemoteException|NullPointerException e){
+        } catch (RemoteException|NullPointerException e) {
             this.resetIoToDefault();
             return false;
         }

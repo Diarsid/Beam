@@ -16,29 +16,35 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
  *
  * Is implemented with JavaFX or Swing technology which is choosed from config.xml.
  */
-public interface Gui{
+public interface Gui {
+    
+    void stopJavaFXPlatform();
     
     /*
      * Method used to show user`s tasks.
      */
-    public void showTask(TaskMessage task);
+    void showTask(TaskMessage task);
     
     /*
      * Method to show bunch of tasks to user.
      */
-    public void showTasks(String description, List<TaskMessage> tasks);
+    void showTasks(String description, List<TaskMessage> tasks);
     
     /*
      * Used to show program`s messages, typically errors, warnings or notifications.
      * Param isCritical defines whether program should be closed after this event.
      */
-    public void showMessage(String[] message); 
+    void showMessage(String[] message); 
     
     /*
      * Used to show program`s occured exceptions.
      * Param isCritical defines whether program should be closed after this event.
      */
-    public void showError(String[] error);
+    void showError(String[] error);
     
-    public void exitAfterAllWindowsClosed();
+    /*
+     * Signals to underlying GUI system that it should invoke a prorgam
+     * cancelation after the last window is closed.
+     */
+    void exitAfterAllWindowsClosed();
 }

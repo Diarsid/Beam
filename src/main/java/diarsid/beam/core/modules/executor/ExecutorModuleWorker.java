@@ -4,47 +4,44 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.entities.Location;
-import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DaoCommands;
-import diarsid.beam.core.modules.data.HandlerLocations;
-import diarsid.beam.core.modules.data.HandlerWebPages;
 
+/**
+ * Implements ExecutorModule interface.
+ * 
+ * Manages multiple processors that are responsible each for its particular
+ * task.
+ * 
+ * @author Diarsid
+ */
 class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
     private final IntelligentResolver intell;
-    private final OS system;
-    private final HandlerLocations locationsHandler;
-    private final DaoCommands commandsDao;
-    private final HandlerWebPages pagesHandler;        
-    private final List<String> command;
-    private final Location notes;
+    
+    private final ProcessorPrograms programs;
+    private final ProcessorNotes notes;
+    private final ProcessorWebPages pages;
+    private final ProcessorLocations locations;
+    private final ProcessorCommands commands;    
     
     ExecutorModuleWorker(
-            IoInnerModule io, 
-            DaoCommands comDao, 
-            HandlerLocations locHandler,
-            HandlerWebPages pagesHandler,
-            IntelligentResolver i, 
-            OS os,
-            Location notes) {
+            IoInnerModule io,
+            IntelligentResolver intell,
+            ProcessorsBuilder builder) {
+        
         this.ioEngine = io;
-        this.intell = i;
-        this.locationsHandler = locHandler;
-        this.commandsDao = comDao;
-        this.pagesHandler = pagesHandler;
-        this.system = os;
-        this.command = new ArrayList<>();
-        this.notes = notes;
+        this.intell = intell;
+        this.pages = builder.buildProcessorWebPages();
+        this.commands = builder.buildProcessorCommands();
+        this.locations = builder.buildProcessorLocations();
+        this.programs = builder.buildProcessorPrograms();
+        this.notes = builder.buildProcessorNotes();
     }
     
     @Override
@@ -54,52 +51,29 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void open(List<String> commandParams) {
-        command.addAll(commandParams);
-        try {
-            if (commandParams.contains("in")) {
-                if (commandParams.contains("with")) {
-                    // command pattern: open [file] in [location] with [program]
-                    this.openFileInLocationWithProgram(
-                            commandParams.get(1), 
-                            commandParams.get(3),
-                            commandParams.get(5),
-                            String.join(" ", commandParams));
-                } else {
-                    // command pattern: open [file|folder] in [location]
-                    this.openFileInLocation(
-                            commandParams.get(1), 
-                            commandParams.get(3),
-                            String.join(" ", commandParams));
-                }
-            } else {
-                // command pattern: open [location]
-                this.openLocation(commandParams.get(1), 
-                        String.join(" ", commandParams));
-            }
-        } catch (IndexOutOfBoundsException indexException) {
-            this.ioEngine.reportError("Unrecognizable command.");
-        }
-        command.clear();
+        this.locations.open(commandParams);
+    }    
+    
+    @Override
+    public List<String> listLocationContent(String locationName) {
+        return this.locations.listLocationContent(locationName);
     }
     
     @Override
-    public void run(List<String> commandParams){
-        // command pattern: run [program_1] [program_2] [program_3]...
-        for(int i = 1; i < commandParams.size(); i++){
-            this.system.runProgram(commandParams.get(i));
-        }
+    public void run(List<String> commandParams) {
+        this.programs.runProgram(commandParams);
     }
     
     @Override
-    public void start(List<String> commandParams){
+    public void start(List<String> commandParams) {
         // command pattern: start [program]
-        this.runMarkedProgram("start", commandParams);       
+        this.programs.runMarkedProgram("start", commandParams);       
     }
     
     @Override
-    public void stop(List<String> commandParams){
+    public void stop(List<String> commandParams) {
         // command pattern: stop [program]
-        this.runMarkedProgram("stop", commandParams);        
+        this.programs.runMarkedProgram("stop", commandParams);        
     }
     
     @Override
@@ -108,8 +82,11 @@ class ExecutorModuleWorker implements ExecutorModule {
         StoredExecutorCommand storedCommand;
         StringBuilder sb = new StringBuilder();
         for(int i = 1; i < commandParams.size(); i++) {
-            sb.append(commandParams.get(0)).append(" ").append(commandParams.get(i));
-            storedCommand = this.getCommand(commandParams.get(i), sb.toString());
+            sb.append(commandParams.get(0))
+                    .append(" ")
+                    .append(commandParams.get(i));
+            storedCommand = this.commands
+                    .getCommand(commandParams.get(i), sb.toString());
             if (storedCommand != null) {
                 this.executeCommand(storedCommand);
             }
@@ -117,96 +94,35 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     @Override
-    public void openWebPage(List<String> commandParams){
-        if (commandParams.contains("with") || 
-                commandParams.contains("w") || 
-                commandParams.contains("in")) {
-            this.openWebPageWithGivenBrowser(commandParams);
-        } else {
-            this.openWebPages(commandParams);
-        }
+    public void openWebPage(List<String> commandParams) {
+        this.pages.openWebPage(commandParams);
     }
     
     @Override
-    public void newCommand(List<String> commands, String commandName){
-        for(int i = 0; i < commands.size(); i++){
-            String s = commands.get(i).trim().toLowerCase();
-            if (s.equals("call") || s.equals("exe")){
-                this.ioEngine.reportMessage(
-                        "'call' and 'exe' is not permitted to use.",
-                        "It can cause cyclical execution.");
-                return;
-            }
-            commands.set(i, s);
-        }
-        commandName = commandName.trim().toLowerCase();
-        this.commandsDao.saveNewCommand(new StoredExecutorCommand(commandName, commands));
+    public void newCommand(List<String> commands, String commandName) {
+        this.commands.newCommand(commands, commandName);
     }    
         
     @Override
-    public boolean deleteCommand(String commandName){
-        commandName = commandName.trim().toLowerCase();
-        return this.commandsDao.removeCommand(commandName);
+    public boolean deleteCommand(String commandName) {
+        return this.commands.deleteCommand(commandName);
     }    
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands(){
-        return this.commandsDao.getAllCommands();
-    }
+    public List<StoredExecutorCommand> getAllCommands() {
+        return this.commands.getAllCommands();
+    }    
     
     @Override
-    public List<String> listLocationContent(String locationName){
-        Location location = this.getLocation(locationName, "list "+locationName);
-        if (location != null){
-            List<String> locationContent = this.system.getLocationContent(location);
-            if (locationContent != null){
-                locationContent.add(0, location.getName());
-                return locationContent;
-            } else {                
-                return new ArrayList<>();
-            }
-        } else {
-            return Collections.emptyList();
-        }
-    }
+    public List<StoredExecutorCommand> getCommands(String commandName) {
+        return this.commands.getCommands(commandName);
+    }    
     
-    @Override
-    public List<StoredExecutorCommand> getCommands(String commandName){
-        commandName = commandName.trim().toLowerCase();
-        return this.commandsDao.getCommandsByName(commandName);
-    }
-       
-    private void openLocation(String locationName, String command){
-        Location location = this.getLocation(locationName, command);
-        if (location != null){
-            this.system.openLocation(location);
-        } 
-    }
-    
-    private void openFileInLocation(
-            String targetName, String locationName, String command){
-        targetName = targetName.trim().toLowerCase();
-        Location location = this.getLocation(locationName, command);
-        if (location != null){
-            this.system.openFileInLocation(targetName, location);
-        }             
-    }
-    
-    private void openFileInLocationWithProgram(
-            String file, String locationName, String program, String command){
-        file = file.trim().toLowerCase();
-        program = program.trim().toLowerCase();
-        Location location = this.getLocation(locationName, command);
-        if (location != null){
-            this.system.openFileInLocationWithProgram(file, location, program);
-        }    
-    }
-    
-    private void executeCommand(StoredExecutorCommand command){
+    private void executeCommand(StoredExecutorCommand command) {
         List<String> commandParams;
-        for(String commandString : command.getCommands()){
+        for(String commandString : command.getCommands()) {
             commandParams = Arrays.asList(commandString.split("\\s+"));
-            switch(commandParams.get(0)){
+            switch(commandParams.get(0)) {
                 case "open" :
                 case "op" :
                 case "o" : {
@@ -244,173 +160,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 }
             }
         }
-    }
-        
-    private void runMarkedProgram(String mark, List<String> commandParams) {
-        if (commandParams.size() == 2){
-            this.system.runProgram(commandParams.get(1)+"-"+mark);
-        } else {
-            this.ioEngine.reportMessage("Unrecognizable command.");
-        }
-    }
-    
-    private Location getLocation(String locationName, String command) {        
-        List<Location> foundLocations = this.locationsHandler
-                .getLocations(locationName);        
-        
-        if (foundLocations.size() < 1){
-            this.ioEngine.reportMessage("Couldn`t find such location.");
-            return null;
-        } else if (foundLocations.size() == 1){
-            return foundLocations.get(0);
-        } else { 
-            return this.resolveMultipleLocations(foundLocations, command);
-        }
-    }
-    
-    private Location resolveMultipleLocations(
-            List<Location> foundLocations, String command) {
-        
-        List<String> locationNames = new ArrayList();
-        for (Location loc : foundLocations){
-            locationNames.add(loc.getName());
-        }
-        int varNumber = this.intell.resolve(
-                "There are several locations:", 
-                command, 
-                locationNames);
-        //int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
-        //        "There are several locations:", 
-        //        locationNames);
-        if (varNumber < 0){
-            return null;
-        } else {
-            return foundLocations.get(varNumber-1);
-        }
-    }
-    
-    
-    private StoredExecutorCommand getCommand(String name, String command){        
-        name = name.trim().toLowerCase();
-        List<StoredExecutorCommand> commands = this.commandsDao.getCommandsByName(name);    
-        
-        if (commands.size() < 1){
-            this.ioEngine.reportMessage("Couldn`t find such command.");
-            return null;
-        } else if (commands.size() == 1){
-            return commands.get(0);
-        } else {
-            List<String> commandNames = new ArrayList<>();
-            for (StoredExecutorCommand c : commands){
-                commandNames.add(c.getName());
-            }
-            int variant = this.intell.resolve(
-                    "There are several commands:", 
-                    command, 
-                    commandNames);
-            //int variant = this.ioEngine.resolveVariantsWithExternalIO(
-            //        "There are several commands:", 
-            //        commandNames
-            //);
-            
-            if (variant < 0){
-                return null;
-            } else {
-                return commands.get(variant-1);
-            }            
-        }
-    }
-    
-    private void openWebPages(List<String> commandParams){
-        // command pattern: see [webPage_1] [webPage_2]...
-        WebPage page;
-        StringBuilder commandBuilder = new StringBuilder();
-        for (int i = 1; i < commandParams.size(); i++) {
-            commandBuilder
-                    .append(commandParams.get(0))
-                    .append(" ")
-                    .append(commandParams.get(i));
-            page = this.getWebPage(commandParams.get(i), commandBuilder.toString());
-            if (page != null){
-                if (page.useDefaultBrowser()){
-                    this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
-                } else {
-                    this.system.openUrlWithGivenBrowser(page.getUrlAddress(), page.getBrowser());
-                }
-            }
-        }
-    }
-    
-    private void openWebPageWithGivenBrowser(List<String> commandParams){
-        // command pattern: see [webPage] with|w [browserName]
-        if (commandParams.size() > 3 && 
-                (commandParams.get(2).contains("w") || 
-                commandParams.get(2).contains("in") )) {
-            WebPage page = this.getWebPage(
-                    commandParams.get(1),
-                    String.join(" ", commandParams.subList(0, 2)));
-            String browserName = commandParams.get(3);
-            if (page != null) {
-                if (browserName.equals("default") || browserName.equals("def")){
-                    this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
-                    this.pagesHandler.editWebPageBrowser(page.getName(), "default");
-                } else {
-                    this.system.openUrlWithGivenBrowser(page.getUrlAddress(), browserName);
-                    String pageBrowser = page.getBrowser();
-                    if ( pageBrowser.contains(browserName) || browserName.contains(pageBrowser) ) {
-                        return;
-                    } else {
-                        String[] vars = {"yes", "no"};
-                        int choosed = this.ioEngine.resolveVariantsWithExternalIO(
-                                "Use given browser always for this page?", 
-                                Arrays.asList(vars));
-                        if (choosed == 1){
-                            if (this.pagesHandler.editWebPageBrowser(page.getName(), browserName)){
-                                this.ioEngine.reportMessage("Get it.");
-                            }                   
-                        }
-                    }                    
-                }                
-            }
-        } else {
-            this.ioEngine.reportMessage("Unrecognizale command.");
-        }
-    }
-    
-    private WebPage getWebPage(String name, String command) {
-        
-        List<WebPage> pages = this.pagesHandler.getWebPages(name);
-        return this.resolveMultiplePages(pages, command);
-    }
-    
-    private WebPage resolveMultiplePages(List<WebPage> pages, String command) {
-        if (pages.size() == 1) {
-            return pages.get(0);
-        } else if (pages.isEmpty()) {
-            this.ioEngine.reportMessage("Couldn`t find such page.");
-            return null;
-        } else {
-            List<String> pageNames = new ArrayList<>();
-            for (WebPage wp : pages) {
-                pageNames.add(
-                        wp.getName() + " - " + 
-                        wp.getDirectory() + "::" + 
-                        wp.getPlacement().name().toLowerCase());
-            }
-            int choosedVariant = this.intell.resolve(
-                    "There are several pages:", 
-                    command, 
-                    pageNames);
-            //int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
-            //        "There are several pages:", pageNames);
-            
-            if (choosedVariant < 0) {
-                return null;
-            } else {
-                return pages.get(choosedVariant-1);
-            } 
-        }
-    }    
+    } 
     
     private void pauseCommandExecution(List<String> commandParams) {
         // default value for pause. It will be used in no other value has been 
@@ -463,19 +213,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void openNotes() {
-        this.system.openLocation(this.notes);
+        this.notes.openNotes();
     }
     
     @Override
     public void openNote(List<String> commandParams) {
-        if (commandParams.size() < 2) {
-            this.system.createAndOpenTxtFileIn("", this.notes);
-        } else {
-            String name = String.join(" ", commandParams.subList(1, commandParams.size()));
-            if ( ! this.system.openFileInLocation(name, this.notes)) {
-                this.system.createAndOpenTxtFileIn(name, this.notes);
-            }
-        }
-    }
-    
+        this.notes.openNote(commandParams);
+    }    
 }

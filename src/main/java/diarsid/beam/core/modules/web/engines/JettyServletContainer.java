@@ -22,6 +22,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.web.ServletContainer;
 import diarsid.beam.core.modules.web.ServletData;
 import diarsid.beam.shared.modules.ConfigModule;
@@ -38,12 +39,14 @@ import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_PORT;
  */
 class JettyServletContainer implements ServletContainer {
     
+    private final IoInnerModule ioEngine;
     private final Server jettyServer;
     private final ServletContextHandler jettyContext;
     private final String internetConnectorName;
     private final String localConnectorName;
     
-    JettyServletContainer(ConfigModule config) {     
+    JettyServletContainer(IoInnerModule io, ConfigModule config) {     
+        this.ioEngine = io;
         this.internetConnectorName = "internet_jetty_connector";
         this.localConnectorName = "localhost_jetty_connector";
         this.jettyServer = new Server();
@@ -54,6 +57,8 @@ class JettyServletContainer implements ServletContainer {
         
         this.jettyServer.setHandler(this.jettyContext);
         this.configureServerAddresses(config);
+        
+        this.jettyServer.setStopAtShutdown(true);
     }
     
     private void configureServerAddresses(ConfigModule config) {
@@ -107,6 +112,15 @@ class JettyServletContainer implements ServletContainer {
             throw new ModuleInitializationException(
                     "It is impossible to start Jetty Server.");
         } 
+    }
+    
+    @Override
+    public void stopServer() {
+        try {
+            this.jettyServer.stop();
+        } catch (Exception e) {
+            this.ioEngine.reportException(e, "Jetty Server fails to stop.");
+        }        
     }
     
     @Override

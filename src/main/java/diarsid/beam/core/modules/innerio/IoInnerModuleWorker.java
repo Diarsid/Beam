@@ -10,11 +10,8 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
-
-import diarsid.beam.core.modules.tasks.Task;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 /**
@@ -39,6 +36,11 @@ class IoInnerModuleWorker implements IoInnerModule {
         }
         this.io = ioModule;
         this.gui = gui;
+    }
+    
+    @Override
+    public void stopModule() {
+        gui.stopJavaFXPlatform();
     }
     
     @Override

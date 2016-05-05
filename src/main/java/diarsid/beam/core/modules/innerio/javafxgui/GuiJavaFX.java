@@ -35,6 +35,7 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
         new JFXPanel();
         Platform.setImplicitExit(false);
     }
+    
     private final String pathToCssFile = "file:./../config/BeamWindow.css";
     private final WindowController windowsController;  
     private final WindowsBuilder windowsBuilder;
@@ -71,6 +72,11 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
                 errorImage = new Image("file:"+ imagesLocation + "exception.png");
             }
         });
+    }
+    
+    @Override
+    public void stopJavaFXPlatform() {
+        Platform.exit();
     }
     
     @Override

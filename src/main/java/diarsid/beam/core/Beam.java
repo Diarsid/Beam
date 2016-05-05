@@ -4,13 +4,20 @@
  */
 package diarsid.beam.core;
 
+import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RmiModule;
+import diarsid.beam.core.modules.TaskManagerModule;
+import diarsid.beam.core.modules.WebModule;
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
+import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
 
@@ -31,19 +38,43 @@ public class Beam {
     private static RmiExecutorInterface rmiExecutorInterface;
     private static RmiTaskManagerInterface rmiTaskManagerInterface;
     private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
-    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;    
+    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;  
+    
+    public final static String CORE_CONTAINER = "Beam.core";
     
     private Beam() {
     }    
            
     public static void main(String[] args) {
-        GemInjector.buildContainer("Beam.core", new BeamModulesDeclaration());
-        GemInjector.getContainer("Beam.core").init();
-        //GemInjector.clear();
+        initApplication();
+        setJVMShutdownHook();
     }
     
-    public static void exitBeamCoreNow(){
-        System.exit(1);
+    private static void initApplication() {
+        GemInjector
+                .buildContainer(CORE_CONTAINER, new BeamModulesDeclaration())
+                .init();
+    }
+    
+    private static void setJVMShutdownHook() {
+        Runnable shutdownCallback = new Runnable() {
+            @Override
+            public void run() {
+                Container container = GemInjector.getContainer(CORE_CONTAINER);
+                container.getModule(TaskManagerModule.class).stopModule();
+                container.getModule(ExecutorModule.class).stopModule();
+                container.getModule(DataModule.class).stopModule();
+                container.getModule(WebModule.class).stopModule();
+                container.getModule(RmiModule.class).stopModule();
+                container.getModule(IoInnerModule.class).stopModule();        
+                container.getModule(IoModule.class).stopModule();
+            }
+        };
+        Runtime.getRuntime().addShutdownHook(new Thread(shutdownCallback));        
+    }
+    
+    public static void exitBeamCoreNow() {
+        System.exit(0);
     }
     
     public static void saveRmiInterfacesInStaticContext(RmiModule rmiModule){

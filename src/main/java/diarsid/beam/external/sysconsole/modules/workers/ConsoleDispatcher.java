@@ -81,8 +81,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.eventTypes.add("yearly event");
     }
     
-    // ------------------- External IO Interface methods -----------------------
-    
+    // ------------------- External IO Interface methods -----------------------    
     
     @Override
     public void isActive () throws RemoteException {

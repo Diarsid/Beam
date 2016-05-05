@@ -18,6 +18,8 @@ public interface ServletContainer {
             
     void startServer();
     
+    void stopServer();
+    
     void addServlets(Set<ServletData> servlets);
     
     void addFilter(

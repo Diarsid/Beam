@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.rmi;
 
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -25,7 +26,13 @@ import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.Config;
+
+import static diarsid.beam.shared.modules.config.Config.BEAM_ACCESS_NAME;
+import static diarsid.beam.shared.modules.config.Config.CORE_PORT;
+import static diarsid.beam.shared.modules.config.Config.EXECUTOR_NAME;
+import static diarsid.beam.shared.modules.config.Config.LOCATIONS_HANDLER_NAME;
+import static diarsid.beam.shared.modules.config.Config.TASK_MANAGER_NAME;
+import static diarsid.beam.shared.modules.config.Config.WEB_PAGES_HANDLER_NAME;
 
 /**
  *
@@ -91,7 +98,7 @@ class RmiModuleWorker implements RmiModule {
     public void exportInterfaces() {        
         
         try {            
-            int beamCorePort = Integer.parseInt(config.get(Config.CORE_PORT));
+            int beamCorePort = Integer.parseInt(config.get(CORE_PORT));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RmiRemoteControlInterface orgIOStub = 
                     (RmiRemoteControlInterface) UnicastRemoteObject.exportObject(
@@ -113,11 +120,11 @@ class RmiModuleWorker implements RmiModule {
                     (RmiWebPagesHandlerInterface) UnicastRemoteObject.exportObject(
                             this.rmiWebPageHandlerInterface, beamCorePort);
 
-            registry.bind(config.get(Config.BEAM_ACCESS_NAME), orgIOStub);
-            registry.bind(config.get(Config.EXECUTOR_NAME), osExecutorStub);
-            registry.bind(config.get(Config.TASK_MANAGER_NAME), TaskManagerStub);
-            registry.bind(config.get(Config.LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
-            registry.bind(config.get(Config.WEB_PAGES_HANDLER_NAME), WebPagesHandlerStub);
+            registry.bind(config.get(BEAM_ACCESS_NAME), orgIOStub);
+            registry.bind(config.get(EXECUTOR_NAME), osExecutorStub);
+            registry.bind(config.get(TASK_MANAGER_NAME), TaskManagerStub);
+            registry.bind(config.get(LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
+            registry.bind(config.get(WEB_PAGES_HANDLER_NAME), WebPagesHandlerStub);
 
         } catch (AlreadyBoundException|RemoteException e) {            
             ioEngine.reportExceptionAndExitLater(e, 
@@ -125,5 +132,21 @@ class RmiModuleWorker implements RmiModule {
                     "Program will be closed.");
             throw new ModuleInitializationException();
         }
-    }     
+    }    
+    
+    @Override
+    public void stopModule() {
+        int beamCorePort = Integer.parseInt(config.get(CORE_PORT));
+        try {            
+            Registry registry = LocateRegistry.getRegistry(beamCorePort);
+            registry.unbind(config.get(BEAM_ACCESS_NAME));
+            registry.unbind(config.get(EXECUTOR_NAME));
+            registry.unbind(config.get(TASK_MANAGER_NAME));
+            registry.unbind(config.get(LOCATIONS_HANDLER_NAME));
+            registry.unbind(config.get(WEB_PAGES_HANDLER_NAME));
+        } catch (NotBoundException|RemoteException e) {            
+            ioEngine.reportException(e, 
+                    "Unbind Beam.Server rmin module interfaces failure.");
+        }        
+    }
 }
