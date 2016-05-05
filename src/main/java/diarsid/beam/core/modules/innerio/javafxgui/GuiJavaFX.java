@@ -8,13 +8,11 @@ package diarsid.beam.core.modules.innerio.javafxgui;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 import diarsid.beam.core.modules.innerio.Gui;
 import diarsid.beam.core.modules.innerio.javafxgui.window.WindowsBuilderWorker;
@@ -27,7 +25,7 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
  * trough encapsulated Platform.runLater() calls. Therefore all
  * window classes used by this program, must implement Runnable. 
  */
-public class GuiJavaFX extends Application implements Gui, WindowResources {
+public class GuiJavaFX implements Gui, WindowResources {
     
     // static JavaFX platform initialization.
     // new JFXPanel creation is used for JavaFX platform init.
@@ -49,7 +47,7 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     private Image messageIcon;
     
     private DropShadow buttonShadow;
-        
+    
     public GuiJavaFX(String imagesLocation) {
         this.windowsController = new WindowController();
         this.windowsBuilder = new WindowsBuilderWorker();
@@ -76,20 +74,7 @@ public class GuiJavaFX extends Application implements Gui, WindowResources {
     
     @Override
     public void stopJavaFXPlatform() {
-        Platform.exit();
-    }
-    
-    @Override
-    public void start(Stage stage) {
-        // JavaFX Platform is used for background 
-        // notifications only when some important event
-        // occurs. Thus, only Platform.runLater() is used.
-        //
-        // Actually, this method will not be invoked at all 
-        // because initialization of Java FX Platform has been
-        // perfomed during this class loading and before object
-        // of this class can be created.
-        // See static init block at the beginning of this class.
+        //Platform.exit();
     }
     
     @Override

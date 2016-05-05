@@ -38,10 +38,10 @@ class IoModuleWorker implements IoModule {
     @Override
     public void stopModule() {
         try {
-            externalIOEngine.exitExternalIO();
+            externalIOEngine.exitExternalIO();            
         } catch (RemoteException e) {
             this.resetIoToDefault();
-        }        
+        }
     }
     
     @Override

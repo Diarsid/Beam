@@ -74,7 +74,10 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
         this.controller.windowClosed();
         if ( this.getClass().equals(TaskWindow.class) ) {
             this.resources.addTaskWindowToReusable( (ReusableTaskWindow) this );
-        }        
+        }   
+        if ( this.onTopRestoring != null ) {
+            this.onTopRestoring.stop();
+        }
     }    
     
     final void showThis() {

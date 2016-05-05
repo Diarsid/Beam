@@ -85,7 +85,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     }
     
     @Override
-    public void stopModule() {
+    public void stopModule() {        
         this.scheduler.shutdown();
     }
     
