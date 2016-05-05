@@ -8,13 +8,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 
-/*
- * Interface to get access to database from DAO objects.
+/**
+ * Interface representing DataBase abstraction.
  * Hides concrete implementation of connecting with particular database.
+ * 
+ * @author Diarsid
  */
 public interface DataBase {
     
     Connection connect() throws SQLException;
+    
+    void disconnect();
     
     JdbcTransaction beginTransaction();
     

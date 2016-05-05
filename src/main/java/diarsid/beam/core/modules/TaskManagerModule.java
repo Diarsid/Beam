@@ -5,20 +5,19 @@
  */
 package diarsid.beam.core.modules;
 
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
+import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 
-import com.drs.gem.injector.module.GemModule;
-
 /**
- *
+ * Is responsible for tasks management and execution.
+ * 
  * @author Diarsid
  */
-public interface TaskManagerModule extends GemModule {
+public interface TaskManagerModule extends StopableBeamModule {
     
     boolean createNewTask(TaskType type, String time, String[] task, 
             Set<Integer> days, Set<Integer> hours);

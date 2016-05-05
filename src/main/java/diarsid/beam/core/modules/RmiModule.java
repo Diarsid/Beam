@@ -5,19 +5,20 @@
  */
 package diarsid.beam.core.modules;
 
+import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
-import com.drs.gem.injector.module.GemModule;
-
 /**
- *
+ * Is responsible for creating the RMI registry, binding remote objects, 
+ * exporting and storing them.
+ * 
  * @author Diarsid
  */
-public interface RmiModule extends GemModule {
+public interface RmiModule extends StopableBeamModule {
     
     RmiExecutorInterface getRmiExecutorInterface();
     

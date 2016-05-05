@@ -14,9 +14,11 @@ import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.JdbcTransaction;
 
-/*
- * Connects with H2 database using org.h2.jdbcx.JdbcConnectionPool pool.
- * Is used by TasksDAO to get connections froom connection pool.
+/**
+ * Represents embedded H2 Database Engine, implementing DataBase
+ * interface.
+ * 
+ * @author Diarsid
  */
 class H2 implements DataBase {
     
@@ -38,6 +40,11 @@ class H2 implements DataBase {
             return this.conPool.getConnection();
         }        
     }
+    
+    @Override 
+    public void disconnect() {
+        this.conPool.dispose();
+    } 
     
     @Override
     public String getName() {

@@ -9,15 +9,16 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Set;
 
+import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.external.ExternalIOInterface;
 
-import com.drs.gem.injector.module.GemModule;
-
 /**
- *
+ * Is responsible for an interaction of the whole program with
+ * its remote controls such as remote console.
+ * 
  * @author Diarsid
  */
-public interface IoModule extends GemModule {
+public interface IoModule extends StopableBeamModule {
     
     public boolean isExternalProcessorActive();
     

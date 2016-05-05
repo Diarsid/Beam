@@ -48,6 +48,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     @Override
+    public void stopModule() {
+        
+    }
+    
+    @Override
     public void open(List<String> commandParams) {
         command.addAll(commandParams);
         try {

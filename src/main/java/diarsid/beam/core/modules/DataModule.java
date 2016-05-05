@@ -5,19 +5,18 @@
  */
 package diarsid.beam.core.modules;
 
+import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoIntellChoice;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
-import com.drs.gem.injector.module.GemModule;
-
 /**
  *
  * @author Diarsid
  */
-public interface DataModule extends GemModule {
+public interface DataModule extends StopableBeamModule {
     
     DaoTasks getTasksDao();    
     

@@ -8,15 +8,17 @@ package diarsid.beam.core.modules;
 import java.util.List;
 import java.util.Map;
 
+import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
 
-import com.drs.gem.injector.module.GemModule;
-
 /**
- *
+ * Executes remote commands such as open particular directory in the local
+ * file system, run certain program, open web site or run a bunch of 
+ * such commands.
+ * 
  * @author Diarsid
  */
-public interface ExecutorModule extends GemModule {
+public interface ExecutorModule extends StopableBeamModule {
         
     void open(List<String> commandParams);
     void run(List<String> commandParams);

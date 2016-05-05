@@ -6,19 +6,22 @@ package diarsid.beam.core.modules;
 
 import java.util.List;
 
+import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
-import com.drs.gem.injector.module.GemModule;
-
-/*
- * Interface defines methods for output within the program.
- * These methods are used by another parts of program to reportInfo 
+/**
+ * This interface defines methods for an output within the program.
+ * 
+ * These methods are used by another parts of the program to report 
  * about messages, exceptions, tasks, events and so on.
- * Implementation has to describe concrete ways how exactly 
- * display given output infomation according to it`s 
+ * 
+ * An implementation class has to describe concrete ways how exactly 
+ * given output information should be displayed according to it`s 
  * types, settings and other requirements.
+ * 
+ * @author Diarsid
  */
-public interface IoInnerModule extends GemModule {  
+public interface IoInnerModule extends StopableBeamModule {  
     
     void showTask(TaskMessage task);  
     

@@ -5,12 +5,14 @@
  */
 package diarsid.beam.core.modules;
 
-import com.drs.gem.injector.module.GemModule;
+import diarsid.beam.core.StopableBeamModule;
 
 /**
- *
+ * Is responsible for a web interactions of the whole program.
+ * Supplies REST service on configured addresses.
+ * 
  * @author Diarsid
  */
-public interface WebModule extends GemModule {
+public interface WebModule extends StopableBeamModule {
     
 }

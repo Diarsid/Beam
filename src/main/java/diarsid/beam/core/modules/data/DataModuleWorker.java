@@ -14,7 +14,8 @@ import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 
 /**
- *
+ * Implements DataModule.
+ * 
  * @author Diarsid
  */
 class DataModuleWorker implements DataModule {
@@ -36,25 +37,30 @@ class DataModuleWorker implements DataModule {
         this.ioEngine = io;
         this.daosPackageName = daosPackageName;
     }
+    
+    @Override
+    public void stopModule() {
+        this.dataBase.disconnect();
+    }
         
     @Override
-    public DaoTasks getTasksDao(){
+    public DaoTasks getTasksDao() {
         return (DaoTasks) this.assembleConcreteDao(DaoTasks.class);        
     }
     
     @Override
-    public HandlerLocations getLocationsHandler(){
+    public HandlerLocations getLocationsHandler() {
         DaoLocations dao = (DaoLocations) this.assembleConcreteDao(DaoLocations.class);    
         return new HandlerWorkerLocations(this.ioEngine, dao);
     }
     
     @Override
-    public DaoCommands getCommandsDao(){ 
+    public DaoCommands getCommandsDao() { 
         return (DaoCommands) this.assembleConcreteDao(DaoCommands.class);        
     }  
     
     @Override
-    public HandlerWebPages getWebPagesHandler(){
+    public HandlerWebPages getWebPagesHandler() {
         DaoWebPages dao = (DaoWebPages) this.assembleConcreteDao(DaoWebPages.class);
         return new HandlerWorkerWebPages(this.ioEngine, dao);
     }
@@ -64,14 +70,12 @@ class DataModuleWorker implements DataModule {
         return (DaoIntellChoice) this.assembleConcreteDao(DaoIntellChoice.class);
     }
     
-    private Object assembleConcreteDao(Class daoInterface){
+    private Object assembleConcreteDao(Class daoInterface) {
         try {
-            
-            String daoType = daoInterface.getSimpleName();
             String daoClassName = 
                     this.daosPackageName + 
                     this.dataBase.getName() + 
-                    daoType;
+                    daoInterface.getSimpleName();
             
             Class daoClass = Class.forName(daoClassName);
             Constructor daoConstr = daoClass.getDeclaredConstructor(
@@ -80,21 +84,21 @@ class DataModuleWorker implements DataModule {
             
             return daoConstr.newInstance(this.ioEngine, this.dataBase);
             
-        } catch (ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "DataManager: Dao implementation class not found by its name.",
                     "Program will be closed.");
             throw new ModuleInitializationException();
-        } catch (NoSuchMethodException e){
+        } catch (NoSuchMethodException e) {
             this.ioEngine.reportExceptionAndExitLater(e, 
                     "DataManager: Dao constructor creation failure.", 
                     "Program will be closed.");
             throw new ModuleInitializationException();
-        } catch (Exception e){
+        } catch (Exception e) {
             this.ioEngine.reportExceptionAndExitLater(e, 
-                    "DataManager: "+daoInterface.getSimpleName()+" instance creation failure.", 
+                    "DataManager: " + daoInterface.getSimpleName() +
+                    " instance creation failure.", 
                     "Program will be closed.");
-            e.printStackTrace();
             throw new ModuleInitializationException();
         }
     }
