@@ -8,8 +8,8 @@ package diarsid.beam.core.modules;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
+import diarsid.beam.core.StoppableBeamModule;
 
 /**
  * Executes remote commands such as open particular directory in the local
@@ -18,7 +18,7 @@ import diarsid.beam.core.modules.executor.StoredExecutorCommand;
  * 
  * @author Diarsid
  */
-public interface ExecutorModule extends StopableBeamModule {
+public interface ExecutorModule extends StoppableBeamModule {
         
     void open(List<String> commandParams);
     void run(List<String> commandParams);

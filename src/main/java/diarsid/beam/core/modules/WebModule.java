@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.modules;
 
-import diarsid.beam.core.StopableBeamModule;
+import diarsid.beam.core.StoppableBeamModule;
 
 /**
  * Is responsible for a web interactions of the whole program.
@@ -13,6 +13,6 @@ import diarsid.beam.core.StopableBeamModule;
  * 
  * @author Diarsid
  */
-public interface WebModule extends StopableBeamModule {
+public interface WebModule extends StoppableBeamModule {
     
 }

@@ -9,7 +9,7 @@ package diarsid.beam.core;
  *
  * @author Diarsid
  */
-public interface StopableBeamModule extends BeamModule {
+public interface StoppableBeamModule extends BeamModule {
     
     void stopModule();
 }

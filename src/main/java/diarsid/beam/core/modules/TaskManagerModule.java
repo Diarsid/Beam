@@ -8,16 +8,16 @@ package diarsid.beam.core.modules;
 import java.util.List;
 import java.util.Set;
 
-import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
+import diarsid.beam.core.StoppableBeamModule;
 
 /**
  * Is responsible for tasks management and execution.
  * 
  * @author Diarsid
  */
-public interface TaskManagerModule extends StopableBeamModule {
+public interface TaskManagerModule extends StoppableBeamModule {
     
     boolean createNewTask(
             TaskType type, 

@@ -6,8 +6,8 @@ package diarsid.beam.core.modules;
 
 import java.util.List;
 
-import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.core.modules.tasks.TaskMessage;
+import diarsid.beam.core.StoppableBeamModule;
 
 /**
  * This interface defines methods for an output within the program.
@@ -21,7 +21,7 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
  * 
  * @author Diarsid
  */
-public interface IoInnerModule extends StopableBeamModule {  
+public interface IoInnerModule extends StoppableBeamModule {  
     
     void showTask(TaskMessage task);  
     

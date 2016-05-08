@@ -9,8 +9,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Set;
 
-import diarsid.beam.core.StopableBeamModule;
 import diarsid.beam.external.ExternalIOInterface;
+import diarsid.beam.core.StoppableBeamModule;
 
 /**
  * Is responsible for an interaction of the whole program with
@@ -18,7 +18,7 @@ import diarsid.beam.external.ExternalIOInterface;
  * 
  * @author Diarsid
  */
-public interface IoModule extends StopableBeamModule {
+public interface IoModule extends StoppableBeamModule {
     
     public boolean isExternalProcessorActive();
     
