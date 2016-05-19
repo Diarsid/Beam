@@ -45,19 +45,16 @@ class ProcessorLocations {
                     this.openFileInLocationWithProgram(
                             commandParams.get(1), 
                             commandParams.get(3),
-                            commandParams.get(5),
-                            String.join(" ", commandParams));
+                            commandParams.get(5));
                 } else {
                     // command pattern: open [file|folder] in [location]
                     this.openFileInLocation(
                             commandParams.get(1), 
-                            commandParams.get(3),
-                            String.join(" ", commandParams));
+                            commandParams.get(3));
                 }
             } else {
                 // command pattern: open [location]
-                this.openLocation(commandParams.get(1), 
-                        String.join(" ", commandParams));
+                this.openLocation(commandParams.get(1));
             }
         } catch (IndexOutOfBoundsException indexException) {
             this.ioEngine.reportError("Unrecognizable command.");
@@ -65,7 +62,7 @@ class ProcessorLocations {
     }
     
     List<String> listLocationContent(String locationName) {
-        Location location = this.getLocation(locationName, "list "+locationName);
+        Location location = this.getLocation(locationName);
         if (location != null) {
             List<String> locationContent = this.system.getLocationContent(location);
             if (locationContent != null) {
@@ -79,33 +76,33 @@ class ProcessorLocations {
         }
     }
        
-    private void openLocation(String locationName, String command) {
-        Location location = this.getLocation(locationName, command);
+    private void openLocation(String locationName) {
+        Location location = this.getLocation(locationName);
         if (location != null) {
             this.system.openLocation(location);
         } 
     }
     
     private void openFileInLocation(
-            String targetName, String locationName, String command) {
+            String targetName, String locationName) {
         targetName = targetName.trim().toLowerCase();
-        Location location = this.getLocation(locationName, command);
+        Location location = this.getLocation(locationName);
         if (location != null) {
             this.system.openFileInLocation(targetName, location);
         }             
     }
     
     private void openFileInLocationWithProgram(
-            String file, String locationName, String program, String command) {
+            String file, String locationName, String program) {
         file = file.trim().toLowerCase();
         program = program.trim().toLowerCase();
-        Location location = this.getLocation(locationName, command);
+        Location location = this.getLocation(locationName);
         if (location != null) {
             this.system.openFileInLocationWithProgram(file, location, program);
         }    
     }
     
-    private Location getLocation(String locationName, String command) {        
+    private Location getLocation(String locationName) {        
         List<Location> foundLocations = this.locationsHandler
                 .getLocations(locationName);        
         
@@ -115,20 +112,19 @@ class ProcessorLocations {
         } else if (foundLocations.size() == 1) {
             return foundLocations.get(0);
         } else { 
-            return this.resolveMultipleLocations(foundLocations, command);
+            return this.resolveMultipleLocations(foundLocations);
         }
     }
     
     private Location resolveMultipleLocations(
-            List<Location> foundLocations, String command) {
+            List<Location> foundLocations) {
         
         List<String> locationNames = new ArrayList();
         for (Location loc : foundLocations) {
             locationNames.add(loc.getName());
         }
         int varNumber = this.intell.resolve(
-                "There are several locations:", 
-                command, 
+                "There are several locations:",
                 locationNames);
         //int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
         //        "There are several locations:", 

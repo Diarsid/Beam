@@ -22,25 +22,34 @@ public class IntelligentResolver {
     
     private final IoInnerModule ioEngine;
     private final DaoIntellChoice choiceDao;
+    private final CurrentlyExecutedCommandHolder currentCommandHolder;
             
     private boolean active;
     private boolean shouldAskUser;
     
-    IntelligentResolver(DataModule data, IoInnerModule io) {
+    IntelligentResolver(
+            DataModule data, 
+            IoInnerModule io, 
+            CurrentlyExecutedCommandHolder currentCommandHolder) {        
         this.ioEngine = io;
         this.active = true;
         this.shouldAskUser = false;
         this.choiceDao = data.getIntellChoiceDao();
+        this.currentCommandHolder = currentCommandHolder;
     }
     
-    public int resolve(
-            String question, String command, List<String> variants) {        
-        
+    public int resolve(String question, List<String> variants) {        
+        String command = String.join(
+                " ", this.currentCommandHolder.getCurrentlyExecutedCommand());
         if ( this.active ) {
             return this.tryToChoose(question, command, variants);
         } else {
             return this.askIoAndRememberChoice(question, command, variants);
         }
+    }
+    
+    public void adjustCurrentCommand(String... newCommand) {
+        this.currentCommandHolder.adjustCurrentlyExecutedCommand(newCommand);
     }
     
     private int tryToChoose(

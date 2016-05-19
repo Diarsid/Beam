@@ -48,15 +48,14 @@ class ProcessorWebPages {
     }    
     
     private void openWebPages(List<String> commandParams) {
-        // command pattern: see [webPage_1] [webPage_2]...
+        // command pattern: see [webPage_1] [webPage_2] [webPage_3]...
         WebPage page;
-        StringBuilder commandBuilder = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
-            commandBuilder
-                    .append(commandParams.get(0))
-                    .append(" ")
-                    .append(commandParams.get(i));
-            page = this.getWebPage(commandParams.get(i), commandBuilder.toString());
+            // register current command as: see [webPage_i]
+            this.intell.adjustCurrentCommand(
+                    commandParams.get(0), 
+                    commandParams.get(i));
+            page = this.getWebPage(commandParams.get(i));
             if (page != null) {
                 if (page.useDefaultBrowser()){
                     this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
@@ -72,9 +71,7 @@ class ProcessorWebPages {
         if (commandParams.size() > 3 && 
                 (commandParams.get(2).contains("w") || 
                 commandParams.get(2).contains("in") )) {
-            WebPage page = this.getWebPage(
-                    commandParams.get(1),
-                    String.join(" ", commandParams.subList(0, 2)));
+            WebPage page = this.getWebPage(commandParams.get(1));
             String givenBrowser = commandParams.get(3);
             if (page != null) {
                 if (givenBrowser.equals("default") || givenBrowser.equals("def")) {
@@ -109,12 +106,12 @@ class ProcessorWebPages {
         }
     }
     
-    private WebPage getWebPage(String name, String command) {        
+    private WebPage getWebPage(String name) {        
         List<WebPage> pages = this.pagesHandler.getWebPages(name);
-        return this.resolveMultiplePages(pages, command);
+        return this.resolveMultiplePages(pages);
     }
     
-    private WebPage resolveMultiplePages(List<WebPage> pages, String command) {
+    private WebPage resolveMultiplePages(List<WebPage> pages) {
         if (pages.size() == 1) {
             return pages.get(0);
         } else if (pages.isEmpty()) {
@@ -129,8 +126,7 @@ class ProcessorWebPages {
                         wp.getPlacement().name().toLowerCase());
             }
             int choosedVariant = this.intell.resolve(
-                    "There are several pages:", 
-                    command, 
+                    "There are several pages:",
                     pageNames);
             //int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
             //        "There are several pages:", pageNames);

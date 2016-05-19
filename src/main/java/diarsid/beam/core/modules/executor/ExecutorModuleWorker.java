@@ -81,12 +81,11 @@ class ExecutorModuleWorker implements ExecutorModule {
         // command pattern: call [command_1] [command_2]...
         StoredExecutorCommand storedCommand;
         StringBuilder sb = new StringBuilder();
-        for(int i = 1; i < commandParams.size(); i++) {
+        for (int i = 1; i < commandParams.size(); i++) {
             sb.append(commandParams.get(0))
                     .append(" ")
                     .append(commandParams.get(i));
-            storedCommand = this.commands
-                    .getCommand(commandParams.get(i), sb.toString());
+            storedCommand = this.commands.getCommand(commandParams.get(i));
             if (storedCommand != null) {
                 this.executeCommand(storedCommand);
             }

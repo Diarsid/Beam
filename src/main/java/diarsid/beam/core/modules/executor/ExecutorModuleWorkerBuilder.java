@@ -6,6 +6,9 @@
 
 package diarsid.beam.core.modules.executor;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -35,17 +38,28 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     }
     
     @Override
-    public ExecutorModule buildModule() {        
-        IntelligentResolver intell = 
-                new IntelligentResolver(this.dataModule, this.ioInnerModule);
+    public ExecutorModule buildModule() {
+        CurrentlyExecutedCommandIntelligentContext commandIntelligentContext = 
+                new CurrentlyExecutedCommandIntelligentContext();
+        IntelligentResolver intelligentResolver = new IntelligentResolver(
+                this.dataModule, 
+                this.ioInnerModule,
+                commandIntelligentContext);
         OS os = OSProvider.getOS(this.ioInnerModule, this.configModule); 
         ProcessorsBuilder processorsBuilder = new ProcessorsBuilder(
                 this.ioInnerModule, 
                 this.dataModule, 
                 this.configModule, 
-                intell, 
+                intelligentResolver, 
                 os);        
-        return new ExecutorModuleWorker(
-                this.ioInnerModule, intell, processorsBuilder);
+        ExecutorModuleWorker actualExecutor = new ExecutorModuleWorker(
+                this.ioInnerModule, intelligentResolver, processorsBuilder);
+        InvocationHandler preparedProxy = new ExecutorModuleIntelligentProxy(
+                actualExecutor, commandIntelligentContext);
+        ExecutorModule proxyExecutor = (ExecutorModule) Proxy.newProxyInstance(
+                ExecutorModule.class.getClassLoader(), 
+                actualExecutor.getClass().getInterfaces(), 
+                preparedProxy);
+        return proxyExecutor;
     }
 }
