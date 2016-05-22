@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  *
@@ -95,8 +96,6 @@ class DataBaseModel {
         this.tables.put(directories.name, directories);
     }
     
-    // Methods ============================================================================
-    
     List<String> getTableNames() {
         return new ArrayList<>(this.tables.keySet());
     }
@@ -126,6 +125,40 @@ class DataBaseModel {
         
         int getColQty() {
             return this.columnsQty;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + Objects.hashCode(this.name);
+            hash = 71 * hash + Objects.hashCode(this.creationSqlScript);
+            hash = 71 * hash + this.columnsQty;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if ( this == obj ) {
+                return true;
+            }
+            if ( obj == null ) {
+                return false;
+            }
+            if ( getClass() != obj.getClass() ) {
+                return false;
+            }
+            final TableInfo other = ( TableInfo ) obj;
+            if ( this.columnsQty != other.columnsQty ) {
+                return false;
+            }
+            if ( !Objects.equals(this.name, other.name) ) {
+                return false;
+            }
+            if ( !Objects.equals(this.creationSqlScript,
+                                 other.creationSqlScript) ) {
+                return false;
+            }
+            return true;
         }
     }
 }

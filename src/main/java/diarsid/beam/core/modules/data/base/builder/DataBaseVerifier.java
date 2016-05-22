@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.base.builder;
 
-import diarsid.beam.core.modules.data.DataBase;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -16,33 +14,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.data.DataBase;
 
 /**
  *
  * @author Diarsid
  */
 class DataBaseVerifier {
-    // Fields =============================================================================
+    
     private final DataBaseInitializer initializer;
     private final IoInnerModule ioEngine;
     private final DataBaseModel dataModel;
     
-    // Constructors =======================================================================
-
-    DataBaseVerifier(IoInnerModule io, DataBaseInitializer init, DataBaseModel model) {
+    DataBaseVerifier(
+            IoInnerModule io, DataBaseInitializer init, DataBaseModel model) {
         this.ioEngine = io;
         this.initializer = init;
         this.dataModel = model;
     }    
     
-    // Methods ============================================================================
-    void verifyDataBase(DataBase db){
+    void verifyDataBase(DataBase db) {
         List<String> existingTables = this.getExistingTables(db);
         List<String> messagePool = new ArrayList<>();
-        for (String table : dataModel.getTableNames()){
-            if (!existingTables.contains(table)){
+        for (String table : dataModel.getTableNames()) {
+            if (!existingTables.contains(table)) {
                 messagePool.add("Table '"+table+"' does not exists.");
                 this.initializer.createTable(
                         dataModel.getTable(table), 
@@ -52,16 +48,17 @@ class DataBaseVerifier {
             }
         }
         if (messagePool.size() > 0){
-            this.ioEngine.reportMessage(messagePool.toArray(new String[messagePool.size()]));
+            this.ioEngine.reportMessage(
+                    messagePool.toArray(new String[messagePool.size()]));
         }
     }
     
-    private List<String> getExistingTables(DataBase db){        
-        try (Connection con = db.connect();){
+    private List<String> getExistingTables(DataBase db) {        
+        try (Connection con = db.connect();) {
             DatabaseMetaData metadata = con.getMetaData();
             ResultSet rs = metadata.getTables(null, null, "%", null);
             List<String> existingTables = new ArrayList<>();
-            while (rs.next()){
+            while (rs.next()) {
                 existingTables.add(rs.getString("TABLE_NAME").toLowerCase());
             }
             rs.close();

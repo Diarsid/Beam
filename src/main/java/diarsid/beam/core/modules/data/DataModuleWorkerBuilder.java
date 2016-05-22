@@ -6,14 +6,11 @@
 
 package diarsid.beam.core.modules.data;
 
-import diarsid.beam.shared.modules.ConfigModule;
-
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
-
-import diarsid.beam.core.modules.data.base.builder.DataBaseBuilder;
-
+import diarsid.beam.core.modules.data.base.builder.DataBaseBuilderImpl;
 import diarsid.beam.core.modules.data.daos.DaosInfo;
+import diarsid.beam.shared.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -32,17 +29,26 @@ class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     }
     
     @Override
-    public DataModule buildModule(){
-        DataBase dataBase = DataBaseBuilder
-                .buildDataBase(this.ioInnerModule, this.configModule);
+    public DataModule buildModule() {
+        DataBase dataBase = this.getDataBase();
+        String daosPackageName = this.getDaosPackageName();
+        DataModule dataModule = new DataModuleWorker(
+                this.ioInnerModule, dataBase, daosPackageName);
+        
+        return dataModule;        
+    }
+
+    private DataBase getDataBase() {
+        DataBaseBuilder builder = new DataBaseBuilderImpl();        
+        return builder.buildDataBase(this.ioInnerModule, this.configModule);
+    }
+
+    private String getDaosPackageName() {
         // obtain dao implementations package name.
         // "my.package.with.database.DataBaseInfo" -> "my.package.with.database."
         String daosPackageName = DaosInfo.class
                 .getCanonicalName()
                 .replace(DaosInfo.class.getSimpleName(), "");
-        DataModule dataModule = new DataModuleWorker(
-                this.ioInnerModule, dataBase, daosPackageName);
-        
-        return dataModule;        
+        return daosPackageName;        
     }
 }
