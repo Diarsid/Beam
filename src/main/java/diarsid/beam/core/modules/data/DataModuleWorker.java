@@ -66,8 +66,8 @@ class DataModuleWorker implements DataModule {
     }
     
     @Override
-    public DaoIntellChoice getIntellChoiceDao() {
-        return (DaoIntellChoice) this.assembleConcreteDao(DaoIntellChoice.class);
+    public DaoExecutorIntelligentChoices getIntellChoiceDao() {
+        return (DaoExecutorIntelligentChoices) this.assembleConcreteDao(DaoExecutorIntelligentChoices.class);
     }
     
     private Object assembleConcreteDao(Class daoInterface) {

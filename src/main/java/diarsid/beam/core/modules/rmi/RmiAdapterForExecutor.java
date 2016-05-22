@@ -6,17 +6,12 @@
 
 package diarsid.beam.core.modules.rmi;
 
-import diarsid.beam.core.modules.ExecutorModule;
-
-import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
-
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.Map;
 
-import diarsid.beam.core.entities.Location;
-
+import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
+import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 
 /**
  *
@@ -102,14 +97,13 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     }     
     
     @Override
-    public void setAskUserToRememberHisChoice(boolean askUser) 
-            throws RemoteException {
-        
-        this.executorModule.setAskUserToRememberHisChoice(askUser);
+    public void rememberChoiceAutomatically(boolean auto) 
+            throws RemoteException {        
+        this.executorModule.rememberChoiceAutomatically(auto);
     } 
     
     @Override
-    public Map<String, String> getAllChoices() throws RemoteException {
+    public List<String> getAllChoices() throws RemoteException {
         return this.executorModule.getAllChoices();
     }
     

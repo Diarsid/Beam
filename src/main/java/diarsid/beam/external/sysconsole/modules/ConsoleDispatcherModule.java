@@ -135,7 +135,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     
     void useExternalShowTaskMethod() throws IOException; 
     
-    void setAskUserToRememberHisChoice(String yesOrNo) throws IOException; 
+    void rememberChoiceAutomatically(String yesOrNo) throws IOException; 
     
     void setIntelligentActive(String yesOrNo) throws IOException;    
     

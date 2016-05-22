@@ -52,7 +52,7 @@ class DataBaseModel {
         
         TableInfo webPages = new TableInfo(
                 "web_pages", 
-                "CREATE TABLE web_pages (" +
+                "CREATE TABLE web_pages ( " +
                 "page_id        INTEGER         NOT NULL, " +
                 "page_name      VARCHAR(300)    NOT NULL, " +
                 "page_shortcuts VARCHAR(20)     NOT NULL, " + 
@@ -70,11 +70,18 @@ class DataBaseModel {
         
         TableInfo commandChoices = new TableInfo(
                 "command_choices", 
-                "CREATE TABLE command_choices (" +
-                "choice_id      INTEGER         NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                "command        VARCHAR(100)    NOT NULL, " +
-                "choice         VARCHAR(30)     NOT NULL)",
-                3);
+                "CREATE TABLE command_choices ( " +
+                "choice_id      INTEGER         NOT NULL, " +
+                "command        VARCHAR(300)    NOT NULL, " +
+                "pattern_number INTEGER         NOT NULL, " +
+                "pattern        VARCHAR(300)    NOT NULL, " + 
+                "choice         VARCHAR(300)    NOT NULL, " + 
+                "PRIMARY KEY ( "
+                        + "choice_id, "
+                        + "command, "
+                        + "pattern_number, "
+                        + "pattern) )",
+                5);
         this.tables.put(commandChoices.name, commandChoices);
         
         TableInfo directories = new TableInfo(

@@ -11,9 +11,9 @@ import java.util.List;
  *
  * @author Diarsid
  */
-interface CurrentlyExecutedCommandContainer {
+interface CurrentlyExecutedCommandContext {
     
-    void saveCurrentlyExecutedCommand(List<String> commandParams);
+    void beginCurrentCommandState(List<String> commandParams);
     
-    void clearCurrentlyExecutedCommand();    
+    void destroyCurrentCommandState();    
 }

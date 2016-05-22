@@ -888,9 +888,9 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void setAskUserToRememberHisChoice(String yesOrNo) throws IOException {
-        boolean yes = this.input.checkOnYes(yesOrNo);
-        this.beam.executor().setAskUserToRememberHisChoice(yes);
+    public void rememberChoiceAutomatically(String yesOrNo) throws IOException {
+        boolean auto = this.input.checkOnYes(yesOrNo);
+        this.beam.executor().rememberChoiceAutomatically(auto);
     }
     
     @Override

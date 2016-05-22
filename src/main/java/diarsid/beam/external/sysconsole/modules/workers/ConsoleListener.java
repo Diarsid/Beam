@@ -530,7 +530,7 @@ class ConsoleListener implements ConsoleListenerModule {
                                         if (params.size() < 4) {
                                             break parsing;
                                         }
-                                        this.dispatcher.setAskUserToRememberHisChoice(params.get(3));
+                                        this.dispatcher.rememberChoiceAutomatically(params.get(3));
                                         break parsing;
                                     }
                                     case "active" : {

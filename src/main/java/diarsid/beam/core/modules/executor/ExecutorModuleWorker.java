@@ -6,7 +6,6 @@ package diarsid.beam.core.modules.executor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -22,7 +21,7 @@ import diarsid.beam.core.modules.IoInnerModule;
 class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
-    private final IntelligentResolver intell;
+    private final IntelligentExecutorCommandContext intelligentContext;
     
     private final ProcessorPrograms programs;
     private final ProcessorNotes notes;
@@ -32,11 +31,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     ExecutorModuleWorker(
             IoInnerModule io,
-            IntelligentResolver intell,
+            IntelligentExecutorCommandContext intell,
             ProcessorsBuilder builder) {
         
         this.ioEngine = io;
-        this.intell = intell;
+        this.intelligentContext = intell;
         this.pages = builder.buildProcessorWebPages();
         this.commands = builder.buildProcessorCommands();
         this.locations = builder.buildProcessorLocations();
@@ -180,22 +179,22 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void setIntelligentActive(boolean isActive) {
-        this.intell.setActive(isActive);
+        this.intelligentContext.setActive(isActive);
     }  
     
     @Override
     public boolean deleteMem(String command) {
-        return this.intell.deleteMem(command);
+        return this.intelligentContext.deleteChoicesForCommand(command);
     }     
     
     @Override
-    public void setAskUserToRememberHisChoice(boolean askUser) {
-        this.intell.setAskUserToRememberHisChoice(askUser);
+    public void rememberChoiceAutomatically(boolean autoRemember) {
+        this.intelligentContext.setRememberChoiceAutomatically(autoRemember);
     }  
     
     @Override
-    public Map<String, String> getAllChoices() {
-        return this.intell.getAllChoices();
+    public List<String> getAllChoices() {
+        return this.intelligentContext.getAllChoices();
     }
     
     /*

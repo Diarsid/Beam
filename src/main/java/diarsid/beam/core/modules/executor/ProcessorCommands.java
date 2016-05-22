@@ -20,48 +20,48 @@ class ProcessorCommands {
     
     private final IoInnerModule ioEngine;
     private final DaoCommands commandsDao;
-    private final IntelligentResolver intell;
+    private final IntelligentExecutorCommandContext intellContext;
     
     ProcessorCommands(
             IoInnerModule io, 
             DaoCommands dao, 
-            IntelligentResolver intell) {
+            IntelligentExecutorCommandContext intell) {
         
         this.ioEngine = io;
         this.commandsDao = dao;
-        this.intell = intell;
+        this.intellContext = intell;
     }    
     
     StoredExecutorCommand getCommand(String name) {        
         name = name.trim().toLowerCase();
         List<StoredExecutorCommand> commands = this.commandsDao.getCommandsByName(name);    
         
-        if (commands.size() < 1) {
+        if ( commands.size() < 1 ) {
             this.ioEngine.reportMessage("Couldn`t find such command.");
             return null;
-        } else if (commands.size() == 1) {
+        } else if ( commands.size() == 1 ) {
             return commands.get(0);
         } else {
             List<String> commandNames = new ArrayList<>();
             for (StoredExecutorCommand c : commands) {
                 commandNames.add(c.getName());
             }
-            int variant = this.intell.resolve(
+            int variant = this.intellContext.resolve(
                     "There are several commands:", 
+                    name, 
                     commandNames);
             //int variant = this.ioEngine.resolveVariantsWithExternalIO(
             //        "There are several commands:", 
             //        commandNames
             //);
             
-            if (variant < 0){
+            if ( variant < 0 ) {
                 return null;
             } else {
                 return commands.get(variant-1);
             }            
         }
-    }   
-    
+    }       
     
     void newCommand(List<String> commands, String commandName) {
         for(int i = 0; i < commands.size(); i++) {

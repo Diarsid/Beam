@@ -23,18 +23,18 @@ class ProcessorLocations {
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerLocations locationsHandler;
-    private final IntelligentResolver intell;
+    private final IntelligentExecutorCommandContext intellContext;
 
     ProcessorLocations(
             IoInnerModule io, 
             OS sys, 
             HandlerLocations locs, 
-            IntelligentResolver intell) {
+            IntelligentExecutorCommandContext intell) {
         
         this.ioEngine = io;
         this.system = sys;
         this.locationsHandler = locs;
-        this.intell = intell;
+        this.intellContext = intell;
     }
     
     void open(List<String> commandParams) {
@@ -112,19 +112,21 @@ class ProcessorLocations {
         } else if (foundLocations.size() == 1) {
             return foundLocations.get(0);
         } else { 
-            return this.resolveMultipleLocations(foundLocations);
+            return this.resolveMultipleLocations(locationName, foundLocations);
         }
     }
     
     private Location resolveMultipleLocations(
+            String requiredLocationName,
             List<Location> foundLocations) {
         
         List<String> locationNames = new ArrayList();
         for (Location loc : foundLocations) {
             locationNames.add(loc.getName());
         }
-        int varNumber = this.intell.resolve(
+        int varNumber = this.intellContext.resolve(
                 "There are several locations:",
+                requiredLocationName,
                 locationNames);
         //int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
         //        "There are several locations:", 

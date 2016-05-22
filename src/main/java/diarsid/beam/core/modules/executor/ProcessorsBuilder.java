@@ -21,19 +21,19 @@ class ProcessorsBuilder {
     private final IoInnerModule ioEngine;
     private final DataModule dataModule;
     private final ConfigModule configModule;
-    private final IntelligentResolver intell;
+    private final IntelligentExecutorCommandContext intellContext;
     private final OS os;
     
     ProcessorsBuilder(
             IoInnerModule io, 
             DataModule data, 
             ConfigModule config,
-            IntelligentResolver intell,
+            IntelligentExecutorCommandContext intell,
             OS os) {
         
         this.ioEngine = io;
         this.dataModule = data;
-        this.intell = intell;
+        this.intellContext = intell;
         this.configModule = config;
         this.os = os;
     }
@@ -43,14 +43,14 @@ class ProcessorsBuilder {
                 this.ioEngine, 
                 this.os, 
                 this.dataModule.getWebPagesHandler(), 
-                intell);
+                intellContext);
     }
     
     ProcessorCommands buildProcessorCommands() {
         return new ProcessorCommands(
                 this.ioEngine, 
                 this.dataModule.getCommandsDao(), 
-                this.intell);
+                this.intellContext);
     }
     
     ProcessorNotes buildProcessorNotes() {
@@ -65,7 +65,7 @@ class ProcessorsBuilder {
                 this.ioEngine, 
                 this.os, 
                 this.dataModule.getLocationsHandler(), 
-                this.intell);
+                this.intellContext);
     }
     
     ProcessorPrograms buildProcessorPrograms() {

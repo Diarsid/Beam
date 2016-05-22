@@ -6,10 +6,9 @@
 package diarsid.beam.core.modules;
 
 import java.util.List;
-import java.util.Map;
 
-import diarsid.beam.core.modules.executor.StoredExecutorCommand;
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.core.modules.executor.StoredExecutorCommand;
 
 /**
  * Executes remote commands such as open particular directory in the local
@@ -39,8 +38,8 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     void setIntelligentActive(boolean isActive);    
     boolean deleteMem(String command);    
-    void setAskUserToRememberHisChoice(boolean askUser);
-    Map<String, String> getAllChoices();
+    void rememberChoiceAutomatically(boolean auto);
+    List<String> getAllChoices();
     
     //void newNote(List<String> commandParams);
     void openNotes();

@@ -7,7 +7,6 @@ package diarsid.beam.core.rmi.interfaces;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.Map;
 
 import diarsid.beam.core.modules.executor.StoredExecutorCommand;
 
@@ -35,8 +34,8 @@ public interface RmiExecutorInterface extends Remote {
     
     void setIntelligentActive(boolean isActive) throws RemoteException;  
     boolean deleteMem(String command) throws RemoteException;    
-    void setAskUserToRememberHisChoice(boolean askUser) throws RemoteException; 
-    Map<String, String> getAllChoices() throws RemoteException;
+    void rememberChoiceAutomatically(boolean auto) throws RemoteException; 
+    List<String> getAllChoices() throws RemoteException;
     
     //void newNote(List<String> commandParams) throws RemoteException;
     void openNotes() throws RemoteException;

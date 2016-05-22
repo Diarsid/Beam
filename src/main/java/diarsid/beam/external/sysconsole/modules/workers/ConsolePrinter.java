@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
@@ -307,7 +306,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printChoices(Map<String, String> choices) throws IOException {
+    public void printChoices(List<String> choices) throws IOException {
         if (choices.isEmpty()) {
             printUnderLn("There aren't any command choices.");
             return;
@@ -317,11 +316,8 @@ class ConsolePrinter implements ConsolePrinterModule {
         this.writer.write(SPACE);
         this.writer.write("==================================================");
         this.writer.newLine();
-        for (Map.Entry<String, String> entry : choices.entrySet()) {
-            sb.append(SPACE)
-                    .append(format(entry.getKey(), 30))
-                    .append("choice--> ")
-                    .append(entry.getValue());
+        for (String choice : choices) {
+            sb.append(SPACE).append(choice);
             this.writer.write(sb.toString());
             sb = sb.delete(0, sb.length());
             this.writer.newLine();

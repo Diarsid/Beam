@@ -36,7 +36,7 @@ public class ExecutorTest {
     HandlerLocations locHandler;
     DaoCommands comDao;
     OS os;
-    IntelligentResolver intell;
+    IntelligentExecutorResolver intell;
     
     @Test
     @Before
@@ -51,7 +51,7 @@ public class ExecutorTest {
         when(data.getCommandsDao()).thenReturn(comDao);
         when(data.getWebPagesHandler()).thenReturn(pagesHandler);
         os = mock(OS.class);
-        intell = mock(IntelligentResolver.class);
+        intell = mock(IntelligentExecutorResolver.class);
         Location notes = mock(Location.class);
         
         exec = null;

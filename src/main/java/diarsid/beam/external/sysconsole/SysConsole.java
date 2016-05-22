@@ -22,7 +22,7 @@ public class SysConsole {
     private SysConsole() {
     }
     
-    public static void main(String[] args) {
+    public static void main(String... args) {
         Declaration modules = new SysConsoleModulesDeclaration();
         GemInjector.buildContainer("console", modules);
         GemInjector.getContainer("console").init();

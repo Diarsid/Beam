@@ -23,18 +23,18 @@ class ProcessorWebPages {
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerWebPages pagesHandler;
-    private final IntelligentResolver intell;
+    private final IntelligentExecutorCommandContext intellContext;
     
     ProcessorWebPages(
             IoInnerModule io, 
             OS sys, 
             HandlerWebPages pages, 
-            IntelligentResolver intell) {
+            IntelligentExecutorCommandContext intell) {
         
         this.ioEngine = io;
         this.system = sys;
         this.pagesHandler = pages;
-        this.intell = intell;
+        this.intellContext = intell;
     }
     
     void openWebPage(List<String> params) {
@@ -52,7 +52,7 @@ class ProcessorWebPages {
         WebPage page;
         for (int i = 1; i < commandParams.size(); i++) {
             // register current command as: see [webPage_i]
-            this.intell.adjustCurrentCommand(
+            this.intellContext.adjustCurrentlyExecutedCommand(
                     commandParams.get(0), 
                     commandParams.get(i));
             page = this.getWebPage(commandParams.get(i));
@@ -108,26 +108,29 @@ class ProcessorWebPages {
     
     private WebPage getWebPage(String name) {        
         List<WebPage> pages = this.pagesHandler.getWebPages(name);
-        return this.resolveMultiplePages(pages);
+        return this.resolveMultiplePages(name, pages);
     }
     
-    private WebPage resolveMultiplePages(List<WebPage> pages) {
+    private WebPage resolveMultiplePages(
+            String requiredPageName, List<WebPage> pages) {
+        
         if (pages.size() == 1) {
             return pages.get(0);
         } else if (pages.isEmpty()) {
             this.ioEngine.reportMessage("Couldn`t find such page.");
             return null;
         } else {
-            List<String> pageNames = new ArrayList<>();
+            List<String> displayedPagesInfo = new ArrayList<>();
             for (WebPage wp : pages) {
-                pageNames.add(
+                displayedPagesInfo.add(
                         wp.getName() + " - " + 
                         wp.getDirectory() + "::" + 
                         wp.getPlacement().name().toLowerCase());
             }
-            int choosedVariant = this.intell.resolve(
+            int choosedVariant = this.intellContext.resolve(
                     "There are several pages:",
-                    pageNames);
+                    requiredPageName,
+                    displayedPagesInfo);
             //int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
             //        "There are several pages:", pageNames);
             

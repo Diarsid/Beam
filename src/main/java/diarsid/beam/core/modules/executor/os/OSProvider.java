@@ -5,15 +5,11 @@
  */
 package diarsid.beam.core.modules.executor.os;
 
-import diarsid.beam.shared.modules.ConfigModule;
-
-import diarsid.beam.core.modules.executor.OS;
-
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-
 import diarsid.beam.core.modules.IoInnerModule;
-
-import diarsid.beam.core.modules.executor.IntelligentResolver;
+import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
+import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.shared.modules.ConfigModule;
 
 /**
  *
@@ -21,10 +17,14 @@ import diarsid.beam.core.modules.executor.IntelligentResolver;
  */
 public interface OSProvider {
     
-    static OS getOS(IoInnerModule io, ConfigModule configModule){
+    static OS getOS(
+            IoInnerModule io, 
+            ConfigModule configModule, 
+            IntelligentExecutorCommandContext intelligentContext) {
+        
         String systemName = System.getProperty("os.name").toLowerCase();
-        if (systemName.contains("win")){
-            return new OSWindows(io, configModule);
+        if (systemName.contains("win")) {
+            return new OSWindows(io, configModule, intelligentContext);
         } else if (systemName.contains("x")) {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program

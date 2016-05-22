@@ -11,9 +11,17 @@ import java.util.List;
  *
  * @author Diarsid
  */
-interface CurrentlyExecutedCommandHolder {
+public interface IntelligentExecutorCommandContext {
     
-    List<String> getCurrentlyExecutedCommand();
+    int resolve(String question, String originalPattern, List<String> variants);
     
     void adjustCurrentlyExecutedCommand(String... newCommandParams);
+    
+    void setActive(boolean active);
+    
+    boolean deleteChoicesForCommand(String command);
+    
+    List<String> getAllChoices();
+    
+    void setRememberChoiceAutomatically(boolean auto);
 }

@@ -20,6 +20,8 @@ import diarsid.beam.external.sysconsole.SysConsole;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
+import static diarsid.beam.starter.BeamPartsBatchLoader.SHELL_MODE_OPTION;
+
 /**
  *
  * @author Diarsid
@@ -233,13 +235,13 @@ class BatchScriptsProvider {
                     configHashCode, 
                     consoleClasspath, 
                     jvmOptions, 
-                    BeamPartsShellLoader.class.getCanonicalName());
+                    BeamPartsBatchLoader.class.getCanonicalName() + SHELL_MODE_OPTION);
         } else if (systemName.contains("x") || systemName.contains("u")){
             scriptLines = this.scriptsComposer.composeShellLoaderShellScript(
                     configHashCode, 
                     consoleClasspath, 
                     jvmOptions, 
-                    BeamPartsShellLoader.class.getCanonicalName());
+                    BeamPartsBatchLoader.class.getCanonicalName() + SHELL_MODE_OPTION);
         } else {
             System.out.println("Unknown OS.");
             System.exit(1);

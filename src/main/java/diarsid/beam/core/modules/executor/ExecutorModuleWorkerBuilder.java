@@ -39,23 +39,25 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     @Override
     public ExecutorModule buildModule() {
-        CurrentlyExecutedCommandIntelligentContext commandIntelligentContext = 
-                new CurrentlyExecutedCommandIntelligentContext();
-        IntelligentResolver intelligentResolver = new IntelligentResolver(
+        IntelligentExecutorResolver resolver = new IntelligentExecutorResolver(
                 this.dataModule, 
-                this.ioInnerModule,
-                commandIntelligentContext);
-        OS os = OSProvider.getOS(this.ioInnerModule, this.configModule); 
+                this.ioInnerModule);
+        CurrentlyExecutedCommandIntelligentContext intelligentContext = 
+                new CurrentlyExecutedCommandIntelligentContext(resolver);        
+        OS os = OSProvider.getOS(
+                this.ioInnerModule, 
+                this.configModule, 
+                intelligentContext); 
         ProcessorsBuilder processorsBuilder = new ProcessorsBuilder(
                 this.ioInnerModule, 
                 this.dataModule, 
                 this.configModule, 
-                intelligentResolver, 
+                intelligentContext, 
                 os);        
         ExecutorModuleWorker actualExecutor = new ExecutorModuleWorker(
-                this.ioInnerModule, intelligentResolver, processorsBuilder);
+                this.ioInnerModule, intelligentContext, processorsBuilder);
         InvocationHandler preparedProxy = new ExecutorModuleIntelligentProxy(
-                actualExecutor, commandIntelligentContext);
+                actualExecutor, intelligentContext);
         ExecutorModule proxyExecutor = (ExecutorModule) Proxy.newProxyInstance(
                 ExecutorModule.class.getClassLoader(), 
                 actualExecutor.getClass().getInterfaces(), 

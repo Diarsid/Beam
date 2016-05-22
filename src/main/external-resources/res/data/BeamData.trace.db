@@ -767,3 +767,37 @@ Data conversion error converting "wh" [22018-176]
 03-09 17:27:53 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLException: Ошибка преобразования данных при конвертации "wh"
 Data conversion error converting "wh" [22018-176]
+05-21 12:13:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "CREATE TABLE COMMAND_CHOICES (
+CHOICE_ID      INTEGER         NOT NULL, 
+COMMAND        VARCHAR(300)    NOT NULL, 
+PATTERN_NUMBER INTEGER         NOT NULL, 
+PATTERN        VARCHAR(300)    NOT NULL, 
+CHOICE         VARCHAR(300)    NOT NULL, 
+PRIMARY KEY ( 
+                        CHOICE_ID, 
+                        COMMAND, 
+                        PATTERN_NUMBER, 
+                        PATTERN) )COMMAND_CHOICES[*] "
+Syntax error in SQL statement "CREATE TABLE COMMAND_CHOICES (
+CHOICE_ID      INTEGER         NOT NULL, 
+COMMAND        VARCHAR(300)    NOT NULL, 
+PATTERN_NUMBER INTEGER         NOT NULL, 
+PATTERN        VARCHAR(300)    NOT NULL, 
+CHOICE         VARCHAR(300)    NOT NULL, 
+PRIMARY KEY ( 
+                        CHOICE_ID, 
+                        COMMAND, 
+                        PATTERN_NUMBER, 
+                        PATTERN) )COMMAND_CHOICES[*] "; SQL statement:
+CREATE TABLE command_choices (
+choice_id      INTEGER         NOT NULL, 
+command        VARCHAR(300)    NOT NULL, 
+pattern_number INTEGER         NOT NULL, 
+pattern        VARCHAR(300)    NOT NULL, 
+choice         VARCHAR(300)    NOT NULL, 
+PRIMARY KEY ( 
+                        choice_id, 
+                        command, 
+                        pattern_number, 
+                        pattern) )COMMAND_CHOICES [42000-176]

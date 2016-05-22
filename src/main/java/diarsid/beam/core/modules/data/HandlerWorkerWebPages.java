@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data;
 
-import diarsid.beam.core.modules.data.HandlerWebPages;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -15,7 +13,6 @@ import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPageDirectory;
 import diarsid.beam.core.entities.WebPagePlacement;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DaoWebPages;
 
 import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
 
@@ -44,6 +41,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
         
         name = name.trim().toLowerCase();
         if ( ! name.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Page name is invalid.");
             return false;
         }
         if ( name.endsWith("/") ) {
@@ -51,6 +49,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
         }
         directory = directory.trim().toLowerCase();
         if ( ! directory.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Directory name is invalid.");
             return false;
         }
         browser = browser.trim().toLowerCase();
@@ -61,6 +60,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     @Override
     public boolean deleteWebPage(String name, String dir, WebPagePlacement place) {        
         if ( ! dir.matches(WEB_NAME_REGEXP) || ! name.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Page or directory name is invalid.");
             return false;
         }    
         name = name.trim().toLowerCase();
@@ -83,6 +83,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
         
         directory = directory.trim().toLowerCase();
         if ( ! directory.matches(WEB_NAME_REGEXP) ) {
+            this.ioEngine.reportMessage("Directory name is invalid.");
             return Collections.emptyList();
         }
         return this.dao.getAllWebPagesInDirectoryAndPlacement(
@@ -94,6 +95,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
             String name, String dir, WebPagePlacement place) {
         
         if ( ! dir.matches(WEB_NAME_REGEXP) || ! name.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Page or directory name is invalid.");
             return Collections.emptyList();
         }
         return this.dao.getWebPagesByNameInDirAndPlace(name, dir, place);
@@ -103,6 +105,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     public List<WebPage> getWebPages(String name) {
         name = name.trim().toLowerCase();
         if ( ! name.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Page name is invalid.");
             return Collections.emptyList();
         }
         if (name.contains("-")){
@@ -117,6 +120,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
         name = name.trim().toLowerCase();
         newName = newName.trim().toLowerCase();
         if ( ! newName.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("New page name is invalid.");
             return false;
         }
         if ( newName.endsWith("/") ) {
@@ -153,6 +157,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
             return false;
         }
         if ( ! dir.matches(WEB_NAME_REGEXP) || ! name.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Page or directory name is invalid.");
             return false;
         }
         return this.dao.editWebPageOrder(name, dir, place, newOrder);
@@ -162,6 +167,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     public WebPageDirectory getDirectoryExact(WebPagePlacement place, String dir) {
         dir = dir.trim().toLowerCase();
         if ( ! dir.matches(WEB_NAME_REGEXP) ) {
+            this.ioEngine.reportMessage("Directory name is invalid.");
             return null;
         } 
         return this.dao.getDirectoryExact(place, dir);
@@ -179,6 +185,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
         directory = directory.trim().toLowerCase();
         newDirectory = newDirectory.trim().toLowerCase();
         if ( ! newDirectory.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("New directory name is invalid.");
             return false;
         }
         return this.dao.renameDirectoryInPlacement(directory, newDirectory, placement);
@@ -192,6 +199,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
             return false;
         }
         if ( ! name.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Directory name is invalid.");
             return false;
         }
         return this.dao.editDirectoryOrder(place, name, newOrder);
@@ -201,6 +209,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     public boolean deleteDirectoryAndPages(String dir, WebPagePlacement place) {
         dir = dir.trim().toLowerCase();
         if ( ! dir.matches(WEB_NAME_REGEXP) ) {
+            this.ioEngine.reportMessage("Directory name is invalid.");
             return false;
         }        
         WebPageDirectory dirToDelete = new WebPageDirectory(dir, place);
@@ -211,6 +220,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     public boolean createEmptyDirectory(WebPagePlacement place, String dir) {
         dir = dir.trim().toLowerCase();
         if ( ! dir.matches(WEB_NAME_REGEXP) ) {
+            this.ioEngine.reportMessage("Directory name is invalid.");
             return false;
         }
         return this.dao.createEmptyDirectory(place, dir);
@@ -227,10 +237,12 @@ class HandlerWorkerWebPages implements HandlerWebPages {
         pageName = pageName.trim().toLowerCase();
         newDir = newDir.trim().toLowerCase();
         if ( ! newDir.matches(WEB_NAME_REGEXP) || ! pageName.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("New directory name is invalid.");
             return false;
         } 
         oldDir = oldDir.trim().toLowerCase();
         if ( ! oldDir.matches(WEB_NAME_REGEXP) || ! pageName.matches(WEB_NAME_REGEXP)) {
+            this.ioEngine.reportMessage("Old directory name is invalid.");
             return false;
         }
         return this.dao.moveWebPageToPlacementAndDirectory(

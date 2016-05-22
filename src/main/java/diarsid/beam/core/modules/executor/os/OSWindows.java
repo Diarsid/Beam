@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
@@ -37,8 +38,13 @@ public class OSWindows implements OS {
     private final IoInnerModule ioEngine;
     private final ExecutorService executorService;
     private final SearchFileVisitor searchVisitor;
+    private final IntelligentExecutorCommandContext intelligentContext;
 
-    public OSWindows(IoInnerModule io, ConfigModule config) {
+    public OSWindows(
+            IoInnerModule io, 
+            ConfigModule config, 
+            IntelligentExecutorCommandContext intelligentContext) {
+        
         this.ioEngine = io;
         if(!Desktop.isDesktopSupported()){
             this.ioEngine.reportErrorAndExitLater(
@@ -52,6 +58,7 @@ public class OSWindows implements OS {
                 .intern();      
         this.executorService = Executors.newFixedThreadPool(3);
         this.searchVisitor = new SearchFileVisitor(this.ioEngine);
+        this.intelligentContext = intelligentContext;
     }
 
     @Override
@@ -207,7 +214,7 @@ public class OSWindows implements OS {
             if (foundItems.size() == 1) {
                 return foundItems.get(0);
             } else if (foundItems.size() > 1) {
-                return this.chooseOneVariantFrom(foundItems);
+                return this.chooseOneVariantFrom(targetName, foundItems);
             } else {
                 this.ioEngine.reportMessage(noTargetMessage);
                 return "";
@@ -236,9 +243,12 @@ public class OSWindows implements OS {
         }
     }
 
-    private String chooseOneVariantFrom(List<String> variants) {
-        int variantNumber = this.ioEngine.resolveVariantsWithExternalIO(
+    private String chooseOneVariantFrom(
+            String targetName, List<String> variants) {
+        
+        int variantNumber = this.intelligentContext.resolve(
                 "There are several targets:",
+                targetName,
                 variants);
         if (variantNumber > 0) {
             return variants.get(variantNumber - 1);

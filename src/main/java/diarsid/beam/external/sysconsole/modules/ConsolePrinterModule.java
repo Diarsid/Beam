@@ -7,7 +7,6 @@ package diarsid.beam.external.sysconsole.modules;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
@@ -32,7 +31,7 @@ public interface ConsolePrinterModule extends GemModule {
 
     void printBeamWithUnderLn(String... message) throws IOException;
 
-    void printChoices(Map<String, String> choices) throws IOException;
+    void printChoices(List<String> choices) throws IOException;
 
     void printCommands(List<StoredExecutorCommand> commands) throws IOException;
 
