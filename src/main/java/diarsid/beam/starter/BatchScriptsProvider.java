@@ -235,13 +235,13 @@ class BatchScriptsProvider {
                     configHashCode, 
                     consoleClasspath, 
                     jvmOptions, 
-                    BeamPartsBatchLoader.class.getCanonicalName() + SHELL_MODE_OPTION);
+                    BeamPartsBatchLoader.class.getCanonicalName() + " " + SHELL_MODE_OPTION);
         } else if (systemName.contains("x") || systemName.contains("u")){
             scriptLines = this.scriptsComposer.composeShellLoaderShellScript(
                     configHashCode, 
                     consoleClasspath, 
                     jvmOptions, 
-                    BeamPartsBatchLoader.class.getCanonicalName() + SHELL_MODE_OPTION);
+                    BeamPartsBatchLoader.class.getCanonicalName() + " " + SHELL_MODE_OPTION);
         } else {
             System.out.println("Unknown OS.");
             System.exit(1);

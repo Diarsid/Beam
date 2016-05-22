@@ -37,6 +37,7 @@ public class BeamPartsBatchLoader {
         for (String arg : args) {
             if ( SHELL_MODE_OPTION.equals(arg) ) {
                 shellMode = true;
+                return;
             }
         }
         shellMode = false;

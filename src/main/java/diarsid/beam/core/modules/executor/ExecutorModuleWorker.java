@@ -179,7 +179,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void setIntelligentActive(boolean isActive) {
-        this.intelligentContext.setActive(isActive);
+        this.intelligentContext.setContextActive(isActive);
     }  
     
     @Override

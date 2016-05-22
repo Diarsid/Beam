@@ -1,7 +1,8 @@
 @echo off
-echo Beam loading...
+echo loading...
 echo.
-
 @echo off
-cd E:\1__Projects\NetBeans\Beam\target\classes\bin
+set OLDDIR=%cd%
+cd /D E:\1__Projects\NetBeans\Beam\target\classes\bin
 call E:\1__Projects\NetBeans\Beam\target\classes\bin\Beam.shell-loader_run.bat
+cd /D %OLDDIR%

@@ -17,7 +17,7 @@ public interface IntelligentExecutorCommandContext {
     
     void adjustCurrentlyExecutedCommand(String... newCommandParams);
     
-    void setActive(boolean active);
+    void setContextActive(boolean active);
     
     boolean deleteChoicesForCommand(String command);
     

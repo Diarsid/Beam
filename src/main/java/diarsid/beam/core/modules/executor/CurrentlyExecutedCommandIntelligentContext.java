@@ -106,7 +106,7 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     @Override
-    public void setActive(boolean active) {
+    public void setContextActive(boolean active) {
         this.resolver.setActive(active);
     }
         
