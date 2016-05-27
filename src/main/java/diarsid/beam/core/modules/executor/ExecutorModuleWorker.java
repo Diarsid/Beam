@@ -6,9 +6,12 @@ package diarsid.beam.core.modules.executor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
+
+import static java.lang.String.join;
 
 /**
  * Implements ExecutorModule interface.
@@ -27,30 +30,61 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final ProcessorNotes notes;
     private final ProcessorWebPages pages;
     private final ProcessorLocations locations;
-    private final ProcessorCommands commands;    
+    private final ProcessorCommands commands; 
+    
+    private final CommandsIntelligentCache commandsCache;
+    private final ThreadLocal<Boolean> isCurrentCommandNew;
     
     ExecutorModuleWorker(
             IoInnerModule io,
             IntelligentExecutorCommandContext intell,
-            ProcessorsBuilder builder) {
+            ProcessorsBuilder builder,
+            CommandsIntelligentCache commandsCache) {
         
         this.ioEngine = io;
         this.intelligentContext = intell;
+        
+        this.commandsCache = commandsCache;
+        this.isCurrentCommandNew = ThreadLocal.withInitial(
+                new Supplier<Boolean> () {
+            @Override
+            public Boolean get() {
+                return true;
+            }
+        });
+        
         this.pages = builder.buildProcessorWebPages();
         this.commands = builder.buildProcessorCommands();
         this.locations = builder.buildProcessorLocations();
         this.programs = builder.buildProcessorPrograms();
-        this.notes = builder.buildProcessorNotes();
+        this.notes = builder.buildProcessorNotes();        
     }
     
     @Override
     public void stopModule() {
         
+    }  
+    
+    private void saveConsoleCommandIfValid(List<String> commandParams) {
+        if ( this.intelligentContext.ifCanSaveConsoleCommand() &&
+                this.isCurrentCommandNew.get() ) {
+            this.commandsCache.addCommand(commandParams);
+        }
+    }
+    
+    private void saveConsoleCommandIfValid(String command) {
+        if ( this.intelligentContext.ifCanSaveConsoleCommand() &&
+                this.isCurrentCommandNew.get() ) {
+            this.commandsCache.addCommand(command);
+        }
     }
     
     @Override
     public void open(List<String> commandParams) {
-        this.locations.open(commandParams);
+        OperationResult operation = this.locations.open(commandParams);
+        if (operation.ifOperationWasSuccessful()) {
+            this.saveConsoleCommandIfValid(commandParams);
+        }
     }    
     
     @Override
@@ -60,13 +94,23 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void run(List<String> commandParams) {
-        this.programs.runProgram(commandParams);
+        List<OperationResult> operations = 
+                this.programs.runPrograms(commandParams);
+        for (int i = 0; i < operations.size(); i++) {
+            if (operations.get(i).ifOperationWasSuccessful()) {
+                this.saveConsoleCommandIfValid("run " + commandParams.get(i+1));
+            }            
+        }
     }
     
     @Override
     public void start(List<String> commandParams) {
         // command pattern: start [program]
-        this.programs.runMarkedProgram("start", commandParams);       
+        OperationResult operation = 
+                this.programs.runMarkedProgram("start", commandParams); 
+        if (operation.ifOperationWasSuccessful()) {
+            this.saveConsoleCommandIfValid(commandParams);
+        }
     }
     
     @Override
@@ -87,13 +131,20 @@ class ExecutorModuleWorker implements ExecutorModule {
             storedCommand = this.commands.getCommand(commandParams.get(i));
             if (storedCommand != null) {
                 this.executeCommand(storedCommand);
+                this.saveConsoleCommandIfValid(sb.toString());
             }
+            sb.delete(0, sb.length());
         }   
     }
     
     @Override
     public void openWebPage(List<String> commandParams) {
-        this.pages.openWebPage(commandParams);
+        List<OperationResult> operations = this.pages.openWebPage(commandParams);
+        for (int i = 0; i < operations.size(); i++) {
+            if (operations.get(i).ifOperationWasSuccessful()) {
+                this.saveConsoleCommandIfValid("see " + commandParams.get(i+1));
+            }            
+        }
     }
     
     @Override
@@ -117,48 +168,56 @@ class ExecutorModuleWorker implements ExecutorModule {
     }    
     
     private void executeCommand(StoredExecutorCommand command) {
-        List<String> commandParams;
-        for(String commandString : command.getCommands()) {
-            commandParams = Arrays.asList(commandString.split("\\s+"));
-            switch(commandParams.get(0)) {
-                case "open" :
-                case "op" :
-                case "o" : {
-                    this.open(commandParams);
-                    break;
-                } 
-                case "r" :
-                case "run" : {
-                    this.run(commandParams);
-                    break;
-                }
-                case "call" : {
-                    this.call(commandParams);
-                    break;
-                }
-                case "start" : {
-                    this.start(commandParams);
-                    break;
-                }
-                case "stop" : {
-                    this.stop(commandParams);
-                    break;
-                }
-                case "see" :
-                case "www" : {
-                    this.openWebPage(commandParams);
-                    break;
-                }
-                case "pause" : {
-                    this.pauseCommandExecution(commandParams);
-                    break;
-                }
-                default : {
-                    this.ioEngine.reportError("Unrecognizible command.");
-                }
-            }
+        for (String commandString : command.getCommands()) {
+            this.dispatchCommandToAppropriateMethod(
+                    this.transformCommandStringToParams(commandString));
         }
     } 
+
+    private List<String> transformCommandStringToParams(String commandString) {
+        return Arrays.asList(commandString.split("\\s+"));
+    }
+
+    private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
+        System.out.println("[EXECUTOR DEBUG] dispatch: " +commandParams);
+        switch (commandParams.get(0)) {
+            case "open" :
+            case "op" :
+            case "o" : {
+                this.open(commandParams);
+                break;
+            }
+            case "r" :
+            case "run" : {
+                this.run(commandParams);
+                break;
+            }
+            case "call" : {
+                this.call(commandParams);
+                break;
+            }
+            case "start" : {
+                this.start(commandParams);
+                break;
+            }
+            case "stop" : {
+                this.stop(commandParams);
+                break;
+            }
+            case "see" :
+            case "www" : {
+                this.openWebPage(commandParams);
+                break;
+            }
+            case "pause" : {
+                this.pauseCommandExecution(commandParams);
+                break;
+            }
+            default : {
+                // do nothing
+            }
+        }
+    }
     
     private void pauseCommandExecution(List<String> commandParams) {
         // default value for pause. It will be used in no other value has been 
@@ -218,4 +277,18 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void openNote(List<String> commandParams) {
         this.notes.openNote(commandParams);
     }    
+    
+    @Override
+    public void executeIfExists(List<String> commandParams) {
+        String obtainedCommand = this.commandsCache
+                .getPatternCommandForExecution(join(" ", commandParams));
+        if ( ! obtainedCommand.isEmpty() ) {
+            this.isCurrentCommandNew.set(false);
+            this.intelligentContext
+                    .adjustCurrentlyExecutedCommand(obtainedCommand);
+            this.dispatchCommandToAppropriateMethod(
+                    this.transformCommandStringToParams(obtainedCommand));
+            this.isCurrentCommandNew.set(true);
+        }        
+    }
 }

@@ -68,4 +68,12 @@ public final class CommandChoice {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "CommandChoice{" + 
+                "pattern=" + pattern + 
+                ", madeChoice=" + madeChoice + 
+                ", choiceNumber=" + choiceNumber + '}';
+    }
 }

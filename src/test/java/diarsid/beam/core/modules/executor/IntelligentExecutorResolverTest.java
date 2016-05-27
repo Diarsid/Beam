@@ -136,8 +136,7 @@ public class IntelligentExecutorResolverTest {
                 case_open_1, 0, "j");
         verify(ioEngine, never()).resolveVariantsWithExternalIO(
                 "?", variants_for_j);
-        verify(contextCallback).doNotSaveThisChoice();
-        verify(contextCallback, never()).saveThisChoice();        
+        verify(contextCallback, never()).choiceWasAlreadySaved();
         assertEquals(1, result);  
         assertEquals("java", variants_for_j.get(result-1));
     }
@@ -153,8 +152,7 @@ public class IntelligentExecutorResolverTest {
                 case_open_1, 0, "j");
         verify(ioEngine).resolveVariantsWithExternalIO(
                 "?", variants_for_j_unable_to_guess);
-        verify(contextCallback).saveThisChoice();
-        verify(contextCallback, never()).doNotSaveThisChoice();
+        verify(contextCallback, never()).choiceWasAlreadySaved();
         assertEquals(1, result);  
         assertEquals("java", variants_for_j_unable_to_guess.get(result-1));
     }
@@ -164,9 +162,8 @@ public class IntelligentExecutorResolverTest {
         int result = testedResolver.resolve(
                 "?", case_open_1, 0, "j", variants_for_j, contextCallback);
         verify(choicesDao, never()).getChoiceForCommandPart(case_open_1, 0, "j");
+        verify(contextCallback, never()).choiceWasAlreadySaved();
         verify(ioEngine, never()).resolveVariantsWithExternalIO("?", variants_for_j);
-        verify(contextCallback).doNotSaveThisChoice();
-        verify(contextCallback, never()).saveThisChoice();
         assertNotEquals(2, result);
         assertNotEquals("jython", variants_for_j.get(result-1));
     }
@@ -178,8 +175,7 @@ public class IntelligentExecutorResolverTest {
         when(choicesDao.getChoiceForCommandPart(case_open_1, 1, "eng")).thenReturn("");
         int result = testedResolver.resolve(
                 "?", case_open_1, 1, "eng", variants_for_eng, contextCallback);
-        verify(contextCallback).saveThisChoice();
-        verify(contextCallback, never()).doNotSaveThisChoice();
+        verify(contextCallback, never()).choiceWasAlreadySaved();
         verify(choicesDao).getChoiceForCommandPart(case_open_1, 1, "eng");
         verify(ioEngine).resolveVariantsWithExternalIO("?", variants_for_eng);
         assertEquals(1, result);        
@@ -192,8 +188,8 @@ public class IntelligentExecutorResolverTest {
         when(choicesDao.getChoiceForCommandPart(case_open_1, 1, "eng")).thenReturn("engines");
         int result = testedResolver.resolve(
                 "?", case_open_1, 1, "eng", variants_for_eng, contextCallback);
-        verify(contextCallback).doNotSaveThisChoice();
-        verify(contextCallback, never()).saveThisChoice();
+        verify(contextCallback).choiceWasAlreadySaved();
+        verify(choicesDao, never()).saveChoiceForCommandAndItsPart(case_open_1_state);
         verify(choicesDao).getChoiceForCommandPart(case_open_1, 1, "eng");
         verify(ioEngine, never()).resolveVariantsWithExternalIO("?", variants_for_eng);
         assertEquals(1, result);        

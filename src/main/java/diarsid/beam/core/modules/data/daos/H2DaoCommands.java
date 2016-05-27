@@ -26,8 +26,8 @@ import diarsid.beam.core.modules.executor.StoredExecutorCommand;
  *
  * @author Diarsid
  */
-class H2DaoCommands implements DaoCommands{
-    // Fields =============================================================================
+class H2DaoCommands implements DaoCommands {
+    
     private final DataBase data;
     private final IoInnerModule ioEngine;
     
@@ -66,14 +66,13 @@ class H2DaoCommands implements DaoCommands{
             "Such command name already exists.";
     private final String NO_STORED_COMMANDS = "There aren`t any commands.";
     
-    // Constructors =======================================================================
     H2DaoCommands(final IoInnerModule io, final DataBase data) {
-        if (io == null){
+        if (io == null) {
             throw new NullDependencyInjectionException(
                     H2DaoCommands.class.getSimpleName(), 
                     IoInnerModule.class.getSimpleName());
         }
-        if (data == null){
+        if (data == null) {
             throw new NullDependencyInjectionException(
                     H2DaoCommands.class.getSimpleName(), 
                     DataBase.class.getSimpleName());
@@ -82,41 +81,42 @@ class H2DaoCommands implements DaoCommands{
         this.ioEngine = io;
     }
     
-    // Methods ============================================================================
-    
-    private String convertInputCommandForStoring(List<String> commands){
+    private String convertInputCommandForStoring(List<String> commands) {
         StringJoiner sj = new StringJoiner("::");
-        for(String command : commands){
+        for(String command : commands) {
             sj.add(command.replace("\\", "/"));
         }
         return sj.toString();
     }
     
-    private List<String> convertStoredCommandForUsing(String storedCommandsString){
+    private List<String> convertStoredCommandForUsing(
+            String storedCommandsString) {
+        
         return Arrays.asList(storedCommandsString.split("::"));
     }
     
     @Override
-    public List<StoredExecutorCommand> getCommandsByName(String commandName){
+    public List<StoredExecutorCommand> getCommandsByName(String commandName) {
         ResultSet rs = null;
         try(Connection con = this.data.connect();
-            PreparedStatement ps = con.prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);){
+            PreparedStatement ps = con
+                    .prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);) {
             List<StoredExecutorCommand> commands = new ArrayList<>();
 
             ps.setString(1, "%"+commandName+"%");
             rs = ps.executeQuery();
-            while(rs.next()){
+            while(rs.next()) {
                 commands.add(new StoredExecutorCommand(
                         rs.getString(1), 
                         convertStoredCommandForUsing(rs.getString(2)))
                 );
             }            
             return commands; 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: get commands by name.");
             return Collections.emptyList();
         } finally {
-            if (rs != null){
+            if (rs != null) {
                 try{
                     rs.close();
                 } catch (SQLException se){
@@ -131,16 +131,19 @@ class H2DaoCommands implements DaoCommands{
     }
     
     @Override
-    public void saveNewCommand(StoredExecutorCommand command){
+    public void saveNewCommand(StoredExecutorCommand command) {
         try(Connection con = this.data.connect();
-            PreparedStatement ps = con.prepareStatement(INSERT_NEW_COMMAND);){
+            PreparedStatement ps = con
+                    .prepareStatement(INSERT_NEW_COMMAND);) {
             
             ps.setString(1, command.getName());
-            ps.setString(2, convertInputCommandForStoring(command.getCommands()));
+            ps.setString(
+                    2, 
+                    this.convertInputCommandForStoring(command.getCommands()));
             ps.executeUpdate();
             
-        } catch (SQLException e){
-            if (e.getSQLState().startsWith("23")){
+        } catch (SQLException e) {
+            if (e.getSQLState().startsWith("23")) {
                 this.ioEngine.reportMessage("Such command name already exists.");
             } else {
                 this.ioEngine.reportException(e, "SQLException: save command.");
@@ -149,7 +152,7 @@ class H2DaoCommands implements DaoCommands{
     }
     
     @Override
-    public boolean removeCommand(String commandName){
+    public boolean removeCommand(String commandName) {
         try(Connection con = this.data.connect();
             PreparedStatement ps = con.prepareStatement(DELETE_COMMAND_WHERE_NAME_lIKE);){
 
@@ -157,20 +160,20 @@ class H2DaoCommands implements DaoCommands{
             int qty = ps.executeUpdate();
 
             return (qty > 0); 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: remove command.");
             return false;
         } 
     }
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands(){
+    public List<StoredExecutorCommand> getAllCommands() {
         try(Connection con = this.data.connect();
             Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);){
+            ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);) {
             
             List<StoredExecutorCommand> commands = new ArrayList<>();
-            while(rs.next()){
+            while(rs.next()) {
                 commands.add(new StoredExecutorCommand(
                         rs.getString(1), 
                         convertStoredCommandForUsing(rs.getString(2)))
@@ -178,7 +181,7 @@ class H2DaoCommands implements DaoCommands{
             }
 
             return commands;  
-        } catch (SQLException e){
+        } catch (SQLException e) {
             this.ioEngine.reportException(e, "SQLException: get commands.");
             return Collections.emptyList();
         }

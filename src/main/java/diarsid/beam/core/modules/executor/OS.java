@@ -14,17 +14,21 @@ import diarsid.beam.core.entities.Location;
  */
 public interface OS {
     
-    void openLocation(Location location);
-    boolean openFileInLocation(String file, Location location);
+    OperationResult openLocation(Location location);
     
-    void openFileInLocationWithProgram(String file, Location location, String program);
-    void runProgram(String program);
+    OperationResult openFileInLocation(String file, Location location);
+    
+    OperationResult openFileInLocationWithProgram(
+            String file, Location location, String program);
+    
+    OperationResult runProgram(String program);
     
     List<String> getLocationContent(Location location); 
     
-    void openUrlWithDefaultBrowser(String name);
+    OperationResult openUrlWithDefaultBrowser(String name);
     
-    void openUrlWithGivenBrowser(String urlAddress, String browserName);
+    OperationResult openUrlWithGivenBrowser(
+            String urlAddress, String browserName);
     
     void createAndOpenTxtFileIn(String name, Location location);
 }

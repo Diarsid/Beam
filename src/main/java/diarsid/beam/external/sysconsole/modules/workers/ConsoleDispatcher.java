@@ -149,16 +149,6 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void dumpCommandsIntoCore(Set<String> commandsHash) throws IOException {
-        this.beam.remoteControl().storeCommandsFromConsole(commandsHash);
-    }
-    
-    @Override
-    public Set<String> getCommandsFromCoreStorage() throws IOException {
-        return this.beam.remoteControl().getPreviousConsoleCommands();
-    }
-    
-    @Override
     public String waitForNewCommand() throws IOException {
         synchronized (this.readerLock) {
             return this.reader.read();
@@ -907,6 +897,13 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     @Override
     public void openNote(List<String> command) throws IOException {
         this.beam.executor().openNote(command);
+    }
+    
+    @Override
+    public void tryToExecuteUsingCoreCommandsCache(List<String> commandParams) 
+            throws IOException {
+        
+        this.beam.executor().executeIfExists(commandParams);
     }
     
     /*

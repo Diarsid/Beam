@@ -15,7 +15,13 @@ public interface IntelligentExecutorCommandContext {
     
     int resolve(String question, String originalPattern, List<String> variants);
     
+    void discardCurrentlyExecutedCommandInPattern(String pattern);
+    
     void adjustCurrentlyExecutedCommand(String... newCommandParams);
+    
+    void adjustCurrentlyExecutedCommand(String newCommand);
+    
+    boolean ifCanSaveConsoleCommand();
     
     void setContextActive(boolean active);
     

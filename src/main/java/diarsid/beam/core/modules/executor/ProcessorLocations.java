@@ -14,6 +14,9 @@ import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerLocations;
 
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
+
 /**
  *
  * @author Diarsid
@@ -37,28 +40,31 @@ class ProcessorLocations {
         this.intellContext = intell;
     }
     
-    void open(List<String> commandParams) {
+    OperationResult open(List<String> commandParams) {
+        OperationResult result;
         try {
             if (commandParams.contains("in")) {
                 if (commandParams.contains("with")) {
                     // command pattern: open [file] in [location] with [program]
-                    this.openFileInLocationWithProgram(
+                    result = this.openFileInLocationWithProgram(
                             commandParams.get(1), 
                             commandParams.get(3),
                             commandParams.get(5));
                 } else {
                     // command pattern: open [file|folder] in [location]
-                    this.openFileInLocation(
+                    result = this.openFileInLocation(
                             commandParams.get(1), 
                             commandParams.get(3));
                 }
             } else {
                 // command pattern: open [location]
-                this.openLocation(commandParams.get(1));
+                result = this.openLocation(commandParams.get(1));
             }
         } catch (IndexOutOfBoundsException indexException) {
             this.ioEngine.reportError("Unrecognizable command.");
+            result = failByInvalidLogic();
         }
+        return result;
     }
     
     List<String> listLocationContent(String locationName) {
@@ -76,30 +82,37 @@ class ProcessorLocations {
         }
     }
        
-    private void openLocation(String locationName) {
+    private OperationResult openLocation(String locationName) {
         Location location = this.getLocation(locationName);
         if (location != null) {
-            this.system.openLocation(location);
-        } 
+            return this.system.openLocation(location);
+        } else {
+            return failByInvalidArgument(locationName);
+        }
     }
     
-    private void openFileInLocation(
+    private OperationResult openFileInLocation(
             String targetName, String locationName) {
         targetName = targetName.trim().toLowerCase();
         Location location = this.getLocation(locationName);
         if (location != null) {
-            this.system.openFileInLocation(targetName, location);
+            return this.system.openFileInLocation(targetName, location);
+        } else {
+            return failByInvalidArgument(locationName);
         }             
     }
     
-    private void openFileInLocationWithProgram(
+    private OperationResult openFileInLocationWithProgram(
             String file, String locationName, String program) {
         file = file.trim().toLowerCase();
         program = program.trim().toLowerCase();
         Location location = this.getLocation(locationName);
         if (location != null) {
-            this.system.openFileInLocationWithProgram(file, location, program);
-        }    
+            return this.system.openFileInLocationWithProgram(
+                    file, location, program);
+        } else {
+            return failByInvalidArgument(locationName);
+        }   
     }
     
     private Location getLocation(String locationName) {        
@@ -125,7 +138,7 @@ class ProcessorLocations {
             locationNames.add(loc.getName());
         }
         int varNumber = this.intellContext.resolve(
-                "There are several locations:",
+                "Desired location?",
                 requiredLocationName,
                 locationNames);
         //int varNumber = this.ioEngine.resolveVariantsWithExternalIO(

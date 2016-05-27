@@ -119,15 +119,5 @@ class IoModuleWorker implements IoModule {
             this.resetIoToDefault();
             return false;
         }
-    }
-    
-    @Override
-    public Set<String> getPreviousConsoleCommands() {
-        return this.consoleCommandsDump;
-    }
-    
-    @Override
-    public void storeCommandsFromConsole(Set<String> commands) {
-        this.consoleCommandsDump.addAll(commands);
-    }
+    }    
 }

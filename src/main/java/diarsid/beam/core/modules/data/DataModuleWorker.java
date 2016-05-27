@@ -50,7 +50,8 @@ class DataModuleWorker implements DataModule {
     
     @Override
     public HandlerLocations getLocationsHandler() {
-        DaoLocations dao = (DaoLocations) this.assembleConcreteDao(DaoLocations.class);    
+        DaoLocations dao = (DaoLocations) 
+                this.assembleConcreteDao(DaoLocations.class);    
         return new HandlerWorkerLocations(this.ioEngine, dao);
     }
     
@@ -61,13 +62,21 @@ class DataModuleWorker implements DataModule {
     
     @Override
     public HandlerWebPages getWebPagesHandler() {
-        DaoWebPages dao = (DaoWebPages) this.assembleConcreteDao(DaoWebPages.class);
+        DaoWebPages dao = (DaoWebPages) 
+                this.assembleConcreteDao(DaoWebPages.class);
         return new HandlerWorkerWebPages(this.ioEngine, dao);
     }
     
     @Override
     public DaoExecutorIntelligentChoices getIntellChoiceDao() {
-        return (DaoExecutorIntelligentChoices) this.assembleConcreteDao(DaoExecutorIntelligentChoices.class);
+        return (DaoExecutorIntelligentChoices) 
+                this.assembleConcreteDao(DaoExecutorIntelligentChoices.class);
+    }
+    
+    @Override
+    public DaoExecutorConsoleCommands getConsoleCommandsDao() {
+        return (DaoExecutorConsoleCommands) 
+                this.assembleConcreteDao(DaoExecutorConsoleCommands.class);
     }
     
     private Object assembleConcreteDao(Class daoInterface) {

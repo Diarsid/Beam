@@ -94,6 +94,15 @@ class DataBaseModel {
                 "PRIMARY KEY (dir_name, dir_placement))",
                 3);
         this.tables.put(directories.name, directories);
+        
+        TableInfo consoleCommands = new TableInfo(
+                "console_commands", 
+                "CREATE TABLE console_commands (" +
+                "command_id     INTEGER         NOT NULL, " +
+                "command        VARCHAR(200)    NOT NULL, " +
+                "PRIMARY KEY (command_id, command) )", 
+                2);
+        this.tables.put(consoleCommands.name, consoleCommands);
     }
     
     List<String> getTableNames() {

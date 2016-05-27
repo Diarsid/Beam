@@ -81,21 +81,56 @@ public class IntelligentExecutorResolver {
             List<String> variants,
             CurrentlyExecutedCommandContextCallback contextCallback) {
         
-        String choice;
-        choice = this.tryToGuessChoice(variants);
+        System.out.println("[RESOLVER DEBUG] "+patternToResolve+" -> " + variants);
+        
+//        String choice = this.choiceDao.getChoiceForCommandPart(
+//                command, resolvingAttemptNumber, patternToResolve);
+//        if ( choice.isEmpty() ) {
+//            this.choiceDao.deleteChoicesForCommand(command);
+//            choice = this.tryToGuessChoice(variants);
+//            if ( choice.isEmpty() ) {                
+//                return this.askUserAboutHisChoice(question, variants);
+//            } else {
+//                if ( variants.contains(choice) ) {
+//                    return variants.indexOf(choice)+1;
+//                } else {
+//                    this.choiceDao.deleteChoicesForCommand(command);
+//                    return this.askUserAboutHisChoice(question, variants);
+//                }
+//            }
+//        } else {            
+//            if ( variants.contains(choice) ) {
+//                contextCallback.choiceWasAlreadySaved();
+//                return variants.indexOf(choice)+1;
+//            } else {
+//                this.choiceDao.deleteChoicesForCommand(command);
+//                return this.askUserAboutHisChoice(question, variants);
+//            }
+//        }
+        
+        
+        String choice = this.tryToGuessChoice(variants);
+        
         if (choice.isEmpty()) {
             choice = this.choiceDao.getChoiceForCommandPart(
                     command, resolvingAttemptNumber, patternToResolve);
-        } 
-        if (choice.isEmpty()) {
-            contextCallback.saveThisChoice();
-            return this.askUserAboutHisChoice(question, variants);
+            if (choice.isEmpty()) {
+                this.choiceDao.deleteChoicesForCommand(command);
+                return this.askUserAboutHisChoice(question, variants);
+            } else {
+                if ( variants.contains(choice) ) {
+                    contextCallback.choiceWasAlreadySaved();
+                    return variants.indexOf(choice)+1;
+                } else {
+                    this.choiceDao.deleteChoicesForCommand(command);
+                    return this.askUserAboutHisChoice(question, variants);
+                }
+            }
         } else {
             if ( variants.contains(choice) ) {
-                contextCallback.doNotSaveThisChoice();
+                contextCallback.choiceWasAlreadySaved();
                 return variants.indexOf(choice)+1;
             } else {
-                contextCallback.saveThisChoice();
                 this.choiceDao.deleteChoicesForCommand(command);
                 return this.askUserAboutHisChoice(question, variants);
             }
@@ -184,6 +219,10 @@ public class IntelligentExecutorResolver {
             this.ioEngine.reportMessage(
                     "I will ask before remembering your choice.");
         }        
+    }
+    
+    boolean discardCommandByPattern(String pattern) {
+        return this.choiceDao.discardCommandByPattern(pattern);
     }
     
     boolean deleteChoicesForCommand(String commandPart) {

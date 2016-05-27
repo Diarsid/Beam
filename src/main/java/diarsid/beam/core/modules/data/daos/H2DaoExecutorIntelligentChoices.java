@@ -38,12 +38,12 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     H2DaoExecutorIntelligentChoices(final IoInnerModule io, final DataBase data) {
         if (io == null) {
             throw new NullDependencyInjectionException(
-                    H2DaoIntellChoice.class.getSimpleName(), 
+                    H2DaoExecutorIntelligentChoices.class.getSimpleName(), 
                     IoInnerModule.class.getSimpleName());
         }
         if (data == null) {
             throw new NullDependencyInjectionException(
-                    H2DaoIntellChoice.class.getSimpleName(), 
+                    H2DaoExecutorIntelligentChoices.class.getSimpleName(), 
                     DataBase.class.getSimpleName());
         }
         this.data = data;
@@ -69,29 +69,40 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     private final String SELECT_CHOICES_WHERE_COMMAND_NUBMER_PATTERN_IS = 
             "SELECT choice " +
             "FROM command_choices " +
-            "WHERE ( command IS ? ) " + 
-            "  AND ( pattern_number IS ? ) " + 
-            "  AND ( pattern IS ? )";
+            "WHERE ( LOWER(command) IS ? ) " + 
+            "  AND ( LOWER(pattern_number) IS ? ) " + 
+            "  AND ( LOWER(pattern) IS ? )";
     private final String SELECT_ALL_COMMANDS = 
             "SELECT command, pattern, choice, pattern_number " +
             "FROM command_choices ";
     private final String SELECT_COMMANDS_WHERE_COMMAND_OR_CHOICE_OR_PATTERN_LIKE = 
             "SELECT command, pattern, choice, pattern_number " +
             "FROM command_choices " + 
-            "WHERE ( command LIKE ? ) " +
-            "   OR ( pattern LIKE ? ) " +
-            "   OR ( choice LIKE ? ) ";
+            "WHERE ( LOWER(command) LIKE ? ) " +
+            "   OR ( LOWER(pattern) LIKE ? ) " +
+            "   OR ( LOWER(choice) LIKE ? ) ";
     private final String INSERT_COMMAND = 
             "INSERT INTO command_choices " + 
             "       (choice_id, command, pattern_number, pattern, choice)" +
             "VALUES (?, ?, ?, ?, ?) ";
     private final String DELETE_WHERE_COMMAND_IS = 
             "DELETE FROM command_choices " + 
-            "WHERE command IS ? ";
+            "WHERE LOWER(command) IS ? ";
+    private final String DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE = 
+            "DELETE FROM command_choices " +
+            "WHERE ( LOWER(command) LIKE ? ) " +
+            "   OR ( LOWER(pattern) LIKE ? ) " +
+            "   OR ( LOWER(choice) LIKE ? ) ";
+    private final String DELETE_FROM_CONSOLE_WHERE_COMMAND_LIKE = 
+            "DELETE FROM console_commands " +
+            "WHERE LOWER(command) LIKE ? ";
     
     @Override
     public String getChoiceForCommandPart(
             String command, int attemptNumber, String pattern) {
+        
+        command = command.toLowerCase();
+        pattern = pattern.toLowerCase();
         
         try (Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(
@@ -116,19 +127,21 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public boolean saveChoiceForCommandAndItsPart(CurrentCommandState commandState) {
+        System.out.println("[DAO CHOICES DEBUG] save: " + commandState.getCommandString() + " -> " + commandState.getMadeChoices());
         try (Connection con = this.data.connect();
-                PreparedStatement ps = con.prepareStatement(INSERT_COMMAND)) {
+                PreparedStatement insertInChoices = 
+                        con.prepareStatement(INSERT_COMMAND);) {
             
             for (CommandChoice choice : commandState.getMadeChoices()) {
-                ps.setInt(1, this.getRandomInt());
-                ps.setString(2, commandState.getCommandString());
-                ps.setInt(3, choice.getChoiceNumber());
-                ps.setString(4, choice.getPattern());
-                ps.setString(5, choice.getMadeChoice());
-                ps.addBatch();
+                insertInChoices.setInt(1, this.getRandomInt());
+                insertInChoices.setString(2, commandState.getCommandString());
+                insertInChoices.setInt(3, choice.getChoiceNumber());
+                insertInChoices.setString(4, choice.getPattern());
+                insertInChoices.setString(5, choice.getMadeChoice());
+                insertInChoices.addBatch();
             }            
             
-            ps.executeBatch();
+            insertInChoices.executeBatch();
             return true;
         } catch (SQLException e) {
             this.ioEngine.reportException(e, 
@@ -140,6 +153,7 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public boolean deleteChoicesForCommand(String command) {
+        command = command.toLowerCase();
         try (Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(
                         DELETE_WHERE_COMMAND_IS)) {
@@ -150,6 +164,31 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
         } catch (SQLException e) {
             this.ioEngine.reportException(e, 
                     "SQLException: delete choice for command: " + command);
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean discardCommandByPattern(String pattern) {
+        pattern = pattern.toLowerCase();
+        try (Connection con = this.data.connect();
+                PreparedStatement deleteFromChoices = con.prepareStatement(
+                        DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE);
+                PreparedStatement deleteFromConsole = con.prepareStatement(
+                        DELETE_FROM_CONSOLE_WHERE_COMMAND_LIKE)) {
+            
+            deleteFromChoices.setString(1, "% "+pattern+" %");
+            deleteFromChoices.setString(2, "%"+pattern+"%");
+            deleteFromChoices.setString(3, "%"+pattern+"%");
+            int qty = deleteFromChoices.executeUpdate();
+            
+            deleteFromConsole.setString(1, "% "+pattern+" %");
+            qty = qty + deleteFromConsole.executeUpdate();
+            
+            return ( qty > 0 );
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, 
+                    "SQLException: delete choice for command: " + pattern);
             return false;
         }
     }
@@ -197,6 +236,7 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public List<CurrentCommandState> getChoicesWhereCommandLike(String part) {
+        part = part.toLowerCase();
         try (Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(
                 SELECT_COMMANDS_WHERE_COMMAND_OR_CHOICE_OR_PATTERN_LIKE)) {

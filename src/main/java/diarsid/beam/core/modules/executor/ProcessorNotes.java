@@ -33,7 +33,8 @@ class ProcessorNotes {
             this.system.createAndOpenTxtFileIn("", this.notes);
         } else {
             String name = String.join(" ", commandParams.subList(1, commandParams.size()));
-            if ( ! this.system.openFileInLocation(name, this.notes)) {
+            OperationResult openFile = this.system.openFileInLocation(name, this.notes);
+            if ( ! openFile.ifOperationWasSuccessful() ) {
                 this.system.createAndOpenTxtFileIn(name, this.notes);
             }
         }

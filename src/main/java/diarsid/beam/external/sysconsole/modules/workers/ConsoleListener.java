@@ -7,14 +7,9 @@
 package diarsid.beam.external.sysconsole.modules.workers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
 
-import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import diarsid.beam.external.sysconsole.modules.ConsoleListenerModule;
 
@@ -25,45 +20,37 @@ import diarsid.beam.external.sysconsole.modules.ConsoleListenerModule;
 class ConsoleListener implements ConsoleListenerModule {
     
     private final ConsoleDispatcherModule dispatcher;
-    private final Set<String> commandsCache;
-    private final List<String> params;
     
-    private String command;
     private boolean commandWasExecuted;
-    private int executeCount;
     
     ConsoleListener(ConsoleDispatcherModule dispatcher) {
         this.dispatcher = dispatcher;
-        this.commandsCache = new HashSet<>();
-        try {
-            this.commandsCache.addAll(this.dispatcher.getCommandsFromCoreStorage());
-        } catch (IOException e) {
-            throw new WorkflowBrokenException(
-                    "ConsoleListener creation: it is impossible to get " + 
-                    "stored console commands from core through the RMI."); 
-        }        
-        this.params = new ArrayList<>();
     }
     
     private void commandAccepted() {
         this.commandWasExecuted = true;
     }
-    
+        
     @Override
     public void run() {
-         
-        input: while (true) {
+        
+        String command = "";
+        List<String> params;
+        
+        mainConsoleLoop: 
+        while (true) {
             try {
+                
                 this.commandWasExecuted = false;
-                this.executeCount = 0;
                 this.dispatcher.newLoop();
-                this.command = this.dispatcher.waitForNewCommand();
-                if (this.command.length() == 0){
-                    continue input;
-                }
-                do {    
-                this.parseCommand(this.command, params);                
-                parsing: switch (params.get(0)) { 
+                command = this.dispatcher.waitForNewCommand();
+                if (command.length() == 0){
+                    continue mainConsoleLoop;
+                } 
+                params = Arrays.asList(command.split("\\s+")); 
+                
+                parsing: 
+                switch (params.get(0)) { 
                     case "help" : {
                         this.commandAccepted();
                         this.dispatcher.printHelp();
@@ -71,15 +58,14 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "close" : {
                         this.commandAccepted();
-                        this.dispatcher.dumpCommandsIntoCore(this.commandsCache);
                         this.dispatcher.closeConsole();
                     }
                     case "+" :
                     case "new" : {
-                        if (this.params.size() < 2) {
+                        if (params.size() < 2) {
                             break parsing;
                         }                        
-                        switch (this.params.get(1)) {
+                        switch (params.get(1)) {
                             case "loc" :
                             case "location" : {
                                 this.commandAccepted();
@@ -129,17 +115,17 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "li" :
                     case "list" : {
-                        if (this.params.size() > 1) {
+                        if (params.size() > 1) {
                             this.commandAccepted();
-                            this.dispatcher.listLocation(this.params.get(1));
+                            this.dispatcher.listLocation(params.get(1));
                         }
                         break parsing;
                     }
                     case "get" : {
-                        if (this.params.size() < 2) {
+                        if (params.size() < 2) {
                             break parsing;
                         }                        
-                        switch (this.params.get(1)) {
+                        switch (params.get(1)) {
                             case "comm" :
                             case "command" : {
                                 this.commandAccepted();
@@ -238,6 +224,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "r" :
                     case "run" : {
+                        params.set(0, "run");
                         this.commandAccepted();
                         this.dispatcher.run(params); 
                         break parsing;
@@ -256,6 +243,7 @@ class ConsoleListener implements ConsoleListenerModule {
                     case "op" :    
                     case "open" : {
                         this.commandAccepted();
+                        params.set(0, "open");
                         this.dispatcher.open(params);
                         break parsing;
                     }
@@ -496,7 +484,6 @@ class ConsoleListener implements ConsoleListenerModule {
                     }
                     case "exit" : {
                         this.commandAccepted();
-                        this.dispatcher.dumpCommandsIntoCore(this.commandsCache);
                         this.dispatcher.exitDialog();
                         break parsing;
                     }
@@ -588,34 +575,13 @@ class ConsoleListener implements ConsoleListenerModule {
                     default : {
                         break parsing;
                     }
-                }
+                }                
                 
-                // if command has been recognized, save it in chache
-                if ( this.commandWasExecuted && 
-                        this.isCommandNecessary(this.command)) {                    
-                    this.commandsCache.add(this.command);
-                } else {
-                    // else try to find command from cache that looks 
-                    // like given one
-                    this.command = this.intellSearchFromCache(this.command);
-                    // if such command has not been found, do not proceed
-                    if (this.command.isEmpty()) {
-                        // algorithm will proceed if (executeCount < 2) that 
-                        // actually means it can be executed only one more 
-                        // time after first fail to recognize original given 
-                        // command
-                        this.executeCount = 10;
-                    } else {
-                        // if such command has been found, increment counter
-                        // and try to execute it
-                        this.executeCount++;
-                    }
-                }
-                
-                } while ( (! commandWasExecuted) && (executeCount < 2) );
+                if ( ! this.commandWasExecuted ) {                    
+                    this.dispatcher.tryToExecuteUsingCoreCommandsCache(params);
+                } 
                 
                 command = "";
-                params.clear();
             } catch (IOException e) {
                 System.out.println("Exception:");
                 System.out.println(e.getMessage());
@@ -623,159 +589,5 @@ class ConsoleListener implements ConsoleListenerModule {
                 e.printStackTrace();
             }    
         }
-    }
-    
-    private String intellSearchFromCache(String unknownCommand) 
-            throws IOException {
-        
-        if (unknownCommand.length() < 2) {
-            // There is no reason to search commands that matches only
-            // one letter
-            return "";
-        }
-        List<String> choosedCommands = new ArrayList<>();
-        String choosedPreviousCommand = "";
-        
-        // character '-' separates different parts in command argument's 
-        // body. All these parts must be presented in searched target.
-        // For instance, 'jav-ol' could mean 'java_folder' but neither only 
-        // 'java' nor 'java projects'.
-        if (unknownCommand.contains("-")) {
-            // loop to iterate through the cache 
-            searchInCommandsCache:
-            for (String previousCommand : this.commandsCache) {
-                // loop to evaluate every command in cache if it contains
-                // all required parts
-                for (String requiredPart : unknownCommand.split("-")) {
-                    if ( ! previousCommand.contains(requiredPart) ) {
-                        // if currently evaluated command from cache does 
-                        // not contain this required part, begin next 
-                        // iteration with next command from cache
-                        continue searchInCommandsCache;
-                    }
-                }
-                
-                // initially set first suitable command
-                // that have been encountered
-                if ( choosedPreviousCommand.isEmpty() ) {
-                    choosedPreviousCommand = previousCommand;
-                } else {
-                    // trying to chose the shortest command from cache
-                    // if there are more than one suitable command with
-                    // the same action type
-                    if ( this.ifCommandActionsAreEqual(
-                            previousCommand, choosedPreviousCommand) ) {
-                        // chose the shortest command among currently 
-                        // evaluated command from cache and suitable
-                        // command that has been choosed from cache during 
-                        // previous iterations
-                        if ( previousCommand.length() < choosedPreviousCommand.length() ) {
-                            choosedPreviousCommand = previousCommand;
-                        }
-                    } else {
-                        // if there are more than one suitable command in the 
-                        // old commands cache but they have different action
-                        // types, collect them in order to ask user to chose 
-                        // one that suits for him
-                        choosedCommands.add(previousCommand);
-                    }                    
-                }
-            }
-        } else {
-            // if command consists only from one part to be guessed
-            for (String previousCommand : this.commandsCache) {            
-                // chose from old commands cache only commands that
-                // contain new command entry
-                if ( previousCommand.contains(unknownCommand) ) {  
-                    // initially set first suitable command
-                    // that have been encountered
-                    if ( choosedPreviousCommand.isEmpty() ) {
-                        choosedPreviousCommand = previousCommand;
-                    } else {
-                        // trying to chose the shortest command from cache
-                        // if there are more than one suitable command with
-                        // the same action type
-                        if ( this.ifCommandActionsAreEqual(
-                                previousCommand, choosedPreviousCommand) ) {
-                            // chose the shortest command among two
-                            if ( previousCommand.length() < choosedPreviousCommand.length() ) {
-                                choosedPreviousCommand = previousCommand;
-                            }
-                        } else {
-                            // if there are more than one suitable command in the 
-                            // old commands cache but they have different action
-                            // types, collect them in order to ask user to chose 
-                            // one that suits for him
-                            choosedCommands.add(previousCommand);
-                        }                    
-                    }                
-                }
-            }    
-        }        
-        
-        if ( ! choosedCommands.isEmpty() ) {
-            choosedCommands.add(choosedPreviousCommand);
-            int choosed = this.dispatcher.chooseVariants("Action?", choosedCommands);
-            if ( choosed > 0 ) {
-                return choosedCommands.get(choosed - 1);
-            } else {
-                return "";
-            }            
-        } else {
-            String[] parts = choosedPreviousCommand.split("\\s+");
-            StringJoiner futureCommand = new StringJoiner(" ");
-            if ( parts.length > 1 ) {
-                futureCommand.add(parts[0]).add(parts[1]);
-                if ( (parts.length > 3) && (parts[2].equals("in")) ) {
-                    futureCommand.add(parts[2]).add(parts[3]);
-                }
-                return futureCommand.toString();
-            } else {
-                return "";
-            }            
-        }
-    }
-    
-    private boolean isCommandNecessary(String searchedCommand) {
-        if ( searchedCommand.startsWith("see") ||
-                searchedCommand.startsWith("www") ||
-                searchedCommand.startsWith("web") ||
-                searchedCommand.startsWith("o") ||
-                searchedCommand.startsWith("r") ||
-                searchedCommand.startsWith("call") ||
-                searchedCommand.startsWith("exe") ||
-                searchedCommand.startsWith("start") ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    private boolean ifCommandActionsAreEqual(String previous, String choosed) {
-        return ( previous.charAt(0) == choosed.charAt(0) );
-    }
-    
-    private boolean ifRunCommand(String previousCommand) {
-        return 
-                previousCommand.startsWith("r") || 
-                previousCommand.startsWith("run");
-    }
-    
-    private boolean ifCallCommand(String previousCommand) {
-        return 
-                previousCommand.startsWith("call") ||
-                previousCommand.startsWith("exe");
-    }
-    
-    private boolean ifSeeCommand(String previousCommand) {
-        return 
-                previousCommand.startsWith("see") ||
-                previousCommand.startsWith("www") ||
-                previousCommand.startsWith("web");
-    }
-    
-    private void parseCommand(String command, List<String> params) {
-        this.params.clear();
-        this.params.addAll(Arrays.asList(command.split("\\s+")));
-    }
+    }  
 }

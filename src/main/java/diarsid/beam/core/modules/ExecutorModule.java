@@ -18,12 +18,20 @@ import diarsid.beam.core.modules.executor.StoredExecutorCommand;
  * @author Diarsid
  */
 public interface ExecutorModule extends StoppableBeamModule {
-        
+    
+    // Basic executor functionality. Provides methods representing
+    // concrete actions - execut program, open web page, file, folder
+    // or call a stored command.
     void open(List<String> commandParams);
+    
     void run(List<String> commandParams);
+    
     void call(List<String> commandParams);
+    
     void start(List<String> commandParams);
+    
     void stop(List<String> commandParams);
+    
     void openWebPage(List<String> commandParams);
     
     void newCommand(List<String> command, String commandName);
@@ -36,12 +44,19 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     boolean deleteCommand(String commandName);
     
-    void setIntelligentActive(boolean isActive);    
-    boolean deleteMem(String command);    
+    void setIntelligentActive(boolean isActive);
+    
+    boolean deleteMem(String command);  
+    
     void rememberChoiceAutomatically(boolean auto);
+    
     List<String> getAllChoices();
     
     //void newNote(List<String> commandParams);
+    
     void openNotes();
+    
     void openNote(List<String> commandParams);
+    
+    void executeIfExists(List<String> commandParams);
 }

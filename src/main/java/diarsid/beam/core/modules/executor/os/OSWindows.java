@@ -25,8 +25,13 @@ import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
+
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.OperationResult.success;
 
 /**
  *
@@ -62,81 +67,116 @@ public class OSWindows implements OS {
     }
 
     @Override
-    public void openLocation(Location location) {
+    public OperationResult openLocation(Location location) {
         if (this.checkIfDirectoryExists(location.getPath())){
             this.executorService.execute(
                     new RunnableDesktopOpenTask(
                             this.ioEngine,
                             location.getPath()));            
             this.ioEngine.reportMessage("opening...");
-        }     
+            return success();
+        } else {
+            return failByInvalidArgument(location.getName());
+        }    
     }
 
     @Override
-    public boolean openFileInLocation(String target, Location location) {
+    public OperationResult openFileInLocation(String target, Location location) {
         // targetName pattern: myPr / myFil
         // corrected target name: myProject / myFile.ext or "" if not exists
-        target = this.checkNameInDirectory(target, location.getPath(), 
-                "File not found.", "Location`s path is invalid.");
-
-        if (target.length() > 0) {
+        String checkedTarget = this.checkNameInDirectory(
+                target, 
+                location.getPath(), 
+                "File not found.", 
+                "Location`s path is invalid.");
+        
+        if (checkedTarget.length() > 0) {
             this.executorService.execute(
                     new RunnableDesktopOpenTask(
                             this.ioEngine,
-                            location.getPath() + "/" + target));
+                            location.getPath() + "/" + checkedTarget));            
             this.ioEngine.reportMessage("opening...");
-            return true;
+            return success();
         } else {
-            return false;
+            return failByInvalidArgument(target);
         }
     }
 
     @Override
-    public void openFileInLocationWithProgram(String file, Location location, String program) {
-        file = this.checkNameInDirectory(file, location.getPath(), "File not found.", "Location`s path is invalid.");
-        program = this.checkNameInDirectory(program, PROGRAMS_LOCATION,
-                "Program not found.", "Program`s location not found.");
+    public OperationResult openFileInLocationWithProgram(
+            String givenFile, Location givenLocation, String givenProgram) {
+        
+        String checkedFile = this.checkNameInDirectory(
+                givenFile, 
+                givenLocation.getPath(), 
+                "File not found.", 
+                "Location`s path is invalid.");
+        String checkedProgram = this.checkNameInDirectory(
+                givenProgram, 
+                PROGRAMS_LOCATION,
+                "Program not found.", 
+                "Program`s location not found.");
 
-        if (file.length() > 0 && program.length() > 0) {
+        if ( checkedFile.length() > 0 && checkedProgram.length() > 0 ) {
             StringBuilder commandBuilder = new StringBuilder();
             commandBuilder
                     .append("cmd /c start ")
                     .append(PROGRAMS_LOCATION.replace("/", "\\"))
                     .append("\\")
-                    .append(program)
+                    .append(checkedProgram)
                     .append(" ")
-                    .append(location.getPath().replace("/", "\\"))
+                    .append(givenLocation.getPath().replace("/", "\\"))
                     .append("\\")
-                    .append(file);
+                    .append(checkedFile);
             this.executorService.execute(
-                    new RunnableRuntimeCommandTask(this.ioEngine, commandBuilder.toString()));
+                    new RunnableRuntimeCommandTask(
+                            this.ioEngine, commandBuilder.toString()));
             this.ioEngine.reportMessage("running...");
+            return success();
+        } else {
+            if ( givenFile.isEmpty() ) {
+                return failByInvalidArgument(givenFile);
+            } else if ( givenProgram.isEmpty() ) {
+                return failByInvalidArgument(givenProgram);
+            } else {
+                return failByInvalidLogic();
+            }            
         }
     }
 
     @Override
-    public void runProgram(String program) {
+    public OperationResult runProgram(String givenProgram) {
         // program pattern: notep, NetBe
         // corrected program names: notepad.exe, NetBeans.lnk or "" if not exists
-        program = this.checkNameInDirectory(program, PROGRAMS_LOCATION,
-                "Program not found.", "Program`s location not found.");
+        String checkedProgram = this.checkNameInDirectory(
+                givenProgram, 
+                PROGRAMS_LOCATION,
+                "Program not found.", 
+                "Program`s location not found.");
 
-        if (program.length() > 0) {
+        if ( checkedProgram.length() > 0 ) {
             this.executorService.execute(
                     new RunnableDesktopOpenTask(
                             this.ioEngine,
-                            PROGRAMS_LOCATION + "\\" + program));
+                            PROGRAMS_LOCATION + "\\" + checkedProgram));
             this.ioEngine.reportMessage("running...");
+            return success();
+        } else {
+            return failByInvalidArgument(givenProgram);
         }
     }
 
     private boolean checkIfDirectoryExists(String location) {
         File dir = new File(location);
-        if (!dir.exists()) {
+        if ( ! dir.exists() ) {
             this.ioEngine.reportMessage("This path doesn`t exists.");
+            this.intelligentContext
+                    .discardCurrentlyExecutedCommandInPattern(location);
             return false;
         } else if (!dir.isDirectory()) {
             this.ioEngine.reportMessage("This isn`t a directory.");
+            this.intelligentContext
+                    .discardCurrentlyExecutedCommandInPattern(location);
             return false;
         } else {
             return true;
@@ -171,31 +211,42 @@ public class OSWindows implements OS {
     }
     
     @Override
-    public void openUrlWithDefaultBrowser(String urlAddress){
+    public OperationResult openUrlWithDefaultBrowser(String urlAddress) {
         this.executorService.execute(
                 new RunnableBrowserTask(this.ioEngine, urlAddress));
         this.ioEngine.reportMessage("browse...");
+        return success();
     }
     
     @Override
-    public void openUrlWithGivenBrowser(String urlAddress, String browserName){
-        browserName = this.checkNameInDirectory(
-                browserName+"-browser", PROGRAMS_LOCATION, 
-                "Browser not found.", "Program`s location not found.");
-        if (browserName.length() > 0){
+    public OperationResult openUrlWithGivenBrowser(
+            String urlAddress, String givenBrowserName) {
+        
+        String checkedBrowserName = this.checkNameInDirectory(
+                givenBrowserName+"-browser", 
+                PROGRAMS_LOCATION, 
+                "Browser not found.", 
+                "Program`s location not found.");
+        if ( checkedBrowserName.length() > 0 ) {
             StringBuilder commandBuilder = new StringBuilder();
             commandBuilder
                     .append("cmd /c start ")
                     .append(PROGRAMS_LOCATION.replace("/", "\\"))
                     .append("\\")
-                    .append(browserName)
+                    .append(checkedBrowserName)
                     .append(" ")
                     .append(urlAddress);
             this.executorService.execute(
-                    new RunnableRuntimeCommandTask(this.ioEngine, commandBuilder.toString()));
+                    new RunnableRuntimeCommandTask(
+                            this.ioEngine, commandBuilder.toString()));
             this.ioEngine.reportMessage("browse...");
+            return success();
         } else {
-            this.ioEngine.reportMessage("Check browser in programs location or try with another browser.");
+            this.ioEngine.reportMessage("Check browser in programs location"
+                    + " or try with another browser.");
+            this.intelligentContext
+                    .discardCurrentlyExecutedCommandInPattern(givenBrowserName);
+            return failByInvalidArgument(givenBrowserName);
         }
     }
 
@@ -206,21 +257,52 @@ public class OSWindows implements OS {
             String noLocationMessage) {
 
         Path dir = Paths.get(location);
+        String result = "";
         if (Files.exists(dir) && Files.isDirectory(dir)) {
-            List<String> foundItems = new ArrayList<>();
-
-            this.findInTree(dir, targetName, foundItems);
-
-            if (foundItems.size() == 1) {
-                return foundItems.get(0);
-            } else if (foundItems.size() > 1) {
-                return this.chooseOneVariantFrom(targetName, foundItems);
+            if (this.containsFileSeparator(targetName)) {
+                result = this.searchByGivenPath(dir, targetName, noTargetMessage);
             } else {
-                this.ioEngine.reportMessage(noTargetMessage);
-                return "";
+                result = this.searchByFileName(dir, targetName, noTargetMessage);
+            }
+            if ( result.isEmpty() ) {
+                this.ioEngine.reportMessage(
+                        noTargetMessage + " in location::" + location);   
+                this.intelligentContext
+                        .discardCurrentlyExecutedCommandInPattern(targetName);
             }
         } else {
             this.ioEngine.reportMessage(noLocationMessage);
+            this.intelligentContext
+                    .discardCurrentlyExecutedCommandInPattern(location);
+        }        
+        return result;
+    }
+    
+    private boolean containsFileSeparator(String target) {
+        return target.contains("/") || target.contains("\\");
+    }
+    
+    private String searchByGivenPath(
+            Path dir, String targetName, String noTargetMessage) {
+        System.out.println("[OS DEBUG] search by path: " + dir.resolve(targetName).toString());
+        if ( Files.exists(dir.resolve(targetName)) ) {
+            return targetName;
+        } else {
+            return "";
+        }
+    }
+
+    private String searchByFileName(
+            Path dir, String targetName, String noTargetMessage) {
+        
+        List<String> foundItems = new ArrayList<>();        
+        this.findInTree(dir, targetName, foundItems);
+        
+        if (foundItems.size() == 1) {
+            return foundItems.get(0);
+        } else if (foundItems.size() > 1) {
+            return this.chooseOneVariantFrom(targetName, foundItems);
+        } else {
             return "";
         }
     }
@@ -238,8 +320,12 @@ public class OSWindows implements OS {
             foundItems.remove("");
         } catch (AccessDeniedException e ) {
             this.ioEngine.reportError("Access to file is denied, stream stoped.");
+            this.intelligentContext
+                    .discardCurrentlyExecutedCommandInPattern(nameToFind);
         } catch (IOException e ) {
             this.ioEngine.reportError("Error occured in Files.find(...);");
+            this.intelligentContext
+                    .discardCurrentlyExecutedCommandInPattern(nameToFind);
         }
     }
 
@@ -255,7 +341,7 @@ public class OSWindows implements OS {
         } else if (variantNumber == -1) {
             return "";
         } else if (variantNumber == -2) {
-            this.ioEngine.reportError("There are no external IO engine now.");
+            this.ioEngine.reportError("There is no external IO engine now.");
             return "";
         } else {
             return "";

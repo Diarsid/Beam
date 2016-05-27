@@ -42,6 +42,8 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
         IntelligentExecutorResolver resolver = new IntelligentExecutorResolver(
                 this.dataModule, 
                 this.ioInnerModule);
+        CommandsIntelligentCache consoleCommandsCache = new CommandsIntelligentCache(
+                this.ioInnerModule, this.dataModule.getConsoleCommandsDao());
         CurrentlyExecutedCommandIntelligentContext intelligentContext = 
                 new CurrentlyExecutedCommandIntelligentContext(resolver);        
         OS os = OSProvider.getOS(
@@ -52,10 +54,13 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
                 this.ioInnerModule, 
                 this.dataModule, 
                 this.configModule, 
-                intelligentContext, 
-                os);        
+                intelligentContext,
+                os);         
         ExecutorModuleWorker actualExecutor = new ExecutorModuleWorker(
-                this.ioInnerModule, intelligentContext, processorsBuilder);
+                this.ioInnerModule, 
+                intelligentContext, 
+                processorsBuilder, 
+                consoleCommandsCache);
         InvocationHandler preparedProxy = new ExecutorModuleIntelligentProxy(
                 actualExecutor, intelligentContext);
         ExecutorModule proxyExecutor = (ExecutorModule) Proxy.newProxyInstance(

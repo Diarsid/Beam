@@ -120,7 +120,12 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     }
     
     @Override
-    public  void openNote(List<String> commandParams) throws RemoteException {
+    public void openNote(List<String> commandParams) throws RemoteException {
         this.executorModule.openNote(commandParams);
     }    
+    
+    @Override
+    public void executeIfExists(List<String> commandParams) throws RemoteException {
+        this.executorModule.executeIfExists(commandParams);
+    }
 }

@@ -15,19 +15,27 @@ import java.util.List;
  */
 class CurrentlyExecutedCommandIntelligentContext 
         implements IntelligentExecutorCommandContext, 
-                   CurrentlyExecutedCommandContext,
-                   CurrentlyExecutedCommandContextCallback {
+                   CurrentlyExecutedCommandContext{
     
     private final ThreadLocal<CurrentCommandState> currentCommand;
     private final ThreadLocal<Boolean> needSaveChoices;
+    private final ThreadLocal<Boolean> currentCommandDiscarded;
     private final ThreadLocal<Integer> resolvingAttemptNubmer;
     private final IntelligentExecutorResolver resolver;
+    private final CurrentlyExecutedCommandContextCallback contextCallback;
     
     CurrentlyExecutedCommandIntelligentContext(IntelligentExecutorResolver resolver) {
         this.currentCommand = new ThreadLocal<>();
         this.needSaveChoices = new ThreadLocal<>();
+        this.currentCommandDiscarded = new ThreadLocal<>();
         this.resolvingAttemptNubmer = new ThreadLocal<>();
         this.resolver = resolver;
+        this.contextCallback = new CurrentlyExecutedCommandContextCallback() {
+            @Override
+            public void choiceWasAlreadySaved() {
+                needSaveChoices.set(false);
+            }
+        };
     }
     
     @Override
@@ -35,6 +43,7 @@ class CurrentlyExecutedCommandIntelligentContext
         System.out.println("[EXECUTOR PROXY] command intercepted!");
         System.out.println("[EXECUTOR PROXY] " + commandParams.toString());
         this.currentCommand.set(new CurrentCommandState(commandParams));
+        this.currentCommandDiscarded.set(false);
         this.needSaveChoices.set(true);
         this.resolvingAttemptNubmer.set(0);
     }
@@ -49,15 +58,20 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     private void rememberChoicesForCurrentCommandIfNecessary() {
+        System.out.println("[EXECUTOR PROXY] remeber?");
         if ( this.ifMustSaveChoices() ) {
             this.resolver.remember(this.currentCommand.get());
         }
     }
     
     private boolean ifMustSaveChoices() {
+        System.out.println("[EXECUTOR PROXY] hasChoices="+this.currentCommand.get().hasChoices()
+                + ", needSaveChoices="+this.needSaveChoices.get()+
+                ", commandValid="+!this.currentCommandDiscarded.get());
         return 
                 this.currentCommand.get().hasChoices() && 
-                this.needSaveChoices.get();
+                this.needSaveChoices.get() &&
+                ! this.currentCommandDiscarded.get();
     }
     
     @Override
@@ -70,10 +84,14 @@ class CurrentlyExecutedCommandIntelligentContext
                 this.getResolvingAttemptNumberDuringContextSession(),
                 patternToResolve, 
                 variants,
-                this);    
-        this.resolvingAttemptNubmer.set(this.resolvingAttemptNubmer.get() + 1);
+                this.contextCallback);    
+        this.incrementResolvingAttemptNumber();
         this.saveChoiceInCurrentContextIfMade(patternToResolve, chosenVariant, variants);        
         return chosenVariant;
+    }
+
+    private void incrementResolvingAttemptNumber() {
+        this.resolvingAttemptNubmer.set(this.resolvingAttemptNubmer.get() + 1);
     }
     
     private String getCommandStringFromContext() {
@@ -96,16 +114,6 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     @Override
-    public void doNotSaveThisChoice() {
-        this.needSaveChoices.set(false);
-    }
-    
-    @Override
-    public void saveThisChoice() {
-        this.needSaveChoices.set(true);
-    }
-    
-    @Override
     public void setContextActive(boolean active) {
         this.resolver.setActive(active);
     }
@@ -114,6 +122,24 @@ class CurrentlyExecutedCommandIntelligentContext
     public void adjustCurrentlyExecutedCommand(String... newCommand) {
         this.currentCommand.set(
                 new CurrentCommandState(Arrays.asList(newCommand)));
+    }
+    
+    @Override
+    public void adjustCurrentlyExecutedCommand(String newCommand) {
+        this.currentCommand.set(new CurrentCommandState(newCommand));
+    }
+    
+    @Override
+    public void discardCurrentlyExecutedCommandInPattern(String pattern) {
+        System.out.println("[EXECUTOR DEBUG] discard pattern: " + pattern);
+        boolean deleted = this.resolver.discardCommandByPattern(pattern);
+        System.out.println("[EXECUTOR DEBUG] discarded? " + deleted);
+        this.currentCommandDiscarded.set(true);
+    }
+    
+    @Override
+    public boolean ifCanSaveConsoleCommand() {
+        return ! this.currentCommandDiscarded.get();
     }
     
     @Override

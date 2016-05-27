@@ -22,10 +22,11 @@ public interface DaoExecutorIntelligentChoices {
     
     boolean deleteChoicesForCommand(String command);
     
+    boolean discardCommandByPattern(String pattern);
+    
     List<CurrentCommandState> getAllChoices();
     
     List<CurrentCommandState> getChoicesWhereCommandLike(String commandPart);
 
-    public List<String> formatCommandsForOutput(
-            List<CurrentCommandState> commands) ;
+    List<String> formatCommandsForOutput(List<CurrentCommandState> commands);
 }

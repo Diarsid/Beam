@@ -7,6 +7,7 @@ package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.HandlerLocations;
@@ -27,4 +28,6 @@ public interface DataModule extends StoppableBeamModule {
     HandlerWebPages getWebPagesHandler();
     
     DaoExecutorIntelligentChoices getIntellChoiceDao();
+    
+    DaoExecutorConsoleCommands getConsoleCommandsDao();
 }

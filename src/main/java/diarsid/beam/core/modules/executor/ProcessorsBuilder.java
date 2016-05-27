@@ -43,7 +43,7 @@ class ProcessorsBuilder {
                 this.ioEngine, 
                 this.os, 
                 this.dataModule.getWebPagesHandler(), 
-                intellContext);
+                this.intellContext);
     }
     
     ProcessorCommands buildProcessorCommands() {
@@ -55,8 +55,7 @@ class ProcessorsBuilder {
     
     ProcessorNotes buildProcessorNotes() {
         Location notes = new Location(
-                "notes", 
-                this.configModule.get(Config.NOTES_LOCATION));
+                "notes", this.configModule.get(Config.NOTES_LOCATION));
         return new ProcessorNotes(this.os, notes);
     }
     

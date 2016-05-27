@@ -7,7 +7,6 @@ package diarsid.beam.external.sysconsole.modules;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import diarsid.beam.external.ExternalIOInterface;
 
@@ -18,11 +17,7 @@ import com.drs.gem.injector.module.GemModule;
  * @author Diarsid
  */
 public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface {
-    
-    void dumpCommandsIntoCore(Set<String> commandsHash) throws IOException;
-
-    Set<String> getCommandsFromCoreStorage() throws IOException;
-    
+        
     void deleteCommand() throws IOException;
 
     void deleteEvent() throws IOException;
@@ -144,4 +139,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     void openNote(List<String> command) throws IOException;
     
     //void newNote(List<String> command) throws IOException;
+    
+    void tryToExecuteUsingCoreCommandsCache(List<String> commandParams)
+            throws IOException;
 }

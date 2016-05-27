@@ -14,6 +14,9 @@ import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
+
 /**
  *
  * @author Diarsid
@@ -37,19 +40,22 @@ class ProcessorWebPages {
         this.intellContext = intell;
     }
     
-    void openWebPage(List<String> params) {
+    List<OperationResult> openWebPage(List<String> params) {
+        List<OperationResult> operations = new ArrayList<>();
         if (params.contains("with") || 
                 params.contains("w") || 
                 params.contains("in")) {
-            this.openWebPageWithGivenBrowser(params);
+            operations.add(this.openWebPageWithGivenBrowser(params));
         } else {
-            this.openWebPages(params);
+            operations.addAll(this.openWebPages(params));
         }
+        return operations;
     }    
     
-    private void openWebPages(List<String> commandParams) {
+    private List<OperationResult> openWebPages(List<String> commandParams) {
         // command pattern: see [webPage_1] [webPage_2] [webPage_3]...
         WebPage page;
+        List<OperationResult> operations = new ArrayList<>();
         for (int i = 1; i < commandParams.size(); i++) {
             // register current command as: see [webPage_i]
             this.intellContext.adjustCurrentlyExecutedCommand(
@@ -57,16 +63,29 @@ class ProcessorWebPages {
                     commandParams.get(i));
             page = this.getWebPage(commandParams.get(i));
             if (page != null) {
-                if (page.useDefaultBrowser()){
-                    this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
-                } else {
-                    this.system.openUrlWithGivenBrowser(page.getUrlAddress(), page.getBrowser());
-                }
+                operations.add(this.processPageWithItsOwnBrowser(page));
+            } else {
+                operations.add(failByInvalidArgument(commandParams.get(i)));
             }
         }
+        return operations;
+    }
+
+    private OperationResult processPageWithItsOwnBrowser(WebPage page) {
+        OperationResult result;
+        if (page.useDefaultBrowser()){
+            result = this.system.openUrlWithDefaultBrowser(
+                    page.getUrlAddress());
+        } else {
+            result = this.system.openUrlWithGivenBrowser(
+                    page.getUrlAddress(), page.getBrowser());
+        }
+        return result;
     }
     
-    private void openWebPageWithGivenBrowser(List<String> commandParams) {
+    private OperationResult openWebPageWithGivenBrowser(
+            List<String> commandParams) {
+        
         // command pattern: see [webPage] with|w [browserName]
         if (commandParams.size() > 3 && 
                 (commandParams.get(2).contains("w") || 
@@ -75,23 +94,42 @@ class ProcessorWebPages {
             String givenBrowser = commandParams.get(3);
             if (page != null) {
                 if (givenBrowser.equals("default") || givenBrowser.equals("def")) {
-                    this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
-                    this.pagesHandler.editWebPageBrowser(page.getName(), "default");
+                    return processPageWithDefaultBrowser(page);
                 } else {
-                    this.system.openUrlWithGivenBrowser(page.getUrlAddress(), givenBrowser);
-                    String pageBrowser = page.getBrowser();
-                    if ( pageBrowser.contains(givenBrowser) 
-                            || givenBrowser.contains(pageBrowser) ) {
-                        // do nothing because it seams that it is the same browser
-                        return;
-                    } else {
-                        this.rememberNewBrowserForPage(page, givenBrowser);
-                    }                    
+                    return processPageWithNonDefaultBrowser(page, givenBrowser);
                 }                
+            } else {
+                return failByInvalidArgument(commandParams.get(1));
             }
         } else {
             this.ioEngine.reportMessage("Unrecognizale command.");
+            return failByInvalidLogic();
         }
+    }
+
+    private OperationResult processPageWithNonDefaultBrowser(
+            WebPage page, String givenBrowser) {
+        
+        OperationResult result;
+        result = this.system.openUrlWithGivenBrowser(
+                page.getUrlAddress(), givenBrowser);
+        String pageBrowser = page.getBrowser();
+        if ( pageBrowser.contains(givenBrowser)
+                || givenBrowser.contains(pageBrowser) ) {
+            // do nothing because it seams that it is the same browser
+        } else {
+            this.rememberNewBrowserForPage(page, givenBrowser);
+        }
+        return result;
+    }
+
+    private OperationResult processPageWithDefaultBrowser(WebPage page) {
+        OperationResult result;
+        result = this.system.openUrlWithDefaultBrowser(
+                page.getUrlAddress());
+        this.pagesHandler.editWebPageBrowser(
+                page.getName(), "default");
+        return result;
     }
     
     private void rememberNewBrowserForPage(WebPage page, String givenBrowser) {
@@ -131,9 +169,6 @@ class ProcessorWebPages {
                     "There are several pages:",
                     requiredPageName,
                     displayedPagesInfo);
-            //int choosedVariant = this.ioEngine.resolveVariantsWithExternalIO(
-            //        "There are several pages:", pageNames);
-            
             if (choosedVariant < 0) {
                 return null;
             } else {

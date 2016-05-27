@@ -7,7 +7,6 @@ package diarsid.beam.core.rmi.interfaces;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.Set;
 
 /*
  * Interface provides methods to control main program`s flow 
@@ -29,8 +28,4 @@ public interface RmiRemoteControlInterface extends Remote {
     void exit() throws RemoteException;
     
     void setDefaultIO() throws RemoteException;
-    
-    Set<String> getPreviousConsoleCommands() throws RemoteException;
-    
-    void storeCommandsFromConsole(Set<String> commands) throws RemoteException;
 }

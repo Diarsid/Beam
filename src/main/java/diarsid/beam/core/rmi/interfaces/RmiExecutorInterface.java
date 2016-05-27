@@ -40,4 +40,6 @@ public interface RmiExecutorInterface extends Remote {
     //void newNote(List<String> commandParams) throws RemoteException;
     void openNotes() throws RemoteException;
     void openNote(List<String> commandParams) throws RemoteException;
+    
+    void executeIfExists(List<String> commandParams) throws RemoteException;
 }

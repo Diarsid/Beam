@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 public class CurrentCommandState {
     
-    private final String command;
+    private String command;
     private final List<CommandChoice> madeChoices;
     
     CurrentCommandState(List<String> commandParams) {
@@ -23,9 +23,18 @@ public class CurrentCommandState {
         this.madeChoices = new ArrayList<>();
     }
     
+    CurrentCommandState(String command) {
+        this.command = command;
+        this.madeChoices = new ArrayList<>();
+    }
+    
     public CurrentCommandState(String command, List<CommandChoice> choices) {
         this.command = command;
         this.madeChoices = choices;
+    }
+    
+    void adjustCommand(String command) {
+        this.command = command;
     }
     
     void addChoice(String patternToResolve, String madeChoice) {

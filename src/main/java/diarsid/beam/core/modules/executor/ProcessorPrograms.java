@@ -6,9 +6,12 @@
 
 package diarsid.beam.core.modules.executor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
+
+import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
 
 /**
  *
@@ -25,18 +28,21 @@ class ProcessorPrograms {
         this.system = system;
     }
     
-    void runProgram(List<String> params) {
+    List<OperationResult> runPrograms(List<String> params) {
         // command pattern: run [program_1] [program_2] [program_3]...
+        List<OperationResult> results = new ArrayList<>();
         for (int i = 1; i < params.size(); i++) {
-            this.system.runProgram(params.get(i));
+            results.add(this.system.runProgram(params.get(i)));
         }
+        return results;
     }
             
-    void runMarkedProgram(String mark, List<String> commandParams) {
+    OperationResult runMarkedProgram(String mark, List<String> commandParams) {
         if (commandParams.size() == 2){
-            this.system.runProgram(commandParams.get(1)+"-"+mark);
+            return this.system.runProgram(commandParams.get(1)+"-"+mark);
         } else {
             this.ioEngine.reportMessage("Unrecognizable command.");
+            return failByInvalidLogic();
         }
     }
 }

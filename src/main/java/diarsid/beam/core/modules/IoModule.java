@@ -7,10 +7,9 @@ package diarsid.beam.core.modules;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.Set;
 
-import diarsid.beam.external.ExternalIOInterface;
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.external.ExternalIOInterface;
 
 /**
  * Is responsible for an interaction of the whole program with
@@ -37,8 +36,4 @@ public interface IoModule extends StoppableBeamModule {
             throws RemoteException, NotBoundException;
     
     void exitBeam();
-    
-    Set<String> getPreviousConsoleCommands();
-    
-    void storeCommandsFromConsole(Set<String> commands);
 }

@@ -19,13 +19,13 @@ import diarsid.beam.core.modules.ExecutorModule;
 class ExecutorModuleIntelligentProxy implements InvocationHandler {
     
     private final ExecutorModule executorModule;
-    private final CurrentlyExecutedCommandContext currentCommandContainer;
+    private final CurrentlyExecutedCommandContext currentCommandContext;
     
     ExecutorModuleIntelligentProxy(
             ExecutorModule executorModule, 
-            CurrentlyExecutedCommandContext currentCommandProcessor) {        
+            CurrentlyExecutedCommandContext currentCommandContext) {        
         this.executorModule = executorModule;
-        this.currentCommandContainer = currentCommandProcessor;
+        this.currentCommandContext = currentCommandContext;
     }
     
     @Override 
@@ -43,10 +43,10 @@ class ExecutorModuleIntelligentProxy implements InvocationHandler {
             throws Exception {
         
         Object invocationResult;
-        this.currentCommandContainer.beginCurrentCommandState(
+        this.currentCommandContext.beginCurrentCommandState(
                 this.extractCommandFromPassedArgs(args));
         invocationResult = method.invoke(this.executorModule, args);
-        this.currentCommandContainer.destroyCurrentCommandState();
+        this.currentCommandContext.destroyCurrentCommandState();
         return invocationResult;
     }
     
