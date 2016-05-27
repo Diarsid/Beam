@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.executor;
 
+import diarsid.beam.core.modules.executor.processors.workers.ProcessorsBuilderImpl;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
@@ -50,7 +52,7 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
                 this.ioInnerModule, 
                 this.configModule, 
                 intelligentContext); 
-        ProcessorsBuilder processorsBuilder = new ProcessorsBuilder(
+        ProcessorsBuilderImpl processorsBuilder = new ProcessorsBuilderImpl(
                 this.ioInnerModule, 
                 this.dataModule, 
                 this.configModule, 

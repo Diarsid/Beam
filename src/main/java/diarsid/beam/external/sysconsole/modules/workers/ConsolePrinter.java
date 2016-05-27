@@ -14,7 +14,7 @@ import java.util.List;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
-import diarsid.beam.core.modules.executor.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 

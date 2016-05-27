@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.executor;
 
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,7 +20,7 @@ class CurrentlyExecutedCommandIntelligentContext
                    CurrentlyExecutedCommandContext{
     
     private final ThreadLocal<CurrentCommandState> currentCommand;
-    private final ThreadLocal<Boolean> needSaveChoices;
+    private final ThreadLocal<Boolean> needSaveCurrentChoice;
     private final ThreadLocal<Boolean> currentCommandDiscarded;
     private final ThreadLocal<Integer> resolvingAttemptNubmer;
     private final IntelligentExecutorResolver resolver;
@@ -26,14 +28,19 @@ class CurrentlyExecutedCommandIntelligentContext
     
     CurrentlyExecutedCommandIntelligentContext(IntelligentExecutorResolver resolver) {
         this.currentCommand = new ThreadLocal<>();
-        this.needSaveChoices = new ThreadLocal<>();
+        this.needSaveCurrentChoice = new ThreadLocal<>();
         this.currentCommandDiscarded = new ThreadLocal<>();
         this.resolvingAttemptNubmer = new ThreadLocal<>();
         this.resolver = resolver;
         this.contextCallback = new CurrentlyExecutedCommandContextCallback() {
             @Override
-            public void choiceWasAlreadySaved() {
-                needSaveChoices.set(false);
+            public void doNotSaveThisChoice() {
+                needSaveCurrentChoice.set(false);
+            }
+            
+            @Override
+            public void saveThisChoice() {
+                needSaveCurrentChoice.set(true);
             }
         };
     }
@@ -42,9 +49,20 @@ class CurrentlyExecutedCommandIntelligentContext
     public void beginCurrentCommandState(List<String> commandParams) {
         System.out.println("[EXECUTOR PROXY] command intercepted!");
         System.out.println("[EXECUTOR PROXY] " + commandParams.toString());
+        this.setContextAfresh(commandParams);
+    }
+
+    private void setContextAfresh(List<String> commandParams) {
         this.currentCommand.set(new CurrentCommandState(commandParams));
         this.currentCommandDiscarded.set(false);
-        this.needSaveChoices.set(true);
+        this.needSaveCurrentChoice.set(true);
+        this.resolvingAttemptNubmer.set(0);
+    }
+    
+    private void setContextAfresh(String command) {
+        this.currentCommand.set(new CurrentCommandState(command));
+        this.currentCommandDiscarded.set(false);
+        this.needSaveCurrentChoice.set(true);
         this.resolvingAttemptNubmer.set(0);
     }
     
@@ -54,7 +72,14 @@ class CurrentlyExecutedCommandIntelligentContext
         System.out.println("[EXECUTOR PROXY] " + currentCommand.get().getCommandString());
         System.out.println();
         this.rememberChoicesForCurrentCommandIfNecessary();
+        this.clearContext();
+    }
+
+    private void clearContext() {
         this.currentCommand.remove();
+        this.currentCommandDiscarded.set(false);
+        this.needSaveCurrentChoice.set(true);
+        this.resolvingAttemptNubmer.set(0);
     }
     
     private void rememberChoicesForCurrentCommandIfNecessary() {
@@ -65,12 +90,10 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     private boolean ifMustSaveChoices() {
-        System.out.println("[EXECUTOR PROXY] hasChoices="+this.currentCommand.get().hasChoices()
-                + ", needSaveChoices="+this.needSaveChoices.get()+
+        System.out.println("[EXECUTOR PROXY] hasChoices="+this.currentCommand.get().hasChoices()+
                 ", commandValid="+!this.currentCommandDiscarded.get());
         return 
-                this.currentCommand.get().hasChoices() && 
-                this.needSaveChoices.get() &&
+                this.currentCommand.get().hasChoices() &&
                 ! this.currentCommandDiscarded.get();
     }
     
@@ -105,7 +128,7 @@ class CurrentlyExecutedCommandIntelligentContext
     private void saveChoiceInCurrentContextIfMade(
             String patternToResolve, int chosenVariant, List<String> variants) {
         
-        if ( this.needSaveChoices.get() ) {
+        if ( this.needSaveCurrentChoice.get() ) {
             if ( chosenVariant > 0 ) {
                 this.currentCommand.get().addChoice(
                         patternToResolve, variants.get(chosenVariant-1));
@@ -120,13 +143,14 @@ class CurrentlyExecutedCommandIntelligentContext
         
     @Override
     public void adjustCurrentlyExecutedCommand(String... newCommand) {
-        this.currentCommand.set(
-                new CurrentCommandState(Arrays.asList(newCommand)));
+        this.rememberChoicesForCurrentCommandIfNecessary();
+        this.setContextAfresh(Arrays.asList(newCommand));
     }
     
     @Override
     public void adjustCurrentlyExecutedCommand(String newCommand) {
-        this.currentCommand.set(new CurrentCommandState(newCommand));
+        this.rememberChoicesForCurrentCommandIfNecessary();
+        this.setContextAfresh(newCommand);
     }
     
     @Override

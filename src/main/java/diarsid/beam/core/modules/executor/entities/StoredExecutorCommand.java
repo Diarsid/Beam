@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.entities;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,26 +15,15 @@ import java.util.Objects;
  * @author Diarsid
  */
 public class StoredExecutorCommand implements Serializable {
-// ________________________________________________________________________________________
-//                                        Fields                                           
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-
-    private final String name;
-    private final List<String> commands;
     
-// ________________________________________________________________________________________
-//                                     Constructor                                         
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+    private final String name;
+    private final List<String> commands;    
     
     public StoredExecutorCommand(String name, List<String> commands) {
         this.name = name;
         this.commands = commands;
     }    
     
-// ________________________________________________________________________________________
-//                                       Methods                                           
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-
     public String getName() {
         return name;
     }

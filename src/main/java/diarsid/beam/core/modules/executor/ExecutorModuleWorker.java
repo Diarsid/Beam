@@ -10,6 +10,14 @@ import java.util.function.Supplier;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.processors.ProcessorCommands;
+import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
+import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
+import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
+import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
+import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
+import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 import static java.lang.String.join;
 
@@ -180,6 +188,8 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
         System.out.println("[EXECUTOR DEBUG] dispatch: " +commandParams);
+        this.intelligentContext
+                    .adjustCurrentlyExecutedCommand(join(" ", commandParams));
         switch (commandParams.get(0)) {
             case "open" :
             case "op" :
@@ -283,9 +293,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         String obtainedCommand = this.commandsCache
                 .getPatternCommandForExecution(join(" ", commandParams));
         if ( ! obtainedCommand.isEmpty() ) {
-            this.isCurrentCommandNew.set(false);
-            this.intelligentContext
-                    .adjustCurrentlyExecutedCommand(obtainedCommand);
+            this.isCurrentCommandNew.set(false);            
             this.dispatchCommandToAppropriateMethod(
                     this.transformCommandStringToParams(obtainedCommand));
             this.isCurrentCommandNew.set(true);

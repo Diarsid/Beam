@@ -4,31 +4,36 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.processors.workers;
 
 import java.util.List;
 
 import diarsid.beam.core.entities.Location;
+import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
+import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 /**
  *
  * @author Diarsid
  */
-class ProcessorNotes {
+class ProcessorNotesWorker implements ProcessorNotes {
     
     private final OS system;
     private final Location notes;
     
-    ProcessorNotes(OS sys, Location notes) {
+    ProcessorNotesWorker(OS sys, Location notes) {
         this.system = sys;
         this.notes = notes;
     }
     
-    void openNotes() {
+    @Override
+    public void openNotes() {
         this.system.openLocation(this.notes);
     }
     
-    void openNote(List<String> commandParams) {
+    @Override
+    public void openNote(List<String> commandParams) {
         if (commandParams.size() < 2) {
             this.system.createAndOpenTxtFileIn("", this.notes);
         } else {

@@ -4,11 +4,19 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.processors.workers;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
+import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.processors.ProcessorCommands;
+import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
+import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
+import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
+import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
+import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
@@ -16,7 +24,7 @@ import diarsid.beam.shared.modules.config.Config;
  *
  * @author Diarsid
  */
-class ProcessorsBuilder {
+public class ProcessorsBuilderImpl implements ProcessorsBuilder {
     
     private final IoInnerModule ioEngine;
     private final DataModule dataModule;
@@ -24,7 +32,7 @@ class ProcessorsBuilder {
     private final IntelligentExecutorCommandContext intellContext;
     private final OS os;
     
-    ProcessorsBuilder(
+    public ProcessorsBuilderImpl(
             IoInnerModule io, 
             DataModule data, 
             ConfigModule config,
@@ -38,36 +46,41 @@ class ProcessorsBuilder {
         this.os = os;
     }
     
-    ProcessorWebPages buildProcessorWebPages() {
-        return new ProcessorWebPages(
+    @Override
+    public ProcessorWebPages buildProcessorWebPages() {
+        return new ProcessorWebPagesWorker(
                 this.ioEngine, 
                 this.os, 
                 this.dataModule.getWebPagesHandler(), 
                 this.intellContext);
     }
     
-    ProcessorCommands buildProcessorCommands() {
-        return new ProcessorCommands(
+    @Override
+    public ProcessorCommands buildProcessorCommands() {
+        return new ProcessorCommandsWorker(
                 this.ioEngine, 
                 this.dataModule.getCommandsDao(), 
                 this.intellContext);
     }
     
-    ProcessorNotes buildProcessorNotes() {
+    @Override
+    public ProcessorNotes buildProcessorNotes() {
         Location notes = new Location(
                 "notes", this.configModule.get(Config.NOTES_LOCATION));
-        return new ProcessorNotes(this.os, notes);
+        return new ProcessorNotesWorker(this.os, notes);
     }
     
-    ProcessorLocations buildProcessorLocations() {
-        return new ProcessorLocations(
+    @Override
+    public ProcessorLocations buildProcessorLocations() {
+        return new ProcessorLocationsWorker(
                 this.ioEngine, 
                 this.os, 
                 this.dataModule.getLocationsHandler(), 
                 this.intellContext);
     }
     
-    ProcessorPrograms buildProcessorPrograms() {
-        return new ProcessorPrograms(this.ioEngine, this.os);
+    @Override
+    public ProcessorPrograms buildProcessorPrograms() {
+        return new ProcessorProgramsWorker(this.ioEngine, this.os);
     }
 }

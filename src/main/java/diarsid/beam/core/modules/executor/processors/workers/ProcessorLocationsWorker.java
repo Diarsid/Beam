@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.processors.workers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,22 +13,26 @@ import java.util.List;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerLocations;
+import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
+import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
+import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidArgument;
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidLogic;
 
 /**
  *
  * @author Diarsid
  */
-class ProcessorLocations {
+class ProcessorLocationsWorker implements ProcessorLocations {
     
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerLocations locationsHandler;
     private final IntelligentExecutorCommandContext intellContext;
 
-    ProcessorLocations(
+    ProcessorLocationsWorker(
             IoInnerModule io, 
             OS sys, 
             HandlerLocations locs, 
@@ -40,7 +44,8 @@ class ProcessorLocations {
         this.intellContext = intell;
     }
     
-    OperationResult open(List<String> commandParams) {
+    @Override
+    public OperationResult open(List<String> commandParams) {
         OperationResult result;
         try {
             if (commandParams.contains("in")) {
@@ -67,7 +72,8 @@ class ProcessorLocations {
         return result;
     }
     
-    List<String> listLocationContent(String locationName) {
+    @Override
+    public List<String> listLocationContent(String locationName) {
         Location location = this.getLocation(locationName);
         if (location != null) {
             List<String> locationContent = this.system.getLocationContent(location);

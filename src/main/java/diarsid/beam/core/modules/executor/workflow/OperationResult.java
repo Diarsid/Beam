@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.workflow;
 
 /**
  *
@@ -37,15 +37,15 @@ public class OperationResult {
         return new OperationResult(false);
     }
     
-    boolean ifOperationWasSuccessful() {
+    public boolean ifOperationWasSuccessful() {
         return this.status;
     }
     
-    boolean ifFailCausedByInvalidArgument() {
+    public boolean ifFailCausedByInvalidArgument() {
         return ( ! this.argumentCausingToFail.isEmpty() );
     }
     
-    String getFailureArgument() {
+    public String getFailureArgument() {
         return this.argumentCausingToFail;
     }
     

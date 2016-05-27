@@ -4,31 +4,35 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.processors.workers;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
+import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidLogic;
 
 /**
  *
  * @author Diarsid
  */
-class ProcessorPrograms {
+class ProcessorProgramsWorker implements ProcessorPrograms {
     
     private final IoInnerModule ioEngine;
     private final OS system;
     
     
-    ProcessorPrograms(IoInnerModule io, OS system) {
+    ProcessorProgramsWorker(IoInnerModule io, OS system) {
         this.ioEngine = io;
         this.system = system;
     }
     
-    List<OperationResult> runPrograms(List<String> params) {
+    @Override
+    public List<OperationResult> runPrograms(List<String> params) {
         // command pattern: run [program_1] [program_2] [program_3]...
         List<OperationResult> results = new ArrayList<>();
         for (int i = 1; i < params.size(); i++) {
@@ -37,7 +41,8 @@ class ProcessorPrograms {
         return results;
     }
             
-    OperationResult runMarkedProgram(String mark, List<String> commandParams) {
+    @Override
+    public OperationResult runMarkedProgram(String mark, List<String> commandParams) {
         if (commandParams.size() == 2){
             return this.system.runProgram(commandParams.get(1)+"-"+mark);
         } else {

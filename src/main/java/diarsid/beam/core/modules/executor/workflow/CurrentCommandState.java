@@ -3,11 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.workflow;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 
 /**
  *
@@ -18,12 +20,12 @@ public class CurrentCommandState {
     private String command;
     private final List<CommandChoice> madeChoices;
     
-    CurrentCommandState(List<String> commandParams) {
+    public CurrentCommandState(List<String> commandParams) {
         this.command = String.join(" ", commandParams);
         this.madeChoices = new ArrayList<>();
     }
     
-    CurrentCommandState(String command) {
+    public CurrentCommandState(String command) {
         this.command = command;
         this.madeChoices = new ArrayList<>();
     }
@@ -33,11 +35,11 @@ public class CurrentCommandState {
         this.madeChoices = choices;
     }
     
-    void adjustCommand(String command) {
+    public void adjustCommand(String command) {
         this.command = command;
     }
     
-    void addChoice(String patternToResolve, String madeChoice) {
+    public void addChoice(String patternToResolve, String madeChoice) {
         this.madeChoices.add(new CommandChoice(
                 patternToResolve, madeChoice, this.madeChoices.size()));
     }
@@ -46,7 +48,7 @@ public class CurrentCommandState {
         return this.madeChoices;
     }
     
-    boolean hasChoices() {
+    public boolean hasChoices() {
         return ( ! this.madeChoices.isEmpty() );
     }
         

@@ -4,25 +4,28 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.processors.workers;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
+import diarsid.beam.core.modules.executor.processors.ProcessorCommands;
+import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
 
 /**
  *
  * @author Diarsid
  */
-class ProcessorCommands {
+class ProcessorCommandsWorker implements ProcessorCommands {
     
     private final IoInnerModule ioEngine;
     private final DaoCommands commandsDao;
     private final IntelligentExecutorCommandContext intellContext;
     
-    ProcessorCommands(
+    ProcessorCommandsWorker(
             IoInnerModule io, 
             DaoCommands dao, 
             IntelligentExecutorCommandContext intell) {
@@ -32,7 +35,8 @@ class ProcessorCommands {
         this.intellContext = intell;
     }    
     
-    StoredExecutorCommand getCommand(String name) {        
+    @Override
+    public StoredExecutorCommand getCommand(String name) {        
         name = name.trim().toLowerCase();
         List<StoredExecutorCommand> commands = this.commandsDao.getCommandsByName(name);    
         
@@ -63,7 +67,8 @@ class ProcessorCommands {
         }
     }       
     
-    void newCommand(List<String> commands, String commandName) {
+    @Override
+    public void newCommand(List<String> commands, String commandName) {
         for(int i = 0; i < commands.size(); i++) {
             String s = commands.get(i).trim().toLowerCase();
             if ( s.equals("call") || s.equals("exe") ) {
@@ -78,16 +83,19 @@ class ProcessorCommands {
         this.commandsDao.saveNewCommand(new StoredExecutorCommand(commandName, commands));
     }    
         
-    boolean deleteCommand(String commandName) {
+    @Override
+    public boolean deleteCommand(String commandName) {
         commandName = commandName.trim().toLowerCase();
         return this.commandsDao.removeCommand(commandName);
     }    
     
-    List<StoredExecutorCommand> getAllCommands() {
+    @Override
+    public List<StoredExecutorCommand> getAllCommands() {
         return this.commandsDao.getAllCommands();
     }    
     
-    List<StoredExecutorCommand> getCommands(String commandName) {
+    @Override
+    public List<StoredExecutorCommand> getCommands(String commandName) {
         commandName = commandName.trim().toLowerCase();
         return this.commandsDao.getCommandsByName(commandName);
     }    

@@ -8,7 +8,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
 
 /*
  * 

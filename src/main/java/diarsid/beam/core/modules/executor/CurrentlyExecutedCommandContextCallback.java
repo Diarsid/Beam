@@ -11,5 +11,7 @@ package diarsid.beam.core.modules.executor;
  */
 public interface CurrentlyExecutedCommandContextCallback {
     
-    void choiceWasAlreadySaved();
+    void doNotSaveThisChoice();
+    
+    void saveThisChoice();
 }

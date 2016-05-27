@@ -6,7 +6,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
 
 /**
  *

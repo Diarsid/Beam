@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.modules.executor;
 
+import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+
 import java.util.Arrays;
 import java.util.List;
 

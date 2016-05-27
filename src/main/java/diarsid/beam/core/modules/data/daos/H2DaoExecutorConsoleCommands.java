@@ -24,7 +24,7 @@ import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
-import diarsid.beam.core.modules.executor.CommandChoice;
+import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 
 /**
  *

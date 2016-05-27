@@ -25,13 +25,13 @@ import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
-import diarsid.beam.core.modules.executor.OperationResult;
+import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidArgument;
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
-import static diarsid.beam.core.modules.executor.OperationResult.success;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.success;
 
 /**
  *

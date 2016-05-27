@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.CurrentCommandState;
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 /**
  *

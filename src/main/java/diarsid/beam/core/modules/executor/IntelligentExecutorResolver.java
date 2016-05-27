@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.executor;
 
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +102,7 @@ public class IntelligentExecutorResolver {
 //            }
 //        } else {            
 //            if ( variants.contains(choice) ) {
-//                contextCallback.choiceWasAlreadySaved();
+//                contextCallback.doNotSaveThisChoice();
 //                return variants.indexOf(choice)+1;
 //            } else {
 //                this.choiceDao.deleteChoicesForCommand(command);
@@ -116,22 +118,25 @@ public class IntelligentExecutorResolver {
                     command, resolvingAttemptNumber, patternToResolve);
             if (choice.isEmpty()) {
                 this.choiceDao.deleteChoicesForCommand(command);
+                contextCallback.saveThisChoice();
                 return this.askUserAboutHisChoice(question, variants);
             } else {
                 if ( variants.contains(choice) ) {
-                    contextCallback.choiceWasAlreadySaved();
+                    contextCallback.doNotSaveThisChoice();
                     return variants.indexOf(choice)+1;
                 } else {
                     this.choiceDao.deleteChoicesForCommand(command);
+                    contextCallback.saveThisChoice();
                     return this.askUserAboutHisChoice(question, variants);
                 }
             }
         } else {
             if ( variants.contains(choice) ) {
-                contextCallback.choiceWasAlreadySaved();
+                contextCallback.doNotSaveThisChoice();
                 return variants.indexOf(choice)+1;
             } else {
                 this.choiceDao.deleteChoicesForCommand(command);
+                contextCallback.saveThisChoice();
                 return this.askUserAboutHisChoice(question, variants);
             }
         }

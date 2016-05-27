@@ -22,8 +22,8 @@ import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
 import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.core.modules.executor.CommandChoice;
-import diarsid.beam.core.modules.executor.CurrentCommandState;
+import diarsid.beam.core.modules.executor.workflow.CommandChoice;
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 /**
  *

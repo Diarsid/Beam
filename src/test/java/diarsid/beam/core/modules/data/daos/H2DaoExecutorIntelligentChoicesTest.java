@@ -18,8 +18,8 @@ import org.junit.Test;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.base.H2TestDataBase;
 import diarsid.beam.core.modules.data.base.TestDataBase;
-import diarsid.beam.core.modules.executor.CommandChoice;
-import diarsid.beam.core.modules.executor.CurrentCommandState;
+import diarsid.beam.core.modules.executor.workflow.CommandChoice;
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

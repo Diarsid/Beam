@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.processors.workers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,22 +13,26 @@ import java.util.List;
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerWebPages;
+import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
+import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
+import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidArgument;
-import static diarsid.beam.core.modules.executor.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidLogic;
 
 /**
  *
  * @author Diarsid
  */
-class ProcessorWebPages {
+class ProcessorWebPagesWorker implements ProcessorWebPages {
     
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerWebPages pagesHandler;
     private final IntelligentExecutorCommandContext intellContext;
     
-    ProcessorWebPages(
+    ProcessorWebPagesWorker(
             IoInnerModule io, 
             OS sys, 
             HandlerWebPages pages, 
@@ -40,7 +44,8 @@ class ProcessorWebPages {
         this.intellContext = intell;
     }
     
-    List<OperationResult> openWebPage(List<String> params) {
+    @Override
+    public List<OperationResult> openWebPage(List<String> params) {
         List<OperationResult> operations = new ArrayList<>();
         if (params.contains("with") || 
                 params.contains("w") || 
