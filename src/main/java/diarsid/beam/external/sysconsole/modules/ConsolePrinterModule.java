@@ -33,7 +33,7 @@ public interface ConsolePrinterModule extends GemModule {
 
     void printChoices(List<String> choices) throws IOException;
 
-    void printCommands(List<StoredCommandsBatch> commands) throws IOException;
+    void printBatches(List<StoredCommandsBatch> commands) throws IOException;
 
     void printHelp();
 

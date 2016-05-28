@@ -174,7 +174,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     @Override
     public void getCommandsBatches() throws IOException {
         List<StoredCommandsBatch> commands = this.beam.executor().getAllCommands();
-        this.printer.printCommands(commands);
+        this.printer.printBatches(commands);
     }    
     
     @Override
@@ -748,7 +748,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         this.printer.printUnder("name: ");
         String commandName = this.reader.read();
         if ( !commandName.isEmpty() ) {
-            this.printer.printCommands(
+            this.printer.printBatches(
                     this.beam.executor().getCommand(commandName));
         }
     }

@@ -183,12 +183,12 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printCommands(List<StoredCommandsBatch> commands) throws IOException {
+    public void printBatches(List<StoredCommandsBatch> commands) throws IOException {
         if (commands.isEmpty()) {
             printUnderLn("There aren`t any commands.");
             return;
         }
-        printUnderLn("Commands:");
+        printUnderLn("Batches:");
         this.writer.write(SPACE);
         this.writer.write("==================================================");
         this.writer.newLine();
