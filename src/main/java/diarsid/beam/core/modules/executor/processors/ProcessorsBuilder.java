@@ -11,7 +11,7 @@ package diarsid.beam.core.modules.executor.processors;
  */
 public interface ProcessorsBuilder {
 
-    ProcessorCommands buildProcessorCommands();
+    ProcessorCommandsBatches buildProcessorBatches();
 
     ProcessorLocations buildProcessorLocations();
 

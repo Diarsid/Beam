@@ -41,6 +41,10 @@ class CommandsIntelligentCache {
         this.dao.saveNewConsoleCommand(command);
     }
     
+    boolean removeFromCacheByCommandName(String command) {
+        return this.dao.remove(command);
+    }
+    
     String getPatternCommandForExecution(String command) {
         return this.intelligentSearchInCache(command);
     }    
@@ -87,20 +91,25 @@ class CommandsIntelligentCache {
     }
     
     private String defineOperationByToken(String command) {
-        String token = command.substring(0, command.indexOf(" "));
-        if (token.equals("see") || token.equals("www") || token.equals("web")) {
+        if (command.startsWith("see ") || 
+                command.startsWith("www ") || 
+                command.startsWith("web ")) {
             return "see";
         }
-        if (token.equals("exe") || token.equals("call")) {
+        if (command.startsWith("exe ") || 
+                command.startsWith("call ")) {
             return "exe";
         }
-        if (token.equals("o") || token.equals("op") || token.equals("open")) {
+        if (command.startsWith("o ") || 
+                command.startsWith("op ") || 
+                command.startsWith("open ")) {
             return "open";
         }
-        if (token.equals("r") || token.equals("run")) {
+        if (command.startsWith("r ") || 
+                command.startsWith("run ")) {
             return "run";
         }
-        return token;
+        return command.substring(0, command.indexOf(" "));
     }
 
     private String refineCommandFromUnnecessaryParts(

@@ -18,7 +18,7 @@ import com.drs.gem.injector.module.GemModule;
  */
 public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface {
         
-    void deleteCommand() throws IOException;
+    void deleteCommandsBatch() throws IOException;
 
     void deleteEvent() throws IOException;
 
@@ -32,7 +32,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     
     void deleteDirectory() throws IOException;
 
-    void editCommand() throws IOException;
+    void editCommandsBatch() throws IOException;
 
     void editLocation() throws IOException;
 
@@ -42,9 +42,9 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
 
     void getAllChoices() throws IOException;
 
-    void getCommand() throws IOException;
+    void getCommandsBatch() throws IOException;
 
-    void getCommands() throws IOException;
+    void getCommandsBatches() throws IOException;
 
     void getLocation() throws IOException;
 
@@ -60,7 +60,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
 
     void listLocation(String locationName) throws IOException;
 
-    void newCommand() throws IOException;    
+    void newCommandsBatch() throws IOException;    
     
     void newLocation() throws IOException;
 

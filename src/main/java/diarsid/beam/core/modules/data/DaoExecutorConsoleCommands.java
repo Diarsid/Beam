@@ -17,6 +17,8 @@ public interface DaoExecutorConsoleCommands {
     
     boolean saveNewConsoleCommand(String command);
     
+    boolean remove(String command);
+    
     Set<String> getImprovedCommandsForPattern(String pattern); 
 
     Set<String> getRawCommandsForPattern(String pattern);     

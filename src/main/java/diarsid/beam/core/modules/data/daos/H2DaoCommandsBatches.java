@@ -18,15 +18,15 @@ import java.util.StringJoiner;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 
 /**
  *
  * @author Diarsid
  */
-class H2DaoCommands implements DaoCommands {
+class H2DaoCommandsBatches implements DaoCommandsBatches {
     
     private final DataBase data;
     private final IoInnerModule ioEngine;
@@ -66,15 +66,15 @@ class H2DaoCommands implements DaoCommands {
             "Such command name already exists.";
     private final String NO_STORED_COMMANDS = "There aren`t any commands.";
     
-    H2DaoCommands(final IoInnerModule io, final DataBase data) {
+    H2DaoCommandsBatches(final IoInnerModule io, final DataBase data) {
         if (io == null) {
             throw new NullDependencyInjectionException(
-                    H2DaoCommands.class.getSimpleName(), 
+                    H2DaoCommandsBatches.class.getSimpleName(), 
                     IoInnerModule.class.getSimpleName());
         }
         if (data == null) {
             throw new NullDependencyInjectionException(
-                    H2DaoCommands.class.getSimpleName(), 
+                    H2DaoCommandsBatches.class.getSimpleName(), 
                     DataBase.class.getSimpleName());
         }
         this.data = data;
@@ -96,17 +96,17 @@ class H2DaoCommands implements DaoCommands {
     }
     
     @Override
-    public List<StoredExecutorCommand> getCommandsByName(String commandName) {
+    public List<StoredCommandsBatch> getBatchesByName(String commandName) {
         ResultSet rs = null;
         try(Connection con = this.data.connect();
             PreparedStatement ps = con
                     .prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);) {
-            List<StoredExecutorCommand> commands = new ArrayList<>();
+            List<StoredCommandsBatch> commands = new ArrayList<>();
 
             ps.setString(1, "%"+commandName+"%");
             rs = ps.executeQuery();
             while(rs.next()) {
-                commands.add(new StoredExecutorCommand(
+                commands.add(new StoredCommandsBatch(
                         rs.getString(1), 
                         convertStoredCommandForUsing(rs.getString(2)))
                 );
@@ -131,7 +131,7 @@ class H2DaoCommands implements DaoCommands {
     }
     
     @Override
-    public void saveNewCommand(StoredExecutorCommand command) {
+    public void saveNewBatch(StoredCommandsBatch command) {
         try(Connection con = this.data.connect();
             PreparedStatement ps = con
                     .prepareStatement(INSERT_NEW_COMMAND);) {
@@ -144,7 +144,7 @@ class H2DaoCommands implements DaoCommands {
             
         } catch (SQLException e) {
             if (e.getSQLState().startsWith("23")) {
-                this.ioEngine.reportMessage("Such command name already exists.");
+                this.ioEngine.reportMessage("Such batch name already exists.");
             } else {
                 this.ioEngine.reportException(e, "SQLException: save command.");
             }
@@ -152,7 +152,7 @@ class H2DaoCommands implements DaoCommands {
     }
     
     @Override
-    public boolean removeCommand(String commandName) {
+    public boolean removeBatch(String commandName) {
         try(Connection con = this.data.connect();
             PreparedStatement ps = con.prepareStatement(DELETE_COMMAND_WHERE_NAME_lIKE);){
 
@@ -167,14 +167,14 @@ class H2DaoCommands implements DaoCommands {
     }
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands() {
+    public List<StoredCommandsBatch> getAllBatches() {
         try(Connection con = this.data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);) {
             
-            List<StoredExecutorCommand> commands = new ArrayList<>();
+            List<StoredCommandsBatch> commands = new ArrayList<>();
             while(rs.next()) {
-                commands.add(new StoredExecutorCommand(
+                commands.add(new StoredCommandsBatch(
                         rs.getString(1), 
                         convertStoredCommandForUsing(rs.getString(2)))
                 );

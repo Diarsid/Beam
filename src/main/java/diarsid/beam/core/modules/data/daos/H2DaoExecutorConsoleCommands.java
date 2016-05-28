@@ -91,6 +91,9 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private final String INSERT_NEW_COMMAND = 
             "INSERT INTO console_commands (command_id, command) " +
             "VALUES ( ?, ? ) ";
+    private final String DELETE_WHERE_COMMAND_IS = 
+            "DELETE FROM console_commands " +
+            "WHERE LOWER(command) IS ? ";
     
     
     @Override
@@ -141,6 +144,27 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
             this.ioEngine.reportError("SQLException: save new console command.");
             return false;
         }
+    }
+    
+    @Override
+    public boolean remove(String command) {
+        command = command.toLowerCase();
+        System.out.println("[DAO CONSOLE DEBUG] delete: " +command);
+        boolean removed = false;
+        try (Connection con = this.data.connect();
+                PreparedStatement delete = con.prepareStatement(
+                        DELETE_WHERE_COMMAND_IS)) {
+            
+            delete.setString(1, "call " + command);
+            delete.addBatch();
+            delete.setString(1, "exe " + command);
+            delete.addBatch();
+            removed = ( delete.executeBatch().length > 0 );
+        } catch (SQLException e) {
+            this.ioEngine.reportError("SQLException: delete command.");
+            removed = false;
+        }
+        return removed;
     }
     
     @Override

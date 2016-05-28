@@ -39,7 +39,7 @@ class ProcessorNotesWorker implements ProcessorNotes {
         } else {
             String name = String.join(" ", commandParams.subList(1, commandParams.size()));
             OperationResult openFile = this.system.openFileInLocation(name, this.notes);
-            if ( ! openFile.ifOperationWasSuccessful() ) {
+            if ( ! openFile.ifSuccess() ) {
                 this.system.createAndOpenTxtFileIn(name, this.notes);
             }
         }

@@ -12,17 +12,17 @@ package diarsid.beam.core.modules.executor.workflow;
  */
 public class OperationResult {
     
-    private final boolean status;
-    private final String argumentCausingToFail;
+    private final boolean success;
+    private final String argumentCausingOperationToFail;
     
-    private OperationResult(boolean status) {
-        this.status = status;
-        this.argumentCausingToFail = "";
+    private OperationResult(boolean success) {
+        this.success = success;
+        this.argumentCausingOperationToFail = "";
     }
     
     private OperationResult(String invalidArgument) {
-        this.status = false;
-        this.argumentCausingToFail = invalidArgument;
+        this.success = false;
+        this.argumentCausingOperationToFail = invalidArgument;
     }
     
     public static OperationResult success() {
@@ -37,20 +37,24 @@ public class OperationResult {
         return new OperationResult(false);
     }
     
-    public boolean ifOperationWasSuccessful() {
-        return this.status;
+    public boolean ifSuccess() {
+        return this.success;
+    }
+    
+    public boolean ifFail() {
+        return ( ! this.success );
     }
     
     public boolean ifFailCausedByInvalidArgument() {
-        return ( ! this.argumentCausingToFail.isEmpty() );
+        return ( ! this.argumentCausingOperationToFail.isEmpty() );
     }
     
     public String getFailureArgument() {
-        return this.argumentCausingToFail;
+        return this.argumentCausingOperationToFail;
     }
     
     // equals() and hashCode() methods have not been overriden
-    // deliberately, as every operation finishing successfuly 
+    // deliberately, as every operation that finishes successfuly 
     // returns absolutely equal OperationResult objects. Some 
     // methods return Set<OperationResult> instead of single 
     // object, that's why all OperationResult objects must be 

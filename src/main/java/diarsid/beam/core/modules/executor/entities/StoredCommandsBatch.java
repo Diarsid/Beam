@@ -14,12 +14,12 @@ import java.util.Objects;
  *
  * @author Diarsid
  */
-public class StoredExecutorCommand implements Serializable {
+public class StoredCommandsBatch implements Serializable {
     
     private final String name;
     private final List<String> commands;    
     
-    public StoredExecutorCommand(String name, List<String> commands) {
+    public StoredCommandsBatch(String name, List<String> commands) {
         this.name = name;
         this.commands = commands;
     }    
@@ -53,7 +53,7 @@ public class StoredExecutorCommand implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final StoredExecutorCommand other = (StoredExecutorCommand) obj;
+        final StoredCommandsBatch other = (StoredCommandsBatch) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }

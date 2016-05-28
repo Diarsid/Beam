@@ -11,7 +11,6 @@ import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
-import diarsid.beam.core.modules.executor.processors.ProcessorCommands;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
@@ -19,6 +18,7 @@ import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
+import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 
 /**
  *
@@ -56,8 +56,8 @@ public class ProcessorsBuilderImpl implements ProcessorsBuilder {
     }
     
     @Override
-    public ProcessorCommands buildProcessorCommands() {
-        return new ProcessorCommandsWorker(
+    public ProcessorCommandsBatches buildProcessorBatches() {
+        return new ProcessorCommandsBatchesWorker(
                 this.ioEngine, 
                 this.dataModule.getCommandsDao(), 
                 this.intellContext);

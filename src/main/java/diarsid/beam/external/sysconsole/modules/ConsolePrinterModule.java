@@ -10,7 +10,7 @@ import java.util.List;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 import com.drs.gem.injector.module.GemModule;
@@ -33,7 +33,7 @@ public interface ConsolePrinterModule extends GemModule {
 
     void printChoices(List<String> choices) throws IOException;
 
-    void printCommands(List<StoredExecutorCommand> commands) throws IOException;
+    void printCommands(List<StoredCommandsBatch> commands) throws IOException;
 
     void printHelp();
 

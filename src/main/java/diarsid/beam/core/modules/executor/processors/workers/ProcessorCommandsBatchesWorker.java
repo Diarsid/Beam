@@ -10,55 +10,50 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
-import diarsid.beam.core.modules.executor.processors.ProcessorCommands;
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 
 /**
  *
  * @author Diarsid
  */
-class ProcessorCommandsWorker implements ProcessorCommands {
+class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     
     private final IoInnerModule ioEngine;
-    private final DaoCommands commandsDao;
+    private final DaoCommandsBatches batchesDao;
     private final IntelligentExecutorCommandContext intellContext;
     
-    ProcessorCommandsWorker(
+    ProcessorCommandsBatchesWorker(
             IoInnerModule io, 
-            DaoCommands dao, 
+            DaoCommandsBatches dao, 
             IntelligentExecutorCommandContext intell) {
         
         this.ioEngine = io;
-        this.commandsDao = dao;
+        this.batchesDao = dao;
         this.intellContext = intell;
     }    
     
     @Override
-    public StoredExecutorCommand getCommand(String name) {        
+    public StoredCommandsBatch getBatch(String name) {        
         name = name.trim().toLowerCase();
-        List<StoredExecutorCommand> commands = this.commandsDao.getCommandsByName(name);    
+        List<StoredCommandsBatch> commands = this.batchesDao.getBatchesByName(name);    
         
         if ( commands.size() < 1 ) {
-            this.ioEngine.reportMessage("Couldn`t find such command.");
+            this.ioEngine.reportMessage("Couldn`t find such batch.");
             return null;
         } else if ( commands.size() == 1 ) {
             return commands.get(0);
         } else {
             List<String> commandNames = new ArrayList<>();
-            for (StoredExecutorCommand c : commands) {
+            for (StoredCommandsBatch c : commands) {
                 commandNames.add(c.getName());
             }
             int variant = this.intellContext.resolve(
-                    "There are several commands:", 
+                    "There are several batches:", 
                     name, 
                     commandNames);
-            //int variant = this.ioEngine.resolveVariantsWithExternalIO(
-            //        "There are several commands:", 
-            //        commandNames
-            //);
-            
             if ( variant < 0 ) {
                 return null;
             } else {
@@ -68,35 +63,37 @@ class ProcessorCommandsWorker implements ProcessorCommands {
     }       
     
     @Override
-    public void newCommand(List<String> commands, String commandName) {
+    public void newBatch(List<String> commands, String commandName) {
         for(int i = 0; i < commands.size(); i++) {
             String s = commands.get(i).trim().toLowerCase();
             if ( s.equals("call") || s.equals("exe") ) {
                 this.ioEngine.reportMessage(
-                        "'call' and 'exe' is not permitted to use.",
-                        "It can cause cyclical execution.");
+                        "'call' and 'exe' commands are not permitted "
+                                + "to use in batched commands.",
+                        "Calling a batch inside another batch can cause "
+                                + "an endless cyclical execution.");
                 return;
             }
             commands.set(i, s);
         }
         commandName = commandName.trim().toLowerCase();
-        this.commandsDao.saveNewCommand(new StoredExecutorCommand(commandName, commands));
+        this.batchesDao.saveNewBatch(new StoredCommandsBatch(commandName, commands));
     }    
         
     @Override
-    public boolean deleteCommand(String commandName) {
+    public boolean deleteBatch(String commandName) {
         commandName = commandName.trim().toLowerCase();
-        return this.commandsDao.removeCommand(commandName);
+        return this.batchesDao.removeBatch(commandName);
     }    
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands() {
-        return this.commandsDao.getAllCommands();
+    public List<StoredCommandsBatch> getAllBatches() {
+        return this.batchesDao.getAllBatches();
     }    
     
     @Override
-    public List<StoredExecutorCommand> getCommands(String commandName) {
+    public List<StoredCommandsBatch> getBatches(String commandName) {
         commandName = commandName.trim().toLowerCase();
-        return this.commandsDao.getCommandsByName(commandName);
+        return this.batchesDao.getBatchesByName(commandName);
     }    
 }

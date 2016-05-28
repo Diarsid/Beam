@@ -8,7 +8,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 
 /*
  * 
@@ -26,9 +26,9 @@ public interface RmiExecutorInterface extends Remote {
     
     List<String> listLocationContent(String locationName) throws RemoteException;
     
-    List<StoredExecutorCommand> getAllCommands() throws RemoteException;    
+    List<StoredCommandsBatch> getAllCommands() throws RemoteException;    
     
-    List<StoredExecutorCommand> getCommand(String commandName)  throws RemoteException;
+    List<StoredCommandsBatch> getCommand(String commandName)  throws RemoteException;
     
     boolean deleteCommand(String commandName) throws RemoteException;
     

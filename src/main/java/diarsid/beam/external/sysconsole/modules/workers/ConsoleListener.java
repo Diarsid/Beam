@@ -89,10 +89,11 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.newReminder();
                                 break parsing;
                             }                            
-                            case "comm" :
-                            case "command" : {
+                            case "bat" :
+                            case "batc" :
+                            case "batch" : {
                                 this.commandAccepted();
-                                this.dispatcher.newCommand();
+                                this.dispatcher.newCommandsBatch();
                                 break parsing;
                             }
                             case "page" :
@@ -126,10 +127,11 @@ class ConsoleListener implements ConsoleListenerModule {
                             break parsing;
                         }                        
                         switch (params.get(1)) {
-                            case "comm" :
-                            case "command" : {
+                            case "bat" :
+                            case "batc" :
+                            case "batch" : {
                                 this.commandAccepted();
-                                this.dispatcher.getCommand();
+                                this.dispatcher.getCommandsBatch();
                                 break parsing;
                             }
                             case "loc" :
@@ -319,11 +321,12 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.getAllChoices();
                                 break parsing;
                             }
-                            case "comm" :
-                            case "comms" :    
-                            case "commands" : {
+                            case "bat" :
+                            case "batc" :
+                            case "batch" : 
+                            case "batches" : {
                                 this.commandAccepted();
-                                this.dispatcher.getCommands();
+                                this.dispatcher.getCommandsBatches();
                                 break parsing;
                             }
                             case "web" :
@@ -356,10 +359,11 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.editLocation();
                                 break parsing;
                             } 
-                            case "comm" : 
-                            case "command" : {
+                            case "bat" :
+                            case "batc" :
+                            case "batch" : {
                                 this.commandAccepted();
-                                this.dispatcher.editCommand();
+                                this.dispatcher.editCommandsBatch();
                                 break parsing;
                             }
                             case "dir" :
@@ -432,11 +436,11 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.deleteMem();
                                 break parsing;
                             }                                
-                            case "com" :
-                            case "comm" :
-                            case "command" : {
+                            case "bat" :
+                            case "batc" :
+                            case "batch" : {
                                 this.commandAccepted();
-                                this.dispatcher.deleteCommand();
+                                this.dispatcher.deleteCommandsBatch();
                                 break parsing;
                             }
                             case "all" : {

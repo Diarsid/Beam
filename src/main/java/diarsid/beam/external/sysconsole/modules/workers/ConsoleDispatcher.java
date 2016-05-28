@@ -17,7 +17,7 @@ import java.util.Set;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
 import diarsid.beam.core.entities.WebPagePlacement;
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
@@ -172,8 +172,8 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void getCommands() throws IOException {
-        List<StoredExecutorCommand> commands = this.beam.executor().getAllCommands();
+    public void getCommandsBatches() throws IOException {
+        List<StoredCommandsBatch> commands = this.beam.executor().getAllCommands();
         this.printer.printCommands(commands);
     }    
     
@@ -290,7 +290,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
         
     @Override
-    public void newCommand() throws IOException {
+    public void newCommandsBatch() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
         if (name.isEmpty()) {
@@ -379,8 +379,10 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void getAllDirs() throws IOException {
         List<String> dirs = this.beam.webPages()
                 .getAllDirectoriesInPlacement(WEBPANEL);
-        dirs.add(0, "> WebPanel: ");
-        dirs.add("> Bookmarks: ");
+        dirs.add(0, "");
+        dirs.add(1, "---- WebPanel ----");
+        dirs.add("");
+        dirs.add("---- Bookmarks ----");
         dirs.addAll(this.beam.webPages()
                 .getAllDirectoriesInPlacement(BOOKMARKS));
         this.printer.printDirs(dirs);
@@ -456,7 +458,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void deleteCommand() throws IOException{
+    public void deleteCommandsBatch() throws IOException{
         this.printer.printUnder("name: ");
         String name = this.reader.read();
         if (name.isEmpty()) {
@@ -464,7 +466,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         }
         if (name.length() > 0) {
             if (this.beam.executor().deleteCommand(name)) {
-                this.printer.printUnderLn("Command has been removed.");
+                this.printer.printUnderLn("Batch has been removed.");
             }
         }        
     }
@@ -617,7 +619,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void editCommand() throws IOException {
+    public void editCommandsBatch() throws IOException {
         this.printer.printUnder("name: ");
         String name = this.reader.read();
         if (name.isEmpty()) {
@@ -742,7 +744,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void getCommand() throws IOException {
+    public void getCommandsBatch() throws IOException {
         this.printer.printUnder("name: ");
         String commandName = this.reader.read();
         if ( !commandName.isEmpty() ) {
@@ -844,7 +846,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     @Override
     public void exitDialog() throws IOException {
         boolean confirm = this.confirmAction("Do you really want to stop me?");        
-        if (confirm){
+        if (confirm) {
             this.printer.exitMessage();
             try {
                 Thread.sleep(1000);
@@ -854,7 +856,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         }
     }
     
-    private void exitProgram(){
+    private void exitProgram() {
         try{  
             if (this.beam.remoteControl() != null) {
                 this.beam.remoteControl().exit();
@@ -866,14 +868,16 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     @Override
     public void useNativeShowTaskMethod() throws IOException {
         if (this.beam.remoteControl().setUseNativeShowTaskMethod()) {
-            this.printer.printUnderLn("CONSOLE: core will use NATIVE show task method.");
+            this.printer.printUnderLn(
+                    "CONSOLE: core will use NATIVE show task method.");
         }
     }
     
     @Override
     public void useExternalShowTaskMethod() throws IOException {
         if (this.beam.remoteControl().setUseExternalShowTaskMethod()) {
-            this.printer.printUnderLn("CONSOLE: core will use CONSOLE show task method.");
+            this.printer.printUnderLn(
+                    "CONSOLE: core will use CONSOLE show task method.");
         }        
     }
     

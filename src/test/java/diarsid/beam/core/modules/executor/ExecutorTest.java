@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,10 +15,11 @@ import org.junit.Test;
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.data.HandlerWebPages;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -36,7 +35,7 @@ public class ExecutorTest {
     
     IoInnerModule io;
     HandlerLocations locHandler;
-    DaoCommands comDao;
+    DaoCommandsBatches comDao;
     OS os;
     IntelligentExecutorResolver intell;
     
@@ -46,7 +45,7 @@ public class ExecutorTest {
         
         io = mock(IoInnerModule.class);        
         DaoLocations dao = mock(DaoLocations.class);
-        comDao = mock(DaoCommands.class);
+        comDao = mock(DaoCommandsBatches.class);
         locHandler = mock(HandlerLocations.class);
         HandlerWebPages pagesHandler = mock(HandlerWebPages.class);
         DataModule data = mock(DataModule.class);
@@ -156,8 +155,8 @@ public class ExecutorTest {
         
         exec.call(commandParams);
         
-        verify(comDao).getCommandsByName("command1");
-        verify(comDao).getCommandsByName("command2");
+        verify(comDao).getBatchesByName("command1");
+        verify(comDao).getBatchesByName("command2");
     }
 
     @Test
@@ -165,10 +164,10 @@ public class ExecutorTest {
         String[] a = {"open location", "run program"};
         List<String> commands = Arrays.asList(a);
         
-        StoredExecutorCommand command = new StoredExecutorCommand("command", commands);
+        StoredCommandsBatch command = new StoredCommandsBatch("command", commands);
         exec.newCommand(commands, "command");
         
-        verify(comDao).saveNewCommand(command);
+        verify(comDao).saveNewBatch(command);
     }
 
 
@@ -178,21 +177,21 @@ public class ExecutorTest {
         
         exec.deleteCommand(commandName);
         
-        verify(comDao).removeCommand(commandName);
+        verify(comDao).removeBatch(commandName);
     }
 
     @Test
     public void testGetAllCommands() {
         exec.getAllCommands();
         
-        verify(comDao).getAllCommands();
+        verify(comDao).getAllBatches();
     }
 
     @Test
     public void testGetCommands() {
         exec.getCommands("comm_name");
         
-        verify(comDao).getCommandsByName("comm_name");
+        verify(comDao).getBatchesByName("comm_name");
     }
     
 }

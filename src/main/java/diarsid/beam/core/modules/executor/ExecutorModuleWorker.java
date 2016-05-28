@@ -10,8 +10,7 @@ import java.util.function.Supplier;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
-import diarsid.beam.core.modules.executor.processors.ProcessorCommands;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
@@ -19,6 +18,264 @@ import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
+import static java.lang.String.join;
+import static java.lang.String.join;
+
+import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
+
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
 import static java.lang.String.join;
 
 /**
@@ -38,19 +295,19 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final ProcessorNotes notes;
     private final ProcessorWebPages pages;
     private final ProcessorLocations locations;
-    private final ProcessorCommands commands; 
+    private final ProcessorCommandsBatches commands; 
     
     private final CommandsIntelligentCache commandsCache;
     private final ThreadLocal<Boolean> isCurrentCommandNew;
     
     ExecutorModuleWorker(
             IoInnerModule io,
-            IntelligentExecutorCommandContext intell,
+            IntelligentExecutorCommandContext intelligentContext,
             ProcessorsBuilder builder,
             CommandsIntelligentCache commandsCache) {
         
         this.ioEngine = io;
-        this.intelligentContext = intell;
+        this.intelligentContext = intelligentContext;
         
         this.commandsCache = commandsCache;
         this.isCurrentCommandNew = ThreadLocal.withInitial(
@@ -62,7 +319,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         });
         
         this.pages = builder.buildProcessorWebPages();
-        this.commands = builder.buildProcessorCommands();
+        this.commands = builder.buildProcessorBatches();
         this.locations = builder.buildProcessorLocations();
         this.programs = builder.buildProcessorPrograms();
         this.notes = builder.buildProcessorNotes();        
@@ -70,7 +327,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void stopModule() {
-        
+        // there are nothing stoppable inside of ExecutorModule.
     }  
     
     private void saveConsoleCommandIfValid(List<String> commandParams) {
@@ -90,7 +347,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void open(List<String> commandParams) {
         OperationResult operation = this.locations.open(commandParams);
-        if (operation.ifOperationWasSuccessful()) {
+        if (operation.ifSuccess()) {
             this.saveConsoleCommandIfValid(commandParams);
         }
     }    
@@ -105,7 +362,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         List<OperationResult> operations = 
                 this.programs.runPrograms(commandParams);
         for (int i = 0; i < operations.size(); i++) {
-            if (operations.get(i).ifOperationWasSuccessful()) {
+            if (operations.get(i).ifSuccess()) {
                 this.saveConsoleCommandIfValid("run " + commandParams.get(i+1));
             }            
         }
@@ -116,7 +373,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         // command pattern: start [program]
         OperationResult operation = 
                 this.programs.runMarkedProgram("start", commandParams); 
-        if (operation.ifOperationWasSuccessful()) {
+        if (operation.ifSuccess()) {
             this.saveConsoleCommandIfValid(commandParams);
         }
     }
@@ -130,13 +387,13 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void call(List<String> commandParams) {
         // command pattern: call [command_1] [command_2]...
-        StoredExecutorCommand storedCommand;
+        StoredCommandsBatch storedCommand;
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
             sb.append(commandParams.get(0))
                     .append(" ")
                     .append(commandParams.get(i));
-            storedCommand = this.commands.getCommand(commandParams.get(i));
+            storedCommand = this.commands.getBatch(commandParams.get(i));
             if (storedCommand != null) {
                 this.executeCommand(storedCommand);
                 this.saveConsoleCommandIfValid(sb.toString());
@@ -147,9 +404,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void openWebPage(List<String> commandParams) {
+        // command pattern: see [page_1] [page_2]...
         List<OperationResult> operations = this.pages.openWebPage(commandParams);
         for (int i = 0; i < operations.size(); i++) {
-            if (operations.get(i).ifOperationWasSuccessful()) {
+            if (operations.get(i).ifSuccess()) {
+                // save command as: see [page_i]
                 this.saveConsoleCommandIfValid("see " + commandParams.get(i+1));
             }            
         }
@@ -157,25 +416,25 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void newCommand(List<String> commands, String commandName) {
-        this.commands.newCommand(commands, commandName);
+        this.commands.newBatch(commands, commandName);
     }    
         
     @Override
     public boolean deleteCommand(String commandName) {
-        return this.commands.deleteCommand(commandName);
+        return this.commands.deleteBatch(commandName);
     }    
     
     @Override
-    public List<StoredExecutorCommand> getAllCommands() {
-        return this.commands.getAllCommands();
+    public List<StoredCommandsBatch> getAllCommands() {
+        return this.commands.getAllBatches();
     }    
     
     @Override
-    public List<StoredExecutorCommand> getCommands(String commandName) {
-        return this.commands.getCommands(commandName);
+    public List<StoredCommandsBatch> getCommands(String commandName) {
+        return this.commands.getBatches(commandName);
     }    
     
-    private void executeCommand(StoredExecutorCommand command) {
+    private void executeCommand(StoredCommandsBatch command) {
         for (String commandString : command.getCommands()) {
             this.dispatchCommandToAppropriateMethod(
                     this.transformCommandStringToParams(commandString));
@@ -189,7 +448,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
         System.out.println("[EXECUTOR DEBUG] dispatch: " +commandParams);
         this.intelligentContext
-                    .adjustCurrentlyExecutedCommand(join(" ", commandParams));
+                    .adjustCurrentlyExecutedCommand(aggregate(commandParams));
         switch (commandParams.get(0)) {
             case "open" :
             case "op" :
@@ -290,9 +549,39 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void executeIfExists(List<String> commandParams) {
-        String obtainedCommand = this.commandsCache
-                .getPatternCommandForExecution(join(" ", commandParams));
-        
+        String cachedCommand = this.commandsCache
+                .getPatternCommandForExecution(this.aggregate(commandParams));
+        if ( this.ifCachedCommandIsBatch(cachedCommand) ) {
+            this.executeStoredBatchIfExists(cachedCommand);
+        } else {
+            this.executeOldCommandInternally(cachedCommand);
+        }    
+    }
+    
+    private boolean ifCachedCommandIsBatch(String cachedCommand) {
+        return cachedCommand.startsWith("exe ") ||
+                cachedCommand.startsWith("call ");
+    }
+
+    private void executeStoredBatchIfExists(String cachedCommand) {
+        String possibleBatchName = cachedCommand
+                .substring(cachedCommand.lastIndexOf(" ")+1);
+        StoredCommandsBatch storedBatch = this.commands
+                .getBatch(possibleBatchName);
+        if ( storedBatch != null ) {
+            for (String commandFromBatch : storedBatch.getCommands()) {
+                this.executeOldCommandInternally(commandFromBatch);
+            }
+        } else {
+            this.commandsCache.removeFromCacheByCommandName(possibleBatchName);
+        }
+    }
+
+    private String aggregate(List<String> commandParams) {
+        return join(" ", commandParams);
+    }
+
+    private void executeOldCommandInternally(String obtainedCommand) {
         if ( ! obtainedCommand.isEmpty() ) {
             this.isCurrentCommandNew.set(false);            
             this.dispatchCommandToAppropriateMethod(

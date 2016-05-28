@@ -14,7 +14,7 @@ import java.util.List;
 
 import diarsid.beam.core.entities.Location;
 import diarsid.beam.core.entities.WebPage;
-import diarsid.beam.core.modules.executor.entities.StoredExecutorCommand;
+import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 
@@ -183,7 +183,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printCommands(List<StoredExecutorCommand> commands) throws IOException {
+    public void printCommands(List<StoredCommandsBatch> commands) throws IOException {
         if (commands.isEmpty()) {
             printUnderLn("There aren`t any commands.");
             return;
@@ -192,7 +192,7 @@ class ConsolePrinter implements ConsolePrinterModule {
         this.writer.write(SPACE);
         this.writer.write("==================================================");
         this.writer.newLine();
-        for(StoredExecutorCommand command : commands){
+        for(StoredCommandsBatch command : commands){
             this.writer.write(SPACE);
             this.writer.write(command.getName() + ":");
             this.writer.newLine();
