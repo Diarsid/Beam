@@ -62,10 +62,10 @@ class CommandsIntelligentCache {
             return "";
         }
         System.out.println("[COMM CACHE DEBUG] raw commands: " + commandsCache);
-        Map<Character, String> chosenCommands = new HashMap<>();
-        char operationToken;
+        Map<String, String> chosenCommands = new HashMap<>();
+        String operationToken;
         for (String testedCommand : commandsCache) {
-            operationToken = testedCommand.charAt(0);
+            operationToken = this.defineOperationByToken(testedCommand);
             if (chosenCommands.containsKey(operationToken)) {
                 if (testedCommand.length() < chosenCommands.get(operationToken).length()) {
                     chosenCommands.put(operationToken, testedCommand);
@@ -84,6 +84,23 @@ class CommandsIntelligentCache {
             return this.askUserWhichActionToPerform(
                     new ArrayList<>(chosenCommands.values()));
         }
+    }
+    
+    private String defineOperationByToken(String command) {
+        String token = command.substring(0, command.indexOf(" "));
+        if (token.equals("see") || token.equals("www") || token.equals("web")) {
+            return "see";
+        }
+        if (token.equals("exe") || token.equals("call")) {
+            return "exe";
+        }
+        if (token.equals("o") || token.equals("op") || token.equals("open")) {
+            return "open";
+        }
+        if (token.equals("r") || token.equals("run")) {
+            return "run";
+        }
+        return token;
     }
 
     private String refineCommandFromUnnecessaryParts(

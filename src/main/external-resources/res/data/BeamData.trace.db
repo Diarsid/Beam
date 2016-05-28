@@ -801,3 +801,145 @@ PRIMARY KEY (
                         command, 
                         pattern_number, 
                         pattern) )COMMAND_CHOICES [42000-176]
+05-24 18:08:08 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "CREATE TABLE CONSOLE_COMMANDS (
+COMMAND_ID     INTEGER         NOT NULL, 
+COMMAND        VARCHAR(200)    NOT NULL, 
+PRIMARY KEY (COMMAND_ID, COMMAND) "; ожидалось "INDEX, ,, )"
+Syntax error in SQL statement "CREATE TABLE CONSOLE_COMMANDS (
+COMMAND_ID     INTEGER         NOT NULL, 
+COMMAND        VARCHAR(200)    NOT NULL, 
+PRIMARY KEY (COMMAND_ID, COMMAND) "; expected "INDEX, ,, )"; SQL statement:
+CREATE TABLE console_commands (
+command_id     INTEGER         NOT NULL, 
+command        VARCHAR(200)    NOT NULL, 
+PRIMARY KEY (command_id, command) [42001-176]
+05-24 18:11:45 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "INSERT IN[*] CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE NOT EXIST (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "; ожидалось "INTO"
+Syntax error in SQL statement "INSERT IN[*] CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE NOT EXIST (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "; expected "INTO"; SQL statement:
+INSERT IN console_commands (command_id, command) 
+VALUES ( 2, 'op java-en' ) 
+WHERE NOT EXIST (SELECT command FROM console_commands WHERE command IS 'op java-en') [42001-176]
+05-24 18:12:08 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE[*] NOT EXIST (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "
+Syntax error in SQL statement "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE[*] NOT EXIST (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "; SQL statement:
+INSERT INTO console_commands (command_id, command) 
+VALUES ( 2, 'op java-en' ) 
+WHERE NOT EXIST (SELECT command FROM console_commands WHERE command IS 'op java-en') [42000-176]
+05-24 18:13:10 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE[*] NOT IN (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "
+Syntax error in SQL statement "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE[*] NOT IN (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "; SQL statement:
+INSERT INTO console_commands (command_id, command) 
+VALUES ( 2, 'op java-en' ) 
+WHERE NOT IN (SELECT command FROM console_commands WHERE command IS 'op java-en') [42000-176]
+05-24 18:20:37 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE[*] COMMAND NOT IN (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "
+Syntax error in SQL statement "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java-en' ) 
+WHERE[*] COMMAND NOT IN (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java-en') "; SQL statement:
+INSERT INTO console_commands (command_id, command) 
+VALUES ( 2, 'op java-en' ) 
+WHERE command NOT IN (SELECT command FROM console_commands WHERE command IS 'op java-en') [42000-176]
+05-24 18:32:23 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "IF[*] NOT EXISTS (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java')
+INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java' ) 
+END IF "; ожидалось "INSERT, {"
+Syntax error in SQL statement "IF[*] NOT EXISTS (SELECT COMMAND FROM CONSOLE_COMMANDS WHERE COMMAND IS 'op java')
+INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( 2, 'op java' ) 
+END IF "; expected "INSERT, {"; SQL statement:
+IF NOT EXISTS (SELECT command FROM console_commands WHERE command IS 'op java')
+INSERT INTO console_commands (command_id, command) 
+VALUES ( 2, 'op java' ) 
+END IF [42001-176]
+05-24 18:40:02 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( ,[*] ) "; ожидалось "), DEFAULT, NOT, EXISTS, INTERSECTS, SELECT, FROM"
+Syntax error in SQL statement "INSERT INTO CONSOLE_COMMANDS (COMMAND_ID, COMMAND) 
+VALUES ( ,[*] ) "; expected "), DEFAULT, NOT, EXISTS, INTERSECTS, SELECT, FROM"; SQL statement:
+INSERT INTO console_commands (command_id, command) 
+VALUES ( , ) [42001-176]
+05-25 21:46:47 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Неоднозначное имя столбца "COMMAND"
+Ambiguous column name "COMMAND"; SQL statement:
+SELECT command, choice
+FROM 
+    (SELECT command FROM console_commands WHERE command LIKE '%pr%g%') cons 
+INNER JOIN
+    command_choices ch
+ON
+    (cons.command = ch.command) [90059-176]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:344)
+	at org.h2.message.DbException.get(DbException.java:178)
+	at org.h2.message.DbException.get(DbException.java:154)
+	at org.h2.expression.ExpressionColumn.mapColumn(ExpressionColumn.java:125)
+	at org.h2.expression.ExpressionColumn.mapColumns(ExpressionColumn.java:95)
+	at org.h2.command.dml.Select.mapColumns(Select.java:1181)
+	at org.h2.command.dml.Select.init(Select.java:806)
+	at org.h2.command.Parser.parseSelect(Parser.java:1668)
+	at org.h2.command.Parser.parsePrepared(Parser.java:434)
+	at org.h2.command.Parser.parse(Parser.java:306)
+	at org.h2.command.Parser.parse(Parser.java:278)
+	at org.h2.command.Parser.prepareCommand(Parser.java:243)
+	at org.h2.engine.Session.prepareLocal(Session.java:442)
+	at org.h2.engine.Session.prepareCommand(Session.java:384)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1188)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:172)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:160)
+	at org.h2.server.web.WebApp.getResult(WebApp.java:1391)
+	at org.h2.server.web.WebApp.query(WebApp.java:1064)
+	at org.h2.server.web.WebApp$1.next(WebApp.java:1026)
+	at org.h2.server.web.WebApp$1.next(WebApp.java:1013)
+	at org.h2.server.web.WebThread.process(WebThread.java:168)
+	at org.h2.server.web.WebThread.run(WebThread.java:94)
+	at java.lang.Thread.run(Thread.java:745)
+05-25 22:25:34 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Нет данных
+No data is available [2000-176]
+05-25 22:28:19 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Нет данных
+No data is available [2000-176]
+05-25 22:50:46 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Синтаксическая ошибка в выражении SQL "SELECT CONS.COMMAND, ,[*] CH.PATTERN, CH.PATTERN_NUMBER, CH.CHOICE
+FROM 
+    (SELECT COMMAND 
+FROM CONSOLE_COMMANDS WHERE COMMAND LIKE '%fb%' ) CONS 
+LEFT JOIN
+    COMMAND_CHOICES CH
+ON
+    (CONS.COMMAND = CH.COMMAND) "; ожидалось "*, NOT, EXISTS, INTERSECTS, SELECT, FROM"
+Syntax error in SQL statement "SELECT CONS.COMMAND, ,[*] CH.PATTERN, CH.PATTERN_NUMBER, CH.CHOICE
+FROM 
+    (SELECT COMMAND 
+FROM CONSOLE_COMMANDS WHERE COMMAND LIKE '%fb%' ) CONS 
+LEFT JOIN
+    COMMAND_CHOICES CH
+ON
+    (CONS.COMMAND = CH.COMMAND) "; expected "*, NOT, EXISTS, INTERSECTS, SELECT, FROM"; SQL statement:
+SELECT cons.command, , ch.pattern, ch.pattern_number, ch.choice
+FROM 
+    (SELECT command 
+FROM console_commands WHERE command LIKE '%fb%' ) cons 
+LEFT JOIN
+    command_choices ch
+ON
+    (cons.command = ch.command) [42001-176]
+05-26 01:20:38 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Значение слишком длинное для поля "LOCATION_NAME VARCHAR(20) NOT NULL": "'java_installed_engine' (21)"
+Value too long for column "LOCATION_NAME VARCHAR(20) NOT NULL": "'java_installed_engine' (21)"; SQL statement:
+INSERT INTO locations VALUES (?, ?) [22001-176]

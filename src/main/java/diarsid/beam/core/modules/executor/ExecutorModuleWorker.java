@@ -292,6 +292,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void executeIfExists(List<String> commandParams) {
         String obtainedCommand = this.commandsCache
                 .getPatternCommandForExecution(join(" ", commandParams));
+        
         if ( ! obtainedCommand.isEmpty() ) {
             this.isCurrentCommandNew.set(false);            
             this.dispatchCommandToAppropriateMethod(
