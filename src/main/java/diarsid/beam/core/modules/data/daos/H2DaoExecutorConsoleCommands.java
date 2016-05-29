@@ -11,12 +11,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -78,16 +80,20 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private final String SELECT_WHERE_COMMAND_LIKE = 
             "SELECT command " +
             "FROM console_commands " + 
-            "WHERE ( LOWER(command) LIKE ? ) ";
+            "WHERE [REPLACEABLE_CONDITION] ";
     private final String SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE = 
             "SELECT cons.command, ch.pattern, ch.pattern_number, ch.choice " +
             "FROM " +
             "    (SELECT command " +
             "    FROM console_commands " +
-            "    WHERE LOWER(command) LIKE ? ) cons " +
+            "    WHERE [REPLACEABLE_CONDITION] ) cons " +
             "LEFT JOIN " +
             "    command_choices ch " +
             "ON (LOWER(cons.command) = LOWER(ch.command)) ";
+    private final String COMMAND_LIKE = 
+            " ( LOWER(command) LIKE ? ) ";
+    private final String AND = " AND ";
+    private final String REPLACEABLE_CONDITION = "[REPLACEABLE_CONDITION]";
     private final String INSERT_NEW_COMMAND = 
             "INSERT INTO console_commands (command_id, command) " +
             "VALUES ( ?, ? ) ";
@@ -169,15 +175,20 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     
     @Override
     public Set<String> getImprovedCommandsForPattern(String pattern) {
-        pattern = this.adjustPatternIfMultipart(pattern); 
+        Set<String> patternParts = this.splitPatternIfMultipart(pattern); 
         Map<String, Set<CommandChoice>> choices = new HashMap<>();
         Set<String> found = new HashSet<>();
+        String statement = SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE.replace(
+                REPLACEABLE_CONDITION, 
+                this.prepareFullConditionExpression(patternParts.size()));
         
         try (Connection con = data.connect();
-                PreparedStatement ps = con.prepareStatement(
-                        SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE)) {
-            
-            ps.setString(1, "%"+pattern+"%");
+                PreparedStatement ps = con.prepareStatement(statement)) {
+            int paramsCounter = 1;
+            for (String patternPart : patternParts) {
+                ps.setString(paramsCounter, "%"+patternPart+"%");
+                paramsCounter++;
+            }            
             ResultSet rs = ps.executeQuery();
             
             while ( rs.next() ) {
@@ -220,12 +231,20 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     
     @Override
     public Set<String> getRawCommandsForPattern(String pattern) {
-        pattern = this.adjustPatternIfMultipart(pattern);
+        Set<String> patternParts = this.splitPatternIfMultipart(pattern);
         Set<String> found = new HashSet<>(); 
+        String statement = SELECT_WHERE_COMMAND_LIKE.replace(
+                REPLACEABLE_CONDITION, 
+                this.prepareFullConditionExpression(patternParts.size()));
+        
         try (Connection con = data.connect();
                 PreparedStatement ps = con
-                        .prepareStatement(SELECT_WHERE_COMMAND_LIKE)) {
-            ps.setString(1, "%"+pattern+"%");
+                        .prepareStatement(statement)) {
+            int paramsCounter = 1;
+            for (String patternPart : patternParts) {
+                ps.setString(paramsCounter, "%"+patternPart+"%");
+                paramsCounter++;
+            }
             ResultSet rs = ps.executeQuery();
             
             while ( rs.next() ) {
@@ -237,11 +256,20 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
         return found;
     }
     
-    private String adjustPatternIfMultipart(String pattern) {
+    private String prepareFullConditionExpression(int qty) {
+        StringJoiner joiner = new StringJoiner(AND);
+        for (int i = 0; i < qty; i++) {
+            joiner.add(COMMAND_LIKE);
+        }
+        return joiner.toString();
+    }
+    
+    private Set<String> splitPatternIfMultipart(String pattern) {
         pattern = pattern.toLowerCase();
         if ( pattern.contains("-") ) {
-            pattern = pattern.trim().replace("-", "%");
+            return new HashSet<>(Arrays.asList(pattern.split("-")));
+        } else {
+            return new HashSet<>(Arrays.asList(new String[] {pattern}));
         }
-        return pattern;
     }    
 }
