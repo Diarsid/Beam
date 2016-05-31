@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.executor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,39 +65,43 @@ class CommandsIntelligentCache {
         Map<String, String> chosenCommands = new HashMap<>();
         String operationToken;
         for (Map.Entry<String, String> entry : commandsCache.entrySet()) {
-            String testedImprovedCommand = entry.getValue();
-            String originalCommand = entry.getKey();
+            String originalTestedCommand = entry.getKey();
             
-            if ( testedImprovedCommand.contains("webpanel") 
-                    || testedImprovedCommand.contains("bookamrks") ) {
-                testedImprovedCommand = testedImprovedCommand
-                        .substring(0, testedImprovedCommand.indexOf(" - "));
-            }
-            
-            operationToken = this.defineOperationByToken(testedImprovedCommand);
+            operationToken = this.defineOperationByToken(originalTestedCommand);
             if (chosenCommands.containsKey(operationToken)) {
-                if (originalCommand.length() < chosenCommands.get(operationToken).length()) {
-                    chosenCommands.put(operationToken, testedImprovedCommand);
-                } else if (originalCommand.length() == chosenCommands.get(operationToken).length()) {
-                    chosenCommands.put(
-                            operationToken + "(1)", chosenCommands.get(operationToken));
-                    chosenCommands.put(
-                            operationToken + "(2)", testedImprovedCommand);
-                    chosenCommands.remove(operationToken);
+                if (originalTestedCommand.length() < 
+                        chosenCommands.get(operationToken).length()) {
+                    chosenCommands.put(operationToken, originalTestedCommand);
+                } else if (originalTestedCommand.length() == 
+                        chosenCommands.get(operationToken).length()) {
+                    if (commandsCache.get(originalTestedCommand).length() < 
+                            commandsCache.get(chosenCommands.get(operationToken)).length()) {
+                        chosenCommands.put(operationToken, originalTestedCommand);
+                    } else if (commandsCache.get(originalTestedCommand).length() == 
+                            commandsCache.get(chosenCommands.get(operationToken)).length()) {
+                        chosenCommands.put(
+                                operationToken, 
+                                this.askUserWhichActionToPerform(
+                                        commandsCache.get(originalTestedCommand),
+                                        commandsCache.get(chosenCommands.get(operationToken))));
+                    }
                 }
             } else {
-                chosenCommands.put(operationToken, testedImprovedCommand);
+                chosenCommands.put(operationToken, originalTestedCommand);
             }
         }
         
         System.out.println("[COMM CACHE DEBUG] chosen commands: " + chosenCommands);
         
         if ( chosenCommands.size() == 1 ) {
-            return this.refineCommandFromUnnecessaryParts(
-                    new ArrayList<>(chosenCommands.values()).get(0));
+            String improvedCommand = commandsCache.get(
+                    chosenCommands.entrySet().iterator().next().getValue());
+            return this.refineCommandFromUnnecessaryParts(improvedCommand);
         } else {
-            return this.askUserWhichActionToPerform(
-                    new ArrayList<>(chosenCommands.values()));
+            String chosenOriginalCommand = this.askUserWhichActionToPerform(
+                            new ArrayList<>(chosenCommands.values()));
+            String improvedCommand = commandsCache.get(chosenOriginalCommand);
+            return this.refineCommandFromUnnecessaryParts(improvedCommand);
         }
     }
     
@@ -122,10 +127,14 @@ class CommandsIntelligentCache {
         return command.substring(0, command.indexOf(" "));
     }
 
-    private String refineCommandFromUnnecessaryParts(
-                String chosenPreviousCommand) {
+    private String refineCommandFromUnnecessaryParts(String command) {     
+        if ( command.contains("webpanel") 
+                || command.contains("bookamrks") ) {
+            command = command
+                    .substring(0, command.indexOf(" - "));
+        }
         
-        String[] parts = chosenPreviousCommand.split("\\s+");
+        String[] parts = command.split("\\s+");
         StringJoiner futureCommand = new StringJoiner(" ");
         if ( parts.length > 1 ) {
             futureCommand.add(parts[0]).add(parts[1]);
@@ -136,6 +145,11 @@ class CommandsIntelligentCache {
         } else {
             return "";
         }
+    }
+    
+    private String askUserWhichActionToPerform(String variant1, String variant2) {
+        return this.askUserWhichActionToPerform(
+                Arrays.asList(new String[]{variant1, variant2}));
     }
 
     private String askUserWhichActionToPerform(List<String> chosenCommands) {

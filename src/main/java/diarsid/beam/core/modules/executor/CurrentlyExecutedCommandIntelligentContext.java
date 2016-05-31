@@ -47,8 +47,7 @@ class CurrentlyExecutedCommandIntelligentContext
     
     @Override
     public void beginCurrentCommandState(List<String> commandParams) {
-        System.out.println("[EXECUTOR PROXY] command intercepted!");
-        System.out.println("[EXECUTOR PROXY] " + commandParams.toString());
+        System.out.println("[EXECUTOR PROXY] command intercepted : "  + commandParams.toString());
         this.setContextAfresh(commandParams);
     }
 
