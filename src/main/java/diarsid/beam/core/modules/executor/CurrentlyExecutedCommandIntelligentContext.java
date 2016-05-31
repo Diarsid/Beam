@@ -6,10 +6,10 @@
 
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
-
 import java.util.Arrays;
 import java.util.List;
+
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 /**
  *
@@ -53,6 +53,7 @@ class CurrentlyExecutedCommandIntelligentContext
     }
 
     private void setContextAfresh(List<String> commandParams) {
+        System.out.println("[EXECUTOR PROXY] context refreshed: " + commandParams);
         this.currentCommand.set(new CurrentCommandState(commandParams));
         this.currentCommandDiscarded.set(false);
         this.needSaveCurrentChoice.set(true);
@@ -60,6 +61,7 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     private void setContextAfresh(String command) {
+        System.out.println("[EXECUTOR PROXY] context refreshed: " + command);
         this.currentCommand.set(new CurrentCommandState(command));
         this.currentCommandDiscarded.set(false);
         this.needSaveCurrentChoice.set(true);
@@ -68,11 +70,12 @@ class CurrentlyExecutedCommandIntelligentContext
     
     @Override
     public void destroyCurrentCommandState() {
-        System.out.println("[EXECUTOR PROXY] end of interception...");
-        System.out.println("[EXECUTOR PROXY] " + currentCommand.get().getCommandString());
-        System.out.println();
+        String comm = currentCommand.get().getCommandString();        
         this.rememberChoicesForCurrentCommandIfNecessary();
         this.clearContext();
+        System.out.println("[EXECUTOR PROXY] end of interception...");
+        System.out.println("[EXECUTOR PROXY] " + comm);
+        System.out.println();
     }
 
     private void clearContext() {
@@ -83,7 +86,7 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     private void rememberChoicesForCurrentCommandIfNecessary() {
-        System.out.println("[EXECUTOR PROXY] remeber?");
+        System.out.println("[EXECUTOR PROXY] remeber '" + this.currentCommand.get().getCommandString() + "' ?" );
         if ( this.ifMustSaveChoices() ) {
             this.resolver.remember(this.currentCommand.get());
         }

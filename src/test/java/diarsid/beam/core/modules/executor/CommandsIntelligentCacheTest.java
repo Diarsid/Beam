@@ -6,8 +6,8 @@
 
 package diarsid.beam.core.modules.executor;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -76,9 +76,9 @@ public class CommandsIntelligentCacheTest {
      */
     @Test
     public void testGetPatternCommandForExecution() {
-        Set<String> result = new HashSet<>();
-        result.add("open java in eng");
-        result.add("open java in engines");
+        Map<String, String> result = new HashMap<>();
+        result.put("open java in eng", "open java in eng");
+        result.put("open java in engines", "open java in engines");
         when(dao.getImprovedCommandsForPattern("j-eng")).thenReturn(result);
         String command = cache.getPatternCommandForExecution("j-eng");
         verify(dao).getImprovedCommandsForPattern("j-eng");        

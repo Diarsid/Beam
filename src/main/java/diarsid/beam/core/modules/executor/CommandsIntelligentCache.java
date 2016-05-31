@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringJoiner;
 
 import diarsid.beam.core.modules.IoInnerModule;
@@ -49,10 +48,6 @@ class CommandsIntelligentCache {
         return this.intelligentSearchInCache(command);
     }    
     
-    private boolean ifCommandActionsAreEqual(String previous, String choosed) {
-        return ( previous.charAt(0) == choosed.charAt(0) );
-    }
-    
     private String intelligentSearchInCache(String pattern) {        
         
         if (pattern.length() < 2) {
@@ -60,7 +55,7 @@ class CommandsIntelligentCache {
             // one letter
             return "";
         }
-        Set<String> commandsCache = 
+        Map<String, String> commandsCache = 
                 this.dao.getImprovedCommandsForPattern(pattern);
         if ( commandsCache.isEmpty() ) {
             return "";
@@ -68,14 +63,29 @@ class CommandsIntelligentCache {
         System.out.println("[COMM CACHE DEBUG] raw commands: " + commandsCache);
         Map<String, String> chosenCommands = new HashMap<>();
         String operationToken;
-        for (String testedCommand : commandsCache) {
-            operationToken = this.defineOperationByToken(testedCommand);
+        for (Map.Entry<String, String> entry : commandsCache.entrySet()) {
+            String testedImprovedCommand = entry.getValue();
+            String originalCommand = entry.getKey();
+            
+            if ( testedImprovedCommand.contains("webpanel") 
+                    || testedImprovedCommand.contains("bookamrks") ) {
+                testedImprovedCommand = testedImprovedCommand
+                        .substring(0, testedImprovedCommand.indexOf(" - "));
+            }
+            
+            operationToken = this.defineOperationByToken(testedImprovedCommand);
             if (chosenCommands.containsKey(operationToken)) {
-                if (testedCommand.length() < chosenCommands.get(operationToken).length()) {
-                    chosenCommands.put(operationToken, testedCommand);
+                if (originalCommand.length() < chosenCommands.get(operationToken).length()) {
+                    chosenCommands.put(operationToken, testedImprovedCommand);
+                } else if (originalCommand.length() == chosenCommands.get(operationToken).length()) {
+                    chosenCommands.put(
+                            operationToken + "(1)", chosenCommands.get(operationToken));
+                    chosenCommands.put(
+                            operationToken + "(2)", testedImprovedCommand);
+                    chosenCommands.remove(operationToken);
                 }
             } else {
-                chosenCommands.put(operationToken, testedCommand);
+                chosenCommands.put(operationToken, testedImprovedCommand);
             }
         }
         

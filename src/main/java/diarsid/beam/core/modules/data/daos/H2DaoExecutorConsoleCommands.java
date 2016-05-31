@@ -174,10 +174,10 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     }
     
     @Override
-    public Set<String> getImprovedCommandsForPattern(String pattern) {
+    public Map<String, String> getImprovedCommandsForPattern(String pattern) {
         Set<String> patternParts = this.splitPatternIfMultipart(pattern); 
         Map<String, Set<CommandChoice>> choices = new HashMap<>();
-        Set<String> found = new HashSet<>();
+        Map<String, String> found = new HashMap<>();
         String statement = SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE.replace(
                 REPLACEABLE_CONDITION, 
                 this.prepareFullConditionExpression(patternParts.size()));
@@ -194,7 +194,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
             while ( rs.next() ) {
                 String command = rs.getString("command");
                 if ( rs.getString("pattern") == null ) {
-                    found.add(command);
+                    found.put(command, command);
                 } else {
                     CommandChoice choice = new CommandChoice(
                             rs.getString("pattern"), 
@@ -213,17 +213,17 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
         }
         
         for (Map.Entry<String, Set<CommandChoice>> entry : choices.entrySet() ) {
-            String command = entry.getKey();
+            String improvedCommand = entry.getKey();
             for (CommandChoice choice : entry.getValue()) {
                 // patterns are being replaced with a whitespace behind them
                 // to prevent an undesired accident replacing of an actual
                 // part of real argument. Replacing " ja" to " java"
                 // instead of "ja" ensures that any arbitraty argument 
                 // coincidentally containing "ja" will be undamaged.
-                command = command.replace(
+                improvedCommand = improvedCommand.replace(
                         " "+choice.getPattern(), " "+choice.getMadeChoice());                
             }
-            found.add(command);
+            found.put(entry.getKey(), improvedCommand);
         }
         
         return found;
