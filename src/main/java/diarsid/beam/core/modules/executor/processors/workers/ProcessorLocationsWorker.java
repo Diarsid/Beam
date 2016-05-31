@@ -74,7 +74,7 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     
     @Override
     public List<String> listLocationContent(String locationName) {
-        Location location = this.getLocation(locationName);
+        Location location = this.getLocation(locationName, false);
         if (location != null) {
             List<String> locationContent = this.system.getLocationContent(location);
             if (locationContent != null) {
@@ -121,7 +121,13 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         }   
     }
     
-    private Location getLocation(String locationName) {        
+    private Location getLocation(String locationName) {
+        return this.getLocation(locationName, true);
+    }
+    
+    private Location getLocation(
+            String locationName, boolean useIntelligentContext) {  
+        
         List<Location> foundLocations = this.locationsHandler
                 .getLocations(locationName);        
         
@@ -131,25 +137,32 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         } else if (foundLocations.size() == 1) {
             return foundLocations.get(0);
         } else { 
-            return this.resolveMultipleLocations(locationName, foundLocations);
+            return this.resolveMultipleLocations(
+                    locationName, foundLocations, useIntelligentContext);
         }
     }
     
     private Location resolveMultipleLocations(
             String requiredLocationName,
-            List<Location> foundLocations) {
+            List<Location> foundLocations,
+            boolean useIntelligentContext) {
         
         List<String> locationNames = new ArrayList();
         for (Location loc : foundLocations) {
             locationNames.add(loc.getName());
         }
-        int varNumber = this.intellContext.resolve(
-                "Desired location?",
-                requiredLocationName,
-                locationNames);
-        //int varNumber = this.ioEngine.resolveVariantsWithExternalIO(
-        //        "There are several locations:", 
-        //        locationNames);
+        int varNumber = -1;
+        if ( useIntelligentContext ) {
+            varNumber = this.intellContext.resolve(
+                    "Desired location?",
+                    requiredLocationName,
+                    locationNames);
+        } else {
+            varNumber = this.ioEngine.resolveVariantsWithExternalIO(
+                    "Desired location?", 
+                    locationNames);
+        }        
+        
         if (varNumber < 0) {
             return null;
         } else {
