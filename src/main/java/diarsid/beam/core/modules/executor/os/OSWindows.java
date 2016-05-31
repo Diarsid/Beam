@@ -169,7 +169,7 @@ public class OSWindows implements OS {
     private boolean checkIfDirectoryExists(String location) {
         File dir = new File(location);
         if ( ! dir.exists() ) {
-            this.ioEngine.reportMessage("This path doesn`t exists.");
+            this.ioEngine.reportMessage("This path doesn`t exist.");
             this.intelligentContext
                     .discardCurrentlyExecutedCommandInPattern(location);
             return false;
