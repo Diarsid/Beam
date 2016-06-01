@@ -100,8 +100,12 @@ class CommandsIntelligentCache {
         } else {
             String chosenOriginalCommand = this.askUserWhichActionToPerform(
                             new ArrayList<>(chosenCommands.values()));
-            String improvedCommand = commandsCache.get(chosenOriginalCommand);
-            return this.refineCommandFromUnnecessaryParts(improvedCommand);
+            if ( chosenOriginalCommand.isEmpty() ) {
+                return "";
+            } else {
+                String improvedCommand = commandsCache.get(chosenOriginalCommand);
+                return this.refineCommandFromUnnecessaryParts(improvedCommand);
+            }            
         }
     }
     

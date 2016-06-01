@@ -294,11 +294,19 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void executeIfExists(List<String> commandParams) {
         String cachedCommand = this.commandsCache
                 .getPatternCommandForExecution(this.aggregate(commandParams));
+        if ( cachedCommand.isEmpty() ) {
+            return;
+        } else {
+            this.tryToExecuteCachedCommand(cachedCommand);
+        }            
+    }
+
+    private void tryToExecuteCachedCommand(String cachedCommand) {
         if ( this.ifCachedCommandIsBatch(cachedCommand) ) {
             this.executeStoredBatchIfExists(cachedCommand);
         } else {
             this.executeOldCommandInternally(cachedCommand);
-        }    
+        }
     }
     
     private boolean ifCachedCommandIsBatch(String cachedCommand) {
