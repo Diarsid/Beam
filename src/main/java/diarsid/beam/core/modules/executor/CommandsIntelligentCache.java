@@ -94,9 +94,13 @@ class CommandsIntelligentCache {
         System.out.println("[COMM CACHE DEBUG] chosen commands: " + chosenCommands);
         
         if ( chosenCommands.size() == 1 ) {
-            String improvedCommand = commandsCache.get(
-                    chosenCommands.entrySet().iterator().next().getKey());
-            return this.refineCommandFromUnnecessaryParts(improvedCommand);
+            String chosenCommand = chosenCommands.entrySet().iterator().next().getValue();
+            if ( chosenCommand.isEmpty() ) {
+                return "";
+            } else {
+                String improvedCommand = commandsCache.get(chosenCommand);
+                return this.refineCommandFromUnnecessaryParts(improvedCommand);
+            }
         } else if ( chosenCommands.size() > 1 ) {
             String chosenOriginalCommand = this.askUserWhichActionToPerform(
                             new ArrayList<>(chosenCommands.values()));
