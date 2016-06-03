@@ -51,7 +51,7 @@ class CommandsIntelligentCache {
     
     private String intelligentSearchInCache(String pattern) {        
         
-        if (pattern.length() < 2) {
+        if ( pattern.length() < 2 ) {
             // There is no reason to search commands that matches only
             // one letter
             return "";
@@ -95,9 +95,9 @@ class CommandsIntelligentCache {
         
         if ( chosenCommands.size() == 1 ) {
             String improvedCommand = commandsCache.get(
-                    chosenCommands.entrySet().iterator().next().getValue());
+                    chosenCommands.entrySet().iterator().next().getKey());
             return this.refineCommandFromUnnecessaryParts(improvedCommand);
-        } else {
+        } else if ( chosenCommands.size() > 1 ) {
             String chosenOriginalCommand = this.askUserWhichActionToPerform(
                             new ArrayList<>(chosenCommands.values()));
             if ( chosenOriginalCommand.isEmpty() ) {
@@ -106,6 +106,8 @@ class CommandsIntelligentCache {
                 String improvedCommand = commandsCache.get(chosenOriginalCommand);
                 return this.refineCommandFromUnnecessaryParts(improvedCommand);
             }            
+        } else {
+            return "";
         }
     }
     
