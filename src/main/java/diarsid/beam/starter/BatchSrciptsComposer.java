@@ -31,7 +31,7 @@ class BatchSrciptsComposer {
         scriptLines.add("");
         scriptLines.add("@echo off");
         scriptLines.add(
-                "cmd /c start javaw -cp .;" + 
+                "cmd /c start \"Beam.core\" javaw -cp .;" + 
                 coreClassPath + 
                 " -Djava.rmi.server.hostname=127.0.0.1 " + 
                 jvmOptions + " " + className);
@@ -50,7 +50,7 @@ class BatchSrciptsComposer {
         scriptLines.add("");
         scriptLines.add("@echo off");
         scriptLines.add(
-                "cmd /c start java -cp .;" + 
+                "cmd /c start \"Beam\" java -cp .;" + 
                 consoleClasspath + 
                 " -Djava.rmi.server.hostname=127.0.0.1 " + 
                 jvmOptions + " " + className);
