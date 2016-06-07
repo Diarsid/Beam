@@ -79,12 +79,18 @@ class CommandsIntelligentCache {
                         chosenCommands.put(operationToken, originalTestedCommand);
                     } else if (commandsCache.get(originalTestedCommand).length() == 
                             commandsCache.get(chosenCommands.get(operationToken)).length()) {
-                        chosenCommands.put(
-                                operationToken, 
-                                this.askUserWhichActionToPerform(
-                                        commandsCache.get(originalTestedCommand),
-                                        commandsCache.get(chosenCommands.get(operationToken))));
+                        String chosenCommand = this.askUserWhichActionToPerform(
+                                "chose candidate for '" + operationToken + "' command:",
+                                commandsCache.get(originalTestedCommand),
+                                commandsCache.get(chosenCommands.get(operationToken)));
+                        if ( chosenCommand.isEmpty() ) {
+                            chosenCommands.remove(operationToken);
+                        } else {
+                            chosenCommands.put(operationToken, chosenCommand);
+                        }                        
                     }
+                } else {
+                    // do nothing.
                 }
             } else {
                 chosenCommands.put(operationToken, originalTestedCommand);
@@ -103,7 +109,8 @@ class CommandsIntelligentCache {
             }
         } else if ( chosenCommands.size() > 1 ) {
             String chosenOriginalCommand = this.askUserWhichActionToPerform(
-                            new ArrayList<>(chosenCommands.values()));
+                    "action?",
+                    new ArrayList<>(chosenCommands.values()));
             if ( chosenOriginalCommand.isEmpty() ) {
                 return "";
             } else {
@@ -157,14 +164,15 @@ class CommandsIntelligentCache {
         }
     }
     
-    private String askUserWhichActionToPerform(String variant1, String variant2) {
+    private String askUserWhichActionToPerform(String question, String variant1, String variant2) {
         return this.askUserWhichActionToPerform(
+                question, 
                 Arrays.asList(new String[]{variant1, variant2}));
     }
 
-    private String askUserWhichActionToPerform(List<String> chosenCommands) {
+    private String askUserWhichActionToPerform(String question, List<String> chosenCommands) {
         int chosen = this.ioEngine.resolveVariantsWithExternalIO(
-                "action?", chosenCommands);
+                question, chosenCommands);
         if ( chosen > 0 ) {
             return chosenCommands.get(chosen - 1);
         } else {

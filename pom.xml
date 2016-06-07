@@ -119,7 +119,7 @@
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath/>
-                        <argument>diarsid.beam.starter.BeamPartsLoader</argument>
+                        <argument>diarsid.beam.starter.BeamPartsBatchLoader</argument>
                     </arguments>
                 </configuration>
             </plugin>
