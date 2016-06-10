@@ -57,7 +57,6 @@ class AllPagesInDirectoryServlet extends HttpServlet {
             throws ServletException, IOException { 
         
         String path = this.resolver.getNormalizedPath(request);
-        System.out.println("ALL PAGES IN DIR pathInfo = " + path);
         List<WebPage> pages = this.pagesHandler.getAllWebPagesInDirectoryAndPlacement(
                 this.resolver.extractDirectoryBeforePages(path), 
                 this.resolver.extractPlacementBeforeDirectory(path),

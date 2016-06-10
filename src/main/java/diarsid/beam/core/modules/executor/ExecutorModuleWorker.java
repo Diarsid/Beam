@@ -130,15 +130,15 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void call(List<String> commandParams) {
         // command pattern: call [command_1] [command_2]...
-        StoredCommandsBatch storedCommand;
+        StoredCommandsBatch storedBatch;
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
             sb.append(commandParams.get(0))
                     .append(" ")
                     .append(commandParams.get(i));
-            storedCommand = this.commands.getBatch(commandParams.get(i));
-            if (storedCommand != null) {
-                this.executeCommand(storedCommand);
+            storedBatch = this.commands.getBatch(commandParams.get(i));
+            if (storedBatch != null) {
+                this.executeCommandsBatch(storedBatch);
                 this.saveConsoleCommandIfValid(sb.toString());
             }
             sb.delete(0, sb.length());
@@ -177,7 +177,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         return this.commands.getBatches(commandName);
     }    
     
-    private void executeCommand(StoredCommandsBatch command) {
+    private void executeCommandsBatch(StoredCommandsBatch command) {
         for (String commandString : command.getCommands()) {
             this.dispatchCommandToAppropriateMethod(
                     this.transformCommandStringToParams(commandString));

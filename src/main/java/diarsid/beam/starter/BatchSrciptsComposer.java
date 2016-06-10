@@ -34,6 +34,7 @@ class BatchSrciptsComposer {
                 "cmd /c start \"Beam.core\" javaw -cp .;" + 
                 coreClassPath + 
                 " -Djava.rmi.server.hostname=127.0.0.1 " + 
+                " -Dlog4j.configuration=file:./../config/log4j.properties " +        
                 jvmOptions + " " + className);
         
         return scriptLines;
@@ -72,6 +73,7 @@ class BatchSrciptsComposer {
                 "java -cp .;" + 
                 consoleClasspath + 
                 " -Djava.rmi.server.hostname=127.0.0.1 " + 
+                " -Dlog4j.configuration=file:./../config/log4j.properties " +
                 jvmOptions + " " + className);
         
         return scriptLines;

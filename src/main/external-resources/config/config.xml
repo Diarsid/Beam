@@ -43,6 +43,9 @@
             <element>./../lib/jetty-util-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-servlet-9.3.6.v20151106.jar</element>
             <element>./../lib/jetty-security-9.3.6.v20151106.jar</element>
+            <element>./../lib/log4j-1.2.17.jar</element>
+            <element>./../lib/slf4j-api-1.7.21.jar</element>
+            <element>./../lib/slf4j-log4j12-1.7.21.jar</element>
         </beam-core>
         <beam-system-console>
             <element>Beam.jar</element>

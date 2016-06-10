@@ -82,7 +82,6 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
     
     final void showThis() {
         WindowPosition position = controller.getNewWindowPosition();
-        System.out.println();
         if ( (position.getX() != 0) && (Double.isNaN(this.stage.getX())) ) {
             this.stage.setX(position.getX());
             this.stage.setY(position.getY());

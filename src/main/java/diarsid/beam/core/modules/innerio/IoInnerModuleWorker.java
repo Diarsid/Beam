@@ -9,6 +9,9 @@ package diarsid.beam.core.modules.innerio;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
@@ -22,6 +25,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     
     private final IoModule io;
     private final Gui gui;
+    private final Logger logger;
 
     IoInnerModuleWorker(IoModule ioModule, Gui gui) {
         if (ioModule == null) {
@@ -36,11 +40,12 @@ class IoInnerModuleWorker implements IoInnerModule {
         }
         this.io = ioModule;
         this.gui = gui;
+        this.logger = LoggerFactory.getLogger(IoInnerModule.class);
     }
     
     @Override
     public void stopModule() {
-        gui.stopJavaFXPlatform();
+        this.gui.stopJavaFXPlatform();
     }
     
     @Override
@@ -82,11 +87,11 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public void reportInfo(String... info){
-        if (this.io.hasExternalIOProcessor()){
+    public void reportInfo(String... info) {
+        if (this.io.hasExternalIOProcessor()) {
             try{
                 this.io.getExternalIOEngine().reportInfo(info);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 this.io.resetIoToDefault();
                 this.nativeReportMessage(info);
             }
@@ -96,11 +101,11 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public void reportMessage(String... message){
-        if (this.io.hasExternalIOProcessor()){
+    public void reportMessage(String... message) {
+        if (this.io.hasExternalIOProcessor()) {
             try{
                 this.io.getExternalIOEngine().reportMessage(message);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 this.io.resetIoToDefault();
                 this.nativeReportMessage(message);
             }
@@ -110,11 +115,11 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
 
     @Override
-    public void reportError(String... error){
+    public void reportError(String... error) {
         if (this.io.hasExternalIOProcessor()){
             try{
                 this.io.getExternalIOEngine().reportError(error);
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 this.io.resetIoToDefault();
                 this.nativeReportError(false, error);
             }
@@ -124,12 +129,12 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public void reportErrorAndExitLater(String... error){
-        if (this.io.hasExternalIOProcessor()){
+    public void reportErrorAndExitLater(String... error) {
+        if (this.io.hasExternalIOProcessor()) {
             try{
                 this.io.getExternalIOEngine().reportError(error);
                 this.io.getExternalIOEngine().exitExternalIO();
-            } catch (RemoteException e){
+            } catch (RemoteException e) {
                 this.io.resetIoToDefault();
                 this.nativeReportError(true, error);
             }
@@ -139,8 +144,8 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public void reportException(Exception e, String... description){
-        if (this.io.hasExternalIOProcessor()){
+    public void reportException(Exception e, String... description) {
+        if (this.io.hasExternalIOProcessor()) {
             try {
                 this.io.getExternalIOEngine().reportException(description);
             } catch (RemoteException re) {
@@ -152,8 +157,8 @@ class IoInnerModuleWorker implements IoInnerModule {
         }    
     }
     @Override
-    public void reportExceptionAndExitLater(Exception e, String... description){
-        if (this.io.hasExternalIOProcessor()){
+    public void reportExceptionAndExitLater(Exception e, String... description) {
+        if (this.io.hasExternalIOProcessor()) {
             try {
                 this.io.getExternalIOEngine().reportException(description);
             } catch (RemoteException re) {
@@ -166,9 +171,9 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public int resolveVariantsWithExternalIO(String message, List<String> variants){
+    public int resolveVariantsWithExternalIO(String message, List<String> variants) {
         int choosedVariant = 0;
-        if (this.io.hasExternalIOProcessor()){
+        if (this.io.hasExternalIOProcessor()) {
             try {
                 choosedVariant = this.io.getExternalIOEngine()
                         .chooseVariants(message, variants);
@@ -189,31 +194,49 @@ class IoInnerModuleWorker implements IoInnerModule {
      *
      * 'Native' output methods use JavaFX GUI to reportInfo user about events, errors etc.
      */
-    private void nativeShowTask(TaskMessage task){                
-        gui.showTask(task);        
+    private void nativeShowTask(TaskMessage task) {                
+        this.gui.showTask(task);        
     }
     
     private void nativeShowTasksNotification(
             String periodOfNotification, List<TaskMessage> tasks) {
         
-        gui.showTasks(periodOfNotification, tasks);
+        this.gui.showTasks(periodOfNotification, tasks);
     }
 
     private void nativeReportMessage(String[] info){
-        gui.showMessage(info);
+        this.gui.showMessage(info);
     }
     
-    private void nativeReportError(boolean critical, String[] error){
-        gui.showError(error);
-        if (critical){
-            gui.exitAfterAllWindowsClosed();
+    private void nativeReportError(boolean critical, String[] description) {
+        this.gui.showError(description);
+        this.logError(critical, description);
+        if (critical) {
+            this.gui.exitAfterAllWindowsClosed();
         }
     }
     
-    private void nativeReportException(Exception e, boolean critical, String[] description){
-        gui.showError(description);
-        if (critical){
-            gui.exitAfterAllWindowsClosed();
+    private void logError(boolean critical, String[] description) {
+        String criticalStatus = critical ? "critical" : "non-critical";        
+        this.logger.error("status: " + criticalStatus + " :");
+        for (String s : description) {
+            this.logger.error(s);
         }
+    }
+    
+    private void nativeReportException(Exception e, boolean critical, String[] description) {
+        this.gui.showError(description);
+        this.logException(e, critical, description);
+        if (critical) {
+            this.gui.exitAfterAllWindowsClosed();
+        }
+    }
+
+    private void logException(Exception e, boolean critical, String[] description) {
+        String criticalStatus = critical ? "critical" : "non-critical";
+        for (String s : description) {
+            this.logger.error(s);
+        }
+        this.logger.error("native exception reporting, status: "+criticalStatus, e);
     }
 }

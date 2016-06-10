@@ -11,48 +11,50 @@
         <directory>target</directory>
         <outputDirectory>/bin</outputDirectory>
         <includes>
-          <include>*.jar</include>
+            <include>*.jar</include>
         </includes>
     </fileSet>
     <fileSet>
         <directory>src/main/external-resources/bin</directory>
         <outputDirectory>bin</outputDirectory>
         <includes>
-          <include>*.bat</include>
-          <include>*.sh</include>
+            <include>*.bat</include>
+            <include>*.sh</include>
         </includes>
     </fileSet>
     <fileSet>
         <directory>src/main/external-resources/config</directory>
         <outputDirectory>config</outputDirectory>
         <includes>
-          <include>*.*</include>
+            <include>*.*</include>
         </includes>    
     </fileSet>
     <fileSet>
         <directory>src/main/external-resources/data</directory>
         <outputDirectory>data</outputDirectory>
         <includes>
-          <include>*.*</include>
+            <include>*.*</include>
         </includes>    
     </fileSet>
     <fileSet>
         <directory>src/main/external-resources/data/images</directory>
         <outputDirectory>data/images</outputDirectory>
         <includes>
-          <include>*.*</include>
+            <include>*.*</include>
         </includes>    
     </fileSet>
     <fileSet>
         <directory>src/main/external-resources/lib</directory>
         <outputDirectory>lib</outputDirectory>
         <includes>
-          <include>h2*.jar</include>
-          <include>gem-injector*.jar</include>
-          <include>javax.servlet*.jar</include>
-          <include>*jetty*.jar</include>
-          <include>json-simple*.jar</include>
-          <include>*http2*.jar</include>
+            <include>h2*.jar</include>
+            <include>gem-injector*.jar</include>
+            <include>javax.servlet*.jar</include>
+            <include>*jetty*.jar</include>
+            <include>json-simple*.jar</include>
+            <include>*http2*.jar</include>
+            <include>*log4j*.jar</include>
+            <include>*slf4j*.jar</include>
         </includes>    
     </fileSet>
     <fileSet>
