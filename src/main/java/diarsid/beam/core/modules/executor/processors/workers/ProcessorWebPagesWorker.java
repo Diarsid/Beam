@@ -118,14 +118,21 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
         OperationResult result;
         result = this.system.openUrlWithGivenBrowser(
                 page.getUrlAddress(), givenBrowser);
-        String pageBrowser = page.getBrowser();
-        if ( pageBrowser.contains(givenBrowser)
-                || givenBrowser.contains(pageBrowser) ) {
+        this.rememberNewBrowserForPageIfValid(result, givenBrowser, page);
+        return result;
+    }
+
+    private void rememberNewBrowserForPageIfValid(
+            OperationResult result, String givenBrowser, WebPage page) {
+        if ( result.ifFail() ) {
+            return;
+        }
+        if ( page.getBrowser().contains(givenBrowser)
+                || givenBrowser.contains(page.getBrowser()) ) {
             // do nothing because it seams that it is the same browser
         } else {
             this.rememberNewBrowserForPage(page, givenBrowser);
         }
-        return result;
     }
 
     private OperationResult processPageWithDefaultBrowser(WebPage page) {

@@ -8,10 +8,15 @@ package diarsid.beam.core.modules.executor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringJoiner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
@@ -24,6 +29,9 @@ class CommandsIntelligentCache {
     
     private final IoInnerModule ioEngine;
     private final DaoExecutorConsoleCommands dao;
+    private final List<String> executableOperationsByPriority;
+    
+    private final Logger debugger = LoggerFactory.getLogger("debugger");
         
     CommandsIntelligentCache(
             IoInnerModule ioEngine,
@@ -31,6 +39,12 @@ class CommandsIntelligentCache {
         
         this.ioEngine = ioEngine;
         this.dao = consoleCommandsDao;
+        List<String> listOfOperations = new ArrayList<>();
+        listOfOperations.add("run");
+        listOfOperations.add("start");
+        listOfOperations.add("call");
+        this.executableOperationsByPriority = 
+                Collections.unmodifiableList(listOfOperations);
     }    
     
     void addCommand(List<String> commandParams) {
@@ -46,59 +60,147 @@ class CommandsIntelligentCache {
     }
     
     String getPatternCommandForExecution(String command) {
-        return this.intelligentSearchInCache(command);
-    }    
-    
-    private String intelligentSearchInCache(String pattern) {        
-        
-        if ( pattern.length() < 2 ) {
+        if ( command.length() < 2 ) {
             // There is no reason to search commands that matches only
             // one letter
             return "";
-        }
-        Map<String, String> commandsCache = 
-                this.dao.getImprovedCommandsForPattern(pattern);
-        if ( commandsCache.isEmpty() ) {
+        } else {
+            return this.intelligentSearchInCache(command);
+        }        
+    }    
+    
+    private String intelligentSearchInCache(String pattern) {    
+        Map<String, String> commandsRawCache = this.dao.getImprovedCommandsForPattern(pattern);
+        if ( commandsRawCache.isEmpty() ) {
             return "";
         }
-        System.out.println("[COMM CACHE DEBUG] raw commands: " + commandsCache);
+        debugger.debug("[COMM CACHE DEBUG] raw commands: " + commandsRawCache);
+        Map<String, String> chosenCommands = 
+                this.chooseCommandsByOperationFromRawCache(commandsRawCache);
+        debugger.debug("[COMM CACHE DEBUG] chosen commands: " + chosenCommands);
+        if ( chosenCommands.size() > 1 ) {
+            this.testCommandsForWeakCombinations2(chosenCommands);
+        }                
+        debugger.debug("[COMM CACHE DEBUG] chosen commands after weakness check: " + chosenCommands); 
+        return this.resolveCommandAfterCacheRefining(chosenCommands, commandsRawCache);
+    }
+
+    private Map<String, String> chooseCommandsByOperationFromRawCache(
+            Map<String, String> commandsCache) {
+        
+        // commandsCache contains Map of commands where key is a 
+        // cached command itself as it was once printed by user. 
+        // This command could be made of abbreviations and thus
+        // be quite short.
+        // Value is an 'improved' version of cached command placed in key,
+        //  where all abbreviations have been replaced with full names
+        // and arguments
+        
         Map<String, String> chosenCommands = new HashMap<>();
-        String operationToken;
+        String operation;
+        String originalTestedCommand;
+        String improvedTestedCommand;
+        String originalPrevChosenCommand;
+        String improvedPrevChosenCommand;
+        
         for (Map.Entry<String, String> entry : commandsCache.entrySet()) {
-            String originalTestedCommand = entry.getKey();
             
-            operationToken = this.defineOperationByToken(originalTestedCommand);
-            if (chosenCommands.containsKey(operationToken)) {
-                if (originalTestedCommand.length() < 
-                        chosenCommands.get(operationToken).length()) {
-                    chosenCommands.put(operationToken, originalTestedCommand);
-                } else if (originalTestedCommand.length() == 
-                        chosenCommands.get(operationToken).length()) {
-                    if (commandsCache.get(originalTestedCommand).length() < 
-                            commandsCache.get(chosenCommands.get(operationToken)).length()) {
-                        chosenCommands.put(operationToken, originalTestedCommand);
-                    } else if (commandsCache.get(originalTestedCommand).length() == 
-                            commandsCache.get(chosenCommands.get(operationToken)).length()) {
+            originalTestedCommand = entry.getKey();
+            improvedTestedCommand = entry.getValue();
+            originalPrevChosenCommand = "";
+            improvedPrevChosenCommand = "";            
+            operation = this.defineOperationOf(originalTestedCommand);   
+            
+            if (chosenCommands.containsKey(operation)) {
+                // If chosen commands already have command with the same operation
+                // it is necessary to find out which command should be picked and saved.
+                // Algorithm should find the shortest command among all candidate 
+                // commands having the same operation.
+                originalPrevChosenCommand = chosenCommands.get(operation);                
+                if (originalTestedCommand.length() < originalPrevChosenCommand.length()) {
+                    // replace command because new tested candidate is shorter
+                    // than previous one
+                    chosenCommands.put(operation, originalTestedCommand);
+                } else if (originalTestedCommand.length() == originalPrevChosenCommand.length()) {
+                    // if both tested and previously chosen command have equal length
+                    // let's see on the length difference between their 'improved'
+                    // versions as those commands normally have greater length than 
+                    // 'original' versions
+                    improvedPrevChosenCommand = commandsCache.get(originalPrevChosenCommand);
+                    if (improvedTestedCommand.length() < improvedPrevChosenCommand.length()) {
+                        // replace prveiously chosen command because 'improved' version
+                        // of currently tested command is shorter than 'improved' version
+                        // of previosly chosen one
+                        chosenCommands.put(operation, originalTestedCommand);
+                    } else if (improvedTestedCommand.length() == improvedPrevChosenCommand.length()) {
+                        // if even 'improved' versions of both tested and previously chosen
+                        // commands have equal length then ask user about his choice
+                        // among these two commands
                         String chosenCommand = this.askUserWhichActionToPerform(
-                                "chose candidate for '" + operationToken + "' command:",
-                                commandsCache.get(originalTestedCommand),
-                                commandsCache.get(chosenCommands.get(operationToken)));
+                                "chose candidate for '" + operation + "' command:",
+                                improvedTestedCommand,
+                                improvedPrevChosenCommand);
                         if ( chosenCommand.isEmpty() ) {
-                            chosenCommands.remove(operationToken);
+                            // if user has not made any choice (it means he has rejected
+                            // both variants!) then remove this hateful command at all.
+                            chosenCommands.remove(operation);
                         } else {
-                            chosenCommands.put(operationToken, chosenCommand);
+                            // save user's choice to proceed
+                            chosenCommands.put(operation, chosenCommand);
                         }                        
                     }
                 } else {
                     // do nothing.
                 }
             } else {
-                chosenCommands.put(operationToken, originalTestedCommand);
+                chosenCommands.put(operation, originalTestedCommand);
             }
         }
+        return chosenCommands;
+    }
+    
+    private void testCommandsForWeakCombinations2(Map<String, String> chosenCommands) {
+        Map<String, String> operationsByTargets = new HashMap<>();
+        Map<String, String> weakCommands = new HashMap<>();
+        String testedOperation;
+        String testedTarget;
+        String prevChosenOperation;
+        int testedOperationPriority;
+        int prevChosenOperationPriority;
         
-        System.out.println("[COMM CACHE DEBUG] chosen commands: " + chosenCommands);
+        for (Entry<String, String> entry : chosenCommands.entrySet()) {
+            testedOperation = entry.getKey();            
+            if ( this.executableOperationsByPriority.contains(testedOperation) ) {
+                testedTarget = ( entry.getValue() ).substring(entry.getValue().indexOf(" "));
+                if ( operationsByTargets.containsKey(testedTarget) ) {
+                    prevChosenOperation = operationsByTargets.get(testedTarget);
+                    testedOperationPriority = this.priorityOf(testedOperation);
+                    prevChosenOperationPriority = this.priorityOf(prevChosenOperation);
+                    if ( testedOperationPriority > prevChosenOperationPriority ) {
+                        weakCommands.put(
+                                prevChosenOperation, chosenCommands.get(prevChosenOperation));
+                        operationsByTargets.replace(testedTarget, testedOperation);
+                    } else {
+                        weakCommands.put(
+                                testedOperation, chosenCommands.get(testedOperation));
+                    }                  
+                } else {
+                    operationsByTargets.put(testedTarget, testedOperation);
+                }
+            }            
+        }
         
+        for (Entry<String, String> entry : weakCommands.entrySet()) {
+            chosenCommands.remove(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private int priorityOf(String operation) {
+        return this.executableOperationsByPriority.indexOf(operation);
+    }  
+
+    private String resolveCommandAfterCacheRefining(
+            Map<String, String> chosenCommands, Map<String, String> commandsCache) {
         if ( chosenCommands.size() == 1 ) {
             String chosenCommand = chosenCommands.entrySet().iterator().next().getValue();
             if ( chosenCommand.isEmpty() ) {
@@ -122,7 +224,7 @@ class CommandsIntelligentCache {
         }
     }
     
-    private String defineOperationByToken(String command) {
+    private String defineOperationOf(String command) {
         if (command.startsWith("see ") || 
                 command.startsWith("www ") || 
                 command.startsWith("web ")) {
@@ -130,7 +232,7 @@ class CommandsIntelligentCache {
         }
         if (command.startsWith("exe ") || 
                 command.startsWith("call ")) {
-            return "exe";
+            return "call";
         }
         if (command.startsWith("o ") || 
                 command.startsWith("op ") || 
