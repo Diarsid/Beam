@@ -60,16 +60,19 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
     private List<OperationResult> openWebPages(List<String> commandParams) {
         // command pattern: see [webPage_1] [webPage_2] [webPage_3]...
         WebPage page;
+        String processedPageName;
         List<OperationResult> operations = new ArrayList<>();
         for (int i = 1; i < commandParams.size(); i++) {
+            processedPageName = commandParams.get(i);
             // register current command as: see [webPage_i]
             this.intellContext.adjustCurrentlyExecutedCommand(
-                    commandParams.get(0), 
-                    commandParams.get(i));
-            page = this.getWebPage(commandParams.get(i));
+                    "see", processedPageName);
+            page = this.getWebPage(processedPageName);
             if (page != null) {
                 operations.add(this.processPageWithItsOwnBrowser(page));
             } else {
+                this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                        "see", processedPageName);
                 operations.add(failByInvalidArgument(commandParams.get(i)));
             }
         }
@@ -104,6 +107,8 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
                     return processPageWithNonDefaultBrowser(page, givenBrowser);
                 }                
             } else {
+                this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                        "see", commandParams.get(1));
                 return failByInvalidArgument(commandParams.get(1));
             }
         } else {

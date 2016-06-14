@@ -54,7 +54,7 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     public void newCommand(List<String> command, String commandName) 
             throws RemoteException {
         
-        this.executorModule.newCommand(command, commandName);
+        this.executorModule.newBatch(command, commandName);
     }
     
     @Override
@@ -71,19 +71,19 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     
     @Override
     public List<StoredCommandsBatch> getAllCommands() throws RemoteException {
-        return this.executorModule.getAllCommands();
+        return this.executorModule.getAllBatches();
     }
     
     @Override
     public List<StoredCommandsBatch> getCommand(String commandName) 
             throws RemoteException {
         
-        return this.executorModule.getCommands(commandName);
+        return this.executorModule.getBathesByName(commandName);
     }
     
     @Override
     public boolean deleteCommand(String commandName) throws RemoteException {
-        return this.executorModule.deleteCommand(commandName);
+        return this.executorModule.deleteBatch(commandName);
     }
     
     @Override

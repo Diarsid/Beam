@@ -36,34 +36,37 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     }    
     
     @Override
-    public StoredCommandsBatch getBatch(String name) {        
-        name = name.trim().toLowerCase();
-        List<StoredCommandsBatch> commands = this.batchesDao.getBatchesByName(name);    
+    public StoredCommandsBatch getBatch(String batchName) {        
+        batchName = batchName.trim().toLowerCase();
+        List<StoredCommandsBatch> foundBatches = 
+                this.batchesDao.getBatchesByName(batchName);    
         
-        if ( commands.size() < 1 ) {
+        if ( foundBatches.size() < 1 ) {
             this.ioEngine.reportMessage("Couldn`t find such batch.");
+            this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    "call", batchName);
             return null;
-        } else if ( commands.size() == 1 ) {
-            return commands.get(0);
+        } else if ( foundBatches.size() == 1 ) {
+            return foundBatches.get(0);
         } else {
-            List<String> commandNames = new ArrayList<>();
-            for (StoredCommandsBatch c : commands) {
-                commandNames.add(c.getName());
+            List<String> foundBatchesNames = new ArrayList<>();
+            for (StoredCommandsBatch c : foundBatches) {
+                foundBatchesNames.add(c.getName());
             }
             int variant = this.intellContext.resolve(
                     "There are several batches:", 
-                    name, 
-                    commandNames);
+                    batchName, 
+                    foundBatchesNames);
             if ( variant < 0 ) {
                 return null;
             } else {
-                return commands.get(variant-1);
+                return foundBatches.get(variant-1);
             }            
         }
     }       
     
     @Override
-    public void newBatch(List<String> commands, String commandName) {
+    public void newBatch(List<String> commands, String batchName) {
         for(int i = 0; i < commands.size(); i++) {
             String s = commands.get(i).trim().toLowerCase();
             if ( s.equals("call") || s.equals("exe") ) {
@@ -76,14 +79,14 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
             }
             commands.set(i, s);
         }
-        commandName = commandName.trim().toLowerCase();
-        this.batchesDao.saveNewBatch(new StoredCommandsBatch(commandName, commands));
+        batchName = batchName.trim().toLowerCase();
+        this.batchesDao.saveNewBatch(new StoredCommandsBatch(batchName, commands));
     }    
         
     @Override
-    public boolean deleteBatch(String commandName) {
-        commandName = commandName.trim().toLowerCase();
-        return this.batchesDao.removeBatch(commandName);
+    public boolean deleteBatch(String batchName) {
+        batchName = batchName.trim().toLowerCase();
+        return this.batchesDao.removeBatch(batchName);
     }    
     
     @Override
@@ -92,8 +95,8 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     }    
     
     @Override
-    public List<StoredCommandsBatch> getBatches(String commandName) {
-        commandName = commandName.trim().toLowerCase();
-        return this.batchesDao.getBatchesByName(commandName);
+    public List<StoredCommandsBatch> getBatches(String batchName) {
+        batchName = batchName.trim().toLowerCase();
+        return this.batchesDao.getBatchesByName(batchName);
     }    
 }

@@ -170,7 +170,7 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public boolean discardCommandByPattern(String pattern) {
-        pattern = pattern.toLowerCase();
+        pattern = pattern.toLowerCase().replace("-", "%");
         try (Connection con = this.data.connect();
                 PreparedStatement deleteFromChoices = con.prepareStatement(
                         DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE);
@@ -183,6 +183,31 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
             int qty = deleteFromChoices.executeUpdate();
             
             deleteFromConsole.setString(1, "% "+pattern+" %");
+            qty = qty + deleteFromConsole.executeUpdate();
+            
+            return ( qty > 0 );
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, 
+                    "SQLException: delete choice for command: " + pattern);
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean discardCommandByPatternAndOperation(String operation, String pattern) {
+        pattern = pattern.toLowerCase().replace("-", "%");
+        try (Connection con = this.data.connect();
+                PreparedStatement deleteFromChoices = con.prepareStatement(
+                        DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE);
+                PreparedStatement deleteFromConsole = con.prepareStatement(
+                        DELETE_FROM_CONSOLE_WHERE_COMMAND_LIKE)) {
+            
+            deleteFromChoices.setString(1, operation + " %"+pattern+"%");
+            deleteFromChoices.setString(2, "%"+pattern+"%");
+            deleteFromChoices.setString(3, "%"+pattern+"%");
+            int qty = deleteFromChoices.executeUpdate();
+            
+            deleteFromConsole.setString(1, operation + " %"+pattern+"%");
             qty = qty + deleteFromConsole.executeUpdate();
             
             return ( qty > 0 );

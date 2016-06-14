@@ -6,14 +6,13 @@
 
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
+import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 /**
  *
@@ -228,6 +227,10 @@ public class IntelligentExecutorResolver {
     
     boolean discardCommandByPattern(String pattern) {
         return this.choiceDao.discardCommandByPattern(pattern);
+    }
+    
+    boolean discardCommandByPatternAndOperation(String operation, String pattern) {
+        return this.choiceDao.discardCommandByPatternAndOperation(operation, pattern);
     }
     
     boolean deleteChoicesForCommand(String commandPart) {

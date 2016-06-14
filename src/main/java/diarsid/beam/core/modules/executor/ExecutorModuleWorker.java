@@ -38,7 +38,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final ProcessorNotes notes;
     private final ProcessorWebPages pages;
     private final ProcessorLocations locations;
-    private final ProcessorCommandsBatches commands; 
+    private final ProcessorCommandsBatches batches; 
     
     private final CommandsIntelligentCache commandsCache;
     private final ThreadLocal<Boolean> isCurrentCommandNew;
@@ -62,7 +62,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         });
         
         this.pages = builder.buildProcessorWebPages();
-        this.commands = builder.buildProcessorBatches();
+        this.batches = builder.buildProcessorBatches();
         this.locations = builder.buildProcessorLocations();
         this.programs = builder.buildProcessorPrograms();
         this.notes = builder.buildProcessorNotes();        
@@ -136,7 +136,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             sb.append(commandParams.get(0))
                     .append(" ")
                     .append(commandParams.get(i));
-            storedBatch = this.commands.getBatch(commandParams.get(i));
+            storedBatch = this.batches.getBatch(commandParams.get(i));
             if (storedBatch != null) {
                 this.executeCommandsBatch(storedBatch);
                 this.saveConsoleCommandIfValid(sb.toString());
@@ -158,23 +158,23 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     @Override
-    public void newCommand(List<String> commands, String commandName) {
-        this.commands.newBatch(commands, commandName);
+    public void newBatch(List<String> commands, String commandName) {
+        this.batches.newBatch(commands, commandName);
     }    
         
     @Override
-    public boolean deleteCommand(String commandName) {
-        return this.commands.deleteBatch(commandName);
+    public boolean deleteBatch(String commandName) {
+        return this.batches.deleteBatch(commandName);
     }    
     
     @Override
-    public List<StoredCommandsBatch> getAllCommands() {
-        return this.commands.getAllBatches();
+    public List<StoredCommandsBatch> getAllBatches() {
+        return this.batches.getAllBatches();
     }    
     
     @Override
-    public List<StoredCommandsBatch> getCommands(String commandName) {
-        return this.commands.getBatches(commandName);
+    public List<StoredCommandsBatch> getBathesByName(String commandName) {
+        return this.batches.getBatches(commandName);
     }    
     
     private void executeCommandsBatch(StoredCommandsBatch command) {
@@ -317,15 +317,13 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void executeStoredBatchIfExists(String cachedCommand) {
         String possibleBatchName = cachedCommand
                 .substring(cachedCommand.lastIndexOf(" ")+1);
-        StoredCommandsBatch storedBatch = this.commands
+        StoredCommandsBatch storedBatch = this.batches
                 .getBatch(possibleBatchName);
         if ( storedBatch != null ) {
             for (String commandFromBatch : storedBatch.getCommands()) {
                 this.executeOldCommandInternally(commandFromBatch);
             }
-        } else {
-            this.commandsCache.removeFromCacheByCommandName(possibleBatchName);
-        }
+        } 
     }
 
     private String aggregate(List<String> commandParams) {

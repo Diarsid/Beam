@@ -34,15 +34,15 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     void openWebPage(List<String> commandParams);
     
-    void newCommand(List<String> command, String commandName);
+    void newBatch(List<String> command, String commandName);
     
     List<String> listLocationContent(String locationName);
     
-    List<StoredCommandsBatch> getAllCommands();
+    List<StoredCommandsBatch> getAllBatches();
     
-    List<StoredCommandsBatch> getCommands(String commandName);
+    List<StoredCommandsBatch> getBathesByName(String commandName);
     
-    boolean deleteCommand(String commandName);
+    boolean deleteBatch(String commandName);
     
     void setIntelligentActive(boolean isActive);
     

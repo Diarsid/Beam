@@ -93,6 +93,8 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         if (location != null) {
             return this.system.openLocation(location);
         } else {
+            this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    "open", locationName);
             return failByInvalidArgument(locationName);
         }
     }
@@ -104,6 +106,8 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         if (location != null) {
             return this.system.openFileInLocation(targetName, location);
         } else {
+            this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    "open", locationName);
             return failByInvalidArgument(locationName);
         }             
     }
@@ -117,6 +121,8 @@ class ProcessorLocationsWorker implements ProcessorLocations {
             return this.system.openFileInLocationWithProgram(
                     file, location, program);
         } else {
+            this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    "open", locationName);
             return failByInvalidArgument(locationName);
         }   
     }

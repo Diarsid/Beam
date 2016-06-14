@@ -17,6 +17,9 @@ public interface IntelligentExecutorCommandContext {
     
     void discardCurrentlyExecutedCommandInPattern(String pattern);
     
+    void discardCurrentlyExecutedCommandInPatternAndOperation(
+            String operation, String pattern);
+    
     void adjustCurrentlyExecutedCommand(String... newCommandParams);
     
     void adjustCurrentlyExecutedCommand(String newCommand);

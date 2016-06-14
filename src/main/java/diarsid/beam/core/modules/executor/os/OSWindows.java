@@ -76,6 +76,8 @@ public class OSWindows implements OS {
             this.ioEngine.reportMessage("opening...");
             return success();
         } else {
+            this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    "open", location.getName());
             return failByInvalidArgument(location.getName());
         }    
     }
@@ -170,13 +172,9 @@ public class OSWindows implements OS {
         File dir = new File(location);
         if ( ! dir.exists() ) {
             this.ioEngine.reportMessage("This path doesn`t exist.");
-            this.intelligentContext
-                    .discardCurrentlyExecutedCommandInPattern(location);
             return false;
         } else if (!dir.isDirectory()) {
             this.ioEngine.reportMessage("This isn`t a directory.");
-            this.intelligentContext
-                    .discardCurrentlyExecutedCommandInPattern(location);
             return false;
         } else {
             return true;
@@ -244,8 +242,8 @@ public class OSWindows implements OS {
         } else {
             this.ioEngine.reportMessage("Check browser in programs location"
                     + " or try with another browser.");
-            this.intelligentContext
-                    .discardCurrentlyExecutedCommandInPattern(givenBrowserName);
+            this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    "see", givenBrowserName);
             return failByInvalidArgument(givenBrowserName);
         }
     }

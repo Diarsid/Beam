@@ -62,7 +62,7 @@ public class ExecutorModuleIntelligentProxyTest {
         methodAcceptingBoolean = ExecutorModule.class
                 .getMethod("setIntelligentActive", boolean.class);
         methodAcceptingString = ExecutorModule.class
-                .getMethod("deleteCommand", String.class);
+                .getMethod("deleteBatch", String.class);
     }
 
     /**

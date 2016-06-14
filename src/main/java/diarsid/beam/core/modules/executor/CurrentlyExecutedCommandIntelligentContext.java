@@ -164,6 +164,15 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     @Override
+    public void discardCurrentlyExecutedCommandInPatternAndOperation(
+            String operation, String pattern) {
+        System.out.println("[EXECUTOR DEBUG] discard operation + pattern: " + operation + " + " + pattern);
+        boolean deleted = this.resolver.discardCommandByPatternAndOperation(operation, pattern);
+        System.out.println("[EXECUTOR DEBUG] discarded? " + deleted);
+        this.currentCommandDiscarded.set(true);
+    }
+    
+    @Override
     public boolean ifCanSaveConsoleCommand() {
         return ! this.currentCommandDiscarded.get();
     }

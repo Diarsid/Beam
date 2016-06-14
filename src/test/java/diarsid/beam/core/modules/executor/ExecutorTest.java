@@ -165,7 +165,7 @@ public class ExecutorTest {
         List<String> commands = Arrays.asList(a);
         
         StoredCommandsBatch command = new StoredCommandsBatch("command", commands);
-        exec.newCommand(commands, "command");
+        exec.newBatch(commands, "command");
         
         verify(comDao).saveNewBatch(command);
     }
@@ -175,21 +175,21 @@ public class ExecutorTest {
     public void testDeleteCommand() {
         String commandName = "comm_name";
         
-        exec.deleteCommand(commandName);
+        exec.deleteBatch(commandName);
         
         verify(comDao).removeBatch(commandName);
     }
 
     @Test
     public void testGetAllCommands() {
-        exec.getAllCommands();
+        exec.getAllBatches();
         
         verify(comDao).getAllBatches();
     }
 
     @Test
     public void testGetCommands() {
-        exec.getCommands("comm_name");
+        exec.getBathesByName("comm_name");
         
         verify(comDao).getBatchesByName("comm_name");
     }
