@@ -18,7 +18,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.StringJoiner;
+import java.util.TreeMap;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -174,10 +176,10 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     }
     
     @Override
-    public Map<String, String> getImprovedCommandsForPattern(String pattern) {
+    public SortedMap<String, String> getImprovedCommandsForPattern(String pattern) {
         Set<String> patternParts = this.splitPatternIfMultipart(pattern); 
         Map<String, Set<CommandChoice>> choices = new HashMap<>();
-        Map<String, String> found = new HashMap<>();
+        SortedMap<String, String> found = new TreeMap<>();
         String statement = SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE.replace(
                 REPLACEABLE_CONDITION, 
                 this.prepareFullConditionExpression(patternParts.size()));

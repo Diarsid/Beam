@@ -5,8 +5,8 @@
  */
 package diarsid.beam.core.modules.data;
 
-import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
 /**
  *
@@ -20,7 +20,7 @@ public interface DaoExecutorConsoleCommands {
     
     boolean remove(String command);
     
-    Map<String, String> getImprovedCommandsForPattern(String pattern); 
+    SortedMap<String, String> getImprovedCommandsForPattern(String pattern); 
 
     Set<String> getRawCommandsForPattern(String pattern);     
 }

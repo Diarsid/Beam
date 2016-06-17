@@ -7,9 +7,9 @@
 package diarsid.beam.core.modules.executor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -78,7 +78,7 @@ public class CommandsIntelligentCacheTest {
      */
     @Test
     public void testGetPatternCommandForExecution() {
-        Map<String, String> result = new HashMap<>();
+        SortedMap<String, String> result = new TreeMap<>();
         result.put("open java in eng", "open java in eng");
         result.put("open java in engines", "open java in engines");
         when(dao.getImprovedCommandsForPattern("j-eng")).thenReturn(result);
@@ -89,7 +89,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_run_call_start_are_equal() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("run tomcat", "run tomcat");
         rawCachedCommands.put("start tomcat", "start tomcat");
         rawCachedCommands.put("call tomcat", "call tomcat");
@@ -104,7 +104,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_run_call_are_equal_start_differ() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("run tomcat", "run tomcat");
         rawCachedCommands.put("start tomEE", "start tomEE");
         rawCachedCommands.put("call tomcat", "call tomcat");
@@ -124,7 +124,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_run_start_are_equal_call_differ() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("run tomcat", "run tomcat");
         rawCachedCommands.put("start tomcat", "start tomcat");
         rawCachedCommands.put("call tomEE", "call tomEE");
@@ -145,7 +145,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_call_start_are_equal_run_differ() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("run tomEE", "run tomEE");
         rawCachedCommands.put("start tomcat", "start tomcat");
         rawCachedCommands.put("call tomcat", "call tomcat");
@@ -165,7 +165,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_call_start_are_equal() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("start tomcat", "start tomcat");
         rawCachedCommands.put("call tomcat", "call tomcat");
         
@@ -180,7 +180,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_call_run_are_equal() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("run tomcat", "run tomcat");
         rawCachedCommands.put("call tomcat", "call tomcat");
         
@@ -195,7 +195,7 @@ public class CommandsIntelligentCacheTest {
     
     @Test
     public void testGetPatternCommandForExecution_run_start_are_equal() {
-        Map<String, String> rawCachedCommands = new HashMap<>();
+        SortedMap<String, String> rawCachedCommands = new TreeMap<>();
         rawCachedCommands.put("run tomcat", "run tomcat");
         rawCachedCommands.put("start tomcat", "start tomcat");
         
