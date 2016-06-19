@@ -6,9 +6,9 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.entities.WebPage;
-import diarsid.beam.core.entities.WebPageDirectory;
-import diarsid.beam.core.entities.WebPagePlacement;
+import diarsid.beam.core.entities.global.WebPage;
+import diarsid.beam.core.entities.global.WebPageDirectory;
+import diarsid.beam.core.entities.global.WebPagePlacement;
 
 /**
  *

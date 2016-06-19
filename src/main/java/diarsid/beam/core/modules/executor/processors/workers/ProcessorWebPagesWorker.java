@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import diarsid.beam.core.entities.WebPage;
+import diarsid.beam.core.entities.global.WebPage;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;

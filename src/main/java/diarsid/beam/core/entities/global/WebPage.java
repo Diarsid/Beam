@@ -1,10 +1,10 @@
-package diarsid.beam.core.entities;
+package diarsid.beam.core.entities.global;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-import static diarsid.beam.core.entities.WebPagePlacement.BOOKMARKS;
-import static diarsid.beam.core.entities.WebPagePlacement.WEBPANEL;
+import static diarsid.beam.core.entities.global.WebPagePlacement.BOOKMARKS;
+import static diarsid.beam.core.entities.global.WebPagePlacement.WEBPANEL;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -114,6 +114,18 @@ public class WebPage implements Serializable, Comparable<WebPage> {
     
     public boolean useDefaultBrowser() {
         return "default".equals(this.browser);
+    }
+    
+    public void incrementPageOrder() {
+        this.pageInDirectoryOrder++;
+    }
+    
+    public void decrementPageOrder() {
+        this.pageInDirectoryOrder--;
+    }
+    
+    public void incrementPageDirectoryOrder() {
+        
     }
     
     @Override

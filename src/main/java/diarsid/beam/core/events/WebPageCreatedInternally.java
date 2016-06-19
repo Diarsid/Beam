@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.events;
 
-import diarsid.beam.core.entities.WebPage;
+import diarsid.beam.core.entities.global.WebPage;
 
 
 /**

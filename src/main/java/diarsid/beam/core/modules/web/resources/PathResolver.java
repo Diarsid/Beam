@@ -8,9 +8,9 @@ package diarsid.beam.core.modules.web.resources;
 
 import javax.servlet.http.HttpServletRequest;
 
-import diarsid.beam.core.entities.WebPagePlacement;
+import diarsid.beam.core.entities.global.WebPagePlacement;
 
-import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
+import static diarsid.beam.core.entities.global.WebPage.WEB_NAME_REGEXP;
 
 /**
  *

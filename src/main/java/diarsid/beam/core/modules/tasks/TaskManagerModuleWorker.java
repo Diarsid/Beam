@@ -93,11 +93,6 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     LocalDateTime getFirstTaskTime() {
         return this.tasksDao.getFirstTaskTime();
     }
-    
-    // TO DELETE
-    boolean isAnyTasks() {
-        return (this.scheduler.getQueue().size() != 0);
-    }
         
     /*
      * Method for initial database reading when program starts it's work 
@@ -262,6 +257,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     private void processObtainedTasksWithoutHourlyDailyAndUpdateTimer(
             List<Task> tasks) {
         
+        System.out.println("[TASKS] process tasks without hourly, daily...");
         for (int i = 0; i < tasks.size(); i++) {
             if ( HOURLY.equals(tasks.get(i).getType()) 
                     || DAILY.equals(tasks.get(i).getType())) {
@@ -283,7 +279,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                 // do not show hourly tasks, only update 
                 // them to set actual time of future execution.
                 tasks.get(i).modifyAccordingToType();
-            } else {
+            } else {                
                 this.ioEngine.showTask(tasks.get(i).generateMessage());
                 tasks.get(i).modifyAccordingToType();
             }
@@ -291,7 +287,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
         this.updateTimer(this.tasksDao.updateTasksAndGetNextFirstTime(tasks));
     }  
     
-    private void processObtainedTasksAndUpdateTimer(List<Task> tasks) { 
+    private void processObtainedTasksAndUpdateTimer(List<Task> tasks) {
         for (int i = 0; i < tasks.size(); i++) {
             this.ioEngine.showTask(tasks.get(i).generateMessage());
             tasks.get(i).modifyAccordingToType();
@@ -316,7 +312,6 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                 // actual tasks and there is no need to update scheduler, but
                 // all operations have been performed properly.
                 if ( ! newTime.equals(LocalDateTime.MIN) ) {
-                    //System.out.println("[UPDATE TIMER] timer scheduling new task... ");
                     this.currentExecution =
                     this.scheduler.schedule(new Runnable() {
                             @Override
@@ -330,17 +325,16 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                                                 newTime, 
                                                 LocalDateTime.now())
                                                 .toMinutes();
-                                //System.out.println("[TIMER: RUN] inactivePeriod = " + inactivePeriod);
-                                if ( inactivePeriod <= 45 ) {
+                                if ( inactivePeriod <= 30 ) {
                                     performFirstTasks();
-                                } else if ( (45 < inactivePeriod) && (inactivePeriod <= 60*24) ) {
-                                    // If lag is longer than one hour but no
-                                    // longer than day, do not show hourly 
+                                } else if ( (30 < inactivePeriod) && (inactivePeriod <= 60*5) ) {
+                                    // If lag is longer than 30 minutes but no
+                                    // longer than 5 hours, do not show hourly 
                                     // tasks that was expired while program
                                     // or system was inactive, just update them.
                                     performFirstTasksExceptHourlyTasks();
                                 } else {
-                                    // if lag is longer than one day, do not 
+                                    // if lag is longer than 5 hours, do not 
                                     // show both hourly and daily tasks that 
                                     // was expired while program or system was
                                     // inactive, just update them.
@@ -350,7 +344,6 @@ class TaskManagerModuleWorker implements TaskManagerModule {
                         }, 
                         this.getMillisFromNowToTime(newTime), 
                         TimeUnit.MILLISECONDS);
-                    //System.out.println("[UPDATE TIMER] timer runnables state: " + scheduler.getQueue().size());
                 } else {
                     this.currentExecution = null;
                 }
@@ -373,7 +366,6 @@ class TaskManagerModuleWorker implements TaskManagerModule {
             Set<Integer> days, Set<Integer> hours) {
         
         try {
-            //System.out.println("[CREATE NEW TASK]");
             LocalDateTime taskTime = this.formatter.ofFormat(time, true);            
             LocalDateTime newTime = this.tasksDao
                     .addTask(Task.newTask(type, taskTime, task, days, hours));

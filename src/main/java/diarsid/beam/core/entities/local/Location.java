@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.entities;
+package diarsid.beam.core.entities.local;
 
 import java.io.Serializable;
 import java.util.Arrays;

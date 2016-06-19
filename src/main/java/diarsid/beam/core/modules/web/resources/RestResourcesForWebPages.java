@@ -14,7 +14,7 @@ import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.modules.web.ServletData;
 
-import static diarsid.beam.core.entities.WebPage.WEB_NAME_REGEXP;
+import static diarsid.beam.core.entities.global.WebPage.WEB_NAME_REGEXP;
 
 /**
  * Enum that contains full description of WebPages related web resources. 

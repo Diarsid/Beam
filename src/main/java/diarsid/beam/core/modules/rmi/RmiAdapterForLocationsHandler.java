@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.rmi;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import diarsid.beam.core.entities.Location;
+import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
 

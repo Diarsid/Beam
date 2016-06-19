@@ -8,7 +8,7 @@ import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 import java.util.List;
 
-import diarsid.beam.core.entities.Location;
+import diarsid.beam.core.entities.local.Location;
 
 /**
  *

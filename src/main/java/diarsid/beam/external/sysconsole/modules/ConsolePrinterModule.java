@@ -8,8 +8,8 @@ package diarsid.beam.external.sysconsole.modules;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.entities.Location;
-import diarsid.beam.core.entities.WebPage;
+import diarsid.beam.core.entities.local.Location;
+import diarsid.beam.core.entities.global.WebPage;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 

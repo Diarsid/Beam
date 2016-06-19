@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.entities;
+package diarsid.beam.core.entities.global;
 
 import java.util.Objects;
 
-import static diarsid.beam.core.entities.WebPagePlacement.BOOKMARKS;
-import static diarsid.beam.core.entities.WebPagePlacement.WEBPANEL;
+import static diarsid.beam.core.entities.global.WebPagePlacement.BOOKMARKS;
+import static diarsid.beam.core.entities.global.WebPagePlacement.WEBPANEL;
 
 /**
  *
