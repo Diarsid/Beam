@@ -22,6 +22,7 @@ import java.util.SortedMap;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
@@ -124,7 +125,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     @Override
     public boolean saveNewConsoleCommand(String command) {        
         command = command.toLowerCase();
-        System.out.println("[DAO CONSOLE DEBUG] save: " +command);
+        Logs.debug("[COMMANDS CONSOLE DAO] save: " +command);
         JdbcTransaction transact = data.beginTransaction();
         try {
             PreparedStatement getCommand = 
@@ -148,8 +149,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
                             + "save new console command.");
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
-            this.ioEngine.reportError("SQLException: save new console command.");
+            this.ioEngine.reportException(e, "SQLException: save new console command.");
             return false;
         }
     }
@@ -157,7 +157,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     @Override
     public boolean remove(String command) {
         command = command.toLowerCase();
-        System.out.println("[DAO CONSOLE DEBUG] delete: " +command);
+        Logs.debug("[COMMANDS CONSOLE DAO] delete " +command);
         boolean removed = false;
         try (Connection con = this.data.connect();
                 PreparedStatement delete = con.prepareStatement(

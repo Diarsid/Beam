@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -258,9 +259,9 @@ public class OSWindows implements OS {
         String result = "";
         if (Files.exists(dir) && Files.isDirectory(dir)) {
             if (this.containsFileSeparator(targetName)) {
-                result = this.searchByGivenPath(dir, targetName, noTargetMessage);
+                result = this.searchByGivenPath(dir, targetName);
             } else {
-                result = this.searchByFileName(dir, targetName, noTargetMessage);
+                result = this.searchByFileName(dir, targetName);
             }
             if ( result.isEmpty() ) {
                 this.ioEngine.reportMessage(
@@ -280,9 +281,8 @@ public class OSWindows implements OS {
         return target.contains("/") || target.contains("\\");
     }
     
-    private String searchByGivenPath(
-            Path dir, String targetName, String noTargetMessage) {
-        System.out.println("[OS DEBUG] search by path: " + dir.resolve(targetName).toString());
+    private String searchByGivenPath(Path dir, String targetName) {
+        Logs.debug("[OS] search by path: " + dir.resolve(targetName).toString());
         if ( Files.exists(dir.resolve(targetName)) ) {
             return targetName;
         } else {
@@ -290,9 +290,7 @@ public class OSWindows implements OS {
         }
     }
 
-    private String searchByFileName(
-            Path dir, String targetName, String noTargetMessage) {
-        
+    private String searchByFileName(Path dir, String targetName) {        
         List<String> foundItems = new ArrayList<>();        
         this.findInTree(dir, targetName, foundItems);
         

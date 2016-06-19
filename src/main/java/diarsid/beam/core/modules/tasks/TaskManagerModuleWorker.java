@@ -257,7 +257,6 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     private void processObtainedTasksWithoutHourlyDailyAndUpdateTimer(
             List<Task> tasks) {
         
-        System.out.println("[TASKS] process tasks without hourly, daily...");
         for (int i = 0; i < tasks.size(); i++) {
             if ( HOURLY.equals(tasks.get(i).getType()) 
                     || DAILY.equals(tasks.get(i).getType())) {

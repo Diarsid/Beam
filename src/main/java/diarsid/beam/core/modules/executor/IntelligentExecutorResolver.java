@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.executor;
 import java.util.ArrayList;
 import java.util.List;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
@@ -82,33 +83,7 @@ public class IntelligentExecutorResolver {
             List<String> variants,
             CurrentlyExecutedCommandContextCallback contextCallback) {
         
-        System.out.println("[RESOLVER DEBUG] "+patternToResolve+" -> " + variants);
-        
-//        String choice = this.choiceDao.getChoiceForCommandPart(
-//                command, resolvingAttemptNumber, patternToResolve);
-//        if ( choice.isEmpty() ) {
-//            this.choiceDao.deleteChoicesForCommand(command);
-//            choice = this.tryToGuessChoice(variants);
-//            if ( choice.isEmpty() ) {                
-//                return this.askUserAboutHisChoice(question, variants);
-//            } else {
-//                if ( variants.contains(choice) ) {
-//                    return variants.indexOf(choice)+1;
-//                } else {
-//                    this.choiceDao.deleteChoicesForCommand(command);
-//                    return this.askUserAboutHisChoice(question, variants);
-//                }
-//            }
-//        } else {            
-//            if ( variants.contains(choice) ) {
-//                contextCallback.doNotSaveThisChoice();
-//                return variants.indexOf(choice)+1;
-//            } else {
-//                this.choiceDao.deleteChoicesForCommand(command);
-//                return this.askUserAboutHisChoice(question, variants);
-//            }
-//        }
-        
+        Logs.debug("[EXECUTOR RESOLVER] "+patternToResolve+" -> " + variants);
         
         String choice = this.tryToGuessChoice(variants);
         

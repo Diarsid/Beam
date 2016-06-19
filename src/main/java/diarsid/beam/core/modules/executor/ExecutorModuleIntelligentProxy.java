@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.modules.ExecutorModule;
 
 /**
@@ -42,7 +43,7 @@ class ExecutorModuleIntelligentProxy implements InvocationHandler {
     private Object interceptCommandAndProceed(Method method, Object[] args) 
             throws Exception {
         
-        System.out.println("[PROXY] method intercepted : "  + method.getName());
+        Logs.debug("[EXECUTOR PROXY] method intercepted : "  + method.getName());
         Object invocationResult;
         this.currentCommandContext.beginCurrentCommandState(
                 this.extractCommandFromPassedArgs(args));

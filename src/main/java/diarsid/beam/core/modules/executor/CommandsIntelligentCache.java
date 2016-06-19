@@ -15,9 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringJoiner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 
@@ -30,8 +28,6 @@ class CommandsIntelligentCache {
     private final IoInnerModule ioEngine;
     private final DaoExecutorConsoleCommands dao;
     private final List<String> executableOperationsByPriority;
-    
-    private final Logger debugger = LoggerFactory.getLogger("debugger");
         
     CommandsIntelligentCache(
             IoInnerModule ioEngine,
@@ -70,14 +66,14 @@ class CommandsIntelligentCache {
         if ( commandsRawCache.isEmpty() ) {
             return "";
         }
-        debugger.debug("[COMM CACHE DEBUG] raw commands: " + commandsRawCache);
+        Logs.debug("[COMMANDS CACHE] raw commands: " + commandsRawCache);
         Map<String, String> chosenCommands = 
                 this.chooseCommandsByOperationFromRawCache(commandsRawCache);
-        debugger.debug("[COMM CACHE DEBUG] chosen commands: " + chosenCommands);
+        Logs.debug("[COMMANDS CACHE] chosen commands: " + chosenCommands);
         if ( chosenCommands.size() > 1 ) {
             this.testCommandsForWeakCombinations2(chosenCommands);
         }                
-        debugger.debug("[COMM CACHE DEBUG] chosen commands after weakness check: " + chosenCommands); 
+        Logs.debug("[COMMANDS CACHE] chosen commands after weakness check: " + chosenCommands); 
         return this.resolveCommandAfterCacheRefining(chosenCommands, commandsRawCache);
     }
 

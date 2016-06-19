@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
@@ -127,7 +128,8 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public boolean saveChoiceForCommandAndItsPart(CurrentCommandState commandState) {
-        System.out.println("[DAO CHOICES DEBUG] save: " + commandState.getCommandString() + " -> " + commandState.getMadeChoices());
+        Logs.debug("[DAO EXECUTOR CHOICES] save: " + commandState.getCommandString()
+                + " -> " + commandState.getMadeChoices());
         try (Connection con = this.data.connect();
                 PreparedStatement insertInChoices = 
                         con.prepareStatement(INSERT_COMMAND);) {

@@ -102,13 +102,16 @@ class JettyServletContainer implements ServletContainer {
     @Override 
     public void startServer() { 
         if ( this.jettyServer.getConnectors().length < 1 ) {
+            this.ioEngine.reportErrorAndExitLater(
+                    "Jetty ServerConnectors have not been set.");
             throw new ModuleInitializationException(
                     "Jetty ServerConnectors have not been set.");
         }
         try {
             this.jettyServer.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            this.ioEngine.reportExceptionAndExitLater(
+                    e, "It is impossible to start Jetty Server.");
             throw new ModuleInitializationException(
                     "It is impossible to start Jetty Server.");
         } 

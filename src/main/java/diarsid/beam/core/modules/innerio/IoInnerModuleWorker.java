@@ -9,9 +9,7 @@ package diarsid.beam.core.modules.innerio;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
@@ -25,7 +23,6 @@ class IoInnerModuleWorker implements IoInnerModule {
     
     private final IoModule io;
     private final Gui gui;
-    private final Logger logger;
 
     IoInnerModuleWorker(IoModule ioModule, Gui gui) {
         if (ioModule == null) {
@@ -40,7 +37,6 @@ class IoInnerModuleWorker implements IoInnerModule {
         }
         this.io = ioModule;
         this.gui = gui;
-        this.logger = LoggerFactory.getLogger(IoInnerModule.class);
     }
     
     @Override
@@ -217,11 +213,11 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     private void logError(boolean critical, String[] description) {
-        String criticalStatus = critical ? "critical" : "non-critical";        
-        this.logger.error("status: " + criticalStatus + " :");
-        for (String s : description) {
-            this.logger.error(s);
-        }
+        String criticalStatus = critical ? "critical" : "non-critical"; 
+        Logs.error(
+                IoInnerModule.class, 
+                "Logical error reporting, status: " + criticalStatus + " :", 
+                description);
     }
     
     private void nativeReportException(Exception e, boolean critical, String[] description) {
@@ -234,9 +230,10 @@ class IoInnerModuleWorker implements IoInnerModule {
 
     private void logException(Exception e, boolean critical, String[] description) {
         String criticalStatus = critical ? "critical" : "non-critical";
-        for (String s : description) {
-            this.logger.error(s);
-        }
-        this.logger.error("native exception reporting, status: "+criticalStatus, e);
+        Logs.error(
+                IoInnerModule.class, 
+                "Exception reporting, status: "+criticalStatus + " :", 
+                e, 
+                description);
     }
 }

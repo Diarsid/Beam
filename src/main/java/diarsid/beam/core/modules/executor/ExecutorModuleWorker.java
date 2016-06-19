@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
@@ -189,7 +190,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
-        System.out.println("[EXECUTOR DEBUG] dispatch: " +commandParams);
+        Logs.debug("[EXECUTOR] inner dispatching: " +commandParams);
         this.intelligentContext
                     .adjustCurrentlyExecutedCommand(aggregate(commandParams));
         switch (commandParams.get(0)) {

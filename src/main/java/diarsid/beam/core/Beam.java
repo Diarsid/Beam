@@ -4,9 +4,6 @@
  */
 package diarsid.beam.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -23,7 +20,6 @@ import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
-
 /**
  *
  * @author Diarsid
@@ -31,7 +27,6 @@ import com.drs.gem.injector.core.GemInjector;
 
 public class Beam {
     
-    private final static Logger logger = LoggerFactory.getLogger(Beam.class);
     /**
      * Java RMI mechanism requires that remote objects that have been exported 
      * by this JVM for an external usage by other JVM were saved in static variables.
@@ -50,7 +45,7 @@ public class Beam {
     }    
            
     public static void main(String[] args) {
-        logger.info("start Beam.core");
+        Logs.info(Beam.class, "start Beam.core");
         initApplication();
         setJVMShutdownHook();
     }
@@ -73,14 +68,14 @@ public class Beam {
                 container.getModule(RmiModule.class).stopModule();
                 container.getModule(IoInnerModule.class).stopModule();        
                 container.getModule(IoModule.class).stopModule();
-                logger.info("JVM shutdown: Beam.core modules stopped");
+                Logs.info(Beam.class, "JVM shutdown: Beam.core modules stopped");
             }
         };
         Runtime.getRuntime().addShutdownHook(new Thread(shutdownCallback));        
     }
     
     public static void exitBeamCoreNow() {
-        logger.info("stop Beam.core");
+        Logs.info(Beam.class, "stop Beam.core");
         System.exit(0);
     }
     

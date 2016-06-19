@@ -39,7 +39,6 @@ class DataBaseInitializer {
                     "SQLException: create table '" + 
                             tableInfo.getTableName() + "' failure.",
                     "Program will be closed.");
-            e.printStackTrace();
             throw new ModuleInitializationException();
         }
     }

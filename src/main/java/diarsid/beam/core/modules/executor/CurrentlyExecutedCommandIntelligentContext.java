@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.executor;
 import java.util.Arrays;
 import java.util.List;
 
+import diarsid.beam.core.Logs;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 /**
@@ -47,12 +48,12 @@ class CurrentlyExecutedCommandIntelligentContext
     
     @Override
     public void beginCurrentCommandState(List<String> commandParams) {
-        System.out.println("[EXECUTOR PROXY] command intercepted : "  + commandParams.toString());
+        Logs.debug("[EXECUTOR CONTEXT] command intercepted : "  + commandParams.toString());
         this.setContextAfresh(commandParams);
     }
 
     private void setContextAfresh(List<String> commandParams) {
-        System.out.println("[EXECUTOR PROXY] context refreshed: " + commandParams);
+        Logs.debug("[EXECUTOR CONTEXT] context refreshed: " + commandParams);
         this.currentCommand.set(new CurrentCommandState(commandParams));
         this.currentCommandDiscarded.set(false);
         this.needSaveCurrentChoice.set(true);
@@ -60,7 +61,7 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     private void setContextAfresh(String command) {
-        System.out.println("[EXECUTOR PROXY] context refreshed: " + command);
+        Logs.debug("[EXECUTOR CONTEXT] context refreshed: " + command);
         this.currentCommand.set(new CurrentCommandState(command));
         this.currentCommandDiscarded.set(false);
         this.needSaveCurrentChoice.set(true);
@@ -72,9 +73,7 @@ class CurrentlyExecutedCommandIntelligentContext
         String comm = currentCommand.get().getCommandString();        
         this.rememberChoicesForCurrentCommandIfNecessary();
         this.clearContext();
-        System.out.println("[EXECUTOR PROXY] end of interception...");
-        System.out.println("[EXECUTOR PROXY] " + comm);
-        System.out.println();
+        Logs.debug("[EXECUTOR CONTEXT] end of interception...");
     }
 
     private void clearContext() {
@@ -85,14 +84,14 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     private void rememberChoicesForCurrentCommandIfNecessary() {
-        System.out.println("[EXECUTOR PROXY] remeber '" + this.currentCommand.get().getCommandString() + "' ?" );
+        Logs.debug("[EXECUTOR CONTEXT] remeber '" + this.currentCommand.get().getCommandString() + "' ?" );
         if ( this.ifMustSaveChoices() ) {
             this.resolver.remember(this.currentCommand.get());
         }
     }
     
     private boolean ifMustSaveChoices() {
-        System.out.println("[EXECUTOR PROXY] hasChoices="+this.currentCommand.get().hasChoices()+
+        Logs.debug("[EXECUTOR CONTEXT] hasChoices="+this.currentCommand.get().hasChoices()+
                 ", commandValid="+!this.currentCommandDiscarded.get());
         return 
                 this.currentCommand.get().hasChoices() &&
@@ -157,18 +156,18 @@ class CurrentlyExecutedCommandIntelligentContext
     
     @Override
     public void discardCurrentlyExecutedCommandInPattern(String pattern) {
-        System.out.println("[EXECUTOR DEBUG] discard pattern: " + pattern);
+        Logs.debug("[EXECUTOR CONTEXT] discard pattern: " + pattern);
         boolean deleted = this.resolver.discardCommandByPattern(pattern);
-        System.out.println("[EXECUTOR DEBUG] discarded? " + deleted);
+        Logs.debug("[EXECUTOR CONTEXT] discarded? " + deleted);
         this.currentCommandDiscarded.set(true);
     }
     
     @Override
     public void discardCurrentlyExecutedCommandInPatternAndOperation(
             String operation, String pattern) {
-        System.out.println("[EXECUTOR DEBUG] discard operation + pattern: " + operation + " + " + pattern);
+        Logs.debug("[EXECUTOR CONTEXT] discard operation + pattern: " + operation + " + " + pattern);
         boolean deleted = this.resolver.discardCommandByPatternAndOperation(operation, pattern);
-        System.out.println("[EXECUTOR DEBUG] discarded? " + deleted);
+        Logs.debug("[EXECUTOR CONTEXT] discarded? " + deleted);
         this.currentCommandDiscarded.set(true);
     }
     
