@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,6 +41,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private final IoInnerModule ioEngine;
     private final DataBase data;
     private final Random random;
+    private final Comparator<String> stringLengthComparator;
     
     /* 
      * SQL Table illustration for Executor console commands storing.
@@ -71,6 +73,18 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
         this.data = data;
         this.ioEngine = ioEngine;
         this.random = new Random();
+        this.stringLengthComparator = new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                if ( s1.length() < s2.length() ) {
+                    return -1;
+                } else if ( s1.length() > s2.length() ) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        };
     }
     
     private final String SELECT_ALL = 
@@ -179,7 +193,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     public SortedMap<String, String> getImprovedCommandsForPattern(String pattern) {
         Set<String> patternParts = this.splitPatternIfMultipart(pattern); 
         Map<String, Set<CommandChoice>> choices = new HashMap<>();
-        SortedMap<String, String> found = new TreeMap<>();
+        SortedMap<String, String> found = new TreeMap<>(this.stringLengthComparator);
         String statement = SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE.replace(
                 REPLACEABLE_CONDITION, 
                 this.prepareFullConditionExpression(patternParts.size()));
