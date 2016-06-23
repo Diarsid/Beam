@@ -81,7 +81,13 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
                 } else if ( s1.length() > s2.length() ) {
                     return 1;
                 } else {
-                    return 0;
+                    if ( s1.hashCode() < s2.hashCode() ) {
+                        return -1;
+                    } else if ( s1.hashCode() > s2.hashCode() ) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
             }
         };
@@ -206,9 +212,9 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
                 paramsCounter++;
             }            
             ResultSet rs = ps.executeQuery();
-            
+            String command;
             while ( rs.next() ) {
-                String command = rs.getString("command");
+                command = rs.getString("command");
                 if ( rs.getString("pattern") == null ) {
                     found.put(command, command);
                 } else {
