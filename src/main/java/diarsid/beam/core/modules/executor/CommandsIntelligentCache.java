@@ -138,7 +138,11 @@ class CommandsIntelligentCache {
                             chosenCommands.remove(operation);
                         } else {
                             // save user's choice to proceed
-                            chosenCommands.put(operation, chosenCommand);
+                            if ( chosenCommand.equals(improvedTestedCommand) ) {
+                                chosenCommands.put(operation, originalTestedCommand);
+                            } else {
+                                chosenCommands.put(operation, originalPrevChosenCommand);
+                            }
                         }                        
                     }
                 } else {
