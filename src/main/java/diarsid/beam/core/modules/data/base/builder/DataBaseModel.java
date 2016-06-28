@@ -38,16 +38,16 @@ class DataBaseModel {
         TableInfo locations = new TableInfo(
                 "locations", 
                 "CREATE TABLE locations (" +
-                "location_name   VARCHAR(20)     NOT NULL PRIMARY KEY, " +
-                "location_path   VARCHAR(300)    NOT NULL)",
+                "location_name   VARCHAR(100)    NOT NULL PRIMARY KEY, " +
+                "location_path   VARCHAR(500)    NOT NULL)",
                 2);
         this.tables.put(locations.name, locations);
         
         TableInfo commands = new TableInfo(
                 "commands", 
                 "CREATE TABLE commands (" +
-                "command_name   VARCHAR(20)     NOT NULL PRIMARY KEY, " +
-                "command_text   VARCHAR(300)    NOT NULL)", 
+                "command_name   VARCHAR(100)    NOT NULL PRIMARY KEY, " +
+                "command_text   VARCHAR(500)    NOT NULL)", 
                 2);
         this.tables.put(commands.name, commands);
         
