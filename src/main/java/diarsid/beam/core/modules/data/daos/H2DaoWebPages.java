@@ -109,8 +109,8 @@ class H2DaoWebPages implements DaoWebPages {
             + "AND "
             + "(p.page_placement = d.dir_placement) " +
             "WHERE ";
-    private final String NAME_LIKE_NAMEPART = 
-            " page_name LIKE ? ";
+    private final String NAME_OR_SHORTCUT_LIKE_NAMEPART = 
+            " ( ( page_name LIKE ? ) OR ( page_shortcuts LIKE ? ) ) ";
     private final String AND = 
             " AND ";
     private final String ORDER_BY_DIR_AND_PAGE_ORDERS = 
@@ -432,11 +432,11 @@ class H2DaoWebPages implements DaoWebPages {
             StringBuilder queryBuilder = new StringBuilder();
             queryBuilder
                     .append(SELECT_PAGES_JOIN_DIRS_WHERE)
-                    .append(NAME_LIKE_NAMEPART);
+                    .append(NAME_OR_SHORTCUT_LIKE_NAMEPART);
             for (int i = 1; i < partsQty; i++){
                 queryBuilder
                         .append(AND)
-                        .append(NAME_LIKE_NAMEPART);
+                        .append(NAME_OR_SHORTCUT_LIKE_NAMEPART);
             }
             queryBuilder.append(ORDER_BY_DIR_AND_PAGE_ORDERS);
             
@@ -444,7 +444,8 @@ class H2DaoWebPages implements DaoWebPages {
             try(Connection con = data.connect();
                PreparedStatement ps = con.prepareStatement(queryBuilder.toString())) {
                 for (int j = 0; j < partsQty; j++) {
-                    ps.setString(j+1, "%"+nameParts[j]+"%");
+                    ps.setString( (j * 2) + 1, "%"+nameParts[j]+"%");
+                    ps.setString( (j * 2) + 2, "%"+nameParts[j]+"%");
                 }
                 rs = ps.executeQuery();
                 List<WebPage> pages = new ArrayList<>();
