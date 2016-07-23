@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.executor;
 import java.util.Arrays;
 import java.util.List;
 
-import diarsid.beam.core.Logs;
+import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 /**

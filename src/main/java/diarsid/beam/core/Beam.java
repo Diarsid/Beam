@@ -4,6 +4,7 @@
  */
 package diarsid.beam.core;
 
+import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;

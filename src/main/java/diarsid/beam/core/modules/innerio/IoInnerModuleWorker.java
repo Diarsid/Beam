@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.innerio;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import diarsid.beam.core.Logs;
+import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;

@@ -10,8 +10,11 @@ package diarsid.beam.core.events;
  *
  * @author Diarsid
  */
-class WebPageEditedInternally {
+public abstract class WebPageEvent extends BeamEvent {
     
-    WebPageEditedInternally() {
+    protected WebPageEvent() {
+        super();
     }
+    
+    public abstract Object getCause();
 }

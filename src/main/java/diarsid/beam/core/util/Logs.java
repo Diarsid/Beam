@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core;
+package diarsid.beam.core.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -9,6 +9,8 @@ package diarsid.beam.core.events;
 import java.util.HashMap;
 import java.util.Map;
 
+import static diarsid.beam.core.events.BeamEventRuntime.fireEventAsync;
+
 /**
  *
  * @author Diarsid
@@ -16,28 +18,38 @@ import java.util.Map;
 public abstract class BeamEvent {
     
     private final Map<String, Object> attributes;
-    private boolean alreadyFired;
+    protected boolean alreadyFired;
     
     protected BeamEvent() {
         this.attributes = new HashMap<>();
         this.alreadyFired = false;
     }
     
-    protected BeamEvent with(String attribute, Object value) {
+    protected void set(String attribute, Object value) {
         if ( this.alreadyFired ) {
-            return this;
         } else {
             this.attributes.put(attribute, value);
-            return this;
         }        
     } 
-    
-    public final BeamEvent compile() {
-        this.alreadyFired = true;
-        return this;
-    }
     
     protected Object get(String attribute) {
         return this.attributes.get(attribute);
     }
+    
+    public abstract Object getCause();
+    
+    public static final class PrecompiledEvent <E extends BeamEvent> {
+        
+        protected final E constructableEvent;
+        
+        protected PrecompiledEvent(E event) {
+            this.constructableEvent = event;
+        }
+        
+        public void fireAsync() {
+            this.constructableEvent.alreadyFired = true;
+            fireEventAsync(this.constructableEvent);
+        }
+    }  
+    
 }

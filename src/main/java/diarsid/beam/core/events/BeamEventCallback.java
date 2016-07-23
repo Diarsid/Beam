@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.events.runtime;
+package diarsid.beam.core.events;
 
 import diarsid.beam.core.events.BeamEvent;
 
@@ -11,7 +11,7 @@ import diarsid.beam.core.events.BeamEvent;
  *
  * @author Diarsid
  */
-public interface BeamEventCallback<T extends BeamEvent> {
+public interface BeamEventCallback<E extends BeamEvent> {
     
-    public void onEvent(T event);
+    public void onEvent(E event);
 }

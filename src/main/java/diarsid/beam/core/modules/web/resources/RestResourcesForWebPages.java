@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.servlet.http.HttpServlet;
 
-import diarsid.beam.core.Logs;
+import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.modules.web.ServletData;
