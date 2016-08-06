@@ -17,6 +17,7 @@ import java.util.Set;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
+import diarsid.beam.core.util.Logs;
 
 /**
  * Transaction wrapper class to tackle with JDBC transactions.
@@ -255,7 +256,10 @@ class JdbcTransactionWrapper implements JdbcTransaction {
     public void rollbackAllAndReleaseResources() {
         try {
             this.con.rollback();
-        } catch (SQLException e) {
+        } catch (SQLException e) { 
+            Logs.error(this.getClass(), "Exception occured during connection.rollback()", e);
+        }
+        finally {
             this.restoreAutoCommit();
             this.closeResultSets();
             this.closeStatements();
