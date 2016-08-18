@@ -77,11 +77,13 @@ public class InputHandler {
                     // it will be filled only with "empty" value and break input loop
                     taskContent.add("empty");
                     break taskInput;
-                } else
+                } else {
                     break taskInput;
-            } else
+                }    
+            } else {
                 // in other cases entered string is added to the list
                 taskContent.add(taskLine);
+            }    
         }
         return taskContent.toArray(new String[taskContent.size()]);
     }
@@ -93,10 +95,13 @@ public class InputHandler {
             this.printer.printUnder("Input text to delete: ");
             text = this.reader.readWithoutStopChecking();
             // symbol '.' finishes input and breaks input loop, method returns null
-            if (text.equals("."))
+            if (text.equals(".")) {
+                text = "";
                 break inputText;
-            if (text.length()==0)
+            }    
+            if (text.length()==0) {
                 continue inputText;
+            }    
             // if given string satisfied all requirements input loop ends, method returns it's value
             break inputText;
         }
@@ -168,6 +173,7 @@ public class InputHandler {
     Set<Integer> inputAllowedDays() throws IOException, NumberFormatException {
         this.printer.printUnder("days of week (1-7, inclusive): ");
         String days = this.reader.read();
+        days = days.replace(",", "");
         ExecutionTime schedule = new ExecutionTime();
         for (String day : days.split("\\s+")) {
             if ( day.contains("-")) {
@@ -184,6 +190,7 @@ public class InputHandler {
     Set<Integer> inputAllowedHours() throws IOException, NumberFormatException {
         this.printer.printUnder("hours of day (0-24, exclusive): ");
         String hours = this.reader.read();
+        hours = hours.replace(",", "");
         ExecutionTime schedule = new ExecutionTime();
         for (String hour : hours.split("\\s+")) {
             if ( hour.contains("-")) {
