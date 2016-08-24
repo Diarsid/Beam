@@ -10,14 +10,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringJoiner;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -89,6 +91,7 @@ class CommandsIntelligentCache {
         // and arguments
         
         Map<String, String> chosenCommands = new HashMap<>();
+        Set<String> operationsExludedFromFurtherProcessing = new HashSet<>();
         String operation;
         String originalTestedCommand;
         String improvedTestedCommand;
@@ -102,6 +105,10 @@ class CommandsIntelligentCache {
             originalPrevChosenCommand = "";
             improvedPrevChosenCommand = "";            
             operation = this.defineOperationOf(originalTestedCommand);   
+            
+            if ( operationsExludedFromFurtherProcessing.contains(operation) ) {
+                continue;
+            }
             
             if (chosenCommands.containsKey(operation)) {
                 // If chosen commands already have command with the same operation
@@ -136,6 +143,9 @@ class CommandsIntelligentCache {
                             // if user has not made any choice (it means he has rejected
                             // both variants!) then remove this hateful command at all.
                             chosenCommands.remove(operation);
+                            // Do not process any futher commands with this operation 
+                            // during current cache processing.
+                            operationsExludedFromFurtherProcessing.add(operation);
                         } else {
                             // save user's choice to proceed
                             if ( chosenCommand.equals(improvedTestedCommand) ) {
