@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor.os;
+package diarsid.beam.core.modules.executor.os.search;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -14,34 +14,33 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 
-import diarsid.beam.core.modules.IoInnerModule;
-
 import static java.nio.file.FileVisitResult.CONTINUE;
+
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.relativizeFileName;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
 
 /**
  *
  * @author Diarsid
  */
-class SearchFileVisitor extends SimpleFileVisitor<Path> {
-    
-    private final IoInnerModule ioEngine;
-    
+public class FileSearchByNamePatternReusableFileVisitor extends SimpleFileVisitor<Path> {
+        
     private Path root;
     private String nameToFind;
     private List<String> foundItems;
     
-    SearchFileVisitor(IoInnerModule io) {
-        this.ioEngine = io;
+    public FileSearchByNamePatternReusableFileVisitor() {
     }
     
-    SearchFileVisitor set(Path root, String nameToFind, List<String> foundItems) {
+    public FileSearchByNamePatternReusableFileVisitor useAgainWith(
+            Path root, String nameToFind, List<String> foundItems) {
         this.root = root;
         this.nameToFind = nameToFind;
         this.foundItems = foundItems;
         return this;
     }
     
-    void clear() {
+    public void clear() {
         this.root = null;
         this.nameToFind = null;
         this.foundItems = null;
@@ -50,24 +49,18 @@ class SearchFileVisitor extends SimpleFileVisitor<Path> {
     @Override 
     public FileVisitResult preVisitDirectory(Path file, BasicFileAttributes attrs)
             throws IOException {
-
         return this.processItem(file);
     }        
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
             throws IOException {
-
         return this.processItem(file);
     }
     
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc)
-            throws IOException {
-        
-        this.ioEngine.reportError("Unable to process " + 
-                file.normalize().toString().replace("\\", "/"));
-        
+            throws IOException {        
         return CONTINUE;
     }
     
@@ -75,34 +68,31 @@ class SearchFileVisitor extends SimpleFileVisitor<Path> {
         
         String fileName;
         if ( file.getNameCount() > 0 ) {
-            fileName = file.getFileName().toString().toLowerCase();
+            fileName = file.getFileName().toString();
         } else {
             fileName = file.toString();
         }
-        if ( fileName.contains("desktop.ini") ) {
+        if ( containsIgnoreCase(fileName, "desktop.ini") ) {
             return CONTINUE;
         }
         
         if ( this.nameToFind.contains("-") ) {
             for (String fragment : Arrays.asList(this.nameToFind.split("-"))) {
-                if ( !fileName.contains(fragment) ) {
+                if ( ! containsIgnoreCase(fileName, fragment) ) {
                     return CONTINUE;
                 }                
             }
-            this.foundItems.add(this.root
-                            .relativize(file)
-                            .toString()
-                            .replace("\\", "/"));
+            this.foundItems.add(this.extractRelativeFileName(file));
             return CONTINUE;
         } else {
-            if ( fileName.contains(this.nameToFind) ) {
-                this.foundItems.add(this.root
-                        .relativize(file)
-                        .toString()
-                        .replace("\\", "/"));
+            if ( containsIgnoreCase(fileName, this.nameToFind) ) {
+                this.foundItems.add(this.extractRelativeFileName(file));
             }
         }
-
         return CONTINUE;
+    }
+
+    private String extractRelativeFileName(Path file) {
+        return relativizeFileName(this.root, file);
     }
 }

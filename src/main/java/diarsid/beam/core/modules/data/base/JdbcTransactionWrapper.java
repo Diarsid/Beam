@@ -257,7 +257,7 @@ class JdbcTransactionWrapper implements JdbcTransaction {
         try {
             this.con.rollback();
         } catch (SQLException e) { 
-            Logs.error(this.getClass(), "Exception occured during connection.rollback()", e);
+            Logs.logError(this.getClass(), "Exception occured during connection.rollback()", e);
         }
         finally {
             this.restoreAutoCommit();

@@ -27,11 +27,11 @@ public class Logs {
         DEBUGGER.debug(log); 
     }
     
-    public static void info(Class clazz, String log) {
+    public static void log(Class clazz, String log) {
         LoggerFactory.getLogger(clazz).info(log);
     }
     
-    public static void error(Class clazz, String log, String... description) {
+    public static void logError(Class clazz, String log, String... description) {
         Logger l = LoggerFactory.getLogger(clazz); 
         l.error(log);
         for (String s : description) {
@@ -39,7 +39,7 @@ public class Logs {
         }
     }
     
-    public static void error(Class clazz, String log, Exception e, String... description) {
+    public static void logError(Class clazz, String log, Exception e, String... description) {
         Logger l = LoggerFactory.getLogger(clazz); 
         l.error(log, e);
         for (String s : description) {

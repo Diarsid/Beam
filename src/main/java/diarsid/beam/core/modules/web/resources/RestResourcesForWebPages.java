@@ -121,7 +121,7 @@ enum RestResourcesForWebPages {
                 InstantiationException|
                 IllegalAccessException|
                 InvocationTargetException e) {
-            Logs.error(this.getClass(), "Resource HTTP Servlet creation failure.", e);
+            Logs.logError(this.getClass(), "Resource HTTP Servlet creation failure.", e);
             throw new WorkflowBrokenException();
         }      
     }

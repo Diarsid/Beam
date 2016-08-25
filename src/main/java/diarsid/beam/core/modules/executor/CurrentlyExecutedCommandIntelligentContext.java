@@ -9,8 +9,8 @@ package diarsid.beam.core.modules.executor;
 import java.util.Arrays;
 import java.util.List;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -158,7 +158,7 @@ class CurrentlyExecutedCommandIntelligentContext
     public void discardCurrentlyExecutedCommandInPattern(String pattern) {
         Logs.debug("[EXECUTOR CONTEXT] discard pattern: " + pattern);
         boolean deleted = this.resolver.discardCommandByPattern(pattern);
-        Logs.debug("[EXECUTOR CONTEXT] discarded? " + deleted);
+        Logs.debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
         this.currentCommandDiscarded.set(true);
     }
     
@@ -167,7 +167,7 @@ class CurrentlyExecutedCommandIntelligentContext
             String operation, String pattern) {
         Logs.debug("[EXECUTOR CONTEXT] discard operation + pattern: " + operation + " + " + pattern);
         boolean deleted = this.resolver.discardCommandByPatternAndOperation(operation, pattern);
-        Logs.debug("[EXECUTOR CONTEXT] discarded? " + deleted);
+        Logs.debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
         this.currentCommandDiscarded.set(true);
     }
     

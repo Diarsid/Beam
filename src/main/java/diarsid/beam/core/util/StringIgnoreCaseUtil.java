@@ -20,7 +20,17 @@ public class StringIgnoreCaseUtil {
     private StringIgnoreCaseUtil() {
     }
         
-    public static boolean containsIgnoreCase(String searched, String whereToSearch) {
+    
+    public static boolean containsAllPartsIgnoreCase(String whereToSearch, String searched) {
+        for (String searchedPart : searched.split("-")) {
+            if ( ! whereToSearch.toLowerCase().contains(searchedPart.toLowerCase()) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static boolean containsIgnoreCase(String whereToSearch, String searched) {
         if ( searched == null || whereToSearch == null ) {
             return false;
         } else {

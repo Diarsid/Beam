@@ -21,6 +21,13 @@ import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
+import static java.lang.String.join;
 
 /**
  * Implements ExecutorModule interface.

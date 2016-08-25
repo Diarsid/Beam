@@ -20,13 +20,17 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.os.actions.RunnableBrowserAction;
+import diarsid.beam.core.modules.executor.os.actions.RunnableDesktopOpenAction;
+import diarsid.beam.core.modules.executor.os.actions.RunnableRuntimeCommandAction;
+import diarsid.beam.core.modules.executor.os.search.FileSearchByNamePatternReusableFileVisitor;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
+import diarsid.beam.core.util.Logs;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
@@ -43,7 +47,7 @@ public class OSWindows implements OS {
     private final String PROGRAMS_LOCATION;
     private final IoInnerModule ioEngine;
     private final ExecutorService executorService;
-    private final SearchFileVisitor searchVisitor;
+    private final FileSearchByNamePatternReusableFileVisitor searchVisitor;
     private final IntelligentExecutorCommandContext intelligentContext;
 
     public OSWindows(
@@ -63,15 +67,14 @@ public class OSWindows implements OS {
                 .toLowerCase()
                 .intern();      
         this.executorService = Executors.newFixedThreadPool(3);
-        this.searchVisitor = new SearchFileVisitor(this.ioEngine);
+        this.searchVisitor = new FileSearchByNamePatternReusableFileVisitor();
         this.intelligentContext = intelligentContext;
     }
 
     @Override
     public OperationResult openLocation(Location location) {
         if (this.checkIfDirectoryExists(location.getPath())){
-            this.executorService.execute(
-                    new RunnableDesktopOpenTask(
+            this.executorService.execute(new RunnableDesktopOpenAction(
                             this.ioEngine,
                             location.getPath()));            
             this.ioEngine.reportMessage("opening...");
@@ -94,8 +97,7 @@ public class OSWindows implements OS {
                 "Location`s path is invalid.");
         
         if (checkedTarget.length() > 0) {
-            this.executorService.execute(
-                    new RunnableDesktopOpenTask(
+            this.executorService.execute(new RunnableDesktopOpenAction(
                             this.ioEngine,
                             location.getPath() + "/" + checkedTarget));            
             this.ioEngine.reportMessage("opening...");
@@ -131,8 +133,7 @@ public class OSWindows implements OS {
                     .append(givenLocation.getPath().replace("/", "\\"))
                     .append("\\")
                     .append(checkedFile);
-            this.executorService.execute(
-                    new RunnableRuntimeCommandTask(
+            this.executorService.execute(new RunnableRuntimeCommandAction(
                             this.ioEngine, commandBuilder.toString()));
             this.ioEngine.reportMessage("running...");
             return success();
@@ -158,8 +159,7 @@ public class OSWindows implements OS {
                 "Program`s location not found.");
 
         if ( checkedProgram.length() > 0 ) {
-            this.executorService.execute(
-                    new RunnableDesktopOpenTask(
+            this.executorService.execute(new RunnableDesktopOpenAction(
                             this.ioEngine,
                             PROGRAMS_LOCATION + "\\" + checkedProgram));
             this.ioEngine.reportMessage("running...");
@@ -174,7 +174,7 @@ public class OSWindows implements OS {
         if ( ! dir.exists() ) {
             this.ioEngine.reportMessage("This path doesn`t exist.");
             return false;
-        } else if (!dir.isDirectory()) {
+        } else if ( ! dir.isDirectory()) {
             this.ioEngine.reportMessage("This isn`t a directory.");
             return false;
         } else {
@@ -211,8 +211,7 @@ public class OSWindows implements OS {
     
     @Override
     public OperationResult openUrlWithDefaultBrowser(String urlAddress) {
-        this.executorService.execute(
-                new RunnableBrowserTask(this.ioEngine, urlAddress));
+        this.executorService.execute(new RunnableBrowserAction(this.ioEngine, urlAddress));
         this.ioEngine.reportMessage("browse...");
         return success();
     }
@@ -235,8 +234,7 @@ public class OSWindows implements OS {
                     .append(checkedBrowserName)
                     .append(" ")
                     .append(urlAddress);
-            this.executorService.execute(
-                    new RunnableRuntimeCommandTask(
+            this.executorService.execute(new RunnableRuntimeCommandAction(
                             this.ioEngine, commandBuilder.toString()));
             this.ioEngine.reportMessage("browse...");
             return success();
@@ -306,11 +304,10 @@ public class OSWindows implements OS {
     private void findInTree(Path root, String nameToFind, List<String> foundItems) {
         try { 
             
-            Files.walkFileTree(
-                    root, 
+            Files.walkFileTree(root, 
                     EnumSet.of(FileVisitOption.FOLLOW_LINKS), 
                     2,
-                    this.searchVisitor.set(root, nameToFind, foundItems));
+                    this.searchVisitor.useAgainWith(root, nameToFind, foundItems));
             
             this.searchVisitor.clear();
             foundItems.remove("");
@@ -362,8 +359,7 @@ public class OSWindows implements OS {
                 ioEngine.reportMessage("This note already exists.");
             } else {
                 Files.createFile(newNote);
-                this.executorService.submit(
-                        new RunnableDesktopOpenTask(
+                this.executorService.submit(new RunnableDesktopOpenAction(
                                 ioEngine, 
                                 newNote.toFile().getPath()));
             }

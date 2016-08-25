@@ -46,7 +46,7 @@ public class Beam {
     }    
            
     public static void main(String[] args) {
-        Logs.info(Beam.class, "start Beam.core");
+        Logs.log(Beam.class, "start Beam.core");
         initApplication();
         setJVMShutdownHook();
     }
@@ -69,14 +69,14 @@ public class Beam {
                 container.getModule(RmiModule.class).stopModule();
                 container.getModule(IoInnerModule.class).stopModule();        
                 container.getModule(IoModule.class).stopModule();
-                Logs.info(Beam.class, "JVM shutdown: Beam.core modules stopped");
+                Logs.log(Beam.class, "JVM shutdown: Beam.core modules stopped");
             }
         };
         Runtime.getRuntime().addShutdownHook(new Thread(shutdownCallback));        
     }
     
     public static void exitBeamCoreNow() {
-        Logs.info(Beam.class, "stop Beam.core");
+        Logs.log(Beam.class, "stop Beam.core");
         System.exit(0);
     }
     

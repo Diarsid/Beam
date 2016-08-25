@@ -214,7 +214,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     
     private void logError(boolean critical, String[] description) {
         String criticalStatus = critical ? "critical" : "non-critical"; 
-        Logs.error(
+        Logs.logError(
                 IoInnerModule.class, 
                 "Logical error reporting, status: " + criticalStatus + " :", 
                 description);
@@ -230,7 +230,7 @@ class IoInnerModuleWorker implements IoInnerModule {
 
     private void logException(Exception e, boolean critical, String[] description) {
         String criticalStatus = critical ? "critical" : "non-critical";
-        Logs.error(
+        Logs.logError(
                 IoInnerModule.class, 
                 "Exception reporting, status: "+criticalStatus + " :", 
                 e, 

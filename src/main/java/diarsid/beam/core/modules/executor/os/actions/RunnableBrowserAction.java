@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor.os;
+package diarsid.beam.core.modules.executor.os.actions;
 
 import java.awt.Desktop;
 import java.io.IOException;
@@ -17,26 +17,22 @@ import diarsid.beam.core.modules.IoInnerModule;
  *
  * @author Diarsid
  */
-public class RunnableBrowserTask implements Runnable {
+public class RunnableBrowserAction extends AbstractRunnableAction {
     
-    private final String url;
-    private final IoInnerModule ioEngine;
-
-    RunnableBrowserTask(IoInnerModule ioEngine, String url) {
-        this.url = url;
-        this.ioEngine = ioEngine;
+    public RunnableBrowserAction(IoInnerModule ioEngine, String url) {
+        super(ioEngine, url);
     }
     
     @Override
     public void run() {
         try {
-            Desktop.getDesktop().browse(new URI(url));
+            Desktop.getDesktop().browse(new URI(super.getArgument()));
         } catch (IOException e) {
-            ioEngine.reportException(e, "browse URL with Desktop -> IOException: given url may be invalid.");
+            super.getIo().reportException(e, "browse URL with Desktop -> IOException: given url may be invalid.");
         } catch (IllegalArgumentException argumentException) {
-            ioEngine.reportError("Unknown target");
+            super.getIo().reportError("Unknown target");
         } catch (URISyntaxException urie){
-            ioEngine.reportException(urie, "URL syntax error in address: " + url);
+            super.getIo().reportException(urie, "URL syntax error in address: " + super.getArgument());
         }
     }
 }

@@ -3,12 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.executor.os;
+package diarsid.beam.core.modules.executor.os.search.result;
 
 /**
  *
  * @author Diarsid
  */
-public interface DiscoveryResult {
+public interface FileSearchResult {
     
+    boolean isOk();
+    
+    FileSearchSuccess success();
+    
+    FileSearchFailure failure();        
 }
