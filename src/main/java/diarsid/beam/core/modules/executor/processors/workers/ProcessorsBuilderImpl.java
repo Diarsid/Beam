@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.executor.processors.workers;
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
@@ -19,6 +18,7 @@ import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 
 /**
  *
@@ -29,14 +29,14 @@ public class ProcessorsBuilderImpl implements ProcessorsBuilder {
     private final IoInnerModule ioEngine;
     private final DataModule dataModule;
     private final ConfigModule configModule;
-    private final IntelligentExecutorCommandContext intellContext;
+    private final ExecutorContext intellContext;
     private final OS os;
     
     public ProcessorsBuilderImpl(
             IoInnerModule io, 
             DataModule data, 
             ConfigModule config,
-            IntelligentExecutorCommandContext intell,
+            ExecutorContext intell,
             OS os) {
         
         this.ioEngine = io;

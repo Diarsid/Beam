@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.context;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import diarsid.beam.core.util.Logs;
  *
  * @author Diarsid
  */
-public class IntelligentExecutorResolver {
+public class SmartAmbiguityResolver {
     
     private final IoInnerModule ioEngine;
     private final DaoExecutorIntelligentChoices choiceDao;
@@ -27,7 +27,7 @@ public class IntelligentExecutorResolver {
     private boolean active;
     private boolean shouldRememberAutomatically;
     
-    IntelligentExecutorResolver(
+    SmartAmbiguityResolver(
             DataModule data, 
             IoInnerModule io) {        
         this.ioEngine = io;
@@ -61,7 +61,7 @@ public class IntelligentExecutorResolver {
             int resolvingAttemptNumber,
             String patternToResolve, 
             List<String> variants, 
-            CurrentlyExecutedCommandContextCallback contextCallback) {
+            ContextChoiceSavingCallback contextCallback) {
         if ( this.active ) {
             return this.tryToChoose(
                     question, 
@@ -81,7 +81,7 @@ public class IntelligentExecutorResolver {
             int resolvingAttemptNumber,
             String patternToResolve, 
             List<String> variants,
-            CurrentlyExecutedCommandContextCallback contextCallback) {
+            ContextChoiceSavingCallback contextCallback) {
         
         Logs.debug("[EXECUTOR RESOLVER] "+patternToResolve+" -> " + variants);
         

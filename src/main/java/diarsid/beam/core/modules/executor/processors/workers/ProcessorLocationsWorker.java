@@ -13,7 +13,6 @@ import java.util.List;
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerLocations;
-import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
@@ -26,6 +25,13 @@ import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.index
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 
+import static java.lang.String.join;
+
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
+
+import static java.lang.String.join;
+import static java.lang.String.join;
+
 /**
  *
  * @author Diarsid
@@ -35,13 +41,13 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerLocations locationsHandler;
-    private final IntelligentExecutorCommandContext intellContext;
+    private final ExecutorContext intellContext;
 
     ProcessorLocationsWorker(
             IoInnerModule io, 
             OS sys, 
             HandlerLocations locs, 
-            IntelligentExecutorCommandContext intell) {
+            ExecutorContext intell) {
         
         this.ioEngine = io;
         this.system = sys;

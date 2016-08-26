@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.context;
 
 /**
  *
  * @author Diarsid
  */
-public interface CurrentlyExecutedCommandContextCallback {
+public interface ContextChoiceSavingCallback {
     
     void doNotSaveThisChoice();
     

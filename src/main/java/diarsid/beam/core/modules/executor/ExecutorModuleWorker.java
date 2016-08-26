@@ -4,6 +4,8 @@
  */
 package diarsid.beam.core.modules.executor;
 
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +34,7 @@ import static java.lang.String.join;
 class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
-    private final IntelligentExecutorCommandContext intelligentContext;
+    private final ExecutorContext intelligentContext;
     
     private final ProcessorPrograms programs;
     private final ProcessorNotes notes;
@@ -40,14 +42,14 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final ProcessorLocations locations;
     private final ProcessorCommandsBatches batches; 
     
-    private final CommandsIntelligentCache commandsCache;
+    private final SmartConsoleCommandsCache commandsCache;
     private final ThreadLocal<Boolean> isCurrentCommandNew;
     
     ExecutorModuleWorker(
             IoInnerModule io,
-            IntelligentExecutorCommandContext intelligentContext,
+            ExecutorContext intelligentContext,
             ProcessorsBuilder builder,
-            CommandsIntelligentCache commandsCache) {
+            SmartConsoleCommandsCache commandsCache) {
         
         this.ioEngine = io;
         this.intelligentContext = intelligentContext;

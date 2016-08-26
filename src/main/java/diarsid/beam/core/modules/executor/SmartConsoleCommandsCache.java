@@ -25,13 +25,13 @@ import diarsid.beam.core.util.Logs;
  *
  * @author Diarsid
  */
-class CommandsIntelligentCache {
+class SmartConsoleCommandsCache {
     
     private final IoInnerModule ioEngine;
     private final DaoExecutorConsoleCommands dao;
     private final List<String> executableOperationsByPriority;
         
-    CommandsIntelligentCache(
+    SmartConsoleCommandsCache(
             IoInnerModule ioEngine,
             DaoExecutorConsoleCommands consoleCommandsDao) {  
         

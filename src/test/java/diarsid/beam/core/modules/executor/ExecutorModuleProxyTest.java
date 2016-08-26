@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.executor;
 
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.executor.context.ExecutorContextLifecycleController;
 
 import static org.mockito.Mockito.*;
 
@@ -21,10 +23,10 @@ import static org.mockito.Mockito.*;
  *
  * @author Diarsid
  */
-public class ExecutorModuleIntelligentProxyTest {
+public class ExecutorModuleProxyTest {
     
     private final ExecutorModule executor;
-    private final CurrentlyExecutedCommandContext commandContext;
+    private final ExecutorContextLifecycleController commandContext;
     private final Object proxyVoidTarget;
     
     private final List<String> listOfStrings;
@@ -33,7 +35,7 @@ public class ExecutorModuleIntelligentProxyTest {
     private final Object[] args_string;
     {
         executor = mock(ExecutorModule.class);
-        commandContext = mock(CurrentlyExecutedCommandContext.class);
+        commandContext = mock(ExecutorContextLifecycleController.class);
         proxyVoidTarget = new Object();        
         listOfStrings = new ArrayList<>();
         listOfStrings.add("open");
@@ -45,9 +47,9 @@ public class ExecutorModuleIntelligentProxyTest {
         args_string = new Object[] {"location"};
     }
     
-    private final ExecutorModuleIntelligentProxy testedProxy;
+    private final ExecutorModuleProxy testedProxy;
     {
-        testedProxy = new ExecutorModuleIntelligentProxy(
+        testedProxy = new ExecutorModuleProxy(
                 executor, commandContext);
     }
     
@@ -66,27 +68,27 @@ public class ExecutorModuleIntelligentProxyTest {
     }
 
     /**
-     * Test of invoke method, of class ExecutorModuleIntelligentProxy.
+     * Test of invoke method, of class ExecutorModuleProxy.
      */
     @Test
     public void testInvoke_boolean() throws Exception {
         testedProxy.invoke(proxyVoidTarget, methodAcceptingBoolean, args_boolean);
-        verify(commandContext, never()).beginCurrentCommandState(listOfStrings);
-        verify(commandContext, never()).destroyCurrentCommandState();
+        verify(commandContext, never()).createContextForCommand(listOfStrings);
+        verify(commandContext, never()).destroyCurrentContext();
     }
     
     /**
-     * Test of invoke method, of class ExecutorModuleIntelligentProxy.
+     * Test of invoke method, of class ExecutorModuleProxy.
      */
     @Test
     public void testInvoke_string() throws Exception {
         testedProxy.invoke(proxyVoidTarget, methodAcceptingString, args_string);
-        verify(commandContext, never()).beginCurrentCommandState(listOfStrings);
-        verify(commandContext, never()).destroyCurrentCommandState();
+        verify(commandContext, never()).createContextForCommand(listOfStrings);
+        verify(commandContext, never()).destroyCurrentContext();
     }
     
     /**
-     * Test of invoke method, of class ExecutorModuleIntelligentProxy.
+     * Test of invoke method, of class ExecutorModuleProxy.
      */
     @Test
     public void testInvoke_listOfStrings() throws Exception {
@@ -94,7 +96,7 @@ public class ExecutorModuleIntelligentProxyTest {
                 proxyVoidTarget, 
                 methodAcceptingListOfStrings, 
                 args_listOfStrings);
-        verify(commandContext).beginCurrentCommandState(listOfStrings);
-        verify(commandContext).destroyCurrentCommandState();
+        verify(commandContext).createContextForCommand(listOfStrings);
+        verify(commandContext).destroyCurrentContext();
     }
 }

@@ -11,9 +11,9 @@ import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
-import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 
 /**
  *
@@ -23,12 +23,12 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     
     private final IoInnerModule ioEngine;
     private final DaoCommandsBatches batchesDao;
-    private final IntelligentExecutorCommandContext intellContext;
+    private final ExecutorContext intellContext;
     
     ProcessorCommandsBatchesWorker(
             IoInnerModule io, 
             DaoCommandsBatches dao, 
-            IntelligentExecutorCommandContext intell) {
+            ExecutorContext intell) {
         
         this.ioEngine = io;
         this.batchesDao = dao;

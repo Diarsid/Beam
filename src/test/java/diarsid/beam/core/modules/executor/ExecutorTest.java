@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.modules.executor;
 
+import diarsid.beam.core.modules.executor.context.SmartAmbiguityResolver;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class ExecutorTest {
     HandlerLocations locHandler;
     DaoCommandsBatches comDao;
     OS os;
-    IntelligentExecutorResolver intell;
+    SmartAmbiguityResolver intell;
     
     @Test
     @Before
@@ -52,7 +54,7 @@ public class ExecutorTest {
         when(data.getCommandsDao()).thenReturn(comDao);
         when(data.getWebPagesHandler()).thenReturn(pagesHandler);
         os = mock(OS.class);
-        intell = mock(IntelligentExecutorResolver.class);
+        intell = mock(SmartAmbiguityResolver.class);
         Location notes = mock(Location.class);
         
         exec = null;

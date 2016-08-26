@@ -7,11 +7,11 @@ package diarsid.beam.core.modules.executor.os;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 
 /**
  *
@@ -24,7 +24,7 @@ public interface OSProvider {
             ConfigModule config, 
             SystemActionsExecutor actionsExecutor,
             FileSearcher fileSearcher,
-            IntelligentExecutorCommandContext intelligentContext) {
+            ExecutorContext intelligentContext) {
         
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")) {

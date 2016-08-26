@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.context;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Diarsid
  */
-public interface IntelligentExecutorCommandContext {
+public interface ExecutorContext {
     
     int resolve(String question, String originalPattern, List<String> variants);
     

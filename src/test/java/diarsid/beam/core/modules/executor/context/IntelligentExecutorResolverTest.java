@@ -4,7 +4,10 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.context;
+
+import diarsid.beam.core.modules.executor.context.SmartAmbiguityResolver;
+import diarsid.beam.core.modules.executor.context.ContextChoiceSavingCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,12 +71,12 @@ public class IntelligentExecutorResolverTest {
     
     
     // tested object
-    private IntelligentExecutorResolver testedResolver;
+    private SmartAmbiguityResolver testedResolver;
     
     // tested resolver dependencies (mocks)
     private DaoExecutorIntelligentChoices choicesDao;
     private IoInnerModule ioEngine;
-    private CurrentlyExecutedCommandContextCallback contextCallback;
+    private ContextChoiceSavingCallback contextCallback;
 
     public IntelligentExecutorResolverTest() {
     }
@@ -91,11 +94,11 @@ public class IntelligentExecutorResolverTest {
         DataModule data = mock(DataModule.class);
         this.choicesDao = mock(DaoExecutorIntelligentChoices.class);
         this.ioEngine = mock(IoInnerModule.class);
-        this.contextCallback = mock(CurrentlyExecutedCommandContextCallback.class);
+        this.contextCallback = mock(ContextChoiceSavingCallback.class);
         
         when(data.getIntellChoiceDao()).thenReturn(this.choicesDao);
         
-        this.testedResolver = new IntelligentExecutorResolver(data, this.ioEngine);
+        this.testedResolver = new SmartAmbiguityResolver(data, this.ioEngine);
     }
 
     @After

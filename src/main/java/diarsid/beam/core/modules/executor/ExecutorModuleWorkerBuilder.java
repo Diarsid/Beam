@@ -12,6 +12,7 @@ import java.lang.reflect.Proxy;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.context.ExecutorContextWorker;
 import diarsid.beam.core.modules.executor.os.OSProvider;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
@@ -20,6 +21,7 @@ import diarsid.beam.shared.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static diarsid.beam.core.modules.executor.context.ExecutorContextWorker.createContext;
 import static diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor.getExecutor;
 import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDeepOf;
 
@@ -47,32 +49,29 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     public ExecutorModule buildModule() {
         FileSearcher fileSearcher = getSearcherWithDeepOf(2);
         SystemActionsExecutor actionsExecutor = getExecutor(this.ioInnerModule);
-        IntelligentExecutorResolver resolver = new IntelligentExecutorResolver(
-                this.dataModule, 
-                this.ioInnerModule);
-        CommandsIntelligentCache consoleCommandsCache = new CommandsIntelligentCache(
+        
+        SmartConsoleCommandsCache consoleCommandsCache = new SmartConsoleCommandsCache(
                 this.ioInnerModule, this.dataModule.getConsoleCommandsDao());
-        CurrentlyExecutedCommandIntelligentContext intelligentContext = 
-                new CurrentlyExecutedCommandIntelligentContext(resolver);        
+        ExecutorContextWorker context = createContext(this.dataModule, this.ioInnerModule);
         OS os = OSProvider.getOS(
                 this.ioInnerModule, 
                 this.configModule, 
                 actionsExecutor,
                 fileSearcher,
-                intelligentContext); 
+                context); 
         ProcessorsBuilderImpl processorsBuilder = new ProcessorsBuilderImpl(
                 this.ioInnerModule, 
                 this.dataModule, 
                 this.configModule, 
-                intelligentContext,
+                context,
                 os);         
         ExecutorModuleWorker actualExecutor = new ExecutorModuleWorker(
                 this.ioInnerModule, 
-                intelligentContext, 
+                context, 
                 processorsBuilder, 
                 consoleCommandsCache);
-        InvocationHandler preparedProxy = new ExecutorModuleIntelligentProxy(
-                actualExecutor, intelligentContext);
+        InvocationHandler preparedProxy = new ExecutorModuleProxy(
+                actualExecutor, context);
         ExecutorModule proxyExecutor = (ExecutorModule) Proxy.newProxyInstance(
                 ExecutorModule.class.getClassLoader(), 
                 actualExecutor.getClass().getInterfaces(), 

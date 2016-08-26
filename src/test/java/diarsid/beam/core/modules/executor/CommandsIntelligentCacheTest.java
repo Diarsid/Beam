@@ -31,12 +31,12 @@ public class CommandsIntelligentCacheTest {
     
     private final IoInnerModule ioEngine;
     private final DaoExecutorConsoleCommands dao;
-    private final CommandsIntelligentCache cache;
+    private final SmartConsoleCommandsCache cache;
     
     {
         ioEngine = mock(IoInnerModule.class);
         dao = mock(DaoExecutorConsoleCommands.class);
-        cache = new CommandsIntelligentCache(ioEngine, dao);
+        cache = new SmartConsoleCommandsCache(ioEngine, dao);
     }
     
 
@@ -60,21 +60,21 @@ public class CommandsIntelligentCacheTest {
     }
 
     /**
-     * Test of addCommand method, of class CommandsIntelligentCache.
+     * Test of addCommand method, of class SmartConsoleCommandsCache.
      */
     @Test
     public void testAddCommand_List() {
     }
 
     /**
-     * Test of addCommand method, of class CommandsIntelligentCache.
+     * Test of addCommand method, of class SmartConsoleCommandsCache.
      */
     @Test
     public void testAddCommand_String() {
     }
 
     /**
-     * Test of getPatternCommandForExecution method, of class CommandsIntelligentCache.
+     * Test of getPatternCommandForExecution method, of class SmartConsoleCommandsCache.
      */
     @Test
     public void testGetPatternCommandForExecution() {

@@ -4,11 +4,14 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.context;
+
 
 import java.util.Arrays;
 import java.util.List;
 
+import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 import diarsid.beam.core.util.Logs;
 
@@ -16,38 +19,31 @@ import diarsid.beam.core.util.Logs;
  *
  * @author Diarsid
  */
-class CurrentlyExecutedCommandIntelligentContext 
-        implements IntelligentExecutorCommandContext, 
-                   CurrentlyExecutedCommandContext{
+public class ExecutorContextWorker 
+        implements ExecutorContext, 
+                   ExecutorContextLifecycleController {
     
     private final ThreadLocal<CurrentCommandState> currentCommand;
     private final ThreadLocal<Boolean> needSaveCurrentChoice;
     private final ThreadLocal<Boolean> currentCommandDiscarded;
     private final ThreadLocal<Integer> resolvingAttemptNubmer;
-    private final IntelligentExecutorResolver resolver;
-    private final CurrentlyExecutedCommandContextCallback contextCallback;
+    private final SmartAmbiguityResolver resolver;
     
-    CurrentlyExecutedCommandIntelligentContext(IntelligentExecutorResolver resolver) {
+    ExecutorContextWorker(SmartAmbiguityResolver resolver) {
         this.currentCommand = new ThreadLocal<>();
         this.needSaveCurrentChoice = new ThreadLocal<>();
         this.currentCommandDiscarded = new ThreadLocal<>();
         this.resolvingAttemptNubmer = new ThreadLocal<>();
         this.resolver = resolver;
-        this.contextCallback = new CurrentlyExecutedCommandContextCallback() {
-            @Override
-            public void doNotSaveThisChoice() {
-                needSaveCurrentChoice.set(false);
-            }
-            
-            @Override
-            public void saveThisChoice() {
-                needSaveCurrentChoice.set(true);
-            }
-        };
+    }
+    
+    public static ExecutorContextWorker createContext(
+            DataModule dataModule, IoInnerModule ioInnerModule) {
+        return new ExecutorContextWorker(new SmartAmbiguityResolver(dataModule, ioInnerModule));
     }
     
     @Override
-    public void beginCurrentCommandState(List<String> commandParams) {
+    public void createContextForCommand(List<String> commandParams) {
         Logs.debug("[EXECUTOR CONTEXT] command intercepted : "  + commandParams.toString());
         this.resetContextWithNew(commandParams);
     }
@@ -69,7 +65,7 @@ class CurrentlyExecutedCommandIntelligentContext
     }
     
     @Override
-    public void destroyCurrentCommandState() {
+    public void destroyCurrentContext() {
         String comm = currentCommand.get().getCommandString();        
         this.rememberChoicesForCurrentCommandIfNecessary();
         this.clearContext();
@@ -108,10 +104,24 @@ class CurrentlyExecutedCommandIntelligentContext
                 this.getResolvingAttemptNumberDuringContextSession(),
                 patternToResolve, 
                 variants,
-                this.contextCallback);    
+                this.provideChoiceSavingCallback());    
         this.incrementResolvingAttemptNumber();
         this.saveChoiceInCurrentContextIfMade(patternToResolve, chosenVariant, variants);        
         return chosenVariant;
+    }
+    
+    private ContextChoiceSavingCallback provideChoiceSavingCallback() {
+        return new ContextChoiceSavingCallback() {
+            @Override
+            public void doNotSaveThisChoice() {
+                needSaveCurrentChoice.set(false);
+            }
+            
+            @Override
+            public void saveThisChoice() {
+                needSaveCurrentChoice.set(true);
+            }
+        };
     }
 
     private void incrementResolvingAttemptNumber() {

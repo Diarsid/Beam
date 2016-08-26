@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.context;
 
 import java.util.List;
 
@@ -11,9 +11,9 @@ import java.util.List;
  *
  * @author Diarsid
  */
-interface CurrentlyExecutedCommandContext {
+public interface ExecutorContextLifecycleController {
     
-    void beginCurrentCommandState(List<String> commandParams);
+    void createContextForCommand(List<String> commandParams);
     
-    void destroyCurrentCommandState();    
+    void destroyCurrentContext();    
 }

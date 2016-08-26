@@ -18,7 +18,6 @@ import java.util.List;
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
@@ -31,6 +30,14 @@ import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.fa
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
 
+
+import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
+
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
+
+import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
+import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
+
 /**
  *
  * @author Diarsid
@@ -41,14 +48,14 @@ public class OSWorker implements OS {
     private final IoInnerModule ioEngine;
     private final SystemActionsExecutor actionsExecutor;
     private final FileSearcher fileSearcher;
-    private final IntelligentExecutorCommandContext intelligentContext;
+    private final ExecutorContext intelligentContext;
 
     public OSWorker(
             IoInnerModule io, 
             ConfigModule config, 
             SystemActionsExecutor actionsExecutor,
             FileSearcher fileSearcher,
-            IntelligentExecutorCommandContext intelligentContext) {
+            ExecutorContext intelligentContext) {
         
         this.ioEngine = io;
         if(!Desktop.isDesktopSupported()){

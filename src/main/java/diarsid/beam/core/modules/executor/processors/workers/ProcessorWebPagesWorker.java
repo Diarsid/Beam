@@ -13,13 +13,14 @@ import java.util.List;
 import diarsid.beam.core.entities.global.WebPage;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerWebPages;
-import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
+
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 
 /**
  *
@@ -30,13 +31,13 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerWebPages pagesHandler;
-    private final IntelligentExecutorCommandContext intellContext;
+    private final ExecutorContext intellContext;
     
     ProcessorWebPagesWorker(
             IoInnerModule io, 
             OS sys, 
             HandlerWebPages pages, 
-            IntelligentExecutorCommandContext intell) {
+            ExecutorContext intell) {
         
         this.ioEngine = io;
         this.system = sys;

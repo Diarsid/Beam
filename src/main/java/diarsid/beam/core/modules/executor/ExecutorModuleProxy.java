@@ -10,21 +10,22 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.util.Logs;
+import diarsid.beam.core.modules.executor.context.ExecutorContextLifecycleController;
 
 /**
  *
  * @author Diarsid
  */
-class ExecutorModuleIntelligentProxy implements InvocationHandler {
+class ExecutorModuleProxy implements InvocationHandler {
     
     private final ExecutorModule executorModule;
-    private final CurrentlyExecutedCommandContext currentCommandContext;
+    private final ExecutorContextLifecycleController currentCommandContext;
     
-    ExecutorModuleIntelligentProxy(
+    ExecutorModuleProxy(
             ExecutorModule executorModule, 
-            CurrentlyExecutedCommandContext currentCommandContext) {        
+            ExecutorContextLifecycleController currentCommandContext) {        
         this.executorModule = executorModule;
         this.currentCommandContext = currentCommandContext;
     }
@@ -45,10 +46,10 @@ class ExecutorModuleIntelligentProxy implements InvocationHandler {
         
         Logs.debug("[EXECUTOR PROXY] method intercepted : "  + method.getName());
         Object invocationResult;
-        this.currentCommandContext.beginCurrentCommandState(
+        this.currentCommandContext.createContextForCommand(
                 this.extractCommandFromPassedArgs(args));
         invocationResult = method.invoke(this.executorModule, args);
-        this.currentCommandContext.destroyCurrentCommandState();
+        this.currentCommandContext.destroyCurrentContext();
         return invocationResult;
     }
     

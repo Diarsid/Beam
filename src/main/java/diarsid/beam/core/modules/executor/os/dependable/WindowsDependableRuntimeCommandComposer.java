@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor.os;
+package diarsid.beam.core.modules.executor.os.dependable;
 
 
 public class WindowsDependableRuntimeCommandComposer implements OSDependableRuntimeCommandComposer {
