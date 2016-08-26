@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -94,9 +94,17 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
             "WHERE ( LOWER(command) LIKE ? ) " +
             "   OR ( LOWER(pattern) LIKE ? ) " +
             "   OR ( LOWER(choice) LIKE ? ) ";
+    private final String DELETE_FROM_CHOICES_WHERE_COMMAND_AND_PATH_OR_CHOICE_OR_PATTEN_LIKE = 
+            "DELETE FROM command_choices " +
+            "WHERE ( ( LOWER(command) LIKE ? ) AND (LOWER(command) LIKE ? ) )" +
+            "   OR ( ( LOWER(pattern) LIKE ? ) AND (LOWER(pattern) LIKE ? ) ) " +
+            "   OR ( ( LOWER(choice) LIKE ? ) AND (LOWER(choice) LIKE ? ) ) ";
     private final String DELETE_FROM_CONSOLE_WHERE_COMMAND_LIKE = 
             "DELETE FROM console_commands " +
             "WHERE LOWER(command) LIKE ? ";
+    private final String DELETE_FROM_CONSOLE_WHERE_COMMAND_AND_PATH_LIKE = 
+            "DELETE FROM console_commands " +
+            "WHERE ( ( LOWER(command) LIKE ? ) AND ( LOWER(command) LIKE ? ) )";
     
     @Override
     public String getChoiceForCommandPart(
@@ -197,7 +205,7 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public boolean discardCommandByPatternAndOperation(String operation, String pattern) {
-        pattern = pattern.toLowerCase().replace("-", "%");
+        pattern = pattern.replace("-", "%").toLowerCase();
         try (Connection con = this.data.connect();
                 PreparedStatement deleteFromChoices = con.prepareStatement(
                         DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE);
@@ -215,10 +223,44 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
             return ( qty > 0 );
         } catch (SQLException e) {
             this.ioEngine.reportException(e, 
-                    "SQLException: delete choice for command: " + pattern);
+                    "SQLException: delete choice for command: " + operation + " " + pattern);
             return false;
         }
     }
+    
+//    @Override
+//    public boolean discardCommandByPathPatternAndOperation(String operation, String pathToTarget, String targetPattern) {
+//        targetPattern = targetPattern.replace("-", "%").trim().toLowerCase();
+//        pathToTarget = pathToTarget.replace("-", "%").trim().toLowerCase();
+//        try (Connection con = this.data.connect();
+//                PreparedStatement deleteFromChoices = con.prepareStatement(
+//                        DELETE_FROM_CHOICES_WHERE_COMMAND_AND_PATH_OR_CHOICE_OR_PATTEN_LIKE);
+//                PreparedStatement deleteFromConsole = con.prepareStatement(
+//                        DELETE_FROM_CONSOLE_WHERE_COMMAND_AND_PATH_LIKE)) {
+//            
+//            deleteFromChoices.setString(1, operation + "% "+targetPattern+"%");
+//            deleteFromChoices.setString(2, operation + "% "+pathToTarget+"%");
+//            
+//            deleteFromChoices.setString(3, "%"+targetPattern+"%");
+//            deleteFromChoices.setString(4, "%"+pathToTarget+"%");
+//            
+//            deleteFromChoices.setString(5, "%"+targetPattern+"%");
+//            deleteFromChoices.setString(6, "%"+pathToTarget+"%");
+//            
+//            int qty = deleteFromChoices.executeUpdate();
+//            
+//            deleteFromConsole.setString(1, operation + "% "+targetPattern+"%");
+//            deleteFromConsole.setString(2, operation + "% "+pathToTarget+"%");
+//            qty = qty + deleteFromConsole.executeUpdate();
+//            
+//            return ( qty > 0 );
+//        } catch (SQLException e) {
+//            this.ioEngine.reportException(e, 
+//                    "SQLException: delete choice for command: " + 
+//                            operation + " " + pathToTarget + " " + targetPattern);
+//            return false;
+//        }
+//    }
     
     @Override
     public List<CurrentCommandState> getAllChoices() {

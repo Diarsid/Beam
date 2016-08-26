@@ -14,7 +14,7 @@ import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
-import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 
 /**
  *
@@ -23,8 +23,7 @@ import static diarsid.beam.core.modules.executor.workflow.OperationResult.failBy
 class ProcessorProgramsWorker implements ProcessorPrograms {
     
     private final IoInnerModule ioEngine;
-    private final OS system;
-    
+    private final OS system;    
     
     ProcessorProgramsWorker(IoInnerModule io, OS system) {
         this.ioEngine = io;
@@ -43,7 +42,7 @@ class ProcessorProgramsWorker implements ProcessorPrograms {
             
     @Override
     public OperationResult runMarkedProgram(String mark, List<String> commandParams) {
-        if (commandParams.size() == 2){
+        if ( commandParams.size() == 2 ) {
             return this.system.runProgram(commandParams.get(1)+"-"+mark);
         } else {
             this.ioEngine.reportMessage("Unrecognizable command.");

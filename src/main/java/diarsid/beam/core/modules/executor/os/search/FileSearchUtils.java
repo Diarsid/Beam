@@ -13,7 +13,7 @@ import java.nio.file.Path;
  *
  * @author Diarsid
  */
-class FileSearchUtils {
+public class FileSearchUtils {
     
     private FileSearchUtils() {
     }
@@ -22,8 +22,19 @@ class FileSearchUtils {
         return Files.exists(dir) && Files.isDirectory(dir);
     }
     
+    public static int indexOfFirstFileSeparator(String target) {
+        int indexOfSlash = target.indexOf("/");
+        int indexOfBackSlash = target.indexOf("\\");
+        if ( indexOfBackSlash < 0 ) {
+            return indexOfSlash;
+        } else if ( indexOfSlash < 0 ) {
+            return indexOfBackSlash;
+        } else {
+            return ( indexOfSlash < indexOfBackSlash) ? indexOfSlash : indexOfBackSlash; 
+        }
+    }
     
-    static boolean containsFileSeparator(String target) {
+    public static boolean containsFileSeparator(String target) {
         return target.contains("/") || target.contains("\\");
     }
     

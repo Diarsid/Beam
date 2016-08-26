@@ -9,6 +9,8 @@ import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.IntelligentExecutorCommandContext;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
+import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.shared.modules.ConfigModule;
 
 /**
@@ -19,12 +21,15 @@ public interface OSProvider {
     
     static OS getOS(
             IoInnerModule io, 
-            ConfigModule configModule, 
+            ConfigModule config, 
+            SystemActionsExecutor actionsExecutor,
+            FileSearcher fileSearcher,
             IntelligentExecutorCommandContext intelligentContext) {
         
         String systemName = System.getProperty("os.name").toLowerCase();
         if (systemName.contains("win")) {
-            return new OSWindows(io, configModule, intelligentContext);
+            return new OSWorker(
+                    io, config, actionsExecutor, fileSearcher, intelligentContext);
         } else if (systemName.contains("x")) {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program

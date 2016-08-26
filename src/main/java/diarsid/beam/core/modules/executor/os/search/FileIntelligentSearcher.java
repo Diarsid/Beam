@@ -34,13 +34,13 @@ import static diarsid.beam.core.util.Logs.logError;
  *
  * @author Diarsid
  */
-public class FileIntelligentSearcher {  
+class FileIntelligentSearcher implements FileSearcher {  
     
     private final int deep;
     private final FileSearchByNamePatternReusableFileVisitor reusableVisitorByName;
     private final FileSearchByPathPatternReusableFileVisitor reusableVisitorByPath;
     
-    public FileIntelligentSearcher(
+    FileIntelligentSearcher(
             int deep, 
             FileSearchByNamePatternReusableFileVisitor visitorByName, 
             FileSearchByPathPatternReusableFileVisitor visitorByPath) {
@@ -49,6 +49,7 @@ public class FileIntelligentSearcher {
         this.reusableVisitorByPath = visitorByPath;
     }
     
+    @Override
     public FileSearchResult findTarget(String target, String location) {
         Path dir = Paths.get(location);        
         if ( givenPathIsDirectory(dir) ) {

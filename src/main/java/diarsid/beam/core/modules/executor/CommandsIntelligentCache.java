@@ -53,6 +53,10 @@ class CommandsIntelligentCache {
         this.dao.saveNewConsoleCommand(command);
     }
     
+    boolean delete(String command) {
+        return this.dao.remove(command);
+    }
+    
     String getPatternCommandForExecution(String command) {
         if ( command.length() < 2 ) {
             // There is no reason to search commands that matches only

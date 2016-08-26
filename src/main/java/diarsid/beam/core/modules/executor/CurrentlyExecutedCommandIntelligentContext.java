@@ -49,10 +49,10 @@ class CurrentlyExecutedCommandIntelligentContext
     @Override
     public void beginCurrentCommandState(List<String> commandParams) {
         Logs.debug("[EXECUTOR CONTEXT] command intercepted : "  + commandParams.toString());
-        this.setContextAfresh(commandParams);
+        this.resetContextWithNew(commandParams);
     }
 
-    private void setContextAfresh(List<String> commandParams) {
+    private void resetContextWithNew(List<String> commandParams) {
         Logs.debug("[EXECUTOR CONTEXT] context refreshed: " + commandParams);
         this.currentCommand.set(new CurrentCommandState(commandParams));
         this.currentCommandDiscarded.set(false);
@@ -60,7 +60,7 @@ class CurrentlyExecutedCommandIntelligentContext
         this.resolvingAttemptNubmer.set(0);
     }
     
-    private void setContextAfresh(String command) {
+    private void resetContextWithNew(String command) {
         Logs.debug("[EXECUTOR CONTEXT] context refreshed: " + command);
         this.currentCommand.set(new CurrentCommandState(command));
         this.currentCommandDiscarded.set(false);
@@ -104,7 +104,7 @@ class CurrentlyExecutedCommandIntelligentContext
         
         int chosenVariant = this.resolver.resolve(
                 question, 
-                this.getCommandStringFromContext(), 
+                this.getCurrentCommandFromContext(), 
                 this.getResolvingAttemptNumberDuringContextSession(),
                 patternToResolve, 
                 variants,
@@ -118,7 +118,8 @@ class CurrentlyExecutedCommandIntelligentContext
         this.resolvingAttemptNubmer.set(this.resolvingAttemptNubmer.get() + 1);
     }
     
-    private String getCommandStringFromContext() {
+    @Override
+    public String getCurrentCommandFromContext() {
         return this.currentCommand.get().getCommandString();
     }
     
@@ -145,13 +146,13 @@ class CurrentlyExecutedCommandIntelligentContext
     @Override
     public void adjustCurrentlyExecutedCommand(String... newCommand) {
         this.rememberChoicesForCurrentCommandIfNecessary();
-        this.setContextAfresh(Arrays.asList(newCommand));
+        this.resetContextWithNew(Arrays.asList(newCommand));
     }
     
     @Override
     public void adjustCurrentlyExecutedCommand(String newCommand) {
         this.rememberChoicesForCurrentCommandIfNecessary();
-        this.setContextAfresh(newCommand);
+        this.resetContextWithNew(newCommand);
     }
     
     @Override
@@ -170,6 +171,15 @@ class CurrentlyExecutedCommandIntelligentContext
         Logs.debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
         this.currentCommandDiscarded.set(true);
     }
+    
+//    @Override
+//    public void discardCurrentlyExecutedCommandInPathPatternAndOperation(
+//            String operation, String path, String pattern) {
+//        Logs.debug("[EXECUTOR CONTEXT] discard operation + path + pattern: " + operation + " + " + path + " + " + pattern);
+//        boolean deleted = this.resolver.discardCommandByPathPatternAndOperation(operation, path, pattern);
+//        Logs.debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
+//        this.currentCommandDiscarded.set(true);
+//    }
     
     @Override
     public boolean ifCanSaveConsoleCommand() {

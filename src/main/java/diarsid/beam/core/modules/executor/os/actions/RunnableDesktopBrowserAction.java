@@ -17,9 +17,9 @@ import diarsid.beam.core.modules.IoInnerModule;
  *
  * @author Diarsid
  */
-public class RunnableBrowserAction extends AbstractRunnableAction {
+public class RunnableDesktopBrowserAction extends AbstractRunnableAction {
     
-    public RunnableBrowserAction(IoInnerModule ioEngine, String url) {
+    public RunnableDesktopBrowserAction(IoInnerModule ioEngine, String url) {
         super(ioEngine, url);
     }
     

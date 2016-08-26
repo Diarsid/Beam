@@ -18,8 +18,8 @@ import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
-import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidArgument;
-import static diarsid.beam.core.modules.executor.workflow.OperationResult.failByInvalidLogic;
+import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
+import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 
 /**
  *
@@ -47,9 +47,9 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
     @Override
     public List<OperationResult> openWebPage(List<String> params) {
         List<OperationResult> operations = new ArrayList<>();
-        if (params.contains("with") || 
+        if ( params.contains("with") || 
                 params.contains("w") || 
-                params.contains("in")) {
+                params.contains("in") ) {
             operations.add(this.openWebPageWithGivenBrowser(params));
         } else {
             operations.addAll(this.openWebPages(params));
@@ -68,20 +68,18 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
             this.intellContext.adjustCurrentlyExecutedCommand(
                     "see", processedPageName);
             page = this.getWebPage(processedPageName);
-            if (page != null) {
-                operations.add(this.processPageWithItsOwnBrowser(page));
+            if ( page != null ) {
+                operations.add(this.processPage(page));
             } else {
-                this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                        "see", processedPageName);
-                operations.add(failByInvalidArgument(commandParams.get(i)));
+                operations.add(failByInvalidArgument(processedPageName));
             }
         }
         return operations;
     }
 
-    private OperationResult processPageWithItsOwnBrowser(WebPage page) {
+    private OperationResult processPage(WebPage page) {
         OperationResult result;
-        if (page.useDefaultBrowser()){
+        if ( page.useDefaultBrowser() ) {
             result = this.system.openUrlWithDefaultBrowser(
                     page.getUrlAddress());
         } else {
@@ -98,18 +96,19 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
         if (commandParams.size() > 3 && 
                 (commandParams.get(2).contains("w") || 
                 commandParams.get(2).contains("in") )) {
-            WebPage page = this.getWebPage(commandParams.get(1));
+            
+            String givenPageName = commandParams.get(1);
+            WebPage page = this.getWebPage(givenPageName);
             String givenBrowser = commandParams.get(3);
-            if (page != null) {
-                if (givenBrowser.equals("default") || givenBrowser.equals("def")) {
-                    return processPageWithDefaultBrowser(page);
+            
+            if ( page != null ) {
+                if ( givenBrowser.equals("default") || givenBrowser.equals("def") ) {
+                    return this.processPageWithDefaultBrowser(page);
                 } else {
-                    return processPageWithNonDefaultBrowser(page, givenBrowser);
+                    return this.processPageWithNonDefaultBrowser(page, givenBrowser);
                 }                
             } else {
-                this.intellContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                        "see", commandParams.get(1));
-                return failByInvalidArgument(commandParams.get(1));
+                return failByInvalidArgument(givenPageName);
             }
         } else {
             this.ioEngine.reportMessage("Unrecognizale command.");
@@ -134,7 +133,7 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
         }
         if ( page.getBrowser().contains(givenBrowser)
                 || givenBrowser.contains(page.getBrowser()) ) {
-            // do nothing because it seams that it is the same browser
+            // do nothing because it seems that it is the same browser
         } else {
             this.rememberNewBrowserForPage(page, givenBrowser);
         }
@@ -142,19 +141,17 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
 
     private OperationResult processPageWithDefaultBrowser(WebPage page) {
         OperationResult result;
-        result = this.system.openUrlWithDefaultBrowser(
-                page.getUrlAddress());
-        this.pagesHandler.editWebPageBrowser(
-                page.getName(), "default");
+        result = this.system.openUrlWithDefaultBrowser(page.getUrlAddress());
+        this.pagesHandler.editWebPageBrowser(page.getName(), "default");
         return result;
     }
     
     private void rememberNewBrowserForPage(WebPage page, String givenBrowser) {
         String[] vars = {"yes", "no"};
-        int choosed = this.ioEngine.resolveVariantsWithExternalIO(
+        int chosen = this.ioEngine.resolveVariantsWithExternalIO(
                 "Use given browser always for this page?", 
                 Arrays.asList(vars));
-        if (choosed == 1) {
+        if ( chosen == 1 ) {
             if (this.pagesHandler.editWebPageBrowser(page.getName(), givenBrowser)) {
                 this.ioEngine.reportMessage("Get it.");
             }                   
@@ -169,9 +166,9 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
     private WebPage resolveMultiplePages(
             String requiredPageName, List<WebPage> pages) {
         
-        if (pages.size() == 1) {
+        if ( pages.size() == 1 ) {
             return pages.get(0);
-        } else if (pages.isEmpty()) {
+        } else if ( pages.isEmpty() ) {
             this.ioEngine.reportMessage("Couldn`t find such page.");
             return null;
         } else {
@@ -189,7 +186,7 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
             if (choosedVariant < 0) {
                 return null;
             } else {
-                return pages.get(choosedVariant-1);
+                return pages.get(choosedVariant - 1);
             } 
         }
     }    

@@ -14,9 +14,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.entities.global.WebPage;
 import diarsid.beam.core.entities.global.WebPagePlacement;
+import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
@@ -473,15 +473,15 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public void deleteMem() throws IOException {
-        this.printer.printUnder("command choice in memory: ");
+        this.printer.printUnder("command in memory: ");
         String name = this.reader.read();
         if (name.isEmpty()) {
             return;
         }
         if ( ! name.isEmpty() ) { 
             if ( this.beam.executor().deleteMem(name) ) {
-                this.printer.printUnderLn("Choice has been removed from memory.");
-            }
+                this.printer.printUnderLn("Command has been removed from memory.");
+            } 
         }
     }
     

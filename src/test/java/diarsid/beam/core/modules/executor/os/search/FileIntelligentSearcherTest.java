@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -255,7 +256,6 @@ public class FileIntelligentSearcherTest {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
                 assertTrue(file.equals("folder_1/inner/nested/yyyAAA.txt"));
-                System.out.println("passed");
             } else {
                 fail();
             }
@@ -314,6 +314,36 @@ public class FileIntelligentSearcherTest {
                 assertTrue(files.contains("folder_1/inner/nested/XXxx.txt"));
                 assertTrue(files.contains("folder_1/inner/nested/xXXXx.txt"));
                 assertTrue(files.size() == 2);
+            }
+        } else {
+            fail();
+        }
+    }
+    
+    @Test
+    public void testFindTarget_findSingleFile_byPathWithFollowedSeparator_withoutWildcard_ingoreCase_failure() {
+        FileSearchResult result = searcher.findTarget("iNNer/", root);
+        if ( result.isOk() ) {
+            if ( result.success().hasSingleFoundFile() ) {
+                String file = result.success().getFoundFile();
+                assertEquals("folder_1/inner", file);
+            } else {
+                fail();
+            }
+        } else {
+            fail();
+        }
+    }
+    
+    @Test
+    public void testFindTarget_findSingleFile_byPathWithLeadSeparator_withoutWildcard_ingoreCase_failure() {
+        FileSearchResult result = searcher.findTarget("/iNNer", root);
+        if ( result.isOk() ) {
+            if ( result.success().hasSingleFoundFile() ) {
+                String file = result.success().getFoundFile();
+                assertEquals("folder_1/inner", file);
+            } else {
+                fail();
             }
         } else {
             fail();

@@ -6,9 +6,7 @@ package diarsid.beam.core.modules.executor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
@@ -19,14 +17,8 @@ import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
+import diarsid.beam.core.util.Logs;
 
-import static java.lang.String.join;
-import static java.lang.String.join;
-import static java.lang.String.join;
-import static java.lang.String.join;
-import static java.lang.String.join;
-import static java.lang.String.join;
-import static java.lang.String.join;
 import static java.lang.String.join;
 
 /**
@@ -61,13 +53,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         this.intelligentContext = intelligentContext;
         
         this.commandsCache = commandsCache;
-        this.isCurrentCommandNew = ThreadLocal.withInitial(
-                new Supplier<Boolean> () {
-            @Override
-            public Boolean get() {
-                return true;
-            }
-        });
+        this.isCurrentCommandNew = ThreadLocal.withInitial(() -> true);
         
         this.pages = builder.buildProcessorWebPages();
         this.batches = builder.buildProcessorBatches();
@@ -81,10 +67,11 @@ class ExecutorModuleWorker implements ExecutorModule {
         // there are nothing stoppable inside of ExecutorModule.
     }  
     
-    private void saveConsoleCommandIfValid(List<String> commandParams) {
+    private void saveConsoleCommandIfValid() {
         if ( this.intelligentContext.ifCanSaveConsoleCommand() &&
                 this.isCurrentCommandNew.get() ) {
-            this.commandsCache.addCommand(commandParams);
+            this.commandsCache.addCommand(
+                    this.intelligentContext.getCurrentCommandFromContext());
         }
     }
     
@@ -98,8 +85,16 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void open(List<String> commandParams) {
         OperationResult operation = this.locations.open(commandParams);
-        if (operation.ifSuccess()) {
-            this.saveConsoleCommandIfValid(commandParams);
+        if ( operation.ifSuccess() ) {
+            this.saveConsoleCommandIfValid();
+        } else {
+            if ( operation.ifFailCausedByInvalidArgument() ) {
+                this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                        "open", operation.getFailureArgument());               
+            } else {
+                this.intelligentContext.discardCurrentlyExecutedCommandInPattern(
+                        this.aggregate(commandParams));
+            }
         }
     }    
     
@@ -112,10 +107,20 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void run(List<String> commandParams) {
         List<OperationResult> operations = 
                 this.programs.runPrograms(commandParams);
+        OperationResult currentResult;
         for (int i = 0; i < operations.size(); i++) {
-            if (operations.get(i).ifSuccess()) {
-                this.saveConsoleCommandIfValid("run " + commandParams.get(i+1));
-            }            
+            currentResult = operations.get(i);
+            if ( currentResult.ifSuccess() ) {
+                this.saveConsoleCommandIfValid("run " + commandParams.get(i + 1));
+            } else {
+                if ( currentResult.ifFailCausedByInvalidArgument() ) {
+                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                            "run", currentResult.getFailureArgument());
+                } else {
+                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                            "run", commandParams.get(i + 1));
+                }
+            }         
         }
     }
     
@@ -124,8 +129,16 @@ class ExecutorModuleWorker implements ExecutorModule {
         // command pattern: start [program]
         OperationResult operation = 
                 this.programs.runMarkedProgram("start", commandParams); 
-        if (operation.ifSuccess()) {
-            this.saveConsoleCommandIfValid(commandParams);
+        if ( operation.ifSuccess() ) {
+            this.saveConsoleCommandIfValid();
+        } else {
+            if ( operation.ifFailCausedByInvalidArgument() ) {
+                this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                        "start", operation.getFailureArgument());
+            } else {
+                this.intelligentContext.discardCurrentlyExecutedCommandInPattern(
+                        this.aggregate(commandParams));
+            }
         }
     }
     
@@ -157,11 +170,21 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void openWebPage(List<String> commandParams) {
         // command pattern: see [page_1] [page_2]...
         List<OperationResult> operations = this.pages.openWebPage(commandParams);
+        OperationResult currentResult;
         for (int i = 0; i < operations.size(); i++) {
-            if (operations.get(i).ifSuccess()) {
-                // save command as: see [page_i]
-                this.saveConsoleCommandIfValid("see " + commandParams.get(i+1));
-            }            
+            currentResult = operations.get(i);
+            if (currentResult.ifSuccess()) {
+                // save command as: see [page_i]                
+                this.saveConsoleCommandIfValid("see " + commandParams.get(i + 1));
+            } else { 
+                if ( currentResult.ifFailCausedByInvalidArgument() ) {
+                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                            "see", currentResult.getFailureArgument());
+                } else {
+                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
+                            "see", commandParams.get(i + 1));
+                }    
+            }           
         }
     }
     
@@ -198,8 +221,8 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
         Logs.debug("[EXECUTOR] inner dispatching: " +commandParams);
-        this.intelligentContext
-                    .adjustCurrentlyExecutedCommand(aggregate(commandParams));
+        this.intelligentContext.adjustCurrentlyExecutedCommand(
+                this.aggregate(commandParams));
         switch (commandParams.get(0)) {
             case "open" :
             case "op" :
@@ -263,7 +286,9 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public boolean deleteMem(String command) {
-        return this.intelligentContext.deleteChoicesForCommand(command);
+        boolean deletedConsoleMem = this.commandsCache.delete(command);
+        boolean deletedChoiceMem = this.intelligentContext.deleteChoicesForCommand(command);
+        return ( deletedChoiceMem || deletedConsoleMem );
     }     
     
     @Override
@@ -300,8 +325,8 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void executeIfExists(List<String> commandParams) {
-        String cachedCommand = this.commandsCache
-                .getPatternCommandForExecution(this.aggregate(commandParams));
+        String cachedCommand = this.commandsCache.getPatternCommandForExecution(
+                this.aggregate(commandParams));
         if ( cachedCommand.isEmpty() ) {
             return;
         } else {

@@ -230,7 +230,6 @@ public class IntelligentExecutorResolverTest {
     public void testDeleteChoicesForCommand_noCommandsFound() {        
         when(choicesDao.getChoicesWhereCommandLike("ja")).thenReturn(new ArrayList<>());
         testedResolver.deleteChoicesForCommand("ja");
-        verify(ioEngine).reportMessage("There is no such command in memory.");
     }
     
     @Test

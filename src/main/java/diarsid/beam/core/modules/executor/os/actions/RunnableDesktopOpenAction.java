@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -29,6 +30,7 @@ public class RunnableDesktopOpenAction extends AbstractRunnableAction {
         } catch (IOException e) {
             super.getIo().reportException(e, "Run task with Desktop -> IOException: given path may be invalid.");
         } catch (IllegalArgumentException argumentException) {
+            Logs.logError(this.getClass(), super.getArgument(), argumentException);
             super.getIo().reportError("Unknown target");
         }
     }

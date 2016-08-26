@@ -23,7 +23,6 @@ import java.util.SortedMap;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
@@ -31,6 +30,7 @@ import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
 import diarsid.beam.core.modules.executor.workflow.CommandChoice;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -116,6 +116,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private final String COMMAND_LIKE = 
             " ( LOWER(command) LIKE ? ) ";
     private final String AND = " AND ";
+    private final String OR = " OR ";
     private final String REPLACEABLE_CONDITION = "[REPLACEABLE_CONDITION]";
     private final String INSERT_NEW_COMMAND = 
             "INSERT INTO console_commands (command_id, command) " +
@@ -123,6 +124,10 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private final String DELETE_WHERE_COMMAND_IS = 
             "DELETE FROM console_commands " +
             "WHERE LOWER(command) IS ? ";
+    private final String DELETE_WHERE_COMMAND_LIKE_CONDITION = 
+            "DELETE FROM console_commands " +
+            "WHERE [REPLACEABLE_CONDITION] ";
+    
     
     
     @Override
@@ -177,22 +182,44 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     @Override
     public boolean remove(String command) {
         command = command.toLowerCase();
-        Logs.debug("[COMMANDS CONSOLE DAO] delete " +command);
-        boolean removed = false;
+        Set<String> parts = this.splitPatternIfMultipart(command);
+        Logs.debug("[COMMANDS CONSOLE DAO] delete " + command);
+        String condition = this.prepareFullConditionExpression(parts.size());
+        String statement = DELETE_WHERE_COMMAND_LIKE_CONDITION.replace(REPLACEABLE_CONDITION, condition);
+        
         try (Connection con = this.data.connect();
-                PreparedStatement delete = con.prepareStatement(
-                        DELETE_WHERE_COMMAND_IS)) {
+                PreparedStatement deleteFullCommand = con.prepareStatement(
+                        DELETE_WHERE_COMMAND_IS);
+                PreparedStatement deleteByParts = con.prepareStatement(
+                        statement)) {
             
-            delete.setString(1, "call " + command);
-            delete.addBatch();
-            delete.setString(1, "exe " + command);
-            delete.addBatch();
-            removed = ( delete.executeBatch().length > 0 );
+            deleteFullCommand.setString(1, "call " + command);
+            deleteFullCommand.addBatch();
+            deleteFullCommand.setString(1, "exe " + command);
+            deleteFullCommand.addBatch();
+            
+            int qty = this.calculateBatchResults(deleteFullCommand.executeBatch());
+            
+            int paramsCounter = 1;
+            for (String part : parts) {
+                deleteByParts.setString(paramsCounter, "%"+part+"%");
+                paramsCounter++;
+            }
+            qty = qty + deleteByParts.executeUpdate();
+            
+            return ( qty > 0 );
         } catch (SQLException e) {
             this.ioEngine.reportError("SQLException: delete command.");
-            removed = false;
+            return false;
         }
-        return removed;
+    }
+    
+    private int calculateBatchResults(int[] results) {
+        int result = 0;
+        for (Integer i : results) {
+            result += i;
+        }
+        return result;
     }
     
     @Override

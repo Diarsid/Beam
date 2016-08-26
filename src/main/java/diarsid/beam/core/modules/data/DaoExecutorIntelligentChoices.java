@@ -26,6 +26,8 @@ public interface DaoExecutorIntelligentChoices {
     
     boolean discardCommandByPatternAndOperation(String operation, String pattern);
     
+//    boolean discardCommandByPathPatternAndOperation(String operation, String pathToTarget, String targetPattern);
+    
     List<CurrentCommandState> getAllChoices();
     
     List<CurrentCommandState> getChoicesWhereCommandLike(String commandPart);

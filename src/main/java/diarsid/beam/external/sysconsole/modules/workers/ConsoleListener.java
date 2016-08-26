@@ -315,8 +315,7 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.getLocations();
                                 break parsing;
                             }
-                            case "mem" :
-                            case "choices" : {
+                            case "mem" : {
                                 this.commandAccepted();
                                 this.dispatcher.getAllChoices();
                                 break parsing;

@@ -53,40 +53,69 @@ class FileSearchByPathPatternReusableFileVisitor extends SimpleFileVisitor<Path>
         this.currentPathName = null;
         this.searchedCounter = 0;
     }
+    
+    @Override 
+    public FileVisitResult preVisitDirectory(Path file, BasicFileAttributes attrs)
+            throws IOException {
+        return this.processItem(file);
+    }        
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
             throws IOException {
-        this.currentPathName = this.extractRelativeFileName(file);
-        this.currentPath = normalizePathFragmentsFrom(this.currentPathName);
-        if ( this.searchedPath.length > this.currentPath.length ) {
-            return CONTINUE;
-        }
-        
-        this.searchedCounter = 0;
-        for (int i = 0; i < this.currentPath.length; i++) {
-            this.searchedPathFragment = this.searchedPath[this.searchedCounter];
-            if ( this.searchedPathFragment.contains("-") ) {
-                if ( containsAllPartsIgnoreCase(this.currentPath[i], this.searchedPathFragment) ) {
-                    this.searchedCounter++;
-                }
-            } else {
-                if ( containsIgnoreCase(this.currentPath[i], this.searchedPathFragment) ) {
-                    this.searchedCounter++;
-                } 
-            }            
-        }
-        
-        if ( this.searchedCounter == this.searchedPath.length ) {
-            this.foundItems.add(this.currentPathName);
-        }
-        return CONTINUE;
+        return this.processItem(file);
     }
     
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc)
             throws IOException {
         return CONTINUE;
+    }
+    
+    private FileVisitResult processItem(Path file) {        
+        this.currentPathName = this.extractRelativeFileName(file);
+        if ( containsIgnoreCase(this.currentPathName, "desktop.ini") ) {
+            return CONTINUE;
+        }
+        
+        this.currentPath = normalizePathFragmentsFrom(this.currentPathName);
+        if ( this.searchedPath.length > this.currentPath.length ) {
+            return CONTINUE;
+        }
+        
+        this.searchedCounter = 0;
+        for (String currentPathFragment : this.currentPath) {            
+            this.searchedPathFragment = this.searchedPath[this.searchedCounter];
+            if ( this.searchedPathFragment.contains("-") ) {
+                if ( containsAllPartsIgnoreCase(currentPathFragment, this.searchedPathFragment) ) {
+                    this.searchedCounter++;
+                }
+            } else {
+                if ( containsIgnoreCase(currentPathFragment, this.searchedPathFragment) ) {
+                    this.searchedCounter++;
+                } 
+            }     
+            if ( this.searchedCounter == this.searchedPath.length ) {
+                if ( this.arraysEndsAreSimilar(this.currentPath, this.searchedPath)) {                    
+                    break;
+                } else {
+                    this.searchedCounter = -1;
+                    break;
+                }                
+            }
+        }
+        
+        if ( this.searchedCounter == this.searchedPath.length ) {
+            this.foundItems.add(this.currentPathName);
+        } 
+        return CONTINUE;
+    }
+    
+    private boolean arraysEndsAreSimilar(
+            String[] arrayWithFullNames, String[] arrayWithPartialNames) {
+        return containsAllPartsIgnoreCase(
+                arrayWithFullNames[arrayWithFullNames.length - 1], 
+                arrayWithPartialNames[arrayWithPartialNames.length - 1]);
     }
     
     private String extractRelativeFileName(Path file) {

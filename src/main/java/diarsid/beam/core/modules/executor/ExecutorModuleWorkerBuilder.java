@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.modules.executor.processors.workers.ProcessorsBuilderImpl;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
@@ -15,9 +13,15 @@ import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.os.OSProvider;
+import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
+import diarsid.beam.core.modules.executor.os.search.FileSearcher;
+import diarsid.beam.core.modules.executor.processors.workers.ProcessorsBuilderImpl;
 import diarsid.beam.shared.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import static diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor.getExecutor;
+import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDeepOf;
 
 /**
  *
@@ -41,6 +45,8 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     @Override
     public ExecutorModule buildModule() {
+        FileSearcher fileSearcher = getSearcherWithDeepOf(2);
+        SystemActionsExecutor actionsExecutor = getExecutor(this.ioInnerModule);
         IntelligentExecutorResolver resolver = new IntelligentExecutorResolver(
                 this.dataModule, 
                 this.ioInnerModule);
@@ -51,6 +57,8 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
         OS os = OSProvider.getOS(
                 this.ioInnerModule, 
                 this.configModule, 
+                actionsExecutor,
+                fileSearcher,
                 intelligentContext); 
         ProcessorsBuilderImpl processorsBuilder = new ProcessorsBuilderImpl(
                 this.ioInnerModule, 

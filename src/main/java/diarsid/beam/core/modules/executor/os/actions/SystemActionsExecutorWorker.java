@@ -36,8 +36,8 @@ class SystemActionsExecutorWorker implements SystemActionsExecutor {
     }
     
     @Override
-    public void asyncOpenWithBrowser(String url) {
-        this.executeAsync(new RunnableBrowserAction(this.ioEngine, url));
+    public void asyncBrowseWithDesktop(String url) {
+        this.executeAsync(new RunnableDesktopBrowserAction(this.ioEngine, url));
     }
     
     private void executeAsync(AbstractRunnableAction task) {

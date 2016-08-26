@@ -19,7 +19,7 @@ public interface SystemActionsExecutor {
 
     void asyncExecuteWithRuntime(String command);
 
-    void asyncOpenWithBrowser(String url);
+    void asyncBrowseWithDesktop(String url);
 
     void asyncOpenWithDesktop(String target);    
 }

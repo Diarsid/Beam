@@ -9,11 +9,11 @@ package diarsid.beam.core.modules.executor;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -208,11 +208,14 @@ public class IntelligentExecutorResolver {
         return this.choiceDao.discardCommandByPatternAndOperation(operation, pattern);
     }
     
+//    boolean discardCommandByPathPatternAndOperation(String operation, String path, String pattern) {
+//        return this.choiceDao.discardCommandByPathPatternAndOperation(operation, path, pattern);
+//    }
+    
     boolean deleteChoicesForCommand(String commandPart) {
         List<CurrentCommandState> commands = 
                 this.choiceDao.getChoicesWhereCommandLike(commandPart);
         if ( commands.isEmpty() ) {
-            this.ioEngine.reportMessage("There is no such command in memory.");
             return false;
         } else if ( commands.size() > 1 ) {
             return this.askUserWhichCommandToDelete(commands);            

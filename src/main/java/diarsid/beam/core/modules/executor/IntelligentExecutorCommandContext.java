@@ -20,9 +20,14 @@ public interface IntelligentExecutorCommandContext {
     void discardCurrentlyExecutedCommandInPatternAndOperation(
             String operation, String pattern);
     
+//    public void discardCurrentlyExecutedCommandInPathPatternAndOperation(
+//            String operation, String path, String pattern);
+    
     void adjustCurrentlyExecutedCommand(String... newCommandParams);
     
     void adjustCurrentlyExecutedCommand(String newCommand);
+    
+    String getCurrentCommandFromContext();
     
     boolean ifCanSaveConsoleCommand();
     
