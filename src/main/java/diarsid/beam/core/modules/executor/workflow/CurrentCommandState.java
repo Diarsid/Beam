@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import diarsid.beam.core.modules.executor.workflow.CommandChoice;
-
 /**
  *
  * @author Diarsid
@@ -39,10 +37,15 @@ public class CurrentCommandState {
         this.command = command;
     }
     
-    public void addChoice(String patternToResolve, String madeChoice) {
+    public void addChoice(String patternToResolve, String madeChoice, int attemptNumber) {
         this.madeChoices.add(new CommandChoice(
-                patternToResolve, madeChoice, this.madeChoices.size()));
+                patternToResolve, madeChoice, attemptNumber));
     }
+    
+//    public void addChoice(String patternToResolve, String madeChoice) {
+//        this.madeChoices.add(new CommandChoice(
+//                patternToResolve, madeChoice, this.madeChoices.size()));
+//    }
 
     public List<CommandChoice> getMadeChoices() {
         return this.madeChoices;

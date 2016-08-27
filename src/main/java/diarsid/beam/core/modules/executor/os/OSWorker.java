@@ -19,6 +19,7 @@ import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
@@ -29,14 +30,7 @@ import diarsid.beam.shared.modules.config.Config;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
-
-
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
-
-import diarsid.beam.core.modules.executor.context.ExecutorContext;
-
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -75,7 +69,7 @@ public class OSWorker implements OS {
     
     private String chooseOneVariantFrom(
             String targetName, List<String> variants) {
-        
+                
         int variantNumber = this.intelligentContext.resolve(
                 "There are several targets:",
                 targetName,
@@ -116,7 +110,8 @@ public class OSWorker implements OS {
                 resolvedTarget = result.success().getFoundFile();
             } else {
                 resolvedTarget = this.chooseOneVariantFrom(
-                        target, result.success().getMultipleFoundFiles());                
+                        target, result.success().getMultipleFoundFiles());     
+                debug("[OS] target resolved: " + target + " -> " + resolvedTarget);
             } 
             if ( resolvedTarget.isEmpty() ) {
                 return success();

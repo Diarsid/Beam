@@ -38,14 +38,23 @@ public class FileSearchUtils {
         return target.contains("/") || target.contains("\\");
     }
     
-    static String[] normalizePathFragmentsFrom(String target) {
-        target = target.replaceAll("[/\\\\]+", "/");
+    public static String trimSeparatorsInBothEnds(String target) {
         if (target.endsWith("/")) {
             target = target.substring(0, target.length()-1);
         }
         if (target.startsWith("/")) {
             target = target.substring(1);
         }
+        return target;
+    }
+    
+    public static String normalizeSingleCommandParam(String target) {
+        return target.replaceAll("[/\\\\]+", "/").replaceAll("[-]+", "-");
+    }
+    
+    static String[] normalizePathFragmentsFrom(String target) {
+        target = normalizeSingleCommandParam(target);
+        target = trimSeparatorsInBothEnds(target);
         return target.split("/");
     }    
     

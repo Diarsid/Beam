@@ -23,7 +23,7 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.modules.executor.context.ExecutorContextWorker.createContext;
 import static diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor.getExecutor;
-import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDeepOf;
+import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDepthsOf;
 
 /**
  *
@@ -47,7 +47,7 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     @Override
     public ExecutorModule buildModule() {
-        FileSearcher fileSearcher = getSearcherWithDeepOf(2);
+        FileSearcher fileSearcher = getSearcherWithDepthsOf(3, 3);
         SystemActionsExecutor actionsExecutor = getExecutor(this.ioInnerModule);
         
         SmartConsoleCommandsCache consoleCommandsCache = new SmartConsoleCommandsCache(

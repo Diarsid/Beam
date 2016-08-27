@@ -14,6 +14,7 @@ import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
@@ -22,15 +23,11 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfFirstFileSeparator;
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizeSingleCommandParam;
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.trimSeparatorsInBothEnds;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
-
-import static java.lang.String.join;
-
-import diarsid.beam.core.modules.executor.context.ExecutorContext;
-
-import static java.lang.String.join;
-import static java.lang.String.join;
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -58,8 +55,28 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     
     private List<String> normalizeArguments(List<String> commandParams) {
         return commandParams.stream()
-                .map((param) -> param.trim().replaceAll("[/\\\\]+", "/").replaceAll("[-]+", "-"))
+                .map((param) -> normalizeSingleCommandParam(param))
+                .map((param) -> trimSeparatorsInBothEnds(param))
                 .collect(toList());
+    }
+    
+    @Override
+    public boolean ifCommandLooksLikeLocationAndPath(List<String> commandParams) {
+        if ( commandParams.size() == 1 ) {
+            String command = normalizeSingleCommandParam(commandParams.get(0));
+            if ( containsFileSeparator(command) ) {
+                return this.pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(command);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    private boolean pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(String command) {
+        int separatorIndex = indexOfFirstFileSeparator(command);
+        return ( separatorIndex > 1 && separatorIndex < command.length() - 3);
     }
     
     @Override
@@ -213,6 +230,7 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         if (varNumber < 0) {
             return null;
         } else {
+            debug("[LOCATIONS PROCESSOR] resolved: " + requiredLocationName + " -> " + foundLocations.get(varNumber-1).getName());
             return foundLocations.get(varNumber-1);
         }
     }

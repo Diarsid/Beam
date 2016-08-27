@@ -4,13 +4,13 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.modules.executor.context.ExecutorContext;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
@@ -22,6 +22,8 @@ import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.core.util.Logs;
 
 import static java.lang.String.join;
+
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  * Implements ExecutorModule interface.
@@ -95,7 +97,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                         "open", operation.getFailureArgument());               
             } else {
                 this.intelligentContext.discardCurrentlyExecutedCommandInPattern(
-                        this.aggregate(commandParams));
+                        join(" ", commandParams));
             }
         }
     }    
@@ -139,7 +141,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                         "start", operation.getFailureArgument());
             } else {
                 this.intelligentContext.discardCurrentlyExecutedCommandInPattern(
-                        this.aggregate(commandParams));
+                        join(" ", commandParams));
             }
         }
     }
@@ -224,7 +226,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
         Logs.debug("[EXECUTOR] inner dispatching: " +commandParams);
         this.intelligentContext.adjustCurrentlyExecutedCommand(
-                this.aggregate(commandParams));
+                join(" ", commandParams));
         switch (commandParams.get(0)) {
             case "open" :
             case "op" :
@@ -327,16 +329,38 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void executeIfExists(List<String> commandParams) {
-        String cachedCommand = this.commandsCache.getPatternCommandForExecution(
-                this.aggregate(commandParams));
-        if ( cachedCommand.isEmpty() ) {
-            return;
+        if ( this.locations.ifCommandLooksLikeLocationAndPath(commandParams) ) {
+            this.tryToExecuteAsOpenCommand(commandParams);
         } else {
-            this.tryToExecuteCachedCommand(cachedCommand);
-        }            
+            this.tryToGetCommandFromCacheAndExecute(commandParams);
+        }        
     }
 
-    private void tryToExecuteCachedCommand(String cachedCommand) {
+    private void tryToGetCommandFromCacheAndExecute(List<String> commandParams) {
+        String cachedCommand = this.commandsCache.getPatternCommandForExecution(
+                join(" ", commandParams));
+        if ( ! cachedCommand.isEmpty() ) {
+            this.executeFoundCachedCommand(cachedCommand);
+        } 
+    }
+
+    private void tryToExecuteAsOpenCommand(List<String> commandParams) {
+        debug("[EXECUTOR] " + commandParams + " will be processed as path");
+        List<String> newCommand = this.transformInOpenCommand(commandParams);
+        debug("[EXECUTOR] transform to open command : " + newCommand);
+        this.intelligentContext.adjustCurrentlyExecutedCommand(join(" ", newCommand));
+        this.open(newCommand);
+    }
+        
+    private List<String> transformInOpenCommand(List<String> commandParams) {
+        if ( commandParams.size() == 1 ) {
+            return Arrays.asList(new String[] {"open", commandParams.get(0)});
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    private void executeFoundCachedCommand(String cachedCommand) {
         if ( this.ifCachedCommandIsBatch(cachedCommand) ) {
             this.executeStoredBatchIfExists(cachedCommand);
         } else {
@@ -359,10 +383,6 @@ class ExecutorModuleWorker implements ExecutorModule {
                 this.executeOldCommandInternally(commandFromBatch);
             }
         } 
-    }
-
-    private String aggregate(List<String> commandParams) {
-        return join(" ", commandParams);
     }
 
     private void executeOldCommandInternally(String obtainedCommand) {

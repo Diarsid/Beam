@@ -13,7 +13,8 @@ import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
-import diarsid.beam.core.util.Logs;
+
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -83,34 +84,58 @@ public class SmartAmbiguityResolver {
             List<String> variants,
             ContextChoiceSavingCallback contextCallback) {
         
-        Logs.debug("[EXECUTOR RESOLVER] "+patternToResolve+" -> " + variants);
+        debug("[RESOLVER] try to resolve: ");
+        debug("[RESOLVER]    pattern  : " + patternToResolve);
+        debug("[RESOLVER]    command  : " + command);
+        debug("[RESOLVER]    attemptN : " + resolvingAttemptNumber);
+        debug("[RESOLVER]    variants : " + variants);
+        String debugMessage = "[RESOLVER] ";
         
         String choice = this.tryToGuessChoice(variants);
         
-        if (choice.isEmpty()) {
+        if ( choice.isEmpty() ) {
+            debugMessage += "not guessed, ";
             choice = this.choiceDao.getChoiceForCommandPart(
                     command, resolvingAttemptNumber, patternToResolve);
             if (choice.isEmpty()) {
-                this.choiceDao.deleteChoicesForCommand(command);
+                debugMessage += "not found in memory, ";
+                boolean deleted = this.choiceDao.deleteChoicesForCommand(command);
+                debugMessage += deleted ? "command removed from memory, " : "";
                 contextCallback.saveThisChoice();
+                debugMessage += "must ask user and save. ";
+                debug(debugMessage);
                 return this.askUserAboutHisChoice(question, variants);
             } else {
+                debugMessage += "found in memory, ";
                 if ( variants.contains(choice) ) {
+                    debugMessage += "found in variants, do not save.";
                     contextCallback.doNotSaveThisChoice();
+                    debug(debugMessage);
                     return variants.indexOf(choice)+1;
                 } else {
-                    this.choiceDao.deleteChoicesForCommand(command);
+                    debugMessage += "does not found in variants, ";
+                    boolean deleted = this.choiceDao.deleteChoicesForCommand(command);
+                    debugMessage += deleted ? "command removed from memory, " : "";
                     contextCallback.saveThisChoice();
+                    debugMessage += "must ask user and save.";
+                    debug(debugMessage);
                     return this.askUserAboutHisChoice(question, variants);
                 }
             }
         } else {
+            debugMessage += "guessed, ";
             if ( variants.contains(choice) ) {
+                debugMessage += "found in variants, do not save.";
                 contextCallback.doNotSaveThisChoice();
+                debug(debugMessage);
                 return variants.indexOf(choice)+1;
             } else {
-                this.choiceDao.deleteChoicesForCommand(command);
+                debugMessage += "does not found in variants, ";
+                boolean deleted = this.choiceDao.deleteChoicesForCommand(command);
+                debugMessage += deleted ? "command removed from memory, " : "";
                 contextCallback.saveThisChoice();
+                debugMessage += "must ask user and save.";
+                debug(debugMessage);
                 return this.askUserAboutHisChoice(question, variants);
             }
         }

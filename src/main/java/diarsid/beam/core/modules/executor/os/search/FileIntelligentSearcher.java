@@ -36,15 +36,18 @@ import static diarsid.beam.core.util.Logs.logError;
  */
 class FileIntelligentSearcher implements FileSearcher {  
     
-    private final int deep;
+    private final int nameSearchDepth;
+    private final int pathSearchDepth;
     private final FileSearchByNamePatternReusableFileVisitor reusableVisitorByName;
     private final FileSearchByPathPatternReusableFileVisitor reusableVisitorByPath;
     
     FileIntelligentSearcher(
-            int deep, 
+            int depthOfSearchByName, 
+            int depthOfSearchByPath,
             FileSearchByNamePatternReusableFileVisitor visitorByName, 
             FileSearchByPathPatternReusableFileVisitor visitorByPath) {
-        this.deep = deep;
+        this.nameSearchDepth = depthOfSearchByName;
+        this.pathSearchDepth = depthOfSearchByPath;
         this.reusableVisitorByName = visitorByName;
         this.reusableVisitorByPath = visitorByPath;
     }
@@ -91,7 +94,7 @@ class FileIntelligentSearcher implements FileSearcher {
         walkFileTree(
                 root,
                 EnumSet.of(FileVisitOption.FOLLOW_LINKS),
-                this.deep,
+                this.nameSearchDepth,
                 this.reusableVisitorByName.useAgainWith(root, nameToFind, foundItems));
         foundItems.remove("");        
         this.reusableVisitorByName.clear();
@@ -102,6 +105,8 @@ class FileIntelligentSearcher implements FileSearcher {
             throws IOException {
         walkFileTree(
                 root, 
+                EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                this.pathSearchDepth,
                 this.reusableVisitorByPath.useAgainWith(root, targetPathParts, foundItems));
         foundItems.remove("");        
         this.reusableVisitorByPath.clear();

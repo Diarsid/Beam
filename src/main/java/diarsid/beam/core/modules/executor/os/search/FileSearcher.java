@@ -13,12 +13,14 @@ import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
  */
 public interface FileSearcher {
     
-    public static FileSearcher getSearcherWithDeepOf(int deep) {
+    public static FileSearcher getSearcherWithDepthsOf(
+            int depthOfSearchByName, int depthOfSearchByPath) {
         FileSearchByPathPatternReusableFileVisitor visitorByPath = 
                 new FileSearchByPathPatternReusableFileVisitor();
         FileSearchByNamePatternReusableFileVisitor visitorByName = 
                 new FileSearchByNamePatternReusableFileVisitor();
-        return new FileIntelligentSearcher(deep, visitorByName, visitorByPath);
+        return new FileIntelligentSearcher(
+                depthOfSearchByName, depthOfSearchByPath, visitorByName, visitorByPath);
     } 
 
     FileSearchResult findTarget(String target, String location);    

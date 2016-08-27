@@ -40,7 +40,7 @@ public class FileIntelligentSearcherTest {
         FileSearchByNamePatternReusableFileVisitor visitorByName = 
                 new FileSearchByNamePatternReusableFileVisitor();
         
-        searcher = new FileIntelligentSearcher(3, visitorByName, visitorByPath);
+        searcher = new FileIntelligentSearcher(3, 5, visitorByName, visitorByPath);
         
         root = Paths.get("./temp").normalize().toAbsolutePath().toString();
         System.out.println("[FileIntelligentSearcherTest] ROOT: " + root);

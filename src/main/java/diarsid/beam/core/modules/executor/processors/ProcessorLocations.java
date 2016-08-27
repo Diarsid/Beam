@@ -17,5 +17,7 @@ public interface ProcessorLocations {
 
     List<String> listLocationContent(String locationName);
 
-    OperationResult open(List<String> commandParams);    
+    OperationResult open(List<String> commandParams); 
+    
+    boolean ifCommandLooksLikeLocationAndPath(List<String> commandParams);
 }

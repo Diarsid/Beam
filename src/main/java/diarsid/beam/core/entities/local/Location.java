@@ -14,27 +14,16 @@ import java.util.Objects;
  *
  * @author Diarsid
  */
-public class Location implements Serializable{
-// ________________________________________________________________________________________
-//                                        Fields                                           
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+public class Location implements Serializable {
 
     private final String name;
     private final String path;
-    
-// ________________________________________________________________________________________
-//                                     Constructor                                         
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
     
     public Location(String name, String path) {
         this.name = name;
         this.path = path;
     }    
     
-// ________________________________________________________________________________________
-//                                       Methods                                           
-// ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-
     public String getName() {
         return name;
     }
@@ -45,7 +34,7 @@ public class Location implements Serializable{
 
     @Override
     public String toString() {
-        return "Location > " + this.name + " : " + this.path;
+        return "Location[" + this.name + "::" + this.path + "]";
     }
     
     /**
@@ -64,9 +53,9 @@ public class Location implements Serializable{
      * @return Formatted string of format "locationName : locationPath", where space between 
      * the beginning of string and ":" delimiter is determined by parameter value.
      */
-    public String printLocationInFormat(int locationPartLength){
+    public String printLocationInFormat(int locationPartLength) {
         int length = this.name.length();
-        while (locationPartLength <= length){
+        while ( locationPartLength <= length ) {
             locationPartLength += 10;
         }
         char[] result = Arrays.copyOf(this.name.toCharArray(), locationPartLength);

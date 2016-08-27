@@ -104,9 +104,9 @@ public class ExecutorContextWorker
                 this.getResolvingAttemptNumberDuringContextSession(),
                 patternToResolve, 
                 variants,
-                this.provideChoiceSavingCallback());    
-        this.incrementResolvingAttemptNumber();
-        this.saveChoiceInCurrentContextIfMade(patternToResolve, chosenVariant, variants);        
+                this.provideChoiceSavingCallback());   
+        this.saveChoiceInCurrentContextIfMade(patternToResolve, chosenVariant, variants);
+        this.incrementResolvingAttemptNumber();        
         return chosenVariant;
     }
     
@@ -143,7 +143,9 @@ public class ExecutorContextWorker
         if ( this.needSaveCurrentChoice.get() ) {
             if ( chosenVariant > 0 ) {
                 this.currentCommand.get().addChoice(
-                        patternToResolve, variants.get(chosenVariant-1));
+                        patternToResolve, 
+                        variants.get(chosenVariant-1), 
+                        this.resolvingAttemptNubmer.get());
             }
         } 
     }
