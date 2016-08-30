@@ -10,6 +10,7 @@ import java.util.List;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
@@ -24,6 +25,8 @@ import diarsid.beam.core.util.Logs;
 import static java.lang.String.join;
 
 import static diarsid.beam.core.util.Logs.debug;
+
+import static java.lang.String.join;
 
 /**
  * Implements ExecutorModule interface.
@@ -290,7 +293,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public boolean deleteMem(String command) {
-        boolean deletedConsoleMem = this.commandsCache.delete(command);
+        boolean deletedConsoleMem = this.commandsCache.deleteCommand(command);
         boolean deletedChoiceMem = this.intelligentContext.deleteChoicesForCommand(command);
         return ( deletedChoiceMem || deletedConsoleMem );
     }     

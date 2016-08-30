@@ -74,6 +74,12 @@ class DataModuleWorker implements DataModule {
     }
     
     @Override
+    public DaoActionChoice getActionsChoiceDao() {
+        return (DaoActionChoice) 
+                this.assembleConcreteDao(DaoActionChoice.class);
+    }
+    
+    @Override
     public DaoExecutorConsoleCommands getConsoleCommandsDao() {
         return (DaoExecutorConsoleCommands) 
                 this.assembleConcreteDao(DaoExecutorConsoleCommands.class);

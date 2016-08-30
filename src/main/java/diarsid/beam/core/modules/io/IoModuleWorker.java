@@ -8,8 +8,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.HashSet;
-import java.util.Set;
 
 import diarsid.beam.core.Beam;
 import diarsid.beam.core.modules.IoModule;
@@ -27,18 +25,16 @@ class IoModuleWorker implements IoModule {
     private ExternalIOInterface externalIOEngine;
     private boolean hasExternalIOProcessor;
     private boolean useExternalShowTaskMethod;
-    private final Set<String> consoleCommandsDump;
     
     IoModuleWorker() {
         this.hasExternalIOProcessor = false;
         this.useExternalShowTaskMethod = false;
-        this.consoleCommandsDump = new HashSet<>();
     }
     
     @Override
     public void stopModule() {
         try {
-            externalIOEngine.exitExternalIO();            
+            this.externalIOEngine.exitExternalIO();            
         } catch (RemoteException e) {
             this.resetIoToDefault();
         }
@@ -51,9 +47,9 @@ class IoModuleWorker implements IoModule {
     
     @Override      
     public void resetIoToDefault() {
-        hasExternalIOProcessor = false;
-        useExternalShowTaskMethod = false;
-        externalIOEngine = null;
+        this.hasExternalIOProcessor = false;
+        this.useExternalShowTaskMethod = false;
+        this.externalIOEngine = null;
     }
     
     /*
@@ -113,7 +109,7 @@ class IoModuleWorker implements IoModule {
     @Override
     public boolean isExternalProcessorActive() {
         try {            
-            externalIOEngine.isActive();
+            this.externalIOEngine.isActive();
             return true;
         } catch (RemoteException|NullPointerException e) {
             this.resetIoToDefault();

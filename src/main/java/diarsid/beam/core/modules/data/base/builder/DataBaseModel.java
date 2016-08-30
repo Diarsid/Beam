@@ -103,6 +103,16 @@ class DataBaseModel {
                 "PRIMARY KEY (command_id, command) )", 
                 2);
         this.tables.put(consoleCommands.name, consoleCommands);
+        
+        TableInfo actionChoices = new TableInfo(
+                "action_choices", 
+                "CREATE TABLE action_choices ( " +
+                "action_arg VARCHAR(300) NOT NULL, " +
+                "action_variants VARCHAR(1000) NOT NULL, " +
+                "action_choice VARCHAR (300) NOT NULL, " +
+                "PRIMARY KEY (action_arg) )", 
+                3);
+        this.tables.put(actionChoices.name, actionChoices);
     }
     
     List<String> getTableNames() {

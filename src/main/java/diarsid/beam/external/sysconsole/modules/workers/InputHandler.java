@@ -159,6 +159,17 @@ public class InputHandler {
         return choosed;
     }
     
+    boolean confirmActionWithoutBeamSign(String question) throws IOException {
+        this.printer.printUnderLn(question);
+        this.printer.printUnder("yes / no : ");
+        String response = this.reader.read();
+        if (response.isEmpty()) {
+            return false;
+        } else {
+            return checkOnYes(response);
+        }
+    }
+    
     boolean confirmAction(String question) throws IOException {
         this.printer.printBeamWithMessageLn(question);
         this.printer.printUnder("yes / no : ");

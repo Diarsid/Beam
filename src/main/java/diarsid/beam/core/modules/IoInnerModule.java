@@ -6,8 +6,8 @@ package diarsid.beam.core.modules;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.core.modules.tasks.TaskMessage;
 
 /**
  * This interface defines methods for an output within the program.
@@ -32,10 +32,14 @@ public interface IoInnerModule extends StoppableBeamModule {
     void reportMessage(String... info);
     
     void reportError(String... error);
+    
     void reportErrorAndExitLater(String... error);
     
     void reportException(Exception e, String... description); 
+    
     void reportExceptionAndExitLater(Exception e, String... description); 
+    
+    boolean askUserYesOrNo(String yesOrNoQuestion);
     
     int  resolveVariantsWithExternalIO(String message, List<String> variants);
 }

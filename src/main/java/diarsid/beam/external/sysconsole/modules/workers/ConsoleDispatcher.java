@@ -130,6 +130,15 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     public void exitExternalIO() throws RemoteException {
         this.closeConsole();
     }
+    
+    @Override
+    public boolean askUserYesOrNo(String yesOrNoQuestion) throws RemoteException {
+        try {
+            return this.input.confirmActionWithoutBeamSign(yesOrNoQuestion);
+        } catch (IOException e) {
+            return false;
+        }
+    }
         
     @Override
     public int chooseVariants(String message, List<String> variants) throws RemoteException {

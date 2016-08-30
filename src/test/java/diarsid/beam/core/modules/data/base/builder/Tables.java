@@ -17,4 +17,8 @@ public class Tables {
     public static String commandChoicesTableScript() {
         return MODEL.getTable("command_choices").getSqlScript();
     }
+    
+    public static String actionChoicesTableScript() {
+        return MODEL.getTable("action_choices").getSqlScript();
+    }
 }

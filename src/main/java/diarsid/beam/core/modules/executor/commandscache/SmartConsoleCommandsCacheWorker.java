@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.executor;
+package diarsid.beam.core.modules.executor.commandscache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,25 +17,27 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 import diarsid.beam.core.util.Logs;
+
+import static diarsid.beam.core.modules.executor.commandscache.ActionRequest.actionRequestOf;
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
  * @author Diarsid
  */
-class SmartConsoleCommandsCache {
+class SmartConsoleCommandsCacheWorker implements SmartConsoleCommandsCache {
     
-    private final IoInnerModule ioEngine;
     private final DaoExecutorConsoleCommands dao;
+    private final ActionsResolver actionsResolver;
     private final List<String> executableOperationsByPriority;
         
-    SmartConsoleCommandsCache(
-            IoInnerModule ioEngine,
+    SmartConsoleCommandsCacheWorker(
+            ActionsResolver actionsResolver,
             DaoExecutorConsoleCommands consoleCommandsDao) {  
         
-        this.ioEngine = ioEngine;
+        this.actionsResolver = actionsResolver;
         this.dao = consoleCommandsDao;
         List<String> listOfOperations = new ArrayList<>();
         listOfOperations.add("run");
@@ -45,19 +47,23 @@ class SmartConsoleCommandsCache {
                 Collections.unmodifiableList(listOfOperations);
     }    
     
-    void addCommand(List<String> commandParams) {
+    @Override
+    public void addCommand(List<String> commandParams) {
         this.dao.saveNewConsoleCommand(String.join(" ", commandParams));
     }
     
-    void addCommand(String command) {
+    @Override
+    public void addCommand(String command) {
         this.dao.saveNewConsoleCommand(command);
     }
     
-    boolean delete(String command) {
+    @Override
+    public boolean deleteCommand(String command) {
         return this.dao.remove(command);
     }
     
-    String getPatternCommandForExecution(String command) {
+    @Override
+    public String getPatternCommandForExecution(String command) {
         if ( command.length() < 2 ) {
             // There is no reason to search commands that matches only
             // one letter
@@ -68,19 +74,20 @@ class SmartConsoleCommandsCache {
     }    
     
     private String intelligentSearchInCache(String pattern) {    
+        debug("[COMMANDS CACHE] search for pattern: " + pattern);
         Map<String, String> commandsRawCache = this.dao.getImprovedCommandsForPattern(pattern);
         if ( commandsRawCache.isEmpty() ) {
             return "";
         }
-        Logs.debug("[COMMANDS CACHE] raw commands: " + commandsRawCache);
+        debug("[COMMANDS CACHE] raw commands: " + commandsRawCache);
         Map<String, String> chosenCommands = 
                 this.chooseCommandsByOperationFromRawCache(commandsRawCache);
-        Logs.debug("[COMMANDS CACHE] chosen commands: " + chosenCommands);
+        debug("[COMMANDS CACHE] chosen commands: " + chosenCommands);
         if ( chosenCommands.size() > 1 ) {
             this.testCommandsForWeakCombinations2(chosenCommands);
         }                
-        Logs.debug("[COMMANDS CACHE] chosen commands after weakness check: " + chosenCommands); 
-        return this.resolveCommandAfterCacheRefining(chosenCommands, commandsRawCache);
+        debug("[COMMANDS CACHE] chosen commands after weakness check: " + chosenCommands); 
+        return this.resolveCommandAfterCacheRefining(pattern, chosenCommands, commandsRawCache);
     }
 
     private Map<String, String> chooseCommandsByOperationFromRawCache(
@@ -139,10 +146,8 @@ class SmartConsoleCommandsCache {
                         // if even 'improved' versions of both tested and previously chosen
                         // commands have equal length then ask user about his choice
                         // among these two commands
-                        String chosenCommand = this.askUserWhichActionToPerform(
-                                "chose candidate for '" + operation + "' command:",
-                                improvedTestedCommand,
-                                improvedPrevChosenCommand);
+                        String chosenCommand = this.askUserToChooseCandidateActionForOperation(
+                                operation, improvedTestedCommand, improvedPrevChosenCommand);
                         if ( chosenCommand.isEmpty() ) {
                             // if user has not made any choice (it means he has rejected
                             // both variants!) then remove this hateful command at all.
@@ -210,7 +215,7 @@ class SmartConsoleCommandsCache {
     }  
 
     private String resolveCommandAfterCacheRefining(
-            Map<String, String> chosenCommands, Map<String, String> commandsCache) {
+            String pattern, Map<String, String> chosenCommands, Map<String, String> commandsCache) {
         if ( chosenCommands.size() == 1 ) {
             String chosenCommand = chosenCommands.entrySet().iterator().next().getValue();
             if ( chosenCommand.isEmpty() ) {
@@ -220,9 +225,8 @@ class SmartConsoleCommandsCache {
                 return this.refineCommandFromUnnecessaryParts(improvedCommand);
             }
         } else if ( chosenCommands.size() > 1 ) {
-            String chosenOriginalCommand = this.askUserWhichActionToPerform(
-                    "action?",
-                    new ArrayList<>(chosenCommands.values()));
+            String chosenOriginalCommand = this.actionsResolver.resolve(actionRequestOf(
+                    pattern, chosenCommands.values()));
             if ( chosenOriginalCommand.isEmpty() ) {
                 return "";
             } else {
@@ -276,13 +280,13 @@ class SmartConsoleCommandsCache {
         }
     }
     
-    private String askUserWhichActionToPerform(String question, String variant1, String variant2) {        
+    private String askUserToChooseCandidateActionForOperation(
+            String operation, String variant1, String variant2) {        
         if ( this.operationsArgumentsAreEqual(variant1, variant2) ) {
             return variant1;
         } else {
-            return this.askUserWhichActionToPerform(
-                question, 
-                Arrays.asList(new String[]{variant1, variant2}));
+            return this.actionsResolver.resolveActionsCandidates(
+                    operation, Arrays.asList(new String[] {variant1, variant2}));
         }        
     }
 
@@ -328,15 +332,5 @@ class SmartConsoleCommandsCache {
     private boolean argumentPartsAreEqual(
             List<String> partsOfArg1, List<String> partsOfArg2) {
         return (partsOfArg1.containsAll(partsOfArg2) && partsOfArg2.containsAll(partsOfArg1));
-    }
-
-    private String askUserWhichActionToPerform(String question, List<String> chosenCommands) {
-        int chosen = this.ioEngine.resolveVariantsWithExternalIO(
-                question, chosenCommands);
-        if ( chosen > 0 ) {
-            return chosenCommands.get(chosen - 1);
-        } else {
-            return "";
-        }
     }
 }

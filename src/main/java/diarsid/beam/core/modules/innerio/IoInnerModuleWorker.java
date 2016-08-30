@@ -9,11 +9,11 @@ package diarsid.beam.core.modules.innerio;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.tasks.TaskMessage;
+import diarsid.beam.core.util.Logs;
 
 /**
  *
@@ -22,7 +22,7 @@ import diarsid.beam.core.modules.tasks.TaskMessage;
 class IoInnerModuleWorker implements IoInnerModule {
     
     private final IoModule io;
-    private final Gui gui;
+    private final Gui gui;    
 
     IoInnerModuleWorker(IoModule ioModule, Gui gui) {
         if (ioModule == null) {
@@ -181,6 +181,21 @@ class IoInnerModuleWorker implements IoInnerModule {
             choosedVariant = -2;
         }
         return choosedVariant;
+    }
+    
+    @Override
+    public boolean askUserYesOrNo(String yesOrNoQuestion) {
+        if ( this.io.hasExternalIOProcessor() ) {
+            try {
+                return this.io.getExternalIOEngine().askUserYesOrNo(yesOrNoQuestion);
+            } catch (RemoteException re) {
+                Logs.logError(
+                        this.getClass(), "RemoteException during askUserYesOrNo() execution.", re);
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
     
     /* ====================== Native Application output methods ===========================    

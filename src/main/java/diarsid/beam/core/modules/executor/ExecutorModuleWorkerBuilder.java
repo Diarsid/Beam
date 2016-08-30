@@ -12,6 +12,7 @@ import java.lang.reflect.Proxy;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
+import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
 import diarsid.beam.core.modules.executor.context.ExecutorContextWorker;
 import diarsid.beam.core.modules.executor.os.OSProvider;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
@@ -21,6 +22,7 @@ import diarsid.beam.shared.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache.buildCache;
 import static diarsid.beam.core.modules.executor.context.ExecutorContextWorker.createContext;
 import static diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor.getExecutor;
 import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDepthsOf;
@@ -50,8 +52,8 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
         FileSearcher fileSearcher = getSearcherWithDepthsOf(3, 3);
         SystemActionsExecutor actionsExecutor = getExecutor(this.ioInnerModule);
         
-        SmartConsoleCommandsCache consoleCommandsCache = new SmartConsoleCommandsCache(
-                this.ioInnerModule, this.dataModule.getConsoleCommandsDao());
+        SmartConsoleCommandsCache consoleCommandsCache = buildCache(
+                this.ioInnerModule, this.dataModule);
         ExecutorContextWorker context = createContext(this.dataModule, this.ioInnerModule);
         OS os = OSProvider.getOS(
                 this.ioInnerModule, 

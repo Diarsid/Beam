@@ -31,6 +31,7 @@ import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
 import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 import diarsid.beam.core.util.Logs;
+import diarsid.beam.core.util.StringByLengthComparator;
 
 /**
  *
@@ -73,24 +74,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
         this.data = data;
         this.ioEngine = ioEngine;
         this.random = new Random();
-        this.stringLengthComparator = new Comparator<String>() {
-            @Override
-            public int compare(String s1, String s2) {
-                if ( s1.length() < s2.length() ) {
-                    return -1;
-                } else if ( s1.length() > s2.length() ) {
-                    return 1;
-                } else {
-                    if ( s1.hashCode() < s2.hashCode() ) {
-                        return -1;
-                    } else if ( s1.hashCode() > s2.hashCode() ) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            }
-        };
+        this.stringLengthComparator = new StringByLengthComparator();
     }
     
     private final String SELECT_ALL = 
