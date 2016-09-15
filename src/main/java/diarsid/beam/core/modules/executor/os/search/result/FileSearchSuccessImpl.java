@@ -6,9 +6,12 @@
 
 package diarsid.beam.core.modules.executor.os.search.result;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import diarsid.beam.core.modules.executor.os.ResultOperationNotAllowedException;
 
-import java.util.List;
+import static java.util.Objects.isNull;
 
 
 public class FileSearchSuccessImpl implements FileSearchSuccess {
@@ -17,6 +20,19 @@ public class FileSearchSuccessImpl implements FileSearchSuccess {
     
     private FileSearchSuccessImpl(List<String> multipleValues) {
         this.multipleValues = multipleValues;
+    }
+    
+    private FileSearchSuccessImpl(String value) {
+        this.multipleValues = new ArrayList<>();
+        this.multipleValues.add(value);
+    }
+    
+    public static FileSearchSuccess foundFile(String value) {
+        if ( isNull(value) || value.isEmpty() ) {
+            throw new ResultOperationNotAllowedException(
+                    "Action not allowed - value is null or empty.");
+        }
+        return new FileSearchSuccessImpl(value);
     }
     
     public static FileSearchSuccess foundFiles(List<String> values) {

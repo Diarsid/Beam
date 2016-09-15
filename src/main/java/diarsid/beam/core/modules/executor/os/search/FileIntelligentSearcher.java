@@ -21,13 +21,16 @@ import static java.nio.file.Files.walkFileTree;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.givenPathIsDirectory;
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.isValidPath;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizePathFragmentsFrom;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.invalidLocationFailure;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.targetInvalidMessage;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.targetNotFoundFailure;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchResultImpl.failWith;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchResultImpl.successWith;
+import static diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccessImpl.foundFile;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccessImpl.foundFiles;
+import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -54,9 +57,18 @@ class FileIntelligentSearcher implements FileSearcher {
     
     @Override
     public FileSearchResult findTarget(String target, String location) {
+        debug("[FILE SEARCHER] must find: ");
+        debug("[FILE SEARCHER]    location : " + location);
+        debug("[FILE SEARCHER]    target   : " + target);
         Path dir = Paths.get(location);        
         if ( givenPathIsDirectory(dir) ) {
-            return search(dir, target);
+            if ( isValidPath(location + "/" + target)) {
+                debug("[FILE SEARCHER] target found directly. No search.");
+                return successWith(foundFile(target));
+            } else {
+                debug("[FILE SEARCHER] target not found directly. Search begins...");
+                return search(dir, target);
+            }            
         } else {
             return failWith(invalidLocationFailure());
         }
@@ -67,16 +79,20 @@ class FileIntelligentSearcher implements FileSearcher {
         try {             
             
             if ( containsFileSeparator(target) ) {
+                debug("[FILE SEARCHER] ...search by path...");
                 this.collectFoundFilesByPathParts(
                         root, normalizePathFragmentsFrom(target), foundItems);
             } else {
+                debug("[FILE SEARCHER] ...search by name...");
                 this.collectFoundFilesByNameInRoot(
                         root, target, foundItems);
             }            
             
             if ( foundItems.isEmpty() ) {
+                debug("[FILE SEARCHER] not found.");
                 return failWith(targetNotFoundFailure());
             } else {
+                debug("[FILE SEARCHER] found : " + foundItems);
                 return successWith(foundFiles(foundItems));
             }            
         } catch (AccessDeniedException e ) {

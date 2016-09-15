@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.executor.os.search;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  *
@@ -20,6 +21,10 @@ public class FileSearchUtils {
     
     static boolean givenPathIsDirectory(Path dir) {
         return Files.exists(dir) && Files.isDirectory(dir);
+    }
+    
+    static boolean isValidPath(String file) {
+        return Files.exists(Paths.get(file));
     }
     
     public static int indexOfFirstFileSeparator(String target) {
