@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfFirstFileSeparator;
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfLastFileSeparator;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizeSingleCommandParam;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.trimSeparatorsInBothEnds;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
@@ -75,8 +76,9 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     }
     
     private boolean pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(String command) {
-        int separatorIndex = indexOfFirstFileSeparator(command);
-        return ( separatorIndex > 1 && separatorIndex < command.length() - 3);
+        return ( 
+                indexOfFirstFileSeparator(command) > 1 && 
+                indexOfLastFileSeparator(command) < command.length() - 2);
     }
     
     @Override

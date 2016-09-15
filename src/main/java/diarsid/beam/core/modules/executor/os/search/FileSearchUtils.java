@@ -34,6 +34,18 @@ public class FileSearchUtils {
         }
     }
     
+    public static int indexOfLastFileSeparator(String target) {
+        int indexOfSlash = target.lastIndexOf("/");
+        int indexOfBackSlash = target.lastIndexOf("\\");
+        if ( indexOfBackSlash < 0 ) {
+            return indexOfSlash;
+        } else if ( indexOfSlash < 0 ) {
+            return indexOfBackSlash;
+        } else {
+            return ( indexOfSlash > indexOfBackSlash) ? indexOfSlash : indexOfBackSlash; 
+        }
+    }
+    
     public static boolean containsFileSeparator(String target) {
         return target.contains("/") || target.contains("\\");
     }

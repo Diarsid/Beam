@@ -13,6 +13,8 @@ import java.io.IOException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.util.Logs;
 
+import static diarsid.beam.core.util.Logs.logError;
+
 /**
  *
  * @author Diarsid
@@ -28,6 +30,7 @@ public class RunnableDesktopOpenAction extends AbstractRunnableAction {
         try {
             Desktop.getDesktop().open(new File(super.getArgument()));            
         } catch (IOException e) {
+            logError(this.getClass(), "Exception during Desktop.open() with " + super.getArgument(), e);
             super.getIo().reportException(e, "Run task with Desktop -> IOException: given path may be invalid.");
         } catch (IllegalArgumentException argumentException) {
             Logs.logError(this.getClass(), super.getArgument(), argumentException);
