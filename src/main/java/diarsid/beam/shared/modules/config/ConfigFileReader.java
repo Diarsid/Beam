@@ -12,6 +12,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.util.Logs;
+import diarsid.beam.core.util.classloading.CustomClassLoader;
+
+import static java.util.Objects.isNull;
+
+import static diarsid.beam.core.util.classloading.CustomClassLoader.getCustomLoader;
 
 /**
  *
@@ -23,14 +29,18 @@ class ConfigFileReader {
     }
     
     Map<Config, String> readConfigs(File configFile) {
-        XmlContent content = this.loadReaderAndReadFile(configFile);
+        XmlContent content = null;
+        content = this.loadReaderDynamicallyAndReadFile(configFile);
+        if ( isNull(content) ) {
+            content = this.readFile(configFile);
+        }
         return this.processXmlContent(content);        
     }
     
-    private XmlContent loadReaderAndReadFile(File configFile) {
+    private XmlContent loadReaderDynamicallyAndReadFile(File configFile) {
         try {
             ClassLoader defaultLoader = this.getClass().getClassLoader();
-            CustomClassLoader customLoader = new CustomClassLoader(defaultLoader);
+            CustomClassLoader customLoader = getCustomLoader(defaultLoader);
             Class xmlReaderClass = customLoader.loadClass(
                     "diarsid.beam.shared.modules.config.XmlSaxReaderWorker");
             Constructor xmlReaderConstr = xmlReaderClass.getDeclaredConstructor(ClassLoader.class);
@@ -43,12 +53,21 @@ class ConfigFileReader {
             throw new ModuleInitializationException(
                     "Exception during dynamic " +
                     "XmlSaxReaderWorker class loading: invalid class name.");
+        } catch (ModuleInitializationException e) {
+            return null;
         } catch (Exception e) {
+            Logs.logError(this.getClass(), "", e);
             throw new ModuleInitializationException(
                     "Exception during dynamic " +
                     "XmlSaxReaderWorker class loading: " + 
                     " constructor or instantiation failure.");
         }
+    }
+    
+    private XmlContent readFile(File configFile) {
+        XmlReader reader = new XmlSaxReaderWorker(this.getClass().getClassLoader());
+        XmlContent content = reader.read(configFile);
+        return content;
     }
     
     private Map<Config, String> processXmlContent(XmlContent content) {

@@ -4,38 +4,51 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.shared.modules.config;
+package diarsid.beam.core.util.classloading;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 
+import diarsid.beam.core.exceptions.ModuleInitializationException;
+
+
 /**
  *
  * @author Diarsid
  */
-class CustomClassLoader extends ClassLoader {
+public class CustomClassLoader extends ClassLoader {
     
+    private final ClassResourceLoader resourceLoader;
     private final String[] saxApis = 
             {".XmlSax", "javax.xml", "w3c", "xml", "sax", ".xerces."};
     
-    public CustomClassLoader(ClassLoader parent) {
+    CustomClassLoader(ClassLoader parent, ClassResourceLoader resourceLoader) {
         super(parent);
+        this.resourceLoader = resourceLoader;
+    }
+    
+    public static CustomClassLoader getCustomLoader(ClassLoader parentLoader) {
+        ClassResourceLoadStrategyProvider strategiesProvider = 
+                new ClassResourceLoadStrategyProvider(
+                        new SystemClassResourceLoadStrategy(),
+                        new ModuleClassResourceLoadStrategy());
+        ClassResourceLoader resourceLoader = new ClassResourceLoader(strategiesProvider);
+        return new CustomClassLoader(parentLoader, resourceLoader);
     }
     
     @Override
     public synchronized Class loadClass(String className) 
             throws ClassNotFoundException {
         
-        if (isSaxApiClass(className)) {
+        if ( this.isSaxApiClass(className) ) {
             try (ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                InputStream input = getResourcesFor(className);)
-                {
+                InputStream input = this.resourceLoader.getResourcesAsStream(className)) {
                     
                 byte[] data = new byte[2048];
                 int read = input.read(data);
-                while(read != -1){
+                while( read != -1 ) {
                     buffer.write(data, 0, read);
                     read = input.read(data);
                 }
@@ -44,7 +57,7 @@ class CustomClassLoader extends ClassLoader {
                 
                 Class c = defineClass(
                         className, classData, 0, classData.length, null);                
-                if (c == null) {
+                if ( c == null ) {
                     throw new NoClassDefFoundError("Class.defineClass() in " + 
                             this.getClass().getCanonicalName() + 
                             " failure.");
@@ -55,16 +68,14 @@ class CustomClassLoader extends ClassLoader {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (ClassResourceLoadFailedException e) {
+                throw new ModuleInitializationException(
+                        "Dynamic SAX Parser classloading in config module failed.");
             }
         } else {
             return super.loadClass(className, false);
         }
         return null;
-    }
-    
-    private InputStream getResourcesFor(String className) {
-        return  ClassLoader
-                .getSystemResourceAsStream(className.replace(".", "/")+".class");
     }
     
     boolean isSaxApiClass(String className) {
