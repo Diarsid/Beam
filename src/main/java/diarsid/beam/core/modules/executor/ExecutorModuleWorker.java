@@ -26,8 +26,6 @@ import static java.lang.String.join;
 
 import static diarsid.beam.core.util.Logs.debug;
 
-import static java.lang.String.join;
-
 /**
  * Implements ExecutorModule interface.
  * 

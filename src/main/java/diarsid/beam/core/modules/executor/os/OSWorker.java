@@ -21,12 +21,14 @@ import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
+import diarsid.beam.core.modules.executor.os.search.FileLister;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
@@ -42,6 +44,7 @@ public class OSWorker implements OS {
     private final IoInnerModule ioEngine;
     private final SystemActionsExecutor actionsExecutor;
     private final FileSearcher fileSearcher;
+    private final FileLister fileLister;
     private final ExecutorContext intelligentContext;
 
     public OSWorker(
@@ -49,6 +52,7 @@ public class OSWorker implements OS {
             ConfigModule config, 
             SystemActionsExecutor actionsExecutor,
             FileSearcher fileSearcher,
+            FileLister fileLister,
             ExecutorContext intelligentContext) {
         
         this.ioEngine = io;
@@ -64,6 +68,7 @@ public class OSWorker implements OS {
                 .intern();      
         this.actionsExecutor = actionsExecutor;
         this.fileSearcher = fileSearcher;
+        this.fileLister = fileLister;
         this.intelligentContext = intelligentContext;
     }    
     
@@ -268,6 +273,39 @@ public class OSWorker implements OS {
         } else {
             return true;
         }
+    }
+    
+    public List<String> listContentIn(Location location, String relativePath, int depth) {
+        File dir = new File(location.getPath());
+        if ( ! dir.exists() ) {
+            this.ioEngine.reportError("This path does not exist.");
+            return null;
+        }
+        if ( ! dir.isDirectory() ) {
+            this.ioEngine.reportError("This location is not a directory.");
+            return null;
+        }        
+        if ( depth == 0 ) {
+            return null;
+        }
+        
+        if ( relativePath.isEmpty() ) {
+            return this.fileLister.listContentOf(location, depth);
+        } else {
+            FileSearchResult result = this.fileSearcher.findTarget(relativePath, location.getPath());
+            if ( result.isOk() ) {
+                return this.fileLister.listContentOf(
+                        combinePathFrom(location.getPath(), relativePath), depth);
+            } else {
+                if ( result.failure().targetNotFound() ) {
+                    this.ioEngine.reportMessage(relativePath + " not found in " + location.getName());                                        
+                } else if ( result.failure().targetNotAccessible() ) {
+                    this.ioEngine.reportMessage(relativePath + " is not accessible.");
+                }
+                this.ioEngine.reportMessage("..." + location.getName() + " content:");
+                return this.fileLister.listContentOf(location, depth);
+            }
+        }        
     }
     
     @Override
