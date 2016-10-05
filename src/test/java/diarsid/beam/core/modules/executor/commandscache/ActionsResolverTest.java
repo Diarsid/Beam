@@ -57,13 +57,13 @@ public class ActionsResolverTest {
         ActionRequest request = request(actionArg, variants);
         
         when(dao.getChoiceFor(request)).thenReturn(madeChocie);
-        when(ioEngine.resolveVariantsWithExternalIO("action", variants)).thenReturn(1);
+        when(ioEngine.resolveVariants("action", variants)).thenReturn(1);
         
         String result = resolver.resolve(request);
         assertEquals(madeChocie, result);
         
         verify(dao).getChoiceFor(request);
-        verify(ioEngine, never()).resolveVariantsWithExternalIO("action?", variants);
+        verify(ioEngine, never()).resolveVariants("action?", variants);
     }
     
     @Test
@@ -78,12 +78,12 @@ public class ActionsResolverTest {
         ActionChoice choice = formulateChoiceFor(request, madeChoice);
         
         when(dao.getChoiceFor(request)).thenReturn("");
-        when(ioEngine.resolveVariantsWithExternalIO("action?", variants)).thenReturn(1);
+        when(ioEngine.resolveVariants("action?", variants)).thenReturn(1);
         when(ioEngine.askUserYesOrNo("Use this choice in future?")).thenReturn(true);
         
         String result = resolver.resolve(request);
         
-        verify(ioEngine).resolveVariantsWithExternalIO("action?", variants);
+        verify(ioEngine).resolveVariants("action?", variants);
         verify(ioEngine).askUserYesOrNo("Use this choice in future?");
         verify(dao).saveChoice(choice);
         

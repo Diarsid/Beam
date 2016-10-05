@@ -6,7 +6,9 @@ package diarsid.beam.core.modules.executor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
@@ -25,8 +27,6 @@ import diarsid.beam.core.util.Logs;
 import static java.lang.String.join;
 
 import static diarsid.beam.core.util.Logs.debug;
-
-import static java.lang.String.join;
 
 /**
  * Implements ExecutorModule interface.
@@ -292,8 +292,12 @@ class ExecutorModuleWorker implements ExecutorModule {
     }  
     
     @Override
-    public boolean deleteMem(String command) {
-        boolean deletedConsoleMem = this.commandsCache.deleteCommand(command);
+    public boolean deleteFromExecutorMemory(String command) {
+        if ( command.replace("-", "").length() < 2 ) {
+            this.ioEngine.reportMessage("...to short. ");
+            return false;
+        }
+        boolean deletedConsoleMem = this.commandsCache.deleteCached(command);
         boolean deletedChoiceMem = this.intelligentContext.deleteChoicesForCommand(command);
         return ( deletedChoiceMem || deletedConsoleMem );
     }     
@@ -304,8 +308,17 @@ class ExecutorModuleWorker implements ExecutorModule {
     }  
     
     @Override
-    public List<String> getAllChoices() {
-        return this.intelligentContext.getAllChoices();
+    public Map<String, List<String>> getFromExecutorMemory(String memPattern) {
+        Map<String, List<String>> result = new HashMap<>();
+        List<String> commandChoices = this.intelligentContext.getChoicesByPattern(memPattern);
+        if ( ! commandChoices.isEmpty() ) {
+            result.put("commands choices:", commandChoices);
+        }
+        List<String> consoleCommands = this.commandsCache.getConsoleCommandsOfPattern(memPattern);
+        if ( ! consoleCommands.isEmpty() ) {
+            result.put("cached console commands:", consoleCommands);
+        }
+        return result;
     }
     
     /*

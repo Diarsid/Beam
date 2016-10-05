@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules;
 
 import java.util.List;
+import java.util.Map;
 
 import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
@@ -46,11 +47,11 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     void setIntelligentActive(boolean isActive);
     
-    boolean deleteMem(String command);  
+    boolean deleteFromExecutorMemory(String command);  
+    
+    Map<String, List<String>> getFromExecutorMemory(String memPattern);
     
     void rememberChoiceAutomatically(boolean auto);
-    
-    List<String> getAllChoices();
     
     //void newNote(List<String> commandParams);
     

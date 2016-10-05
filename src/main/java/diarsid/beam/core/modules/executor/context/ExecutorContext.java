@@ -35,6 +35,8 @@ public interface ExecutorContext {
     
     boolean deleteChoicesForCommand(String command);
     
+    List<String> getChoicesByPattern(String pattern);
+    
     List<String> getAllChoices();
     
     void setRememberChoiceAutomatically(boolean auto);

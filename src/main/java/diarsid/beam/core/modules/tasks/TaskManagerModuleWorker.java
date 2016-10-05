@@ -463,7 +463,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
             for (Task task : suspendableTasks) {
                 taskStrings.add(task.getContent()[0]);
             }
-            int choice = this.ioEngine.resolveVariantsWithExternalIO(
+            int choice = this.ioEngine.resolveVariants(
                     "Which task to suspend?", taskStrings);
         }
         this.updateTimer(this.tasksDao.suspendTask());

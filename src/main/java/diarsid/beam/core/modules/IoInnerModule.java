@@ -41,5 +41,5 @@ public interface IoInnerModule extends StoppableBeamModule {
     
     boolean askUserYesOrNo(String yesOrNoQuestion);
     
-    int  resolveVariantsWithExternalIO(String message, List<String> variants);
+    int  resolveVariants(String message, List<String> variants);
 }

@@ -76,7 +76,7 @@ class ActionsResolver {
     }
     
     private String resolveQuestion(String question, List<String> variants) {
-        int chosen = this.ioEngine.resolveVariantsWithExternalIO(
+        int chosen = this.ioEngine.resolveVariants(
                 question, variants);
         if ( chosen > 0 ) {
             return variants.get(chosen - 1);

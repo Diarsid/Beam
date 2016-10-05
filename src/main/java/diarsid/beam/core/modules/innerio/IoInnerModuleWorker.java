@@ -167,7 +167,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     @Override
-    public int resolveVariantsWithExternalIO(String message, List<String> variants) {
+    public int resolveVariants(String message, List<String> variants) {
         int choosedVariant = 0;
         if (this.io.hasExternalIOProcessor()) {
             try {

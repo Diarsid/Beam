@@ -305,7 +305,7 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     
     @Override
     public List<CurrentCommandState> getChoicesWhereCommandLike(String part) {
-        part = part.toLowerCase();
+        part = part.toLowerCase().replace("-", "%");
         try (Connection con = this.data.connect();
                 PreparedStatement ps = con.prepareStatement(
                 SELECT_COMMANDS_WHERE_COMMAND_OR_CHOICE_OR_PATTERN_LIKE)) {

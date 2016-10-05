@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 import diarsid.beam.core.util.Logs;
 
@@ -29,14 +30,16 @@ import static diarsid.beam.core.util.Logs.debug;
  */
 class SmartConsoleCommandsCacheWorker implements SmartConsoleCommandsCache {
     
+    private final IoInnerModule ioEngine;
     private final DaoExecutorConsoleCommands dao;
     private final ActionsResolver actionsResolver;
     private final List<String> executableOperationsByPriority;
         
     SmartConsoleCommandsCacheWorker(
+            IoInnerModule ioEngine,
             ActionsResolver actionsResolver,
             DaoExecutorConsoleCommands consoleCommandsDao) {  
-        
+        this.ioEngine = ioEngine;
         this.actionsResolver = actionsResolver;
         this.dao = consoleCommandsDao;
         List<String> listOfOperations = new ArrayList<>();
@@ -58,8 +61,42 @@ class SmartConsoleCommandsCacheWorker implements SmartConsoleCommandsCache {
     }
     
     @Override
-    public boolean deleteCommand(String command) {
-        return this.dao.remove(command);
+    public List<String> getConsoleCommandsOfPattern(String pattern) {
+        return new ArrayList<>(this.dao.getRawCommandsForPattern(pattern));
+    }
+    
+    @Override
+    public boolean deleteCached(String command) {
+        List<String> candidates = new ArrayList<>(
+                this.dao.getRawCommandsForPattern(command));
+        if ( candidates.isEmpty() ) {
+            this.ioEngine.reportMessage(
+                    "...command '" + command + "' not found in console cache.");
+            return false;
+        } else if ( candidates.size() == 1 ) {
+            if ( this.dao.remove(command) ) {
+                this.ioEngine.reportMessage(
+                        "...command '" + candidates.get(0) + "' removed from console cache.");
+                return true;
+            } else {
+                this.ioEngine.reportMessage("...fails to delete.");
+                return false;
+            }
+        } else {
+            int choice = this.ioEngine.resolveVariants(
+                    "...remove from console cache:", candidates);
+            if ( choice > 0 ) {
+                if ( this.dao.remove(candidates.get(choice - 1)) ) {
+                    this.ioEngine.reportMessage("...removed.");
+                    return true;
+                } else {
+                    this.ioEngine.reportMessage("...fails to delete.");
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
     }
     
     @Override

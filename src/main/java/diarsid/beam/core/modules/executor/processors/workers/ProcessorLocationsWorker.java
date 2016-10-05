@@ -224,7 +224,7 @@ class ProcessorLocationsWorker implements ProcessorLocations {
                     requiredLocationName,
                     locationNames);
         } else {
-            varNumber = this.ioEngine.resolveVariantsWithExternalIO(
+            varNumber = this.ioEngine.resolveVariants(
                     "Desired location?", 
                     locationNames);
         }        

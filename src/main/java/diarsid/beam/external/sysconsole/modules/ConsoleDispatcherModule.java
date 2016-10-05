@@ -40,7 +40,7 @@ public interface ConsoleDispatcherModule extends GemModule, ExternalIOInterface 
     
     void movePageToDirectoryAndPlacement() throws IOException;
 
-    void getAllChoices() throws IOException;
+    void getExecutorMemories() throws IOException;
 
     void getCommandsBatch() throws IOException;
 

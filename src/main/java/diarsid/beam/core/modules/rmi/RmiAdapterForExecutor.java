@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.rmi;
 
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
@@ -93,7 +94,7 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     
     @Override
     public boolean deleteMem(String command) throws RemoteException {
-        return this.executorModule.deleteMem(command);
+        return this.executorModule.deleteFromExecutorMemory(command);
     }     
     
     @Override
@@ -103,8 +104,9 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     } 
     
     @Override
-    public List<String> getAllChoices() throws RemoteException {
-        return this.executorModule.getAllChoices();
+    public Map<String, List<String>> getFromExecutorMemory(String memPattern) 
+            throws RemoteException {
+        return this.executorModule.getFromExecutorMemory(memPattern);
     }
     
     /*

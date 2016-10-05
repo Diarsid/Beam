@@ -149,7 +149,7 @@ class ProcessorWebPagesWorker implements ProcessorWebPages {
     
     private void rememberNewBrowserForPage(WebPage page, String givenBrowser) {
         String[] vars = {"yes", "no"};
-        int chosen = this.ioEngine.resolveVariantsWithExternalIO(
+        int chosen = this.ioEngine.resolveVariants(
                 "Use given browser always for this page?", 
                 Arrays.asList(vars));
         if ( chosen == 1 ) {

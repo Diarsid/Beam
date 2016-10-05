@@ -6,9 +6,6 @@
 
 package diarsid.beam.core.modules.executor.context;
 
-import diarsid.beam.core.modules.executor.context.SmartAmbiguityResolver;
-import diarsid.beam.core.modules.executor.context.ContextChoiceSavingCallback;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,12 +111,12 @@ public class IntelligentExecutorResolverTest {
     @Test
     public void testRememberIfRememberAutomaticallySetFalse() {
         
-        when(ioEngine.resolveVariantsWithExternalIO(
+        when(ioEngine.resolveVariants(
                 "remember your choice for this command?", yesOrNo))
                 .thenReturn(1);
         testedResolver.setRememberChoiceAutomatically(false);
         testedResolver.remember(case_open_1_state);      
-        verify(ioEngine).resolveVariantsWithExternalIO(
+        verify(ioEngine).resolveVariants(
                 "remember your choice for this command?", yesOrNo);
         verify(this.choicesDao).saveChoiceForCommandAndItsPart(case_open_1_state);
     }
@@ -128,7 +125,7 @@ public class IntelligentExecutorResolverTest {
     public void testRememberIfRememberAutomaticallySetTrue() {        
         testedResolver.setRememberChoiceAutomatically(true);
         testedResolver.remember(case_open_1_state);  
-        verify(ioEngine, never()).resolveVariantsWithExternalIO(
+        verify(ioEngine, never()).resolveVariants(
                 "remember your choice for this command?", yesOrNo);
         verify(this.choicesDao).saveChoiceForCommandAndItsPart(case_open_1_state);
     }
@@ -139,7 +136,7 @@ public class IntelligentExecutorResolverTest {
                 "?", case_open_1, 0, "j", variants_for_j, contextCallback);
         verify(choicesDao, never()).getChoiceForCommandPart(
                 case_open_1, 0, "j");
-        verify(ioEngine, never()).resolveVariantsWithExternalIO(
+        verify(ioEngine, never()).resolveVariants(
                 "?", variants_for_j);
         verify(contextCallback).doNotSaveThisChoice();
         verify(contextCallback, never()).saveThisChoice();
@@ -149,14 +146,14 @@ public class IntelligentExecutorResolverTest {
     
     @Test
     public void testResolve_j_true_unable_to_guess() {
-        when(ioEngine.resolveVariantsWithExternalIO("?", variants_for_j_unable_to_guess))
+        when(ioEngine.resolveVariants("?", variants_for_j_unable_to_guess))
                 .thenReturn(1);
         when(choicesDao.getChoiceForCommandPart(case_open_1, 0, "j")).thenReturn("");
         int result = testedResolver.resolve(
                 "?", case_open_1, 0, "j", variants_for_j_unable_to_guess, contextCallback);
         verify(choicesDao).getChoiceForCommandPart(
                 case_open_1, 0, "j");
-        verify(ioEngine).resolveVariantsWithExternalIO(
+        verify(ioEngine).resolveVariants(
                 "?", variants_for_j_unable_to_guess);
         verify(contextCallback, never()).doNotSaveThisChoice();
         verify(contextCallback).saveThisChoice();
@@ -171,14 +168,14 @@ public class IntelligentExecutorResolverTest {
         verify(choicesDao, never()).getChoiceForCommandPart(case_open_1, 0, "j");
         verify(contextCallback).doNotSaveThisChoice();
         verify(contextCallback, never()).saveThisChoice();
-        verify(ioEngine, never()).resolveVariantsWithExternalIO("?", variants_for_j);
+        verify(ioEngine, never()).resolveVariants("?", variants_for_j);
         assertNotEquals(2, result);
         assertNotEquals("jython", variants_for_j.get(result-1));
     }
     
     @Test
     public void testResolve_eng_daoCannotResolve() {
-        when(ioEngine.resolveVariantsWithExternalIO("?", variants_for_eng))
+        when(ioEngine.resolveVariants("?", variants_for_eng))
                 .thenReturn(1);
         when(choicesDao.getChoiceForCommandPart(case_open_1, 1, "eng")).thenReturn("");
         int result = testedResolver.resolve(
@@ -186,13 +183,13 @@ public class IntelligentExecutorResolverTest {
         verify(contextCallback, never()).doNotSaveThisChoice();
         verify(contextCallback).saveThisChoice();
         verify(choicesDao).getChoiceForCommandPart(case_open_1, 1, "eng");
-        verify(ioEngine).resolveVariantsWithExternalIO("?", variants_for_eng);
+        verify(ioEngine).resolveVariants("?", variants_for_eng);
         assertEquals(1, result);        
     }
     
     @Test
     public void testResolve_eng_daoMustResolve() {
-        when(ioEngine.resolveVariantsWithExternalIO("?", variants_for_eng))
+        when(ioEngine.resolveVariants("?", variants_for_eng))
                 .thenReturn(1);
         when(choicesDao.getChoiceForCommandPart(case_open_1, 1, "eng")).thenReturn("engines");
         int result = testedResolver.resolve(
@@ -200,7 +197,7 @@ public class IntelligentExecutorResolverTest {
         verify(contextCallback).doNotSaveThisChoice();
         verify(choicesDao, never()).saveChoiceForCommandAndItsPart(case_open_1_state);
         verify(choicesDao).getChoiceForCommandPart(case_open_1, 1, "eng");
-        verify(ioEngine, never()).resolveVariantsWithExternalIO("?", variants_for_eng);
+        verify(ioEngine, never()).resolveVariants("?", variants_for_eng);
         assertEquals(1, result);        
     }
 
@@ -262,14 +259,14 @@ public class IntelligentExecutorResolverTest {
         variants.add(case_open_1 + " -> j->java eng->engines ");
         variants.add(oneMoreCommand + " -> jav->java_projects tes->test_projects ");
         when(choicesDao.formatCommandsForOutput(foundCommands)).thenReturn(variants);
-        when(ioEngine.resolveVariantsWithExternalIO(
-                "Which command delete from memory?", variants))
+        when(ioEngine.resolveVariants(
+                "...remove from command choices:", variants))
                 .thenReturn(2);
         when(choicesDao.deleteChoicesForCommand(oneMoreCommand))
                 .thenReturn(true);
         boolean deleted = testedResolver.deleteChoicesForCommand("ja");
-        verify(ioEngine).resolveVariantsWithExternalIO(
-                "Which command delete from memory?", variants);
+        verify(ioEngine).resolveVariants(
+                "...remove from command choices:", variants);
         verify(choicesDao).deleteChoicesForCommand(oneMoreCommand);
         assertTrue(deleted);
     }

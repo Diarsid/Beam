@@ -51,7 +51,7 @@ public class SmartAmbiguityResolver {
         List<String> yesOrNo = new ArrayList<>();
         yesOrNo.add("yes");
         yesOrNo.add("no");
-        int remember = this.ioEngine.resolveVariantsWithExternalIO(
+        int remember = this.ioEngine.resolveVariants(
                 "remember your choice for this command?", yesOrNo);
         return ( remember == 1 );
     }
@@ -197,7 +197,12 @@ public class SmartAmbiguityResolver {
     private int askUserAboutHisChoice(
             String question, List<String> variants) {
                      
-        return this.ioEngine.resolveVariantsWithExternalIO(question, variants);
+        return this.ioEngine.resolveVariants(question, variants);
+    }
+    
+    List<String> getChoicesByPattern(String pattern) {
+        List<CurrentCommandState> commands = this.choiceDao.getChoicesWhereCommandLike(pattern);
+        return this.choiceDao.formatCommandsForOutput(commands);
     }
     
     List<String> getAllChoices() {
@@ -241,23 +246,37 @@ public class SmartAmbiguityResolver {
         List<CurrentCommandState> commands = 
                 this.choiceDao.getChoicesWhereCommandLike(commandPart);
         if ( commands.isEmpty() ) {
+            this.ioEngine.reportMessage("...command '" + commandPart + "' not found in choices.");
             return false;
         } else if ( commands.size() > 1 ) {
             return this.askUserWhichCommandToDelete(commands);            
         } else {
-            return this.choiceDao.deleteChoicesForCommand(
-                    commands.get(0).getCommandString());
+            String commandToDelete = commands.get(0).getCommandString();
+            if ( this.choiceDao.deleteChoicesForCommand(commandToDelete) ) {
+                this.ioEngine.reportMessage(
+                        "...command '" + commandToDelete + "' removed from choices.");
+                return true;
+            } else {
+                this.ioEngine.reportMessage("...fails to delete.");
+                return false;
+            }
         }
     }
 
     private boolean askUserWhichCommandToDelete(List<CurrentCommandState> commands) {
         List<String> displayedCommands = 
                 this.choiceDao.formatCommandsForOutput(commands);
-        int indexToDelete = this.ioEngine.resolveVariantsWithExternalIO(
-                "Which command delete from memory?", displayedCommands);
+        int indexToDelete = this.ioEngine.resolveVariants(
+                "...remove from command choices:", displayedCommands);
         if (indexToDelete > 0) {
             String del = commands.get(indexToDelete-1).getCommandString();
-            return this.choiceDao.deleteChoicesForCommand(del);
+            if ( this.choiceDao.deleteChoicesForCommand(del) ) {
+                this.ioEngine.reportMessage("...removed.");
+                return true;
+            } else {
+                this.ioEngine.reportMessage("...fails to delete.");
+                return false;
+            }
         } else {
             return false;
         }

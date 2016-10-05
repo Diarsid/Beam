@@ -44,7 +44,7 @@ public class CommandsIntelligentCacheTest {
         ActionsResolver actionsResolver = new ActionsResolver(
                 ioEngine, actionsDao);
         cache = new SmartConsoleCommandsCacheWorker(
-                actionsResolver, consoleDao);
+                ioEngine, actionsResolver, consoleDao);
     }
     
 
@@ -121,13 +121,13 @@ public class CommandsIntelligentCacheTest {
         variants.add("start tomEE");
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
-        when(ioEngine.resolveVariantsWithExternalIO("action?", variants)).thenReturn(2);
+        when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("start tomEE");
         
         String command = cache.getPatternCommandForExecution("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
-        verify(ioEngine, never()).resolveVariantsWithExternalIO("action?", variants);
+        verify(ioEngine, never()).resolveVariants("action?", variants);
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));        
         assertEquals("start tomEE", command);
     }
@@ -143,13 +143,13 @@ public class CommandsIntelligentCacheTest {
         variants.add("start tomEE");
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
-        when(ioEngine.resolveVariantsWithExternalIO("action?", variants)).thenReturn(2);
+        when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("");
         
         String command = cache.getPatternCommandForExecution("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
-        verify(ioEngine).resolveVariantsWithExternalIO("action?", variants);
+        verify(ioEngine).resolveVariants("action?", variants);
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));        
         assertEquals("start tomEE", command);
     }
@@ -167,13 +167,13 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("start tomcat");
-        when(ioEngine.resolveVariantsWithExternalIO("action?", variants)).thenReturn(2);
+        when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         
         String command = cache.getPatternCommandForExecution("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));
-        verify(ioEngine, never()).resolveVariantsWithExternalIO("action?", variants);        
+        verify(ioEngine, never()).resolveVariants("action?", variants);        
         assertEquals("start tomcat", command);
     }
     
@@ -190,13 +190,13 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("");
-        when(ioEngine.resolveVariantsWithExternalIO("action?", variants)).thenReturn(2);
+        when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         
         String command = cache.getPatternCommandForExecution("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));
-        verify(ioEngine).resolveVariantsWithExternalIO("action?", variants);        
+        verify(ioEngine).resolveVariants("action?", variants);        
         assertEquals("start tomcat", command);
     }
     
@@ -212,12 +212,12 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("run tomEE");
-        when(ioEngine.resolveVariantsWithExternalIO("action?", variants)).thenReturn(2);
+        when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         
         String command = cache.getPatternCommandForExecution("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
-        verify(ioEngine, never()).resolveVariantsWithExternalIO("action?", variants);    
+        verify(ioEngine, never()).resolveVariants("action?", variants);    
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));
         assertEquals("run tomEE", command);
     }

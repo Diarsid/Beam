@@ -398,8 +398,12 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     
     @Override
-    public void getAllChoices() throws IOException {
-        this.printer.printChoices(this.beam.executor().getAllChoices());
+    public void getExecutorMemories() throws IOException {
+        this.printer.printUnder("mem: ");
+        String mem = this.reader.read();
+        if ( ! mem.isEmpty() ) {
+            this.printer.printMemories(this.beam.executor().getFromExecutorMemory(mem));
+        }
     }
     
     @Override
@@ -488,9 +492,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
             return;
         }
         if ( ! name.isEmpty() ) { 
-            if ( this.beam.executor().deleteMem(name) ) {
-                this.printer.printUnderLn("Command has been removed from memory.");
-            } 
+            this.beam.executor().deleteMem(name);
         }
     }
     

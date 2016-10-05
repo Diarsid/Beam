@@ -214,6 +214,11 @@ class ConsoleListener implements ConsoleListenerModule {
                                 this.dispatcher.getAllDirs();
                                 break parsing;
                             }
+                            case "mem" : {
+                                this.commandAccepted();
+                                this.dispatcher.getExecutorMemories();
+                                break parsing;
+                            }
                             default : {
                                 break parsing;
                             }
@@ -317,7 +322,7 @@ class ConsoleListener implements ConsoleListenerModule {
                             }
                             case "mem" : {
                                 this.commandAccepted();
-                                this.dispatcher.getAllChoices();
+                                this.dispatcher.getExecutorMemories();
                                 break parsing;
                             }
                             case "bat" :

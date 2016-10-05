@@ -11,9 +11,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.entities.global.WebPage;
+import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
@@ -27,6 +28,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     private final String BEAM =     "Beam > ";    
     private final String UNDER =    "     > ";
     private final String SPACE =    "       ";
+    private final String LEVEL_INDENT = "  ";
     private final String ERROR =    "Beam error > ";
     
     private final String HELP_START =   "   +---- HELP ------------------------------------------";
@@ -306,27 +308,26 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printChoices(List<String> choices) throws IOException {
-        if (choices.isEmpty()) {
+    public void printMemories(Map<String, List<String>> memories) throws IOException {
+        if (memories.isEmpty()) {
             printUnderLn("There aren't any command choices.");
             return;
         } 
         StringBuilder sb = new StringBuilder();
-        printUnderLn("Choices: ");
-        this.writer.write(SPACE);
-        this.writer.write("==================================================");
-        this.writer.newLine();
-        for (String choice : choices) {
-            sb.append(SPACE).append(choice);
+        for (Map.Entry<String, List<String>> entry : memories.entrySet()) {
+            sb.append(SPACE).append(entry.getKey());
             this.writer.write(sb.toString());
             sb = sb.delete(0, sb.length());
             this.writer.newLine();
             this.writer.flush();
+            for (String item : entry.getValue()) {
+                sb.append(SPACE).append(LEVEL_INDENT).append(item);
+                this.writer.write(sb.toString());
+                sb = sb.delete(0, sb.length());
+                this.writer.newLine();
+                this.writer.flush();
+            }            
         }
-        this.writer.write(SPACE);
-        this.writer.write("==================================================");
-        this.writer.newLine();
-        this.writer.flush();
     }
     
     @Override

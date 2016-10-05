@@ -209,6 +209,11 @@ public class ExecutorContextWorker
     }
     
     @Override
+    public List<String> getChoicesByPattern(String pattern) {
+        return this.resolver.getChoicesByPattern(pattern);
+    }
+    
+    @Override
     public void setRememberChoiceAutomatically(boolean auto) {
         this.resolver.setRememberChoiceAutomatically(auto);
     }

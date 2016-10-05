@@ -21,14 +21,16 @@ public interface SmartConsoleCommandsCache {
         ActionsResolver actionsResolver = new ActionsResolver(
                 ioEngine, dataModule.getActionsChoiceDao());
         return new SmartConsoleCommandsCacheWorker(
-                actionsResolver, dataModule.getConsoleCommandsDao());
+                ioEngine, actionsResolver, dataModule.getConsoleCommandsDao());
     }
 
     void addCommand(List<String> commandParams);
 
     void addCommand(String command);
 
-    boolean deleteCommand(String command);
+    boolean deleteCached(String command);
+    
+    List<String> getConsoleCommandsOfPattern(String pattern);
 
     String getPatternCommandForExecution(String command);
     
