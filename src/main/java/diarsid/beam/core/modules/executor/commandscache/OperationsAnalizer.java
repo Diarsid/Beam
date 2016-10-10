@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import diarsid.beam.core.util.Logs;
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -35,27 +35,38 @@ class OperationsAnalizer {
     
     String tryToChooseByOperationArgumentsComplexity(
             String operation, String command1, String command2) {
-        String args1 = command1.replace(operation, "");
-        String args2 = command2.replace(operation, "");
+        debug("[OPERATIONS ANALIZER] choosing operation arguments by complexity:");
+        String args1 = command1.replace(operation, "").trim();
+        String args2 = command2.replace(operation, "").trim();
+        debug("[OPERATIONS ANALIZER]   - operation  : " + operation);
+        debug("[OPERATIONS ANALIZER]   - arguments 1: " + args1);
+        debug("[OPERATIONS ANALIZER]   - arguments 2: " + args2);
         if ( this.bothArgumentsAreComposite(args1, args2) ) { 
+            debug("[OPERATIONS ANALIZER] both arguments are composite, no choice.");
             return "";
         } else {
             if ( this.bothArgumentsAreWhole(args1, args2)) {
                 int arg1Meaning = this.countMeaningfulUnitsInArg(args1);
                 int arg2Meaning = this.countMeaningfulUnitsInArg(args2);
                 if ( arg1Meaning == arg2Meaning ) {
+                    debug("[OPERATIONS ANALIZER] both arguments are whole " +
+                            "and have equal meaning weight, no choice.");
                     return "";
                 } else {
                     if ( arg1Meaning > arg2Meaning ) {
+                        debug("[OPERATIONS ANALIZER] choice: " + command2);
                         return command2;
                     } else {
+                        debug("[OPERATIONS ANALIZER] choice: " + command1);
                         return command1;
                     }
                 }
             } else {
                 if ( this.hasCompositeArgument(args1) ) {
+                    debug("[OPERATIONS ANALIZER] choice: " + command2);
                     return command2;
                 } else {
+                    debug("[OPERATIONS ANALIZER] choice: " + command1);
                     return command1;
                 }
             }            
@@ -148,7 +159,7 @@ class OperationsAnalizer {
     }   
     
     boolean operationsArgumentsAreEqual(String variant1, String variant2) {
-        Logs.debug("[OPERATIONS ANALIZER] check arguments equality for pair: " + variant1 + "|" + variant2);
+        debug("[OPERATIONS ANALIZER] check arguments equality for pair: " + variant1 + "|" + variant2);
         List<String> argsOfCommand1 = new ArrayList(Arrays.asList(variant1.split("\\s+")));
         List<String> argsOfCommand2 = new ArrayList(Arrays.asList(variant2.split("\\s+")));        
         argsOfCommand1.remove(0);
@@ -162,19 +173,19 @@ class OperationsAnalizer {
             for (int i = 0; i < argsOfCommand1.size(); i++) {
                 argFrom1 = argsOfCommand1.get(i);
                 argFrom2 = argsOfCommand2.get(i);
-                Logs.debug("[OPERATIONS ANALIZER] args("+i+"): " + argFrom1 + ", " + argFrom2);
+                debug("[OPERATIONS ANALIZER] args("+i+"): " + argFrom1 + ", " + argFrom2);
                 if ( ! argFrom1.equals(argFrom2) ) {
                     argFrom1isComposite = argFrom1.contains("-");
                     argFrom2isComposite = argFrom2.contains("-");
                     if ( argFrom1isComposite && argFrom2isComposite ) {
-                        Logs.debug("[OPERATIONS ANALIZER] both args are composite");
+                        debug("[OPERATIONS ANALIZER] both args are composite");
                         List<String> partsOfArg1 = Arrays.asList(argFrom1.split("-"));
                         List<String> partsOfArg2 = Arrays.asList(argFrom2.split("-"));
-                        Logs.debug("[OPERATIONS ANALIZER] arg 1: " + partsOfArg1);
-                        Logs.debug("[OPERATIONS ANALIZER] arg 2: " + partsOfArg2);
+                        debug("[OPERATIONS ANALIZER] arg 1: " + partsOfArg1);
+                        debug("[OPERATIONS ANALIZER] arg 2: " + partsOfArg2);
                         operationsArgsAreEqual = 
                                 this.argumentPartsAreEqual(partsOfArg1, partsOfArg2);      
-                        Logs.debug("[OPERATIONS ANALIZER] composite args equality: " + operationsArgsAreEqual);
+                        debug("[OPERATIONS ANALIZER] composite args equality: " + operationsArgsAreEqual);
                     } else {
                         return false;
                     }
