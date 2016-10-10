@@ -71,10 +71,6 @@ class ActionsResolver {
         return this.ioEngine.askUserYesOrNo("Use this choice in future?");
     }
     
-    String resolveActionsCandidates(String operation, List<String> candidates) {
-        return this.resolveQuestion("choose action for '" + operation + "' command:", candidates);        
-    }
-    
     private String resolveQuestion(String question, List<String> variants) {
         int chosen = this.ioEngine.resolveVariants(
                 question, variants);

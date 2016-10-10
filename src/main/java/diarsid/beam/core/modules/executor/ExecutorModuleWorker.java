@@ -353,7 +353,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void tryToGetCommandFromCacheAndExecute(List<String> commandParams) {
-        String cachedCommand = this.commandsCache.getPatternCommandForExecution(
+        String cachedCommand = this.commandsCache.getCommandByPattern(
                 join(" ", commandParams));
         if ( ! cachedCommand.isEmpty() ) {
             this.executeFoundCachedCommand(cachedCommand);

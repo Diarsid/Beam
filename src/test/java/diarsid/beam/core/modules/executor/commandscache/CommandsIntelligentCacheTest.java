@@ -43,8 +43,12 @@ public class CommandsIntelligentCacheTest {
         actionsDao = mock(DaoActionChoice.class);
         ActionsResolver actionsResolver = new ActionsResolver(
                 ioEngine, actionsDao);
+        OperationsAnalizer operationsAnalizer = new OperationsAnalizer();
+        OperationCandidatesResolver candidatesResolver = new OperationCandidatesResolver(ioEngine);
+        CommandsAnalizer commandsAnalizer = new CommandsAnalizer(
+                actionsResolver, operationsAnalizer, candidatesResolver);
         cache = new SmartConsoleCommandsCacheWorker(
-                ioEngine, actionsResolver, consoleDao);
+                ioEngine, commandsAnalizer, consoleDao);
     }
     
 
@@ -82,7 +86,7 @@ public class CommandsIntelligentCacheTest {
     }
 
     /**
-     * Test of getPatternCommandForExecution method, of class SmartConsoleCommandsCacheWorker.
+     * Test of getCommandByPattern method, of class SmartConsoleCommandsCacheWorker.
      */
     @Test
     public void testGetPatternCommandForExecution() {
@@ -90,7 +94,7 @@ public class CommandsIntelligentCacheTest {
         result.put("open java in eng", "open java in eng");
         result.put("open java in engines", "open java in engines");
         when(consoleDao.getImprovedCommandsForPattern("j-eng")).thenReturn(result);
-        String command = cache.getPatternCommandForExecution("j-eng");
+        String command = cache.getCommandByPattern("j-eng");
         verify(consoleDao).getImprovedCommandsForPattern("j-eng");        
         assertEquals("open java in eng", command);
     }
@@ -104,7 +108,7 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tomc")).thenReturn(rawCachedCommands);
         
-        String command = cache.getPatternCommandForExecution("tomc");
+        String command = cache.getCommandByPattern("tomc");
         
         verify(consoleDao).getImprovedCommandsForPattern("tomc");        
         assertEquals("call tomcat", command);
@@ -124,7 +128,7 @@ public class CommandsIntelligentCacheTest {
         when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("start tomEE");
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(ioEngine, never()).resolveVariants("action?", variants);
@@ -146,7 +150,7 @@ public class CommandsIntelligentCacheTest {
         when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("");
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(ioEngine).resolveVariants("action?", variants);
@@ -169,7 +173,7 @@ public class CommandsIntelligentCacheTest {
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("start tomcat");
         when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));
@@ -192,7 +196,7 @@ public class CommandsIntelligentCacheTest {
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("");
         when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(actionsDao).getChoiceFor(actionRequestOf("tom", variants));
@@ -214,7 +218,7 @@ public class CommandsIntelligentCacheTest {
         when(actionsDao.getChoiceFor(actionRequestOf("tom", variants))).thenReturn("run tomEE");
         when(ioEngine.resolveVariants("action?", variants)).thenReturn(2);
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verify(ioEngine, never()).resolveVariants("action?", variants);    
@@ -230,7 +234,7 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verifyZeroInteractions(ioEngine);   
@@ -245,7 +249,7 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verifyZeroInteractions(ioEngine);  
@@ -260,7 +264,7 @@ public class CommandsIntelligentCacheTest {
         
         when(consoleDao.getImprovedCommandsForPattern("tom")).thenReturn(rawCachedCommands);
         
-        String command = cache.getPatternCommandForExecution("tom");
+        String command = cache.getCommandByPattern("tom");
         
         verify(consoleDao).getImprovedCommandsForPattern("tom");
         verifyZeroInteractions(ioEngine);  

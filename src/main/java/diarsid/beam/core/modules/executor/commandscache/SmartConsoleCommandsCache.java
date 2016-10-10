@@ -18,10 +18,15 @@ public interface SmartConsoleCommandsCache {
     
     static SmartConsoleCommandsCache buildCache(
             IoInnerModule ioEngine, DataModule dataModule) {
+        OperationsAnalizer operationsAnalizer = new OperationsAnalizer();
+        OperationCandidatesResolver candidatesResolver = new OperationCandidatesResolver(ioEngine);
         ActionsResolver actionsResolver = new ActionsResolver(
                 ioEngine, dataModule.getActionsChoiceDao());
+        CommandsAnalizer commandsAnalizer = new CommandsAnalizer(
+                actionsResolver, operationsAnalizer, candidatesResolver);
+        
         return new SmartConsoleCommandsCacheWorker(
-                ioEngine, actionsResolver, dataModule.getConsoleCommandsDao());
+                ioEngine, commandsAnalizer, dataModule.getConsoleCommandsDao());
     }
 
     void addCommand(List<String> commandParams);
@@ -32,6 +37,6 @@ public interface SmartConsoleCommandsCache {
     
     List<String> getConsoleCommandsOfPattern(String pattern);
 
-    String getPatternCommandForExecution(String command);
+    String getCommandByPattern(String command);
     
 }
