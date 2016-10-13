@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
@@ -21,12 +22,14 @@ import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
-import diarsid.beam.core.modules.executor.os.search.FileLister;
+import diarsid.beam.core.modules.executor.os.listing.FileLister;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
+
+import static java.util.Collections.emptyList;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
@@ -288,24 +291,31 @@ public class OSWorker implements OS {
         if ( depth == 0 ) {
             return null;
         }
-        
+        Optional<List<String>> listResult;
         if ( relativePath.isEmpty() ) {
-            return this.fileLister.listContentOf(location, depth);
+            listResult = this.fileLister.listContentOf(location, depth);
         } else {
-            FileSearchResult result = this.fileSearcher.findTarget(relativePath, location.getPath());
-            if ( result.isOk() ) {
-                return this.fileLister.listContentOf(
+            FileSearchResult relativeTargetResult = 
+                    this.fileSearcher.findTarget(relativePath, location.getPath());
+            if ( relativeTargetResult.isOk() ) {
+                listResult = this.fileLister.listContentOf(
                         combinePathFrom(location.getPath(), relativePath), depth);
             } else {
-                if ( result.failure().targetNotFound() ) {
+                if ( relativeTargetResult.failure().targetNotFound() ) {
                     this.ioEngine.reportMessage(relativePath + " not found in " + location.getName());                                        
-                } else if ( result.failure().targetNotAccessible() ) {
+                } else if ( relativeTargetResult.failure().targetNotAccessible() ) {
                     this.ioEngine.reportMessage(relativePath + " is not accessible.");
                 }
                 this.ioEngine.reportMessage("..." + location.getName() + " content:");
-                return this.fileLister.listContentOf(location, depth);
+                listResult = this.fileLister.listContentOf(location, depth);
             }
-        }        
+        }  
+        if ( listResult.isPresent() ) {
+            return listResult.get();
+        } else {
+            this.ioEngine.reportMessage("...error while listing given path.");
+            return emptyList();
+        }
     }
     
     @Override

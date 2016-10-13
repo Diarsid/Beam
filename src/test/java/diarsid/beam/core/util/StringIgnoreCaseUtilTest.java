@@ -25,7 +25,7 @@ public class StringIgnoreCaseUtilTest {
     }
 
     /**
-     * Test of containsIgnoreCase method, of class StringIgnoreCaseUtil.
+     * Test of containsFullWordIgnoreCase method, of class StringIgnoreCaseUtil.
      */
     
     @Test
@@ -84,7 +84,7 @@ public class StringIgnoreCaseUtilTest {
     }
 
     /**
-     * Test of containsIgnoreCase method, of class StringIgnoreCaseUtil.
+     * Test of containsFullWordIgnoreCase method, of class StringIgnoreCaseUtil.
      */
     @Test
     public void testContainsIgnoreCase_List_String() {
@@ -97,7 +97,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = true;
-        boolean result = StringIgnoreCaseUtil.containsIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -112,7 +112,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -124,7 +124,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -136,7 +136,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -151,8 +151,37 @@ public class StringIgnoreCaseUtilTest {
         String searched = null;
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
         
+        assertEquals(expected, result);
+    }
+    
+    /**
+     * Test of containsSnippetIgnoreCase method, of class StringIgnoreCaseUtil.
+     */
+    @Test void testContainsSnippetIgnoreCase_contains() {
+        List<String> whereToSearch = new ArrayList<>();
+        whereToSearch.add("string");
+        whereToSearch.add("anotherString");
+        whereToSearch.add("one moreString");
+        
+        String searchedSnippet = "oth";
+        
+        boolean expected = true;
+        boolean result = StringIgnoreCaseUtil.containsSnippetIgnoreCase(whereToSearch, searchedSnippet);
+        assertEquals(expected, result);
+    }
+    
+    @Test void testContainsSnippetIgnoreCase_does_not_contain() {
+        List<String> whereToSearch = new ArrayList<>();
+        whereToSearch.add("string");
+        whereToSearch.add("anotherString");
+        whereToSearch.add("one moreString");
+        
+        String searchedSnippet = "XXX";
+        
+        boolean expected = false;
+        boolean result = StringIgnoreCaseUtil.containsSnippetIgnoreCase(whereToSearch, searchedSnippet);
         assertEquals(expected, result);
     }
 

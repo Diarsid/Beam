@@ -38,12 +38,25 @@ public class StringIgnoreCaseUtil {
         }        
     }
     
-    public static boolean containsIgnoreCase(Collection<String> whereToSearch, String searched) {
+    public static boolean containsFullWordIgnoreCase(
+            Collection<String> whereToSearch, String searched) {
         if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
             return false;
         } else {
             return whereToSearch.stream()
                     .filter(s -> s.equalsIgnoreCase(searched))
+                    .findFirst()
+                    .isPresent();
+        }        
+    }
+    
+    public static boolean containsSnippetIgnoreCase(
+            Collection<String> whereToSearch, String searched) {
+        if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
+            return false;
+        } else {
+            return whereToSearch.stream()
+                    .filter(s -> containsIgnoreCase(s, searched))
                     .findFirst()
                     .isPresent();
         }        
