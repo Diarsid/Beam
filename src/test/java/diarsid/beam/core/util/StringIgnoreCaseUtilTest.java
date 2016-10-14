@@ -159,7 +159,8 @@ public class StringIgnoreCaseUtilTest {
     /**
      * Test of containsSnippetIgnoreCase method, of class StringIgnoreCaseUtil.
      */
-    @Test void testContainsSnippetIgnoreCase_contains() {
+    @Test 
+    public void testContainsSnippetIgnoreCase_contains() {
         List<String> whereToSearch = new ArrayList<>();
         whereToSearch.add("string");
         whereToSearch.add("anotherString");
@@ -172,7 +173,8 @@ public class StringIgnoreCaseUtilTest {
         assertEquals(expected, result);
     }
     
-    @Test void testContainsSnippetIgnoreCase_does_not_contain() {
+    @Test 
+    public void testContainsSnippetIgnoreCase_does_not_contain() {
         List<String> whereToSearch = new ArrayList<>();
         whereToSearch.add("string");
         whereToSearch.add("anotherString");
@@ -184,6 +186,38 @@ public class StringIgnoreCaseUtilTest {
         boolean result = StringIgnoreCaseUtil.containsSnippetIgnoreCase(whereToSearch, searchedSnippet);
         assertEquals(expected, result);
     }
+    
+    /**
+     * Test of containsIgnoreCaseAnyFragment method, of class StringIgnoreCaseUtil.
+     */
+    
+    @Test 
+    public void testContainsIgnoreCaseAnyFragment_contains() {
+        String whereToSearch = "long-specific-name";
+        
+        List<String> searchedSnippets = new ArrayList<>();        
+        searchedSnippets.add("anotherString");
+        searchedSnippets.add("one moreString");
+        searchedSnippets.add("peCIf");
+        
+        boolean expected = true;
+        boolean result = StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment(whereToSearch, searchedSnippets);
+        assertEquals(expected, result);
+    }
+    
+    @Test 
+    public void testContainsIgnoreCaseAnyFragment_does_not_contain() {
+        String whereToSearch = "long-specific-name";
+        
+        List<String> searchedSnippets = new ArrayList<>();        
+        searchedSnippets.add("anotherString");
+        searchedSnippets.add("one moreString");
+        searchedSnippets.add("no-matches");
+        
+        boolean expected = false;
+        boolean result = StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment(whereToSearch, searchedSnippets);
+        assertEquals(expected, result);
+    }    
 
     /**
      * Test of indexOfIgnoreCase method, of class StringIgnoreCaseUtil.

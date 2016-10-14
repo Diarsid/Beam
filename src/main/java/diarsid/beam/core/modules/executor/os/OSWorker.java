@@ -29,8 +29,6 @@ import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
-import static java.util.Collections.emptyList;
-
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
@@ -314,7 +312,7 @@ public class OSWorker implements OS {
             return listResult.get();
         } else {
             this.ioEngine.reportMessage("...error while listing given path.");
-            return emptyList();
+            return null;
         }
     }
     

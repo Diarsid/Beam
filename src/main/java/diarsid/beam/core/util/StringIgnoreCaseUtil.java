@@ -62,6 +62,14 @@ public class StringIgnoreCaseUtil {
         }        
     }
     
+    public static boolean containsIgnoreCaseAnyFragment(String whereToSearch, Collection<String> searchedSnippets) {
+        return searchedSnippets
+                .stream()
+                .filter(snippet -> containsIgnoreCase(whereToSearch, snippet))
+                .findFirst()
+                .isPresent();
+    }
+    
     public static int indexOfIgnoreCase(List<String> whereToSearch, String searched) {
         if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
             return -1;

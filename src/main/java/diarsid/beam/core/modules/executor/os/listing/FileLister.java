@@ -29,10 +29,19 @@ import static diarsid.beam.core.util.Logs.logError;
  */
 public class FileLister {
     
-    private final FileListerReusableFileVisitor lister;
+    private final FileListerReusableFileVisitor visitor;
     
     public FileLister(FileListerReusableFileVisitor lister) {
-        this.lister = lister;
+        this.visitor = lister;
+    }
+    
+    public static FileLister getLister() {
+        FileItemsFormatter formatter = new FileItemsFormatter();
+        LargeFolderDetector largeDetector = new LargeFolderDetector(10);
+        ProgramFolderDetector programDetector = new ProgramFolderDetector();
+        FileListerReusableFileVisitor reusableFileVisitor = new FileListerReusableFileVisitor(
+                programDetector, largeDetector, formatter);
+        return new FileLister(reusableFileVisitor);
     }
     
     public Optional<List<String>> listContentOf(Location location, int depth) {
@@ -44,16 +53,16 @@ public class FileLister {
     }
     
     private Optional<List<String>> list(Path root, int depth) {        
-        this.lister.useAgainWith(root);
+        this.visitor.useAgainWith(root);
         try {
-            walkFileTree(root, of(FileVisitOption.FOLLOW_LINKS), depth, this.lister);
-            return of(this.lister.getResults());
+            walkFileTree(root, of(FileVisitOption.FOLLOW_LINKS), depth, this.visitor);
+            return of(this.visitor.getResults());
         } catch (IOException e) {
             logError(this.getClass(), "", e);
             debug("[FILE LISTER] IOException while processing " + root.toString());
             return empty();
         } finally {
-            this.lister.clear();
+            this.visitor.clear();
         }       
     }
 }
