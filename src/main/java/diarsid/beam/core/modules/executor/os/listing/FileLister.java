@@ -37,8 +37,9 @@ public class FileLister {
     
     public static FileLister getLister() {
         FileItemsFormatter formatter = new FileItemsFormatter();
-        LargeFolderDetector largeDetector = new LargeFolderDetector(10);
-        ProgramFolderDetector programDetector = new ProgramFolderDetector();
+        LargeFolderDetector largeDetector = new LargeFolderDetector(20);
+        FileItemAnalizer analizer = new FileItemAnalizer();
+        FolderTypeDetector programDetector = new FolderTypeDetector(analizer);
         FileListerReusableFileVisitor reusableFileVisitor = new FileListerReusableFileVisitor(
                 programDetector, largeDetector, formatter);
         return new FileLister(reusableFileVisitor);

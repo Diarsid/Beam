@@ -275,6 +275,7 @@ public class OSWorker implements OS {
         }
     }
     
+    @Override
     public List<String> listContentIn(Location location, String relativePath, int depth) {
         File dir = new File(location.getPath());
         if ( ! dir.exists() ) {
@@ -295,16 +296,9 @@ public class OSWorker implements OS {
             FileSearchResult relativeTargetResult = 
                     this.fileSearcher.findTarget(relativePath, location.getPath());
             if ( relativeTargetResult.isOk() ) {
-                listResult = this.fileLister.listContentOf(
-                        combinePathFrom(location.getPath(), relativePath), depth);
+                listResult = listLocationAndPath(relativeTargetResult, location, depth);
             } else {
-                if ( relativeTargetResult.failure().targetNotFound() ) {
-                    this.ioEngine.reportMessage(relativePath + " not found in " + location.getName());                                        
-                } else if ( relativeTargetResult.failure().targetNotAccessible() ) {
-                    this.ioEngine.reportMessage(relativePath + " is not accessible.");
-                }
-                this.ioEngine.reportMessage("..." + location.getName() + " content:");
-                listResult = this.fileLister.listContentOf(location, depth);
+                listResult = listLocation(relativeTargetResult, relativePath, location, depth);
             }
         }  
         if ( listResult.isPresent() ) {
@@ -313,9 +307,44 @@ public class OSWorker implements OS {
             this.ioEngine.reportMessage("...error while listing given path.");
             return null;
         }
+    }    
+
+    private Optional<List<String>> listLocation(
+            FileSearchResult relativeTargetResult, String relativePath, Location location, int depth) {
+        Optional<List<String>> listResult;
+        if ( relativeTargetResult.failure().targetNotFound() ) {
+            this.ioEngine.reportMessage(relativePath + " not found in " + location.getName());
+        } else if ( relativeTargetResult.failure().targetNotAccessible() ) {
+            this.ioEngine.reportMessage(relativePath + " is not accessible.");
+        }
+        this.ioEngine.reportMessage("..." + location.getName() + " content:");
+        listResult = this.fileLister.listContentOf(location, depth);
+        return listResult;
+    }
+
+    private Optional<List<String>> listLocationAndPath(
+            FileSearchResult relativeTargetResult, Location location, int depth) {
+        String relativePath;
+        Optional<List<String>> listResult;
+        if ( relativeTargetResult.success().hasSingleFoundFile() ) {
+            relativePath = relativeTargetResult.success().getFoundFile();
+        } else {
+            relativePath = this.resolveMultiplePath(relativeTargetResult.success().getMultipleFoundFiles());
+        }
+        listResult = this.fileLister.listContentOf(combinePathFrom(
+                location.getPath(), relativePath), depth);
+        return listResult;
     }
     
-    @Override
+    private String resolveMultiplePath(List<String> paths) {
+        int choice = this.ioEngine.resolveVariantsWithExternalIO("...path to list?", paths);
+        if ( choice > 0 ) {
+            return paths.get(choice - 1);
+        } else {
+            return "";
+        }
+    }
+    
     public List<String> getLocationContent(Location location) {
         return this.listContentIn(location, "", 5);
 //        File dir = new File(location.getPath());

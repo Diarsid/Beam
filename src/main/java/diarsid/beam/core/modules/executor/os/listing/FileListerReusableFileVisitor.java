@@ -16,7 +16,10 @@ import java.util.List;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 
-import static diarsid.beam.core.modules.executor.os.listing.ProgramFolderDetector.PROGRAM_FOLDER;
+import static diarsid.beam.core.modules.executor.os.listing.FileItemsFormatter.INLINE_SKIPPED;
+import static diarsid.beam.core.modules.executor.os.listing.FileItemsFormatter.NEW_LINE_SKIPPED;
+import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.util.Logs.logError;
 
 /**
  *
@@ -24,14 +27,14 @@ import static diarsid.beam.core.modules.executor.os.listing.ProgramFolderDetecto
  */
 public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
     
-    private final ProgramFolderDetector programFolderDetector;
+    private final FolderTypeDetector programFolderDetector;
     private final LargeFolderDetector largeFolderDetector;
     private final FileItemsFormatter formatter;
     
     private Path root;
     
     public FileListerReusableFileVisitor(
-            ProgramFolderDetector programFolderDetector, 
+            FolderTypeDetector programFolderDetector, 
             LargeFolderDetector largeFolderDetector,
             FileItemsFormatter formatter) {
         this.programFolderDetector = programFolderDetector;
@@ -55,19 +58,38 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) 
-            throws IOException {
-        if ( dir.equals(this.root) ) {
-            return CONTINUE;
+            throws IOException {  
+        try {
+            debug("[FILE LIST VISITOR] pre-visit dir: " + dir.getFileName().toString());
+        } catch (NullPointerException npe) {
+            debug("[FILE LIST VISITOR] pre-visit dir: " + dir);
         }
-        int folderType = this.programFolderDetector.examineTypeOf(dir);
-        if ( folderType == PROGRAM_FOLDER ) {
-            this.formatter.skipFolderWithMessage(dir, "...program folder");
+        
+        FolderType type = this.programFolderDetector.examineTypeOf(dir);
+        switch (type) {
+            case PROGRAM_FOLDER : {
+                this.formatter.skipFolderWithMessage(dir, "(program)", INLINE_SKIPPED);
+                debug("[FILE LIST VISITOR] program folder!");
+                return SKIP_SUBTREE;
+            }
+            case RESTRICTED_FOLDER : {
+                return SKIP_SUBTREE;
+            }
+            case PROJECT_FOLDER : {
+                this.formatter.skipFolderWithMessage(dir, "(project)", INLINE_SKIPPED);
+                debug("[FILE LIST VISITOR] project folder!");
+                return SKIP_SUBTREE;
+            }
+            default : {
+                // do nothing.
+            }
+        }
+        if ( ! dir.equals(this.root) && this.largeFolderDetector.examine(dir) ) {
+            this.formatter.skipFolderWithMessage(dir, " ...too large", NEW_LINE_SKIPPED);
+            debug("[FILE LIST VISITOR] too large, skip subtree");
             return SKIP_SUBTREE;
         }
-        if ( this.largeFolderDetector.examine(dir) ) {
-            this.formatter.skipFolderWithMessage(dir, "...folder too large");
-            return SKIP_SUBTREE;
-        }
+        debug("[FILE LIST VISITOR] include: " + dir);
         this.formatter.includeItem(dir);
         return CONTINUE;
     }
@@ -80,6 +102,7 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        logError(this.getClass(),"", exc);
         this.formatter.skipFailedItem(file, "access denied");
         return CONTINUE;
     }

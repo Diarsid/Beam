@@ -24,7 +24,7 @@ public interface OS {
     
     OperationResult runProgram(String program);
     
-    List<String> getLocationContent(Location location); 
+    List<String> listContentIn(Location location, String relativePath, int depth); 
     
     OperationResult openUrlWithDefaultBrowser(String name);
     
