@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -318,29 +317,30 @@ public class OSWorker implements OS {
     
     @Override
     public List<String> getLocationContent(Location location) {
-        File dir = new File(location.getPath());
-        if ( ! dir.exists() ) {
-            this.ioEngine.reportError("This path does not exist.");
-            return null;
-        }
-        if ( ! dir.isDirectory() ) {
-            this.ioEngine.reportError("This location is not a directory.");
-            return null;
-        }
-        
-        File[] list = dir.listFiles();
-        List<String> content = new ArrayList<>();
-        int folderIndex = 0;
-        for (File file : list) {
-            if (file.isDirectory()) {
-                content.add(folderIndex, " [_] " + file.getName());
-                folderIndex++;
-            } else {
-                content.add("  o  " + file.getName());
-            }
-        }
-        content.remove("  o  desktop.ini");
-        return content;        
+        return this.listContentIn(location, "", 5);
+//        File dir = new File(location.getPath());
+//        if ( ! dir.exists() ) {
+//            this.ioEngine.reportError("This path does not exist.");
+//            return null;
+//        }
+//        if ( ! dir.isDirectory() ) {
+//            this.ioEngine.reportError("This location is not a directory.");
+//            return null;
+//        }
+//        
+//        File[] list = dir.listFiles();
+//        List<String> content = new ArrayList<>();
+//        int folderIndex = 0;
+//        for (File file : list) {
+//            if (file.isDirectory()) {
+//                content.add(folderIndex, " [_] " + file.getName());
+//                folderIndex++;
+//            } else {
+//                content.add("  o  " + file.getName());
+//            }
+//        }
+//        content.remove("  o  desktop.ini");
+//        return content;        
     }
     
     @Override

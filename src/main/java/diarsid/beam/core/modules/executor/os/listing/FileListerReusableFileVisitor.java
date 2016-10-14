@@ -14,7 +14,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.FileVisitResult.SKIP_SIBLINGS;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 
 import static diarsid.beam.core.modules.executor.os.listing.ProgramFolderDetector.PROGRAM_FOLDER;
@@ -41,6 +40,7 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
     }
     
     void useAgainWith(Path root) {
+        this.formatter.presetWith(root);
         this.root = root;
     }
     
@@ -56,10 +56,13 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) 
             throws IOException {
+        if ( dir.equals(this.root) ) {
+            return CONTINUE;
+        }
         int folderType = this.programFolderDetector.examineTypeOf(dir);
         if ( folderType == PROGRAM_FOLDER ) {
             this.formatter.skipFolderWithMessage(dir, "...program folder");
-            return SKIP_SIBLINGS;
+            return SKIP_SUBTREE;
         }
         if ( this.largeFolderDetector.examine(dir) ) {
             this.formatter.skipFolderWithMessage(dir, "...folder too large");

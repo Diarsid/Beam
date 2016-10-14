@@ -67,13 +67,20 @@ class FileItemsFormatter  {
     }
     
     void includeItem(Path item) {
+        if ( item.getFileName().toString().contains("desktop.ini") ) {
+            return;
+        }
         this.results.add(this.getFormattedNameOf(item));
     }
     
     private String getFormattedNameOf(Path item) {
+        String name = item.getFileName().toString();
+        if ( name.length() > 40 ) {
+            name = name.substring(0, 37).concat("...");
+        }
         return this.getIndentOf(item)
                 .concat(this.getIconOf(item))
-                .concat(item.getFileName().toString());
+                .concat(name);
     }
     
     private int getIndentNumberOf(Path item) {
@@ -83,7 +90,7 @@ class FileItemsFormatter  {
     private String getIndentOf(Path item) {
         this.indent = new char[(this.singleIndentLength * this.getIndentNumberOf(item))];
         fill(this.indent, ' ');
-        return item.getFileName().toString().concat(valueOf(this.indent));
+        return valueOf(this.indent);
     }
     
     private String getIconOf(Path item) {
