@@ -12,13 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.String.join;
 import static java.lang.String.valueOf;
 import static java.nio.file.Files.isDirectory;
 import static java.util.Arrays.fill;
 import static java.util.stream.Collectors.toList;
-
-import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -57,15 +54,15 @@ class FileItemsFormatter  {
     
     List<String> getResults() {
         this.reduceResultsIfTooLarge();
-        debug(join(" ", this.results));
+        //debug(join(" ", this.results));
         return this.results;
     }
     
     private void reduceResultsIfTooLarge() {
         int currentMaxIndent = this.getMaxResultsIndent();
-        debug("[FILE ITEMS FORMATTER] reducing...");
+        //debug("[FILE ITEMS FORMATTER] reducing...");
         while ( this.results.size() > 30 && currentMaxIndent > 1) {
-            debug("[FILE ITEMS FORMATTER] reducing by indent of " + currentMaxIndent);
+            //debug("[FILE ITEMS FORMATTER] reducing by indent of " + currentMaxIndent);
             String indentToFilter = this.getIndentOf(currentMaxIndent);
             this.results = this.results
                     .stream()
@@ -113,15 +110,15 @@ class FileItemsFormatter  {
     
     void includeItem(Path item) {
         if ( item.equals(this.root) ) {
-            debug("[FILE ITEMS FORMATTER] is root, not included.");
+            //debug("[FILE ITEMS FORMATTER] is root, not included.");
             return;
         }
         if ( item.getFileName().toString().contains("desktop.ini") ) {
-            debug("[FILE ITEMS FORMATTER] desktop.ini, not included.");
+            //debug("[FILE ITEMS FORMATTER] desktop.ini, not included.");
             return;
         }
         this.results.add(this.getFormattedNameOf(item));
-        debug("[FILE ITEMS FORMATTER] included: " + this.getFormattedNameOf(item));
+        //debug("[FILE ITEMS FORMATTER] included: " + this.getFormattedNameOf(item));
     }
     
     private String getFormattedNameOf(Path item) {

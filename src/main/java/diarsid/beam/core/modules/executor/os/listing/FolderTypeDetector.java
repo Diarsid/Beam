@@ -17,7 +17,6 @@ import static diarsid.beam.core.modules.executor.os.listing.FolderType.PROGRAM_F
 import static diarsid.beam.core.modules.executor.os.listing.FolderType.PROJECT_FOLDER;
 import static diarsid.beam.core.modules.executor.os.listing.FolderType.RESTRICTED_FOLDER;
 import static diarsid.beam.core.modules.executor.os.listing.FolderType.USUAL_FOLDER;
-import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -41,16 +40,16 @@ class FolderTypeDetector {
         Path iterated;
         for (int i = 0; i < 10 && iterator.hasNext(); i++) {
             iterated = (Path) iterator.next();
-            debug("[PROGRAM FOLDER DETECTOR] examine : " + iterated.toString());
+            //debug("[PROGRAM FOLDER DETECTOR] examine : " + iterated.toString());
             if ( this.analizer.isProgramSpecificFile(iterated) ) {
-                debug("[PROGRAM FOLDER DETECTOR]    - specific file!");
+                //debug("[PROGRAM FOLDER DETECTOR]    - specific file!");
                 programSpecificFilesCount++;
             }
             if ( this.analizer.isProjectSpecificFile(iterated) ) {
                 return PROJECT_FOLDER;
             }
             if ( this.analizer.isProgramSpecificFolder(iterated) ) {
-                debug("[PROGRAM FOLDER DETECTOR]    - specific folder!");
+                //debug("[PROGRAM FOLDER DETECTOR]    - specific folder!");
                 programSpecificFoldersCount++;
             }
         }

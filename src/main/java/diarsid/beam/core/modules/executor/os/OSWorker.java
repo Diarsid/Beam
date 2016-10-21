@@ -337,7 +337,7 @@ public class OSWorker implements OS {
     }
     
     private String resolveMultiplePath(List<String> paths) {
-        int choice = this.ioEngine.resolveVariantsWithExternalIO("...path to list?", paths);
+        int choice = this.ioEngine.resolveVariants("...path to list?", paths);
         if ( choice > 0 ) {
             return paths.get(choice - 1);
         } else {

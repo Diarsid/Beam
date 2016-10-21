@@ -20,7 +20,6 @@ import static java.util.EnumSet.of;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -60,7 +59,7 @@ public class FileLister {
             return of(this.visitor.getResults());
         } catch (IOException e) {
             logError(this.getClass(), "", e);
-            debug("[FILE LISTER] IOException while processing " + root.toString());
+            //debug("[FILE LISTER] IOException while processing " + root.toString());
             return empty();
         } finally {
             this.visitor.clear();

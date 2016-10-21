@@ -18,7 +18,6 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 
 import static diarsid.beam.core.modules.executor.os.listing.FileItemsFormatter.INLINE_SKIPPED;
 import static diarsid.beam.core.modules.executor.os.listing.FileItemsFormatter.NEW_LINE_SKIPPED;
-import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -58,18 +57,13 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) 
-            throws IOException {  
-        try {
-            debug("[FILE LIST VISITOR] pre-visit dir: " + dir.getFileName().toString());
-        } catch (NullPointerException npe) {
-            debug("[FILE LIST VISITOR] pre-visit dir: " + dir);
-        }
+            throws IOException {
         
         FolderType type = this.programFolderDetector.examineTypeOf(dir);
         switch (type) {
             case PROGRAM_FOLDER : {
                 this.formatter.skipFolderWithMessage(dir, "(program)", INLINE_SKIPPED);
-                debug("[FILE LIST VISITOR] program folder!");
+                //debug("[FILE LIST VISITOR] program folder!");
                 return SKIP_SUBTREE;
             }
             case RESTRICTED_FOLDER : {
@@ -77,7 +71,7 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
             }
             case PROJECT_FOLDER : {
                 this.formatter.skipFolderWithMessage(dir, "(project)", INLINE_SKIPPED);
-                debug("[FILE LIST VISITOR] project folder!");
+                //debug("[FILE LIST VISITOR] project folder!");
                 return SKIP_SUBTREE;
             }
             default : {
@@ -86,10 +80,10 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
         }
         if ( ! dir.equals(this.root) && this.largeFolderDetector.examine(dir) ) {
             this.formatter.skipFolderWithMessage(dir, " ...too large", NEW_LINE_SKIPPED);
-            debug("[FILE LIST VISITOR] too large, skip subtree");
+            //debug("[FILE LIST VISITOR] too large, skip subtree");
             return SKIP_SUBTREE;
         }
-        debug("[FILE LIST VISITOR] include: " + dir);
+        //debug("[FILE LIST VISITOR] include: " + dir);
         this.formatter.includeItem(dir);
         return CONTINUE;
     }
