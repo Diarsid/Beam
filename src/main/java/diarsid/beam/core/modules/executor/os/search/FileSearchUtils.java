@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.lang.String.join;
+
 /**
  *
  * @author Diarsid
@@ -39,6 +41,10 @@ public class FileSearchUtils {
         }
     }
     
+    public static Path combinePathFrom(String... fragments) {
+        return Paths.get(normalizePath(join("/", fragments)));
+    }
+    
     public static int indexOfLastFileSeparator(String target) {
         int indexOfSlash = target.lastIndexOf("/");
         int indexOfBackSlash = target.lastIndexOf("\\");
@@ -66,7 +72,11 @@ public class FileSearchUtils {
     }
     
     public static String normalizeSingleCommandParam(String target) {
-        return target.replaceAll("[/\\\\]+", "/").replaceAll("[-]+", "-");
+        return normalizePath(target).replaceAll("[-]+", "-");
+    }
+
+    public static String normalizePath(String target) {
+        return target.replaceAll("[/\\\\]+", "/");
     }
     
     static String[] normalizePathFragmentsFrom(String target) {

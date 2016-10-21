@@ -12,8 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
@@ -21,12 +21,14 @@ import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
+import diarsid.beam.core.modules.executor.os.listing.FileLister;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
@@ -42,6 +44,7 @@ public class OSWorker implements OS {
     private final IoInnerModule ioEngine;
     private final SystemActionsExecutor actionsExecutor;
     private final FileSearcher fileSearcher;
+    private final FileLister fileLister;
     private final ExecutorContext intelligentContext;
 
     public OSWorker(
@@ -49,6 +52,7 @@ public class OSWorker implements OS {
             ConfigModule config, 
             SystemActionsExecutor actionsExecutor,
             FileSearcher fileSearcher,
+            FileLister fileLister,
             ExecutorContext intelligentContext) {
         
         this.ioEngine = io;
@@ -64,6 +68,7 @@ public class OSWorker implements OS {
                 .intern();      
         this.actionsExecutor = actionsExecutor;
         this.fileSearcher = fileSearcher;
+        this.fileLister = fileLister;
         this.intelligentContext = intelligentContext;
     }    
     
@@ -271,7 +276,7 @@ public class OSWorker implements OS {
     }
     
     @Override
-    public List<String> getLocationContent(Location location) {
+    public List<String> listContentIn(Location location, String relativePath, int depth) {
         File dir = new File(location.getPath());
         if ( ! dir.exists() ) {
             this.ioEngine.reportError("This path does not exist.");
@@ -280,21 +285,91 @@ public class OSWorker implements OS {
         if ( ! dir.isDirectory() ) {
             this.ioEngine.reportError("This location is not a directory.");
             return null;
+        }        
+        if ( depth == 0 ) {
+            return null;
         }
-        
-        File[] list = dir.listFiles();
-        List<String> content = new ArrayList<>();
-        int folderIndex = 0;
-        for (File file : list) {
-            if (file.isDirectory()) {
-                content.add(folderIndex, " [_] " + file.getName());
-                folderIndex++;
+        Optional<List<String>> listResult;
+        if ( relativePath.isEmpty() ) {
+            listResult = this.fileLister.listContentOf(location, depth);
+        } else {
+            FileSearchResult relativeTargetResult = 
+                    this.fileSearcher.findTarget(relativePath, location.getPath());
+            if ( relativeTargetResult.isOk() ) {
+                listResult = listLocationAndPath(relativeTargetResult, location, depth);
             } else {
-                content.add("  o  " + file.getName());
+                listResult = listLocation(relativeTargetResult, relativePath, location, depth);
             }
+        }  
+        if ( listResult.isPresent() ) {
+            return listResult.get();
+        } else {
+            this.ioEngine.reportMessage("...error while listing given path.");
+            return null;
         }
-        content.remove("  o  desktop.ini");
-        return content;        
+    }    
+
+    private Optional<List<String>> listLocation(
+            FileSearchResult relativeTargetResult, String relativePath, Location location, int depth) {
+        Optional<List<String>> listResult;
+        if ( relativeTargetResult.failure().targetNotFound() ) {
+            this.ioEngine.reportMessage(relativePath + " not found in " + location.getName());
+        } else if ( relativeTargetResult.failure().targetNotAccessible() ) {
+            this.ioEngine.reportMessage(relativePath + " is not accessible.");
+        }
+        this.ioEngine.reportMessage("..." + location.getName() + " content:");
+        listResult = this.fileLister.listContentOf(location, depth);
+        return listResult;
+    }
+
+    private Optional<List<String>> listLocationAndPath(
+            FileSearchResult relativeTargetResult, Location location, int depth) {
+        String relativePath;
+        Optional<List<String>> listResult;
+        if ( relativeTargetResult.success().hasSingleFoundFile() ) {
+            relativePath = relativeTargetResult.success().getFoundFile();
+        } else {
+            relativePath = this.resolveMultiplePath(relativeTargetResult.success().getMultipleFoundFiles());
+        }
+        listResult = this.fileLister.listContentOf(combinePathFrom(
+                location.getPath(), relativePath), depth);
+        return listResult;
+    }
+    
+    private String resolveMultiplePath(List<String> paths) {
+        int choice = this.ioEngine.resolveVariantsWithExternalIO("...path to list?", paths);
+        if ( choice > 0 ) {
+            return paths.get(choice - 1);
+        } else {
+            return "";
+        }
+    }
+    
+    public List<String> getLocationContent(Location location) {
+        return this.listContentIn(location, "", 5);
+//        File dir = new File(location.getPath());
+//        if ( ! dir.exists() ) {
+//            this.ioEngine.reportError("This path does not exist.");
+//            return null;
+//        }
+//        if ( ! dir.isDirectory() ) {
+//            this.ioEngine.reportError("This location is not a directory.");
+//            return null;
+//        }
+//        
+//        File[] list = dir.listFiles();
+//        List<String> content = new ArrayList<>();
+//        int folderIndex = 0;
+//        for (File file : list) {
+//            if (file.isDirectory()) {
+//                content.add(folderIndex, " [_] " + file.getName());
+//                folderIndex++;
+//            } else {
+//                content.add("  o  " + file.getName());
+//            }
+//        }
+//        content.remove("  o  desktop.ini");
+//        return content;        
     }
     
     @Override

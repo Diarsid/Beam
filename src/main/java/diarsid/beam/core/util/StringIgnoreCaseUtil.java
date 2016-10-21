@@ -38,7 +38,8 @@ public class StringIgnoreCaseUtil {
         }        
     }
     
-    public static boolean containsIgnoreCase(Collection<String> whereToSearch, String searched) {
+    public static boolean containsFullWordIgnoreCase(
+            Collection<String> whereToSearch, String searched) {
         if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
             return false;
         } else {
@@ -47,6 +48,26 @@ public class StringIgnoreCaseUtil {
                     .findFirst()
                     .isPresent();
         }        
+    }
+    
+    public static boolean containsSnippetIgnoreCase(
+            Collection<String> whereToSearch, String searched) {
+        if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
+            return false;
+        } else {
+            return whereToSearch.stream()
+                    .filter(s -> containsIgnoreCase(s, searched))
+                    .findFirst()
+                    .isPresent();
+        }        
+    }
+    
+    public static boolean containsIgnoreCaseAnyFragment(String whereToSearch, Collection<String> searchedSnippets) {
+        return searchedSnippets
+                .stream()
+                .filter(snippet -> containsIgnoreCase(whereToSearch, snippet))
+                .findFirst()
+                .isPresent();
     }
     
     public static int indexOfIgnoreCase(List<String> whereToSearch, String searched) {

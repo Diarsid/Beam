@@ -7,7 +7,6 @@
 package diarsid.beam.core.modules.executor.processors.workers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import diarsid.beam.core.entities.local.Location;
@@ -19,6 +18,7 @@ import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 import static java.lang.String.join;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
@@ -64,12 +64,16 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     @Override
     public boolean ifCommandLooksLikeLocationAndPath(List<String> commandParams) {
         if ( commandParams.size() == 1 ) {
-            String command = normalizeSingleCommandParam(commandParams.get(0));
-            if ( containsFileSeparator(command) ) {
-                return this.pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(command);
-            } else {
-                return false;
-            }
+            return this.isResolvablePath(commandParams.get(0));
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isResolvablePath(String possiblePath) {
+        possiblePath = normalizeSingleCommandParam(possiblePath);
+        if ( containsFileSeparator(possiblePath) ) {
+            return this.pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(possiblePath);
         } else {
             return false;
         }
@@ -112,18 +116,36 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     }
     
     @Override
-    public List<String> listLocationContent(String locationName) {
+    public List<String> listLocationContent(String locationAndPath) {
+        String locationName;
+        String relativePath;
+        if ( containsFileSeparator(locationAndPath) ) {
+            if ( this.pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(locationAndPath) ) {
+                relativePath = this.extractSubPathFromLocation(locationAndPath);
+                locationName = this.removeSubPathFromLocation(locationAndPath);
+            } else {
+                return emptyList();
+            }
+        } else {
+            locationName = locationAndPath;
+            relativePath = "";
+        }
+        
         Location location = this.getLocation(locationName, false);
         if ( location != null ) {
-            List<String> locationContent = this.system.getLocationContent(location);
+            List<String> locationContent = this.system.listContentIn(location, relativePath, 5);
             if ( locationContent != null ) {
-                locationContent.add(0, location.getName());
+                if ( relativePath.isEmpty() ) {
+                    locationContent.add(0, location.getName());
+                } else {
+                    locationContent.add(0, location.getName().concat("/").concat(relativePath));
+                }                
                 return locationContent;
             } else {                
                 return new ArrayList<>();
             }
         } else {
-            return Collections.emptyList();
+            return emptyList();
         }
     }
        

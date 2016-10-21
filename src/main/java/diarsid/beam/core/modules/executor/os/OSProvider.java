@@ -8,10 +8,13 @@ package diarsid.beam.core.modules.executor.os;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
+import diarsid.beam.core.modules.executor.os.listing.FileLister;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.core.modules.executor.context.ExecutorContext;
+
+import static diarsid.beam.core.modules.executor.os.listing.FileLister.getLister;
 
 /**
  *
@@ -27,9 +30,10 @@ public interface OSProvider {
             ExecutorContext intelligentContext) {
         
         String systemName = System.getProperty("os.name").toLowerCase();
+        FileLister fileLister = getLister();
         if (systemName.contains("win")) {
             return new OSWorker(
-                    io, config, actionsExecutor, fileSearcher, intelligentContext);
+                    io, config, actionsExecutor, fileSearcher, fileLister, intelligentContext);
         } else if (systemName.contains("x")) {
             // Program does not have OSUnix implementation for working under this OS.
             // Terminates program
