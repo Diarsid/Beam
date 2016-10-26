@@ -72,8 +72,10 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
                 context, 
                 processorsBuilder, 
                 consoleCommandsCache);
+        ExecutorModuleProxyArgumentsAnalizer analizer = 
+                new ExecutorModuleProxyArgumentsAnalizer();
         InvocationHandler preparedProxy = new ExecutorModuleProxy(
-                actualExecutor, context);
+                actualExecutor, context, analizer);
         ExecutorModule proxyExecutor = (ExecutorModule) Proxy.newProxyInstance(
                 ExecutorModule.class.getClassLoader(), 
                 actualExecutor.getClass().getInterfaces(), 

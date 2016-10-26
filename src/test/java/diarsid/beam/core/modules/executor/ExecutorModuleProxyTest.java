@@ -49,8 +49,10 @@ public class ExecutorModuleProxyTest {
     
     private final ExecutorModuleProxy testedProxy;
     {
+        ExecutorModuleProxyArgumentsAnalizer analizer =
+                new ExecutorModuleProxyArgumentsAnalizer();
         testedProxy = new ExecutorModuleProxy(
-                executor, commandContext);
+                executor, commandContext, analizer);
     }
     
     private Method methodAcceptingListOfStrings;

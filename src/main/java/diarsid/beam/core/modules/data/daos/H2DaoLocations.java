@@ -148,37 +148,37 @@ class H2DaoLocations implements DaoLocations {
     }
     
     @Override
-    public List<Location> getLocationsByNameParts(String[] locationNameParts){ 
-        if(locationNameParts.length > 0){
+    public List<Location> getLocationsByNameParts(List<String> locationNameParts){ 
+        if ( ! locationNameParts.isEmpty() ) {
             
             StringBuilder statementBuild = new StringBuilder();
             statementBuild.append(SELECT_LOCATIONS_WHERE).append(NAME_LIKE_NAMEPART);
-            for(int i = 1; i < locationNameParts.length; i++){
+            for(int i = 1; i < locationNameParts.size(); i++) {
                 statementBuild.append(AND).append(NAME_LIKE_NAMEPART);
             }
             statementBuild.append(ORDER_BY_NAME_AND_PATH);
             ResultSet rs = null;
             try(Connection con = this.data.connect();
-               PreparedStatement ps = con.prepareStatement(statementBuild.toString());){
-                for(int j = 0; j < locationNameParts.length; j++){
-                    ps.setString(j+1, "%"+locationNameParts[j]+"%");
+               PreparedStatement ps = con.prepareStatement(statementBuild.toString());) {
+                for (int j = 0; j < locationNameParts.size(); j++) {
+                    ps.setString(j + 1, "%"+locationNameParts.get(j)+"%");
                 }
                 rs = ps.executeQuery();
                 List<Location> locations = new ArrayList<>();
-                while (rs.next()){
+                while (rs.next()) {
                     locations.add(new Location(
                         rs.getString(1), 
                         rs.getString(2)));
                 }               
                 return locations;
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 this.ioEngine.reportException(e, "SQLException: get locations by name parts.");                
                 return Collections.emptyList();
             } finally {
-                if (rs != null){
+                if (rs != null) {
                     try {
                         rs.close();
-                    } catch (SQLException se){
+                    } catch (SQLException se) {
                         this.ioEngine.reportExceptionAndExitLater(se, 
                             "Unknown problem in LocationsDao.getLocationsByNameParts:",
                             "ResultSet close exception.",

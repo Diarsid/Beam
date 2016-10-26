@@ -33,6 +33,8 @@ import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.util.StringByLengthComparator;
 
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
+
 /**
  *
  * @author Diarsid
@@ -167,6 +169,9 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     public boolean remove(String command) {
         command = command.toLowerCase();
         Set<String> parts = this.splitPatternIfMultipart(command);
+        if ( parts.isEmpty() ) {
+            return false;
+        }
         Logs.debug("[COMMANDS CONSOLE DAO] delete " + command);
         String condition = this.prepareFullConditionExpression(parts.size());
         String statement = DELETE_WHERE_COMMAND_LIKE_CONDITION.replace(REPLACEABLE_CONDITION, condition);
@@ -209,8 +214,11 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     @Override
     public SortedMap<String, String> getImprovedCommandsForPattern(String pattern) {
         Set<String> patternParts = this.splitPatternIfMultipart(pattern); 
-        Map<String, Set<CommandChoice>> choices = new HashMap<>();
+        Map<String, Set<CommandChoice>> choices = new HashMap<>();        
         SortedMap<String, String> found = new TreeMap<>(this.stringLengthComparator);
+        if ( patternParts.isEmpty() ) {
+            return found;
+        }
         String statement = SELECT_JOIN_CHOICES_WHERE_COMMAND_LIKE.replace(
                 REPLACEABLE_CONDITION, 
                 this.prepareFullConditionExpression(patternParts.size()));
@@ -266,6 +274,9 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     public Set<String> getRawCommandsForPattern(String pattern) {
         Set<String> patternParts = this.splitPatternIfMultipart(pattern);
         Set<String> found = new HashSet<>(); 
+        if ( patternParts.isEmpty() ) {
+            return found;
+        }
         String statement = SELECT_WHERE_COMMAND_LIKE.replace(
                 REPLACEABLE_CONDITION, 
                 this.prepareFullConditionExpression(patternParts.size()));
@@ -300,7 +311,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private Set<String> splitPatternIfMultipart(String pattern) {
         pattern = pattern.toLowerCase();
         if ( pattern.contains("-") ) {
-            return new HashSet<>(Arrays.asList(pattern.split("-")));
+            return new HashSet<>(splitByDash(pattern));
         } else {
             return new HashSet<>(Arrays.asList(new String[] {pattern}));
         }

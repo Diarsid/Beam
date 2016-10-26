@@ -15,7 +15,7 @@ import diarsid.beam.core.entities.local.Location;
 public interface DaoLocations {
     
     List<Location> getLocationsByName(String locationName);
-    List<Location> getLocationsByNameParts(String[] locationNameParts);
+    List<Location> getLocationsByNameParts(List<String> locationNameParts);
     
     boolean saveNewLocation(Location location);
     

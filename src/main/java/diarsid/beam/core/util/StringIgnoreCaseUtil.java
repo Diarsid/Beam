@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+
 /**
  *
  * @author Diarsid
@@ -22,12 +25,20 @@ public class StringIgnoreCaseUtil {
         
     
     public static boolean containsAllPartsIgnoreCase(String whereToSearch, String searched) {
-        for (String searchedPart : searched.split("-")) {
+        for (String searchedPart : splitByDash(searched)) {
             if ( ! whereToSearch.toLowerCase().contains(searchedPart.toLowerCase()) ) {
                 return false;
             }
         }
         return true;
+    }
+
+    public static List<String> splitByDash(String target) {
+        return stream(target.split("-"))                
+                .filter(string -> ! string.isEmpty())
+                .filter(string -> ! string.matches("\\s+"))
+                .map(string -> string.trim())
+                .collect(toList());
     }
     
     public static boolean containsIgnoreCase(String whereToSearch, String searched) {

@@ -426,8 +426,8 @@ class H2DaoWebPages implements DaoWebPages {
     }
     
     @Override
-    public List<WebPage> getWebPagesByNameParts(String[] nameParts){
-        int partsQty = nameParts.length;
+    public List<WebPage> getWebPagesByNameParts(List<String> nameParts){
+        int partsQty = nameParts.size();
         if ( partsQty > 0 ) {
             StringBuilder queryBuilder = new StringBuilder();
             queryBuilder
@@ -444,8 +444,8 @@ class H2DaoWebPages implements DaoWebPages {
             try(Connection con = data.connect();
                PreparedStatement ps = con.prepareStatement(queryBuilder.toString())) {
                 for (int j = 0; j < partsQty; j++) {
-                    ps.setString( (j * 2) + 1, "%"+nameParts[j]+"%");
-                    ps.setString( (j * 2) + 2, "%"+nameParts[j]+"%");
+                    ps.setString( (j * 2) + 1, "%"+nameParts.get(j)+"%");
+                    ps.setString( (j * 2) + 2, "%"+nameParts.get(j)+"%");
                 }
                 rs = ps.executeQuery();
                 List<WebPage> pages = new ArrayList<>();

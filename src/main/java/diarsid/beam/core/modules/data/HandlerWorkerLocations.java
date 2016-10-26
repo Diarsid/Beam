@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data;
 
-import diarsid.beam.core.modules.data.HandlerLocations;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +13,8 @@ import java.util.List;
 
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DaoLocations;
+
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
 
 /**
  *
@@ -51,7 +50,7 @@ class HandlerWorkerLocations implements HandlerLocations {
     public List<Location> getLocations(String locationName) {
         locationName = locationName.trim().toLowerCase();
         if (locationName.contains("-")){
-            return this.dao.getLocationsByNameParts(locationName.split("-"));            
+            return this.dao.getLocationsByNameParts(splitByDash(locationName));            
         } else {
             return this.dao.getLocationsByName(locationName);            
         }

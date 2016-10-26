@@ -15,6 +15,7 @@ import diarsid.beam.core.entities.global.WebPagePlacement;
 import diarsid.beam.core.modules.IoInnerModule;
 
 import static diarsid.beam.core.entities.global.WebPage.WEB_NAME_REGEXP;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
 
 /**
  *
@@ -109,7 +110,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
             return Collections.emptyList();
         }
         if (name.contains("-")){
-            return this.dao.getWebPagesByNameParts(name.split("-"));
+            return this.dao.getWebPagesByNameParts(splitByDash(name));
         } else {
             return this.dao.getWebPagesByName(name);
         }

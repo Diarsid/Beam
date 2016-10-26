@@ -11,13 +11,13 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.relativizeFileName;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
 
 /**
  *
@@ -77,7 +77,7 @@ public class FileSearchByNamePatternReusableFileVisitor extends SimpleFileVisito
         }
         
         if ( this.nameToFind.contains("-") ) {
-            for (String fragment : Arrays.asList(this.nameToFind.split("-"))) {
+            for (String fragment : splitByDash(this.nameToFind)) {
                 if ( ! containsIgnoreCase(fileName, fragment) ) {
                     return CONTINUE;
                 }                

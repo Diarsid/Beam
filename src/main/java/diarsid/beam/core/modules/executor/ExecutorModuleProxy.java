@@ -11,8 +11,12 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.modules.executor.context.ExecutorContextLifecycleController;
+import diarsid.beam.core.util.Logs;
+
+import static java.util.Objects.isNull;
+
+import static diarsid.beam.core.modules.executor.ProxyMethodExecutionMode.INTERCEPT_AND_PROCEED;
 
 /**
  *
@@ -22,28 +26,35 @@ class ExecutorModuleProxy implements InvocationHandler {
     
     private final ExecutorModule executorModule;
     private final ExecutorContextLifecycleController currentCommandContext;
+    private final ExecutorModuleProxyArgumentsAnalizer argumentsAnalizer;
     
     ExecutorModuleProxy(
             ExecutorModule executorModule, 
-            ExecutorContextLifecycleController currentCommandContext) {        
+            ExecutorContextLifecycleController currentCommandContext,
+            ExecutorModuleProxyArgumentsAnalizer argumentsAnalizer) {        
         this.executorModule = executorModule;
         this.currentCommandContext = currentCommandContext;
+        this.argumentsAnalizer = argumentsAnalizer;
     }
     
     @Override 
     public Object invoke(Object proxy, Method method, Object[] args) 
             throws Exception {  
         
-        if ( this.ifPassedArgsIsParseableCommand(args) ) {
-            return this.interceptCommandAndProceed(method, args);
-        } else {
+        if ( isNull(args) ) {
             return this.justProceed(method, args);
+        } else {
+            if ( this.argumentsAnalizer.defineExecutionMode(args) == INTERCEPT_AND_PROCEED ) {
+                return this.interceptCommandAndProceed(method, args);
+            } else {
+                return this.justProceed(method, args);
+            }
         }
     }
     
+    
     private Object interceptCommandAndProceed(Method method, Object[] args) 
-            throws Exception {
-        
+            throws Exception {        
         Logs.debug("[EXECUTOR PROXY] method intercepted : "  + method.getName());
         Object invocationResult;
         this.currentCommandContext.createContextForCommand(
@@ -59,34 +70,5 @@ class ExecutorModuleProxy implements InvocationHandler {
     
     private Object justProceed(Method method, Object[] args) throws Exception {
         return method.invoke(this.executorModule, args);
-    }
-    
-    private boolean ifPassedArgsIsParseableCommand(Object[] args) {
-        if ( (args == null) || (args.length != 1) ) {
-            return false;
-        } else {
-            return this.ifSingleArgumentIsListOfStrings(args[0]);
-        }
-    }
-    
-    private boolean ifSingleArgumentIsListOfStrings(Object argument) {
-        if ( argument instanceof List<?> ) {
-            return this.ifListContainsStrings( (List<Object>) argument );
-        } else {
-            return false;
-        }
-    }
-    
-    private boolean ifListContainsStrings(List<Object> list) {
-        // if this argument is real command, passed in from an external
-        // ExecutorModule user, List<String> SHOULD have elements in it. 
-        // If otherwise, this means that external usage of ExecutorModule
-        // is invalid and actual ExecutorModule method should not be 
-        // invoked at all as such invocation makes no sense.
-        if ( list.isEmpty() ) {
-            return false;
-        } else {
-            return ( (list.get(0)) instanceof String );
-        }
     }
 }

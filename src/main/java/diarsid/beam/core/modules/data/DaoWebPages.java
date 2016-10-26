@@ -24,7 +24,7 @@ public interface DaoWebPages {
     
     List<WebPage> getWebPagesByName(String name);
     
-    List<WebPage> getWebPagesByNameParts(String[] nameParts);
+    List<WebPage> getWebPagesByNameParts(List<String> nameParts);
     
     List<WebPage> getWebPagesByNameInDirAndPlace(
             String name, String dir, WebPagePlacement place);
