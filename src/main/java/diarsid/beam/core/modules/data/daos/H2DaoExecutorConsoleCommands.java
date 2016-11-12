@@ -30,8 +30,8 @@ import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
 import diarsid.beam.core.modules.executor.workflow.CommandChoice;
+import diarsid.beam.core.util.CommandsStringsComparator;
 import diarsid.beam.core.util.Logs;
-import diarsid.beam.core.util.StringByLengthComparator;
 
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
 
@@ -44,7 +44,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     private final IoInnerModule ioEngine;
     private final DataBase data;
     private final Random random;
-    private final Comparator<String> stringLengthComparator;
+    private final Comparator<String> commandsComparator;
     
     /* 
      * SQL Table illustration for Executor console commands storing.
@@ -76,7 +76,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
         this.data = data;
         this.ioEngine = ioEngine;
         this.random = new Random();
-        this.stringLengthComparator = new StringByLengthComparator();
+        this.commandsComparator = new CommandsStringsComparator();
     }
     
     private final String SELECT_ALL = 
@@ -215,7 +215,7 @@ class H2DaoExecutorConsoleCommands implements DaoExecutorConsoleCommands {
     public SortedMap<String, String> getImprovedCommandsForPattern(String pattern) {
         Set<String> patternParts = this.splitPatternIfMultipart(pattern); 
         Map<String, Set<CommandChoice>> choices = new HashMap<>();        
-        SortedMap<String, String> found = new TreeMap<>(this.stringLengthComparator);
+        SortedMap<String, String> found = new TreeMap<>(this.commandsComparator);
         if ( patternParts.isEmpty() ) {
             return found;
         }

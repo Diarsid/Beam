@@ -27,6 +27,7 @@ import diarsid.beam.core.util.Logs;
 import static java.lang.String.join;
 
 import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpacesToList;
 
 /**
  * Implements ExecutorModule interface.
@@ -217,15 +218,10 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void executeCommandsBatch(StoredCommandsBatch command) {
         for (String commandString : command.getCommands()) {
-            this.dispatchCommandToAppropriateMethod(
-                    this.transformCommandStringToParams(commandString));
+            this.dispatchCommandToAppropriateMethod(splitBySpacesToList(commandString));
         }
     } 
-
-    private List<String> transformCommandStringToParams(String commandString) {
-        return Arrays.asList(commandString.split("\\s+"));
-    }
-
+    
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
         Logs.debug("[EXECUTOR] inner dispatching: " +commandParams);
         this.intelligentContext.adjustCurrentlyExecutedCommand(
@@ -404,8 +400,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void executeOldCommandInternally(String obtainedCommand) {
         if ( ! obtainedCommand.isEmpty() ) {
             this.isCurrentCommandNew.set(false);            
-            this.dispatchCommandToAppropriateMethod(
-                    this.transformCommandStringToParams(obtainedCommand));
+            this.dispatchCommandToAppropriateMethod(splitBySpacesToList(obtainedCommand));
             this.isCurrentCommandNew.set(true);
         }        
     }

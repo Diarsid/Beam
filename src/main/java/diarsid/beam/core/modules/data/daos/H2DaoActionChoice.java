@@ -20,7 +20,7 @@ import diarsid.beam.core.modules.data.JdbcTransaction;
 import diarsid.beam.core.modules.executor.commandscache.ActionChoice;
 import diarsid.beam.core.modules.executor.commandscache.ActionInfo;
 import diarsid.beam.core.modules.executor.commandscache.ActionRequest;
-import diarsid.beam.core.util.StringByLengthComparator;
+import diarsid.beam.core.util.CommandsStringsComparator;
 
 import static java.lang.String.join;
 import static java.util.Collections.sort;
@@ -49,7 +49,7 @@ class H2DaoActionChoice implements DaoActionChoice {
     private static final Comparator STRING_LENGTH_COMPARATOR;
     static {
         DATA_BASE_STRING_DELIMITER = "::::";
-        STRING_LENGTH_COMPARATOR = new StringByLengthComparator();
+        STRING_LENGTH_COMPARATOR = new CommandsStringsComparator();
     }
     
     private static final String INSERT_NEW_CHOICE = 

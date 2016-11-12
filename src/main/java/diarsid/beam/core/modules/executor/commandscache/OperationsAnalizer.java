@@ -7,7 +7,6 @@
 package diarsid.beam.core.modules.executor.commandscache;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.Map.Entry;
 
 import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpacesToList;
 
 /**
  *
@@ -50,9 +50,13 @@ class OperationsAnalizer {
                 int arg1Meaning = this.countMeaningfulUnitsInArg(args1);
                 int arg2Meaning = this.countMeaningfulUnitsInArg(args2);
                 if ( arg1Meaning == arg2Meaning ) {
-                    debug("[OPERATIONS ANALIZER] both arguments are whole " +
-                            "and have equal meaning weight, no choice.");
-                    return "";
+                    if ( this.argsDiffersOnlyByDashsOrUnderscores(args1, args2) ) {
+                        return command1;
+                    } else {
+                        debug("[OPERATIONS ANALIZER] both arguments are whole " +
+                                "and have equal meaning weight, no choice.");
+                        return "";
+                    }                    
                 } else {
                     if ( arg1Meaning > arg2Meaning ) {
                         debug("[OPERATIONS ANALIZER] choice: " + command2);
@@ -72,6 +76,12 @@ class OperationsAnalizer {
                 }
             }            
         }
+    }
+    
+    private boolean argsDiffersOnlyByDashsOrUnderscores(String args1, String args2) {
+        return (
+                args1.replace("-", "")).replace("_", "").equalsIgnoreCase(
+                        args2.replace("-", "").replace("_", ""));
     }
     
     private int countMeaningfulUnitsInArg(String arg) {
@@ -161,8 +171,8 @@ class OperationsAnalizer {
     
     boolean operationsArgumentsAreEqual(String variant1, String variant2) {
         debug("[OPERATIONS ANALIZER] check arguments equality for pair: " + variant1 + "|" + variant2);
-        List<String> argsOfCommand1 = new ArrayList(Arrays.asList(variant1.split("\\s+")));
-        List<String> argsOfCommand2 = new ArrayList(Arrays.asList(variant2.split("\\s+")));        
+        List<String> argsOfCommand1 = splitBySpacesToList(variant1);
+        List<String> argsOfCommand2 = splitBySpacesToList(variant2);        
         argsOfCommand1.remove(0);
         argsOfCommand2.remove(0);        
         if ( argsOfCommand1.size() == argsOfCommand2.size() ) {

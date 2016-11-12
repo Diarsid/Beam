@@ -14,6 +14,7 @@ import java.util.StringJoiner;
 
 import static diarsid.beam.core.modules.executor.commandscache.ActionRequest.actionRequestOf;
 import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpaces;
 
 /**
  *
@@ -175,7 +176,7 @@ class CommandsAnalizer {
                     .substring(0, command.indexOf(" - "));
         }
         
-        String[] parts = command.split("\\s+");
+        String[] parts = splitBySpaces(command);
         StringJoiner futureCommand = new StringJoiner(" ");
         if ( parts.length > 1 ) {
             futureCommand.add(parts[0]).add(parts[1]);
