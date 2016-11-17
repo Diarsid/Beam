@@ -15,21 +15,19 @@ import diarsid.beam.core.modules.executor.workflow.OperationResult;
  */
 public interface OS {
     
-    OperationResult openLocation(Location location);
+    void openLocation(Location location);
     
-    OperationResult openFileInLocation(String file, Location location);
+    void openFileInLocation(String file, Location location);
+        
+    void runProgram(String program);
     
-    OperationResult openFileInLocationWithProgram(
-            String file, Location location, String program);
+    void runMarkedProgram(String program, String mark);
     
-    OperationResult runProgram(String program);
+    List<String> listContentIn(Location location, int depth);
     
     List<String> listContentIn(Location location, String relativePath, int depth); 
     
     OperationResult openUrlWithDefaultBrowser(String name);
-    
-    OperationResult openUrlWithGivenBrowser(
-            String urlAddress, String browserName);
-    
+        
     void createAndOpenTxtFileIn(String name, Location location);
 }

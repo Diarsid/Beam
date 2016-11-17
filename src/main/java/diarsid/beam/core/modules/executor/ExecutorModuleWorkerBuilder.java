@@ -50,6 +50,7 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     @Override
     public ExecutorModule buildModule() {
         FileSearcher fileSearcher = getSearcherWithDepthsOf(3, 3);
+        PathAnalizer pathAnalizer = new PathAnalizer();
         SystemActionsExecutor actionsExecutor = getExecutor(this.ioInnerModule);
         
         SmartConsoleCommandsCache consoleCommandsCache = buildCache(
@@ -66,12 +67,14 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
                 this.dataModule, 
                 this.configModule, 
                 context,
+                pathAnalizer,
                 os);         
         ExecutorModuleWorker actualExecutor = new ExecutorModuleWorker(
                 this.ioInnerModule, 
                 context, 
                 processorsBuilder, 
-                consoleCommandsCache);
+                consoleCommandsCache, 
+                pathAnalizer);
         ExecutorModuleProxyArgumentsAnalizer analizer = 
                 new ExecutorModuleProxyArgumentsAnalizer();
         InvocationHandler preparedProxy = new ExecutorModuleProxy(

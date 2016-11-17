@@ -24,6 +24,10 @@ public interface DaoExecutorIntelligentChoices {
     
     boolean discardCommandByPattern(String pattern);
     
+    boolean discardCommandByInvalidLocationInPath(String invalidLocationName);
+    
+    boolean discardCommandByInvalidTargetInPath(String target);
+    
     boolean discardCommandByPatternAndOperation(String operation, String pattern);
     
 //    boolean discardCommandByPathPatternAndOperation(String operation, String pathToTarget, String targetPattern);

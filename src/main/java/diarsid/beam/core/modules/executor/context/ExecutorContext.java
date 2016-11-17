@@ -17,11 +17,14 @@ public interface ExecutorContext {
     
     void discardCurrentlyExecutedCommandInPattern(String pattern);
     
+    void discardCurrentlyExecutedCommandByInvalidLocation(String location);
+    
     void discardCurrentlyExecutedCommandInPatternAndOperation(
             String operation, String pattern);
     
-//    public void discardCurrentlyExecutedCommandInPathPatternAndOperation(
-//            String operation, String path, String pattern);
+    void discardCurrentlyExecutedCommandByInvalidTarget(String target);
+        
+    void adjustCurrentlyExecutedCommand(List<String> newCommand);
     
     void adjustCurrentlyExecutedCommand(String... newCommandParams);
     

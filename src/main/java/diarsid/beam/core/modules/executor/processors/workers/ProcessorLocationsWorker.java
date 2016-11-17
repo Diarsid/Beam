@@ -13,21 +13,13 @@ import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.PathAnalizer;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 import static java.lang.String.join;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
+import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfFirstFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfLastFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizeSingleCommandParam;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.trimSeparatorsInBothEnds;
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 import static diarsid.beam.core.util.Logs.debug;
 
 /**
@@ -39,174 +31,93 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     private final IoInnerModule ioEngine;
     private final OS system;
     private final HandlerLocations locationsHandler;
-    private final ExecutorContext intellContext;
+    private final ExecutorContext context;
+    private final PathAnalizer pathAnalizer;
 
     ProcessorLocationsWorker(
             IoInnerModule io, 
             OS sys, 
             HandlerLocations locs, 
-            ExecutorContext intell) {
-        
+            ExecutorContext context,
+            PathAnalizer pathAnalizer) {        
         this.ioEngine = io;
         this.system = sys;
         this.locationsHandler = locs;
-        this.intellContext = intell;
+        this.context = context;
+        this.pathAnalizer = pathAnalizer;
     }
     
-    
-    private List<String> normalizeArguments(List<String> commandParams) {
-        return commandParams.stream()
-                .map((param) -> normalizeSingleCommandParam(param))
-                .map((param) -> trimSeparatorsInBothEnds(param))
-                .collect(toList());
-    }
     
     @Override
-    public boolean ifCommandLooksLikeLocationAndPath(List<String> commandParams) {
-        if ( commandParams.size() == 1 ) {
-            return this.isResolvablePath(commandParams.get(0));
-        } else {
-            return false;
-        }
-    }
-
-    private boolean isResolvablePath(String possiblePath) {
-        possiblePath = normalizeSingleCommandParam(possiblePath);
-        if ( containsFileSeparator(possiblePath) ) {
-            return this.pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(possiblePath);
-        } else {
-            return false;
-        }
-    }
-    
-    private boolean pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(String command) {
-        return ( 
-                indexOfFirstFileSeparator(command) > 1 && 
-                indexOfLastFileSeparator(command) < command.length() - 2);
-    }
-    
-    @Override
-    public OperationResult open(List<String> commandParams) {
-        commandParams = this.normalizeArguments(commandParams);
-        this.intellContext.adjustCurrentlyExecutedCommand(join(" ", commandParams));
-        OperationResult result;
+    public void open(List<String> commandParams) {
+        commandParams = this.pathAnalizer.normalizeArguments(commandParams);
+        this.context.adjustCurrentlyExecutedCommand(join(" ", commandParams));
         try {
             if ( commandParams.contains("in") ) {
-                if ( commandParams.contains("with") ) {
-                    // command pattern: open [file] in [location] with [program]
-                    result = this.openFileInLocationWithProgram(
-                            commandParams.get(1), 
-                            commandParams.get(3),
-                            commandParams.get(5));
-                } else {
-                    // command pattern: open [file|folder] in [location]
-                    result = this.openFileInLocation(
-                            commandParams.get(1), 
-                            commandParams.get(3));
-                }
+                // command pattern: open [file|folder] in [location]
+                this.openFileInLocation(
+                        commandParams.get(1), 
+                        commandParams.get(3));
             } else {
                 // command pattern: open [location]
-                result = this.openLocation(commandParams.get(1));
+                this.openLocation(commandParams.get(1));
             }
         } catch (IndexOutOfBoundsException indexException) {
             this.ioEngine.reportError("Unrecognizable command.");
-            result = failByInvalidLogic();
         }
-        return result;
     }
     
     @Override
-    public List<String> listLocationContent(String locationAndPath) {
-        String locationName;
-        String relativePath;
-        if ( containsFileSeparator(locationAndPath) ) {
-            if ( this.pathHasMeaningfullFragmentsBeforeAndAfterFileSeparator(locationAndPath) ) {
-                relativePath = this.extractSubPathFromLocation(locationAndPath);
-                locationName = this.removeSubPathFromLocation(locationAndPath);
-            } else {
-                return emptyList();
-            }
-        } else {
-            locationName = locationAndPath;
-            relativePath = "";
-        }
-        
+    public List<String> listLocationContent(String locationName) {
         Location location = this.getLocation(locationName, false);
-        if ( location != null ) {
-            List<String> locationContent = this.system.listContentIn(location, relativePath, 5);
-            if ( locationContent != null ) {
-                if ( relativePath.isEmpty() ) {
-                    locationContent.add(0, location.getName());
-                } else {
-                    locationContent.add(0, location.getName().concat("/").concat(relativePath));
-                }                
+        if ( nonNull(location) ) {
+            List<String> locationContent = this.system.listContentIn(location, 5);
+            if ( nonNull(locationContent) ) {
+                locationContent.add(0, location.getName());                
                 return locationContent;
             } else {                
                 return new ArrayList<>();
             }
         } else {
-            return emptyList();
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public List<String> listLocationAndSubPathContent(
+            String locationName, String subPath) {
+        Location location = this.getLocation(locationName, false);
+        if ( nonNull(location) ) {
+            List<String> locationContent = this.system.listContentIn(location, subPath, 5);
+            if ( nonNull(locationContent) ) {
+                locationContent.add(0, location.getName().concat("/").concat(subPath));               
+                return locationContent;
+            } else {                
+                return new ArrayList<>();
+            }
+        } else {
+            return new ArrayList<>();
         }
     }
        
-    private OperationResult openLocation(String locationName) {
-        if ( containsFileSeparator(locationName) ) {
-            String targetName = this.extractSubPathFromLocation(locationName);
-            locationName = this.removeSubPathFromLocation(locationName);
-            this.intellContext.adjustCurrentlyExecutedCommand(
-                    "open " + targetName + " in " + locationName);
-            return this.openFileInLocation(targetName, locationName);
+    private void openLocation(String locationName) {
+        Location location = this.getLocation(locationName);
+        if ( nonNull(location) ) {
+            this.context.adjustCurrentlyExecutedCommand("open", location.getName());
+            this.system.openLocation(location);
         } else {
-            Location location = this.getLocation(locationName);
-            if ( location != null ) {
-                return this.system.openLocation(location);
-            } else {
-                return failByInvalidArgument(locationName);
-            }
+            this.context.discardCurrentlyExecutedCommandByInvalidLocation(locationName);
         }
     }
     
-    private OperationResult openFileInLocation(
-            String targetName, String locationName) {
-        if ( containsFileSeparator(locationName) ) {
-            targetName = targetName + "/" + this.extractSubPathFromLocation(locationName);
-            locationName = this.removeSubPathFromLocation(locationName);  
-            this.intellContext.adjustCurrentlyExecutedCommand(
-                    "open " + targetName + " in " + locationName);
-        }
+    private void openFileInLocation(String targetName, String locationName) {        
         Location location = this.getLocation(locationName);
-        if ( location != null ) {
-            return this.system.openFileInLocation(targetName, location);
+        if ( nonNull(location) ) {
+            this.context.adjustCurrentlyExecutedCommand("open", targetName, "in", location.getName());
+            this.system.openFileInLocation(targetName, location);
         } else {
-            return failByInvalidArgument(locationName);
+            this.context.discardCurrentlyExecutedCommandByInvalidLocation(locationName);
         }             
-    }
-
-    private String extractSubPathFromLocation(String locationName) {
-        return locationName.substring(
-                indexOfFirstFileSeparator(locationName) + 1, locationName.length());
-    }
-    
-    private String removeSubPathFromLocation(String locationName) {
-        locationName = locationName.substring(0, indexOfFirstFileSeparator(locationName));
-        return locationName;
-    }
-    
-    private OperationResult openFileInLocationWithProgram(
-            String target, String locationName, String program) {
-        target = target.trim();
-        program = program.trim();
-        Location location = this.getLocation(locationName);
-        if ( containsFileSeparator(locationName) ) {
-            target = target + "/" + this.extractSubPathFromLocation(locationName);
-            locationName = removeSubPathFromLocation(locationName);            
-        }
-        if ( location != null ) {
-            return this.system.openFileInLocationWithProgram(
-                    target, location, program);
-        } else {
-            return failByInvalidArgument(locationName);
-        }   
     }
     
     private Location getLocation(String locationName) {
@@ -214,11 +125,8 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     }
     
     private Location getLocation(
-            String locationName, boolean useIntelligentContext) {  
-        
-        List<Location> foundLocations = this.locationsHandler.getLocations(
-                locationName);        
-        
+            String locationName, boolean useIntelligentContext) {
+        List<Location> foundLocations = this.locationsHandler.getLocations(locationName);      
         if ( foundLocations.size() < 1 ) {
             this.ioEngine.reportMessage("Couldn`t find such location.");
             return null;
@@ -241,7 +149,7 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         }
         int varNumber = -1;
         if ( useIntelligentContext ) {
-            varNumber = this.intellContext.resolve(
+            varNumber = this.context.resolve(
                     "Desired location?",
                     requiredLocationName,
                     locationNames);
@@ -254,7 +162,8 @@ class ProcessorLocationsWorker implements ProcessorLocations {
         if (varNumber < 0) {
             return null;
         } else {
-            debug("[LOCATIONS PROCESSOR] resolved: " + requiredLocationName + " -> " + foundLocations.get(varNumber-1).getName());
+            debug("[LOCATIONS PROCESSOR] resolved: " + requiredLocationName + " -> " + 
+                    foundLocations.get(varNumber-1).getName());
             return foundLocations.get(varNumber-1);
         }
     }

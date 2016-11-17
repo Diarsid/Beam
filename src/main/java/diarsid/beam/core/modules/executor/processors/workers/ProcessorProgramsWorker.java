@@ -6,15 +6,10 @@
 
 package diarsid.beam.core.modules.executor.processors.workers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
+import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
-
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 
 /**
  *
@@ -24,29 +19,23 @@ class ProcessorProgramsWorker implements ProcessorPrograms {
     
     private final IoInnerModule ioEngine;
     private final OS system;    
+    private final ExecutorContext context;
     
-    ProcessorProgramsWorker(IoInnerModule io, OS system) {
+    ProcessorProgramsWorker(IoInnerModule io, OS system, ExecutorContext context) {
         this.ioEngine = io;
         this.system = system;
+        this.context = context;
     }
     
     @Override
-    public List<OperationResult> runPrograms(List<String> params) {
-        // command pattern: run [program_1] [program_2] [program_3]...
-        List<OperationResult> results = new ArrayList<>();
-        for (int i = 1; i < params.size(); i++) {
-            results.add(this.system.runProgram(params.get(i)));
-        }
-        return results;
+    public void runProgram(String programName) {
+        // command pattern: run [program_name]
+        this.system.runProgram(programName);
     }
             
     @Override
-    public OperationResult runMarkedProgram(String mark, List<String> commandParams) {
-        if ( commandParams.size() == 2 ) {
-            return this.system.runProgram(commandParams.get(1)+"-"+mark);
-        } else {
-            this.ioEngine.reportMessage("Unrecognizable command.");
-            return failByInvalidLogic();
-        }
+    public void runMarkedProgram(String mark, String programName) {
+        // command pattern: [start|stop] [program]
+        this.system.runMarkedProgram(programName, mark);
     }
 }

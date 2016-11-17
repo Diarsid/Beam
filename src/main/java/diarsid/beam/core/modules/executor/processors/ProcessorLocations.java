@@ -7,17 +7,16 @@ package diarsid.beam.core.modules.executor.processors;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
-
 /**
  *
  * @author Diarsid
  */
 public interface ProcessorLocations {
 
+    List<String> listLocationAndSubPathContent(
+            String locationName, String subPath);
+    
     List<String> listLocationContent(String locationName);
 
-    OperationResult open(List<String> commandParams); 
-    
-    boolean ifCommandLooksLikeLocationAndPath(List<String> commandParams);
+    void open(List<String> commandParams);     
 }

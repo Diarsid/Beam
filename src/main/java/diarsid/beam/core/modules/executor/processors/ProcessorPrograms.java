@@ -5,17 +5,13 @@
  */
 package diarsid.beam.core.modules.executor.processors;
 
-import java.util.List;
-
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
-
 /**
  *
  * @author Diarsid
  */
 public interface ProcessorPrograms {
 
-    OperationResult runMarkedProgram(String mark, List<String> commandParams);
+    void runMarkedProgram(String mark, String programName);
 
-    List<OperationResult> runPrograms(List<String> params);    
+    void runProgram(String programName);    
 }

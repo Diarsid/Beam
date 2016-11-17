@@ -234,13 +234,17 @@ public class SmartAmbiguityResolver {
         return this.choiceDao.discardCommandByPattern(pattern);
     }
     
+    boolean discardCommandByInvalidLocation(String invalidLocationName) {
+        return this.choiceDao.discardCommandByInvalidLocationInPath(invalidLocationName);
+    }
+    
     boolean discardCommandByPatternAndOperation(String operation, String pattern) {
         return this.choiceDao.discardCommandByPatternAndOperation(operation, pattern);
     }
     
-//    boolean discardCommandByPathPatternAndOperation(String operation, String path, String pattern) {
-//        return this.choiceDao.discardCommandByPathPatternAndOperation(operation, path, pattern);
-//    }
+    boolean discardCommandByInvalidTarget(String target) {
+        return this.choiceDao.discardCommandByInvalidTargetInPath(target);
+    }
     
     boolean deleteChoicesForCommand(String commandPart) {
         List<CurrentCommandState> commands = 

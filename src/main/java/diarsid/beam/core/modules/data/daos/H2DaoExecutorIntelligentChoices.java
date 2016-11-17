@@ -94,6 +94,15 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
             "WHERE ( LOWER(command) LIKE ? ) " +
             "   OR ( LOWER(pattern) LIKE ? ) " +
             "   OR ( LOWER(choice) LIKE ? ) ";
+    private final String DELETE_FROM_CHOICES_WHERE_LOCATION_IN_COMMAND_LIKE_AND_NOT_LIKE = 
+            "DELETE FROM command_choices " +
+            "WHERE  " +
+            "   ( ( LOWER(command) LIKE ? ) OR ( LOWER(command) LIKE ? ) ) " +
+            "       AND " +
+            "   ( LOWER(command) NOT LIKE ? ) ";
+    private final String DELETE_FROM_CHOICES_WHERE_TARGET_IN_COMMAND_LIKE = 
+            "DELETE FROM command_choices " +
+            "WHERE  ( LOWER(command) LIKE ? ) ";
     private final String DELETE_FROM_CHOICES_WHERE_COMMAND_AND_PATH_OR_CHOICE_OR_PATTEN_LIKE = 
             "DELETE FROM command_choices " +
             "WHERE ( ( LOWER(command) LIKE ? ) AND (LOWER(command) LIKE ? ) )" +
@@ -102,9 +111,15 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     private final String DELETE_FROM_CONSOLE_WHERE_COMMAND_LIKE = 
             "DELETE FROM console_commands " +
             "WHERE LOWER(command) LIKE ? ";
-    private final String DELETE_FROM_CONSOLE_WHERE_COMMAND_AND_PATH_LIKE = 
+    private final String DELETE_FROM_CONSOLE_WHERE_LOCATION_IN_COMMAND_LIKE_AND_NOT_LIKE = 
             "DELETE FROM console_commands " +
-            "WHERE ( ( LOWER(command) LIKE ? ) AND ( LOWER(command) LIKE ? ) )";
+            "WHERE " +
+            "   ( ( LOWER(command) LIKE ? ) OR ( LOWER(command) LIKE ? ) ) " +
+            "       AND " +
+            "   ( LOWER(command) NOT LIKE ? )";
+    private final String DELETE_FROM_CONSOLE_WHERE_TARGET_IN_COMMAND_LIKE = 
+            "DELETE FROM console_commands " +
+            "WHERE  ( LOWER(command) LIKE ? ) ";;
     
     @Override
     public String getChoiceForCommandPart(
@@ -199,6 +214,64 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
         } catch (SQLException e) {
             this.ioEngine.reportException(e, 
                     "SQLException: delete choice for command: " + pattern);
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean discardCommandByInvalidLocationInPath(String invalidLocationName) {
+        invalidLocationName = invalidLocationName.replace("-", "%").toLowerCase();
+        try (Connection con = this.data.connect();
+                PreparedStatement deleteFromChoices = con.prepareStatement(
+                        DELETE_FROM_CHOICES_WHERE_LOCATION_IN_COMMAND_LIKE_AND_NOT_LIKE);
+                PreparedStatement deleteFromConsole = con.prepareStatement(
+                        DELETE_FROM_CONSOLE_WHERE_LOCATION_IN_COMMAND_LIKE_AND_NOT_LIKE)) {
+            
+            // like: 
+            deleteFromChoices.setString(1, "open % in %"+invalidLocationName+"%");
+            // or like:
+            deleteFromChoices.setString(2, "open %"+invalidLocationName+"%");
+            // but not like:
+            deleteFromChoices.setString(3, "open %"+invalidLocationName+"% in %");
+            int qty = deleteFromChoices.executeUpdate();
+            
+            // like:
+            deleteFromConsole.setString(1, "open % in %"+invalidLocationName+"%");
+            // or like:
+            deleteFromConsole.setString(2, "open %"+invalidLocationName+"%");
+            // but not like:
+            deleteFromConsole.setString(3, "open %"+invalidLocationName+"% in %");
+            qty = qty + deleteFromConsole.executeUpdate();
+            
+            return ( qty > 0 );
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, 
+                    "SQLException: delete command with invalid location: " + invalidLocationName);
+            return false;
+        }
+    }    
+    
+    @Override
+    public boolean discardCommandByInvalidTargetInPath(String target) {
+        target = target.replace("-", "%").toLowerCase();
+        try (Connection con = this.data.connect();
+                PreparedStatement deleteFromChoices = con.prepareStatement(
+                        DELETE_FROM_CHOICES_WHERE_TARGET_IN_COMMAND_LIKE);
+                PreparedStatement deleteFromConsole = con.prepareStatement(
+                        DELETE_FROM_CONSOLE_WHERE_TARGET_IN_COMMAND_LIKE)) {
+            
+            // like: 
+            deleteFromChoices.setString(1, "open %"+target+"% in %");
+            int qty = deleteFromChoices.executeUpdate();
+            
+            // like:
+            deleteFromConsole.setString(1, "open %"+target+"% in %");
+            qty = qty + deleteFromConsole.executeUpdate();
+            
+            return ( qty > 0 );
+        } catch (SQLException e) {
+            this.ioEngine.reportException(e, 
+                    "SQLException: delete command with invalid location: " + target);
             return false;
         }
     }

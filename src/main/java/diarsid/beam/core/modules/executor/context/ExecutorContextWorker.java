@@ -15,6 +15,8 @@ import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 import diarsid.beam.core.util.Logs;
 
+import static diarsid.beam.core.util.Logs.debug;
+
 /**
  *
  * @author Diarsid
@@ -154,6 +156,12 @@ public class ExecutorContextWorker
     public void setContextActive(boolean active) {
         this.resolver.setActive(active);
     }
+    
+    @Override
+    public void adjustCurrentlyExecutedCommand(List<String> newCommand) {
+        this.rememberChoicesForCurrentCommandIfNecessary();
+        this.resetContextWithNew(newCommand);
+    }
         
     @Override
     public void adjustCurrentlyExecutedCommand(String... newCommand) {
@@ -172,6 +180,22 @@ public class ExecutorContextWorker
         Logs.debug("[EXECUTOR CONTEXT] discard pattern: " + pattern);
         boolean deleted = this.resolver.discardCommandByPattern(pattern);
         Logs.debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
+        this.currentCommandDiscarded.set(true);
+    }
+    
+    @Override
+    public void discardCurrentlyExecutedCommandByInvalidLocation(String invalidLocationName) {
+        debug("[EXECUTOR CONTEXT] discard location: " + invalidLocationName);
+        boolean deleted = this.resolver.discardCommandByInvalidLocation(invalidLocationName);
+        debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
+        this.currentCommandDiscarded.set(true);
+    }
+    
+    @Override
+    public void discardCurrentlyExecutedCommandByInvalidTarget(String target) {
+        debug("[EXECUTOR CONTEXT] discard target: " + target);
+        boolean deleted = this.resolver.discardCommandByInvalidTarget(target);
+        debug("[EXECUTOR CONTEXT]  -removed from memory: " + deleted);
         this.currentCommandDiscarded.set(true);
     }
     

@@ -37,7 +37,7 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     void newBatch(List<String> command, String commandName);
     
-    List<String> listLocationContent(String locationName);
+    List<String> list(String target);
     
     List<StoredCommandsBatch> getAllBatches();
     

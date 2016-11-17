@@ -67,7 +67,7 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     public List<String> listLocationContent(String locationName) 
             throws RemoteException {
         
-        return this.executorModule.listLocationContent(locationName);
+        return this.executorModule.list(locationName);
     }
     
     @Override

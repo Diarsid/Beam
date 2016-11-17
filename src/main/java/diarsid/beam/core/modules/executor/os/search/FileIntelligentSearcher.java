@@ -62,12 +62,12 @@ class FileIntelligentSearcher implements FileSearcher {
         debug("[FILE SEARCHER]    target   : " + target);
         Path dir = Paths.get(location);        
         if ( givenPathIsDirectory(dir) ) {
-            if ( isValidPath(location + "/" + target)) {
+            if ( isValidPath(location + "/" + target) ) {
                 debug("[FILE SEARCHER] target found directly. No search.");
-                return successWith(foundFile(target));
+                return successWith(foundFile(target) );
             } else {
                 debug("[FILE SEARCHER] target not found directly. Search begins...");
-                return search(dir, target);
+                return this.search(dir, target);
             }            
         } else {
             return failWith(invalidLocationFailure());

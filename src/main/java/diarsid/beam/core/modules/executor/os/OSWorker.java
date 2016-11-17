@@ -23,14 +23,14 @@ import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.listing.FileLister;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
+import diarsid.beam.core.modules.executor.os.search.result.FileSearchFailure;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
+import diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccess;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidArgument;
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.failByInvalidLogic;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
 import static diarsid.beam.core.util.Logs.debug;
 
@@ -45,7 +45,7 @@ public class OSWorker implements OS {
     private final SystemActionsExecutor actionsExecutor;
     private final FileSearcher fileSearcher;
     private final FileLister fileLister;
-    private final ExecutorContext intelligentContext;
+    private final ExecutorContext context;
 
     public OSWorker(
             IoInnerModule io, 
@@ -69,13 +69,13 @@ public class OSWorker implements OS {
         this.actionsExecutor = actionsExecutor;
         this.fileSearcher = fileSearcher;
         this.fileLister = fileLister;
-        this.intelligentContext = intelligentContext;
+        this.context = intelligentContext;
     }    
     
     private String chooseOneVariantFrom(
             String targetName, List<String> variants) {
                 
-        int variantNumber = this.intelligentContext.resolve(
+        int variantNumber = this.context.resolve(
                 "There are several targets:",
                 targetName,
                 variants);
@@ -92,176 +92,119 @@ public class OSWorker implements OS {
     }
 
     @Override
-    public OperationResult openLocation(Location location) {
+    public void openLocation(Location location) {
         if ( this.checkIfDirectoryExists(location.getPath()) ) {
             this.actionsExecutor.asyncOpenWithDesktop(location.getPath());
             this.ioEngine.reportMessage("opening...");
-            return success();
         } else {
             this.ioEngine.reportMessage("This location does not exists.");
-            return failByInvalidArgument(location.getName());
+            this.context.discardCurrentlyExecutedCommandByInvalidLocation(location.getName());
         }    
     }
 
     @Override
-    public OperationResult openFileInLocation(String target, Location location) {
+    public void openFileInLocation(String target, Location location) {
         // targetName pattern: myPr / myFil
         // corrected target name: myProject / myFile.ext or "" if not exists
         FileSearchResult result = this.fileSearcher.findTarget(target, location.getPath());
-        String resolvedTarget;
-        
         if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                resolvedTarget = result.success().getFoundFile();
-            } else {
-                resolvedTarget = this.chooseOneVariantFrom(
-                        target, result.success().getMultipleFoundFiles());     
-                debug("[OS] target resolved: " + target + " -> " + resolvedTarget);
-            } 
-            if ( resolvedTarget.isEmpty() ) {
-                return success();
-            }
+            this.processSuccess(result.success(), target, location);
         } else {
-            if ( result.failure().targetNotFound() ) {
-                this.ioEngine.reportMessage(target + " not found in " + location.getName());
-                return failByInvalidArgument(target);
-            }
-            if ( result.failure().locationNotFound() ) {
-                this.ioEngine.reportMessage(
-                        "Location " + location.getName() + "<" + location.getPath() + "> not found");
-                return failByInvalidArgument(location.getName());
-            }
-            if ( result.failure().targetNotAccessible() ) {
-                this.ioEngine.reportMessage("Access denied to " + target);
-                return failByInvalidArgument(target);
-            }
-            return failByInvalidLogic();
+            this.processFailure(result.failure(), target, location);
+        }   
+    }
+
+    private void processSuccess(FileSearchSuccess success, String target, Location location) {
+        String resolvedTarget;
+        if ( success.hasSingleFoundFile() ) {
+            resolvedTarget = success.getFoundFile();
+        } else {
+            resolvedTarget = this.chooseOneVariantFrom(
+                    target, success.getMultipleFoundFiles());
+            debug("[OS] target resolved: " + target + " -> " + resolvedTarget);
+        }
+        if ( ! resolvedTarget.isEmpty() ) {
+            this.context.adjustCurrentlyExecutedCommand("open", target, "in", location.getName());
+            this.actionsExecutor.asyncOpenWithDesktop(
+                    location.getPath() + "/" + resolvedTarget);
+            this.ioEngine.reportMessage("opening...");
         }        
-        
-        this.actionsExecutor.asyncOpenWithDesktop(
-                location.getPath() + "/" + resolvedTarget);
-        this.ioEngine.reportMessage("opening...");
-        return success();
+    }
+
+    private void processFailure(FileSearchFailure failure, String target, Location location) {
+        if ( failure.targetNotFound() ) {
+            this.ioEngine.reportMessage(target + " not found in " + location.getName());
+            this.context.discardCurrentlyExecutedCommandByInvalidTarget(target);
+        }
+        if ( failure.locationNotFound() ) {
+            this.ioEngine.reportMessage(
+                    "Location " + location.getName() + "<" + location.getPath() + "> not found");
+            this.context.discardCurrentlyExecutedCommandByInvalidLocation(location.getName());
+        }
+        if ( failure.targetNotAccessible() ) {
+            this.ioEngine.reportMessage("Access denied to " + target);
+            this.context.discardCurrentlyExecutedCommandByInvalidTarget(target);
+        }
     }
 
     @Override
-    public OperationResult openFileInLocationWithProgram(
-            String file, Location location, String program) {
-        
-        FileSearchResult fileResult = this.fileSearcher.findTarget(file, location.getPath());
-        FileSearchResult programResult = this.fileSearcher.findTarget(program, programsLocationPath);
-        
-        String resolvedFile;
-        String resolvedProgram;
-        
-        if ( fileResult.isOk() ) {
-            if ( fileResult.success().hasSingleFoundFile() ) {
-                resolvedFile = fileResult.success().getFoundFile();
-            } else {
-                resolvedFile = this.chooseOneVariantFrom(
-                        file, fileResult.success().getMultipleFoundFiles());
-            }
-            if ( resolvedFile.isEmpty() ) {
-                return success();
-            }
-        } else {
-            if ( fileResult.failure().targetNotFound() ) {
-                this.ioEngine.reportMessage(file + " not found in " + location.getName());
-                return failByInvalidArgument(file);
-            }
-            if ( fileResult.failure().locationNotFound() ) {
-                this.ioEngine.reportMessage(
-                        "Location " + location.getName() + "<" + location.getPath() + "> not found");
-                return failByInvalidArgument(location.getPath());
-            }
-            if ( fileResult.failure().targetNotAccessible() ) {
-                this.ioEngine.reportMessage("Access denied to " + file);
-                return failByInvalidArgument(file);
-            }
-            return failByInvalidLogic();
-        }
-        
-        if ( programResult.isOk() ) {
-            if ( programResult.success().hasSingleFoundFile() ) {
-                resolvedProgram = programResult.success().getFoundFile();
-            } else {
-                resolvedProgram = this.chooseOneVariantFrom(
-                        program, programResult.success().getMultipleFoundFiles());
-            }
-            if ( resolvedProgram.isEmpty() ) {
-                return success();
-            }
-        } else {
-            if ( programResult.failure().targetNotFound() ) {
-                this.ioEngine.reportMessage("Program " + program + " not found");
-                return failByInvalidArgument(program);
-            }
-            if ( programResult.failure().locationNotFound() ) {
-                this.ioEngine.reportMessage(
-                        "Programs location " + programsLocationPath + " does not exist");
-                return failByInvalidArgument(programsLocationPath);
-            }
-            if ( programResult.failure().targetNotAccessible() ) {
-                this.ioEngine.reportMessage("Program " + program + " is not accessible");
-                return failByInvalidArgument(program);
-            }
-            return failByInvalidLogic();
-        }
-        
-        StringBuilder commandBuilder = new StringBuilder();
-        commandBuilder
-                .append("cmd /c start ")
-                .append(programsLocationPath.replace("/", "\\"))
-                .append("\\")
-                .append(resolvedProgram)
-                .append(" ")
-                .append(location.getPath().replace("/", "\\"))
-                .append("\\")
-                .append(resolvedFile);
-        this.actionsExecutor.asyncExecuteWithRuntime(commandBuilder.toString());
-        this.ioEngine.reportMessage("opening with...");
-        return success();
-    }
-
-    @Override
-    public OperationResult runProgram(String program) {
+    public void runProgram(String program) {
         // program pattern: notep, NetBe
         // corrected program names: notepad.exe, NetBeans.lnk or "" if not exists
-        FileSearchResult result = this.fileSearcher.findTarget(program, programsLocationPath);
-        String resolvedProgram;
-        
+        FileSearchResult result = this.fileSearcher.findTarget(program, programsLocationPath);        
         if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                resolvedProgram = result.success().getFoundFile();
-            } else {
-                resolvedProgram = this.chooseOneVariantFrom(
-                        program, result.success().getMultipleFoundFiles());
-            }
-            if ( resolvedProgram.isEmpty() ) {
-                return success();
-            }
+            this.context.adjustCurrentlyExecutedCommand("run " + program);
+            this.processProgramFound(result.success(), "run", program);
         } else {
-            if ( result.failure().targetNotFound() ) {
-                this.ioEngine.reportMessage("Program " + program + " not found");
-                return failByInvalidArgument(program);
-            }
-            if ( result.failure().locationNotFound() ) {
-                this.ioEngine.reportMessage(
-                        "Programs location " + programsLocationPath + " does not exist");
-                return failByInvalidArgument(programsLocationPath);
-            }
-            if ( result.failure().targetNotAccessible() ) {
-                this.ioEngine.reportMessage("Program " + program + " is not accessible");
-                return failByInvalidArgument(program);
-            }
-            return failByInvalidLogic();
+            this.processProgramSearchingFailure(result.failure(), "run", program);
         }
-        
-        this.actionsExecutor.asyncOpenWithDesktop(programsLocationPath + "/" + resolvedProgram);
-        this.ioEngine.reportMessage("running...");
-        return success();
+    }    
+    
+    @Override
+    public void runMarkedProgram(String program, String mark) {
+        FileSearchResult result = this.fileSearcher.findTarget(
+                program + "_" + mark, 
+                programsLocationPath); 
+        if ( result.isOk() ) {
+            this.context.adjustCurrentlyExecutedCommand(mark + " " + program);
+            this.processProgramFound(result.success(), mark, program);
+        } else {
+            this.processProgramSearchingFailure(result.failure(), mark, program);
+        }
     }
 
+    private void processProgramSearchingFailure(
+            FileSearchFailure failure, String launchCommand, String program) {
+        if ( failure.targetNotFound() ) {
+            this.ioEngine.reportMessage("Program " + program + " not found");
+            this.context.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    launchCommand, program);
+        } else if ( failure.locationNotFound() ) {
+            this.ioEngine.reportMessage(
+                    "Programs location " + programsLocationPath + " does not exist");
+        } else if ( failure.targetNotAccessible() ) {
+            this.ioEngine.reportMessage("Program " + program + " is not accessible");
+            this.context.discardCurrentlyExecutedCommandInPatternAndOperation(
+                    launchCommand, program);
+        }
+    }
+
+    private void processProgramFound(
+            FileSearchSuccess success, String launchCommand, String program) {
+        String resolvedProgram;
+        if ( success.hasSingleFoundFile() ) {
+            resolvedProgram = success.getFoundFile();
+        } else {
+            resolvedProgram = this.chooseOneVariantFrom(
+                    program, success.getMultipleFoundFiles());
+        }
+        if ( ! resolvedProgram.isEmpty() ) {            
+            this.actionsExecutor.asyncOpenWithDesktop(
+                    this.programsLocationPath + "/" + resolvedProgram);
+            this.ioEngine.reportMessage("running...");
+        }        
+    }
+    
     private boolean checkIfDirectoryExists(String location) {
         File dir = new File(location);
         if ( ! dir.exists() ) {
@@ -272,6 +215,30 @@ public class OSWorker implements OS {
             return false;
         } else {
             return true;
+        }
+    }
+    
+    @Override
+    public List<String> listContentIn(Location location, int depth) {
+        File dir = new File(location.getPath());
+        if ( ! dir.exists() ) {
+            this.ioEngine.reportError("This path does not exist.");
+            return null;
+        }
+        if ( ! dir.isDirectory() ) {
+            this.ioEngine.reportError("This location is not a directory.");
+            return null;
+        }        
+        if ( depth == 0 ) {
+            return null;
+        }
+        Optional<List<String>> listResult = this.fileLister
+                .listContentOf(location, depth);        
+        if ( listResult.isPresent() ) {
+            return listResult.get();
+        } else {
+            this.ioEngine.reportMessage("...error while listing given path.");
+            return null;
         }
     }
     
@@ -288,19 +255,17 @@ public class OSWorker implements OS {
         }        
         if ( depth == 0 ) {
             return null;
-        }
-        Optional<List<String>> listResult;
-        if ( relativePath.isEmpty() ) {
-            listResult = this.fileLister.listContentOf(location, depth);
+        }        
+        
+        Optional<List<String>> listResult;        
+        FileSearchResult targetResult = 
+                this.fileSearcher.findTarget(relativePath, location.getPath());
+        if ( targetResult.isOk() ) {
+            listResult = listLocationAndPath(targetResult.success(), location, depth);
         } else {
-            FileSearchResult relativeTargetResult = 
-                    this.fileSearcher.findTarget(relativePath, location.getPath());
-            if ( relativeTargetResult.isOk() ) {
-                listResult = listLocationAndPath(relativeTargetResult, location, depth);
-            } else {
-                listResult = listLocation(relativeTargetResult, relativePath, location, depth);
-            }
-        }  
+            listResult = listLocation(targetResult.failure(), relativePath, location, depth);
+        }
+         
         if ( listResult.isPresent() ) {
             return listResult.get();
         } else {
@@ -310,11 +275,11 @@ public class OSWorker implements OS {
     }    
 
     private Optional<List<String>> listLocation(
-            FileSearchResult relativeTargetResult, String relativePath, Location location, int depth) {
+            FileSearchFailure targetFailure, String relativePath, Location location, int depth) {
         Optional<List<String>> listResult;
-        if ( relativeTargetResult.failure().targetNotFound() ) {
+        if ( targetFailure.targetNotFound() ) {
             this.ioEngine.reportMessage(relativePath + " not found in " + location.getName());
-        } else if ( relativeTargetResult.failure().targetNotAccessible() ) {
+        } else if ( targetFailure.targetNotAccessible() ) {
             this.ioEngine.reportMessage(relativePath + " is not accessible.");
         }
         this.ioEngine.reportMessage("..." + location.getName() + " content:");
@@ -323,20 +288,20 @@ public class OSWorker implements OS {
     }
 
     private Optional<List<String>> listLocationAndPath(
-            FileSearchResult relativeTargetResult, Location location, int depth) {
+            FileSearchSuccess targetFound, Location location, int depth) {
         String relativePath;
         Optional<List<String>> listResult;
-        if ( relativeTargetResult.success().hasSingleFoundFile() ) {
-            relativePath = relativeTargetResult.success().getFoundFile();
+        if ( targetFound.hasSingleFoundFile() ) {
+            relativePath = targetFound.getFoundFile();
         } else {
-            relativePath = this.resolveMultiplePath(relativeTargetResult.success().getMultipleFoundFiles());
+            relativePath = this.resolveMultiplePaths(targetFound.getMultipleFoundFiles());
         }
         listResult = this.fileLister.listContentOf(combinePathFrom(
                 location.getPath(), relativePath), depth);
         return listResult;
     }
     
-    private String resolveMultiplePath(List<String> paths) {
+    private String resolveMultiplePaths(List<String> paths) {
         int choice = this.ioEngine.resolveVariants("...path to list?", paths);
         if ( choice > 0 ) {
             return paths.get(choice - 1);
@@ -345,88 +310,13 @@ public class OSWorker implements OS {
         }
     }
     
-    public List<String> getLocationContent(Location location) {
-        return this.listContentIn(location, "", 5);
-//        File dir = new File(location.getPath());
-//        if ( ! dir.exists() ) {
-//            this.ioEngine.reportError("This path does not exist.");
-//            return null;
-//        }
-//        if ( ! dir.isDirectory() ) {
-//            this.ioEngine.reportError("This location is not a directory.");
-//            return null;
-//        }
-//        
-//        File[] list = dir.listFiles();
-//        List<String> content = new ArrayList<>();
-//        int folderIndex = 0;
-//        for (File file : list) {
-//            if (file.isDirectory()) {
-//                content.add(folderIndex, " [_] " + file.getName());
-//                folderIndex++;
-//            } else {
-//                content.add("  o  " + file.getName());
-//            }
-//        }
-//        content.remove("  o  desktop.ini");
-//        return content;        
-    }
-    
     @Override
     public OperationResult openUrlWithDefaultBrowser(String urlAddress) {
         this.actionsExecutor.asyncBrowseWithDesktop(urlAddress);
         this.ioEngine.reportMessage("browsing...");
         return success();
     }
-    
-    @Override
-    public OperationResult openUrlWithGivenBrowser(
-            String urlAddress, String browser) {
         
-        FileSearchResult result = this.fileSearcher.findTarget(
-                browser+"-browser", programsLocationPath);
-        String resolvedBrowser;
-        
-        if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                resolvedBrowser = result.success().getFoundFile();
-            } else {
-                resolvedBrowser = this.chooseOneVariantFrom(
-                        browser, result.success().getMultipleFoundFiles());
-            }
-            if ( resolvedBrowser.isEmpty() ) {
-                return success();
-            }
-        } else {
-            if ( result.failure().targetNotFound() ) {
-                this.ioEngine.reportMessage("Browser " + browser + " not found");
-                return failByInvalidArgument(browser);
-            }
-            if ( result.failure().locationNotFound() ) {
-                this.ioEngine.reportMessage(
-                        "Programs location " + programsLocationPath + " does not exist");
-                return failByInvalidArgument(programsLocationPath);
-            }
-            if ( result.failure().targetNotAccessible() ) {
-                this.ioEngine.reportMessage("Browser " + browser + " is not accessible");
-                return failByInvalidArgument(browser);
-            }
-            return failByInvalidLogic();
-        }
-        
-        StringBuilder commandBuilder = new StringBuilder();
-        commandBuilder
-                .append("cmd /c start ")
-                .append(programsLocationPath.replace("/", "\\"))
-                .append("\\")
-                .append(resolvedBrowser)
-                .append(" ")
-                .append(urlAddress);
-        this.actionsExecutor.asyncExecuteWithRuntime(commandBuilder.toString());
-        this.ioEngine.reportMessage("browse...");
-        return success();
-    }
-    
     @Override
     public void createAndOpenTxtFileIn(String name, Location location) {
         try {

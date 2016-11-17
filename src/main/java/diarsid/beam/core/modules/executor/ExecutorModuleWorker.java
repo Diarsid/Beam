@@ -4,8 +4,6 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +19,13 @@ import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.core.util.Logs;
 
 import static java.lang.String.join;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
+import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
 import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpacesToList;
 
@@ -40,26 +40,27 @@ import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpacesToList;
 class ExecutorModuleWorker implements ExecutorModule {
     
     private final IoInnerModule ioEngine;
-    private final ExecutorContext intelligentContext;
+    private final ExecutorContext context;
+    private final SmartConsoleCommandsCache commandsCache;
+    private final ThreadLocal<Boolean> isCurrentCommandNew;
+    private final PathAnalizer pathAnalizer;
     
     private final ProcessorPrograms programs;
     private final ProcessorNotes notes;
     private final ProcessorWebPages pages;
     private final ProcessorLocations locations;
     private final ProcessorCommandsBatches batches; 
-    
-    private final SmartConsoleCommandsCache commandsCache;
-    private final ThreadLocal<Boolean> isCurrentCommandNew;
-    
+            
     ExecutorModuleWorker(
             IoInnerModule io,
             ExecutorContext intelligentContext,
             ProcessorsBuilder builder,
-            SmartConsoleCommandsCache commandsCache) {
+            SmartConsoleCommandsCache commandsCache,
+            PathAnalizer pathAnalizer) {
         
         this.ioEngine = io;
-        this.intelligentContext = intelligentContext;
-        
+        this.context = intelligentContext;
+        this.pathAnalizer = pathAnalizer;
         this.commandsCache = commandsCache;
         this.isCurrentCommandNew = ThreadLocal.withInitial(() -> true);
         
@@ -76,15 +77,15 @@ class ExecutorModuleWorker implements ExecutorModule {
     }  
     
     private void saveConsoleCommandIfValid() {
-        if ( this.intelligentContext.ifCanSaveConsoleCommand() &&
+        if ( this.context.ifCanSaveConsoleCommand() &&
                 this.isCurrentCommandNew.get() ) {
             this.commandsCache.addCommand(
-                    this.intelligentContext.getCurrentCommandFromContext());
+                    this.context.getCurrentCommandFromContext());
         }
     }
     
     private void saveConsoleCommandIfValid(String command) {
-        if ( this.intelligentContext.ifCanSaveConsoleCommand() &&
+        if ( this.context.ifCanSaveConsoleCommand() &&
                 this.isCurrentCommandNew.get() ) {
             this.commandsCache.addCommand(command);
         }
@@ -92,68 +93,48 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void open(List<String> commandParams) {
-        OperationResult operation = this.locations.open(commandParams);
-        if ( operation.ifSuccess() ) {
-            this.saveConsoleCommandIfValid();
-        } else {
-            if ( operation.ifFailCausedByInvalidArgument() ) {
-                this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                        "open", operation.getFailureArgument());               
-            } else {
-                this.intelligentContext.discardCurrentlyExecutedCommandInPattern(
-                        join(" ", commandParams));
-            }
-        }
+        this.locations.open(commandParams);
+        this.saveConsoleCommandIfValid();
     }    
     
     @Override
-    public List<String> listLocationContent(String locationName) {
-        return this.locations.listLocationContent(locationName);
+    public List<String> list(String target) {       
+        if ( containsFileSeparator(target) ) {
+            if ( this.pathAnalizer.pathIsMeaningfull(target) ) {
+                return this.locations.listLocationAndSubPathContent(
+                        this.pathAnalizer.extractRootPathFrom(target), 
+                        this.pathAnalizer.extractSubPathFrom(target));
+            } else {
+                return emptyList();
+            }
+        } else {
+            return this.locations.listLocationContent(target);
+        }
     }
     
     @Override
     public void run(List<String> commandParams) {
-        List<OperationResult> operations = 
-                this.programs.runPrograms(commandParams);
-        OperationResult currentResult;
-        for (int i = 0; i < operations.size(); i++) {
-            currentResult = operations.get(i);
-            if ( currentResult.ifSuccess() ) {
-                this.saveConsoleCommandIfValid("run " + commandParams.get(i + 1));
-            } else {
-                if ( currentResult.ifFailCausedByInvalidArgument() ) {
-                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                            "run", currentResult.getFailureArgument());
-                } else {
-                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                            "run", commandParams.get(i + 1));
-                }
-            }         
-        }
+        if ( commandParams.size() == 2 ) {
+            this.programs.runProgram(commandParams.get(1));
+            this.saveConsoleCommandIfValid();
+        } 
     }
     
     @Override
     public void start(List<String> commandParams) {
         // command pattern: start [program]
-        OperationResult operation = 
-                this.programs.runMarkedProgram("start", commandParams); 
-        if ( operation.ifSuccess() ) {
+        if ( commandParams.size() == 2 ) {
+            this.programs.runMarkedProgram("start", commandParams.get(1));
             this.saveConsoleCommandIfValid();
-        } else {
-            if ( operation.ifFailCausedByInvalidArgument() ) {
-                this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                        "start", operation.getFailureArgument());
-            } else {
-                this.intelligentContext.discardCurrentlyExecutedCommandInPattern(
-                        join(" ", commandParams));
-            }
         }
     }
     
     @Override
     public void stop(List<String> commandParams) {
         // command pattern: stop [program]
-        this.programs.runMarkedProgram("stop", commandParams);        
+        if ( commandParams.size() == 2 ) {
+            this.programs.runMarkedProgram("stop", commandParams.get(1));   
+        }    
     }
     
     @Override
@@ -176,23 +157,10 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void openWebPage(List<String> commandParams) {
-        // command pattern: see [page_1] [page_2]...
-        List<OperationResult> operations = this.pages.openWebPage(commandParams);
-        OperationResult currentResult;
-        for (int i = 0; i < operations.size(); i++) {
-            currentResult = operations.get(i);
-            if (currentResult.ifSuccess()) {
-                // save command as: see [page_i]                
-                this.saveConsoleCommandIfValid("see " + commandParams.get(i + 1));
-            } else { 
-                if ( currentResult.ifFailCausedByInvalidArgument() ) {
-                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                            "see", currentResult.getFailureArgument());
-                } else {
-                    this.intelligentContext.discardCurrentlyExecutedCommandInPatternAndOperation(
-                            "see", commandParams.get(i + 1));
-                }    
-            }           
+        // command pattern: see [page_1]
+        if ( commandParams.size() == 2 ) {
+            this.pages.openWebPage(commandParams);
+            this.saveConsoleCommandIfValid();
         }
     }
     
@@ -224,7 +192,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void dispatchCommandToAppropriateMethod(List<String> commandParams) {
         Logs.debug("[EXECUTOR] inner dispatching: " +commandParams);
-        this.intelligentContext.adjustCurrentlyExecutedCommand(
+        this.context.adjustCurrentlyExecutedCommand(
                 join(" ", commandParams));
         switch (commandParams.get(0)) {
             case "open" :
@@ -284,7 +252,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void setIntelligentActive(boolean isActive) {
-        this.intelligentContext.setContextActive(isActive);
+        this.context.setContextActive(isActive);
     }  
     
     @Override
@@ -294,19 +262,19 @@ class ExecutorModuleWorker implements ExecutorModule {
             return false;
         }
         boolean deletedConsoleMem = this.commandsCache.deleteCached(command);
-        boolean deletedChoiceMem = this.intelligentContext.deleteChoicesForCommand(command);
+        boolean deletedChoiceMem = this.context.deleteChoicesForCommand(command);
         return ( deletedChoiceMem || deletedConsoleMem );
     }     
     
     @Override
     public void rememberChoiceAutomatically(boolean autoRemember) {
-        this.intelligentContext.setRememberChoiceAutomatically(autoRemember);
+        this.context.setRememberChoiceAutomatically(autoRemember);
     }  
     
     @Override
     public Map<String, List<String>> getFromExecutorMemory(String memPattern) {
         Map<String, List<String>> result = new HashMap<>();
-        List<String> commandChoices = this.intelligentContext.getChoicesByPattern(memPattern);
+        List<String> commandChoices = this.context.getChoicesByPattern(memPattern);
         if ( ! commandChoices.isEmpty() ) {
             result.put("commands choices:", commandChoices);
         }
@@ -341,7 +309,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public void executeIfExists(List<String> commandParams) {
-        if ( this.locations.ifCommandLooksLikeLocationAndPath(commandParams) ) {
+        if ( this.pathAnalizer.ifLooksLikePath(commandParams) ) {
             this.tryToExecuteAsOpenCommand(commandParams);
         } else {
             this.tryToGetCommandFromCacheAndExecute(commandParams);
@@ -358,18 +326,17 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private void tryToExecuteAsOpenCommand(List<String> commandParams) {
         debug("[EXECUTOR] " + commandParams + " will be processed as path");
-        List<String> newCommand = this.transformInOpenCommand(commandParams);
-        debug("[EXECUTOR] transform to open command : " + newCommand);
-        this.intelligentContext.adjustCurrentlyExecutedCommand(join(" ", newCommand));
+        List<String> newCommand = this.transformPathInOpenCommand(commandParams);
+        debug("[EXECUTOR] transformed to open command : " + newCommand);
+        this.context.adjustCurrentlyExecutedCommand(newCommand);
         this.open(newCommand);
     }
         
-    private List<String> transformInOpenCommand(List<String> commandParams) {
-        if ( commandParams.size() == 1 ) {
-            return Arrays.asList(new String[] {"open", commandParams.get(0)});
-        } else {
-            return new ArrayList<>();
-        }
+    private List<String> transformPathInOpenCommand(List<String> commandParams) {
+        String commandWithPath = commandParams.get(0);
+        String targetName = this.pathAnalizer.extractSubPathFrom(commandWithPath);
+        String locationName = this.pathAnalizer.extractRootPathFrom(commandWithPath);
+        return asList(new String[] {"open", targetName, "in", locationName});
     }
 
     private void executeFoundCachedCommand(String cachedCommand) {

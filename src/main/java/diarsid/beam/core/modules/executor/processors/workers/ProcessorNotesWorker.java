@@ -11,7 +11,6 @@ import java.util.List;
 import diarsid.beam.core.entities.local.Location;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
 
 /**
  *
@@ -38,10 +37,11 @@ class ProcessorNotesWorker implements ProcessorNotes {
             this.system.createAndOpenTxtFileIn("", this.notes);
         } else {
             String name = String.join(" ", commandParams.subList(1, commandParams.size()));
-            OperationResult openFile = this.system.openFileInLocation(name, this.notes);
-            if ( ! openFile.ifSuccess() ) {
-                this.system.createAndOpenTxtFileIn(name, this.notes);
-            }
+            this.system.openFileInLocation(name, this.notes);
+//            OperationResult openFile = this.system.openFileInLocation(name, this.notes);
+//            if ( ! openFile.ifSuccess() ) {
+//                this.system.createAndOpenTxtFileIn(name, this.notes);
+//            }
         }
     }
 }

@@ -112,6 +112,7 @@ class IoInnerModuleWorker implements IoInnerModule {
 
     @Override
     public void reportError(String... error) {
+        this.logError(false, error);
         if (this.io.hasExternalIOProcessor()){
             try{
                 this.io.getExternalIOEngine().reportError(error);
@@ -126,6 +127,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     
     @Override
     public void reportErrorAndExitLater(String... error) {
+        this.logError(true, error);
         if (this.io.hasExternalIOProcessor()) {
             try{
                 this.io.getExternalIOEngine().reportError(error);
@@ -141,6 +143,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     
     @Override
     public void reportException(Exception e, String... description) {
+        this.logException(e, false, description);
         if (this.io.hasExternalIOProcessor()) {
             try {
                 this.io.getExternalIOEngine().reportException(description);
@@ -154,6 +157,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     @Override
     public void reportExceptionAndExitLater(Exception e, String... description) {
+        this.logException(e, true, description);
         if (this.io.hasExternalIOProcessor()) {
             try {
                 this.io.getExternalIOEngine().reportException(description);
@@ -220,8 +224,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     private void nativeReportError(boolean critical, String[] description) {
-        this.gui.showError(description);
-        this.logError(critical, description);
+        this.gui.showError(description);        
         if (critical) {
             this.gui.exitAfterAllWindowsClosed();
         }
@@ -236,8 +239,7 @@ class IoInnerModuleWorker implements IoInnerModule {
     }
     
     private void nativeReportException(Exception e, boolean critical, String[] description) {
-        this.gui.showError(description);
-        this.logException(e, critical, description);
+        this.gui.showError(description);        
         if (critical) {
             this.gui.exitAfterAllWindowsClosed();
         }
