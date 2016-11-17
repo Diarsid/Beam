@@ -23,5 +23,5 @@ public interface FileSearcher {
                 depthOfSearchByName, depthOfSearchByPath, visitorByName, visitorByPath);
     } 
 
-    FileSearchResult findTarget(String target, String location);    
+    FileSearchResult findTarget(String target, String location, FileSearchMode mode);    
 }

@@ -25,10 +25,6 @@ public class FileSearchUtils {
         return Files.exists(dir) && Files.isDirectory(dir);
     }
     
-    static boolean isValidPath(String file) {
-        return Files.exists(Paths.get(file));
-    }
-    
     public static int indexOfFirstFileSeparator(String target) {
         int indexOfSlash = target.indexOf("/");
         int indexOfBackSlash = target.indexOf("\\");

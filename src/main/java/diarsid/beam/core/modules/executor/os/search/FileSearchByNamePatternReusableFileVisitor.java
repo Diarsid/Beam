@@ -16,6 +16,8 @@ import java.util.List;
 import static java.nio.file.FileVisitResult.CONTINUE;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.relativizeFileName;
+import static diarsid.beam.core.modules.executor.os.search.ItemType.FILE;
+import static diarsid.beam.core.modules.executor.os.search.ItemType.FOLDER;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
 
@@ -27,20 +29,23 @@ public class FileSearchByNamePatternReusableFileVisitor extends SimpleFileVisito
         
     private Path root;
     private String nameToFind;
+    private FileSearchMode searchMode;
     private List<String> foundItems;
     
     public FileSearchByNamePatternReusableFileVisitor() {
     }
     
     public FileSearchByNamePatternReusableFileVisitor useAgainWith(
-            Path root, String nameToFind, List<String> foundItems) {
+            Path root, String nameToFind, List<String> foundItems, FileSearchMode mode) {
         this.root = root;
         this.nameToFind = nameToFind;
         this.foundItems = foundItems;
+        this.searchMode = mode;
         return this;
     }
     
     public void clear() {
+        this.searchMode = null;
         this.root = null;
         this.nameToFind = null;
         this.foundItems = null;
@@ -49,13 +54,13 @@ public class FileSearchByNamePatternReusableFileVisitor extends SimpleFileVisito
     @Override 
     public FileVisitResult preVisitDirectory(Path file, BasicFileAttributes attrs)
             throws IOException {
-        return this.processItem(file);
+        return this.processItem(file, FOLDER);
     }        
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
             throws IOException {
-        return this.processItem(file);
+        return this.processItem(file, FILE);
     }
     
     @Override
@@ -64,7 +69,10 @@ public class FileSearchByNamePatternReusableFileVisitor extends SimpleFileVisito
         return CONTINUE;
     }
     
-    private FileVisitResult processItem(Path file) {
+    private FileVisitResult processItem(Path file, ItemType type) {        
+        if ( ! this.searchMode.correspondsTo(type) ) {
+            return CONTINUE;
+        }
         
         String fileName;
         if ( file.getNameCount() > 0 ) {

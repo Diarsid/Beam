@@ -30,6 +30,9 @@ import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
 
+import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.ALL;
+import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FILES_ONLY;
+import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
 import static diarsid.beam.core.util.Logs.debug;
@@ -106,7 +109,8 @@ public class OSWorker implements OS {
     public void openFileInLocation(String target, Location location) {
         // targetName pattern: myPr / myFil
         // corrected target name: myProject / myFile.ext or "" if not exists
-        FileSearchResult result = this.fileSearcher.findTarget(target, location.getPath());
+        FileSearchResult result = this.fileSearcher
+                .findTarget(target, location.getPath(), ALL);
         if ( result.isOk() ) {
             this.processSuccess(result.success(), target, location);
         } else {
@@ -151,7 +155,8 @@ public class OSWorker implements OS {
     public void runProgram(String program) {
         // program pattern: notep, NetBe
         // corrected program names: notepad.exe, NetBeans.lnk or "" if not exists
-        FileSearchResult result = this.fileSearcher.findTarget(program, programsLocationPath);        
+        FileSearchResult result = this.fileSearcher
+                .findTarget(program, this.programsLocationPath, FILES_ONLY);        
         if ( result.isOk() ) {
             this.context.adjustCurrentlyExecutedCommand("run " + program);
             this.processProgramFound(result.success(), "run", program);
@@ -162,9 +167,8 @@ public class OSWorker implements OS {
     
     @Override
     public void runMarkedProgram(String program, String mark) {
-        FileSearchResult result = this.fileSearcher.findTarget(
-                program + "_" + mark, 
-                programsLocationPath); 
+        FileSearchResult result = this.fileSearcher
+                .findTarget(program + "_" + mark, this.programsLocationPath, FILES_ONLY); 
         if ( result.isOk() ) {
             this.context.adjustCurrentlyExecutedCommand(mark + " " + program);
             this.processProgramFound(result.success(), mark, program);
@@ -259,7 +263,7 @@ public class OSWorker implements OS {
         
         Optional<List<String>> listResult;        
         FileSearchResult targetResult = 
-                this.fileSearcher.findTarget(relativePath, location.getPath());
+                this.fileSearcher.findTarget(relativePath, location.getPath(), FOLDERS_ONLY);
         if ( targetResult.isOk() ) {
             listResult = listLocationAndPath(targetResult.success(), location, depth);
         } else {

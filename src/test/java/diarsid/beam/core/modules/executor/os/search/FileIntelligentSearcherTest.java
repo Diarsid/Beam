@@ -24,6 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.ALL;
+
 
 /**
  *
@@ -100,7 +102,7 @@ public class FileIntelligentSearcherTest {
      */
     @Test
     public void testFindTarget_findFile_withoutWildcard_success() {
-        FileSearchResult result = searcher.findTarget("file_1", root);
+        FileSearchResult result = searcher.findTarget("file_1", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -115,7 +117,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.findTarget("fi-1", root);
+        FileSearchResult result = searcher.findTarget("fi-1", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -130,7 +132,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findFolder_withoutWildcard_success() {
-        FileSearchResult result = searcher.findTarget("inn", root);
+        FileSearchResult result = searcher.findTarget("inn", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -145,7 +147,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findFolder_withWildcard_success() {
-        FileSearchResult result = searcher.findTarget("in-r", root);
+        FileSearchResult result = searcher.findTarget("in-r", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -161,7 +163,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findMultipeFile_withoutWildcard_success() {
-        FileSearchResult result = searcher.findTarget("file", root);
+        FileSearchResult result = searcher.findTarget("file", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -179,7 +181,7 @@ public class FileIntelligentSearcherTest {
 
     @Test
     public void testFindTarget_findMultipeFile_withoutWildcard_ingoreCase_success() {
-        FileSearchResult result = searcher.findTarget("aaa", root);
+        FileSearchResult result = searcher.findTarget("aaa", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -197,7 +199,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findSingleFile_withWildcard_failure() {
-        FileSearchResult result = searcher.findTarget("fold-ile", root);
+        FileSearchResult result = searcher.findTarget("fold-ile", root, ALL);
         if ( result.isOk() ) {
             fail();
         } else {
@@ -219,7 +221,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_byPath_findFile_withoutWildcard_success() {
-        FileSearchResult result = searcher.findTarget("inn/yy", root);
+        FileSearchResult result = searcher.findTarget("inn/yy", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -235,7 +237,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_byPath_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.findTarget("inn/y-a", root);
+        FileSearchResult result = searcher.findTarget("inn/y-a", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -251,7 +253,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_byPath2_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.findTarget("inn/es/y-a", root);
+        FileSearchResult result = searcher.findTarget("inn/es/y-a", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -266,7 +268,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_byPath_findFile_withWildcard_failure() {
-        FileSearchResult result = searcher.findTarget("inn/fold/y-a", root);
+        FileSearchResult result = searcher.findTarget("inn/fold/y-a", root, ALL);
         if ( result.isOk() ) {
             fail();
         } else {
@@ -288,7 +290,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findMultipeFile_byPath_withoutWildcard_ingoreCase_success() {
-        FileSearchResult result = searcher.findTarget("IN/xx", root);
+        FileSearchResult result = searcher.findTarget("IN/xx", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -305,7 +307,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findMultipeFile_byPath_withWildcard_ingoreCase_success() {
-        FileSearchResult result = searcher.findTarget("I-eR/xx", root);
+        FileSearchResult result = searcher.findTarget("I-eR/xx", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -322,7 +324,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findSingleFile_byPathWithFollowedSeparator_withoutWildcard_ingoreCase_failure() {
-        FileSearchResult result = searcher.findTarget("iNNer/", root);
+        FileSearchResult result = searcher.findTarget("iNNer/", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();
@@ -337,7 +339,7 @@ public class FileIntelligentSearcherTest {
     
     @Test
     public void testFindTarget_findSingleFile_byPathWithLeadSeparator_withoutWildcard_ingoreCase_failure() {
-        FileSearchResult result = searcher.findTarget("/iNNer", root);
+        FileSearchResult result = searcher.findTarget("/iNNer", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().getFoundFile();

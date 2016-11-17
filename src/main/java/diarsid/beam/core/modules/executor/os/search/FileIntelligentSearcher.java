@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.executor.os.search;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ import static java.nio.file.Files.walkFileTree;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.givenPathIsDirectory;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.isValidPath;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizePathFragmentsFrom;
+import static diarsid.beam.core.modules.executor.os.search.ItemType.typeOf;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.invalidLocationFailure;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.targetInvalidMessage;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.targetNotFoundFailure;
@@ -56,36 +57,41 @@ class FileIntelligentSearcher implements FileSearcher {
     }
     
     @Override
-    public FileSearchResult findTarget(String target, String location) {
+    public FileSearchResult findTarget(String target, String location, FileSearchMode mode) {
         debug("[FILE SEARCHER] must find: ");
         debug("[FILE SEARCHER]    location : " + location);
         debug("[FILE SEARCHER]    target   : " + target);
         Path dir = Paths.get(location);        
         if ( givenPathIsDirectory(dir) ) {
-            if ( isValidPath(location + "/" + target) ) {
+            if ( this.isAppropriatePath(location, target, mode) ) {
                 debug("[FILE SEARCHER] target found directly. No search.");
                 return successWith(foundFile(target) );
             } else {
                 debug("[FILE SEARCHER] target not found directly. Search begins...");
-                return this.search(dir, target);
+                return this.search(dir, target, mode);
             }            
         } else {
             return failWith(invalidLocationFailure());
         }
     }
+
+    private boolean isAppropriatePath(String location, String target, FileSearchMode mode) {
+        Path fullPath = Paths.get(location + "/" + target);
+        return ( Files.exists(fullPath) && mode.correspondsTo(typeOf(fullPath)) );
+    }
     
-    private FileSearchResult search(Path root, String target) {
+    private FileSearchResult search(Path root, String target, FileSearchMode mode) {
         List<String> foundItems = new ArrayList<>();
         try {             
             
             if ( containsFileSeparator(target) ) {
                 debug("[FILE SEARCHER] ...search by path...");
                 this.collectFoundFilesByPathParts(
-                        root, normalizePathFragmentsFrom(target), foundItems);
+                        root, normalizePathFragmentsFrom(target), foundItems, mode);
             } else {
                 debug("[FILE SEARCHER] ...search by name...");
                 this.collectFoundFilesByNameInRoot(
-                        root, target, foundItems);
+                        root, target, foundItems, mode);
             }            
             
             if ( foundItems.isEmpty() ) {
@@ -105,25 +111,27 @@ class FileIntelligentSearcher implements FileSearcher {
     }
 
     private void collectFoundFilesByNameInRoot(
-            Path root, String nameToFind, List<String> foundItems)
+            Path root, String nameToFind, List<String> foundItems, FileSearchMode mode)
             throws IOException {
         walkFileTree(
                 root,
                 EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                 this.nameSearchDepth,
-                this.reusableVisitorByName.useAgainWith(root, nameToFind, foundItems));
+                this.reusableVisitorByName
+                        .useAgainWith(root, nameToFind, foundItems, mode));
         foundItems.remove("");        
         this.reusableVisitorByName.clear();
     }
     
     private void collectFoundFilesByPathParts(
-            Path root, String[] targetPathParts, List<String> foundItems) 
+            Path root, String[] targetPathParts, List<String> foundItems, FileSearchMode mode) 
             throws IOException {
         walkFileTree(
                 root, 
                 EnumSet.of(FileVisitOption.FOLLOW_LINKS),
                 this.pathSearchDepth,
-                this.reusableVisitorByPath.useAgainWith(root, targetPathParts, foundItems));
+                this.reusableVisitorByPath
+                        .useAgainWith(root, targetPathParts, foundItems, mode));
         foundItems.remove("");        
         this.reusableVisitorByPath.clear();
     }

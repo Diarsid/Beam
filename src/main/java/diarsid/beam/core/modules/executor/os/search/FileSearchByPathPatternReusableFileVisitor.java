@@ -17,6 +17,8 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizePathFragmentsFrom;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.relativizeFileName;
+import static diarsid.beam.core.modules.executor.os.search.ItemType.FILE;
+import static diarsid.beam.core.modules.executor.os.search.ItemType.FOLDER;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsAllPartsIgnoreCase;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
 
@@ -32,15 +34,18 @@ class FileSearchByPathPatternReusableFileVisitor extends SimpleFileVisitor<Path>
     private String[] currentPath;
     private String currentPathName;
     private String searchedPathFragment;
+    private FileSearchMode searchMode;
     private int searchedCounter;
     
     FileSearchByPathPatternReusableFileVisitor() {
     }
     
-    FileSearchByPathPatternReusableFileVisitor useAgainWith(Path root, String[] searched, List<String> found) {
+    FileSearchByPathPatternReusableFileVisitor useAgainWith(
+            Path root, String[] searched, List<String> found, FileSearchMode mode) {
         this.foundItems = found;
         this.root = root;
         this.searchedPath = searched;
+        this.searchMode = mode;
         return this;
     }
     
@@ -51,19 +56,20 @@ class FileSearchByPathPatternReusableFileVisitor extends SimpleFileVisitor<Path>
         this.searchedPathFragment = null;
         this.currentPath = null;
         this.currentPathName = null;
+        this.searchMode = null;
         this.searchedCounter = 0;
     }
     
     @Override 
     public FileVisitResult preVisitDirectory(Path file, BasicFileAttributes attrs)
             throws IOException {
-        return this.processItem(file);
+        return this.processItem(file, FOLDER);
     }        
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
             throws IOException {
-        return this.processItem(file);
+        return this.processItem(file, FILE);
     }
     
     @Override
@@ -72,7 +78,11 @@ class FileSearchByPathPatternReusableFileVisitor extends SimpleFileVisitor<Path>
         return CONTINUE;
     }
     
-    private FileVisitResult processItem(Path file) {        
+    private FileVisitResult processItem(Path file, ItemType type) {  
+        if ( ! this.searchMode.correspondsTo(type) ) {
+            return CONTINUE;
+        }
+        
         this.currentPathName = this.extractRelativeFileName(file);
         if ( containsIgnoreCase(this.currentPathName, "desktop.ini") ) {
             return CONTINUE;
