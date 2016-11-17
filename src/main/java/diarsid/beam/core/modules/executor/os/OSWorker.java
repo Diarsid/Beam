@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,8 @@ import diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccess;
 import diarsid.beam.core.modules.executor.workflow.OperationResult;
 import diarsid.beam.shared.modules.ConfigModule;
 import diarsid.beam.shared.modules.config.Config;
+
+import static java.util.Optional.of;
 
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.ALL;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FILES_ONLY;
@@ -265,9 +268,9 @@ public class OSWorker implements OS {
         FileSearchResult targetResult = 
                 this.fileSearcher.findTarget(relativePath, location.getPath(), FOLDERS_ONLY);
         if ( targetResult.isOk() ) {
-            listResult = listLocationAndPath(targetResult.success(), location, depth);
+            listResult = this.listLocationAndPath(targetResult.success(), location, depth);
         } else {
-            listResult = listLocation(targetResult.failure(), relativePath, location, depth);
+            listResult = this.listLocation(targetResult.failure(), relativePath, location, depth);
         }
          
         if ( listResult.isPresent() ) {
@@ -300,9 +303,13 @@ public class OSWorker implements OS {
         } else {
             relativePath = this.resolveMultiplePaths(targetFound.getMultipleFoundFiles());
         }
-        listResult = this.fileLister.listContentOf(combinePathFrom(
-                location.getPath(), relativePath), depth);
-        return listResult;
+        if ( ! relativePath.isEmpty() ) {
+            listResult = this.fileLister.listContentOf(combinePathFrom(
+            location.getPath(), relativePath), depth);
+            return listResult;
+        } else {
+            return of(new ArrayList<>());
+        }
     }
     
     private String resolveMultiplePaths(List<String> paths) {

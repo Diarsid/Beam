@@ -87,17 +87,20 @@ class ProcessorLocationsWorker implements ProcessorLocations {
     public List<String> listLocationAndSubPathContent(
             String locationName, String subPath) {
         Location location = this.getLocation(locationName, false);
+        List<String> locationContent;
         if ( nonNull(location) ) {
-            List<String> locationContent = this.system.listContentIn(location, subPath, 5);
+            locationContent = this.system.listContentIn(location, subPath, 5);
             if ( nonNull(locationContent) ) {
-                locationContent.add(0, location.getName().concat("/").concat(subPath));               
-                return locationContent;
+                if ( ! locationContent.isEmpty()) {
+                    locationContent.add(0, location.getName().concat("/").concat(subPath)); 
+                }               
             } else {                
-                return new ArrayList<>();
+                locationContent = new ArrayList<>();
             }
         } else {
-            return new ArrayList<>();
+            locationContent = new ArrayList<>();
         }
+        return locationContent;
     }
        
     private void openLocation(String locationName) {
