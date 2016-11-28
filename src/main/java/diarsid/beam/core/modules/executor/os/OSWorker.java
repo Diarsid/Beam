@@ -171,7 +171,7 @@ public class OSWorker implements OS {
     @Override
     public void runMarkedProgram(String program, String mark) {
         FileSearchResult result = this.fileSearcher
-                .findTarget(program + "_" + mark, this.programsLocationPath, FILES_ONLY); 
+                .findTarget(program + "-" + mark, this.programsLocationPath, FILES_ONLY); 
         if ( result.isOk() ) {
             this.context.adjustCurrentlyExecutedCommand(mark + " " + program);
             this.processProgramFound(result.success(), mark, program);

@@ -89,6 +89,9 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
     private final String DELETE_WHERE_COMMAND_IS = 
             "DELETE FROM command_choices " + 
             "WHERE LOWER(command) IS ? ";
+    private final String DELETE_FROM_CHOICES_WHERE_COMMAND_AND_PATTERN_OR_CHOICE_LIKE = 
+            "DELETE FROM command_choices " +
+            "WHERE ( LOWER(command) LIKE ? ) ";
     private final String DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE = 
             "DELETE FROM command_choices " +
             "WHERE ( LOWER(command) LIKE ? ) " +
@@ -281,13 +284,11 @@ class H2DaoExecutorIntelligentChoices implements DaoExecutorIntelligentChoices {
         pattern = pattern.replace("-", "%").toLowerCase();
         try (Connection con = this.data.connect();
                 PreparedStatement deleteFromChoices = con.prepareStatement(
-                        DELETE_FROM_CHOICES_WHERE_COMMAND_OR_CHOICE_OR_PATTEN_LIKE);
+                        DELETE_FROM_CHOICES_WHERE_COMMAND_AND_PATTERN_OR_CHOICE_LIKE);
                 PreparedStatement deleteFromConsole = con.prepareStatement(
                         DELETE_FROM_CONSOLE_WHERE_COMMAND_LIKE)) {
             
             deleteFromChoices.setString(1, operation + " %"+pattern+"%");
-            deleteFromChoices.setString(2, "%"+pattern+"%");
-            deleteFromChoices.setString(3, "%"+pattern+"%");
             int qty = deleteFromChoices.executeUpdate();
             
             deleteFromConsole.setString(1, operation + " %"+pattern+"%");
