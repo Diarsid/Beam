@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.executor.processors;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 
 /**
  *

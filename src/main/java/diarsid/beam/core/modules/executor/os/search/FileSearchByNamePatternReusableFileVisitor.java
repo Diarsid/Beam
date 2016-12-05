@@ -15,11 +15,11 @@ import java.util.List;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.relativizeFileName;
 import static diarsid.beam.core.modules.executor.os.search.ItemType.FILE;
 import static diarsid.beam.core.modules.executor.os.search.ItemType.FOLDER;
+import static diarsid.beam.core.util.PathUtils.relativizeFileName;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
+import static diarsid.beam.core.util.StringUtils.splitByDash;
 
 /**
  *

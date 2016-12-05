@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.executor.processors.workers;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.entities.local.Location;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.executor.OS;

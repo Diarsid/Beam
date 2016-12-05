@@ -13,7 +13,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.events.BeamEvent;
+import static java.lang.Runtime.getRuntime;
+
+import static diarsid.beam.core.util.CollectionsUtils.nonNullNonEmpty;
+import static diarsid.beam.core.util.Logs.log;
 
 /**
  *
@@ -21,34 +24,55 @@ import diarsid.beam.core.events.BeamEvent;
  */
 public class BeamEventRuntime {
     
-    private static final Map<Class, Set<BeamEventCallback>> CALLBACKS;
+    private static final Map<String, Set<EventCallback>> CALLBACKS;
     private static final ExecutorService EXECUTOR;
+    private static final Object CALLBACKS_SYNC_MONITOR;
     
     static {
         CALLBACKS = new HashMap<>();
-        EXECUTOR = new ScheduledThreadPoolExecutor(3);
+        EXECUTOR = new ScheduledThreadPoolExecutor(5);
+        CALLBACKS_SYNC_MONITOR = new Object();
+        getRuntime().addShutdownHook(new Thread(() -> shutdownEventRuntime()));
     }
     
     private BeamEventRuntime() {
     }
     
-    public static void registerForEvent(Class eventClass, BeamEventCallback callback) {
-        if ( CALLBACKS.containsKey(eventClass) ) {
-            CALLBACKS.get(eventClass).add(callback);
+    public static Subscription subscribeOn(String type) {
+        return new Subscription(type);
+    }
+    
+    public static void shutdownEventRuntime() {
+        EXECUTOR.shutdown();
+        log(BeamEventRuntime.class, "shutdown.");
+    }
+    
+    static void registerCallbackForType(String type, EventCallback callback) {
+        if ( CALLBACKS.containsKey(type) ) {
+            synchronized ( CALLBACKS_SYNC_MONITOR ) {
+                CALLBACKS.get(type).add(callback);
+            }
         } else {
-            CALLBACKS.put(eventClass, new HashSet<>());
-            CALLBACKS.get(eventClass).add(callback);
+            synchronized ( CALLBACKS_SYNC_MONITOR ) {
+                CALLBACKS.put(type, new HashSet<>());
+                CALLBACKS.get(type).add(callback);
+            }            
         }
     }
     
-    protected static void fireEventAsync(BeamEvent event) {
-        for (BeamEventCallback callback : CALLBACKS.get(event.getClass())) { 
-            EXECUTOR.submit(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onEvent(event);
-                }
-            });
-        }        
+    static void unregisterCallbacksFor(String type, Set<EventCallback> callbacksToUnreg) {
+        Set<EventCallback> callbacksOfType = CALLBACKS.get(type);
+        if ( nonNullNonEmpty(callbacksOfType) ) {
+            synchronized ( CALLBACKS_SYNC_MONITOR ) { 
+                callbacksOfType.removeAll(callbacksToUnreg);
+            }
+        }
+    }
+    
+    public static void fireAsync(Event event) {
+        Set<EventCallback> callbacks = CALLBACKS.get(event.type());
+        if ( nonNullNonEmpty(callbacks) ) {
+            callbacks.forEach((callback) -> EXECUTOR.submit(() -> callback.onEvent(event)));         
+        }
     }
 }

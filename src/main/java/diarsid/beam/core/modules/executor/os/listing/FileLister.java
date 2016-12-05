@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.entities.local.Location;
+import diarsid.beam.core.domain.entities.Location;
 
 import static java.nio.file.Files.walkFileTree;
 import static java.util.EnumSet.of;

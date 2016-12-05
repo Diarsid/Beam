@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
 
-import diarsid.beam.core.entities.global.WebPageDirectory;
-import diarsid.beam.core.entities.global.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPageDirectory;
+import diarsid.beam.core.domain.entities.WebPagePlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**

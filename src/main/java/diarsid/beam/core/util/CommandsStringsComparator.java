@@ -8,7 +8,8 @@ package diarsid.beam.core.util;
 
 import java.util.Comparator;
 
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.countSpaces;
+import static diarsid.beam.core.util.StringUtils.countSpaces;
+
 
 /**
  *

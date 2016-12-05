@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 import diarsid.beam.core.modules.executor.processors.ProcessorLocations;
 import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
@@ -25,9 +25,9 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
 import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpacesToList;
+import static diarsid.beam.core.util.PathUtils.containsFileSeparator;
+import static diarsid.beam.core.util.StringUtils.splitBySpacesToList;
 
 /**
  * Implements ExecutorModule interface.

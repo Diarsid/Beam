@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 
 /**

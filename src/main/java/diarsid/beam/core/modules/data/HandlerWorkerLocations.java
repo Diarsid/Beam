@@ -11,10 +11,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import diarsid.beam.core.entities.local.Location;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.IoInnerModule;
 
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
+import static diarsid.beam.core.util.StringUtils.splitByDash;
 
 /**
  *

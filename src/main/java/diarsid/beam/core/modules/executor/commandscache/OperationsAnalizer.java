@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpacesToList;
+import static diarsid.beam.core.util.StringUtils.splitByDash;
+import static diarsid.beam.core.util.StringUtils.splitBySpacesToList;
 
 /**
  *

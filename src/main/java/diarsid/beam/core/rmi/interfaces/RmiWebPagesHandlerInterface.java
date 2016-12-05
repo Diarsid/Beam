@@ -9,8 +9,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import diarsid.beam.core.entities.global.WebPage;
-import diarsid.beam.core.entities.global.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPage;
+import diarsid.beam.core.domain.entities.WebPagePlacement;
 
 /**
  *

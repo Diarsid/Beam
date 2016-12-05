@@ -20,9 +20,9 @@ import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 
 import static java.nio.file.Files.walkFileTree;
 
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.givenPathIsDirectory;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizePathFragmentsFrom;
+import static diarsid.beam.core.util.PathUtils.containsFileSeparator;
+import static diarsid.beam.core.util.PathUtils.givenPathIsDirectory;
+import static diarsid.beam.core.util.PathUtils.normalizePathFragmentsFrom;
 import static diarsid.beam.core.modules.executor.os.search.ItemType.typeOf;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.invalidLocationFailure;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.targetInvalidMessage;

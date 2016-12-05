@@ -14,10 +14,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import diarsid.beam.core.entities.global.WebPage;
-import diarsid.beam.core.entities.global.WebPagePlacement;
-import diarsid.beam.core.entities.local.Location;
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.WebPage;
+import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
@@ -26,8 +26,8 @@ import diarsid.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 import diarsid.beam.external.sysconsole.modules.ConsoleReaderModule;
 
-import static diarsid.beam.core.entities.global.WebPagePlacement.BOOKMARKS;
-import static diarsid.beam.core.entities.global.WebPagePlacement.WEBPANEL;
+import static diarsid.beam.core.domain.entities.WebPagePlacement.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPagePlacement.WEBPANEL;
 import static diarsid.beam.core.modules.tasks.TaskType.DAILY;
 import static diarsid.beam.core.modules.tasks.TaskType.HOURLY;
 import static diarsid.beam.core.modules.tasks.TaskType.USUAL;

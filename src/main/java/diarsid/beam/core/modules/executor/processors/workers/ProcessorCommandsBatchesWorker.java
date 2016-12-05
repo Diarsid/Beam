@@ -11,7 +11,7 @@ import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 

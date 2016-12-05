@@ -33,7 +33,7 @@ import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 import diarsid.beam.core.util.CommandsStringsComparator;
 import diarsid.beam.core.util.Logs;
 
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
+import static diarsid.beam.core.util.StringUtils.splitByDash;
 
 /**
  *

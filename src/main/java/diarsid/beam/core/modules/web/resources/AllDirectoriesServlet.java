@@ -19,9 +19,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import diarsid.beam.core.entities.global.WebPage;
-import diarsid.beam.core.entities.global.WebPageDirectory;
-import diarsid.beam.core.entities.global.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPage;
+import diarsid.beam.core.domain.entities.WebPageDirectory;
+import diarsid.beam.core.domain.entities.WebPagePlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**

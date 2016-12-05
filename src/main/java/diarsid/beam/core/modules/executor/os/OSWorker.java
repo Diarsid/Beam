@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.entities.local.Location;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.OS;
@@ -36,7 +36,7 @@ import static java.util.Optional.of;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.ALL;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FILES_ONLY;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FOLDERS_ONLY;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.combinePathFrom;
+import static diarsid.beam.core.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
 import static diarsid.beam.core.util.Logs.debug;
 

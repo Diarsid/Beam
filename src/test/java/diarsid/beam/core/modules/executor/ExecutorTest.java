@@ -14,14 +14,14 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import diarsid.beam.core.entities.local.Location;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.data.HandlerWebPages;
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

@@ -10,11 +10,11 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.containsFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfFirstFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.indexOfLastFileSeparator;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.normalizeSingleCommandParam;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchUtils.trimSeparatorsInBothEnds;
+import static diarsid.beam.core.util.PathUtils.containsFileSeparator;
+import static diarsid.beam.core.util.PathUtils.indexOfFirstFileSeparator;
+import static diarsid.beam.core.util.PathUtils.indexOfLastFileSeparator;
+import static diarsid.beam.core.util.PathUtils.trimSeparatorsInBothEnds;
+import static diarsid.beam.core.util.PathUtils.normalizeArgument;
 
 /**
  *
@@ -27,7 +27,7 @@ public class PathAnalizer {
     
     public List<String> normalizeArguments(List<String> commandParams) {
         return commandParams.stream()
-                .map((param) -> normalizeSingleCommandParam(param))
+                .map((param) -> normalizeArgument(param))
                 .map((param) -> trimSeparatorsInBothEnds(param))
                 .collect(toList());
     }
@@ -41,7 +41,7 @@ public class PathAnalizer {
     }
 
     private boolean isResolvablePath(String possiblePath) {
-        possiblePath = normalizeSingleCommandParam(possiblePath);
+        possiblePath = normalizeArgument(possiblePath);
         if ( containsFileSeparator(possiblePath) ) {
             return this.pathIsMeaningfull(possiblePath);
         } else {

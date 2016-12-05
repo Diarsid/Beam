@@ -20,7 +20,7 @@ import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.core.modules.executor.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.StoredCommandsBatch;
 
 /**
  *

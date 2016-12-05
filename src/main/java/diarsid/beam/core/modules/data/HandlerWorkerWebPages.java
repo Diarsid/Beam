@@ -9,13 +9,13 @@ package diarsid.beam.core.modules.data;
 import java.util.Collections;
 import java.util.List;
 
-import diarsid.beam.core.entities.global.WebPage;
-import diarsid.beam.core.entities.global.WebPageDirectory;
-import diarsid.beam.core.entities.global.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPage;
+import diarsid.beam.core.domain.entities.WebPageDirectory;
+import diarsid.beam.core.domain.entities.WebPagePlacement;
 import diarsid.beam.core.modules.IoInnerModule;
 
-import static diarsid.beam.core.entities.global.WebPage.WEB_NAME_REGEXP;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitByDash;
+import static diarsid.beam.core.domain.entities.WebPage.WEB_NAME_REGEXP;
+import static diarsid.beam.core.util.StringUtils.splitByDash;
 
 /**
  *

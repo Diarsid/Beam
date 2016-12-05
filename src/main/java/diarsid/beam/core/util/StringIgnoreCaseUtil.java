@@ -6,15 +6,12 @@
 
 package diarsid.beam.core.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
+import static diarsid.beam.core.util.StringUtils.splitByDash;
 
 /**
  *
@@ -24,7 +21,6 @@ public class StringIgnoreCaseUtil {
     
     private StringIgnoreCaseUtil() {
     }
-        
     
     public static boolean containsAllPartsIgnoreCase(String whereToSearch, String searched) {
         for (String searchedPart : splitByDash(searched)) {
@@ -33,27 +29,6 @@ public class StringIgnoreCaseUtil {
             }
         }
         return true;
-    }
-    
-    public static String[] splitBySpaces(String target) {
-        return target.split("\\s+");
-    }
-    
-    public static int countSpaces(String target) {
-        // TODO
-        // bad code, should use more efficient function here
-        return ( target.split("\\s+").length - 1 );
-    }
-    
-    public static List<String> splitBySpacesToList(String target) {
-        return new ArrayList<>(asList(target.split("\\s+")));
-    }
-
-    public static List<String> splitByDash(String target) {
-        return stream(target.split("-+"))
-                .filter(string -> ! string.matches("\\s+"))
-                .map(string -> string.trim())
-                .collect(toList());
     }
     
     public static boolean containsIgnoreCase(String whereToSearch, String searched) {

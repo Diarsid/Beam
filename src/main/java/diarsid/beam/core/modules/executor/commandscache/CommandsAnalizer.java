@@ -14,7 +14,7 @@ import java.util.StringJoiner;
 
 import static diarsid.beam.core.modules.executor.commandscache.ActionRequest.actionRequestOf;
 import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.splitBySpaces;
+import static diarsid.beam.core.util.StringUtils.splitBySpaces;
 
 /**
  *

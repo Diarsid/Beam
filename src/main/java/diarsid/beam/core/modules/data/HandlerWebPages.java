@@ -7,9 +7,9 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.entities.global.WebPage;
-import diarsid.beam.core.entities.global.WebPageDirectory;
-import diarsid.beam.core.entities.global.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPage;
+import diarsid.beam.core.domain.entities.WebPageDirectory;
+import diarsid.beam.core.domain.entities.WebPagePlacement;
 
 /**
  *
