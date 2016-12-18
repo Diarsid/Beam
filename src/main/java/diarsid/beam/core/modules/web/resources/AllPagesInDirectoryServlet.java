@@ -20,7 +20,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
@@ -85,7 +85,7 @@ class AllPagesInDirectoryServlet extends HttpServlet {
         try {
             String path = this.resolver.getNormalizedPath(request);
             String directory = this.resolver.extractDirectoryBeforePages(path);
-            WebPagePlacement place = 
+            WebPlacement place = 
                     this.resolver.extractPlacementBeforeDirectory(path);
 
             JSONObject postedPage = (JSONObject) this.json.parse(request.getReader());

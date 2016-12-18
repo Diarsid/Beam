@@ -17,7 +17,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
@@ -58,7 +58,7 @@ class PageFieldsServlet extends HttpServlet {
             String field = this.resolver.extractPageField(path);
             String page = this.resolver.extractPageBeforeField(path);
             String dir = this.resolver.extractDirectoryBeforePages(path);
-            WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
+            WebPlacement place = this.resolver.extractPlacementBeforeDirectory(path);
             JSONObject newValueObj = 
                     (JSONObject) this.json.parse(request.getReader().readLine());
             
@@ -105,9 +105,9 @@ class PageFieldsServlet extends HttpServlet {
                 
                 case "directory_and_placement" : {
                     String newPlace = newValueObj.get("placement").toString();
-                    WebPagePlacement placement;
+                    WebPlacement placement;
                     if ( newPlace.matches("WEBPANEL|BOOKMARKS|webpanel|bookmarks") ) {
-                        placement = WebPagePlacement.valueOf(newPlace.toUpperCase());
+                        placement = WebPlacement.valueOf(newPlace.toUpperCase());
                     } else {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         response.setContentType("text/plain");

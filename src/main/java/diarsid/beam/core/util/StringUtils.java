@@ -7,9 +7,7 @@
 package diarsid.beam.core.util;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -29,6 +27,10 @@ public class StringUtils {
         return target.toLowerCase(ENGLISH);
     }
     
+    public static String upper(String target) {
+        return target.toUpperCase(ENGLISH);
+    }
+    
     public static String normalize(String target) {
         return target
                 // replaces multiple spaces with single space
@@ -46,15 +48,12 @@ public class StringUtils {
                 .replaceAll("_$", "")
                 .trim();
     }
-    
-    public static <T> Set<T> toSet(T[] array) {
-        return new HashSet<>(asList(array));
-    }
 
     public static List<String> splitByDash(String target) {        
         return stream(target.split("-+"))
-                .filter((String string) -> !string.matches("\\s+"))
-                .map((String string) -> string.trim()).collect(toList());
+                .filter(string -> !string.matches("\\s+"))
+                .map(string -> string.trim())
+                .collect(toList());
     }
 
     public static String[] splitBySpaces(String target) {

@@ -13,7 +13,11 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import static java.util.Arrays.asList;
+
 import static org.junit.Assert.*;
+
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsAnySnippetsInAnyWordsIgnoreCase;
 
 /**
  *
@@ -25,7 +29,7 @@ public class StringIgnoreCaseUtilTest {
     }
 
     /**
-     * Test of containsFullWordIgnoreCase method, of class StringIgnoreCaseUtil.
+     * Test of containsWordInIgnoreCase method, of class StringIgnoreCaseUtil.
      */
     
     @Test
@@ -84,7 +88,7 @@ public class StringIgnoreCaseUtilTest {
     }
 
     /**
-     * Test of containsFullWordIgnoreCase method, of class StringIgnoreCaseUtil.
+     * Test of containsWordInIgnoreCase method, of class StringIgnoreCaseUtil.
      */
     @Test
     public void testContainsIgnoreCase_List_String() {
@@ -97,7 +101,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = true;
-        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsWordInIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -112,7 +116,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsWordInIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -124,7 +128,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsWordInIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -136,7 +140,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = "searched";
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsWordInIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -151,7 +155,7 @@ public class StringIgnoreCaseUtilTest {
         String searched = null;
         
         boolean expected = false;
-        boolean result = StringIgnoreCaseUtil.containsFullWordIgnoreCase(whereToSearch, searched);
+        boolean result = StringIgnoreCaseUtil.containsWordInIgnoreCase(whereToSearch, searched);
         
         assertEquals(expected, result);
     }
@@ -425,5 +429,23 @@ public class StringIgnoreCaseUtilTest {
         String expected = null;
         String result = StringIgnoreCaseUtil.getIgnoreCase(mapToSearch, ignoreCaseKey);
         assertEquals(expected, result);
+    }
+    
+    @Test
+    public void test_containsAnySnippetsInAnyWordsIgnoreCase_false() {
+        List<String> whereToSearch = asList("argUMEeNT", "xxxXXxxX", "ComMANd");
+        List<String> anyOf = asList("yyYYy", "@", "111");
+        
+        boolean notFound = containsAnySnippetsInAnyWordsIgnoreCase(whereToSearch, anyOf);
+        assertFalse(notFound);
+    }
+    
+    @Test
+    public void test_containsAnySnippetsInAnyWordsIgnoreCase_true() {
+        List<String> whereToSearch = asList("argUMEeNT", "xxxXXxxX", "ComMANd");
+        List<String> anyOf = asList("maN", "@", "111");
+        
+        boolean found = containsAnySnippetsInAnyWordsIgnoreCase(whereToSearch, anyOf);
+        assertTrue(found);
     }
 }

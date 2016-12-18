@@ -7,8 +7,8 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPageDirectory;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebDirectory;
+import diarsid.beam.core.domain.entities.WebPlacement;
 
 /**
  *
@@ -18,21 +18,21 @@ public interface DaoWebPages {
     
     boolean saveWebPage(WebPage page);
     
-    boolean deleteWebPage(String name, String dir, WebPagePlacement placement);
+    boolean deleteWebPage(String name, String dir, WebPlacement placement);
     
-    List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement);
+    List<WebPage> getAllWebPagesInPlacement(WebPlacement placement);
     
     List<WebPage> getWebPagesByName(String name);
     
     List<WebPage> getWebPagesByNameParts(List<String> nameParts);
     
     List<WebPage> getWebPagesByNameInDirAndPlace(
-            String name, String dir, WebPagePlacement place);
+            String name, String dir, WebPlacement place);
     
     List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String dir, WebPagePlacement placement, boolean dirStrictMatch);
+            String dir, WebPlacement placement, boolean dirStrictMatch);
     
-    List<String> getAllDirectoriesInPlacement(WebPagePlacement placement);    
+    List<String> getAllDirectoriesInPlacement(WebPlacement placement);    
     
     boolean editWebPageName(String name, String newName);
     
@@ -43,26 +43,26 @@ public interface DaoWebPages {
     boolean editWebPageBrowser(String name, String newBrowser);
     
     boolean editWebPageOrder(
-            String name, String dir, WebPagePlacement place, int newOrder);
+            String name, String dir, WebPlacement place, int newOrder);
     
     boolean renameDirectoryInPlacement(
-            String directory, String newDirectory, WebPagePlacement placement);
+            String directory, String newDirectory, WebPlacement placement);
     
     boolean moveWebPageToPlacementAndDirectory(
             String pageName, 
             String oldDirectory, 
-            WebPagePlacement oldPlacement, 
+            WebPlacement oldPlacement, 
             String newDirectory, 
-            WebPagePlacement newPlacement);
+            WebPlacement newPlacement);
     
-    boolean deleteDirectoryAndPages(WebPageDirectory dir);
+    boolean deleteDirectoryAndPages(WebDirectory dir);
     
     boolean createEmptyDirectory(
-            WebPagePlacement place, String name);
+            WebPlacement place, String name);
     
-    WebPageDirectory getDirectoryExact(WebPagePlacement place, String name);
+    WebDirectory getDirectoryExact(WebPlacement place, String name);
     
-    List<WebPageDirectory> getAllDirectoriesIn(WebPagePlacement place);
+    List<WebDirectory> getAllDirectoriesIn(WebPlacement place);
     
-    boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder);
+    boolean editDirectoryOrder(WebPlacement place, String name, int newOrder);
 }

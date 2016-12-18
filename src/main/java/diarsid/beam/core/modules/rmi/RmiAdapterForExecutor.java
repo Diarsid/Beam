@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 
 /**
@@ -71,12 +71,12 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     }
     
     @Override
-    public List<StoredCommandsBatch> getAllCommands() throws RemoteException {
+    public List<Batch> getAllCommands() throws RemoteException {
         return this.executorModule.getAllBatches();
     }
     
     @Override
-    public List<StoredCommandsBatch> getCommand(String commandName) 
+    public List<Batch> getCommand(String commandName) 
             throws RemoteException {
         
         return this.executorModule.getBathesByName(commandName);

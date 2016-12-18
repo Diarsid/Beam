@@ -11,7 +11,7 @@ import java.util.List;
 
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 
@@ -36,9 +36,9 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     }    
     
     @Override
-    public StoredCommandsBatch getBatch(String batchName) {        
+    public Batch getBatch(String batchName) {        
         batchName = batchName.trim().toLowerCase();
-        List<StoredCommandsBatch> foundBatches = 
+        List<Batch> foundBatches = 
                 this.batchesDao.getBatchesByName(batchName);    
         
         if ( foundBatches.size() < 1 ) {
@@ -50,7 +50,7 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
             return foundBatches.get(0);
         } else {
             List<String> foundBatchesNames = new ArrayList<>();
-            for (StoredCommandsBatch c : foundBatches) {
+            for (Batch c : foundBatches) {
                 foundBatchesNames.add(c.getName());
             }
             int variant = this.intellContext.resolve(
@@ -80,7 +80,7 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
             commands.set(i, s);
         }
         batchName = batchName.trim().toLowerCase();
-        this.batchesDao.saveNewBatch(new StoredCommandsBatch(batchName, commands));
+        this.batchesDao.saveNewBatch(new Batch(batchName, commands));
     }    
         
     @Override
@@ -90,12 +90,12 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     }    
     
     @Override
-    public List<StoredCommandsBatch> getAllBatches() {
+    public List<Batch> getAllBatches() {
         return this.batchesDao.getAllBatches();
     }    
     
     @Override
-    public List<StoredCommandsBatch> getBatches(String batchName) {
+    public List<Batch> getBatches(String batchName) {
         batchName = batchName.trim().toLowerCase();
         return this.batchesDao.getBatchesByName(batchName);
     }    

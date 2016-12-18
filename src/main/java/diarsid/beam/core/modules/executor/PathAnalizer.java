@@ -10,11 +10,11 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.util.PathUtils.containsFileSeparator;
+import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.util.PathUtils.indexOfFirstFileSeparator;
-import static diarsid.beam.core.util.PathUtils.indexOfLastFileSeparator;
-import static diarsid.beam.core.util.PathUtils.trimSeparatorsInBothEnds;
 import static diarsid.beam.core.util.PathUtils.normalizeArgument;
+import static diarsid.beam.core.util.PathUtils.trimSeparatorsInBothEnds;
+import static diarsid.beam.core.util.PathUtils.isAcceptableRelativePath;
 
 /**
  *
@@ -42,17 +42,11 @@ public class PathAnalizer {
 
     private boolean isResolvablePath(String possiblePath) {
         possiblePath = normalizeArgument(possiblePath);
-        if ( containsFileSeparator(possiblePath) ) {
-            return this.pathIsMeaningfull(possiblePath);
+        if ( containsPathSeparator(possiblePath) ) {
+            return isAcceptableRelativePath(possiblePath);
         } else {
             return false;
         }
-    }
-    
-    public boolean pathIsMeaningfull(String command) {
-        return ( 
-                indexOfFirstFileSeparator(command) > 1 && 
-                indexOfLastFileSeparator(command) < command.length() - 2);
     }
     
     public String extractSubPathFrom(String path) {

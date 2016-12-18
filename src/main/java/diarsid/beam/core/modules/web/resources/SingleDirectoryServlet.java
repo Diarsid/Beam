@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
 
-import diarsid.beam.core.domain.entities.WebPageDirectory;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebDirectory;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
@@ -51,7 +51,7 @@ class SingleDirectoryServlet extends HttpServlet {
             throws ServletException, IOException { 
         
         String path = this.resolver.getNormalizedPath(request);
-        WebPageDirectory dir = this.pagesHandler.getDirectoryExact(
+        WebDirectory dir = this.pagesHandler.getDirectoryExact(
                 this.resolver.extractPlacementBeforeDirectory(path), 
                 this.resolver.extractDirectory(path));
         
@@ -76,7 +76,7 @@ class SingleDirectoryServlet extends HttpServlet {
         
         String path = this.resolver.getNormalizedPath(request);
         String dir = this.resolver.extractDirectory(path);
-        WebPagePlacement place = 
+        WebPlacement place = 
                 this.resolver.extractPlacementBeforeDirectory(path);
         
         if ( this.pagesHandler.deleteDirectoryAndPages(dir, place) ) {

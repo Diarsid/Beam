@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.List;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPageDirectory;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebDirectory;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.IoInnerModule;
 
 import static diarsid.beam.core.domain.entities.WebPage.WEB_NAME_REGEXP;
@@ -36,7 +36,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
             String name,
             String shortcuts, 
             String urlAddress, 
-            WebPagePlacement placement, 
+            WebPlacement placement, 
             String directory, 
             String browser) {
         
@@ -59,7 +59,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     }
     
     @Override
-    public boolean deleteWebPage(String name, String dir, WebPagePlacement place) {        
+    public boolean deleteWebPage(String name, String dir, WebPlacement place) {        
         if ( ! dir.matches(WEB_NAME_REGEXP) || ! name.matches(WEB_NAME_REGEXP)) {
             this.ioEngine.reportMessage("Page or directory name is invalid.");
             return false;
@@ -69,18 +69,18 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     }
     
     @Override
-    public List<String> getAllDirectoriesInPlacement(WebPagePlacement placement) {        
+    public List<String> getAllDirectoriesInPlacement(WebPlacement placement) {        
         return this.dao.getAllDirectoriesInPlacement(placement);
     }
     
     @Override
-    public List<WebPage> getAllWebPagesInPlacement(WebPagePlacement placement) {        
+    public List<WebPage> getAllWebPagesInPlacement(WebPlacement placement) {        
         return this.dao.getAllWebPagesInPlacement(placement);
     }   
     
     @Override
     public List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String directory, WebPagePlacement placement, boolean strict) {
+            String directory, WebPlacement placement, boolean strict) {
         
         directory = directory.trim().toLowerCase();
         if ( ! directory.matches(WEB_NAME_REGEXP) ) {
@@ -93,7 +93,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     
     @Override
     public List<WebPage> getWebPagesByNameInDirAndPlace(
-            String name, String dir, WebPagePlacement place) {
+            String name, String dir, WebPlacement place) {
         
         if ( ! dir.matches(WEB_NAME_REGEXP) || ! name.matches(WEB_NAME_REGEXP)) {
             this.ioEngine.reportMessage("Page or directory name is invalid.");
@@ -153,7 +153,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     
     @Override
     public boolean editWebPageOrder(
-            String name, String dir, WebPagePlacement place, int newOrder) {
+            String name, String dir, WebPlacement place, int newOrder) {
         if ( newOrder <= 0 ) {
             return false;
         }
@@ -165,7 +165,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     }
     
     @Override
-    public WebPageDirectory getDirectoryExact(WebPagePlacement place, String dir) {
+    public WebDirectory getDirectoryExact(WebPlacement place, String dir) {
         dir = dir.trim().toLowerCase();
         if ( ! dir.matches(WEB_NAME_REGEXP) ) {
             this.ioEngine.reportMessage("Directory name is invalid.");
@@ -175,13 +175,13 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     }
     
     @Override
-    public List<WebPageDirectory> getAllDirectoriesIn(WebPagePlacement placement) {
+    public List<WebDirectory> getAllDirectoriesIn(WebPlacement placement) {
         return this.dao.getAllDirectoriesIn(placement);
     }
     
     @Override
     public boolean renameDirectoryInPlacement(
-            String directory, String newDirectory, WebPagePlacement placement) {
+            String directory, String newDirectory, WebPlacement placement) {
         
         directory = directory.trim().toLowerCase();
         newDirectory = newDirectory.trim().toLowerCase();
@@ -194,7 +194,7 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     
     @Override
     public boolean editDirectoryOrder(
-            WebPagePlacement place, String name, int newOrder) {
+            WebPlacement place, String name, int newOrder) {
         
         if ( newOrder <= 0 ) {
             return false;
@@ -207,18 +207,18 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     }
     
     @Override
-    public boolean deleteDirectoryAndPages(String dir, WebPagePlacement place) {
+    public boolean deleteDirectoryAndPages(String dir, WebPlacement place) {
         dir = dir.trim().toLowerCase();
         if ( ! dir.matches(WEB_NAME_REGEXP) ) {
             this.ioEngine.reportMessage("Directory name is invalid.");
             return false;
         }        
-        WebPageDirectory dirToDelete = new WebPageDirectory(dir, place);
+        WebDirectory dirToDelete = new WebDirectory(dir, place);
         return this.dao.deleteDirectoryAndPages(dirToDelete);
     }
     
     @Override
-    public boolean createEmptyDirectory(WebPagePlacement place, String dir) {
+    public boolean createEmptyDirectory(WebPlacement place, String dir) {
         dir = dir.trim().toLowerCase();
         if ( ! dir.matches(WEB_NAME_REGEXP) ) {
             this.ioEngine.reportMessage("Directory name is invalid.");
@@ -231,9 +231,9 @@ class HandlerWorkerWebPages implements HandlerWebPages {
     public boolean moveWebPageTo(
             String pageName, 
             String oldDir, 
-            WebPagePlacement oldPlacement, 
+            WebPlacement oldPlacement, 
             String newDir, 
-            WebPagePlacement newPlacement) {
+            WebPlacement newPlacement) {
                 
         pageName = pageName.trim().toLowerCase();
         newDir = newDir.trim().toLowerCase();

@@ -15,7 +15,7 @@ import java.util.Map;
 
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 
@@ -185,7 +185,7 @@ class ConsolePrinter implements ConsolePrinterModule {
     }
     
     @Override
-    public void printBatches(List<StoredCommandsBatch> commands) throws IOException {
+    public void printBatches(List<Batch> commands) throws IOException {
         if (commands.isEmpty()) {
             printUnderLn("There aren`t any commands.");
             return;
@@ -194,7 +194,7 @@ class ConsolePrinter implements ConsolePrinterModule {
         this.writer.write(SPACE);
         this.writer.write("==================================================");
         this.writer.newLine();
-        for(StoredCommandsBatch command : commands){
+        for(Batch command : commands){
             this.writer.write(SPACE);
             this.writer.write(command.getName() + ":");
             this.writer.newLine();

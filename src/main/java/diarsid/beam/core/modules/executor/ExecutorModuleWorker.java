@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
@@ -26,8 +26,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.PathUtils.containsFileSeparator;
+import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.util.StringUtils.splitBySpacesToList;
+import static diarsid.beam.core.util.PathUtils.isAcceptableRelativePath;
 
 /**
  * Implements ExecutorModule interface.
@@ -99,8 +100,8 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     @Override
     public List<String> list(String target) {       
-        if ( containsFileSeparator(target) ) {
-            if ( this.pathAnalizer.pathIsMeaningfull(target) ) {
+        if ( containsPathSeparator(target) ) {
+            if ( isAcceptableRelativePath(target) ) {
                 return this.locations.listLocationAndSubPathContent(
                         this.pathAnalizer.extractRootPathFrom(target), 
                         this.pathAnalizer.extractSubPathFrom(target));
@@ -140,7 +141,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void call(List<String> commandParams) {
         // command pattern: call [command_1] [command_2]...
-        StoredCommandsBatch storedBatch;
+        Batch storedBatch;
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
             sb.append(commandParams.get(0))
@@ -175,16 +176,16 @@ class ExecutorModuleWorker implements ExecutorModule {
     }    
     
     @Override
-    public List<StoredCommandsBatch> getAllBatches() {
+    public List<Batch> getAllBatches() {
         return this.batches.getAllBatches();
     }    
     
     @Override
-    public List<StoredCommandsBatch> getBathesByName(String commandName) {
+    public List<Batch> getBathesByName(String commandName) {
         return this.batches.getBatches(commandName);
     }    
     
-    private void executeCommandsBatch(StoredCommandsBatch command) {
+    private void executeCommandsBatch(Batch command) {
         for (String commandString : command.getCommands()) {
             this.dispatchCommandToAppropriateMethod(splitBySpacesToList(commandString));
         }
@@ -355,7 +356,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void executeStoredBatchIfExists(String cachedCommand) {
         String possibleBatchName = cachedCommand
                 .substring(cachedCommand.lastIndexOf(" ")+1);
-        StoredCommandsBatch storedBatch = this.batches
+        Batch storedBatch = this.batches
                 .getBatch(possibleBatchName);
         if ( storedBatch != null ) {
             for (String commandFromBatch : storedBatch.getCommands()) {

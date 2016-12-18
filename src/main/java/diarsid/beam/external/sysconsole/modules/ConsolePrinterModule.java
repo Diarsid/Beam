@@ -11,7 +11,7 @@ import java.util.Map;
 
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 
 import com.drs.gem.injector.module.GemModule;
@@ -34,7 +34,7 @@ public interface ConsolePrinterModule extends GemModule {
 
     void printMemories(Map<String, List<String>> memories) throws IOException;
 
-    void printBatches(List<StoredCommandsBatch> commands) throws IOException;
+    void printBatches(List<Batch> commands) throws IOException;
 
     void printHelp();
 

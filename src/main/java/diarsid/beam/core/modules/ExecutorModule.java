@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 
 /**
  * Executes remote commands such as open particular directory in the local
@@ -39,9 +39,9 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     List<String> list(String target);
     
-    List<StoredCommandsBatch> getAllBatches();
+    List<Batch> getAllBatches();
     
-    List<StoredCommandsBatch> getBathesByName(String commandName);
+    List<Batch> getBathesByName(String commandName);
     
     boolean deleteBatch(String commandName);
     

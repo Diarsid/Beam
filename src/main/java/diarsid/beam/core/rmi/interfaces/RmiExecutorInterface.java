@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 
 /*
  * 
@@ -32,9 +32,9 @@ public interface RmiExecutorInterface extends Remote {
     
     List<String> listLocationContent(String locationName) throws RemoteException;
     
-    List<StoredCommandsBatch> getAllCommands() throws RemoteException;    
+    List<Batch> getAllCommands() throws RemoteException;    
     
-    List<StoredCommandsBatch> getCommand(String commandName)  throws RemoteException;
+    List<Batch> getCommand(String commandName)  throws RemoteException;
     
     boolean deleteCommand(String commandName) throws RemoteException;
     

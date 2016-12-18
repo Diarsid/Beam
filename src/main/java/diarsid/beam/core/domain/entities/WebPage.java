@@ -3,8 +3,8 @@ package diarsid.beam.core.domain.entities;
 import java.io.Serializable;
 import java.util.Objects;
 
-import static diarsid.beam.core.domain.entities.WebPagePlacement.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPagePlacement.WEBPANEL;
+import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -23,7 +23,7 @@ public class WebPage implements Serializable, Comparable<WebPage> {
     private final String name;
     private final String shortcuts;
     private final String urlAddress;
-    private final WebPagePlacement placement;
+    private final WebPlacement placement;
     private final String directory;    
     private final int directoryOrder;
     private final String browser;
@@ -34,7 +34,7 @@ public class WebPage implements Serializable, Comparable<WebPage> {
             String name, 
             String shortcuts,             
             String urlAddress, 
-            WebPagePlacement placement,
+            WebPlacement placement,
             String directory, 
             int pageOrder,
             int dirOrder,
@@ -54,7 +54,7 @@ public class WebPage implements Serializable, Comparable<WebPage> {
             String name, 
             String shortcuts,             
             String urlAddress, 
-            WebPagePlacement placement,
+            WebPlacement placement,
             String directory,
             String browser) {
         
@@ -66,7 +66,7 @@ public class WebPage implements Serializable, Comparable<WebPage> {
             String name, 
             String shortcuts,             
             String urlAddress, 
-            WebPagePlacement placement,
+            WebPlacement placement,
             String directory,
             int pageOrder,
             int dirOrder,
@@ -88,7 +88,7 @@ public class WebPage implements Serializable, Comparable<WebPage> {
         return this.urlAddress;
     }
 
-    public WebPagePlacement getPlacement() {
+    public WebPlacement getPlacement() {
         return this.placement;
     }
 

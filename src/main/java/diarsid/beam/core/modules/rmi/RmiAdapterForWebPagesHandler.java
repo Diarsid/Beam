@@ -10,7 +10,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
@@ -31,7 +31,7 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
             String name,
             String shortcuts, 
             String urlAddress, 
-            WebPagePlacement placement, 
+            WebPlacement placement, 
             String directory, 
             String browser) 
             throws RemoteException {
@@ -41,21 +41,21 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     }
     
     @Override
-    public boolean deleteWebPage(String name, String dir, WebPagePlacement place) 
+    public boolean deleteWebPage(String name, String dir, WebPlacement place) 
             throws RemoteException {
         
         return this.webHandler.deleteWebPage(name, dir, place);
     }
     
     @Override
-    public List<String> getAllDirectoriesInPlacement(WebPagePlacement placement)
+    public List<String> getAllDirectoriesInPlacement(WebPlacement placement)
             throws RemoteException {
         
         return this.webHandler.getAllDirectoriesInPlacement(placement);
     }
     
     @Override
-    public List<WebPage> getAllPagesInPlacement(WebPagePlacement placement) 
+    public List<WebPage> getAllPagesInPlacement(WebPlacement placement) 
             throws RemoteException {
         
         return this.webHandler.getAllWebPagesInPlacement(placement);
@@ -63,7 +63,7 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     
     @Override
     public List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String directory, WebPagePlacement placement) throws RemoteException {
+            String directory, WebPlacement placement) throws RemoteException {
                
         // third parameter that is set to FALSE means that dao will not search
         // directory in strict mode:
@@ -115,7 +115,7 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     
     @Override
     public boolean editWebPageOrder(
-            String name, String dir, WebPagePlacement place, int newOrder) 
+            String name, String dir, WebPlacement place, int newOrder) 
             throws RemoteException {
         
         return this.webHandler.editWebPageOrder(name, dir, place, newOrder);
@@ -123,7 +123,7 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     
     @Override
     public boolean renameDirectory(
-            String directory, String newDirectory, WebPagePlacement placement) 
+            String directory, String newDirectory, WebPlacement placement) 
             throws RemoteException {
                 
         return this.webHandler.renameDirectoryInPlacement(
@@ -131,7 +131,7 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     }
     
     @Override
-    public boolean deleteDirectory(String name, WebPagePlacement place) 
+    public boolean deleteDirectory(String name, WebPlacement place) 
             throws RemoteException {
         
         return this.webHandler.deleteDirectoryAndPages(name, place);
@@ -139,7 +139,7 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     
     @Override
     public boolean editDirectoryOrder(
-            WebPagePlacement place, String name, int newOrder) 
+            WebPlacement place, String name, int newOrder) 
             throws RemoteException {
         
         return this.webHandler.editDirectoryOrder(place, name, newOrder);
@@ -149,9 +149,9 @@ public class RmiAdapterForWebPagesHandler implements RmiWebPagesHandlerInterface
     public boolean moveWebPageTo(
             String pageName, 
             String oldDir, 
-            WebPagePlacement oldPlacement, 
+            WebPlacement oldPlacement, 
             String newDir, 
-            WebPagePlacement newPlacement) 
+            WebPlacement newPlacement) 
             throws RemoteException {        
                
         return this.webHandler.moveWebPageTo(

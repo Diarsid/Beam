@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static diarsid.beam.core.util.StringUtils.lower;
 import static diarsid.beam.core.util.StringUtils.splitByDash;
 
 /**
@@ -24,7 +25,7 @@ public class StringIgnoreCaseUtil {
     
     public static boolean containsAllPartsIgnoreCase(String whereToSearch, String searched) {
         for (String searchedPart : splitByDash(searched)) {
-            if ( ! whereToSearch.toLowerCase().contains(searchedPart.toLowerCase()) ) {
+            if ( ! lower(whereToSearch).contains(lower(searchedPart)) ) {
                 return false;
             }
         }
@@ -35,11 +36,11 @@ public class StringIgnoreCaseUtil {
         if ( searched == null || whereToSearch == null ) {
             return false;
         } else {
-            return whereToSearch.toLowerCase().contains(searched.toLowerCase());
+            return lower(whereToSearch).contains(lower(searched));
         }        
     }
     
-    public static boolean containsFullWordIgnoreCase(
+    public static boolean containsWordInIgnoreCase(
             Collection<String> whereToSearch, String searched) {
         if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
             return false;
@@ -63,10 +64,21 @@ public class StringIgnoreCaseUtil {
         }        
     }
     
-    public static boolean containsIgnoreCaseAnyFragment(String whereToSearch, Collection<String> searchedSnippets) {
+    public static boolean containsIgnoreCaseAnyFragment(
+            String whereToSearch, Collection<String> searchedSnippets) {
         return searchedSnippets
                 .stream()
                 .filter(snippet -> containsIgnoreCase(whereToSearch, snippet))
+                .findFirst()
+                .isPresent();
+    }
+    
+    public static boolean containsAnySnippetsInAnyWordsIgnoreCase(
+            Collection<String> whereToSearch, Collection<String> snippetsToSearch) {
+        return whereToSearch
+                .stream()
+                .filter(stringToSearchIn -> 
+                        containsIgnoreCaseAnyFragment(stringToSearchIn, snippetsToSearch))
                 .findFirst()
                 .isPresent();
     }

@@ -20,8 +20,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPageDirectory;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebDirectory;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
@@ -58,16 +58,16 @@ class AllDirectoriesServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String path = this.resolver.getNormalizedPath(request);
-        WebPagePlacement place = 
+        WebPlacement place = 
                 this.resolver.extractPlacementBeforeDirectory(path);
-        List<WebPageDirectory> dirs = this.pagesHandler
+        List<WebDirectory> dirs = this.pagesHandler
                 .getAllDirectoriesIn(place);
         JSONArray directoriesArray = new JSONArray();
         JSONObject directoryObj;
         JSONArray pagesInDirArray;
         JSONObject singlePageInDirObj;
         List<WebPage> pages;
-        for (WebPageDirectory dir : dirs) {
+        for (WebDirectory dir : dirs) {
             directoryObj = new JSONObject();
             directoryObj.put("name", dir.getName());
             directoryObj.put("order", dir.getOrder());
@@ -100,7 +100,7 @@ class AllDirectoriesServlet extends HttpServlet {
             String path = this.resolver.getNormalizedPath(request);
             JSONObject postedDir = (JSONObject) this.json.parse(request.getReader());
             
-            WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
+            WebPlacement place = this.resolver.extractPlacementBeforeDirectory(path);
             String dir = postedDir.get("name").toString();
             if ( dir == null ) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

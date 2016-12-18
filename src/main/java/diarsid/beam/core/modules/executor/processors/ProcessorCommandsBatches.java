@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.executor.processors;
 
 import java.util.List;
 
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 
 /**
  *
@@ -17,11 +17,11 @@ public interface ProcessorCommandsBatches {
 
     boolean deleteBatch(String batchName);
 
-    List<StoredCommandsBatch> getAllBatches();
+    List<Batch> getAllBatches();
 
-    StoredCommandsBatch getBatch(String name);
+    Batch getBatch(String name);
 
-    List<StoredCommandsBatch> getBatches(String batchName);
+    List<Batch> getBatches(String batchName);
 
     void newBatch(List<String> commands, String batchName);    
 }

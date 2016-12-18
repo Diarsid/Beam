@@ -10,7 +10,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 
 /**
  *
@@ -22,21 +22,21 @@ public interface RmiWebPagesHandlerInterface extends Remote {
             String name,
             String shortcuts, 
             String urlAddress, 
-            WebPagePlacement placement, 
+            WebPlacement placement, 
             String directory, 
             String browser) throws RemoteException;
         
-    boolean deleteWebPage(String name, String dir, WebPagePlacement place) 
+    boolean deleteWebPage(String name, String dir, WebPlacement place) 
             throws RemoteException;
     
-    List<String> getAllDirectoriesInPlacement(WebPagePlacement placement) 
+    List<String> getAllDirectoriesInPlacement(WebPlacement placement) 
             throws RemoteException;
     
-    List<WebPage> getAllPagesInPlacement(WebPagePlacement placement) 
+    List<WebPage> getAllPagesInPlacement(WebPlacement placement) 
             throws RemoteException;   
     
     List<WebPage> getAllWebPagesInDirectoryAndPlacement(
-            String directory, WebPagePlacement placement) 
+            String directory, WebPlacement placement) 
             throws RemoteException;
     
     List<WebPage> getWebPages(String name) throws RemoteException;
@@ -52,24 +52,24 @@ public interface RmiWebPagesHandlerInterface extends Remote {
             throws RemoteException;
     
     boolean editWebPageOrder(
-            String name, String dir, WebPagePlacement place, int newOrder) 
+            String name, String dir, WebPlacement place, int newOrder) 
             throws RemoteException;
     
     boolean renameDirectory(
-            String directory, String newDirectory, WebPagePlacement placement) 
+            String directory, String newDirectory, WebPlacement placement) 
             throws RemoteException;
     
     boolean deleteDirectory(
-            String directory, WebPagePlacement placement) throws RemoteException;
+            String directory, WebPlacement placement) throws RemoteException;
     
-    boolean editDirectoryOrder(WebPagePlacement place, String name, int newOrder)
+    boolean editDirectoryOrder(WebPlacement place, String name, int newOrder)
             throws RemoteException;
     
     boolean moveWebPageTo(
             String pageName, 
             String oldDir, 
-            WebPagePlacement oldPlacement, 
+            WebPlacement oldPlacement, 
             String newDir, 
-            WebPagePlacement newPlacement) 
+            WebPlacement newPlacement) 
             throws RemoteException;
 }

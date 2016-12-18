@@ -6,17 +6,33 @@
 
 package diarsid.beam.core.util;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static java.lang.String.join;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+
+import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 /**
  *
  * @author Diarsid
  */
 public class PathUtils {
+        
+    public static final List<String> UNACCEPTABLE_FILEPATH_CHARS = unmodifiableList(asList(
+            "~", "?", "$", "@", "!", 
+            "#", "%", "^", "{", "}", 
+            "*", ";", "`", "+", "=",
+            "\""
+    ));
     
     private PathUtils() {
     }
@@ -53,17 +69,37 @@ public class PathUtils {
         }
     }
     
-    public static boolean containsFileSeparator(String target) {
+    public static boolean containsPathSeparator(String target) {
         return target.contains("/") || target.contains("\\");
     }
     
+    public static boolean isAcceptableWebPath(String target) {        
+        try {            
+            // validate possible url.
+            return ! new URL(target).toURI().toString().isEmpty();
+        } catch (MalformedURLException|URISyntaxException e) {
+            return false;
+        }
+    }
+    
+    public static boolean isAcceptableFilePath(String target) {
+        return 
+                ! containsIgnoreCaseAnyFragment(target, UNACCEPTABLE_FILEPATH_CHARS) &&
+                containsPathSeparator(target);
+    }
+    
+    public static boolean isAcceptableRelativePath(String target) {
+        return ( 
+                wordIsAcceptable(target) &&
+                indexOfFirstFileSeparator(target) > 1 && 
+                indexOfLastFileSeparator(target) < target.length() - 2);
+    }
+    
     public static String extractLocationFromPath(String path) {
-        path = normalizeArgument(path);
         return path.substring(0, indexOfFirstFileSeparator(path));
     }
     
     public static String extractTargetFromPath(String path) {
-        path = normalizeArgument(path);
         return path.substring(indexOfFirstFileSeparator(path) + 1);
     }
     
@@ -85,7 +121,7 @@ public class PathUtils {
         return target.replaceAll("[-]+", "-");
     }
 
-    private static String normalizeSeparators(String target) {
+    public static String normalizeSeparators(String target) {
         return target.replaceAll("[/\\\\]+", "/");
     }
     

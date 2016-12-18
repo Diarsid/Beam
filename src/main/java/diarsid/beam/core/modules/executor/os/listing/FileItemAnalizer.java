@@ -12,8 +12,8 @@ import java.util.List;
 import static java.nio.file.Files.isDirectory;
 import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsFullWordIgnoreCase;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
 /**
  *
@@ -51,7 +51,7 @@ public class FileItemAnalizer {
     
     boolean isRestrictedFolder(Path folder) {
         try {
-            return containsFullWordIgnoreCase(
+            return containsWordInIgnoreCase(
                     this.restrictedSpecificFolder, folder.getFileName().toString());
         } catch (NullPointerException e) {
             return containsIgnoreCaseAnyFragment(
@@ -66,7 +66,7 @@ public class FileItemAnalizer {
     
     boolean isProgramSpecificFolder(Path item) {
         if ( isDirectory(item) ) {
-            return containsFullWordIgnoreCase(
+            return containsWordInIgnoreCase(
                 this.programSpecificFolders, item.getFileName().toString());
         } else {
             return false;

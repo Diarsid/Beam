@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Set;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.domain.entities.StoredCommandsBatch;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.tasks.TaskMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
@@ -26,8 +26,8 @@ import diarsid.beam.external.sysconsole.modules.ConsoleDispatcherModule;
 import diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 import diarsid.beam.external.sysconsole.modules.ConsoleReaderModule;
 
-import static diarsid.beam.core.domain.entities.WebPagePlacement.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPagePlacement.WEBPANEL;
+import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
 import static diarsid.beam.core.modules.tasks.TaskType.DAILY;
 import static diarsid.beam.core.modules.tasks.TaskType.HOURLY;
 import static diarsid.beam.core.modules.tasks.TaskType.USUAL;
@@ -182,7 +182,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public void getCommandsBatches() throws IOException {
-        List<StoredCommandsBatch> commands = this.beam.executor().getAllCommands();
+        List<Batch> commands = this.beam.executor().getAllCommands();
         this.printer.printBatches(commands);
     }    
     
@@ -325,7 +325,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if (urlAddress.isEmpty()) {
             return;
         }
-        WebPagePlacement placement = this.askForPlacement();
+        WebPlacement placement = this.askForPlacement();
         if (placement == null) {
             return;
         }
@@ -347,7 +347,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public void getAllWebPages() throws IOException {
-        WebPagePlacement placement = this.askForPlacement();
+        WebPlacement placement = this.askForPlacement();
         if (placement == null) {
             return;
         } 
@@ -429,7 +429,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if ( dir.isEmpty() ) {
             return;
         }
-        WebPagePlacement place = this.askForPlacement();
+        WebPlacement place = this.askForPlacement();
         if ( place == null ) {
             return;
         }
@@ -445,7 +445,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if ( dir.isEmpty() ) {
             return;
         }
-        WebPagePlacement place = this.askForPlacement();
+        WebPlacement place = this.askForPlacement();
         if ( place == null ) {
             return;
         }
@@ -535,7 +535,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
                 this.printer.printUnderLn("URL has been changed.");
             }
         } else if (choosed == 4) {
-            WebPagePlacement place = this.askForPlacement();
+            WebPlacement place = this.askForPlacement();
             if (place == null) {
                 return;
             }
@@ -583,7 +583,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if ( oldDir.isEmpty() ) {
             return;
         }
-        WebPagePlacement oldPlacement = this.askForPlacement();
+        WebPlacement oldPlacement = this.askForPlacement();
         if ( oldPlacement == null ) {
             return;
         }
@@ -592,7 +592,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
         if ( newDir.isEmpty() ) {
             return;
         }
-        WebPagePlacement newPlacement = this.askForPlacement();
+        WebPlacement newPlacement = this.askForPlacement();
         if ( newPlacement == null ) {
             return;
         }
@@ -649,7 +649,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public void editDirectory() throws IOException {
-        WebPagePlacement placement = this.askForPlacement();
+        WebPlacement placement = this.askForPlacement();
         if (placement == null) {
             return;
         } 
@@ -716,7 +716,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
      
     @Override
     public void getPagesInDirectoryAndPlacement() throws IOException {
-        WebPagePlacement placement = this.askForPlacement();
+        WebPlacement placement = this.askForPlacement();
         if (placement == null) {
             return;
         } 
@@ -928,7 +928,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     }
     */
     
-    private WebPagePlacement askForPlacement() {
+    private WebPlacement askForPlacement() {
         int choice = this.input.chooseVariants("placement : ", this.placements);
         if ( choice == 1 ) {
             return WEBPANEL;

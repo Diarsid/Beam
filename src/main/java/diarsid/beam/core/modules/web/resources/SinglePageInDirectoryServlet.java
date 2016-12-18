@@ -18,7 +18,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
@@ -87,7 +87,7 @@ class SinglePageInDirectoryServlet extends HttpServlet {
         
         String page = this.resolver.extractPage(path);
         String dir = this.resolver.extractDirectoryBeforePages(path);
-        WebPagePlacement place = this.resolver.extractPlacementBeforeDirectory(path);
+        WebPlacement place = this.resolver.extractPlacementBeforeDirectory(path);
         
         if ( this.pagesHandler.deleteWebPage(page, dir, place)) {
             response.setStatus(HttpServletResponse.SC_OK); 

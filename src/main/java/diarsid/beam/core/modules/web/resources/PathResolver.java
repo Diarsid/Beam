@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.web.resources;
 
 import javax.servlet.http.HttpServletRequest;
 
-import diarsid.beam.core.domain.entities.WebPagePlacement;
+import diarsid.beam.core.domain.entities.WebPlacement;
 
 import static diarsid.beam.core.domain.entities.WebPage.WEB_NAME_REGEXP;
 
@@ -28,16 +28,16 @@ class PathResolver {
                 .replace("%3E", ">");
     }
     
-    WebPagePlacement extractPlacement(String path) {
-        return WebPagePlacement.valueOf(
+    WebPlacement extractPlacement(String path) {
+        return WebPlacement.valueOf(
                 path.substring(
                 path.lastIndexOf("resources/") + "resources/".length())
                 .toUpperCase()
         );
     }
     
-    WebPagePlacement extractPlacementBeforeDirectory(String path) {
-        return WebPagePlacement.valueOf(
+    WebPlacement extractPlacementBeforeDirectory(String path) {
+        return WebPlacement.valueOf(
                 path.substring(
                 path.lastIndexOf("resources/") + "resources/".length(), 
                 path.indexOf("/dirs"))

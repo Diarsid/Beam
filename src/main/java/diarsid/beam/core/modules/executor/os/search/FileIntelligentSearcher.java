@@ -20,7 +20,6 @@ import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 
 import static java.nio.file.Files.walkFileTree;
 
-import static diarsid.beam.core.util.PathUtils.containsFileSeparator;
 import static diarsid.beam.core.util.PathUtils.givenPathIsDirectory;
 import static diarsid.beam.core.util.PathUtils.normalizePathFragmentsFrom;
 import static diarsid.beam.core.modules.executor.os.search.ItemType.typeOf;
@@ -33,6 +32,7 @@ import static diarsid.beam.core.modules.executor.os.search.result.FileSearchSucc
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccessImpl.foundFiles;
 import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
 
 /**
  *
@@ -84,7 +84,7 @@ class FileIntelligentSearcher implements FileSearcher {
         List<String> foundItems = new ArrayList<>();
         try {             
             
-            if ( containsFileSeparator(target) ) {
+            if ( containsPathSeparator(target) ) {
                 debug("[FILE SEARCHER] ...search by path...");
                 this.collectFoundFilesByPathParts(
                         root, normalizePathFragmentsFrom(target), foundItems, mode);
