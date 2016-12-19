@@ -12,6 +12,11 @@ import org.junit.Test;
 import diarsid.beam.core.control.commands.Command;
 import diarsid.beam.core.control.commands.EditEntityCommand;
 import diarsid.beam.core.control.commands.SingleStringCommand;
+import diarsid.beam.core.control.commands.TimeEntityEditCommand;
+import diarsid.beam.core.control.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.control.commands.creation.CreateTaskCommand;
+import diarsid.beam.core.control.commands.creation.CreateWebDirectoryCommand;
+import diarsid.beam.core.control.commands.creation.CreateWebPageCommand;
 import diarsid.beam.core.control.commands.executor.CallBatchCommand;
 import diarsid.beam.core.control.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.control.commands.executor.OpenLocationCommand;
@@ -19,10 +24,6 @@ import diarsid.beam.core.control.commands.executor.OpenPathCommand;
 import diarsid.beam.core.control.commands.executor.RunMarkedProgramCommand;
 import diarsid.beam.core.control.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.commands.executor.SeePageCommand;
-import diarsid.beam.core.control.commands.creation.CreateLocationCommand;
-import diarsid.beam.core.control.commands.creation.CreateWebPageCommand;
-import diarsid.beam.core.control.commands.creation.CreateWebDirectoryCommand;
-import diarsid.beam.core.control.commands.creation.CreateTaskCommand;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,10 +38,14 @@ import static diarsid.beam.core.control.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.control.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.control.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.control.commands.CommandType.EDIT_BATCH;
+import static diarsid.beam.core.control.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.control.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.control.commands.CommandType.EDIT_PAGE_DIR;
+import static diarsid.beam.core.control.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.control.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.control.commands.CommandType.EXIT;
+import static diarsid.beam.core.control.commands.CommandType.LIST_LOCATION;
+import static diarsid.beam.core.control.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.control.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.control.commands.CommandType.OPEN_NOTES; 
 import static diarsid.beam.core.control.commands.CommandType.OPEN_PATH;
@@ -53,6 +58,7 @@ import static diarsid.beam.core.control.commands.CommandType.UNDEFINED;
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_COMMANDS;
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_NAME;
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_ORDER;
+import static diarsid.beam.core.control.commands.EditableTarget.TARGET_PATH;
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_PLACE;
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_UNDEFINED;
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_URL;
@@ -379,6 +385,17 @@ public class InterpreterTest {
     }
     
     @Test
+    public void testInterprete_createPage_pathAndNameAndPlace() {
+        Command c1 = interpreter.interprete("+ page https://google.com google panel");
+        assertEquals(CREATE_PAGE, c1.getType());
+        
+        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        assertEquals("google", c1casted.getName());
+        assertEquals("https://google.com", c1casted.getUrl());
+        assertEquals(WEBPANEL.name(), c1casted.getPlace());
+    }    
+    
+    @Test
     public void testInterprete_createPage_onlyPath() {
         Command c1 = interpreter.interprete("+ page https://google.com ");
         assertEquals(CREATE_PAGE, c1.getType());
@@ -389,12 +406,34 @@ public class InterpreterTest {
     }
     
     @Test
+    public void testInterprete_createPage_pathPlace() {
+        Command c1 = interpreter.interprete("+ page https://google.com panel");
+        assertEquals(CREATE_PAGE, c1.getType());
+        
+        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        assertFalse(c1casted.hasName());
+        assertEquals("https://google.com", c1casted.getUrl());
+        assertEquals(WEBPANEL.name(), c1casted.getPlace());
+    }
+    
+    @Test
     public void testInterprete_createPage_onlyName() {
         Command c1 = interpreter.interprete("+ page google ");
         assertEquals(CREATE_PAGE, c1.getType());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertEquals("google", c1casted.getName());
+        assertFalse(c1casted.hasUrl());
+    }
+    
+    @Test
+    public void testInterprete_createPage_namePlace() {
+        Command c1 = interpreter.interprete("+ page google bookm");
+        assertEquals(CREATE_PAGE, c1.getType());
+        
+        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        assertEquals("google", c1casted.getName());
+        assertEquals(BOOKMARKS.name(), c1casted.getPlace());
         assertFalse(c1casted.hasUrl());
     }
     
@@ -747,6 +786,106 @@ public class InterpreterTest {
     }
     
     @Test
+    public void testInterprete_editLocation_name_targetName() {
+        Command c = interpreter.interprete("edit location boo name");        
+        assertEquals(EDIT_LOCATION, c.getType());      
+        
+        EditEntityCommand c1 = (EditEntityCommand) c;
+        assertEquals("boo", c1.getName());
+        assertEquals(TARGET_NAME, c1.getTarget());
+    }  
+    
+    @Test
+    public void testInterprete_editLocation_name_targetPath() {
+        Command c = interpreter.interprete("edit location boo path");        
+        assertEquals(EDIT_LOCATION, c.getType());      
+        
+        EditEntityCommand c1 = (EditEntityCommand) c;
+        assertEquals("boo", c1.getName());
+        assertEquals(TARGET_PATH, c1.getTarget());
+    }  
+    
+    @Test
+    public void testInterprete_editLocation_onlyTargetName() {
+        Command c = interpreter.interprete("edit location name");        
+        assertEquals(EDIT_LOCATION, c.getType());      
+        
+        EditEntityCommand c1 = (EditEntityCommand) c;
+        assertFalse(c1.hasName());
+        assertEquals(TARGET_NAME, c1.getTarget());
+    }  
+    
+    @Test
+    public void testInterprete_editLocation_onlyTargetPath() {
+        Command c = interpreter.interprete("edit location path");        
+        assertEquals(EDIT_LOCATION, c.getType());      
+        
+        EditEntityCommand c1 = (EditEntityCommand) c;
+        assertFalse(c1.hasName());
+        assertEquals(TARGET_PATH, c1.getTarget());
+    }  
+    
+    @Test
+    public void testInterprete_editLocation_onlyName() {
+        Command c = interpreter.interprete("edit location books");        
+        assertEquals(EDIT_LOCATION, c.getType());      
+        
+        EditEntityCommand c1 = (EditEntityCommand) c;
+        assertFalse(c1.isTargetDefined());
+        assertEquals("books", c1.getName());
+    } 
+    
+    @Test
+    public void testInterprete_editTask_textAndTime() {
+        Command c = interpreter.interprete("edit task 10:10 task text");        
+        assertEquals(EDIT_TASK, c.getType());        
+        
+        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
+        assertEquals("10:10", c1.getTime());
+        assertEquals("task text", c1.getText());
+    }
+    
+    @Test
+    public void testInterprete_editTask_textAndTime_1() {
+        Command c = interpreter.interprete("edit task 12 10:15 task text");        
+        assertEquals(EDIT_TASK, c.getType());        
+        
+        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
+        assertEquals("12 10:15", c1.getTime());
+        assertEquals("task text", c1.getText());
+    }
+    
+    @Test
+    public void testInterprete_editTask_text() {
+        Command c = interpreter.interprete("edit task task text");        
+        assertEquals(EDIT_TASK, c.getType());        
+        
+        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
+        assertFalse(c1.hasTime());
+        assertEquals("task text", c1.getText());
+    }
+    
+    @Test
+    public void testInterprete_editTask_timet() {
+        Command c = interpreter.interprete("edit task 10:15");        
+        assertEquals(EDIT_TASK, c.getType());        
+        
+        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
+        assertFalse(c1.hasText());
+        assertEquals("10:15", c1.getTime());
+    }
+    
+    @Test
+    public void testInterprete_editTask_empty() {
+        Command c = interpreter.interprete("edit task");        
+        assertEquals(EDIT_TASK, c.getType());        
+        
+        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
+        assertFalse(c1.hasText());
+        assertFalse(c1.hasTime());
+    }
+        
+    @Test
     public void testInterprete_close() {
         Command c = interpreter.interprete("close");
         assertEquals(CLOSE_CONSOLE, c.getType());   
@@ -757,4 +896,22 @@ public class InterpreterTest {
         Command c = interpreter.interprete("exit");
         assertEquals(EXIT, c.getType());   
     }
+    
+    @Test
+    public void testInterprete_listLocation() {
+        Command c = interpreter.interprete("list books");
+        assertEquals(LIST_LOCATION, c.getType()); 
+        
+        SingleStringCommand c1 = (SingleStringCommand) c;
+        assertEquals("books", c1.getArg());
+    }  
+    
+    @Test
+    public void testInterprete_listPath() {
+        Command c = interpreter.interprete("list books/tech/java");
+        assertEquals(LIST_PATH, c.getType()); 
+        
+        SingleStringCommand c1 = (SingleStringCommand) c;
+        assertEquals("books/tech/java", c1.getArg());
+    }  
 }

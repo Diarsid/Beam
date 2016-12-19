@@ -6,24 +6,17 @@
 
 package diarsid.beam.core.control.commands;
 
-import static java.util.Objects.isNull;
 
-
-public class SingleStringCommand implements Command {
+public class SingleStringCommand extends StringCommand {
     
     private final String arg;
     private final CommandType type;
     
     public SingleStringCommand(String arg, CommandType type) {
-        this.onlyNonNullArgument(arg);
+        super();
+        super.onlyNonNullArgument(arg);
         this.arg = arg;
         this.type = type;
-    }
-    
-    private void onlyNonNullArgument(String arg) {
-        if ( isNull(arg) ) {
-            throw new NullPointerException("Command argument cannot be null.");
-        }
     }
 
     public String getArg() {

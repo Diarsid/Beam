@@ -6,16 +6,14 @@
 
 package diarsid.beam.core.control.interpreter.recognizers;
 
-import java.util.List;
-
 import diarsid.beam.core.control.commands.Command;
 import diarsid.beam.core.control.commands.creation.CreateLocationCommand;
 import diarsid.beam.core.control.interpreter.Input;
 import diarsid.beam.core.control.interpreter.Recognizer;
+import diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor;
 
-import static diarsid.beam.core.control.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
-import static diarsid.beam.core.util.PathUtils.isAcceptableFilePath;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.FILE_PATH;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.SIMPLE_WORD;
 
 
 public class CreateLocationRecognizer implements Recognizer {
@@ -26,35 +24,14 @@ public class CreateLocationRecognizer implements Recognizer {
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
-            List<String> args = input.allRemainingArgs();
-            switch ( args.size() ) {
-                case 1 : {
-                    String arg = args.get(0);
-                    if ( isAcceptableFilePath(arg) ) {
-                        return new CreateLocationCommand("", arg);
-                    } else if ( wordIsAcceptable(arg) ) {
-                        return new CreateLocationCommand(arg, "");
-                    } else {
-                        return undefinedCommand();
-                    }
-                } 
-                case 2 : {
-                    String arg0 = args.get(0);
-                    String arg1 = args.get(1);
-                    if ( isAcceptableFilePath(arg0) && wordIsAcceptable(arg1) ) {
-                        // name, path
-                        return new CreateLocationCommand(arg1, arg0);
-                    } else if ( isAcceptableFilePath(arg1) && wordIsAcceptable(arg0) ) {
-                        // path, name
-                        return new CreateLocationCommand(arg0, arg1);
-                    } else {
-                        return undefinedCommand();
-                    }
-                } 
-                default : {
-                    return undefinedCommand();
-                }
-            }
+            StreamArgumentsInterceptor args = new StreamArgumentsInterceptor();
+            input.allRemainingArgs()
+                    .stream()
+                    .filter(arg -> args.interceptArgumentOfType(arg, FILE_PATH).ifContinue())
+                    .filter(arg -> args.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                    .count();
+            
+            return new CreateLocationCommand(args.of(SIMPLE_WORD), args.of(FILE_PATH));
         } else {
             return new CreateLocationCommand("", "");
         }

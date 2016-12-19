@@ -6,16 +6,15 @@
 
 package diarsid.beam.core.control.interpreter.recognizers;
 
-import java.util.List;
-
 import diarsid.beam.core.control.commands.Command;
 import diarsid.beam.core.control.commands.creation.CreateWebPageCommand;
 import diarsid.beam.core.control.interpreter.Input;
 import diarsid.beam.core.control.interpreter.PrioritizedRecognizer;
+import diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor;
 
-import static diarsid.beam.core.control.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
-import static diarsid.beam.core.util.PathUtils.isAcceptableWebPath;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.SIMPLE_WORD;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.WEB_PATH;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.WEB_PLACEMENT;
 
 
 public class CreateWebPageRecognizer extends PrioritizedRecognizer {
@@ -26,37 +25,24 @@ public class CreateWebPageRecognizer extends PrioritizedRecognizer {
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
-            List<String> args = input.allRemainingArgs();
-            switch ( args.size() ) {
-                case 1 : {
-                    String arg = args.get(0);
-                    if ( isAcceptableWebPath(arg) ) {
-                        return new CreateWebPageCommand("", arg);
-                    } else if ( wordIsAcceptable(arg) ) {
-                        return new CreateWebPageCommand(arg, "");
-                    } else {
-                        return undefinedCommand();
-                    }
-                } 
-                case 2 : {
-                    String arg0 = args.get(0);
-                    String arg1 = args.get(1);
-                    if ( isAcceptableWebPath(arg0) && wordIsAcceptable(arg1) ) {
-                        // name, path
-                        return new CreateWebPageCommand(arg1, arg0);
-                    } else if ( isAcceptableWebPath(arg1) && wordIsAcceptable(arg0) ) {
-                        // path, name
-                        return new CreateWebPageCommand(arg0, arg1);
-                    } else {
-                        return undefinedCommand();
-                    }
-                } 
-                default : {
-                    return undefinedCommand();
-                }
-            }
+            StreamArgumentsInterceptor args = new StreamArgumentsInterceptor();
+            input.allRemainingArgs()
+                    .stream()
+                    .filter(arg -> args.interceptArgumentOfType(arg, WEB_PATH).ifContinue())
+                    .filter(arg -> args.interceptArgumentOfType(arg, WEB_PLACEMENT).ifContinue())
+                    .filter(arg -> args.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                    .count();
+            
+//            System.out.println(join(", ", input.allRemainingArgs()));
+//            System.out.println(notAccepted);
+            
+            return new CreateWebPageCommand(
+                    args.of(SIMPLE_WORD), 
+                    args.of(WEB_PATH), 
+                    args.of(WEB_PLACEMENT)
+            );
         } else {
-            return new CreateWebPageCommand("", "");
+            return new CreateWebPageCommand("", "", "");
         }
     }
 }

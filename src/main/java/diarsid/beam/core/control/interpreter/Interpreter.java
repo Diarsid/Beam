@@ -43,9 +43,15 @@ import static diarsid.beam.core.control.commands.CommandType.DELETE_PAGE_DIR;
 import static diarsid.beam.core.control.commands.CommandType.DELETE_REMINDER;
 import static diarsid.beam.core.control.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.control.commands.CommandType.EDIT_BATCH;
+import static diarsid.beam.core.control.commands.CommandType.EDIT_EVENT;
+import static diarsid.beam.core.control.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.control.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.control.commands.CommandType.EDIT_PAGE_DIR;
+import static diarsid.beam.core.control.commands.CommandType.EDIT_REMINDER;
+import static diarsid.beam.core.control.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.control.commands.CommandType.EXIT;
+import static diarsid.beam.core.control.commands.CommandType.LIST_LOCATION;
+import static diarsid.beam.core.control.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.control.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.control.commands.CommandType.OPEN_PATH_IN_NOTE;
 import static diarsid.beam.core.control.commands.CommandType.OPEN_TARGET_IN_NOTE;
@@ -168,15 +174,19 @@ public class Interpreter {
                                 "alter").branchesTo(
                                         new WordsRecognizer(
                                                 "loc", 
-                                                "location").branchesTo(),
+                                                "location").pointsTo(
+                                                        new EditEntityRecognizer(EDIT_LOCATION)),
                                         new WordRecognizer(
-                                                "task").branchesTo(),
+                                                "task").pointsTo(
+                                                        new TimeEntityEditRecognizer(EDIT_TASK)),
                                         new WordsRecognizer(
                                                 "reminder", 
                                                 "rem", 
-                                                "remind"),
+                                                "remind").pointsTo(
+                                                        new TimeEntityEditRecognizer(EDIT_REMINDER)),
                                         new WordRecognizer(
-                                                "event"),
+                                                "event").pointsTo(
+                                                        new TimeEntityEditRecognizer(EDIT_EVENT)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
@@ -306,7 +316,7 @@ public class Interpreter {
                                 "get", 
                                 "find").branchesTo(
                                 new WordRecognizer(
-                                        "task").branchesTo(), 
+                                        "task"), 
                                 new WordsRecognizer(
                                         "reminder", 
                                         "rem", 
@@ -315,12 +325,12 @@ public class Interpreter {
                                         "event"),
                                 new WordsRecognizer(
                                         "loc", 
-                                        "location").branchesTo(),
+                                        "location"),
                                 new WordsRecognizer(
                                         "page", 
                                         "webpage", 
                                         "webp", 
-                                        "web").branchesTo(),
+                                        "web"),
                                 new WordsRecognizer(
                                         "dir", 
                                         "direct", 
@@ -328,12 +338,18 @@ public class Interpreter {
                                 new WordsRecognizer(
                                         "bat", 
                                         "batch", 
-                                        "exe").branchesTo()
+                                        "exe")
                         ),
                         new WordRecognizer(
                                 "list").branchesTo(
-                                        new SimpleWordRecognizer(), 
-                                        new RelativePathRecognizer()
+                                        new SimpleWordRecognizer().pointsTo(
+                                                input -> new SingleStringCommand(
+                                                        input.currentArg(), 
+                                                        LIST_LOCATION)), 
+                                        new RelativePathRecognizer().pointsTo(
+                                                input -> new SingleStringCommand(
+                                                        input.currentArg(), 
+                                                        LIST_PATH))
                         ),
                         new WordsRecognizer(
                                 "n", 

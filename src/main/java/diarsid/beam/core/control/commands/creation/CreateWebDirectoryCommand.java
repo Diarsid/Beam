@@ -20,8 +20,8 @@ public class CreateWebDirectoryCommand extends DoubleStringCommand {
         super(dirName, "");
     }
     
-    public CreateWebDirectoryCommand(String dirName, WebPlacement place) {
-        super(dirName, place.name());
+    public CreateWebDirectoryCommand(String dirName, String place) {
+        super(dirName, place);
     }
     
     public String getName() {

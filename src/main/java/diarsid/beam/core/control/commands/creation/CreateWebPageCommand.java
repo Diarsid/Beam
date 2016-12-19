@@ -7,15 +7,15 @@
 package diarsid.beam.core.control.commands.creation;
 
 import diarsid.beam.core.control.commands.CommandType;
-import diarsid.beam.core.control.commands.DoubleStringCommand;
+import diarsid.beam.core.control.commands.TripleStringCommand;
 
 import static diarsid.beam.core.control.commands.CommandType.CREATE_PAGE;
 
 
-public class CreateWebPageCommand extends DoubleStringCommand {
+public class CreateWebPageCommand extends TripleStringCommand {
         
-    public CreateWebPageCommand(String name, String url) {
-        super(name, url);
+    public CreateWebPageCommand(String name, String url, String place) {
+        super(name, url, place);
     }
 
     public String getName() {
@@ -26,12 +26,20 @@ public class CreateWebPageCommand extends DoubleStringCommand {
         return super.getSecond();
     }
     
+    public String getPlace() {
+        return super.getThird();
+    }
+    
     public boolean hasName() {
         return super.hasFirst();
     }
     
     public boolean hasUrl() {
         return super.hasSecond();
+    }
+    
+    public boolean hasPlace() {
+        return super.hasThird();
     }
 
     @Override

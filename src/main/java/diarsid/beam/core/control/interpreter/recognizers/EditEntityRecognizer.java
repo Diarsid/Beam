@@ -9,14 +9,14 @@ package diarsid.beam.core.control.interpreter.recognizers;
 import diarsid.beam.core.control.commands.Command;
 import diarsid.beam.core.control.commands.CommandType;
 import diarsid.beam.core.control.commands.EditEntityCommand;
-import diarsid.beam.core.control.commands.EditableTarget;
 import diarsid.beam.core.control.interpreter.Input;
 import diarsid.beam.core.control.interpreter.PrioritizedRecognizer;
+import diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor;
 
 import static diarsid.beam.core.control.commands.EditableTarget.TARGET_UNDEFINED;
-import static diarsid.beam.core.control.commands.EditableTarget.argToTarget;
-import static diarsid.beam.core.control.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
+import static diarsid.beam.core.control.commands.EditableTarget.targetOf;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.EDITABLE_TARGET;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.SIMPLE_WORD;
 
 
 public class EditEntityRecognizer extends PrioritizedRecognizer {
@@ -30,42 +30,19 @@ public class EditEntityRecognizer extends PrioritizedRecognizer {
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
-            switch ( input.remainingArgsQty() ) {
-                case 1 : {
-                    EditableTarget target = argToTarget(input.currentArg());
-                    if ( target.isDefined() ) {
-                        return new EditEntityCommand("", target, this.type);
-                    } else if ( wordIsAcceptable(input.currentArg()) ) {
-                        return new EditEntityCommand(input.currentArg(), TARGET_UNDEFINED, this.type);
-                    }
-                }
-                case 2 : {                        
-                    String arg0 = input.currentArg();
-                    String arg1 = input.toNextArg().currentArg();
-                    
-                    EditableTarget target = argToTarget(arg0);                    
-                    if ( target.isDefined() ) {
-                        return this.commandWithOrWithoutName(arg1, target);
-                    } else if ( (target = argToTarget(arg1)).isDefined() ) {
-                        return this.commandWithOrWithoutName(arg0, target);
-                    } else {
-                        return undefinedCommand();
-                    }
-                }
-                default : {
-                    return undefinedCommand();
-                }
-            }
+            StreamArgumentsInterceptor args = new StreamArgumentsInterceptor();
+            input.allRemainingArgs()
+                    .stream()
+                    .filter(arg -> args.interceptArgumentOfType(arg, EDITABLE_TARGET).ifContinue())
+                    .filter(arg -> args.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                    .count();
+            
+            return new EditEntityCommand(
+                    args.of(SIMPLE_WORD), 
+                    targetOf(args.of(EDITABLE_TARGET)), 
+                    this.type);
         } else {
             return new EditEntityCommand("", TARGET_UNDEFINED, this.type);
-        }
-    }
-    
-    private Command commandWithOrWithoutName(String name, EditableTarget target) {
-        if ( wordIsAcceptable(name) ) {
-            return new EditEntityCommand(name, target, this.type);
-        } else {
-            return new EditEntityCommand("", target, this.type);
         }
     }
 }

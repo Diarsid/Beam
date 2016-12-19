@@ -10,13 +10,10 @@ import diarsid.beam.core.control.commands.Command;
 import diarsid.beam.core.control.commands.creation.CreateWebDirectoryCommand;
 import diarsid.beam.core.control.interpreter.Input;
 import diarsid.beam.core.control.interpreter.Recognizer;
-import diarsid.beam.core.domain.entities.WebPlacement;
+import diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor;
 
-import static java.util.Objects.nonNull;
-
-import static diarsid.beam.core.control.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
-import static diarsid.beam.core.domain.entities.WebPlacement.argToPlacement;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.SIMPLE_WORD;
+import static diarsid.beam.core.control.interpreter.StreamArgumentsInterceptor.ArgumentType.WEB_PLACEMENT;
 
 
 public class CreateWebDirectoryRecognizer implements Recognizer {
@@ -27,42 +24,16 @@ public class CreateWebDirectoryRecognizer implements Recognizer {
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
-            switch ( input.remainingArgsQty() ) {
-                case 1 : {
-                    WebPlacement place = argToPlacement(input.currentArg());
-                    if ( nonNull(place) ) {
-                        return new CreateWebDirectoryCommand("", place);
-                    } else if ( wordIsAcceptable(input.currentArg()) ) {
-                        return new CreateWebDirectoryCommand(input.currentArg());
-                    }
-                }
-                case 2 : {                        
-                    String arg0 = input.currentArg();
-                    String arg1 = input.toNextArg().currentArg();
-                    
-                    WebPlacement place = argToPlacement(arg0);                    
-                    if ( nonNull(place) ) {
-                        return this.commandWithOrWithoutName(arg1, place);
-                    } else if ( nonNull(place = argToPlacement(arg1)) ) {
-                        return this.commandWithOrWithoutName(arg0, place);
-                    } else {
-                        return undefinedCommand();
-                    }
-                }
-                default : {
-                    return undefinedCommand();
-                }
-            }  
+            StreamArgumentsInterceptor args = new StreamArgumentsInterceptor();
+            input.allRemainingArgs()
+                    .stream()
+                    .filter(arg -> args.interceptArgumentOfType(arg, WEB_PLACEMENT).ifContinue())
+                    .filter(arg -> args.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                    .count();
+            
+            return new CreateWebDirectoryCommand(args.of(SIMPLE_WORD), args.of(WEB_PLACEMENT));            
         } else {
             return new CreateWebDirectoryCommand("");
-        }
-    }
-    
-    private Command commandWithOrWithoutName(String name, WebPlacement place) {
-        if ( wordIsAcceptable(name) ) {
-            return new CreateWebDirectoryCommand(name, place);
-        } else {
-            return new CreateWebDirectoryCommand("", place);
         }
     }
 }

@@ -14,7 +14,7 @@ import static diarsid.beam.core.control.commands.CommandType.CREATE_LOCATION;
 
 public class CreateLocationCommand extends DoubleStringCommand {
         
-    public CreateLocationCommand(String name, String path) {
+    public CreateLocationCommand(String name, String path) {        
         super(name, path);
     }
     

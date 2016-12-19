@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.control.commands;
 
+import static java.util.Arrays.stream;
+
 import static diarsid.beam.core.util.StringUtils.lower;
 
 /**
@@ -25,6 +27,17 @@ public enum EditableTarget {
 
     public boolean isDefined() {
         return this != TARGET_UNDEFINED;
+    }
+    
+    public boolean isNotDefined() {
+        return this == TARGET_UNDEFINED;
+    }
+    
+    public static EditableTarget targetOf(String name) {
+        return stream(values())
+                .filter(value -> lower(value.name()).equals(lower(name)))
+                .findFirst()
+                .orElse(TARGET_UNDEFINED);
     }
     
     public static EditableTarget argToTarget(String arg) {

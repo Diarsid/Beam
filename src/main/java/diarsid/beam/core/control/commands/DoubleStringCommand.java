@@ -6,25 +6,18 @@
 
 package diarsid.beam.core.control.commands;
 
-import static java.util.Objects.isNull;
 
-
-public abstract class DoubleStringCommand implements Command {
+public abstract class DoubleStringCommand extends StringCommand {
     
     private final String first;
     private final String second;
     
     protected DoubleStringCommand(String first, String second) {
-        this.onlyNonNullArgument(first);
-        this.onlyNonNullArgument(second);
+        super();
+        super.onlyNonNullArgument(first);
+        super.onlyNonNullArgument(second);
         this.first = first;        
         this.second = second;
-    }
-    
-    private void onlyNonNullArgument(String arg) {
-        if ( isNull(arg) ) {
-            throw new NullPointerException("Command argument cannot be null.");
-        }
     }
     
     protected final boolean hasFirst() {

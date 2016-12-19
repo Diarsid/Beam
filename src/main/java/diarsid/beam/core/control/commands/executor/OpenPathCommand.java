@@ -7,14 +7,12 @@
 package diarsid.beam.core.control.commands.executor;
 
 import diarsid.beam.core.control.commands.Argument;
+import diarsid.beam.core.control.commands.ArgumentedCommand;
 import diarsid.beam.core.control.commands.CommandType;
 
+import static diarsid.beam.core.control.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.util.PathUtils.extractTargetFromPath;
-
-import diarsid.beam.core.control.commands.ArgumentedCommand;
-
-import static diarsid.beam.core.control.commands.CommandType.OPEN_PATH;
 
 
 public class OpenPathCommand implements ArgumentedCommand {

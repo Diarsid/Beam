@@ -4,21 +4,20 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.control.interpreter.recognizers;
+package diarsid.beam.core.control.interpreter;
 
 import diarsid.beam.core.control.commands.Command;
-import diarsid.beam.core.control.commands.creation.CreateTaskCommand;
-import diarsid.beam.core.control.interpreter.Input;
-import diarsid.beam.core.control.interpreter.Recognizer;
-import diarsid.beam.core.control.interpreter.ScheduledEntityArguments;
-import diarsid.beam.core.control.interpreter.ScheduledEntityArgumentsDetector;
+import diarsid.beam.core.control.commands.CommandType;
+import diarsid.beam.core.control.commands.TimeEntityEditCommand;
 
 
-public class CreateTaskRecognizer implements Recognizer {
+public class TimeEntityEditRecognizer implements Recognizer {
     
+    private final CommandType type;
     private final ScheduledEntityArgumentsDetector detector;
     
-    public CreateTaskRecognizer() {
+    public TimeEntityEditRecognizer(CommandType type) {
+        this.type = type;
         this.detector = new ScheduledEntityArgumentsDetector();
     }
 
@@ -26,9 +25,9 @@ public class CreateTaskRecognizer implements Recognizer {
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
             ScheduledEntityArguments args = this.detector.findTimeAndTextArgsFrom(input);
-            return new CreateTaskCommand(args.getTime(), args.getText());
+            return new TimeEntityEditCommand(args.getTime(), args.getText(), this.type);
         } else {
-            return new CreateTaskCommand("", "");
+            return new TimeEntityEditCommand("", "", this.type);
         }
     }
 }
