@@ -14,9 +14,9 @@ import diarsid.beam.core.control.interpreter.Recognizer;
 import static java.lang.Character.isDigit;
 
 
-public class TaskCreationRecognizer implements Recognizer {
+public class CreateTaskRecognizer implements Recognizer {
     
-    public TaskCreationRecognizer() {
+    public CreateTaskRecognizer() {
     }
     
     private boolean argIsPlusTime(Input input) {

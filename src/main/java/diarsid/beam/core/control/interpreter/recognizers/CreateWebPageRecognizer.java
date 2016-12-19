@@ -11,22 +11,21 @@ import java.util.List;
 import diarsid.beam.core.control.commands.Command;
 import diarsid.beam.core.control.commands.creation.CreateWebPageCommand;
 import diarsid.beam.core.control.interpreter.Input;
-import diarsid.beam.core.control.interpreter.Recognizer;
+import diarsid.beam.core.control.interpreter.PrioritizedRecognizer;
 
 import static diarsid.beam.core.control.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
 import static diarsid.beam.core.util.PathUtils.isAcceptableWebPath;
 
 
-public class PageCreationRecognizer implements Recognizer {
+public class CreateWebPageRecognizer extends PrioritizedRecognizer {
     
-    public PageCreationRecognizer() {
+    public CreateWebPageRecognizer() {
     }
 
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
-            System.out.println("LOCATION CREATION");
             List<String> args = input.allRemainingArgs();
             switch ( args.size() ) {
                 case 1 : {

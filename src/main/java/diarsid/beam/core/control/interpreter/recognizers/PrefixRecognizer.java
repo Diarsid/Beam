@@ -27,7 +27,7 @@ public class PrefixRecognizer extends NodeRecognizer {
     
     public PrefixRecognizer(String... controlPrefixes) {
         this.controlPrefixes = unmodifiableSet(stream(controlPrefixes)
-                .map(prefix -> lower(prefix))
+                .map(prefix -> lower(prefix).trim())
                 .collect(toSet()));
     }
 

@@ -19,9 +19,9 @@ import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable
 import static diarsid.beam.core.domain.entities.WebPlacement.argToPlacement;
 
 
-public class PageDirectoryCreationRecognizer implements Recognizer {
+public class CreateWebDirectoryRecognizer implements Recognizer {
     
-    public PageDirectoryCreationRecognizer() {
+    public CreateWebDirectoryRecognizer() {
     }
 
     @Override

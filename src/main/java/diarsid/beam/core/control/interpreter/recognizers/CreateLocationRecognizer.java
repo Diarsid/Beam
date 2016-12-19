@@ -18,15 +18,14 @@ import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable
 import static diarsid.beam.core.util.PathUtils.isAcceptableFilePath;
 
 
-public class LocationCreationRecognizer implements Recognizer {
+public class CreateLocationRecognizer implements Recognizer {
     
-    public LocationCreationRecognizer() {
+    public CreateLocationRecognizer() {
     }
 
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
-            System.out.println("LOCATION CREATION");
             List<String> args = input.allRemainingArgs();
             switch ( args.size() ) {
                 case 1 : {

@@ -70,12 +70,6 @@ public enum CommandType {
     
     UNDEFINED;
     
-//    public static CommandType defineTypeOf(String operation) {
-//        switch ( operation.toLowerCase().trim() ) {
-//            case "open"
-//        }
-//    }
-    
     public static boolean isDefined(CommandType type) {
         return ( type != UNDEFINED );
     }
