@@ -9,14 +9,16 @@ package diarsid.beam.core.modules.data.base.builder;
 import java.lang.reflect.Constructor;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.shared.modules.ConfigModule;
 
-import static diarsid.beam.shared.modules.config.Config.CORE_DB_LOCATION;
-import static diarsid.beam.shared.modules.config.Config.CORE_DB_NAME;
-import static diarsid.beam.shared.modules.config.Config.CORE_JDBC_DRIVER;
-import static diarsid.beam.shared.modules.config.Config.CORE_JDBC_URL;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
+import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.modules.ConfigModule;
+
+import static diarsid.beam.core.modules.config.Config.CORE_DB_LOCATION;
+import static diarsid.beam.core.modules.config.Config.CORE_DB_NAME;
+import static diarsid.beam.core.modules.config.Config.CORE_JDBC_DRIVER;
+import static diarsid.beam.core.modules.config.Config.CORE_JDBC_URL;
 
 /**
  *

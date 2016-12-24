@@ -18,7 +18,9 @@ import java.util.Optional;
 
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
@@ -27,9 +29,9 @@ import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchFailure;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccess;
-import diarsid.beam.core.modules.executor.workflow.OperationResult;
-import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.Config;
+import diarsid.beam.core.control.flow.OperationResult;
+import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.config.Config;
 
 import static java.util.Optional.of;
 
@@ -37,7 +39,7 @@ import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.ALL;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FILES_ONLY;
 import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.util.PathUtils.combinePathFrom;
-import static diarsid.beam.core.modules.executor.workflow.OperationResultImpl.success;
+import static diarsid.beam.core.control.flow.OperationResultImpl.success;
 import static diarsid.beam.core.util.Logs.debug;
 
 /**

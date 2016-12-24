@@ -12,7 +12,8 @@ import java.util.List;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPlacement;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 import static diarsid.beam.core.domain.entities.WebPage.WEB_NAME_REGEXP;
 import static diarsid.beam.core.util.StringUtils.splitByDash;

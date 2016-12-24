@@ -18,7 +18,7 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
-import static diarsid.beam.core.control.interpreter.ControlKeys.wordIsAcceptable;
+import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsAcceptable;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 /**

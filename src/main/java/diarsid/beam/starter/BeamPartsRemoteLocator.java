@@ -9,13 +9,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.Config;
+import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.config.Config;
 
-import static diarsid.beam.shared.modules.config.Config.CORE_HOST;
-import static diarsid.beam.shared.modules.config.Config.CORE_PORT;
-import static diarsid.beam.shared.modules.config.Config.SYS_CONSOLE_HOST;
-import static diarsid.beam.shared.modules.config.Config.SYS_CONSOLE_PORT;
+import static diarsid.beam.core.modules.config.Config.CORE_HOST;
+import static diarsid.beam.core.modules.config.Config.CORE_PORT;
+import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_HOST;
+import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_PORT;
 
 /**
  *

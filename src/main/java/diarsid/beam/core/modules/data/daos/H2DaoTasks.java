@@ -19,14 +19,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.tasks.Task;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;
 import diarsid.beam.core.modules.data.JdbcTransaction;
-import diarsid.beam.core.modules.tasks.TaskMessage;
+import diarsid.beam.core.modules.tasks.TimeMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 
 /**
@@ -357,14 +359,14 @@ class H2DaoTasks implements DaoTasks {
     
    
     @Override
-    public List<TaskMessage> getAllTasks() {
+    public List<TimeMessage> getAllTasks() {
         try(Connection con = data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(SELECT_ALL_TASKS)) {
             
-            List<TaskMessage> tasks = new ArrayList<>();
+            List<TimeMessage> tasks = new ArrayList<>();
             while ( rs.next() ) {
-                tasks.add(new TaskMessage(
+                tasks.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );
@@ -380,14 +382,14 @@ class H2DaoTasks implements DaoTasks {
     }
     
     @Override
-    public List<TaskMessage> getActualTasks() {
+    public List<TimeMessage> getActualTasks() {
         try(Connection con = data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(SELECT_ACTUAL_TASKS)) {
             
-            List<TaskMessage> tasks = new ArrayList<>();
+            List<TimeMessage> tasks = new ArrayList<>();
             while ( rs.next() ) {
-                tasks.add(new TaskMessage(
+                tasks.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );
@@ -403,14 +405,14 @@ class H2DaoTasks implements DaoTasks {
     }
     
     @Override
-    public List<TaskMessage> getNonActualTasks() {
+    public List<TimeMessage> getNonActualTasks() {
         try(Connection con = data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(SELECT_NON_ACTUAL_TASKS)) {
             
-            List<TaskMessage> tasks = new ArrayList<>();
+            List<TimeMessage> tasks = new ArrayList<>();
             while ( rs.next() ) {
-                tasks.add(new TaskMessage(
+                tasks.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );
@@ -426,14 +428,14 @@ class H2DaoTasks implements DaoTasks {
     }
     
     @Override
-    public List<TaskMessage> getActualReminders() {
+    public List<TimeMessage> getActualReminders() {
         try (Connection con = this.data.connect();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(SELECT_ACTUAL_REMINDERS)) {
             
-            List<TaskMessage> reminders = new ArrayList<>();
+            List<TimeMessage> reminders = new ArrayList<>();
             while ( rs.next() ) {
-                reminders.add(new TaskMessage(
+                reminders.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );
@@ -450,14 +452,14 @@ class H2DaoTasks implements DaoTasks {
     }
     
     @Override
-    public List<TaskMessage> getActualEvents() {
+    public List<TimeMessage> getActualEvents() {
         try (Connection con = this.data.connect();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(SELECT_ACTUAL_EVENTS)) {
             
-            List<TaskMessage> events = new ArrayList<>();
+            List<TimeMessage> events = new ArrayList<>();
             while ( rs.next() ) {
-                events.add(new TaskMessage(
+                events.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );
@@ -474,17 +476,17 @@ class H2DaoTasks implements DaoTasks {
     }
     
     @Override
-    public List<TaskMessage> getTasksByTime(LocalDateTime time){
+    public List<TimeMessage> getTasksByTime(LocalDateTime time){
         ResultSet rs = null;
         try(Connection con = data.connect();
             PreparedStatement st = con.prepareStatement(SELECT_TASKS_WHERE_TIME);) {
             
-            List<TaskMessage> tasks = new ArrayList<>();
+            List<TimeMessage> tasks = new ArrayList<>();
             
             st.setString(1, time.format(DateTimeFormatter.ofPattern(DB_TIME_PATTERN)));
             rs = st.executeQuery();
             while ( rs.next() ) {
-                tasks.add(new TaskMessage(
+                tasks.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );
@@ -662,7 +664,7 @@ class H2DaoTasks implements DaoTasks {
     }
     
     @Override
-    public List<TaskMessage> getCalendarTasksBetweenDates(
+    public List<TimeMessage> getCalendarTasksBetweenDates(
             LocalDateTime from, LocalDateTime to) {
         
         JdbcTransaction transact = this.data.beginTransaction();
@@ -674,9 +676,9 @@ class H2DaoTasks implements DaoTasks {
             
             ResultSet rs = transact.executePreparedQuery(ps);
             
-            List<TaskMessage> tasks = new ArrayList<>();
+            List<TimeMessage> tasks = new ArrayList<>();
             while ( rs.next() ) {
-                tasks.add(new TaskMessage(
+                tasks.add(new TimeMessage(
                         this.parseTime(rs.getString("t_time")),
                         this.contentToArray(rs.getString("t_content")))
                 );

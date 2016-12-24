@@ -9,16 +9,17 @@ package diarsid.beam.core.modules.executor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.ExecutorModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
 import diarsid.beam.core.modules.executor.context.ExecutorContextWorker;
 import diarsid.beam.core.modules.executor.os.OSProvider;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.processors.workers.ProcessorsBuilderImpl;
-import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 

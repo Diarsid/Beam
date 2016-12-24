@@ -6,7 +6,8 @@
 
 package diarsid.beam.core.modules.executor.processors.workers;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;

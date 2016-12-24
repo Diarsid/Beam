@@ -10,8 +10,9 @@ package diarsid.beam.core.modules.executor.context;
 import java.util.Arrays;
 import java.util.List;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 import diarsid.beam.core.util.Logs;
 

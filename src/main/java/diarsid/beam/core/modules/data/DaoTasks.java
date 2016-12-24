@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import diarsid.beam.core.modules.tasks.Task;
-import diarsid.beam.core.modules.tasks.TaskMessage;
+import diarsid.beam.core.modules.tasks.TimeMessage;
 
 /**
  *
@@ -33,14 +33,14 @@ public interface DaoTasks {
    
     LocalDateTime getFirstTaskTime(); 
     
-    List<TaskMessage> getAllTasks();
-    List<TaskMessage> getNonActualTasks();
-    List<TaskMessage> getActualTasks();
+    List<TimeMessage> getAllTasks();
+    List<TimeMessage> getNonActualTasks();
+    List<TimeMessage> getActualTasks();
     
-    List<TaskMessage> getActualEvents();
-    List<TaskMessage> getActualReminders();
+    List<TimeMessage> getActualEvents();
+    List<TimeMessage> getActualReminders();
     
-    List<TaskMessage> getTasksByTime(LocalDateTime firstTaskTime); 
+    List<TimeMessage> getTasksByTime(LocalDateTime firstTaskTime); 
     
-    List<TaskMessage> getCalendarTasksBetweenDates(LocalDateTime from, LocalDateTime to);
+    List<TimeMessage> getCalendarTasksBetweenDates(LocalDateTime from, LocalDateTime to);
 }

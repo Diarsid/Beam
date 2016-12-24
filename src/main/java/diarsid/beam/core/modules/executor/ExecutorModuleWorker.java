@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 import diarsid.beam.core.domain.entities.Batch;
-import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.ExecutorModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;

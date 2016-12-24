@@ -16,7 +16,9 @@ import java.util.List;
 
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DataBase;
 

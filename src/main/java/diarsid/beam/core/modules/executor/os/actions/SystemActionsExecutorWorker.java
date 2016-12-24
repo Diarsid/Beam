@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.executor.os.actions;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *

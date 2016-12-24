@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.executor.commandscache;
 import java.util.Arrays;
 import java.util.List;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *

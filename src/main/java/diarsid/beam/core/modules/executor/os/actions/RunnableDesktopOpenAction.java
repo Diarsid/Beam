@@ -10,7 +10,8 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.util.Logs;
 
 import static diarsid.beam.core.util.Logs.logError;

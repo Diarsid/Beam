@@ -14,7 +14,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import diarsid.beam.core.modules.ExecutorModule;
+import old.diarsid.beam.core.modules.ExecutorModule;
+
 import diarsid.beam.core.modules.executor.context.ExecutorContextLifecycleController;
 
 import static org.mockito.Mockito.*;

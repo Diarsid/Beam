@@ -22,16 +22,18 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.web.ServletContainer;
 import diarsid.beam.core.modules.web.ServletData;
-import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigModule;
 
-import static diarsid.beam.shared.modules.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
-import static diarsid.beam.shared.modules.config.Config.WEB_INTERNET_HOST;
-import static diarsid.beam.shared.modules.config.Config.WEB_INTERNET_PORT;
-import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_HOST;
-import static diarsid.beam.shared.modules.config.Config.WEB_LOCAL_PORT;
+import static diarsid.beam.core.modules.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
+import static diarsid.beam.core.modules.config.Config.WEB_INTERNET_HOST;
+import static diarsid.beam.core.modules.config.Config.WEB_INTERNET_PORT;
+import static diarsid.beam.core.modules.config.Config.WEB_LOCAL_HOST;
+import static diarsid.beam.core.modules.config.Config.WEB_LOCAL_PORT;
 
 /**
  *

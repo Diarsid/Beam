@@ -7,9 +7,10 @@ package diarsid.beam.starter;
 
 import java.io.IOException;
 
-import diarsid.beam.external.sysconsole.SysConsole;
-import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.ConfigModuleWorkerBuilder;
+import old.diarsid.beam.external.sysconsole.SysConsole;
+
+import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.config.ConfigModuleWorkerBuilder;
 
 /**
  *

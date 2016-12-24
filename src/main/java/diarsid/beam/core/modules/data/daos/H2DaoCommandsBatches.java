@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.StringJoiner;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.domain.entities.Batch;

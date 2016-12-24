@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 
 import static diarsid.beam.core.util.Logs.debug;

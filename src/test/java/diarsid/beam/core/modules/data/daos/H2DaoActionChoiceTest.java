@@ -16,7 +16,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.base.H2TestDataBase;
 import diarsid.beam.core.modules.data.base.TestDataBase;
 import diarsid.beam.core.modules.executor.commandscache.ActionChoice;

@@ -9,7 +9,8 @@ package diarsid.beam.core.modules.executor.processors.workers;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;

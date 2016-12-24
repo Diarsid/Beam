@@ -24,7 +24,9 @@ import java.util.StringJoiner;
 import java.util.TreeMap;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.HandledTransactSQLException;

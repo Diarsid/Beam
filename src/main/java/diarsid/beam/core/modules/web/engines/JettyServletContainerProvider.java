@@ -6,11 +6,12 @@
 
 package diarsid.beam.core.modules.web.engines;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletContainer;
 import diarsid.beam.core.modules.web.ServletContainerProvider;
-import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigModule;
 
 /**
  *

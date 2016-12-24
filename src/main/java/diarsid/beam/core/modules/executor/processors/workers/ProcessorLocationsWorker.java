@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.HandlerLocations;
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.PathAnalizer;

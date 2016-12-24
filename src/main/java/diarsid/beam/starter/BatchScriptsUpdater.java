@@ -6,9 +6,9 @@
 
 package diarsid.beam.starter;
 
-import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigModule;
 
-import diarsid.beam.shared.modules.config.ConfigModuleWorkerBuilder;
+import diarsid.beam.core.modules.config.ConfigModuleWorkerBuilder;
 
 /**
  *

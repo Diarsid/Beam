@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.executor.os.actions;
 
 import java.io.IOException;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *

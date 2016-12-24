@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.modules.executor.os.actions;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *

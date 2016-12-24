@@ -6,11 +6,12 @@
 
 package diarsid.beam.core.modules.data.base.builder;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.DataBaseBuilder;
 import diarsid.beam.core.modules.data.base.DataBasesInfo;
-import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigModule;
 
 /**
  *

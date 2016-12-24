@@ -87,8 +87,8 @@ public class Task implements Comparable<Task>, Serializable {
         this.activeDays = days;
     }
     
-    TaskMessage generateMessage() {
-        return new TaskMessage(
+    TimeMessage generateMessage() {
+        return new TimeMessage(
                 this.time,
                 this.content);
     }

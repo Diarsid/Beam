@@ -8,7 +8,8 @@ package diarsid.beam.core.modules.executor.commandscache;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoActionChoice;
 
 import static diarsid.beam.core.modules.executor.commandscache.ActionChoice.formulateChoiceFor;

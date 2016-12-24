@@ -10,8 +10,9 @@ import java.lang.reflect.Constructor;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 /**
  * Implements DataModule.

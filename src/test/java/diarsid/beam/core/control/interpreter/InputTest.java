@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.interpreter;
 
+import diarsid.beam.core.control.io.interpreter.Input;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 

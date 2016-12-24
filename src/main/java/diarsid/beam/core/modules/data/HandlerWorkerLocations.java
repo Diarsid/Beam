@@ -12,7 +12,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 import static diarsid.beam.core.util.StringUtils.splitByDash;
 

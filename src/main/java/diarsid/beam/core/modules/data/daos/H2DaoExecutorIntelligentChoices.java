@@ -19,7 +19,9 @@ import java.util.Map;
 import java.util.Random;
 
 import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.executor.workflow.CommandChoice;

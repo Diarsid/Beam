@@ -10,7 +10,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import diarsid.beam.core.modules.ExecutorModule;
+import old.diarsid.beam.core.modules.ExecutorModule;
+
 import diarsid.beam.core.modules.executor.context.ExecutorContextLifecycleController;
 import diarsid.beam.core.util.Logs;
 

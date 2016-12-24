@@ -9,18 +9,20 @@ package diarsid.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.modules.RmiModule;
-import diarsid.beam.core.modules.TaskManagerModule;
-import diarsid.beam.core.modules.WebModule;
-import diarsid.beam.shared.modules.ConfigModule;
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.ExecutorModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.RmiModule;
+import old.diarsid.beam.core.modules.TaskManagerModule;
+import old.diarsid.beam.core.modules.WebModule;
+
+import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.core.Declaration;
 import com.drs.gem.injector.core.GemModuleDeclaration;
 import com.drs.gem.injector.core.GemModuleType;
+
+import old.diarsid.beam.core.modules.OldIoModule;
 
 /**
  *
@@ -51,7 +53,7 @@ class BeamModulesDeclaration implements Declaration {
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(
-                IoModule.class.getCanonicalName(), 
+                OldIoModule.class.getCanonicalName(), 
                 "diarsid.beam.core.modules.io.IoModuleWorker",
                 GemModuleType.SINGLETON));
         

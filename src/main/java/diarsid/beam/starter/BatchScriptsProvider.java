@@ -16,9 +16,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.external.sysconsole.SysConsole;
-import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.Config;
+
+import old.diarsid.beam.external.sysconsole.SysConsole;
+
+import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.config.Config;
 
 import static diarsid.beam.starter.BeamPartsBatchLoader.SHELL_MODE_OPTION;
 

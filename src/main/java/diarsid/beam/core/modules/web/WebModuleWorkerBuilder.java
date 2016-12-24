@@ -6,12 +6,13 @@
 
 package diarsid.beam.core.modules.web;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.WebModule;
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.WebModule;
+
 import diarsid.beam.core.modules.web.engines.JettyServletContainerProvider;
 import diarsid.beam.core.modules.web.resources.ResourcesProviderWorker;
-import diarsid.beam.shared.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 

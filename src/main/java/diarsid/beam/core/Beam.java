@@ -5,21 +5,24 @@
 package diarsid.beam.core;
 
 import diarsid.beam.core.util.Logs;
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.ExecutorModule;
-import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.modules.RmiModule;
-import diarsid.beam.core.modules.TaskManagerModule;
-import diarsid.beam.core.modules.WebModule;
-import diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
-import diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
-import diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
+
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.ExecutorModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.RmiModule;
+import old.diarsid.beam.core.modules.TaskManagerModule;
+import old.diarsid.beam.core.modules.WebModule;
+
+import old.diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
+import old.diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
+import old.diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
+import old.diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
+import old.diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
+
+import old.diarsid.beam.core.modules.OldIoModule;
 
 /**
  *
@@ -68,7 +71,7 @@ public class Beam {
                 container.getModule(WebModule.class).stopModule();
                 container.getModule(RmiModule.class).stopModule();
                 container.getModule(IoInnerModule.class).stopModule();        
-                container.getModule(IoModule.class).stopModule();
+                container.getModule(OldIoModule.class).stopModule();
                 Logs.log(Beam.class, "JVM shutdown: Beam.core modules stopped");
             }
         };

@@ -8,9 +8,9 @@ package diarsid.beam.core.modules.tasks;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.TaskManagerModule;
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.TaskManagerModule;
 
 import diarsid.beam.core.modules.data.DaoTasks;
 

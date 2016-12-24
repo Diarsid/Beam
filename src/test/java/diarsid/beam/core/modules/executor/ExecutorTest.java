@@ -15,8 +15,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.data.DaoCommandsBatches;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.HandlerLocations;

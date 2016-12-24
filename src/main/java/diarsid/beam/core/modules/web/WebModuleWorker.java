@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.modules.web;
 
-import diarsid.beam.core.modules.WebModule;
+import old.diarsid.beam.core.modules.WebModule;
 
 
 /**

@@ -7,8 +7,10 @@
 package diarsid.beam.core.modules.executor.processors.workers;
 
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
+
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
+
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.PathAnalizer;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
@@ -18,8 +20,8 @@ import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
-import diarsid.beam.shared.modules.ConfigModule;
-import diarsid.beam.shared.modules.config.Config;
+import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.config.Config;
 
 /**
  *

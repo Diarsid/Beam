@@ -7,8 +7,8 @@ package diarsid.beam.core.modules.executor.commandscache;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.DataModule;
+import old.diarsid.beam.core.modules.IoInnerModule;
 
 /**
  *

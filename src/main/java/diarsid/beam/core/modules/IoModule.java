@@ -5,35 +5,28 @@
  */
 package diarsid.beam.core.modules;
 
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.external.ExternalIOInterface;
+import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.control.io.base.OuterIoEngine;
+import diarsid.beam.core.control.io.base.TimeScheduledIo;
 
 /**
- * Is responsible for an interaction of the whole program with
- * its remote controls such as remote console.
- * 
+ *
  * @author Diarsid
  */
 public interface IoModule extends StoppableBeamModule {
     
-    public boolean isExternalProcessorActive();
+    InnerIoEngine getInnerIoEngine();
     
-    boolean hasExternalIOProcessor();    
-    boolean useExternalShowTaskMethod();
+    TimeScheduledIo getTimeScheduledIo();
     
-    boolean setUseExternalShowTaskMethod();
-    boolean setUseNativeShowTaskMethod();
+    Initiator getSystemInitiator();
     
-    ExternalIOInterface getExternalIOEngine();
+    void registerOuterIoEngine(OuterIoEngine ioEngine);
     
-    void resetIoToDefault();
+    boolean unregisterIoEngine(Initiator initiator);
     
-    void acceptNewExternalIOProcessor(
-            String consoleRmiName, String consoleHost, int consolePort) 
-            throws RemoteException, NotBoundException;
+    boolean isInitiatorLegal(Initiator initiator);
     
-    void exitBeam();
 }

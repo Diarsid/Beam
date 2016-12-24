@@ -17,8 +17,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.IoInnerModule;
-import diarsid.beam.core.modules.TaskManagerModule;
+
+import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.TaskManagerModule;
+
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
@@ -217,7 +219,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     
     private void notifyUserAboutThisMonthTasks(LocalDateTime monthBeginning) {
         synchronized (this.notificationLock) {
-            List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
+            List<TimeMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
                     monthBeginning, monthBeginning.plusMonths(1));            
             this.ioEngine.showTasksNotification("month", tasks);
             this.scheduleNextRegularTasksSurvey();
@@ -226,7 +228,7 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     
     private void notifyUserAboutThisWeekTasks(LocalDateTime weekBeginning) {
         synchronized (this.notificationLock) {
-            List<TaskMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
+            List<TimeMessage> tasks = this.tasksDao.getCalendarTasksBetweenDates(
                     weekBeginning, weekBeginning.plusWeeks(1));  
             this.ioEngine.showTasksNotification("week", tasks);
             this.scheduleNextRegularTasksSurvey();
@@ -407,27 +409,27 @@ class TaskManagerModuleWorker implements TaskManagerModule {
     }
     
     @Override
-    public List<TaskMessage> getFutureTasks() {
+    public List<TimeMessage> getFutureTasks() {
         return this.tasksDao.getActualTasks();
     }
     
     @Override
-    public List<TaskMessage> getPastTasks() {        
+    public List<TimeMessage> getPastTasks() {        
         return this.tasksDao.getNonActualTasks();  
     }
     
     @Override
-    public List<TaskMessage> getActualReminders() {
+    public List<TimeMessage> getActualReminders() {
         return this.tasksDao.getActualReminders();
     }
     
     @Override
-    public List<TaskMessage> getActualEvents() {
+    public List<TimeMessage> getActualEvents() {
         return this.tasksDao.getActualEvents();
     }
     
     @Override
-    public List<TaskMessage> getFirstTask() {
+    public List<TimeMessage> getFirstTask() {
         return this.tasksDao.getFirstTasks()
                 .stream()
                 .map(Task::generateMessage)
