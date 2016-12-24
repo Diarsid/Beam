@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.control.io.base;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import diarsid.beam.core.util.RandomHexadecimalStringGenerator;
@@ -14,7 +15,7 @@ import diarsid.beam.core.util.RandomHexadecimalStringGenerator;
  *
  * @author Diarsid
  */
-public final class Initiator {
+public final class Initiator implements Serializable {
     
     private final static RandomHexadecimalStringGenerator GENERATOR;
     

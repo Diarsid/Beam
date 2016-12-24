@@ -11,6 +11,10 @@ import diarsid.beam.core.control.io.commands.Command;
 import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.control.io.interpreter.CommandDispatcher;
+import diarsid.beam.core.modules.CoreControlModule;
+import diarsid.beam.core.modules.IoModule;
+
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -18,12 +22,21 @@ import diarsid.beam.core.control.io.interpreter.CommandDispatcher;
  */
 public class CoreCommandDispatcher implements CommandDispatcher {
     
-    public CoreCommandDispatcher() {
-        
+    private final IoModule ioModule;
+    private CoreControlModule coreControlModule;
+    
+    public CoreCommandDispatcher(
+            IoModule ioModule) {
+        this.ioModule = ioModule;
+    }
+    
+    void setCoreControl(CoreControlModule coreControlModule) {
+        this.coreControlModule = coreControlModule;
     }
     
     @Override
     public void dispatch(Initiator initiator, Command command) {
+        debug("initiator:" + initiator.getId() + " commandType: " + command.getType());
         switch ( command.getType() ) {
             case OPEN_LOCATION: {
                 OpenLocationCommand c = (OpenLocationCommand) command;
@@ -115,15 +128,20 @@ public class CoreCommandDispatcher implements CommandDispatcher {
                 break;
             case FIND_BATCH:
                 break;
-            case EXIT:
+            case EXIT : {
+                this.coreControlModule.exitBeam();
                 break;
-            case CLOSE_CONSOLE:
+            }
+            case CLOSE_CONSOLE : {
+                this.ioModule.unregisterIoEngine(initiator);
                 break;
-            case UNDEFINED:
+            }
+            case UNDEFINED : {
                 break;
-            default:
+            }                
+            default : {
                 throw new AssertionError(command.getType().name());
-            
+            }
         }
     }
 }

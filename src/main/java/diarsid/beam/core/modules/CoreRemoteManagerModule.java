@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 
 /**
  *
@@ -13,4 +14,5 @@ import diarsid.beam.core.StoppableBeamModule;
  */
 public interface CoreRemoteManagerModule extends StoppableBeamModule {
     
+    RemoteAccessEndpoint getRemoteAccessEndpoint();
 }

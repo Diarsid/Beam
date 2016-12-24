@@ -98,7 +98,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
                             Integer.parseInt(config.get(Config.CORE_PORT))); 
             
             this.beamRemoteAccess = (RmiRemoteControlInterface) 
-                    this.beamCoreRegistry.lookup(config.get(Config.CORE_ACCESS_ENDPOINT));
+                    this.beamCoreRegistry.lookup(config.get(Config.CORE_ACCESS_ENDPOINT_NAME));
             
             this.taskManager = (RmiTaskManagerInterface) 
                     this.beamCoreRegistry.lookup(config.get(Config.TASK_MANAGER_NAME));

@@ -31,7 +31,7 @@ public class CollectionUtils {
         return unmodifiableSet(new HashSet<>(asList(array)));
     }
     
-    public static <T> List<T> toUnmodifiableList(T[] array) {
+    public static <T> List<T> toUnmodifiableList(T... array) {
         return unmodifiableList(asList(array));
     }
 }

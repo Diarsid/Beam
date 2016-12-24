@@ -17,7 +17,7 @@ public enum Config {
     SYS_CONSOLE_NAME ("/configuration/rmi-info/beam-system-console/console-rmi-name"),
     TASK_MANAGER_NAME  ("/configuration/rmi-info/beam-core/task-manager-rmi-name"),
     EXECUTOR_NAME ("/configuration/rmi-info/beam-core/executor-rmi-name"),
-    CORE_ACCESS_ENDPOINT ("/configuration/rmi-info/beam-core/access-rmi-name"),
+    CORE_ACCESS_ENDPOINT_NAME ("/configuration/rmi-info/beam-core/access-rmi-name"),
     LOCATIONS_HANDLER_NAME ("/configuration/rmi-info/beam-core/locations-rmi-name"),
     WEB_PAGES_HANDLER_NAME ("/configuration/rmi-info/beam-core/web-pages-rmi-name"),    
     CORE_JDBC_DRIVER ("/configuration/databases/core/jdbc-driver"),

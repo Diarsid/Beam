@@ -6,7 +6,6 @@
 
 package diarsid.beam.core.modules.corecontrol;
 
-import diarsid.beam.core.control.io.interpreter.CommandDispatcher;
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.CoreControlModule;
@@ -29,12 +28,13 @@ public class CoreControlModuleWorkerBuilder implements GemModuleBuilder<CoreCont
     @Override
     public CoreControlModule buildModule() {
         Interpreter interpreter = new Interpreter();
-        CommandDispatcher commandDispatcher = new CoreCommandDispatcher();
+        CoreCommandDispatcher commandDispatcher = new CoreCommandDispatcher(this.ioModule);
         CommandLineProcessor cli = new CommandLineProcessor(interpreter, commandDispatcher);
         
 //        OuterIoEngine nativeConsole = new NativeConsoleBuilder().build(cli);
 //        this.ioModule.registerOuterIoEngine(nativeConsole);
-        
-        return new CoreControlModuleWorker(this.ioModule, cli);
+        CoreControlModule coreControlModule = new CoreControlModuleWorker(this.ioModule, cli);
+        commandDispatcher.setCoreControl(coreControlModule);
+        return coreControlModule;
     }
 }

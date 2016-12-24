@@ -31,7 +31,7 @@ public class IoMessage implements Serializable {
     
     public IoMessage(Exception exception) {
         this.type = ERROR;
-        this.text = exception.;
+        this.text = new String[] {exception.getMessage()};
     }
 
     public IoMessageType getType() {

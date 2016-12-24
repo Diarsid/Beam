@@ -37,7 +37,7 @@ import static diarsid.beam.core.modules.config.Config.WEB_PAGES_HANDLER_NAME;
 
 import old.diarsid.beam.core.modules.OldIoModule;
 
-import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT;
+import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT_NAME;
 
 /**
  *
@@ -125,7 +125,7 @@ class RmiModuleWorker implements RmiModule {
                     (RmiWebPagesHandlerInterface) UnicastRemoteObject.exportObject(
                             this.rmiWebPageHandlerInterface, beamCorePort);
 
-            registry.bind(config.get(CORE_ACCESS_ENDPOINT), orgIOStub);
+            registry.bind(config.get(CORE_ACCESS_ENDPOINT_NAME), orgIOStub);
             registry.bind(config.get(EXECUTOR_NAME), osExecutorStub);
             registry.bind(config.get(TASK_MANAGER_NAME), TaskManagerStub);
             registry.bind(config.get(LOCATIONS_HANDLER_NAME), LocationsHandlerStub);
@@ -144,7 +144,7 @@ class RmiModuleWorker implements RmiModule {
         int beamCorePort = Integer.parseInt(config.get(CORE_PORT));
         try {            
             Registry registry = LocateRegistry.getRegistry(beamCorePort);
-            registry.unbind(config.get(CORE_ACCESS_ENDPOINT));
+            registry.unbind(config.get(CORE_ACCESS_ENDPOINT_NAME));
             registry.unbind(config.get(EXECUTOR_NAME));
             registry.unbind(config.get(TASK_MANAGER_NAME));
             registry.unbind(config.get(LOCATIONS_HANDLER_NAME));

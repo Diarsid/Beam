@@ -79,4 +79,9 @@ public class NativeConsole
     public void acceptInitiator(Initiator initiator) {
         this.initiator = initiator;
     }
+
+    @Override
+    public String getName() {
+        return "Native console";
+    }
 }

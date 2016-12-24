@@ -13,6 +13,8 @@ import java.io.IOException;
  */
 public interface OuterIoEngine {
     
+    String getName() throws IOException;
+    
     boolean resolveYesOrNo(String yesOrNoQuestion) throws IOException;
     
     IoChoice resolveVariants(IoQuestion question) throws IOException;

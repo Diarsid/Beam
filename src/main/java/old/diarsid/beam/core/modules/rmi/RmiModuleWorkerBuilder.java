@@ -6,19 +6,16 @@
 
 package old.diarsid.beam.core.modules.rmi;
 
-import diarsid.beam.core.Beam;
-
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.ExecutorModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.OldIoModule;
 import old.diarsid.beam.core.modules.RmiModule;
 import old.diarsid.beam.core.modules.TaskManagerModule;
 
 import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
-
-import old.diarsid.beam.core.modules.OldIoModule;
 
 /**
  *
@@ -58,7 +55,7 @@ class RmiModuleWorkerBuilder implements GemModuleBuilder<RmiModule> {
                 this.dataModule, 
                 this.executorModule, 
                 this.taskManagerModule);
-        Beam.saveRmiInterfacesInStaticContext(mod);
+        //Beam.saveRmiInterfacesInStaticContext(mod);
         mod.exportInterfaces();
         return mod;
     }

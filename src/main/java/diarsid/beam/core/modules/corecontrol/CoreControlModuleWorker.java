@@ -12,6 +12,7 @@ import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.exitBeamCoreNow;
+import static diarsid.beam.core.util.Logs.debug;
 
 /**
  *
@@ -36,8 +37,10 @@ public class CoreControlModuleWorker implements CoreControlModule {
 
     @Override
     public void executeCommand(Initiator initiator, String commandLine) {
+        debug("initiator:" + initiator.getId() + " command: " + commandLine );
         if ( this.ioModule.isInitiatorLegal(initiator) ) {
             this.cliProcessor.process(initiator, commandLine);
-        }        
+        }
+        debug("executed...");
     }
 }

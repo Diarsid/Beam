@@ -16,6 +16,7 @@ import diarsid.beam.core.control.io.base.OuterIoEngine;
 
 import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -37,12 +38,14 @@ public class OuterIoEnginesHolder {
             Initiator initiator = new Initiator();
             try {
                 ioEngine.acceptInitiator(initiator);
+                debug(ioEngine.getName() + " set with initiator: " + initiator.getId());
             } catch (IOException ex) {
                 logError(this.getClass(), 
                         "exception during ioEngine initiator token accepting.", ex);
             }
             this.ioEngines.put(initiator, ioEngine);
-        }        
+            debug("ioEngine accepted.");
+        } 
     }
     
     OuterIoEngine getEngine(Initiator initiator) {
@@ -56,7 +59,8 @@ public class OuterIoEnginesHolder {
             } catch (IOException e) {
                 logError(this.getClass(), "exception during ioEngine closing attempt.", e);
             }
-            return nonNull(this.ioEngines.remove(initiator));
+            debug("ioEngine with initiator: " + initiator.getId() + " has been removed.");
+            return nonNull(this.ioEngines.remove(initiator));            
         }    
     }
     
@@ -66,11 +70,14 @@ public class OuterIoEnginesHolder {
     
     void closeAllEngines() {
         synchronized ( this.enginesLock ) {
+            
             this.ioEngines
                     .values()
                     .forEach(outerIoEngine -> {
                         try {
+                            String engineName = outerIoEngine.getName();
                             outerIoEngine.close();
+                            debug("closing engine: " + engineName);
                         } catch (IOException ex) {
                             logError(this.getClass(), 
                                     "exception during ioEngine closing attempt.", ex);

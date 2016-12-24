@@ -4,25 +4,15 @@
  */
 package diarsid.beam.core;
 
+import diarsid.beam.core.modules.CoreRemoteManagerModule;
+import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 import diarsid.beam.core.util.Logs;
-
-import old.diarsid.beam.core.modules.DataModule;
-import old.diarsid.beam.core.modules.ExecutorModule;
-import old.diarsid.beam.core.modules.IoInnerModule;
-import old.diarsid.beam.core.modules.RmiModule;
-import old.diarsid.beam.core.modules.TaskManagerModule;
-import old.diarsid.beam.core.modules.WebModule;
-
-import old.diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
-import old.diarsid.beam.core.rmi.interfaces.RmiLocationsHandlerInterface;
-import old.diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
-import old.diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
-import old.diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
-import old.diarsid.beam.core.modules.OldIoModule;
+import static diarsid.beam.core.util.Logs.log;
 
 /**
  *
@@ -37,11 +27,11 @@ public class Beam {
      * Otherwise they will be collected by the GC and the RMI interaction through them will 
      * be impossible. Any attempt to use them after it will cause RemoteException.
      */
-    private static RmiRemoteControlInterface rmiRemoteControlInterface;
-    private static RmiExecutorInterface rmiExecutorInterface;
-    private static RmiTaskManagerInterface rmiTaskManagerInterface;
-    private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
-    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;  
+    private static RemoteAccessEndpoint remoteAccessEndpoint;
+//    private static RmiExecutorInterface rmiExecutorInterface;
+//    private static RmiTaskManagerInterface rmiTaskManagerInterface;
+//    private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
+//    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;  
     
     public final static String CORE_CONTAINER = "Beam.core";        
     
@@ -52,6 +42,7 @@ public class Beam {
         Logs.log(Beam.class, "start Beam.core");
         initApplication();
         setJVMShutdownHook();
+        Logs.log(Beam.class, "Beam.core started successfully");
     }
     
     private static void initApplication() {
@@ -64,15 +55,17 @@ public class Beam {
         Runnable shutdownCallback = new Runnable() {
             @Override
             public void run() {
-                Container container = GemInjector.getContainer(CORE_CONTAINER);
-                container.getModule(TaskManagerModule.class).stopModule();
-                container.getModule(ExecutorModule.class).stopModule();
-                container.getModule(DataModule.class).stopModule();
-                container.getModule(WebModule.class).stopModule();
-                container.getModule(RmiModule.class).stopModule();
-                container.getModule(IoInnerModule.class).stopModule();        
-                container.getModule(OldIoModule.class).stopModule();
-                Logs.log(Beam.class, "JVM shutdown: Beam.core modules stopped");
+                Container container = GemInjector.getContainer(CORE_CONTAINER);                
+                container.getModule(IoModule.class).stopModule();
+                container.getModule(CoreRemoteManagerModule.class).stopModule();
+//                container.getModule(TaskManagerModule.class).stopModule();
+//                container.getModule(ExecutorModule.class).stopModule();
+//                container.getModule(DataModule.class).stopModule();
+//                container.getModule(WebModule.class).stopModule();
+//                container.getModule(RmiModule.class).stopModule();
+//                container.getModule(IoInnerModule.class).stopModule();        
+//                container.getModule(OldIoModule.class).stopModule();
+                log(Beam.class, "JVM shutdown: Beam.core modules stopped");
             }
         };
         Runtime.getRuntime().addShutdownHook(new Thread(shutdownCallback));        
@@ -83,11 +76,13 @@ public class Beam {
         System.exit(0);
     }
     
-    public static void saveRmiInterfacesInStaticContext(RmiModule rmiModule){
-        rmiRemoteControlInterface = rmiModule.getRmiRemoteControlInterface();
-        rmiExecutorInterface = rmiModule.getRmiExecutorInterface();
-        rmiTaskManagerInterface = rmiModule.getRmiTaskManagerInterface();
-        rmiLocationsHandlerInterface = rmiModule.getRmiLocationsHandlerInterface();
-        rmiWebPageHandlerInterface = rmiModule.getRmiWebPageHandlerInterface();
+    public static void saveRmiInterfacesInStaticContext(
+            CoreRemoteManagerModule remoteManagerModule) {
+        remoteAccessEndpoint = remoteManagerModule.getRemoteAccessEndpoint();
+//        rmiRemoteControlInterface = rmiModule.getRmiRemoteControlInterface();
+//        rmiExecutorInterface = rmiModule.getRmiExecutorInterface();
+//        rmiTaskManagerInterface = rmiModule.getRmiTaskManagerInterface();
+//        rmiLocationsHandlerInterface = rmiModule.getRmiLocationsHandlerInterface();
+//        rmiWebPageHandlerInterface = rmiModule.getRmiWebPageHandlerInterface();
     }
 }
