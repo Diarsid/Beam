@@ -15,6 +15,9 @@ import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 import static java.lang.System.exit;
 import static java.lang.Thread.sleep;
 
+import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
+import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
+
 /**
  *
  * @author Diarsid
@@ -29,7 +32,9 @@ public class SystemConsole {
     public static void main(String[] args) throws IOException {
         try {
             ConfigModule config = new ConfigModuleWorkerBuilder().buildModule();
-            ConsoleController console = new ConsoleController();
+            ConsolePrinter printer = new ConsolePrinter(provideWriter());
+            ConsoleReader reader = new ConsoleReader(provideReader());
+            ConsoleController console = new ConsoleController(printer, reader);
             ConsoleRemoteManager remoteManager = new ConsoleRemoteManager(config);
             remoteManager.export(console);
         } catch (StartupFailedException e) {

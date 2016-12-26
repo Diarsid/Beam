@@ -6,29 +6,23 @@
 
 package diarsid.beam.core.systemconsole;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
 import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.base.Variant;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 
 import static java.lang.Integer.parseInt;
-import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
 import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
-import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
-import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
 import static diarsid.beam.core.util.StringUtils.isNumeric;
 
 /**
@@ -37,17 +31,17 @@ import static diarsid.beam.core.util.StringUtils.isNumeric;
  */
 public class ConsoleController implements OuterIoEngine {
         
-    private final BufferedReader reader;
-    private final BufferedWriter writer;  
-    private final AtomicBoolean operationInProcess;
+    private final ConsolePrinter printer;
+    private final ConsoleReader reader;     
+    private final AtomicBoolean isInDialogMode;
     private Initiator initiator;
     private RemoteAccessEndpoint remoteAccess;
     private String consoleName;
     
-    public ConsoleController() {
-        this.reader = provideReader();
-        this.writer = provideWriter();
-        this.operationInProcess = new AtomicBoolean(false);
+    public ConsoleController(ConsolePrinter printer, ConsoleReader reader) {
+        this.printer = printer;
+        this.reader = reader;        
+        this.isInDialogMode = new AtomicBoolean(false);
         this.consoleName = "default";
     }
 
@@ -64,43 +58,30 @@ public class ConsoleController implements OuterIoEngine {
             String command;            
             while ( true ) {
                 try {
-                    this.printReadyForNewCommandLine();
-                    command = this.readLine(); 
-                    this.operationInProcess.set(true);
+                    this.printer.printReadyForNewCommandLine();
+                    command = this.reader.readLine(); 
+                    this.isInDialogMode.set(true);
                     if ( ! command.isEmpty() && nonNull(this.initiator) ) {
                         this.remoteAccess.executeCommand(this.initiator, command);
                     }                    
-                    this.operationInProcess.set(false);
+                    this.isInDialogMode.set(false);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 } 
             }
         }).start();
     }
-
-    private void printReadyForNewCommandLine() throws IOException {
-        this.writer.write("Beam[1] > ");
-        this.writer.flush();
-    }
-
+    
     @Override
     public Choice resolveYesOrNo(String yesOrNoQuestion) throws IOException {
-        this.printYesOrNoQuestion(yesOrNoQuestion);
-        return choiceOfPattern(this.readLine());
-    }
-
-    private String readLine() throws IOException {
-        return this.reader.readLine().trim();
-    }
-
-    private void printYesOrNoQuestion(String yesOrNoQuestion) throws IOException {
-        this.printInDialogReportLine(yesOrNoQuestion);
-        this.printInDialogInviteLine("yes / no");
+        this.printer.printInDialogReportLine(yesOrNoQuestion);
+        this.printer.printInDialogInviteLine("yes / no");
+        return choiceOfPattern(this.reader.readLine());
     }
 
     @Override
     public Answer resolveQuestion(Question question) throws IOException {
-        this.printQuestionAndVariants(question);
+        this.printer.printQuestionAndVariants(question);
         return this.askForAnswer(question);
     }
 
@@ -110,82 +91,49 @@ public class ConsoleController implements OuterIoEngine {
         int chosenVariant = -1;
         Answer answer = noAnswer();
         while ( notResolved ) {
-            line = this.readLine();            
+            line = this.reader.readLine();            
             if ( isNumeric(line) ) {
                 chosenVariant = parseInt(line);
                 if ( question.isChoiceInVariantsNaturalRange(chosenVariant) ) {
                     notResolved = false;
                     answer = question.answerWith(chosenVariant);
                 } else {
-                    printInDialogReportLine("not in variants range.");
-                    printInDialogInviteLine("choose");
+                    this.printer.printInDialogReportLine("not in variants range.");
+                    this.printer.printInDialogInviteLine("choose");
                 }
             } else {
-                printInDialogInviteLine("choose");
+                this.printer.printInDialogInviteLine("choose");
             }
         }
         return answer;
     }
 
-    private void printInDialogReportLine(String report) throws IOException {
-        this.writer.write(format("     > %s", report));
-        this.writer.newLine();
-        this.writer.flush();
-    }
-
-    private void printInDialogInviteLine(String invite) throws IOException {
-        this.writer.write(format("     > %s : ", invite));
-        this.writer.flush();
-    }
-
-    private void printQuestionAndVariants(Question question) throws IOException {
-        Variant variant;
-        this.writer.write(format("     > %s", question.getQuestion()));
-        for (int i = 0; i < question.getVariants().size(); i++) {
-            variant = question.getVariants().get(i);
-            if ( variant.hasDisplayText() ) {
-                this.writer.write(format("       %d : %s", i, variant.getDisplay()));
-            } else {
-                this.writer.write(format("       %d : %s", i, variant.get()));
-            }
-        }
-        printInDialogInviteLine("choose");
-    }
-
     @Override
-    public void report(String string) throws IOException {        
-        if ( this.operationInProcess.get() ) {
-            this.writer.write(format("     > %s", string));
-            this.writer.newLine();
-            this.writer.flush();
+    public void report(String report) throws IOException {        
+        if ( this.isInDialogMode.get() ) {
+            this.printer.printInDialogReportLine(report);
         } else {
-            this.writer.write(format("Beam[3] > %s", string));
-            this.writer.newLine();
-            this.writer.write("Beam[3] > ");
-            this.writer.flush();
+            this.printer.printNonDialogReport(report);
         }
     }
 
     @Override
     public void reportMessage(TextMessage message) throws IOException {
-        for (String s : message.getText()) {
-            this.writer.write(format("     > %s", s));
-        }
-        this.writer.newLine();
-        this.writer.write("Beam[4] > ");
-        this.writer.flush();
+        if ( this.isInDialogMode.get() ) {
+            this.printer.printInDialogMultilineReport(message);
+        } else {
+            this.printer.printNonDialogMultilineReport(message);
+        }        
     }
 
     @Override
     public void close() throws IOException {
-        System.out.println("closing...");
+        this.printer.printInDialogReportLine("closing...");
         exitSystemConsole();
-        System.out.println("closed.");
     }
 
     @Override
     public void acceptInitiator(Initiator initiator) throws IOException {
-        System.out.println("ConsoleController accepting initiator: " + initiator.getId());
         this.initiator = initiator;
         this.startConsoleRunner();
     }
