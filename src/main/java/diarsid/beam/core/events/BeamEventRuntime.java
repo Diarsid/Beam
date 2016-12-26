@@ -42,7 +42,7 @@ public class BeamEventRuntime {
         return new Subscription(type);
     }
     
-    public static void shutdownEventRuntime() {
+    private static void shutdownEventRuntime() {
         EXECUTOR.shutdown();
         log(BeamEventRuntime.class, "shutdown.");
     }

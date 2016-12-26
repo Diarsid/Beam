@@ -34,6 +34,7 @@ public class ConsoleController implements OuterIoEngine {
     private final ConsolePrinter printer;
     private final ConsoleReader reader;     
     private final AtomicBoolean isInDialogMode;
+    private final AtomicBoolean isWorking;
     private Initiator initiator;
     private RemoteAccessEndpoint remoteAccess;
     private String consoleName;
@@ -42,6 +43,7 @@ public class ConsoleController implements OuterIoEngine {
         this.printer = printer;
         this.reader = reader;        
         this.isInDialogMode = new AtomicBoolean(false);
+        this.isWorking = new AtomicBoolean(true);
         this.consoleName = "default";
     }
 
@@ -56,7 +58,7 @@ public class ConsoleController implements OuterIoEngine {
     private void startConsoleRunner() {        
         new Thread(() -> {
             String command;            
-            while ( true ) {
+            while ( this.isWorking.get() ) {
                 try {
                     this.printer.printReadyForNewCommandLine();
                     command = this.reader.readLine(); 
@@ -128,6 +130,7 @@ public class ConsoleController implements OuterIoEngine {
 
     @Override
     public void close() throws IOException {
+        this.isWorking.set(false);
         this.printer.printInDialogReportLine("closing...");
         exitSystemConsole();
     }
