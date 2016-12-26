@@ -6,7 +6,7 @@ package diarsid.beam.core.modules.io;
 
 import java.util.List;
 
-import diarsid.beam.core.control.io.base.IoMessage;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.modules.tasks.TimeMessage;
 
 /*
@@ -34,7 +34,7 @@ public interface Gui {
     /*
      * Used to show program`s messages, typically errors, warnings or notifications.
      */
-    void showMessage(IoMessage message); 
+    void showMessage(TextMessage message); 
         
     /*
      * Signals to underlying GUI system that it should invoke a prorgam

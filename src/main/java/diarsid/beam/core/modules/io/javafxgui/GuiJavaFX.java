@@ -14,7 +14,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import diarsid.beam.core.control.io.base.IoMessage;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.modules.io.Gui;
 import diarsid.beam.core.modules.io.javafxgui.window.WindowsBuilderWorker;
 import diarsid.beam.core.modules.tasks.TimeMessage;
@@ -104,7 +104,7 @@ public class GuiJavaFX
     }
     
     @Override
-    public void showMessage(IoMessage message) {
+    public void showMessage(TextMessage message) {
         switch ( message.getType() ) {
             case NORMAL : {
                 Platform.runLater(this.windowsBuilder.newMessageWindow(

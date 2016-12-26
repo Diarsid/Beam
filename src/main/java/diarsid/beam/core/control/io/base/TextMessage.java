@@ -8,13 +8,13 @@ package diarsid.beam.core.control.io.base;
 
 import java.io.Serializable;
 
-import static diarsid.beam.core.control.io.base.IoMessage.IoMessageType.ERROR;
+import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.ERROR;
 
 /**
  *
  * @author Diarsid
  */
-public class IoMessage implements Serializable {
+public class TextMessage implements Serializable {
     
     public static enum IoMessageType implements Serializable {
         NORMAL,
@@ -24,12 +24,12 @@ public class IoMessage implements Serializable {
     private final IoMessageType type;
     private final String[] text;
     
-    public IoMessage(IoMessageType type, String... text) {
+    public TextMessage(IoMessageType type, String... text) {
         this.type = type;
         this.text = text;
     }
     
-    public IoMessage(Exception exception) {
+    public TextMessage(Exception exception) {
         this.type = ERROR;
         this.text = new String[] {exception.getMessage()};
     }

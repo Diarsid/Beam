@@ -5,26 +5,21 @@
  */
 package diarsid.beam.core.control.io.base;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.IoChoice;
-import diarsid.beam.core.control.io.base.IoMessage;
-import diarsid.beam.core.control.io.base.IoQuestion;
-
 /**
  *
  * @author Diarsid
  */
 public interface InnerIoEngine {
     
-    boolean resolveYesOrNo(Initiator initiator, String yesOrNoQuestion);
+    Choice resolveYesOrNo(Initiator initiator, String yesOrNoQuestion);
     
-    IoChoice resolveVariants(Initiator initiator, IoQuestion question);
+    Answer resolveVariants(Initiator initiator, Question question);
     
     void report(Initiator initiator, String string);
     
     void reportAndExitLater(Initiator initiator, String string);
     
-    void reportMessage(Initiator initiator, IoMessage message);
+    void reportMessage(Initiator initiator, TextMessage message);
     
-    void reportMessageAndExitLater(Initiator initiator, IoMessage message);
+    void reportMessageAndExitLater(Initiator initiator, TextMessage message);
 }

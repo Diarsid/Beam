@@ -9,13 +9,15 @@ package diarsid.beam.core.systemconsole;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.IoChoice;
-import diarsid.beam.core.control.io.base.IoMessage;
-import diarsid.beam.core.control.io.base.IoQuestion;
+import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
-import static diarsid.beam.core.control.io.base.IoChoice.choiceNotMade;
+import static diarsid.beam.core.control.io.base.Answer.noAnswer;
+import static diarsid.beam.core.control.io.base.Choice.NOT_MADE;
 
 /**
  *
@@ -38,22 +40,22 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public boolean resolveYesOrNo(String yesOrNoQuestion) throws RemoteException {
+    public Choice resolveYesOrNo(String yesOrNoQuestion) throws RemoteException {
         try {
             return this.console.resolveYesOrNo(yesOrNoQuestion);
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return NOT_MADE;
         }
     }
 
     @Override
-    public IoChoice resolveVariants(IoQuestion question) throws RemoteException {
+    public Answer resolveQuestion(Question question) throws RemoteException {
         try {
-            return this.console.resolveVariants(question);
+            return this.console.resolveQuestion(question);
         } catch (IOException e) {
             e.printStackTrace();
-            return choiceNotMade();
+            return noAnswer();
         }
     }
 
@@ -67,7 +69,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public void reportMessage(IoMessage message) throws RemoteException {
+    public void reportMessage(TextMessage message) throws RemoteException {
         try {
             this.console.reportMessage(message);
         } catch (IOException e) {

@@ -6,16 +6,18 @@
 
 package diarsid.beam.core.modules.corecontrol.nativeconsole;
 
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.IoChoice;
-import diarsid.beam.core.control.io.base.IoMessage;
-import diarsid.beam.core.control.io.base.IoQuestion;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.control.io.base.IoChoice.choiceNotMade;
+import static diarsid.beam.core.control.io.base.Answer.noAnswer;
+import static diarsid.beam.core.control.io.base.Choice.NOT_MADE;
 
 /**
  *
@@ -47,17 +49,17 @@ public class NativeConsole
     }
 
     @Override
-    public boolean resolveYesOrNo(String yesOrNoQuestion) {
+    public Choice resolveYesOrNo(String yesOrNoQuestion) {
         this.buffer.consoleIsWaitingForAnswer();
         // ...
-        return false;
+        return NOT_MADE;
     }
 
     @Override
-    public IoChoice resolveVariants(IoQuestion question) {
+    public Answer resolveQuestion(Question question) {
         this.buffer.consoleIsWaitingForAnswer();
         // ...
-        return choiceNotMade();
+        return noAnswer();
     }
 
     @Override
@@ -66,7 +68,7 @@ public class NativeConsole
     }
 
     @Override
-    public void reportMessage(IoMessage message) {
+    public void reportMessage(TextMessage message) {
         // do nothing
     }
 

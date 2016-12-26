@@ -1,6 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
+ * To change this license header, answerOf License Headers in Project Properties.
+ * To change this template file, answerOf Tools | Templates
  * and open the template in the editor.
  */
 
@@ -9,26 +9,27 @@ package diarsid.beam.core.systemconsole;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.IoChoice;
-import diarsid.beam.core.control.io.base.IoMessage;
-import diarsid.beam.core.control.io.base.IoQuestion;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.Variant;
 import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.control.io.base.IoChoice.choiceNotMade;
+import static diarsid.beam.core.control.io.base.Answer.noAnswer;
+import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
-import static diarsid.beam.core.util.CollectionUtils.toUnmodifiableList;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.util.StringUtils.isNumeric;
 
 /**
  *
@@ -37,9 +38,7 @@ import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCa
 public class ConsoleController implements OuterIoEngine {
         
     private final BufferedReader reader;
-    private final BufferedWriter writer;    
-    private final List<String> yesPatterns = toUnmodifiableList("y", "+", "yes", "ye", "true", "enable");
-    private final List<String> stopPatterns = toUnmodifiableList(".", "", "s", " ", "-", "false", "disable");
+    private final BufferedWriter writer;  
     private final AtomicBoolean operationInProcess;
     private Initiator initiator;
     private RemoteAccessEndpoint remoteAccess;
@@ -65,9 +64,8 @@ public class ConsoleController implements OuterIoEngine {
             String command;            
             while ( true ) {
                 try {
-                    this.writer.write("Beam[1] > ");
-                    this.writer.flush();
-                    command = this.reader.readLine().trim(); 
+                    this.printReadyForNewCommandLine();
+                    command = this.readLine(); 
                     this.operationInProcess.set(true);
                     if ( ! command.isEmpty() && nonNull(this.initiator) ) {
                         this.remoteAccess.executeCommand(this.initiator, command);
@@ -80,26 +78,67 @@ public class ConsoleController implements OuterIoEngine {
         }).start();
     }
 
-    @Override
-    public boolean resolveYesOrNo(String yesOrNoQuestion) throws IOException {
-        this.writer.write(format("     > %s", yesOrNoQuestion));
-        this.writer.newLine();
-        this.writer.write("     > yes/no : ");
+    private void printReadyForNewCommandLine() throws IOException {
+        this.writer.write("Beam[1] > ");
         this.writer.flush();
-        return resolve();
-    }
-    
-    private boolean resolve() throws IOException {
-        String answer = this.reader.readLine().trim();
-        if ( answer.isEmpty() ) {
-            return false;
-        } else {
-            return containsWordInIgnoreCase(this.yesPatterns, answer);
-        }
     }
 
     @Override
-    public IoChoice resolveVariants(IoQuestion question) throws IOException {
+    public Choice resolveYesOrNo(String yesOrNoQuestion) throws IOException {
+        this.printYesOrNoQuestion(yesOrNoQuestion);
+        return choiceOfPattern(this.readLine());
+    }
+
+    private String readLine() throws IOException {
+        return this.reader.readLine().trim();
+    }
+
+    private void printYesOrNoQuestion(String yesOrNoQuestion) throws IOException {
+        this.printInDialogReportLine(yesOrNoQuestion);
+        this.printInDialogInviteLine("yes / no");
+    }
+
+    @Override
+    public Answer resolveQuestion(Question question) throws IOException {
+        this.printQuestionAndVariants(question);
+        return this.askForAnswer(question);
+    }
+
+    private Answer askForAnswer(Question question) throws IOException, NumberFormatException {
+        boolean notResolved = true;
+        String line = "";
+        int chosenVariant = -1;
+        Answer answer = noAnswer();
+        while ( notResolved ) {
+            line = this.readLine();            
+            if ( isNumeric(line) ) {
+                chosenVariant = parseInt(line);
+                if ( question.isChoiceInVariantsNaturalRange(chosenVariant) ) {
+                    notResolved = false;
+                    answer = question.answerWith(chosenVariant);
+                } else {
+                    printInDialogReportLine("not in variants range.");
+                    printInDialogInviteLine("choose");
+                }
+            } else {
+                printInDialogInviteLine("choose");
+            }
+        }
+        return answer;
+    }
+
+    private void printInDialogReportLine(String report) throws IOException {
+        this.writer.write(format("     > %s", report));
+        this.writer.newLine();
+        this.writer.flush();
+    }
+
+    private void printInDialogInviteLine(String invite) throws IOException {
+        this.writer.write(format("     > %s : ", invite));
+        this.writer.flush();
+    }
+
+    private void printQuestionAndVariants(Question question) throws IOException {
         Variant variant;
         this.writer.write(format("     > %s", question.getQuestion()));
         for (int i = 0; i < question.getVariants().size(); i++) {
@@ -110,9 +149,7 @@ public class ConsoleController implements OuterIoEngine {
                 this.writer.write(format("       %d : %s", i, variant.get()));
             }
         }
-        this.writer.write("     > choose: ");
-        this.writer.flush();
-        return choiceNotMade();
+        printInDialogInviteLine("choose");
     }
 
     @Override
@@ -130,7 +167,7 @@ public class ConsoleController implements OuterIoEngine {
     }
 
     @Override
-    public void reportMessage(IoMessage message) throws IOException {
+    public void reportMessage(TextMessage message) throws IOException {
         for (String s : message.getText()) {
             this.writer.write(format("     > %s", s));
         }

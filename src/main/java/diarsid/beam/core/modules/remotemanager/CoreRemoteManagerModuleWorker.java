@@ -13,7 +13,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import diarsid.beam.core.control.io.base.IoMessage;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ConfigModule;
 import diarsid.beam.core.modules.CoreControlModule;
@@ -25,7 +25,7 @@ import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
-import static diarsid.beam.core.control.io.base.IoMessage.IoMessageType.ERROR;
+import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.ERROR;
 import static diarsid.beam.core.modules.config.Config.CORE_PORT;
 import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT_NAME;
@@ -60,9 +60,8 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
             registry.bind(config.get(CORE_ACCESS_ENDPOINT_NAME), access);
             debug("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
-            this.io.getInnerIoEngine().reportMessageAndExitLater(
-                    this.io.getSystemInitiator(), 
-                    new IoMessage(ERROR, 
+            this.io.getInnerIoEngine().reportMessageAndExitLater(this.io.getSystemInitiator(), 
+                    new TextMessage(ERROR, 
                             "Export Beam.Server modules failure.",
                             "Program will be closed.")
             );
@@ -82,7 +81,7 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
 //            registry.unbind(config.get(WEB_PAGES_HANDLER_NAME));
         } catch (NotBoundException|RemoteException e) {            
             this.io.getInnerIoEngine()
-                    .reportMessage(this.io.getSystemInitiator(), new IoMessage(e));
+                    .reportMessage(this.io.getSystemInitiator(), new TextMessage(e));
         }        
     }
 

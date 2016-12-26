@@ -9,16 +9,18 @@ package diarsid.beam.core.modules.io;
 import java.io.IOException;
 import java.util.List;
 
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.IoChoice;
-import diarsid.beam.core.control.io.base.IoMessage;
-import diarsid.beam.core.control.io.base.IoQuestion;
+import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.TimeScheduledIo;
 import diarsid.beam.core.modules.tasks.TimeMessage;
 
-import static diarsid.beam.core.control.io.base.IoChoice.choiceNotMade;
-import static diarsid.beam.core.control.io.base.IoMessage.IoMessageType.NORMAL;
+import static diarsid.beam.core.control.io.base.Answer.noAnswer;
+import static diarsid.beam.core.control.io.base.Choice.NOT_MADE;
+import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.NORMAL;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -45,7 +47,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public boolean resolveYesOrNo(Initiator initiator, String yesOrNoQuestion) {
+    public Choice resolveYesOrNo(Initiator initiator, String yesOrNoQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             try {
                 return this.ioEnginesHolder
@@ -54,27 +56,27 @@ public class MainInnerIoEngine
             } catch (IOException ex) {
                 logError(this.getClass(), ex);
                 this.ioEnginesHolder.deleteEngine(initiator);
-                return false;
+                return NOT_MADE;
             }
         } else {
-            return false;
+            return NOT_MADE;
         }
     }
 
     @Override
-    public IoChoice resolveVariants(Initiator initiator, IoQuestion question) {
+    public Answer resolveVariants(Initiator initiator, Question question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             try {
                 return this.ioEnginesHolder
                         .getEngine(initiator)
-                        .resolveVariants(question);
+                        .resolveQuestion(question);
             } catch (IOException ex) {
                 logError(this.getClass(), ex);
                 this.ioEnginesHolder.deleteEngine(initiator);
-                return choiceNotMade();
+                return noAnswer();
             }
         } else {
-            return choiceNotMade();
+            return noAnswer();
         }        
     }
 
@@ -90,7 +92,7 @@ public class MainInnerIoEngine
                 this.ioEnginesHolder.deleteEngine(initiator);
             }
         } else if ( initiator.equals(this.systemInitiator) ) {
-            this.gui.showMessage(new IoMessage(NORMAL, string));
+            this.gui.showMessage(new TextMessage(NORMAL, string));
         }    
     }
     
@@ -105,12 +107,12 @@ public class MainInnerIoEngine
                         logError(this.getClass(), ex);
                     }
                 });
-        this.gui.showMessage(new IoMessage(NORMAL, string));
+        this.gui.showMessage(new TextMessage(NORMAL, string));
         this.gui.exitAfterAllWindowsClosed();
     }
 
     @Override
-    public void reportMessage(Initiator initiator, IoMessage message) {
+    public void reportMessage(Initiator initiator, TextMessage message) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             try {
                 this.ioEnginesHolder
@@ -126,7 +128,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public void reportMessageAndExitLater(Initiator initiator, IoMessage message) {
+    public void reportMessageAndExitLater(Initiator initiator, TextMessage message) {
         this.ioEnginesHolder
                 .all()
                 .forEach(ioEngine -> {
