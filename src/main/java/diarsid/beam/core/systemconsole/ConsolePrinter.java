@@ -46,12 +46,15 @@ class ConsolePrinter {
     void printQuestionAndVariants(Question question) throws IOException {
         Variant variant;
         this.writer.write(format("     > %s", question.getQuestion()));
+        this.writer.newLine();
         for (int i = 0; i < question.getVariants().size(); i++) {
             variant = question.getVariants().get(i);
             if ( variant.hasDisplayText() ) {
-                this.writer.write(format("       %d : %s", i, variant.getDisplay()));
+                this.writer.write(format("       %d : %s", i + 1, variant.getDisplay()));
+                this.writer.newLine();
             } else {
-                this.writer.write(format("       %d : %s", i, variant.get()));
+                this.writer.write(format("       %d : %s", i + 1, variant.get()));
+                this.writer.newLine();
             }
         }
         printInDialogInviteLine("choose");

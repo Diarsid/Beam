@@ -19,7 +19,8 @@ public enum Choice implements Serializable {
     
     POSTIVE,
     NEGATIVE,
-    NOT_MADE;
+    REJECT,
+    CHOICE_NOT_MADE;
     
     private static final List<String> YES_PATTERNS;
     private static final List<String> NO_PATTERNS;
@@ -37,9 +38,9 @@ public enum Choice implements Serializable {
         } else if ( containsWordInIgnoreCase(NO_PATTERNS, input) ) {
             return NEGATIVE;
         } else if ( containsWordInIgnoreCase(REJECT_PATTERNS, input) ) {
-            return NOT_MADE;
+            return REJECT;
         } else {
-            return NOT_MADE;
+            return CHOICE_NOT_MADE;
         }
     }
     
@@ -51,7 +52,11 @@ public enum Choice implements Serializable {
         return this.equals(NEGATIVE);
     }
     
+    public boolean isRejected() {
+        return this.equals(REJECT);
+    }
+    
     public boolean isNotMade() {
-        return this.equals(NOT_MADE);
+        return this.equals(CHOICE_NOT_MADE);
     }
 }

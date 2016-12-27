@@ -13,14 +13,16 @@ import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.OuterIoEngine;
 import diarsid.beam.core.control.io.base.Question;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.TimeScheduledIo;
 import diarsid.beam.core.modules.tasks.TimeMessage;
 
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
-import static diarsid.beam.core.control.io.base.Choice.NOT_MADE;
+import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.NORMAL;
+import static diarsid.beam.core.util.ConcurrencyUtil.waitAndGet;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -49,32 +51,34 @@ public class MainInnerIoEngine
     @Override
     public Choice resolveYesOrNo(Initiator initiator, String yesOrNoQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            try {
-                return this.ioEnginesHolder
-                        .getEngine(initiator)
-                        .resolveYesOrNo(yesOrNoQuestion);
-            } catch (IOException ex) {
-                logError(this.getClass(), ex);
-                this.ioEnginesHolder.deleteEngine(initiator);
-                return NOT_MADE;
-            }
+            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+            return waitAndGet(() -> {
+                try {
+                    return ioEngine.resolveYesOrNo(yesOrNoQuestion);
+                } catch (Exception ex) {
+                    logError(this.getClass(), ex);
+                    this.ioEnginesHolder.deleteEngine(initiator);
+                    return CHOICE_NOT_MADE;
+                }
+            }).orElse(CHOICE_NOT_MADE);            
         } else {
-            return NOT_MADE;
+            return CHOICE_NOT_MADE;
         }
     }
 
     @Override
     public Answer resolveVariants(Initiator initiator, Question question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            try {
-                return this.ioEnginesHolder
-                        .getEngine(initiator)
-                        .resolveQuestion(question);
-            } catch (IOException ex) {
-                logError(this.getClass(), ex);
-                this.ioEnginesHolder.deleteEngine(initiator);
-                return noAnswer();
-            }
+            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+            return waitAndGet(() -> {
+                try {
+                    return ioEngine.resolveQuestion(question);
+                } catch (IOException ex) {
+                    logError(this.getClass(), ex);
+                    this.ioEnginesHolder.deleteEngine(initiator);
+                    return noAnswer();
+                }
+            }).orElse(noAnswer());            
         } else {
             return noAnswer();
         }        

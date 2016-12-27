@@ -17,7 +17,7 @@ import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
-import static diarsid.beam.core.control.io.base.Choice.NOT_MADE;
+import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
 
 /**
  *
@@ -45,7 +45,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
             return this.console.resolveYesOrNo(yesOrNoQuestion);
         } catch (IOException e) {
             e.printStackTrace();
-            return NOT_MADE;
+            return CHOICE_NOT_MADE;
         }
     }
 

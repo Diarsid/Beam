@@ -103,6 +103,9 @@ public class ConsoleController implements OuterIoEngine {
                     this.printer.printInDialogReportLine("not in variants range.");
                     this.printer.printInDialogInviteLine("choose");
                 }
+            } else if ( choiceOfPattern(line).isRejected() ) {
+                notResolved = false;
+                answer = noAnswer();
             } else {
                 this.printer.printInDialogInviteLine("choose");
             }

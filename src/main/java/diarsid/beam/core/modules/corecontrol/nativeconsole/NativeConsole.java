@@ -17,7 +17,7 @@ import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
-import static diarsid.beam.core.control.io.base.Choice.NOT_MADE;
+import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
 
 /**
  *
@@ -52,7 +52,7 @@ public class NativeConsole
     public Choice resolveYesOrNo(String yesOrNoQuestion) {
         this.buffer.consoleIsWaitingForAnswer();
         // ...
-        return NOT_MADE;
+        return CHOICE_NOT_MADE;
     }
 
     @Override

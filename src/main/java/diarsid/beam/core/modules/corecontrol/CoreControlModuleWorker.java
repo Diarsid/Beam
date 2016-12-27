@@ -6,7 +6,9 @@
 
 package diarsid.beam.core.modules.corecontrol;
 
+import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.IoModule;
@@ -39,6 +41,20 @@ public class CoreControlModuleWorker implements CoreControlModule {
     public void executeCommand(Initiator initiator, String commandLine) {
         debug("initiator:" + initiator.getId() + " command: " + commandLine );
         if ( this.ioModule.isInitiatorLegal(initiator) ) {
+            if ( commandLine.length() % 2 == 1 ) {
+                if ( this.ioModule.getInnerIoEngine().resolveYesOrNo(initiator, "proceed?").isPositive() ) {
+                    this.ioModule.getInnerIoEngine().report(initiator, "...proceeded!");
+                }
+            }
+            if ( commandLine.equals("ask") ) {
+                Answer answer = this.ioModule.getInnerIoEngine().resolveVariants(
+                        initiator, new Question("choose").with("one").with("two").with("three"));
+                if ( answer.isPresent() ) {
+                    this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.get().get());
+                } else {
+                    this.ioModule.getInnerIoEngine().report(initiator, "you have not chosen anything.");
+                }
+            }
             this.cliProcessor.process(initiator, commandLine);
         }
         debug("executed...");

@@ -27,6 +27,7 @@ public class ConcurrencyUtil {
     static {
         EXECUTOR = new ScheduledThreadPoolExecutor(5);
         EXECUTOR.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        EXECUTOR.setRemoveOnCancelPolicy(false);
         getRuntime().addShutdownHook(new Thread(() -> shutdownConcurrentRuntime()));
     }
     
