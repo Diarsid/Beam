@@ -30,8 +30,7 @@ import diarsid.beam.core.modules.executor.os.search.result.FileSearchFailure;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 import diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccess;
 import diarsid.beam.core.control.flow.OperationResult;
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.Config;
+import diarsid.beam.core.config.Config;
 
 import static java.util.Optional.of;
 
@@ -41,6 +40,8 @@ import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FOLDER
 import static diarsid.beam.core.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.control.flow.OperationResultImpl.success;
 import static diarsid.beam.core.util.Logs.debug;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -57,7 +58,7 @@ public class OSWorker implements OS {
 
     public OSWorker(
             IoInnerModule io, 
-            ConfigModule config, 
+            ConfigHolderModule config, 
             SystemActionsExecutor actionsExecutor,
             FileSearcher fileSearcher,
             FileLister fileLister,

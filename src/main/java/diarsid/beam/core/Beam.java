@@ -21,6 +21,8 @@ import static diarsid.beam.core.util.Logs.log;
 
 public class Beam {
     
+    public static final String CONFIG_FILE = "./../config/config.xml";
+    
     /**
      * Java RMI mechanism requires that remote objects that have been exported 
      * by this JVM for an external usage by other JVM were saved in static variables.

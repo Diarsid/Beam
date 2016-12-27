@@ -3,15 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.config;
+package diarsid.beam.core.modules;
 
-import java.io.File;
+import diarsid.beam.core.config.Config;
+
+import com.drs.gem.injector.module.GemModule;
 
 /**
  *
  * @author Diarsid
  */
-public interface XmlReader {
+public interface ConfigHolderModule extends GemModule {
     
-    XmlContent read(File configFile);
+    String get(Config param);
 }

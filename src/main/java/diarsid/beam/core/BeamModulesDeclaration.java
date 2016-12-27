@@ -9,7 +9,7 @@ package diarsid.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigHolderModule;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
@@ -28,12 +28,12 @@ class BeamModulesDeclaration implements Declaration {
     }
     
     @Override
-    public Set<GemModuleDeclaration> getDeclaredModules(){
+    public Set<GemModuleDeclaration> getDeclaredModules() {
         Set<GemModuleDeclaration> modules = new HashSet<>();
         
         modules.add(new GemModuleDeclaration(
-                ConfigModule.class.getCanonicalName(), 
-                "diarsid.beam.core.modules.config.ConfigModuleWorker",
+                ConfigHolderModule.class.getCanonicalName(), 
+                "diarsid.beam.core.modules.config.ConfigHolderModuleWorker",
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(

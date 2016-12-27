@@ -9,13 +9,14 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.Config;
+import diarsid.beam.core.config.Config;
 
-import static diarsid.beam.core.modules.config.Config.CORE_HOST;
-import static diarsid.beam.core.modules.config.Config.CORE_PORT;
-import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_HOST;
-import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_PORT;
+import static diarsid.beam.core.config.Config.CORE_HOST;
+import static diarsid.beam.core.config.Config.CORE_PORT;
+import static diarsid.beam.core.config.Config.SYS_CONSOLE_HOST;
+import static diarsid.beam.core.config.Config.SYS_CONSOLE_PORT;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -23,11 +24,11 @@ import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_PORT;
  */
 final class BeamPartsRemoteLocator {
     
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final boolean shouldStartBeamCore;
     private final boolean shouldStartBeamSysConsole;
     
-    BeamPartsRemoteLocator(ConfigModule config) {
+    BeamPartsRemoteLocator(ConfigHolderModule config) {
         this.config = config;
         this.shouldStartBeamCore = ! this.isBeamCoreWorkingNow();
         this.shouldStartBeamSysConsole = ! this.isBeamSysConsoleWorkingNow();

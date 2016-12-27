@@ -27,17 +27,17 @@ import old.diarsid.beam.core.rmi.interfaces.RmiRemoteControlInterface;
 import old.diarsid.beam.core.rmi.interfaces.RmiTaskManagerInterface;
 import old.diarsid.beam.core.rmi.interfaces.RmiWebPagesHandlerInterface;
 
-import diarsid.beam.core.modules.ConfigModule;
-
-import static diarsid.beam.core.modules.config.Config.CORE_PORT;
-import static diarsid.beam.core.modules.config.Config.EXECUTOR_NAME;
-import static diarsid.beam.core.modules.config.Config.LOCATIONS_HANDLER_NAME;
-import static diarsid.beam.core.modules.config.Config.TASK_MANAGER_NAME;
-import static diarsid.beam.core.modules.config.Config.WEB_PAGES_HANDLER_NAME;
+import static diarsid.beam.core.config.Config.CORE_PORT;
+import static diarsid.beam.core.config.Config.EXECUTOR_NAME;
+import static diarsid.beam.core.config.Config.LOCATIONS_HANDLER_NAME;
+import static diarsid.beam.core.config.Config.TASK_MANAGER_NAME;
+import static diarsid.beam.core.config.Config.WEB_PAGES_HANDLER_NAME;
 
 import old.diarsid.beam.core.modules.OldIoModule;
 
-import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT_NAME;
+import static diarsid.beam.core.config.Config.CORE_ACCESS_ENDPOINT_NAME;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -46,7 +46,7 @@ import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT_NAME;
 class RmiModuleWorker implements RmiModule {
     
     private final IoInnerModule ioEngine;
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     
     private final RmiTaskManagerInterface rmiTaskManagerInterface;
     private final RmiExecutorInterface rmiExecutorInterface;
@@ -57,7 +57,7 @@ class RmiModuleWorker implements RmiModule {
     RmiModuleWorker(
             OldIoModule ioModule,
             IoInnerModule innerIoModule, 
-            ConfigModule configModule,
+            ConfigHolderModule configModule,
             DataModule dataModule,
             ExecutorModule executorModule,
             TaskManagerModule taskManagerModule) {

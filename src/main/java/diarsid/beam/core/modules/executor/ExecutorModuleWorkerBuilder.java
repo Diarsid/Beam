@@ -19,7 +19,6 @@ import diarsid.beam.core.modules.executor.os.OSProvider;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.processors.workers.ProcessorsBuilderImpl;
-import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -27,6 +26,8 @@ import static diarsid.beam.core.modules.executor.commandscache.SmartConsoleComma
 import static diarsid.beam.core.modules.executor.context.ExecutorContextWorker.createContext;
 import static diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor.getExecutor;
 import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDepthsOf;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -36,12 +37,12 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     private final DataModule dataModule;
     private final IoInnerModule ioInnerModule;
-    private final ConfigModule configModule;
+    private final ConfigHolderModule configModule;
     
     ExecutorModuleWorkerBuilder(
             IoInnerModule io, 
             DataModule dataModule, 
-            ConfigModule configModule) {
+            ConfigHolderModule configModule) {
         
         this.dataModule = dataModule;
         this.ioInnerModule = io;

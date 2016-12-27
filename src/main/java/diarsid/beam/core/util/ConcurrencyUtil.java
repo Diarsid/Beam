@@ -38,7 +38,7 @@ public class ConcurrencyUtil {
         try {
             return Optional.of(EXECUTOR.submit(callable).get());
         } catch (InterruptedException | ExecutionException e) {
-            logError(CollectionUtils.class, e);
+            logError(ConcurrencyUtil.class, e);
             return empty();
         } 
     }
@@ -47,7 +47,7 @@ public class ConcurrencyUtil {
         try {
             EXECUTOR.submit(runnable).get();
         } catch (InterruptedException | ExecutionException e) {
-             logError(CollectionUtils.class, e);
+             logError(ConcurrencyUtil.class, e);
         } 
     }
     

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.config;
+package diarsid.beam.core.config;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -23,18 +23,18 @@ import static diarsid.beam.core.util.classloading.CustomClassLoader.getCustomLoa
  *
  * @author Diarsid
  */
-class ConfigFileReader {
+public class ConfigFileReader {
     
-    ConfigFileReader() {
+    public ConfigFileReader() {
     }
     
-    Map<Config, String> readConfigs(File configFile) {
+    public Configuration readConfigurationFile(File configFile) {
         XmlContent content = null;
         content = this.loadReaderDynamicallyAndReadFile(configFile);
         if ( isNull(content) ) {
             content = this.readFile(configFile);
         }
-        return this.processXmlContent(content);        
+        return new Configuration(this.processXmlContent(content));        
     }
     
     private XmlContent loadReaderDynamicallyAndReadFile(File configFile) {
@@ -42,7 +42,7 @@ class ConfigFileReader {
             ClassLoader defaultLoader = this.getClass().getClassLoader();
             CustomClassLoader customLoader = getCustomLoader(defaultLoader);
             Class xmlReaderClass = customLoader.loadClass(
-                    "diarsid.beam.shared.modules.config.XmlSaxReaderWorker");
+                    "diarsid.beam.core.config.XmlSaxReaderWorker");
             Constructor xmlReaderConstr = xmlReaderClass.getDeclaredConstructor(ClassLoader.class);
             xmlReaderConstr.setAccessible(true);
             Object obj = xmlReaderConstr.newInstance(customLoader);

@@ -15,7 +15,6 @@ import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ConfigModule;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
@@ -26,20 +25,22 @@ import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
 import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.ERROR;
-import static diarsid.beam.core.modules.config.Config.CORE_PORT;
+import static diarsid.beam.core.config.Config.CORE_PORT;
 import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT_NAME;
+import static diarsid.beam.core.config.Config.CORE_ACCESS_ENDPOINT_NAME;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 
 public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
     
     private final RemoteAccessEndpoint remoteAccessEndpoint;
     
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final IoModule io;
     
     public CoreRemoteManagerModuleWorker(
-            ConfigModule configModule, 
+            ConfigHolderModule configModule, 
             CoreControlModule coreControlModule, 
             IoModule ioModule) {
         this.config = configModule;

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.config;
+package diarsid.beam.core.config;
 
 import java.util.Map;
 

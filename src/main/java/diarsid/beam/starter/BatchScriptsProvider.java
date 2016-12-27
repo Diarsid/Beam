@@ -19,10 +19,11 @@ import diarsid.beam.core.Beam;
 
 import old.diarsid.beam.external.sysconsole.SysConsole;
 
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.Config;
+import diarsid.beam.core.config.Config;
 
 import static diarsid.beam.starter.BeamPartsBatchLoader.SHELL_MODE_OPTION;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -30,7 +31,7 @@ import static diarsid.beam.starter.BeamPartsBatchLoader.SHELL_MODE_OPTION;
  */
 class BatchScriptsProvider {
     
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final boolean track;
     private final BatchSrciptsComposer scriptsComposer;
     
@@ -46,7 +47,7 @@ class BatchScriptsProvider {
     private Path batchLoaderScript;
     private Path systemPathScript;
     
-    BatchScriptsProvider(ConfigModule config, boolean track) {
+    BatchScriptsProvider(ConfigHolderModule config, boolean track) {
         this.config = config;
         this.track = track;
         this.scriptsComposer = new BatchSrciptsComposer();

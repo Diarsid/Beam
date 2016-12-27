@@ -11,9 +11,10 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 
 import diarsid.beam.core.modules.data.base.builder.DataBaseBuilderImpl;
 import diarsid.beam.core.modules.data.daos.DaosInfo;
-import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -22,9 +23,9 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
     private final IoInnerModule ioInnerModule;
-    private final ConfigModule configModule;
+    private final ConfigHolderModule configModule;
     
-    DataModuleWorkerBuilder(IoInnerModule ioModule, ConfigModule configModule) {
+    DataModuleWorkerBuilder(IoInnerModule ioModule, ConfigHolderModule configModule) {
         this.ioInnerModule = ioModule;
         this.configModule = configModule;
     }

@@ -10,8 +10,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 import static diarsid.beam.core.control.io.base.Answer.answerOf;
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
+import static diarsid.beam.core.util.CollectionsUtils.containsOne;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.util.CollectionsUtils.getOne;
 
 /**
  *
@@ -48,6 +53,24 @@ public class Question implements Serializable {
     public boolean isChoiceInVariantsNaturalRange(int number) {
         // numbers are 1-based, not 0-based.
         return ( 0 < number ) && ( number < (this.variants.size() + 1) );
+    }
+    
+    public Answer ifPartOfAnyVariant(String possibleFragment) {
+        List<Answer> matches = this.variants
+                .stream()
+                .filter(variant -> { 
+                    if ( variant.hasDisplayText() ) {
+                        return containsIgnoreCase(variant.getDisplay(), possibleFragment);
+                    } else {
+                        return containsIgnoreCase(variant.get(), possibleFragment);
+                    }
+                })
+                .map(variant -> answerOf(variant)).collect(toList());
+        if ( containsOne(matches) ) {
+            return getOne(matches);
+        } else {
+            return noAnswer();
+        }
     }
     
     public Answer answerWith(int choiceNumber) {

@@ -29,8 +29,8 @@ import old.diarsid.beam.external.sysconsole.exceptions.RmiException;
 import old.diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 import old.diarsid.beam.external.sysconsole.modules.RmiConsoleManagerModule;
 
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.Config;
+import diarsid.beam.core.config.Config;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -38,7 +38,7 @@ import diarsid.beam.core.modules.config.Config;
  */
 class RmiConsoleManager implements RmiConsoleManagerModule {
     
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final ConsolePrinterModule printer;
     
     private RmiTaskManagerInterface taskManager;
@@ -51,7 +51,7 @@ class RmiConsoleManager implements RmiConsoleManagerModule {
     
     private boolean interfacesLoaded;
     
-    RmiConsoleManager(ConfigModule config, ConsolePrinterModule pr) {
+    RmiConsoleManager(ConfigHolderModule config, ConsolePrinterModule pr) {
         this.config = config;
         this.printer = pr;
         this.interfacesLoaded = false;

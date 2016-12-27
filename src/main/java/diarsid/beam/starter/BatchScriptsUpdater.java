@@ -6,9 +6,9 @@
 
 package diarsid.beam.starter;
 
-import diarsid.beam.core.modules.ConfigModule;
 
-import diarsid.beam.core.modules.config.ConfigModuleWorkerBuilder;
+import diarsid.beam.core.modules.config.ConfigHolderModuleWorkerBuilder;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -21,8 +21,8 @@ class BatchScriptsUpdater {
     
     public static void main(String[] args) {
         System.out.println("Scripts updating...");
-        ConfigModuleWorkerBuilder confBuilder = new ConfigModuleWorkerBuilder();
-        ConfigModule config = confBuilder.buildModule();
+        ConfigHolderModuleWorkerBuilder confBuilder = new ConfigHolderModuleWorkerBuilder();
+        ConfigHolderModule config = confBuilder.buildModule();
         System.out.println("Configuration reading...");
         BatchScriptsProvider scripts = new BatchScriptsProvider(config, true);
         scripts.processScripts();

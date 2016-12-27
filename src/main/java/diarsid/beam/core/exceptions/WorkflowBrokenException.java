@@ -13,6 +13,10 @@ public class WorkflowBrokenException extends RuntimeException {
 
     public WorkflowBrokenException() {
     }
+    
+    public WorkflowBrokenException(Throwable t) {
+        super(t);
+    }
 
     public WorkflowBrokenException(String msg) {
         super(msg);

@@ -20,8 +20,8 @@ import diarsid.beam.core.modules.executor.processors.ProcessorNotes;
 import diarsid.beam.core.modules.executor.processors.ProcessorPrograms;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;
 import diarsid.beam.core.modules.executor.processors.ProcessorsBuilder;
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.Config;
+import diarsid.beam.core.config.Config;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -31,7 +31,7 @@ public class ProcessorsBuilderImpl implements ProcessorsBuilder {
     
     private final IoInnerModule ioEngine;
     private final DataModule dataModule;
-    private final ConfigModule configModule;
+    private final ConfigHolderModule configModule;
     private final ExecutorContext context;
     private final PathAnalizer pathAnalizer;
     private final OS os;
@@ -39,7 +39,7 @@ public class ProcessorsBuilderImpl implements ProcessorsBuilder {
     public ProcessorsBuilderImpl(
             IoInnerModule io, 
             DataModule data, 
-            ConfigModule config,
+            ConfigHolderModule config,
             ExecutorContext intell,
             PathAnalizer pathAnalizer,
             OS os) {

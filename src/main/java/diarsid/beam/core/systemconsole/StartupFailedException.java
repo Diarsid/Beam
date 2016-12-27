@@ -11,6 +11,10 @@ package diarsid.beam.core.systemconsole;
  */
 public class StartupFailedException extends RuntimeException {
 
+    public StartupFailedException(Throwable t) {
+        super(t);
+    }
+    
     /**
      * Constructs an instance of <code>StartupFailedException</code> with the specified detail
      * message.

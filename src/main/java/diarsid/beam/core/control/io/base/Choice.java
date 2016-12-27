@@ -8,7 +8,8 @@ package diarsid.beam.core.control.io.base;
 import java.io.Serializable;
 import java.util.List;
 
-import static diarsid.beam.core.util.CollectionUtils.toUnmodifiableList;
+import diarsid.beam.core.util.CollectionsUtils;
+
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
 /**
@@ -27,9 +28,9 @@ public enum Choice implements Serializable {
     private static final List<String> REJECT_PATTERNS;
     
     static {
-        YES_PATTERNS = toUnmodifiableList("y", "+", "yes", "ye", "true", "enable");
-        NO_PATTERNS = toUnmodifiableList("n", "no", "-", "false", "disable");
-        REJECT_PATTERNS = toUnmodifiableList(".", "", "s", "stop", " ");
+        YES_PATTERNS = CollectionsUtils.toUnmodifiableList("y", "+", "yes", "ye", "true", "enable");
+        NO_PATTERNS = CollectionsUtils.toUnmodifiableList("n", "no", "-", "false", "disable");
+        REJECT_PATTERNS = CollectionsUtils.toUnmodifiableList(".", "", "s", "stop", " ");
     }
     
     public static Choice choiceOfPattern(String input) {

@@ -11,7 +11,7 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletContainer;
 import diarsid.beam.core.modules.web.ServletContainerProvider;
-import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -20,11 +20,11 @@ import diarsid.beam.core.modules.ConfigModule;
 public class JettyServletContainerProvider implements ServletContainerProvider {
     
     private final IoInnerModule ioEngine;
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final ResourcesProvider resources;
     
     public JettyServletContainerProvider(
-            IoInnerModule io, ConfigModule config, ResourcesProvider resources) {
+            IoInnerModule io, ConfigHolderModule config, ResourcesProvider resources) {
         
         this.ioEngine = io;
         this.config = config;

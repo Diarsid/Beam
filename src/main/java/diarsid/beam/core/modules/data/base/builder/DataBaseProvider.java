@@ -13,12 +13,13 @@ import diarsid.beam.core.exceptions.ModuleInitializationException;
 import old.diarsid.beam.core.modules.IoInnerModule;
 
 import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.core.modules.ConfigModule;
 
-import static diarsid.beam.core.modules.config.Config.CORE_DB_LOCATION;
-import static diarsid.beam.core.modules.config.Config.CORE_DB_NAME;
-import static diarsid.beam.core.modules.config.Config.CORE_JDBC_DRIVER;
-import static diarsid.beam.core.modules.config.Config.CORE_JDBC_URL;
+import static diarsid.beam.core.config.Config.CORE_DB_LOCATION;
+import static diarsid.beam.core.config.Config.CORE_DB_NAME;
+import static diarsid.beam.core.config.Config.CORE_JDBC_DRIVER;
+import static diarsid.beam.core.config.Config.CORE_JDBC_URL;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -27,12 +28,12 @@ import static diarsid.beam.core.modules.config.Config.CORE_JDBC_URL;
 class DataBaseProvider {
     
     private final IoInnerModule ioEngine;
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final String dataBaseClassPackage;
     
     DataBaseProvider(
             IoInnerModule ioInnerModule, 
-            ConfigModule config, 
+            ConfigHolderModule config, 
             String dataBaseClassPackage) { 
         
         this.ioEngine = ioInnerModule;

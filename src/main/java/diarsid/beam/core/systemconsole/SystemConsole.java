@@ -6,15 +6,18 @@
 
 package diarsid.beam.core.systemconsole;
 
+import java.io.File;
 import java.io.IOException;
 
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.ConfigModuleWorkerBuilder;
+import diarsid.beam.core.config.ConfigFileReader;
+import diarsid.beam.core.config.Configuration;
+import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
 import static java.lang.System.exit;
 import static java.lang.Thread.sleep;
 
+import static diarsid.beam.core.Beam.CONFIG_FILE;
 import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
 
@@ -31,13 +34,16 @@ public class SystemConsole {
     
     public static void main(String[] args) throws IOException {
         try {
-            ConfigModule config = new ConfigModuleWorkerBuilder().buildModule();
+            File configXML = new File(CONFIG_FILE);
+            ConfigFileReader configReader = new ConfigFileReader();
+            Configuration configuration = configReader.readConfigurationFile(configXML);
             ConsolePrinter printer = new ConsolePrinter(provideWriter());
             ConsoleReader reader = new ConsoleReader(provideReader());
             ConsoleController console = new ConsoleController(printer, reader);
-            ConsoleRemoteManager remoteManager = new ConsoleRemoteManager(config);
+            ConsoleRemoteManager remoteManager = new ConsoleRemoteManager(configuration);
             remoteManager.export(console);
-        } catch (StartupFailedException e) {
+        } catch (StartupFailedException|WorkflowBrokenException e) {
+            e.getCause().printStackTrace();
             e.printStackTrace();
             delayedShutdown();
         }

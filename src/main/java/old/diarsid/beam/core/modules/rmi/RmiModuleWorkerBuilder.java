@@ -13,9 +13,9 @@ import old.diarsid.beam.core.modules.OldIoModule;
 import old.diarsid.beam.core.modules.RmiModule;
 import old.diarsid.beam.core.modules.TaskManagerModule;
 
-import diarsid.beam.core.modules.ConfigModule;
-
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -25,7 +25,7 @@ class RmiModuleWorkerBuilder implements GemModuleBuilder<RmiModule> {
     
     private final OldIoModule ioModule;
     private final IoInnerModule innerIoModule;
-    private final ConfigModule configModule;
+    private final ConfigHolderModule configModule;
     private final DataModule dataModule;
     private final ExecutorModule executorModule;
     private final TaskManagerModule taskManagerModule;
@@ -33,7 +33,7 @@ class RmiModuleWorkerBuilder implements GemModuleBuilder<RmiModule> {
     RmiModuleWorkerBuilder(
             OldIoModule ioModule,
             IoInnerModule innerIoModule, 
-            ConfigModule configModule, 
+            ConfigHolderModule configModule, 
             DataModule dataModule,
             ExecutorModule executorModule,
             TaskManagerModule taskManagerModule){

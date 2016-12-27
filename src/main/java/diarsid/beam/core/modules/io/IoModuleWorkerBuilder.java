@@ -9,11 +9,12 @@ package diarsid.beam.core.modules.io;
 
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.io.javafxgui.GuiJavaFX;
-import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.modules.config.Config.IMAGES_LOCATION;
+import static diarsid.beam.core.config.Config.IMAGES_LOCATION;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -21,9 +22,9 @@ import static diarsid.beam.core.modules.config.Config.IMAGES_LOCATION;
  */
 class IoModuleWorkerBuilder implements GemModuleBuilder<IoModule> {
     
-    private final ConfigModule configModule;
+    private final ConfigHolderModule configModule;
     
-    IoModuleWorkerBuilder(ConfigModule configModule) {
+    IoModuleWorkerBuilder(ConfigHolderModule configModule) {
         this.configModule = configModule;
     }
     

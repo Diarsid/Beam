@@ -7,6 +7,7 @@
 package diarsid.beam.core.systemconsole;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import diarsid.beam.core.control.io.base.Answer;
@@ -15,14 +16,17 @@ import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
 import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.rmi.RemoteAccessEndpoint;
+import diarsid.beam.core.util.StringHolder;
 
 import static java.lang.Integer.parseInt;
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
 import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.StringUtils.isNumeric;
 
 /**
@@ -55,22 +59,32 @@ public class ConsoleController implements OuterIoEngine {
         this.consoleName = name;
     }
     
-    private void startConsoleRunner() {        
+    private void startConsoleRunner() {
+        if ( isNull(this.initiator) ) {
+            throw new StartupFailedException(
+                    "Attempt to start console while initiator has not been set.");
+        }
         new Thread(() -> {
-            String command;            
-            while ( this.isWorking.get() ) {
-                try {
+            StringHolder command = new StringHolder();   
+            try {
+                while ( this.isWorking.get() ) {
                     this.printer.printReadyForNewCommandLine();
-                    command = this.reader.readLine(); 
+                    command.set(this.reader.readLine()); 
                     this.isInDialogMode.set(true);
-                    if ( ! command.isEmpty() && nonNull(this.initiator) ) {
-                        this.remoteAccess.executeCommand(this.initiator, command);
+                    if ( command.isNotEmpty() ) {
+                        waitAndDo(() -> {
+                            try {
+                                this.remoteAccess.executeCommand(this.initiator, command.get());
+                            } catch (RemoteException ex) {
+                                throw new WorkflowBrokenException(ex);
+                            }
+                        });                        
                     }                    
                     this.isInDialogMode.set(false);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                } 
-            }
+                }
+            } catch (IOException ex) {
+                throw new WorkflowBrokenException(ex);
+            } 
         }).start();
     }
     
@@ -103,11 +117,16 @@ public class ConsoleController implements OuterIoEngine {
                     this.printer.printInDialogReportLine("not in variants range.");
                     this.printer.printInDialogInviteLine("choose");
                 }
-            } else if ( choiceOfPattern(line).isRejected() ) {
-                notResolved = false;
-                answer = noAnswer();
             } else {
-                this.printer.printInDialogInviteLine("choose");
+                answer = question.ifPartOfAnyVariant(line);
+                if ( answer.isPresent() ) {
+                    notResolved = false;
+                } else if ( choiceOfPattern(line).isRejected() ) {
+                    notResolved = false;
+                    answer = noAnswer();
+                } else {
+                    this.printer.printInDialogInviteLine("choose");
+                }
             }
         }
         return answer;

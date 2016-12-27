@@ -14,7 +14,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
-import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.config.Configuration;
 import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
@@ -22,12 +22,12 @@ import static java.lang.Integer.parseInt;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.modules.config.Config.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.modules.config.Config.CORE_HOST;
-import static diarsid.beam.core.modules.config.Config.CORE_PORT;
-import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_HOST;
-import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.modules.config.Config.SYS_CONSOLE_PORT;
+import static diarsid.beam.core.config.Config.CORE_ACCESS_ENDPOINT_NAME;
+import static diarsid.beam.core.config.Config.CORE_HOST;
+import static diarsid.beam.core.config.Config.CORE_PORT;
+import static diarsid.beam.core.config.Config.SYS_CONSOLE_HOST;
+import static diarsid.beam.core.config.Config.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.config.Config.SYS_CONSOLE_PORT;
 
 /**
  *
@@ -43,7 +43,7 @@ public class ConsoleRemoteManager {
     private final String coreRegistryHost;
     private final String coreAccessEndpointName;
     
-    public ConsoleRemoteManager(ConfigModule config) {               
+    public ConsoleRemoteManager(Configuration config) {               
         this.consoleRegistryPort = parseInt(config.get(SYS_CONSOLE_PORT));
         this.consoleRegistryHost = config.get(SYS_CONSOLE_HOST);
         this.consoleName = config.get(SYS_CONSOLE_NAME);

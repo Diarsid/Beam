@@ -14,9 +14,10 @@ import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
 import diarsid.beam.core.modules.executor.os.listing.FileLister;
 import diarsid.beam.core.modules.executor.os.search.FileSearcher;
-import diarsid.beam.core.modules.ConfigModule;
 
 import static diarsid.beam.core.modules.executor.os.listing.FileLister.getLister;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -26,7 +27,7 @@ public interface OSProvider {
     
     static OS getOS(
             IoInnerModule io, 
-            ConfigModule config, 
+            ConfigHolderModule config, 
             SystemActionsExecutor actionsExecutor,
             FileSearcher fileSearcher,
             ExecutorContext intelligentContext) {

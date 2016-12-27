@@ -27,13 +27,14 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 
 import diarsid.beam.core.modules.web.ServletContainer;
 import diarsid.beam.core.modules.web.ServletData;
-import diarsid.beam.core.modules.ConfigModule;
 
-import static diarsid.beam.core.modules.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
-import static diarsid.beam.core.modules.config.Config.WEB_INTERNET_HOST;
-import static diarsid.beam.core.modules.config.Config.WEB_INTERNET_PORT;
-import static diarsid.beam.core.modules.config.Config.WEB_LOCAL_HOST;
-import static diarsid.beam.core.modules.config.Config.WEB_LOCAL_PORT;
+import static diarsid.beam.core.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
+import static diarsid.beam.core.config.Config.WEB_INTERNET_HOST;
+import static diarsid.beam.core.config.Config.WEB_INTERNET_PORT;
+import static diarsid.beam.core.config.Config.WEB_LOCAL_HOST;
+import static diarsid.beam.core.config.Config.WEB_LOCAL_PORT;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -47,7 +48,7 @@ class JettyServletContainer implements ServletContainer {
     private final String internetConnectorName;
     private final String localConnectorName;
     
-    JettyServletContainer(IoInnerModule io, ConfigModule config) {     
+    JettyServletContainer(IoInnerModule io, ConfigHolderModule config) {     
         this.ioEngine = io;
         this.internetConnectorName = "internet_jetty_connector";
         this.localConnectorName = "localhost_jetty_connector";
@@ -63,7 +64,7 @@ class JettyServletContainer implements ServletContainer {
         this.jettyServer.setStopAtShutdown(true);
     }
     
-    private void configureServerAddresses(ConfigModule config) {
+    private void configureServerAddresses(ConfigHolderModule config) {
         try {
             if (    ! config.get(WEB_LOCAL_HOST).isEmpty() ||
                     ! config.get(WEB_LOCAL_PORT).isEmpty()) {

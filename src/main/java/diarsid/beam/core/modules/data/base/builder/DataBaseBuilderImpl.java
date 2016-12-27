@@ -11,7 +11,7 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.DataBaseBuilder;
 import diarsid.beam.core.modules.data.base.DataBasesInfo;
-import diarsid.beam.core.modules.ConfigModule;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -24,7 +24,7 @@ public class DataBaseBuilderImpl implements DataBaseBuilder {
     
     @Override
     public DataBase buildDataBase(
-            IoInnerModule ioInnerModule, ConfigModule configModule) {
+            IoInnerModule ioInnerModule, ConfigHolderModule configModule) {
         
         DataBaseInitializer initializer = new DataBaseInitializer(ioInnerModule);
         DataBaseModel dataModel = new DataBaseModel();

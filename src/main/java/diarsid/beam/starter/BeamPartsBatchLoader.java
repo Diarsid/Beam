@@ -9,8 +9,8 @@ import java.io.IOException;
 
 import old.diarsid.beam.external.sysconsole.SysConsole;
 
-import diarsid.beam.core.modules.ConfigModule;
-import diarsid.beam.core.modules.config.ConfigModuleWorkerBuilder;
+import diarsid.beam.core.modules.config.ConfigHolderModuleWorkerBuilder;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -45,16 +45,16 @@ public class BeamPartsBatchLoader {
     }
     
     private static void prepare() throws IOException {
-        ConfigModule config = provideConfig();
+        ConfigHolderModule config = provideConfig();
         locator = new BeamPartsRemoteLocator(config);
         BatchScriptsProvider scripts = new BatchScriptsProvider(config, false);
         scripts.processScripts();
         starter = new BatchScriptsExecutor(scripts);
     }
     
-    private static ConfigModule provideConfig() {
-        ConfigModuleWorkerBuilder confBuilder = new ConfigModuleWorkerBuilder();
-        ConfigModule config = confBuilder.buildModule();
+    private static ConfigHolderModule provideConfig() {
+        ConfigHolderModuleWorkerBuilder confBuilder = new ConfigHolderModuleWorkerBuilder();
+        ConfigHolderModule config = confBuilder.buildModule();
         return config;
     }
 

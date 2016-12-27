@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package diarsid.beam.core.modules.config;
+package diarsid.beam.core.config;
 
 /**
  *

@@ -16,11 +16,11 @@ import old.diarsid.beam.external.sysconsole.modules.ConsolePrinterModule;
 import old.diarsid.beam.external.sysconsole.modules.ConsoleReaderModule;
 import old.diarsid.beam.external.sysconsole.modules.RmiConsoleManagerModule;
 
-import diarsid.beam.core.modules.ConfigModule;
-
 import com.drs.gem.injector.core.Declaration;
 import com.drs.gem.injector.core.GemModuleDeclaration;
 import com.drs.gem.injector.core.GemModuleType;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -37,7 +37,7 @@ class SysConsoleModulesDeclaration implements Declaration {
         Set<GemModuleDeclaration> modules = new HashSet<>();
         
         modules.add(new GemModuleDeclaration(
-                ConfigModule.class.getCanonicalName(), 
+                ConfigHolderModule.class.getCanonicalName(), 
                 "diarsid.beam.shared.modules.config.ConfigModuleWorker",
                 GemModuleType.SINGLETON));
         

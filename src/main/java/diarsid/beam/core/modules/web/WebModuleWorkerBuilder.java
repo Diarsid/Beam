@@ -12,9 +12,10 @@ import old.diarsid.beam.core.modules.WebModule;
 
 import diarsid.beam.core.modules.web.engines.JettyServletContainerProvider;
 import diarsid.beam.core.modules.web.resources.ResourcesProviderWorker;
-import diarsid.beam.core.modules.ConfigModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -23,12 +24,12 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     
     private final IoInnerModule ioEngine;
-    private final ConfigModule config;
+    private final ConfigHolderModule config;
     private final DataModule dataModule;
     
     WebModuleWorkerBuilder(
             IoInnerModule io, 
-            ConfigModule config, 
+            ConfigHolderModule config, 
             DataModule dataModule) {
         
         this.ioEngine = io;
