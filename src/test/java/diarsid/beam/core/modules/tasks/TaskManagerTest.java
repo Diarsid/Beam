@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DaoTasks;
+import old.diarsid.beam.core.modules.data.DaoTasks;
 
 /**
  *

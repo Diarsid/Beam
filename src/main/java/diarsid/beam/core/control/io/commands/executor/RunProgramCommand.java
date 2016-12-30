@@ -23,7 +23,7 @@ public class RunProgramCommand extends SingleArgumentCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return RUN_PROGRAM;
     }
 }

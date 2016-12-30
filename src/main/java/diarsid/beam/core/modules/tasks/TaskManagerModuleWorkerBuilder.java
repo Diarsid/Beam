@@ -12,7 +12,7 @@ import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
 import old.diarsid.beam.core.modules.TaskManagerModule;
 
-import diarsid.beam.core.modules.data.DaoTasks;
+import old.diarsid.beam.core.modules.data.DaoTasks;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 

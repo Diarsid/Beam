@@ -10,25 +10,30 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.VariantAnswer;
+import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.rmi.RemoteAccessEndpoint;
+import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.util.StringHolder;
 
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.control.io.base.Answer.noAnswer;
 import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
+import static diarsid.beam.core.control.io.base.UserReaction.isRejection;
+import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
+import static diarsid.beam.core.control.io.interpreter.ControlKeys.findUnacceptableIn;
+import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.StringUtils.isNumeric;
+import static diarsid.beam.core.util.StringUtils.normalize;
 
 /**
  *
@@ -41,7 +46,7 @@ public class ConsoleController implements OuterIoEngine {
     private final AtomicBoolean isInDialogMode;
     private final AtomicBoolean isWorking;
     private Initiator initiator;
-    private RemoteAccessEndpoint remoteAccess;    
+    private RemoteCoreAccessEndpoint remoteAccess;    
     
     public ConsoleController(ConsolePrinter printer, ConsoleReader reader) {
         this.printer = printer;
@@ -50,7 +55,7 @@ public class ConsoleController implements OuterIoEngine {
         this.isWorking = new AtomicBoolean(true);
     }
 
-    public void setRemoteAccess(RemoteAccessEndpoint remoteAccess) {
+    public void setRemoteAccess(RemoteCoreAccessEndpoint remoteAccess) {
         this.remoteAccess = remoteAccess;
     }
     
@@ -91,23 +96,24 @@ public class ConsoleController implements OuterIoEngine {
     }
 
     @Override
-    public Answer resolveQuestion(Question question) throws IOException {
+    public VariantAnswer resolveQuestion(VariantsQuestion question) throws IOException {
         this.printer.printQuestionAndVariants(question);
         return this.askForAnswer(question);
     }
 
-    private Answer askForAnswer(Question question) throws IOException, NumberFormatException {
+    private VariantAnswer askForAnswer(VariantsQuestion question) 
+            throws IOException, NumberFormatException {
         boolean notResolved = true;
         String line = "";
-        int chosenVariant = -1;
-        Answer answer = noAnswer();
+        int chosenVariantIndex = -1;
+        VariantAnswer answer = noAnswerFromVariants();
         while ( notResolved ) {
             line = this.reader.readLine();            
             if ( isNumeric(line) ) {
-                chosenVariant = parseInt(line);
-                if ( question.isChoiceInVariantsNaturalRange(chosenVariant) ) {
+                chosenVariantIndex = parseInt(line);
+                if ( question.isChoiceInVariantsNaturalRange(chosenVariantIndex) ) {
                     notResolved = false;
-                    answer = question.answerWith(chosenVariant);
+                    answer = question.answerWith(chosenVariantIndex);
                 } else {
                     this.printer.printInDialogReportLine("not in variants range.");
                     this.printer.printInDialogInviteLine("choose");
@@ -116,15 +122,34 @@ public class ConsoleController implements OuterIoEngine {
                 answer = question.ifPartOfAnyVariant(line);
                 if ( answer.isPresent() ) {
                     notResolved = false;
-                } else if ( choiceOfPattern(line).isRejected() ) {
+                } else if ( isRejection(line) ) {
                     notResolved = false;
-                    answer = noAnswer();
+                    answer = noAnswerFromVariants();
                 } else {
                     this.printer.printInDialogInviteLine("choose");
                 }
             }
         }
         return answer;
+    }
+    
+    @Override
+    public String askForInput(String inputRequest) throws IOException {        
+        String input = "";
+        boolean answerIsNotGiven = true;
+        while ( answerIsNotGiven ) {
+            this.printer.printInDialogInviteLine(inputRequest);
+            input = normalize(this.reader.readLine());
+            if ( isRejection(input) ) {
+                input = "";
+                answerIsNotGiven = false;
+            } 
+            if ( wordIsNotAcceptable(input) ) {
+                this.printer.printInDialogReportLine(
+                        format("character %s is not allowed.", findUnacceptableIn(input)));
+            }
+        }
+        return input;
     }
 
     @Override
@@ -137,7 +162,7 @@ public class ConsoleController implements OuterIoEngine {
     }
 
     @Override
-    public void reportMessage(TextMessage message) throws IOException {
+    public void reportMessage(Message message) throws IOException {
         if ( this.isInDialogMode.get() ) {
             this.printer.printInDialogMultilineReport(message);
         } else {

@@ -15,6 +15,7 @@ import static java.util.Collections.unmodifiableList;
 import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsAnySnippetsInAnyWordsIgnoreCase;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.findAnyInIgnoreCase;
 
 /**
  *
@@ -38,10 +39,24 @@ public class ControlKeys {
     private ControlKeys() {
     }
     
+    public static boolean hasWildcard(String word) {
+        return word.contains(WILDCARD);
+    }
+    
+    public static String findUnacceptableIn(String word) {
+        return findAnyInIgnoreCase(word, UNACCEPTABLE_ARGUMENT_CHARS);
+    }
+    
     public static boolean wordIsAcceptable(String word) {
         return 
                 ! word.isEmpty() && 
                 ! containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_ARGUMENT_CHARS);
+    }
+    
+    public static boolean wordIsNotAcceptable(String word) {
+        return 
+                word.isEmpty() ||  
+                containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_ARGUMENT_CHARS);
     }
     
     public static boolean wordIsAcceptableAndSimple(String word) {
@@ -57,6 +72,7 @@ public class ControlKeys {
     }
     
     public static boolean wordsAreAcceptable(Collection<String> words) {
-        return ( ! containsAnySnippetsInAnyWordsIgnoreCase(words, UNACCEPTABLE_ARGUMENT_CHARS));
+        return ( ! containsAnySnippetsInAnyWordsIgnoreCase(
+                        words, UNACCEPTABLE_ARGUMENT_CHARS));
     }
 }

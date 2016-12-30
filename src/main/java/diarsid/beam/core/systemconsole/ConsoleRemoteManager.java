@@ -15,7 +15,6 @@ import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.config.Configuration;
-import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
 import static java.lang.Integer.parseInt;
@@ -30,6 +29,8 @@ import static diarsid.beam.core.config.Config.SYS_CONSOLE_NAME;
 import static diarsid.beam.core.config.Config.SYS_CONSOLE_PORT;
 import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.systemconsole.SystemConsoleLog.consoleDebug;
+
+import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 
 /**
  *
@@ -57,7 +58,7 @@ public class ConsoleRemoteManager {
     
     void export(ConsoleController console) {
         try {            
-            RemoteAccessEndpoint remoteAccess = importRemoteAccess();            
+            RemoteCoreAccessEndpoint remoteAccess = importRemoteAccess();            
             console.setRemoteAccess(remoteAccess);
                         
             Registry registry = null;
@@ -100,9 +101,9 @@ public class ConsoleRemoteManager {
         }
     }
 
-    private RemoteAccessEndpoint importRemoteAccess() 
+    private RemoteCoreAccessEndpoint importRemoteAccess() 
             throws NumberFormatException, RemoteException, NotBoundException {
-        RemoteAccessEndpoint remoteAccess = (RemoteAccessEndpoint) getRegistry(
+        RemoteCoreAccessEndpoint remoteAccess = (RemoteCoreAccessEndpoint) getRegistry(
                         this.coreRegistryHost,
                         this.coreRegistryPort
                 ).lookup(this.coreAccessEndpointName);

@@ -33,8 +33,8 @@ public class InterpreterTestRunner {
             System.out.print(" > ");
             commandLine = reader.readLine(); 
             command = interpreter.interprete(commandLine);
-            System.out.println(command.getType());
-            work = ! command.getType().equals(EXIT);
+            System.out.println(command.type());
+            work = ! command.type().equals(EXIT);
         }
     }
 }

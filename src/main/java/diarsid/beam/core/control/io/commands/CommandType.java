@@ -5,72 +5,94 @@
  */
 package diarsid.beam.core.control.io.commands;
 
+import static diarsid.beam.core.control.io.commands.CommandOperationType.CORE_OPERATION;
+import static diarsid.beam.core.control.io.commands.CommandOperationType.CREATE_ENTITY;
+import static diarsid.beam.core.control.io.commands.CommandOperationType.EDIT_ENTITY;
+import static diarsid.beam.core.control.io.commands.CommandOperationType.EXECUTOR_OPERATION;
+import static diarsid.beam.core.control.io.commands.CommandOperationType.FIND_ENTITY;
+import static diarsid.beam.core.control.io.commands.CommandOperationType.OTHER;
+import static diarsid.beam.core.control.io.commands.CommandOperationType.REMOVE_ENTITY;
+
 /**
  *
  * @author Diarsid
  */
 public enum CommandType {    
     
-    OPEN_LOCATION,
-    OPEN_PATH,    
-    RUN_PROGRAM,
-    RUN_MARKED_PROGRAM,
-    CALL_BATCH,
-    SEE_WEBPAGE,
-    EXECUTOR_DEFAULT,
+    OPEN_LOCATION (EXECUTOR_OPERATION),
+    OPEN_PATH (EXECUTOR_OPERATION),    
+    RUN_PROGRAM (EXECUTOR_OPERATION),
+    RUN_MARKED_PROGRAM (EXECUTOR_OPERATION),
+    CALL_BATCH (EXECUTOR_OPERATION),
+    SEE_WEBPAGE (EXECUTOR_OPERATION),
+    EXECUTOR_DEFAULT (EXECUTOR_OPERATION),
     
-    OPEN_NOTES,
-    OPEN_TARGET_IN_NOTE,
-    OPEN_PATH_IN_NOTE,
+    OPEN_NOTES (EXECUTOR_OPERATION),
+    OPEN_TARGET_IN_NOTE (EXECUTOR_OPERATION),
+    OPEN_PATH_IN_NOTE (EXECUTOR_OPERATION),
     
-    DELETE_MEM,   
+    DELETE_MEM (REMOVE_ENTITY),   
        
-    DELETE_PAGE, 
-    CREATE_PAGE,
-    EDIT_PAGE,
+    DELETE_PAGE (REMOVE_ENTITY), 
+    CREATE_PAGE (CREATE_ENTITY),
+    EDIT_PAGE (EDIT_ENTITY),
     
-    DELETE_PAGE_DIR, 
-    CREATE_PAGE_DIR,
-    EDIT_PAGE_DIR,
+    DELETE_PAGE_DIR (REMOVE_ENTITY), 
+    CREATE_PAGE_DIR (CREATE_ENTITY),
+    EDIT_PAGE_DIR (EDIT_ENTITY),
     
-    DELETE_LOCATION,
-    CREATE_LOCATION,
-    EDIT_LOCATION,
+    DELETE_LOCATION (REMOVE_ENTITY),
+    CREATE_LOCATION (CREATE_ENTITY),
+    EDIT_LOCATION (EDIT_ENTITY),
     
-    DELETE_TASK, 
-    CREATE_TASK,
-    EDIT_TASK,
+    DELETE_TASK (REMOVE_ENTITY), 
+    CREATE_TASK (CREATE_ENTITY),
+    EDIT_TASK (EDIT_ENTITY),
     
-    DELETE_REMINDER, 
-    CREATE_REMINDER,
-    EDIT_REMINDER,
+    DELETE_REMINDER (REMOVE_ENTITY), 
+    CREATE_REMINDER (CREATE_ENTITY),
+    EDIT_REMINDER (EDIT_ENTITY),
     
-    DELETE_EVENT, 
-    CREATE_EVENT,
-    EDIT_EVENT,
+    DELETE_EVENT (REMOVE_ENTITY), 
+    CREATE_EVENT (CREATE_ENTITY),
+    EDIT_EVENT (EDIT_ENTITY),
     
-    DELETE_BATCH, 
-    CREATE_BATCH,
-    EDIT_BATCH,
+    DELETE_BATCH (REMOVE_ENTITY), 
+    CREATE_BATCH (CREATE_ENTITY),
+    EDIT_BATCH (EDIT_ENTITY),
     
-    LIST_LOCATION,
-    LIST_PATH,
+    LIST_LOCATION (EXECUTOR_OPERATION),
+    LIST_PATH (EXECUTOR_OPERATION),
     
-    FIND_LOCATION,
-    FIND_TASK,
-    FIND_EVENT,
-    FIND_REMINDER,
-    FIND_PAGE,
-    FIND_WEBDIRECTORY,  
-    FIND_MEM,
-    FIND_BATCH,
+    FIND_LOCATION (FIND_ENTITY),
+    FIND_TASK (FIND_ENTITY),
+    FIND_EVENT (FIND_ENTITY),
+    FIND_REMINDER (FIND_ENTITY),
+    FIND_PAGE (FIND_ENTITY),
+    FIND_WEBDIRECTORY (FIND_ENTITY),  
+    FIND_MEM (FIND_ENTITY),
+    FIND_BATCH (FIND_ENTITY),
     
-    EXIT,
-    CLOSE_CONSOLE,
+    EXIT (CORE_OPERATION),
+    CLOSE_CONSOLE (CORE_OPERATION),
     
-    UNDEFINED;
+    UNDEFINED (OTHER);
+    
+    private final CommandOperationType operationType;
+    
+    private CommandType(CommandOperationType type) {
+        this.operationType = type;
+    }
+    
+    public CommandOperationType getOperationType() {
+        return this.operationType;
+    }
+    
+    public boolean isNot(CommandType type) {
+        return ! this.equals(type);
+    }
     
     public static boolean isDefined(CommandType type) {
-        return ( type != UNDEFINED );
+        return ( type.equals(UNDEFINED) );
     }
 }

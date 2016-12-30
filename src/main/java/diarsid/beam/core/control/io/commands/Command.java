@@ -11,5 +11,5 @@ package diarsid.beam.core.control.io.commands;
  */
 public interface Command {
     
-    CommandType getType();
+    CommandType type();
 }

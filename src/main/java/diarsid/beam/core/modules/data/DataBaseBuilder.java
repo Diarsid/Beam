@@ -5,10 +5,11 @@
  */
 package diarsid.beam.core.modules.data;
 
-import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DataBase;
+import old.diarsid.beam.core.modules.data.DataBase;
+
 import diarsid.beam.core.modules.ConfigHolderModule;
+import diarsid.beam.core.modules.IoModule;
 
 /**
  *
@@ -16,6 +17,5 @@ import diarsid.beam.core.modules.ConfigHolderModule;
  */
 public interface DataBaseBuilder {
     
-    DataBase buildDataBase(
-            IoInnerModule ioInnerModule, ConfigHolderModule configModule);
+    DataBase buildDataBase(IoModule ioModule, ConfigHolderModule configModule);
 }

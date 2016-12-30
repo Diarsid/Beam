@@ -39,7 +39,7 @@ class RecognizersCluster implements Recognizer {
             return this.childRecognizers
                 .stream()
                 .map(recognizer -> recognizer.assess(input))
-                .filter(command -> isDefined(command.getType()))
+                .filter(command -> isDefined(command.type()))
                 .findFirst()
                 .orElse(undefinedCommand());
         }  

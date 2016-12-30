@@ -15,6 +15,7 @@ import diarsid.beam.core.domain.entities.Location;
 public interface DaoLocations {
     
     List<Location> getLocationsByName(String locationName);
+    
     List<Location> getLocationsByNameParts(List<String> locationNameParts);
     
     boolean saveNewLocation(Location location);
@@ -22,6 +23,10 @@ public interface DaoLocations {
     boolean removeLocation(String locationName);
     
     boolean editLocationPath(String locationName, String newPath);
+    
+    boolean editLocationName(String locationName, String newName);
+    
+    boolean replaceInPaths(String replaceable, String replacement);
             
     List<Location> getAllLocations();
 }

@@ -23,7 +23,7 @@ public class OpenLocationCommand extends SingleArgumentCommand {
     }
     
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return OPEN_LOCATION;
     }
 }

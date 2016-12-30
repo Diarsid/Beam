@@ -13,7 +13,8 @@ import diarsid.beam.core.domain.entities.Location;
 
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.HandlerLocations;
+import old.diarsid.beam.core.modules.data.HandlerLocations;
+
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.PathAnalizer;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;

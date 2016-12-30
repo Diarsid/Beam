@@ -41,7 +41,7 @@ public class CreateWebDirectoryCommand extends DoubleStringCommand {
     }
     
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return CREATE_PAGE_DIR;
     }
 }

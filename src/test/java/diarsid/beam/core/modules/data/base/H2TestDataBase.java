@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.data.base;
 
+import old.diarsid.beam.core.modules.data.base.JdbcTransactionWrapper;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,7 +16,8 @@ import org.h2.jdbcx.JdbcConnectionPool;
 
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.modules.data.JdbcTransaction;
+
+import old.diarsid.beam.core.modules.data.JdbcTransaction;
 
 /**
  *

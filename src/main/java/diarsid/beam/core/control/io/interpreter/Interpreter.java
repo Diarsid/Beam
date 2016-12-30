@@ -8,7 +8,7 @@ package diarsid.beam.core.control.io.interpreter;
 
 import diarsid.beam.core.control.io.commands.Command;
 import diarsid.beam.core.control.io.commands.EmptyCommand;
-import diarsid.beam.core.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.control.io.commands.ExecutorCommand;
 import diarsid.beam.core.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
@@ -343,11 +343,11 @@ public class Interpreter {
                         new WordRecognizer(
                                 "list").branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new SingleStringCommand(
+                                                input -> new ExecutorCommand(
                                                         input.currentArg(), 
                                                         LIST_LOCATION)), 
                                         new RelativePathRecognizer().pointsTo(
-                                                input -> new SingleStringCommand(
+                                                input -> new ExecutorCommand(
                                                         input.currentArg(), 
                                                         LIST_PATH))
                         ),
@@ -356,11 +356,11 @@ public class Interpreter {
                                 "note", 
                                 "notes").priority(LOW).branchesTo(
                                         new RelativePathRecognizer().pointsTo(
-                                                input -> new SingleStringCommand(
+                                                input -> new ExecutorCommand(
                                                         input.currentArg(), 
                                                         OPEN_PATH_IN_NOTE)), 
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new SingleStringCommand(
+                                                input -> new ExecutorCommand(
                                                         input.currentArg(), 
                                                         OPEN_TARGET_IN_NOTE))
                         )

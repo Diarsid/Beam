@@ -31,7 +31,7 @@ public class SeePageCommand implements ArgumentedCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return SEE_WEBPAGE;
     }
 

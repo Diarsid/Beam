@@ -6,11 +6,10 @@
 package diarsid.beam.core.control.io.base;
 
 import java.io.Serializable;
-import java.util.List;
 
-import diarsid.beam.core.util.CollectionsUtils;
-
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.control.io.base.UserReaction.isNo;
+import static diarsid.beam.core.control.io.base.UserReaction.isRejection;
+import static diarsid.beam.core.control.io.base.UserReaction.isYes;
 
 /**
  *
@@ -23,22 +22,12 @@ public enum Choice implements Serializable {
     REJECT,
     CHOICE_NOT_MADE;
     
-    private static final List<String> YES_PATTERNS;
-    private static final List<String> NO_PATTERNS;
-    private static final List<String> REJECT_PATTERNS;
-    
-    static {
-        YES_PATTERNS = CollectionsUtils.toUnmodifiableList("y", "+", "yes", "ye", "true", "enable");
-        NO_PATTERNS = CollectionsUtils.toUnmodifiableList("n", "no", "-", "false", "disable");
-        REJECT_PATTERNS = CollectionsUtils.toUnmodifiableList(".", "", "s", "stop", " ");
-    }
-    
     public static Choice choiceOfPattern(String input) {
-        if ( containsWordInIgnoreCase(YES_PATTERNS, input) ) {
+        if ( isYes(input) ) {
             return POSTIVE;
-        } else if ( containsWordInIgnoreCase(NO_PATTERNS, input) ) {
+        } else if ( isNo(input) ) {
             return NEGATIVE;
-        } else if ( containsWordInIgnoreCase(REJECT_PATTERNS, input) ) {
+        } else if ( isRejection(input) ) {
             return REJECT;
         } else {
             return CHOICE_NOT_MADE;

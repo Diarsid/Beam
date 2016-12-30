@@ -33,9 +33,17 @@ public class CreateLocationCommand extends DoubleStringCommand {
     public boolean hasPath() {
         return super.hasSecond();
     }
+    
+    public void resetName(String newName) {
+        super.resetFirst(newName);        
+    }
+    
+    public void resetPath(String newPath) {
+        super.resetSecond(newPath);
+    }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return CREATE_LOCATION;
     }
 }

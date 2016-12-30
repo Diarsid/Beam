@@ -12,6 +12,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Locale.ENGLISH;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -29,6 +30,14 @@ public class StringUtils {
     
     public static String upper(String target) {
         return target.toUpperCase(ENGLISH);
+    }
+    
+    public static boolean nonNullNonEmpty(String s) {
+        return nonNull(s) && ! s.isEmpty();
+    }
+    
+    public static boolean nonEmpty(String s) {
+        return ! s.isEmpty();
     }
     
     public static String normalize(String target) {
@@ -49,7 +58,7 @@ public class StringUtils {
                 .trim();
     }
 
-    public static List<String> splitByDash(String target) {        
+    public static List<String> splitByWildcard(String target) {        
         return stream(target.split("-+"))
                 .filter(string -> !string.matches("\\s+"))
                 .map(string -> string.trim())

@@ -37,7 +37,7 @@ public class PathUtils {
     private PathUtils() {
     }
     
-    public static boolean givenPathIsDirectory(Path dir) {
+    public static boolean pathIsDirectory(Path dir) {
         return Files.exists(dir) && Files.isDirectory(dir);
     }
     

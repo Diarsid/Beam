@@ -19,10 +19,13 @@ import diarsid.beam.core.domain.entities.Location;
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DaoCommandsBatches;
+import old.diarsid.beam.core.modules.data.DaoCommandsBatches;
+
 import diarsid.beam.core.modules.data.DaoLocations;
-import diarsid.beam.core.modules.data.HandlerLocations;
-import diarsid.beam.core.modules.data.HandlerWebPages;
+
+import old.diarsid.beam.core.modules.data.HandlerLocations;
+import old.diarsid.beam.core.modules.data.HandlerWebPages;
+
 import diarsid.beam.core.domain.entities.Batch;
 
 import static org.mockito.Mockito.mock;

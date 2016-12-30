@@ -15,26 +15,25 @@ import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.modules.ConfigHolderModule;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteAccessEndpointHolder;
-import diarsid.beam.core.rmi.RemoteAccessEndpoint;
+import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
-import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.ERROR;
-import static diarsid.beam.core.config.Config.CORE_PORT;
-import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.config.Config.CORE_ACCESS_ENDPOINT_NAME;
-
-import diarsid.beam.core.modules.ConfigHolderModule;
+import static diarsid.beam.core.config.Config.CORE_PORT;
+import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
+import static diarsid.beam.core.util.Logs.debug;
 
 
 public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
     
-    private final RemoteAccessEndpoint remoteAccessEndpoint;
+    private final RemoteCoreAccessEndpoint remoteAccessEndpoint;
     
     private final ConfigHolderModule config;
     private final IoModule io;
@@ -54,8 +53,8 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
         try {
             int beamCorePort = Integer.parseInt(config.get(CORE_PORT));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
-            RemoteAccessEndpoint access = 
-                    (RemoteAccessEndpoint) UnicastRemoteObject.exportObject(
+            RemoteCoreAccessEndpoint access = 
+                    (RemoteCoreAccessEndpoint) UnicastRemoteObject.exportObject(
                             this.remoteAccessEndpoint, beamCorePort);
 
             registry.bind(config.get(CORE_ACCESS_ENDPOINT_NAME), access);
@@ -87,7 +86,7 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
     }
 
     @Override
-    public RemoteAccessEndpoint getRemoteAccessEndpoint() {
+    public RemoteCoreAccessEndpoint getRemoteAccessEndpoint() {
         return this.remoteAccessEndpoint;
     }
 }

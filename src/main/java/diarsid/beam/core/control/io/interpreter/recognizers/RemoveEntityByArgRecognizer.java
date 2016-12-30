@@ -10,7 +10,7 @@ package diarsid.beam.core.control.io.interpreter.recognizers;
 
 import diarsid.beam.core.control.io.commands.Command;
 import diarsid.beam.core.control.io.commands.CommandType;
-import diarsid.beam.core.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.interpreter.Input;
 import diarsid.beam.core.control.io.interpreter.PrioritizedRecognizer;
 
@@ -44,22 +44,22 @@ public class RemoveEntityByArgRecognizer extends PrioritizedRecognizer {
                         return this.commandWithOrWithoutArgument(input.currentArg());
                     }
                     default : {
-                        return new SingleStringCommand("", this.type);
+                        return new RemoveEntityCommand("", this.type);
                     }
                 }
             } else {
                 return this.commandWithOrWithoutArgument(input.currentArg());
             }            
         } else {
-            return new SingleStringCommand("", this.type);
+            return new RemoveEntityCommand("", this.type);
         }        
     }
 
     private Command commandWithOrWithoutArgument(String arg) {
         if ( wordIsAcceptable(arg) ) {
-            return new SingleStringCommand(arg, this.type);
+            return new RemoveEntityCommand(arg, this.type);
         } else {
-            return new SingleStringCommand("", this.type);
+            return new RemoveEntityCommand("", this.type);
         }
     }
 }

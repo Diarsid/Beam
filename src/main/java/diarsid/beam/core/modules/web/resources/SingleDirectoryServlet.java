@@ -17,7 +17,8 @@ import org.json.simple.JSONObject;
 
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPlacement;
-import diarsid.beam.core.modules.data.HandlerWebPages;
+
+import old.diarsid.beam.core.modules.data.HandlerWebPages;
 
 /**
  *

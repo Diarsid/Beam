@@ -9,19 +9,24 @@ package diarsid.beam.core.modules.io;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.TimeScheduledIo;
+import diarsid.beam.core.control.io.base.VariantAnswer;
+import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.modules.tasks.TimeMessage;
 
-import static diarsid.beam.core.control.io.base.Answer.noAnswer;
+import static java.util.concurrent.CompletableFuture.runAsync;
+
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
-import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.NORMAL;
+import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
+import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
+import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
+import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndGet;
 import static diarsid.beam.core.util.Logs.logError;
 
@@ -67,7 +72,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public Answer resolveVariants(Initiator initiator, Question question) {
+    public VariantAnswer resolveVariants(Initiator initiator, VariantsQuestion question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return waitAndGet(() -> {
@@ -76,27 +81,46 @@ public class MainInnerIoEngine
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
-                    return noAnswer();
+                    return noAnswerFromVariants();
                 }
-            }).orElse(noAnswer());            
+            }).orElse(noAnswerFromVariants());            
         } else {
-            return noAnswer();
+            return noAnswerFromVariants();
         }        
+    }
+    
+    @Override
+    public String askForInput(Initiator initiator, String inputQuestion) {
+        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+            return waitAndGet(() -> {
+                try {
+                    return ioEngine.askForInput(inputQuestion);
+                } catch (IOException ex) {
+                    logError(this.getClass(), ex);
+                    this.ioEnginesHolder.deleteEngine(initiator);
+                    return "";
+                }
+            }).orElse("");
+        } else {
+            return "";
+        }
     }
 
     @Override
     public void report(Initiator initiator, String string) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            try {
-                this.ioEnginesHolder
-                        .getEngine(initiator)
-                        .report(string);
-            } catch (IOException ex) {
-                logError(this.getClass(), ex);
-                this.ioEnginesHolder.deleteEngine(initiator);
-            }
+            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+            waitAndDo(() -> {
+                try {
+                    ioEngine.report(string);
+                } catch (IOException ex) {
+                    logError(this.getClass(), ex);
+                    this.ioEnginesHolder.deleteEngine(initiator);
+                }
+            });            
         } else if ( initiator.equals(this.systemInitiator) ) {
-            this.gui.showMessage(new TextMessage(NORMAL, string));
+            this.gui.showMessage(new TextMessage(INFO, string));
         }    
     }
     
@@ -105,42 +129,47 @@ public class MainInnerIoEngine
         this.ioEnginesHolder
                 .all()
                 .forEach(ioEngine -> {
-                    try {
-                        ioEngine.report(string);
-                    } catch (IOException ex) {
-                        logError(this.getClass(), ex);
-                    }
+                    runAsync(() -> {
+                        try {
+                            ioEngine.report(string);
+                        } catch (IOException ex) {
+                            logError(this.getClass(), ex);
+                        }
+                    });                  
                 });
-        this.gui.showMessage(new TextMessage(NORMAL, string));
+        this.gui.showMessage(new TextMessage(ERROR, string));
         this.gui.exitAfterAllWindowsClosed();
     }
 
     @Override
-    public void reportMessage(Initiator initiator, TextMessage message) {
+    public void reportMessage(Initiator initiator, Message message) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            try {
-                this.ioEnginesHolder
-                        .getEngine(initiator)
-                        .reportMessage(message);
-            } catch (IOException ex) {
-                logError(this.getClass(), ex);
-                this.ioEnginesHolder.deleteEngine(initiator);
-            }
+            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+            waitAndDo(() -> {
+                try {
+                    ioEngine.reportMessage(message);
+                } catch (IOException ex) {
+                    logError(this.getClass(), ex);
+                    this.ioEnginesHolder.deleteEngine(initiator);
+                }
+            });            
         } else if ( initiator.equals(this.systemInitiator) ) {
             this.gui.showMessage(message);
         }
     }
 
     @Override
-    public void reportMessageAndExitLater(Initiator initiator, TextMessage message) {
+    public void reportMessageAndExitLater(Initiator initiator, Message message) {
         this.ioEnginesHolder
                 .all()
                 .forEach(ioEngine -> {
-                    try {
-                        ioEngine.reportMessage(message);
-                    } catch (IOException ex) {
-                        logError(this.getClass(), ex);
-                    }
+                    runAsync(() -> {
+                        try {
+                            ioEngine.reportMessage(message);
+                        } catch (IOException ex) {
+                            logError(this.getClass(), ex);
+                        }
+                    });                    
                 });
         this.gui.showMessage(message);
         this.gui.exitAfterAllWindowsClosed();

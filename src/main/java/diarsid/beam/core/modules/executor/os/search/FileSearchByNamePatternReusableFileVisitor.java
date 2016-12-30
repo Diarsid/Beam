@@ -19,7 +19,7 @@ import static diarsid.beam.core.modules.executor.os.search.ItemType.FILE;
 import static diarsid.beam.core.modules.executor.os.search.ItemType.FOLDER;
 import static diarsid.beam.core.util.PathUtils.relativizeFileName;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.util.StringUtils.splitByDash;
+import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 
 /**
  *
@@ -85,7 +85,7 @@ public class FileSearchByNamePatternReusableFileVisitor extends SimpleFileVisito
         }
         
         if ( this.nameToFind.contains("-") ) {
-            for (String fragment : splitByDash(this.nameToFind)) {
+            for (String fragment : splitByWildcard(this.nameToFind)) {
                 if ( ! containsIgnoreCase(fileName, fragment) ) {
                     return CONTINUE;
                 }                

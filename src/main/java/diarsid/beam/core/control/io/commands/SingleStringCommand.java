@@ -6,10 +6,12 @@
 
 package diarsid.beam.core.control.io.commands;
 
+import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
 
-public class SingleStringCommand extends StringCommand {
+
+public abstract class SingleStringCommand extends StringCommand {
     
-    private final String arg;
+    private String arg;
     private final CommandType type;
     
     public SingleStringCommand(String arg, CommandType type) {
@@ -26,9 +28,19 @@ public class SingleStringCommand extends StringCommand {
     public boolean hasArg() {
         return ( ! this.arg.isEmpty() );
     }
+    
+    public void resetArg(String newArg) {
+        if ( nonNullNonEmpty(newArg) ) {
+            this.arg = newArg;
+        }
+    }
+    
+    public boolean hasNoArg() {
+        return this.arg.isEmpty();
+    }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return this.type;
     }
 }

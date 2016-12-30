@@ -18,7 +18,8 @@ import org.junit.Test;
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
+import old.diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
+
 import diarsid.beam.core.modules.executor.workflow.CommandChoice;
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 

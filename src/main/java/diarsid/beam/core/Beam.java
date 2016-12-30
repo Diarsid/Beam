@@ -6,13 +6,14 @@ package diarsid.beam.core;
 
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.rmi.RemoteAccessEndpoint;
 import diarsid.beam.core.util.Logs;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
 import static diarsid.beam.core.util.Logs.log;
+
+import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 
 /**
  *
@@ -29,7 +30,7 @@ public class Beam {
      * Otherwise they will be collected by the GC and the RMI interaction through them will 
      * be impossible. Any attempt to use them after it will cause RemoteException.
      */
-    private static RemoteAccessEndpoint remoteAccessEndpoint;
+    private static RemoteCoreAccessEndpoint remoteAccessEndpoint;
 //    private static RmiExecutorInterface rmiExecutorInterface;
 //    private static RmiTaskManagerInterface rmiTaskManagerInterface;
 //    private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;

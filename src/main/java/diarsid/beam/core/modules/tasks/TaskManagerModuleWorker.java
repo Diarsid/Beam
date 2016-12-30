@@ -21,7 +21,8 @@ import diarsid.beam.core.exceptions.ModuleInitializationException;
 import old.diarsid.beam.core.modules.IoInnerModule;
 import old.diarsid.beam.core.modules.TaskManagerModule;
 
-import diarsid.beam.core.modules.data.DaoTasks;
+import old.diarsid.beam.core.modules.data.DaoTasks;
+
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTypeInvalidException;

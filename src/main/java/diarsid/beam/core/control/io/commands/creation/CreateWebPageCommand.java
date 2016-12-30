@@ -43,7 +43,7 @@ public class CreateWebPageCommand extends TripleStringCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return CREATE_PAGE;
     }
 }

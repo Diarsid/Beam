@@ -19,7 +19,7 @@ public class ExecutorDefaultCommand extends SingleArgumentCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return EXECUTOR_DEFAULT;
     }
 }

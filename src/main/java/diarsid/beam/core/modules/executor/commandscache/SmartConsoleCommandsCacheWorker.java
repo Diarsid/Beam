@@ -12,7 +12,7 @@ import java.util.Map;
 
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
+import old.diarsid.beam.core.modules.data.DaoExecutorConsoleCommands;
 
 import static diarsid.beam.core.util.Logs.debug;
 

@@ -13,7 +13,8 @@ import diarsid.beam.core.domain.entities.WebPage;
 
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.HandlerWebPages;
+import old.diarsid.beam.core.modules.data.HandlerWebPages;
+
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 import diarsid.beam.core.modules.executor.processors.ProcessorWebPages;

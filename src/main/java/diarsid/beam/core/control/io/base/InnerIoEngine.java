@@ -11,15 +11,17 @@ package diarsid.beam.core.control.io.base;
  */
 public interface InnerIoEngine {
     
+    String askForInput(Initiator initiator, String inputQuestion);
+    
     Choice resolveYesOrNo(Initiator initiator, String yesOrNoQuestion);
     
-    Answer resolveVariants(Initiator initiator, Question question);
+    VariantAnswer resolveVariants(Initiator initiator, VariantsQuestion question);
     
     void report(Initiator initiator, String string);
     
     void reportAndExitLater(Initiator initiator, String string);
     
-    void reportMessage(Initiator initiator, TextMessage message);
+    void reportMessage(Initiator initiator, Message message);
     
-    void reportMessageAndExitLater(Initiator initiator, TextMessage message);
+    void reportMessageAndExitLater(Initiator initiator, Message message);
 }

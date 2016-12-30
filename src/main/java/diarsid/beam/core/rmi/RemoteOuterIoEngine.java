@@ -8,12 +8,12 @@ package diarsid.beam.core.rmi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.Question;
+import diarsid.beam.core.control.io.base.VariantAnswer;
+import diarsid.beam.core.control.io.base.VariantsQuestion;
 
 /**
  *
@@ -25,16 +25,19 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     void close() throws RemoteException;
     
     @Override
+    String askForInput(String inputRequest) throws RemoteException;
+    
+    @Override
     Choice resolveYesOrNo(String yesOrNoQuestion) throws RemoteException;
     
     @Override
-    Answer resolveQuestion(Question question) throws RemoteException;
+    VariantAnswer resolveQuestion(VariantsQuestion question) throws RemoteException;
     
     @Override
     void report(String string) throws RemoteException;
     
     @Override
-    void reportMessage(TextMessage message) throws RemoteException;
+    void reportMessage(Message message) throws RemoteException;
     
     @Override
     void acceptInitiator(Initiator initiator) throws RemoteException;

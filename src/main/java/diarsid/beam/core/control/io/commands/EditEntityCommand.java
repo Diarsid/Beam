@@ -37,7 +37,7 @@ public class EditEntityCommand extends DoubleStringCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return this.type;
     }
 }

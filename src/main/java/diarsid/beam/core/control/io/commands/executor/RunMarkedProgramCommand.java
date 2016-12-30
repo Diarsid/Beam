@@ -40,7 +40,7 @@ public class RunMarkedProgramCommand implements ArgumentedCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return RUN_MARKED_PROGRAM;
     }
     

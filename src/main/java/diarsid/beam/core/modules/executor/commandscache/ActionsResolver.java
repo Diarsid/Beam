@@ -10,7 +10,7 @@ import java.util.List;
 
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DaoActionChoice;
+import old.diarsid.beam.core.modules.data.DaoActionChoice;
 
 import static diarsid.beam.core.modules.executor.commandscache.ActionChoice.formulateChoiceFor;
 import static diarsid.beam.core.modules.executor.commandscache.ActionChoice.formulateNoChoiceFor;

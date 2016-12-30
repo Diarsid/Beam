@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-import diarsid.beam.core.modules.data.DaoTasks;
+import old.diarsid.beam.core.modules.data.DaoTasks;
 
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;

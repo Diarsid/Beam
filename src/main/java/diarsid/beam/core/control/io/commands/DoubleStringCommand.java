@@ -6,11 +6,13 @@
 
 package diarsid.beam.core.control.io.commands;
 
+import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
+
 
 public abstract class DoubleStringCommand extends StringCommand {
     
-    private final String first;
-    private final String second;
+    private String first;
+    private String second;
     
     protected DoubleStringCommand(String first, String second) {
         super();
@@ -36,12 +38,23 @@ public abstract class DoubleStringCommand extends StringCommand {
         return this.second.isEmpty();
     }
 
-    public String getFirst() {
+    protected String getFirst() {
         return first;
     }
 
-    public String getSecond() {
+    protected String getSecond() {
         return second;
     }
     
+    protected void resetFirst(String newFirst) {
+        if ( nonNullNonEmpty(newFirst) ) {
+            this.first = newFirst;
+        }
+    }
+    
+    protected void resetSecond(String newSecond) {
+        if ( nonNullNonEmpty(newSecond) ) {
+            this.second = newSecond;
+        }
+    }    
 }

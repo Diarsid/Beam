@@ -15,13 +15,15 @@ public interface OuterIoEngine {
     
     String getName() throws IOException;
     
+    String askForInput(String inputRequest) throws IOException;
+    
     Choice resolveYesOrNo(String yesOrNoQuestion) throws IOException;
     
-    Answer resolveQuestion(Question question) throws IOException;
+    VariantAnswer resolveQuestion(VariantsQuestion question) throws IOException;
     
     void report(String string) throws IOException;
     
-    void reportMessage(TextMessage message) throws IOException;
+    void reportMessage(Message message) throws IOException;
     
     void close() throws IOException;
     

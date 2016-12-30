@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Objects.nonNull;
+
 import static diarsid.beam.core.util.StringUtils.lower;
-import static diarsid.beam.core.util.StringUtils.splitByDash;
+import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 
 /**
  *
@@ -23,8 +25,25 @@ public class StringIgnoreCaseUtil {
     private StringIgnoreCaseUtil() {
     }
     
+    public static String findAnyInIgnoreCase(
+            String whereToSearch, Collection<String> searchedAnyOf) {
+        if ( 
+                nonNull(whereToSearch) && 
+                nonNull(searchedAnyOf) && 
+                ! whereToSearch.isEmpty() && 
+                ! searchedAnyOf.isEmpty() ) {
+            return searchedAnyOf
+                    .stream()
+                    .filter(any -> containsIgnoreCase(whereToSearch, any))
+                    .findFirst()
+                    .orElse("");
+        } else {
+            return "";
+        }
+    }
+    
     public static boolean containsAllPartsIgnoreCase(String whereToSearch, String searched) {
-        for (String searchedPart : splitByDash(searched)) {
+        for (String searchedPart : splitByWildcard(searched)) {
             if ( ! lower(whereToSearch).contains(lower(searchedPart)) ) {
                 return false;
             }

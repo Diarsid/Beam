@@ -14,10 +14,13 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.modules.io.Gui;
 import diarsid.beam.core.modules.io.javafxgui.window.WindowsBuilderWorker;
 import diarsid.beam.core.modules.tasks.TimeMessage;
+
+import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
+import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
 
 /*
  * Main class for JavaFX based gui.
@@ -104,24 +107,24 @@ public class GuiJavaFX
     }
     
     @Override
-    public void showMessage(TextMessage message) {
+    public void showMessage(Message message) {
         switch ( message.getType() ) {
-            case NORMAL : {
+            case INFO : {
                 Platform.runLater(this.windowsBuilder.newMessageWindow(
-                        message.getText(), 
+                        message.toText(), 
                         (WindowResources) this, 
                         this.windowsController));
             }
             case ERROR : {
                 Platform.runLater(this.windowsBuilder.newErrorWindow(
-                        message.getText(), 
+                        message.toText(), 
                         (WindowResources) this, 
                         this.windowsController));
             }
             default : {
                 // show as usual message
                 Platform.runLater(this.windowsBuilder.newMessageWindow(
-                        message.getText(), 
+                        message.toText(), 
                         (WindowResources) this, 
                         this.windowsController));
             }

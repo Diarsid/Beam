@@ -1,26 +1,14 @@
 /*
- * project: Beam
- * author: Diarsid
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package diarsid.beam.core.modules.data;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-
 /**
- * Interface representing DataBase abstraction.
- * Hides concrete implementation of connecting with particular database.
- * 
+ *
  * @author Diarsid
  */
 public interface DataBase {
     
-    Connection connect() throws SQLException;
-    
-    void disconnect();
-    
-    JdbcTransaction beginTransaction();
-    
-    String getName();
 }

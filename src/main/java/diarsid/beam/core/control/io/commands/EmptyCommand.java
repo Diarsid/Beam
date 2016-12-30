@@ -27,7 +27,7 @@ public class EmptyCommand implements Command {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return this.type;
     }
     

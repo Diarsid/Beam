@@ -13,7 +13,7 @@ import diarsid.beam.core.exceptions.ModuleInitializationException;
 
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DataBase;
+import old.diarsid.beam.core.modules.data.DataBase;
 
 /**
  *

@@ -9,8 +9,8 @@ package diarsid.beam.core.systemconsole;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.base.TextMessage;
+import diarsid.beam.core.control.io.base.Message;
+import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.control.io.base.Variant;
 
 import static java.lang.String.format;
@@ -43,7 +43,7 @@ class ConsolePrinter {
         this.writer.flush();
     }
 
-    void printQuestionAndVariants(Question question) throws IOException {
+    void printQuestionAndVariants(VariantsQuestion question) throws IOException {
         Variant variant;
         this.writer.write(format("     > %s", question.getQuestion()));
         this.writer.newLine();
@@ -60,8 +60,8 @@ class ConsolePrinter {
         printInDialogInviteLine("choose");
     }
     
-    void printNonDialogMultilineReport(TextMessage message) throws IOException {
-        for (String s : message.getText()) {
+    void printNonDialogMultilineReport(Message message) throws IOException {
+        for (String s : message.toText()) {
             this.writer.write(format("     > %s", s));
         }
         this.writer.newLine();
@@ -69,8 +69,8 @@ class ConsolePrinter {
         this.writer.flush();
     }
 
-    void printInDialogMultilineReport(TextMessage message) throws IOException {
-        for (String s : message.getText()) {
+    void printInDialogMultilineReport(Message message) throws IOException {
+        for (String s : message.toText()) {
             this.writer.write(format("     > %s", s));
         }
         this.writer.newLine();

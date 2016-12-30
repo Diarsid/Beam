@@ -6,25 +6,18 @@
 
 package diarsid.beam.core.control.io.base;
 
-import java.io.Serializable;
-
-import static diarsid.beam.core.control.io.base.TextMessage.IoMessageType.ERROR;
+import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 
 /**
  *
  * @author Diarsid
  */
-public class TextMessage implements Serializable {
+public class TextMessage implements Message {
     
-    public static enum IoMessageType implements Serializable {
-        NORMAL,
-        ERROR
-    }
-    
-    private final IoMessageType type;
+    private final MessageType type;
     private final String[] text;
     
-    public TextMessage(IoMessageType type, String... text) {
+    public TextMessage(MessageType type, String... text) {
         this.type = type;
         this.text = text;
     }
@@ -34,11 +27,12 @@ public class TextMessage implements Serializable {
         this.text = new String[] {exception.getMessage()};
     }
 
-    public IoMessageType getType() {
-        return type;
+    public MessageType getType() {
+        return this.type;
     }
 
-    public String[] getText() {
-        return text;
+    @Override
+    public String[] toText() {
+        return this.text;
     }
 }

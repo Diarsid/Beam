@@ -90,7 +90,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_openLocation() {
         Command c = interpreter.interprete("/books");
-        assertEquals(OPEN_LOCATION, c.getType());
+        assertEquals(OPEN_LOCATION, c.type());
         
         OpenLocationCommand c1 = (OpenLocationCommand) c;
         assertEquals("books", c1.stringifyOriginal());
@@ -99,7 +99,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_l_openLocation() {
         Command c = interpreter.interprete("l/books");
-        assertEquals(OPEN_LOCATION, c.getType());
+        assertEquals(OPEN_LOCATION, c.type());
         
         OpenLocationCommand c1 = (OpenLocationCommand) c;
         assertEquals("books", c1.stringifyOriginal());
@@ -108,7 +108,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_openPathInLocation() {
         Command c = interpreter.interprete("/books/fan/tolkien");
-        assertEquals(OPEN_PATH, c.getType());
+        assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
         assertEquals("books", c1.location().getOriginal());
@@ -118,7 +118,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_l_openPathInLocation() {
         Command c = interpreter.interprete("l/books/fan/tolkien");
-        assertEquals(OPEN_PATH, c.getType());
+        assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
         assertEquals("books", c1.location().getOriginal());
@@ -128,7 +128,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_w_seePage() {
         Command c = interpreter.interprete("w/google");
-        assertEquals(SEE_WEBPAGE, c.getType());
+        assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
         assertEquals("google", c1.page().getOriginal());
@@ -137,7 +137,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_i_seePage() {
         Command c = interpreter.interprete("i/google");
-        assertEquals(SEE_WEBPAGE, c.getType());
+        assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
         assertEquals("google", c1.page().getOriginal());
@@ -146,7 +146,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_b_callBatch() {
         Command c = interpreter.interprete("b/env");
-        assertEquals(CALL_BATCH, c.getType());
+        assertEquals(CALL_BATCH, c.type());
         
         CallBatchCommand c1 = (CallBatchCommand) c;
         assertEquals("env", c1.argument().getOriginal());
@@ -155,7 +155,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_r_runProgram() {
         Command c = interpreter.interprete("r/prog");
-        assertEquals(RUN_PROGRAM, c.getType());
+        assertEquals(RUN_PROGRAM, c.type());
         
         RunProgramCommand c1 = (RunProgramCommand) c;
         assertEquals("prog", c1.argument().getOriginal());
@@ -164,7 +164,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_seePage() {
         Command c = interpreter.interprete("see google");
-        assertEquals(SEE_WEBPAGE, c.getType());
+        assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
         assertEquals("google", c1.page().getOriginal());
@@ -174,7 +174,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_callBatch() {
         Command c = interpreter.interprete("call environment");
-        assertEquals(CALL_BATCH, c.getType());
+        assertEquals(CALL_BATCH, c.type());
         
         CallBatchCommand c1 = (CallBatchCommand) c;
         assertEquals("environment", c1.argument().getOriginal());
@@ -184,7 +184,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_runProgram() {
         Command c = interpreter.interprete("run prog");
-        assertEquals(RUN_PROGRAM, c.getType());
+        assertEquals(RUN_PROGRAM, c.type());
         
         RunProgramCommand c1 = (RunProgramCommand) c;
         assertEquals("prog", c1.argument().getOriginal());
@@ -193,7 +193,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_startProgram() {
         Command c = interpreter.interprete("START Prog");
-        assertEquals(RUN_MARKED_PROGRAM, c.getType());
+        assertEquals(RUN_MARKED_PROGRAM, c.type());
         
         RunMarkedProgramCommand c1 = (RunMarkedProgramCommand) c;
         assertEquals("Prog", c1.program().getOriginal());
@@ -203,7 +203,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_stopProgram() {
         Command c = interpreter.interprete("stop prog");
-        assertEquals(RUN_MARKED_PROGRAM, c.getType());
+        assertEquals(RUN_MARKED_PROGRAM, c.type());
         
         RunMarkedProgramCommand c1 = (RunMarkedProgramCommand) c;
         assertEquals("prog", c1.program().getOriginal());
@@ -213,7 +213,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_openLocation() {
         Command c = interpreter.interprete("open books");
-        assertEquals(OPEN_LOCATION, c.getType());
+        assertEquals(OPEN_LOCATION, c.type());
         
         OpenLocationCommand c1 = (OpenLocationCommand) c;
         assertEquals("books", c1.stringifyOriginal());
@@ -222,7 +222,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_openPath() {
         Command c = interpreter.interprete("open books/tolkien");
-        assertEquals(OPEN_PATH, c.getType());
+        assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
         assertEquals("books/tolkien", c1.stringifyOriginal());
@@ -231,28 +231,28 @@ public class InterpreterTest {
     @Test
     public void testInterprete_openPath_improperPath() {
         Command c = interpreter.interprete("open books/tolk%ien");
-        assertEquals(UNDEFINED, c.getType());
+        assertEquals(UNDEFINED, c.type());
     }
     
     @Test
     public void testInterprete_openPath_improperPath_toShort() {
         Command c = interpreter.interprete("open b/tolkien");
-        assertEquals(UNDEFINED, c.getType());
+        assertEquals(UNDEFINED, c.type());
     }
     
     @Test
     public void testInterprete_openNotes() {
         Command c1 = interpreter.interprete("n ");
-        assertEquals(OPEN_NOTES, c1.getType());
+        assertEquals(OPEN_NOTES, c1.type());
         
         Command c2 = interpreter.interprete("note ");
-        assertEquals(OPEN_NOTES, c2.getType());
+        assertEquals(OPEN_NOTES, c2.type());
     }
     
     @Test
     public void testInterprete_notes_as_openLocation() {
         Command c = interpreter.interprete("note todo");
-        assertEquals(OPEN_TARGET_IN_NOTE, c.getType());
+        assertEquals(OPEN_TARGET_IN_NOTE, c.type());
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertEquals("todo", c1.getArg());
@@ -261,7 +261,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_notes_as_openPath() {
         Command c = interpreter.interprete("n project/todo");
-        assertEquals(OPEN_PATH_IN_NOTE, c.getType());
+        assertEquals(OPEN_PATH_IN_NOTE, c.type());
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertEquals("project/todo", c1.getArg());
@@ -270,7 +270,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_default_as_openLocation() {
         Command c = interpreter.interprete("books");
-        assertEquals(EXECUTOR_DEFAULT, c.getType());
+        assertEquals(EXECUTOR_DEFAULT, c.type());
         
         ExecutorDefaultCommand c1 = (ExecutorDefaultCommand) c;
         assertEquals("books", c1.stringifyOriginal());
@@ -279,7 +279,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_default_as_openPath() {
         Command c = interpreter.interprete("books/fant/tolkien");
-        assertEquals(OPEN_PATH, c.getType());
+        assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
         assertEquals("books/fant/tolkien", c1.stringifyOriginal());
@@ -291,7 +291,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_deleteTask() {
         Command c = interpreter.interprete("del task my text");
-        assertEquals(DELETE_TASK, c.getType());
+        assertEquals(DELETE_TASK, c.type());
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertEquals("my text", c1.getArg());
@@ -300,7 +300,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_deleteLocation_withName() {
         Command c = interpreter.interprete("del loc name asasd");
-        assertEquals(DELETE_LOCATION, c.getType());
+        assertEquals(DELETE_LOCATION, c.type());
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertEquals("name", c1.getArg());
@@ -309,7 +309,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_deleteLocation_withoutName() {
         Command c = interpreter.interprete("del loc");
-        assertEquals(DELETE_LOCATION, c.getType());
+        assertEquals(DELETE_LOCATION, c.type());
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertFalse(c1.hasArg());
@@ -318,7 +318,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createLocation_pathAndName_straightOrder() {
         Command c1 = interpreter.interprete("+ loc books C:/path/to/my_books");
-        assertEquals(CREATE_LOCATION, c1.getType());
+        assertEquals(CREATE_LOCATION, c1.type());
         
         CreateLocationCommand c1casted = (CreateLocationCommand) c1;
         assertEquals("books", c1casted.getName());
@@ -328,7 +328,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createLocation_pathAndName() {
         Command c1 = interpreter.interprete("+ loc C:/path/to/my_books books ");
-        assertEquals(CREATE_LOCATION, c1.getType());
+        assertEquals(CREATE_LOCATION, c1.type());
         
         CreateLocationCommand c1casted = (CreateLocationCommand) c1;
         assertEquals("books", c1casted.getName());
@@ -338,7 +338,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createLocation_onlyPath() {
         Command c1 = interpreter.interprete("+ loc C:/path/to/my_books ");
-        assertEquals(CREATE_LOCATION, c1.getType());
+        assertEquals(CREATE_LOCATION, c1.type());
         
         CreateLocationCommand c1casted = (CreateLocationCommand) c1;
         assertFalse(c1casted.hasName());
@@ -348,7 +348,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createLocation_onlyName() {
         Command c1 = interpreter.interprete("+ loc books ");
-        assertEquals(CREATE_LOCATION, c1.getType());
+        assertEquals(CREATE_LOCATION, c1.type());
         
         CreateLocationCommand c1casted = (CreateLocationCommand) c1;
         assertEquals("books", c1casted.getName());
@@ -358,7 +358,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createLocation_noPathNoName() {
         Command c1 = interpreter.interprete("+ loc");
-        assertEquals(CREATE_LOCATION, c1.getType());
+        assertEquals(CREATE_LOCATION, c1.type());
         
         CreateLocationCommand c1casted = (CreateLocationCommand) c1;
         assertFalse(c1casted.hasName());
@@ -369,7 +369,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_pathAndName_straightOrder() {
         Command c1 = interpreter.interprete("+ page google https://google.com");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertEquals("google", c1casted.getName());
@@ -379,7 +379,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_pathAndName() {
         Command c1 = interpreter.interprete("+ page https://google.com google");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertEquals("google", c1casted.getName());
@@ -389,7 +389,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_pathAndNameAndPlace() {
         Command c1 = interpreter.interprete("+ page https://google.com google panel");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertEquals("google", c1casted.getName());
@@ -400,7 +400,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_onlyPath() {
         Command c1 = interpreter.interprete("+ page https://google.com ");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertFalse(c1casted.hasName());
@@ -410,7 +410,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_pathPlace() {
         Command c1 = interpreter.interprete("+ page https://google.com panel");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertFalse(c1casted.hasName());
@@ -421,7 +421,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_onlyName() {
         Command c1 = interpreter.interprete("+ page google ");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertEquals("google", c1casted.getName());
@@ -431,7 +431,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_namePlace() {
         Command c1 = interpreter.interprete("+ page google bookm");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertEquals("google", c1casted.getName());
@@ -442,7 +442,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createPage_noPathNoName() {
         Command c1 = interpreter.interprete("+ page");
-        assertEquals(CREATE_PAGE, c1.getType());
+        assertEquals(CREATE_PAGE, c1.type());
         
         CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
         assertFalse(c1casted.hasName());
@@ -452,7 +452,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createTask_timeAndTask() {
         Command c1 = interpreter.interprete("+ task 10 22:00 to do someth");
-        assertEquals(CREATE_TASK, c1.getType());
+        assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertEquals("10 22:00", c1casted.getTimeString());
@@ -462,7 +462,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createTask_time() {
         Command c1 = interpreter.interprete("+ task 10 22:00");
-        assertEquals(CREATE_TASK, c1.getType());
+        assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertEquals("10 22:00", c1casted.getTimeString());
@@ -472,7 +472,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createTask_plusTimeAndTask() {
         Command c1 = interpreter.interprete("+ task +10 to do someth");
-        assertEquals(CREATE_TASK, c1.getType());
+        assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertEquals("+10", c1casted.getTimeString());
@@ -482,7 +482,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createTask_plusTime() {
         Command c1 = interpreter.interprete("+ task +10");
-        assertEquals(CREATE_TASK, c1.getType());
+        assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertEquals("+10", c1casted.getTimeString());
@@ -492,7 +492,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createTask_task() {
         Command c1 = interpreter.interprete("+ task to do someth");
-        assertEquals(CREATE_TASK, c1.getType());
+        assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertFalse(c1casted.hasTime());
@@ -502,7 +502,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_createTask_empty() {
         Command c1 = interpreter.interprete("+ task ");
-        assertEquals(CREATE_TASK, c1.getType());
+        assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertFalse(c1casted.hasTime());
@@ -512,7 +512,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_undefined() {
         Command c = interpreter.interprete("edit batch");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_UNDEFINED, command.getTarget());
@@ -523,7 +523,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_name() {
         Command c = interpreter.interprete("edit batch name");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_NAME, command.getTarget());
@@ -534,7 +534,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_commands() {
         Command c = interpreter.interprete("change batch comm");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_COMMANDS, command.getTarget());
@@ -545,7 +545,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_undefined_hasName() {
         Command c = interpreter.interprete("edit batch mysql");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_UNDEFINED, command.getTarget());
@@ -557,7 +557,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_name_hasName_v1() {
         Command c = interpreter.interprete("edit batch mysql name");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_NAME, command.getTarget());
@@ -569,7 +569,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_name_hasName_v2() {
         Command c = interpreter.interprete("edit batch name mysql");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_NAME, command.getTarget());
@@ -582,7 +582,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_commands_hasName_v1() {
         Command c = interpreter.interprete("change batch mysql comm");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_COMMANDS, command.getTarget());
@@ -594,7 +594,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editBatch_commands_hasName_v2() {
         Command c = interpreter.interprete("change batch comm mysql ");
-        assertEquals(EDIT_BATCH, c.getType());
+        assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
         assertEquals(TARGET_COMMANDS, command.getTarget());
@@ -608,8 +608,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page dir devtools bookm");
         Command c2 = interpreter.interprete("+ page dir panel devtools");
         
-        assertEquals(CREATE_PAGE_DIR, c1.getType());
-        assertEquals(CREATE_PAGE_DIR, c2.getType());
+        assertEquals(CREATE_PAGE_DIR, c1.type());
+        assertEquals(CREATE_PAGE_DIR, c2.type());
         
         CreateWebDirectoryCommand c1casted = (CreateWebDirectoryCommand) c1;
         CreateWebDirectoryCommand c2casted = (CreateWebDirectoryCommand) c2;
@@ -627,8 +627,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ dir devtools bookm");
         Command c2 = interpreter.interprete("+ dir panel devtools");
         
-        assertEquals(CREATE_PAGE_DIR, c1.getType());
-        assertEquals(CREATE_PAGE_DIR, c2.getType());
+        assertEquals(CREATE_PAGE_DIR, c1.type());
+        assertEquals(CREATE_PAGE_DIR, c2.type());
         
         CreateWebDirectoryCommand c1casted = (CreateWebDirectoryCommand) c1;
         CreateWebDirectoryCommand c2casted = (CreateWebDirectoryCommand) c2;
@@ -646,8 +646,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page dir devtools");
         Command c2 = interpreter.interprete("+ dir devtools");
         
-        assertEquals(CREATE_PAGE_DIR, c1.getType());
-        assertEquals(CREATE_PAGE_DIR, c2.getType());
+        assertEquals(CREATE_PAGE_DIR, c1.type());
+        assertEquals(CREATE_PAGE_DIR, c2.type());
         
         CreateWebDirectoryCommand c1casted = (CreateWebDirectoryCommand) c1;
         CreateWebDirectoryCommand c2casted = (CreateWebDirectoryCommand) c2;
@@ -665,8 +665,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page dir bookmark");
         Command c2 = interpreter.interprete("+ dir panel");
         
-        assertEquals(CREATE_PAGE_DIR, c1.getType());
-        assertEquals(CREATE_PAGE_DIR, c2.getType());
+        assertEquals(CREATE_PAGE_DIR, c1.type());
+        assertEquals(CREATE_PAGE_DIR, c2.type());
         
         CreateWebDirectoryCommand c1casted = (CreateWebDirectoryCommand) c1;
         CreateWebDirectoryCommand c2casted = (CreateWebDirectoryCommand) c2;
@@ -683,8 +683,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page dir");
         Command c2 = interpreter.interprete("+ dir");
         
-        assertEquals(CREATE_PAGE_DIR, c1.getType());
-        assertEquals(CREATE_PAGE_DIR, c2.getType());
+        assertEquals(CREATE_PAGE_DIR, c1.type());
+        assertEquals(CREATE_PAGE_DIR, c2.type());
         
         CreateWebDirectoryCommand c1casted = (CreateWebDirectoryCommand) c1;
         CreateWebDirectoryCommand c2casted = (CreateWebDirectoryCommand) c2;
@@ -699,7 +699,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editPage() {
         Command c = interpreter.interprete("edit page ");
-        assertEquals(EDIT_PAGE, c.getType());
+        assertEquals(EDIT_PAGE, c.type());
         EditEntityCommand com = (EditEntityCommand) c;
         assertFalse(com.hasName());
         assertFalse(com.isTargetDefined());
@@ -708,7 +708,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editPage_name_target() {
         Command c = interpreter.interprete("edit page google name");
-        assertEquals(EDIT_PAGE, c.getType());
+        assertEquals(EDIT_PAGE, c.type());
         
         EditEntityCommand com = (EditEntityCommand) c;
         assertEquals("google", com.getName());
@@ -718,7 +718,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editPage_nameOnly() {
         Command c = interpreter.interprete("edit page google");
-        assertEquals(EDIT_PAGE, c.getType());
+        assertEquals(EDIT_PAGE, c.type());
         
         EditEntityCommand com = (EditEntityCommand) c;
         assertEquals("google", com.getName());
@@ -728,7 +728,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editPage_targetOnly() {
         Command c = interpreter.interprete("edit page url");
-        assertEquals(EDIT_PAGE, c.getType());
+        assertEquals(EDIT_PAGE, c.type());
         
         EditEntityCommand com = (EditEntityCommand) c;
         assertEquals(TARGET_URL, com.getTarget());
@@ -738,7 +738,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editDir_1() {
         Command c = interpreter.interprete("edit page dir");
-        assertEquals(EDIT_PAGE_DIR, c.getType());
+        assertEquals(EDIT_PAGE_DIR, c.type());
         EditEntityCommand com = (EditEntityCommand) c;
         assertFalse(com.hasName());
         assertFalse(com.isTargetDefined());
@@ -747,7 +747,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editDir_2() {
         Command c = interpreter.interprete("edit dir");
-        assertEquals(EDIT_PAGE_DIR, c.getType());
+        assertEquals(EDIT_PAGE_DIR, c.type());
         EditEntityCommand com = (EditEntityCommand) c;
         assertFalse(com.hasName());
         assertFalse(com.isTargetDefined());
@@ -757,8 +757,8 @@ public class InterpreterTest {
     public void testInterprete_editDir_name_target() {
         Command c = interpreter.interprete("edit page dir common name");
         Command c1 = interpreter.interprete("edit directory common place");
-        assertEquals(EDIT_PAGE_DIR, c.getType());
-        assertEquals(EDIT_PAGE_DIR, c1.getType());
+        assertEquals(EDIT_PAGE_DIR, c.type());
+        assertEquals(EDIT_PAGE_DIR, c1.type());
         
         EditEntityCommand com = (EditEntityCommand) c;
         EditEntityCommand com1 = (EditEntityCommand) c1;
@@ -771,7 +771,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editDir_name_target_1() {
         Command c1 = interpreter.interprete("edit directory order common");
-        assertEquals(EDIT_PAGE_DIR, c1.getType());
+        assertEquals(EDIT_PAGE_DIR, c1.type());
         EditEntityCommand com1 = (EditEntityCommand) c1;
         assertEquals("common", com1.getName());
         assertEquals(TARGET_ORDER, com1.getTarget());
@@ -780,7 +780,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editDir_nameOnly() {
         Command c = interpreter.interprete("edit page dir place");        
-        assertEquals(EDIT_PAGE_DIR, c.getType());        
+        assertEquals(EDIT_PAGE_DIR, c.type());        
         
         EditEntityCommand com = (EditEntityCommand) c;
         assertFalse(com.hasName());
@@ -790,7 +790,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editLocation_name_targetName() {
         Command c = interpreter.interprete("edit location boo name");        
-        assertEquals(EDIT_LOCATION, c.getType());      
+        assertEquals(EDIT_LOCATION, c.type());      
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertEquals("boo", c1.getName());
@@ -800,7 +800,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editLocation_name_targetPath() {
         Command c = interpreter.interprete("edit location boo path");        
-        assertEquals(EDIT_LOCATION, c.getType());      
+        assertEquals(EDIT_LOCATION, c.type());      
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertEquals("boo", c1.getName());
@@ -810,7 +810,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editLocation_onlyTargetName() {
         Command c = interpreter.interprete("edit location name");        
-        assertEquals(EDIT_LOCATION, c.getType());      
+        assertEquals(EDIT_LOCATION, c.type());      
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertFalse(c1.hasName());
@@ -820,7 +820,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editLocation_onlyTargetPath() {
         Command c = interpreter.interprete("edit location path");        
-        assertEquals(EDIT_LOCATION, c.getType());      
+        assertEquals(EDIT_LOCATION, c.type());      
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertFalse(c1.hasName());
@@ -830,7 +830,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editLocation_onlyName() {
         Command c = interpreter.interprete("edit location books");        
-        assertEquals(EDIT_LOCATION, c.getType());      
+        assertEquals(EDIT_LOCATION, c.type());      
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertFalse(c1.isTargetDefined());
@@ -840,7 +840,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editTask_textAndTime() {
         Command c = interpreter.interprete("edit task 10:10 task text");        
-        assertEquals(EDIT_TASK, c.getType());        
+        assertEquals(EDIT_TASK, c.type());        
         
         TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
         assertEquals("10:10", c1.getTime());
@@ -850,7 +850,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editTask_textAndTime_1() {
         Command c = interpreter.interprete("edit task 12 10:15 task text");        
-        assertEquals(EDIT_TASK, c.getType());        
+        assertEquals(EDIT_TASK, c.type());        
         
         TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
         assertEquals("12 10:15", c1.getTime());
@@ -860,7 +860,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editTask_text() {
         Command c = interpreter.interprete("edit task task text");        
-        assertEquals(EDIT_TASK, c.getType());        
+        assertEquals(EDIT_TASK, c.type());        
         
         TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
         assertFalse(c1.hasTime());
@@ -870,7 +870,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editTask_timet() {
         Command c = interpreter.interprete("edit task 10:15");        
-        assertEquals(EDIT_TASK, c.getType());        
+        assertEquals(EDIT_TASK, c.type());        
         
         TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
         assertFalse(c1.hasText());
@@ -880,7 +880,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editTask_empty() {
         Command c = interpreter.interprete("edit task");        
-        assertEquals(EDIT_TASK, c.getType());        
+        assertEquals(EDIT_TASK, c.type());        
         
         TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
         assertFalse(c1.hasText());
@@ -890,19 +890,19 @@ public class InterpreterTest {
     @Test
     public void testInterprete_close() {
         Command c = interpreter.interprete("close");
-        assertEquals(CLOSE_CONSOLE, c.getType());   
+        assertEquals(CLOSE_CONSOLE, c.type());   
     }
     
     @Test
     public void testInterprete_exit() {
         Command c = interpreter.interprete("exit");
-        assertEquals(EXIT, c.getType());   
+        assertEquals(EXIT, c.type());   
     }
     
     @Test
     public void testInterprete_listLocation() {
         Command c = interpreter.interprete("list books");
-        assertEquals(LIST_LOCATION, c.getType()); 
+        assertEquals(LIST_LOCATION, c.type()); 
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertEquals("books", c1.getArg());
@@ -911,7 +911,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_listPath() {
         Command c = interpreter.interprete("list books/tech/java");
-        assertEquals(LIST_PATH, c.getType()); 
+        assertEquals(LIST_PATH, c.type()); 
         
         SingleStringCommand c1 = (SingleStringCommand) c;
         assertEquals("books/tech/java", c1.getArg());

@@ -12,7 +12,8 @@ import java.util.List;
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
+import old.diarsid.beam.core.modules.data.DaoExecutorIntelligentChoices;
+
 import diarsid.beam.core.modules.executor.workflow.CurrentCommandState;
 
 import static diarsid.beam.core.util.Logs.debug;

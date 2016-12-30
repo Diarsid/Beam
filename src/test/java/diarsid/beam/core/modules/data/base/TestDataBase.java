@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.modules.data.base;
 
-import diarsid.beam.core.modules.data.DataBase;
+import old.diarsid.beam.core.modules.data.DataBase;
 
 /**
  *

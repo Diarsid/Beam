@@ -6,9 +6,9 @@
 
 package diarsid.beam.core.modules.corecontrol;
 
-import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.VariantAnswer;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.Question;
+import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.IoModule;
@@ -47,8 +47,7 @@ public class CoreControlModuleWorker implements CoreControlModule {
                 }
             }
             if ( commandLine.equals("ask") ) {
-                Answer answer = this.ioModule.getInnerIoEngine().resolveVariants(
-                        initiator, new Question("choose").with("one").with("two").with("three"));
+                VariantAnswer answer = this.ioModule.getInnerIoEngine().resolveVariants(initiator, new VariantsQuestion("choose").with("one").with("two").with("three"));
                 if ( answer.isPresent() ) {
                     this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.get().get());
                 } else {

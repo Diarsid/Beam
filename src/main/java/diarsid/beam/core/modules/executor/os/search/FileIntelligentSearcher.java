@@ -20,7 +20,6 @@ import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
 
 import static java.nio.file.Files.walkFileTree;
 
-import static diarsid.beam.core.util.PathUtils.givenPathIsDirectory;
 import static diarsid.beam.core.util.PathUtils.normalizePathFragmentsFrom;
 import static diarsid.beam.core.modules.executor.os.search.ItemType.typeOf;
 import static diarsid.beam.core.modules.executor.os.search.result.FileSearchFailureImpl.invalidLocationFailure;
@@ -33,6 +32,7 @@ import static diarsid.beam.core.modules.executor.os.search.result.FileSearchSucc
 import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
 import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.util.PathUtils.pathIsDirectory;
 
 /**
  *
@@ -62,7 +62,7 @@ class FileIntelligentSearcher implements FileSearcher {
         debug("[FILE SEARCHER]    location : " + location);
         debug("[FILE SEARCHER]    target   : " + target);
         Path dir = Paths.get(location);        
-        if ( givenPathIsDirectory(dir) ) {
+        if ( pathIsDirectory(dir) ) {
             if ( this.isAppropriatePath(location, target, mode) ) {
                 debug("[FILE SEARCHER] target found directly. No search.");
                 return successWith(foundFile(target) );

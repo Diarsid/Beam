@@ -13,7 +13,8 @@ import javax.servlet.Filter;
 
 import old.diarsid.beam.core.modules.DataModule;
 
-import diarsid.beam.core.modules.data.HandlerWebPages;
+import old.diarsid.beam.core.modules.data.HandlerWebPages;
+
 import diarsid.beam.core.modules.web.ResourcesProvider;
 import diarsid.beam.core.modules.web.ServletData;
 

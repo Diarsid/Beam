@@ -23,7 +23,7 @@ public class CallBatchCommand extends SingleArgumentCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return CALL_BATCH;
     }
 }

@@ -35,7 +35,7 @@ public class CreateTaskCommand extends DoubleStringCommand {
     }
 
     @Override
-    public CommandType getType() {
+    public CommandType type() {
         return CREATE_TASK;
     }
 }

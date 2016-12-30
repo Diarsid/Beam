@@ -51,6 +51,10 @@ public class ConcurrencyUtil {
         } 
     }
     
+    public static void asyncDo(Runnable runnable) {
+        EXECUTOR.submit(runnable);
+    }
+    
     private static void shutdownConcurrentRuntime() {
         EXECUTOR.shutdown();
         log(ConcurrencyUtil.class, "shutdown.");

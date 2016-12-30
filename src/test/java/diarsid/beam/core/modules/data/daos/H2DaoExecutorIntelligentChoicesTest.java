@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.data.daos;
 
+import old.diarsid.beam.core.modules.data.daos.H2DaoExecutorIntelligentChoices;
+
 import java.util.ArrayList;
 import java.util.List;
 

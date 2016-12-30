@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.StringUtils.splitByDash;
 import static diarsid.beam.core.util.StringUtils.splitBySpacesToList;
+import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 
 /**
  *
@@ -190,8 +190,8 @@ class OperationsAnalizer {
                     argFrom2isComposite = argFrom2.contains("-");
                     if ( argFrom1isComposite && argFrom2isComposite ) {
                         debug("[OPERATIONS ANALIZER] both args are composite");
-                        List<String> partsOfArg1 = splitByDash(argFrom1);
-                        List<String> partsOfArg2 = splitByDash(argFrom2);
+                        List<String> partsOfArg1 = splitByWildcard(argFrom1);
+                        List<String> partsOfArg2 = splitByWildcard(argFrom2);
                         debug("[OPERATIONS ANALIZER] arg 1: " + partsOfArg1);
                         debug("[OPERATIONS ANALIZER] arg 2: " + partsOfArg2);
                         operationsArgsAreEqual = 

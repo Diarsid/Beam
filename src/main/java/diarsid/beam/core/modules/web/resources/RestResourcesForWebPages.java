@@ -12,7 +12,9 @@ import javax.servlet.http.HttpServlet;
 
 import diarsid.beam.core.util.Logs;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.modules.data.HandlerWebPages;
+
+import old.diarsid.beam.core.modules.data.HandlerWebPages;
+
 import diarsid.beam.core.modules.web.ServletData;
 
 import static diarsid.beam.core.domain.entities.WebPage.WEB_NAME_REGEXP;
