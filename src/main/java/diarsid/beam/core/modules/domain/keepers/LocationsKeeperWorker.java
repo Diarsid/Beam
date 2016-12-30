@@ -61,7 +61,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
             } else {
                 command.resetArg(input);                
             }
-        } else if (  ) {
+        } else {
             return false;
         }   
         return true;
@@ -83,7 +83,10 @@ public class LocationsKeeperWorker implements LocationsKeeper {
         if ( command.type().isNot(CREATE_LOCATION) ) {
             return false;
         }
-        if ( command.hasNoName() ) {
+        
+        if ( command.hasName() ) {
+            
+        } else {
             String input = this.ioEngine.askForInput(initiator, "name");
             if ( input.isEmpty() ) {
                 return false;
@@ -91,7 +94,10 @@ public class LocationsKeeperWorker implements LocationsKeeper {
                 command.resetName(input);
             }
         }
-        if ( command.hasNoPath() ) {
+        
+        if ( command.hasPath() ) {
+            
+        } else {
             String input = this.ioEngine.askForInput(initiator, "path");
             if ( pathIsDirectory(Paths.get(input)) ) {
                 command.resetPath(input);
@@ -104,7 +110,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public boolean removeLocation(Initiator initiator, RemoveEntityCommand command) {
-        
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

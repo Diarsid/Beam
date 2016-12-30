@@ -93,6 +93,6 @@ public enum CommandType {
     }
     
     public static boolean isDefined(CommandType type) {
-        return ( type.equals(UNDEFINED) );
+        return ( ! type.equals(UNDEFINED) );
     }
 }

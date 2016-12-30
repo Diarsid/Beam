@@ -6,11 +6,13 @@
 
 package diarsid.beam.core.modules.corecontrol.cli.nativeconsole;
 
-import diarsid.beam.core.control.io.base.VariantAnswer;
+import java.io.IOException;
+
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
+import diarsid.beam.core.control.io.base.VariantAnswer;
 import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 
@@ -46,6 +48,11 @@ public class NativeConsole
                 this.cliProcessor.process(this.initiator, commandLine);
             }
         }
+    }
+    
+    @Override
+    public String askForInput(String inputRequest) throws IOException {
+        return "";
     }
 
     @Override

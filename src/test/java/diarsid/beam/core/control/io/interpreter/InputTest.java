@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.control.interpreter;
+package diarsid.beam.core.control.io.interpreter;
 
 import diarsid.beam.core.control.io.interpreter.Input;
 

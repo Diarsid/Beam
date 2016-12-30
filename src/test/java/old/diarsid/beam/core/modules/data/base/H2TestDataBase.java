@@ -4,9 +4,8 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.base;
+package old.diarsid.beam.core.modules.data.base;
 
-import old.diarsid.beam.core.modules.data.base.JdbcTransactionWrapper;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -14,10 +13,10 @@ import java.sql.Statement;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 
+import old.diarsid.beam.core.modules.data.JdbcTransaction;
+
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
-
-import old.diarsid.beam.core.modules.data.JdbcTransaction;
 
 /**
  *

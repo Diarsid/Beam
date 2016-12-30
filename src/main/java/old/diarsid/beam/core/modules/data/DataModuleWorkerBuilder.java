@@ -6,18 +6,13 @@
 
 package old.diarsid.beam.core.modules.data;
 
-import diarsid.beam.core.modules.data.DataBaseBuilder;
-
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
-
-import diarsid.beam.core.modules.data.base.builder.DataBaseBuilderImpl;
-
 import old.diarsid.beam.core.modules.data.daos.DaosInfo;
 
-import com.drs.gem.injector.module.GemModuleBuilder;
-
 import diarsid.beam.core.modules.ConfigHolderModule;
+
+import com.drs.gem.injector.module.GemModuleBuilder;
 
 /**
  *
@@ -44,8 +39,9 @@ class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     }
 
     private DataBase getDataBase() {
-        DataBaseBuilder builder = new DataBaseBuilderImpl();        
-        return builder.buildDataBase(this.ioInnerModule, this.configModule);
+//        DataBaseBuilder builder = new DataBaseBuilderImpl();        
+//        return builder.buildDataBase(this.ioInnerModule, this.configModule);
+        return null;
     }
 
     private String getDaosPackageName() {

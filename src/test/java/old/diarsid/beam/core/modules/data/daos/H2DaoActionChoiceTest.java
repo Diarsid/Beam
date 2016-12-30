@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.daos;
+package old.diarsid.beam.core.modules.data.daos;
 
 import old.diarsid.beam.core.modules.data.daos.H2DaoActionChoice;
 
@@ -20,8 +20,9 @@ import org.junit.Test;
 
 import old.diarsid.beam.core.modules.IoInnerModule;
 
-import diarsid.beam.core.modules.data.base.H2TestDataBase;
-import diarsid.beam.core.modules.data.base.TestDataBase;
+import old.diarsid.beam.core.modules.data.base.H2TestDataBase;
+import old.diarsid.beam.core.modules.data.base.TestDataBase;
+
 import diarsid.beam.core.modules.executor.commandscache.ActionChoice;
 
 import static org.junit.Assert.assertEquals;
