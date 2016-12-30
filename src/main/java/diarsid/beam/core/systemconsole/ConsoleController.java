@@ -26,6 +26,7 @@ import static java.util.Objects.isNull;
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
 import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.StringUtils.isNumeric;
 
@@ -40,23 +41,17 @@ public class ConsoleController implements OuterIoEngine {
     private final AtomicBoolean isInDialogMode;
     private final AtomicBoolean isWorking;
     private Initiator initiator;
-    private RemoteAccessEndpoint remoteAccess;
-    private String consoleName;
+    private RemoteAccessEndpoint remoteAccess;    
     
     public ConsoleController(ConsolePrinter printer, ConsoleReader reader) {
         this.printer = printer;
         this.reader = reader;        
         this.isInDialogMode = new AtomicBoolean(false);
         this.isWorking = new AtomicBoolean(true);
-        this.consoleName = "default";
     }
 
     public void setRemoteAccess(RemoteAccessEndpoint remoteAccess) {
         this.remoteAccess = remoteAccess;
-    }
-    
-    public void setName(String name) {
-        this.consoleName = name;
     }
     
     private void startConsoleRunner() {
@@ -160,11 +155,12 @@ public class ConsoleController implements OuterIoEngine {
     @Override
     public void acceptInitiator(Initiator initiator) throws IOException {
         this.initiator = initiator;
+        getPassport().setInitiatorId(initiator.getId());
         this.startConsoleRunner();
     }
 
     @Override
     public String getName() {
-        return this.consoleName;
+        return getPassport().getName();
     }
 }

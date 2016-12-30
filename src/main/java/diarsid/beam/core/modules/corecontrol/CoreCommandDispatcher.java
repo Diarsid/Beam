@@ -129,6 +129,7 @@ public class CoreCommandDispatcher implements CommandDispatcher {
             case FIND_BATCH:
                 break;
             case EXIT : {
+                this.ioModule.unregisterIoEngine(initiator);
                 this.coreControlModule.exitBeam();
                 break;
             }

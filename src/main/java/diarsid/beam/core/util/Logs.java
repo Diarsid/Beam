@@ -39,11 +39,11 @@ public class Logs {
         }
     }
     
-    public static void logError(Class clazz, Exception e) {
+    public static void logError(Class clazz, Throwable e) {
         LoggerFactory.getLogger(clazz).error("", e); 
     }
     
-    public static void logError(Class clazz, String log, Exception e, String... description) {
+    public static void logError(Class clazz, String log, Throwable e, String... description) {
         Logger l = LoggerFactory.getLogger(clazz); 
         l.error(log, e);
         for (String s : description) {

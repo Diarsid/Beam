@@ -12,12 +12,14 @@ import java.rmi.RemoteException;
 import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.Question;
+import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
 import static diarsid.beam.core.control.io.base.Answer.noAnswer;
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
+import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.util.Logs.logError;
 
 /**
  *
@@ -36,6 +38,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         try {
             this.console.close();
         } catch (IOException e) {
+            logError(this.getClass(), e);   
+            exitSystemConsole();
         }
     }
 
@@ -44,7 +48,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         try {
             return this.console.resolveYesOrNo(yesOrNoQuestion);
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(this.getClass(), e);
+            exitSystemConsole();
             return CHOICE_NOT_MADE;
         }
     }
@@ -54,7 +59,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         try {
             return this.console.resolveQuestion(question);
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(this.getClass(), e);
+            exitSystemConsole();
             return noAnswer();
         }
     }
@@ -64,7 +70,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         try {
             this.console.report(string);
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(this.getClass(), e);
+            exitSystemConsole();
         }
     }
 
@@ -73,7 +80,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         try {
             this.console.reportMessage(message);
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(this.getClass(), e);
+            exitSystemConsole();
         }
     }
 
@@ -82,7 +90,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         try {
             this.console.acceptInitiator(initiator);
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(this.getClass(), e);
+            exitSystemConsole();
         }
     }
 

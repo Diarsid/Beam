@@ -28,6 +28,8 @@ import static diarsid.beam.core.config.Config.CORE_PORT;
 import static diarsid.beam.core.config.Config.SYS_CONSOLE_HOST;
 import static diarsid.beam.core.config.Config.SYS_CONSOLE_NAME;
 import static diarsid.beam.core.config.Config.SYS_CONSOLE_PORT;
+import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
+import static diarsid.beam.core.systemconsole.SystemConsoleLog.consoleDebug;
 
 /**
  *
@@ -65,8 +67,10 @@ public class ConsoleRemoteManager {
                 try {
                     registry = LocateRegistry.createRegistry(this.consoleRegistryPort); 
                     registryNotCreated = false;
+                    consoleDebug("port: " + this.consoleRegistryPort + " is free.");
+                    getPassport().setPort(this.consoleRegistryPort);
                 } catch (ExportException ex) {
-                    System.out.println("port: " + this.consoleRegistryPort + " is in use.");
+                    consoleDebug("port: " + this.consoleRegistryPort + " is in use.");
                     this.consoleRegistryPort++;
                     otherConsolesCounter++;
                 }
@@ -74,7 +78,7 @@ public class ConsoleRemoteManager {
             if ( isNull(registry) ) {
                 throw new StartupFailedException("Cannot create or obtain RMI Registry.");
             }             
-            System.out.println("registry created.");
+            consoleDebug("registry created.");
             
             RemoteOuterIoEngine remoteConsole = new RemoteConsoleAdpater(console);
             RemoteOuterIoEngine consoleStub =
@@ -84,25 +88,15 @@ public class ConsoleRemoteManager {
             this.consoleName = this.consoleName + otherConsolesCounter;
             
             registry.bind(this.consoleName, consoleStub);            
-            console.setName(this.consoleName);
+            getPassport().setName(this.consoleName);
             remoteAccess.acceptRemoteOuterIoEngine(
                     this.consoleName, 
                     this.consoleRegistryHost, 
                     this.consoleRegistryPort);
-            System.out.println("Console is binded with core successfully.");
+            consoleDebug("Console is binded with core successfully.");
             
-        } catch(ExportException e) {
-            e.printStackTrace();
-            //showProblemMessageAndClose("Console export: this port already in use.");
-        } catch (AlreadyBoundException abe) {
-            abe.printStackTrace();
-            //showProblemMessageAndClose("Console export failure: AlreadyBoundException");
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-            //showProblemMessageAndClose("Connecting to Organizer failure: NotBoundException");
-        } catch (RemoteException re) {
-            re.printStackTrace();
-            //showProblemMessageAndClose("Console export failure: RemoteException");
+        } catch (AlreadyBoundException|NotBoundException|RemoteException e) {
+            throw new StartupFailedException(e);
         }
     }
 
@@ -112,7 +106,7 @@ public class ConsoleRemoteManager {
                         this.coreRegistryHost,
                         this.coreRegistryPort
                 ).lookup(this.coreAccessEndpointName);
-        System.out.println("RemoteAccess is imported successfully.");
+        consoleDebug("RemoteAccess is imported successfully.");
         return remoteAccess;
     }
 }
