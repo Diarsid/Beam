@@ -6,15 +6,15 @@
 
 package old.diarsid.beam.core.modules.data;
 
-import diarsid.beam.core.modules.data.DaoLocations;
 
 import java.lang.reflect.Constructor;
 
-import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.exceptions.NullDependencyInjectionException;
-
 import old.diarsid.beam.core.modules.DataModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.data.daos.DaoLocations;
+
+import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.exceptions.NullDependencyInjectionException;
 
 /**
  * Implements DataModule.

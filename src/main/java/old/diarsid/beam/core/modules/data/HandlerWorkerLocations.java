@@ -6,16 +6,15 @@
 
 package old.diarsid.beam.core.modules.data;
 
-import diarsid.beam.core.modules.data.DaoLocations;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import diarsid.beam.core.domain.entities.Location;
-
 import old.diarsid.beam.core.modules.IoInnerModule;
+import old.diarsid.beam.core.modules.data.daos.DaoLocations;
+
+import diarsid.beam.core.domain.entities.Location;
 
 import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 

@@ -28,6 +28,13 @@ public class StringUtils {
         return target.toLowerCase(ENGLISH);
     }
     
+    public static List<String> lower(List<String> targets) {
+        return targets
+                .stream()
+                .map(target -> lower(target))
+                .collect(toList());
+    }
+    
     public static String upper(String target) {
         return target.toUpperCase(ENGLISH);
     }

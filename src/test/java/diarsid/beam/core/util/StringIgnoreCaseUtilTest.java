@@ -18,6 +18,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsAnySnippetsInAnyWordsIgnoreCase;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 
 /**
  *
@@ -31,6 +32,16 @@ public class StringIgnoreCaseUtilTest {
     /**
      * Test of containsWordInIgnoreCase method, of class StringIgnoreCaseUtil.
      */
+    
+    @Test
+    public void testReplaceIgnoreCase() {
+        String target = "where To Replace THis fRAgment of StrIng";
+        String replaceable = "this fragment";
+        String replacement = "ANOTHER";
+        
+        String result = replaceIgnoreCase(target, replaceable, replacement);
+        assertEquals("where To Replace ANOTHER of StrIng", result);
+    }
     
     @Test
     public void testContainsAllPartsIgnoreCase_String_String_contains() {        

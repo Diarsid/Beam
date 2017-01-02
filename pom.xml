@@ -35,6 +35,7 @@
                         <exclude>lib/**</exclude>
                         <exclude>config/**</exclude>
                         <exclude>**/*.netbeans_automatic_build</exclude>
+                        <exclude>**/log4j.properties</exclude>
                     </excludes>
                 </configuration>
             </plugin>       
@@ -209,7 +210,6 @@
             <version>2.5</version>
             <scope>test</scope>
         </dependency>
-
         
         <dependency>
             <groupId>org.ow2.asm</groupId>
@@ -232,6 +232,12 @@
         <dependency>
             <groupId>com.drs</groupId>
             <artifactId>gem-injector</artifactId>
+            <version>1.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>diarsid</groupId>
+            <artifactId>JdbcTransactions</artifactId>
             <version>1.0</version>
         </dependency>
         

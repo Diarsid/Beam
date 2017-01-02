@@ -41,9 +41,11 @@ public class LocationsKeeperWorker implements LocationsKeeper {
     public List<Location> getLocations(Initiator initiator, FindEntityCommand command) {
         if ( this.isConsistent(command, initiator) ) {
             if ( hasWildcard(command.getArg()) ) {
-                return this.dao.getLocationsByNameParts(splitByWildcard(command.getArg()));
+                return this.dao.getLocationsByNameParts(
+                        initiator, splitByWildcard(command.getArg()));
             } else {
-                return this.dao.getLocationsByName(command.getArg());
+                return this.dao.getLocationsByName(
+                        initiator, command.getArg());
             }
         } else {
             return emptyList();
@@ -71,6 +73,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
     public boolean createLocation(Initiator initiator, CreateLocationCommand command) {
         if ( this.isConsistent(command, initiator) ) {
             return this.dao.saveNewLocation(
+                    initiator, 
                     new Location(
                             command.getName(), 
                             command.getPath()));

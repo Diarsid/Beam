@@ -25,6 +25,21 @@ public class StringIgnoreCaseUtil {
     private StringIgnoreCaseUtil() {
     }
     
+    public static String replaceIgnoreCase(String target, String replaceable, String replacement) {
+        if ( containsIgnoreCase(target, replaceable) ) {
+            int indexOf = lower(target).indexOf(lower(replaceable));
+            return target
+                    .substring(0, indexOf)
+                    .concat(replacement)
+                    .concat(target
+                            .substring(
+                                    indexOf + replaceable.length(), 
+                                    target.length()));
+        } else {
+            return target;
+        }
+    }
+    
     public static String findAnyInIgnoreCase(
             String whereToSearch, Collection<String> searchedAnyOf) {
         if ( 

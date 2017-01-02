@@ -5,10 +5,14 @@
  */
 package diarsid.beam.core.modules.data;
 
+import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
+
 /**
  *
  * @author Diarsid
  */
 public interface DataBase {
+    
+    JdbcTransactionFactory transactionFactory();
     
 }

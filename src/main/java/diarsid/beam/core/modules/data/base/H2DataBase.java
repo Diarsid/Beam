@@ -7,10 +7,26 @@
 package diarsid.beam.core.modules.data.base;
 
 import diarsid.beam.core.modules.data.DataBase;
+import diarsid.jdbc.transactions.JdbcConnectionsSource;
+import diarsid.jdbc.transactions.core.JdbcPreparedStatementSetter;
+import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
+import diarsid.jdbc.transactions.core.JdbcTransactionGuard;
 
 
 public class H2DataBase implements DataBase {
     
-    public H2DataBase() {
+    private final JdbcTransactionFactory transactionFactory;
+    
+    public H2DataBase(String dataBaseUrl) {
+        JdbcConnectionsSource source = new H2JdbcConnectionsSource(dataBaseUrl);
+        JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(1);
+        JdbcPreparedStatementSetter paramsSetter = new JdbcPreparedStatementSetter();
+        this.transactionFactory = new JdbcTransactionFactory(
+                source, transactionGuard, paramsSetter);
+    }
+
+    @Override
+    public JdbcTransactionFactory transactionFactory() {
+        return this.transactionFactory;
     }
 }

@@ -6,6 +6,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
+import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.domain.entities.Location;
 
 /**
@@ -14,19 +15,27 @@ import diarsid.beam.core.domain.entities.Location;
  */
 public interface DaoLocations {
     
-    List<Location> getLocationsByName(String locationName);
+    List<Location> getLocationsByName(
+            Initiator initiator, String locationName);
     
-    List<Location> getLocationsByNameParts(List<String> locationNameParts);
+    List<Location> getLocationsByNameParts(
+            Initiator initiator, List<String> locationNameParts);
     
-    boolean saveNewLocation(Location location);
+    boolean saveNewLocation(
+            Initiator initiator, Location location);
     
-    boolean removeLocation(String locationName);
+    boolean removeLocation(
+            Initiator initiator, String locationName);
     
-    boolean editLocationPath(String locationName, String newPath);
+    boolean editLocationPath(
+            Initiator initiator, String locationName, String newPath);
     
-    boolean editLocationName(String locationName, String newName);
+    boolean editLocationName(
+            Initiator initiator, String locationName, String newName);
     
-    boolean replaceInPaths(String replaceable, String replacement);
+    boolean replaceInPaths(
+            Initiator initiator, String replaceable, String replacement);
             
-    List<Location> getAllLocations();
+    List<Location> getAllLocations(
+            Initiator initiator);
 }
