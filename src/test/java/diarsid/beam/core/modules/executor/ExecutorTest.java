@@ -26,7 +26,7 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import old.diarsid.beam.core.modules.data.HandlerLocations;
 import old.diarsid.beam.core.modules.data.HandlerWebPages;
 
-import diarsid.beam.core.domain.entities.Batch;
+import old.diarsid.beam.core.entities.OldBatch;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -171,7 +171,7 @@ public class ExecutorTest {
         String[] a = {"open location", "run program"};
         List<String> commands = Arrays.asList(a);
         
-        Batch command = new Batch("command", commands);
+        OldBatch command = new OldBatch("command", commands);
         exec.newBatch(commands, "command");
         
         verify(comDao).saveNewBatch(command);

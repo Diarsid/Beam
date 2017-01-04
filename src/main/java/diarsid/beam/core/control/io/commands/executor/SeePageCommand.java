@@ -6,12 +6,13 @@
 
 package diarsid.beam.core.control.io.commands.executor;
 
+import java.util.Objects;
+
 import diarsid.beam.core.control.io.commands.Argument;
+import diarsid.beam.core.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.control.io.commands.CommandType;
 
 import static diarsid.beam.core.control.io.commands.CommandType.SEE_WEBPAGE;
-
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
 
 
 public class SeePageCommand implements ArgumentedCommand {
@@ -22,7 +23,7 @@ public class SeePageCommand implements ArgumentedCommand {
         this.pageArgument = new Argument(pageName);
     }
     
-    public SeePageCommand(String pageName, String extendedPageName, String... attrs) {
+    public SeePageCommand(String pageName, String extendedPageName) {
         this.pageArgument = new Argument(pageName, extendedPageName);
     }
     
@@ -43,5 +44,30 @@ public class SeePageCommand implements ArgumentedCommand {
     @Override
     public String stringifyExtended() {
         return this.pageArgument.getExtended();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + Objects.hashCode(this.pageArgument);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final SeePageCommand other = ( SeePageCommand ) obj;
+        if ( !Objects.equals(this.pageArgument, other.pageArgument) ) {
+            return false;
+        }
+        return true;
     }
 }

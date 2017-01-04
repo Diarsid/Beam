@@ -17,7 +17,9 @@ import java.util.Set;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlacement;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.domain.entities.Batch;
+
+import old.diarsid.beam.core.entities.OldBatch;
+
 import diarsid.beam.core.modules.tasks.TimeMessage;
 import diarsid.beam.core.modules.tasks.TaskType;
 import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
@@ -183,7 +185,7 @@ class ConsoleDispatcher implements ConsoleDispatcherModule {
     
     @Override
     public void getCommandsBatches() throws IOException {
-        List<Batch> commands = this.beam.executor().getAllCommands();
+        List<OldBatch> commands = this.beam.executor().getAllCommands();
         this.printer.printBatches(commands);
     }    
     

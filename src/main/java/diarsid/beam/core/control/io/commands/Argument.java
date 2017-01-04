@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.io.commands;
 
+import java.util.Objects;
+
 import diarsid.beam.core.control.io.commands.exceptions.EmptyArgumentException;
 
 /**
@@ -62,5 +64,34 @@ public class Argument {
         } else {
             return this.originalArgument;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + Objects.hashCode(this.originalArgument);
+        hash = 71 * hash + Objects.hashCode(this.extendedArgument);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final Argument other = ( Argument ) obj;
+        if ( !Objects.equals(this.originalArgument, other.originalArgument) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.extendedArgument, other.extendedArgument) ) {
+            return false;
+        }
+        return true;
     }
 }

@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.io.commands;
 
+import java.util.Objects;
+
 import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
 
 
@@ -43,4 +45,35 @@ public abstract class SingleStringCommand extends StringCommand {
     public CommandType type() {
         return this.type;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.arg);
+        hash = 53 * hash + Objects.hashCode(this.type);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final SingleStringCommand other = ( SingleStringCommand ) obj;
+        if ( !Objects.equals(this.arg, other.arg) ) {
+            return false;
+        }
+        if ( this.type != other.type ) {
+            return false;
+        }
+        return true;
+    }
+    
+    
 }

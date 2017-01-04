@@ -23,7 +23,7 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 import old.diarsid.beam.core.modules.data.DaoCommandsBatches;
 import old.diarsid.beam.core.modules.data.DataBase;
 
-import diarsid.beam.core.domain.entities.Batch;
+import old.diarsid.beam.core.entities.OldBatch;
 
 /**
  *
@@ -99,17 +99,17 @@ class H2DaoCommandsBatches implements DaoCommandsBatches {
     }
     
     @Override
-    public List<Batch> getBatchesByName(String commandName) {
+    public List<OldBatch> getBatchesByName(String commandName) {
         ResultSet rs = null;
         try(Connection con = this.data.connect();
             PreparedStatement ps = con
                     .prepareStatement(SELECT_COMMANDS_WHERE_NAME_LIKE);) {
-            List<Batch> commands = new ArrayList<>();
+            List<OldBatch> commands = new ArrayList<>();
 
             ps.setString(1, "%"+commandName+"%");
             rs = ps.executeQuery();
             while(rs.next()) {
-                commands.add(new Batch(
+                commands.add(new OldBatch(
                         rs.getString(1), 
                         convertStoredCommandForUsing(rs.getString(2)))
                 );
@@ -134,7 +134,7 @@ class H2DaoCommandsBatches implements DaoCommandsBatches {
     }
     
     @Override
-    public void saveNewBatch(Batch command) {
+    public void saveNewBatch(OldBatch command) {
         try(Connection con = this.data.connect();
             PreparedStatement ps = con
                     .prepareStatement(INSERT_NEW_COMMAND);) {
@@ -170,14 +170,14 @@ class H2DaoCommandsBatches implements DaoCommandsBatches {
     }
     
     @Override
-    public List<Batch> getAllBatches() {
+    public List<OldBatch> getAllBatches() {
         try(Connection con = this.data.connect();
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(SELECT_ALL_COMMANDS);) {
             
-            List<Batch> commands = new ArrayList<>();
+            List<OldBatch> commands = new ArrayList<>();
             while(rs.next()) {
-                commands.add(new Batch(
+                commands.add(new OldBatch(
                         rs.getString(1), 
                         convertStoredCommandForUsing(rs.getString(2)))
                 );

@@ -6,7 +6,7 @@ package old.diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.domain.entities.Batch;
+import old.diarsid.beam.core.entities.OldBatch;
 
 /**
  *
@@ -14,11 +14,11 @@ import diarsid.beam.core.domain.entities.Batch;
  */
 public interface DaoCommandsBatches {
     
-    public List<Batch> getBatchesByName(String commandName);
+    public List<OldBatch> getBatchesByName(String commandName);
     
-    public void saveNewBatch(Batch command);
+    public void saveNewBatch(OldBatch command);
     
     public boolean removeBatch(String commandName);
     
-    public List<Batch> getAllBatches();
+    public List<OldBatch> getAllBatches();
 }

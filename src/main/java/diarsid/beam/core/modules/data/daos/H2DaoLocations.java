@@ -37,7 +37,7 @@ import static diarsid.jdbc.transactions.core.Params.params;
 
 public class H2DaoLocations implements DaoLocations {
     
-    private final DataBase dataBase;
+    private final DataBase dataBase;                
     private final InnerIoEngine ioEngine;
     private final PerRowConversion<Location> rowToLocationConversion;
     
@@ -51,13 +51,23 @@ public class H2DaoLocations implements DaoLocations {
         };
     }
 
+    private JdbcTransaction getDisposableTransaction() 
+            throws TransactionHandledSQLException {
+        return this.dataBase
+                .transactionFactory()
+                .createDisposableTransaction();
+    }
+
+    private JdbcTransaction getTransaction() 
+            throws TransactionHandledSQLException {
+        return this.dataBase.transactionFactory().createTransaction();
+    }
+
     @Override
     public List<Location> getLocationsByName(
             Initiator initiator, String locationName) {
         try {
-            return this.dataBase
-                    .transactionFactory()
-                    .createDisposableTransaction()
+            return this.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
@@ -79,9 +89,8 @@ public class H2DaoLocations implements DaoLocations {
             Initiator initiator, List<String> nameParts) {
         
         try {
-            return this.dataBase
-                    .transactionFactory()
-                    .createDisposableTransaction()
+            return this.getDisposableTransaction()
+                    .ifTrue( nonEmpty(nameParts) )
                     .doQueryAndStream(
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
@@ -104,9 +113,7 @@ public class H2DaoLocations implements DaoLocations {
     public boolean saveNewLocation(
             Initiator initiator, Location location) {
         try {
-            int updated = this.dataBase
-                    .transactionFactory()
-                    .createDisposableTransaction()
+            int updated = this.getDisposableTransaction()
                     .doUpdateVarargParams(
                             "INSERT INTO locations (loc_name, loc_path) " +
                             "VALUES ( ?, ? ) ", 
@@ -126,9 +133,7 @@ public class H2DaoLocations implements DaoLocations {
     public boolean removeLocation(
             Initiator initiator, String locationName) {
         try {
-            int removed = this.dataBase
-                    .transactionFactory()
-                    .createDisposableTransaction()
+            int removed = this.getDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM locations " +
                             "WHERE loc_name IS ? ", 
@@ -145,7 +150,7 @@ public class H2DaoLocations implements DaoLocations {
     @Override
     public boolean editLocationPath(
             Initiator initiator, String locationName, String newPath) {
-        try (JdbcTransaction transact = this.dataBase.transactionFactory().createTransaction()) {
+        try (JdbcTransaction transact = this.getTransaction()) {
             
             int modified = transact
                     .doUpdateVarargParams(
@@ -175,7 +180,7 @@ public class H2DaoLocations implements DaoLocations {
     @Override
     public boolean editLocationName(
             Initiator initiator, String locationName, String newName) {
-        try (JdbcTransaction transact = this.dataBase.transactionFactory().createTransaction()) {
+        try (JdbcTransaction transact = this.getTransaction()) {
             
             int modified = transact
                     .doUpdateVarargParams(
@@ -205,7 +210,7 @@ public class H2DaoLocations implements DaoLocations {
     @Override
     public boolean replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
-        try (JdbcTransaction transact = this.dataBase.transactionFactory().createTransaction()) {
+        try (JdbcTransaction transact = this.getTransaction()) {
             
             List<Location> locationsToModify = transact
                     .doQueryAndStreamVarargParams(
@@ -252,9 +257,7 @@ public class H2DaoLocations implements DaoLocations {
     public List<Location> getAllLocations(
             Initiator initiator) {
         try {
-            return this.dataBase
-                    .transactionFactory()
-                    .createDisposableTransaction()
+            return this.getDisposableTransaction()
                     .doQueryAndStream(
                             "SELECT loc_name, loc_path " +
                             "FROM locations", 

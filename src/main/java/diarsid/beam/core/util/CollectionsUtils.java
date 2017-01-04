@@ -6,9 +6,11 @@
 
 package diarsid.beam.core.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -56,5 +58,17 @@ public class CollectionsUtils {
 
     public static <T> Set<T> toUnmodifiableSet(T[] array) {
         return unmodifiableSet(new HashSet<>(asList(array)));
+    }
+    
+    public static <T> List<T> arrayListOf(T... t) {
+        return new ArrayList<>(asList(t));
+    }
+    
+    public static <K, V> void mergeInMapWithArrayLists(Map<K, List<V>> map, K key, V value) {
+        if ( map.containsKey(key) ) {
+            map.get(key).add(value);
+        } else {
+            map.put(key, arrayListOf(value));
+        }
     }
 }

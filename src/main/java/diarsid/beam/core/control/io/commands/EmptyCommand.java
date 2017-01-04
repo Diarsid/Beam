@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.io.commands;
 
+import java.util.Objects;
+
 import static diarsid.beam.core.control.io.commands.CommandType.UNDEFINED;
 
 
@@ -37,5 +39,30 @@ public class EmptyCommand implements Command {
     
     public boolean isNotDefined() {
         return ( this.type == UNDEFINED );
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + Objects.hashCode(this.type);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final EmptyCommand other = ( EmptyCommand ) obj;
+        if ( this.type != other.type ) {
+            return false;
+        }
+        return true;
     }
 }

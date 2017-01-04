@@ -13,7 +13,8 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 
 import old.diarsid.beam.core.modules.data.DaoCommandsBatches;
 
-import diarsid.beam.core.domain.entities.Batch;
+import old.diarsid.beam.core.entities.OldBatch;
+
 import diarsid.beam.core.modules.executor.processors.ProcessorCommandsBatches;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
 
@@ -38,9 +39,9 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     }    
     
     @Override
-    public Batch getBatch(String batchName) {        
+    public OldBatch getBatch(String batchName) {        
         batchName = batchName.trim().toLowerCase();
-        List<Batch> foundBatches = 
+        List<OldBatch> foundBatches = 
                 this.batchesDao.getBatchesByName(batchName);    
         
         if ( foundBatches.size() < 1 ) {
@@ -52,7 +53,7 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
             return foundBatches.get(0);
         } else {
             List<String> foundBatchesNames = new ArrayList<>();
-            for (Batch c : foundBatches) {
+            for (OldBatch c : foundBatches) {
                 foundBatchesNames.add(c.getName());
             }
             int variant = this.intellContext.resolve(
@@ -82,7 +83,7 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
             commands.set(i, s);
         }
         batchName = batchName.trim().toLowerCase();
-        this.batchesDao.saveNewBatch(new Batch(batchName, commands));
+        this.batchesDao.saveNewBatch(new OldBatch(batchName, commands));
     }    
         
     @Override
@@ -92,12 +93,12 @@ class ProcessorCommandsBatchesWorker implements ProcessorCommandsBatches {
     }    
     
     @Override
-    public List<Batch> getAllBatches() {
+    public List<OldBatch> getAllBatches() {
         return this.batchesDao.getAllBatches();
     }    
     
     @Override
-    public List<Batch> getBatches(String batchName) {
+    public List<OldBatch> getBatches(String batchName) {
         batchName = batchName.trim().toLowerCase();
         return this.batchesDao.getBatchesByName(batchName);
     }    

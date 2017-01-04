@@ -6,58 +6,71 @@
 
 package diarsid.beam.core.domain.entities;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import diarsid.beam.core.control.io.commands.ArgumentedCommand;
+
+import static java.util.stream.Collectors.toList;
+
+import static diarsid.beam.core.control.io.commands.CommandType.CALL_BATCH;
 
 /**
  *
  * @author Diarsid
  */
-public class Batch implements Serializable {
+public class Batch {
     
     private final String name;
-    private final List<String> commands;    
+    private final List<BatchedCommand> commands;
     
-    public Batch(String name, List<String> commands) {
+    public Batch(String name, List<ArgumentedCommand> commands) {
         this.name = name;
-        this.commands = commands;
-    }    
-    
+        AtomicInteger counter = new AtomicInteger(0);
+        this.commands = commands
+                .stream()
+                .filter(command -> command.type().isNot(CALL_BATCH))
+                .map(command -> new BatchedCommand(this, counter.getAndIncrement(), command))
+                .collect(toList());
+    }
+
     public String getName() {
-        return name;
+        return this.name;
+    }
+    
+    public int getCommandsQty() {
+        return this.commands.size();
     }
 
-    public List<String> getCommands() {
-        return commands;
-    }
-
-    @Override
-    public String toString() {        
-        return "StoredExecutorCommand > " + this.name + " : " + this.commands.toString();
+    public List<BatchedCommand> getCommands() {
+        return this.commands;
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 47 * hash + Objects.hashCode(this.name);
-        hash = 47 * hash + Objects.hashCode(this.commands);
+        hash = 11 * hash + Objects.hashCode(this.name);
+        hash = 11 * hash + Objects.hashCode(this.commands);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final Batch other = (Batch) obj;
-        if (!Objects.equals(this.name, other.name)) {
+        final Batch other = ( Batch ) obj;
+        if ( !Objects.equals(this.name, other.name) ) {
             return false;
         }
-        if (!Objects.equals(this.commands, other.commands)) {
+        if ( !Objects.equals(this.commands, other.commands) ) {
             return false;
         }
         return true;

@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.io.commands;
 
+import java.util.Objects;
+
 
 public abstract class SingleArgumentCommand implements ArgumentedCommand {
     
@@ -32,4 +34,31 @@ public abstract class SingleArgumentCommand implements ArgumentedCommand {
     public final Argument argument() {
         return this.argument;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.argument);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final SingleArgumentCommand other = ( SingleArgumentCommand ) obj;
+        if ( !Objects.equals(this.argument, other.argument) ) {
+            return false;
+        }
+        return true;
+    }
+    
+    
 }

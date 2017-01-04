@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.control.io.interpreter;
 
-import diarsid.beam.core.control.io.interpreter.Interpreter;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,7 +21,6 @@ import diarsid.beam.core.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
-import diarsid.beam.core.control.io.commands.executor.RunMarkedProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
 
@@ -53,7 +50,6 @@ import static diarsid.beam.core.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_PATH_IN_NOTE;
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_TARGET_IN_NOTE;
-import static diarsid.beam.core.control.io.commands.CommandType.RUN_MARKED_PROGRAM;
 import static diarsid.beam.core.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.control.io.commands.CommandType.UNDEFINED;
@@ -193,21 +189,19 @@ public class InterpreterTest {
     @Test
     public void testInterprete_startProgram() {
         Command c = interpreter.interprete("START Prog");
-        assertEquals(RUN_MARKED_PROGRAM, c.type());
+        assertEquals(RUN_PROGRAM, c.type());
         
-        RunMarkedProgramCommand c1 = (RunMarkedProgramCommand) c;
-        assertEquals("Prog", c1.program().getOriginal());
-        assertEquals("start", c1.getMark());
+        RunProgramCommand c1 = (RunProgramCommand) c;
+        assertEquals("Prog-start", c1.argument().getOriginal());
     }
     
     @Test
     public void testInterprete_stopProgram() {
         Command c = interpreter.interprete("stop prog");
-        assertEquals(RUN_MARKED_PROGRAM, c.type());
+        assertEquals(RUN_PROGRAM, c.type());
         
-        RunMarkedProgramCommand c1 = (RunMarkedProgramCommand) c;
-        assertEquals("prog", c1.program().getOriginal());
-        assertEquals("stop", c1.getMark());
+        RunProgramCommand c1 = (RunProgramCommand) c;
+        assertEquals("prog-stop", c1.argument().getOriginal());
     }
     
     @Test

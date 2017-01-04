@@ -6,16 +6,17 @@
 
 package diarsid.beam.core.control.io.commands;
 
-import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.control.io.commands.executor.RunMarkedProgramCommand;
-import diarsid.beam.core.control.io.commands.executor.CallBatchCommand;
-import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
-import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.control.io.commands.exceptions.UndefinedOperationTypeException;
+import diarsid.beam.core.control.io.commands.executor.CallBatchCommand;
+import diarsid.beam.core.control.io.commands.executor.ExecutorDefaultCommand;
+import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
+import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
+import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
 
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.valueOf;
+import static diarsid.beam.core.domain.entities.ExecutorPauseCommand.parsePauseCommandFrom;
 
 /**
  *
@@ -30,8 +31,14 @@ public class Commands {
     public static ArgumentedCommand restoreFrom(
             String operationType, 
             String originalArgs, 
-            String extendedArgs,
-            String... attributes) {
+            String extendedArgs) {
+        return defineCommand(operationType, originalArgs, extendedArgs);
+    }
+
+    private static ArgumentedCommand defineCommand(
+            String operationType, 
+            String originalArgs, 
+            String extendedArgs) {
         switch ( valueOf(operationType) ) {
             case OPEN_LOCATION : {
                 return new OpenLocationCommand(originalArgs, extendedArgs);
@@ -42,19 +49,21 @@ public class Commands {
             case RUN_PROGRAM : {
                 return new RunProgramCommand(originalArgs, extendedArgs);
             }
-            case RUN_MARKED_PROGRAM : {
-                return new RunMarkedProgramCommand(originalArgs, extendedArgs, attributes[0]);
-            }
             case SEE_WEBPAGE : {
-                return new SeePageCommand(originalArgs, extendedArgs, attributes);
+                return new SeePageCommand(originalArgs, extendedArgs);
             }
             case CALL_BATCH : {
                 return new CallBatchCommand(originalArgs, extendedArgs);
+            }
+            case BATCH_PAUSE : {
+                return parsePauseCommandFrom(extendedArgs);
+            }
+            case EXECUTOR_DEFAULT : {
+                return new ExecutorDefaultCommand(originalArgs, extendedArgs);
             }
             default : {
                 throw new UndefinedOperationTypeException();
             }
         }  
     }
-    
 }

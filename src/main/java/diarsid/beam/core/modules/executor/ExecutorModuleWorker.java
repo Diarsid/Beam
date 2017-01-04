@@ -8,8 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.domain.entities.Batch;
-
+import old.diarsid.beam.core.entities.OldBatch;
 import old.diarsid.beam.core.modules.ExecutorModule;
 import old.diarsid.beam.core.modules.IoInnerModule;
 
@@ -143,7 +142,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void call(List<String> commandParams) {
         // command pattern: call [command_1] [command_2]...
-        Batch storedBatch;
+        OldBatch storedBatch;
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < commandParams.size(); i++) {
             sb.append(commandParams.get(0))
@@ -178,16 +177,16 @@ class ExecutorModuleWorker implements ExecutorModule {
     }    
     
     @Override
-    public List<Batch> getAllBatches() {
+    public List<OldBatch> getAllBatches() {
         return this.batches.getAllBatches();
     }    
     
     @Override
-    public List<Batch> getBathesByName(String commandName) {
+    public List<OldBatch> getBathesByName(String commandName) {
         return this.batches.getBatches(commandName);
     }    
     
-    private void executeCommandsBatch(Batch command) {
+    private void executeCommandsBatch(OldBatch command) {
         for (String commandString : command.getCommands()) {
             this.dispatchCommandToAppropriateMethod(splitBySpacesToList(commandString));
         }
@@ -358,7 +357,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void executeStoredBatchIfExists(String cachedCommand) {
         String possibleBatchName = cachedCommand
                 .substring(cachedCommand.lastIndexOf(" ")+1);
-        Batch storedBatch = this.batches
+        OldBatch storedBatch = this.batches
                 .getBatch(possibleBatchName);
         if ( storedBatch != null ) {
             for (String commandFromBatch : storedBatch.getCommands()) {

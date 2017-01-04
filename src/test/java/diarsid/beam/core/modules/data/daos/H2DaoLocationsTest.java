@@ -106,6 +106,7 @@ public class H2DaoLocationsTest {
     public void testGetLocationsByName() {
         List<Location> locations = daoLocations.getLocationsByName(initiator, "proj");
         assertTrue(locations.size() == 3);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
     }
 
     /**
@@ -116,14 +117,17 @@ public class H2DaoLocationsTest {
         List<Location> j_proj_locations = daoLocations
                 .getLocationsByNameParts(initiator, splitByWildcard("j-proj"));
         assertTrue(j_proj_locations.size() == 3);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         
         List<Location> js_proj_locations = daoLocations
                 .getLocationsByNameParts(initiator, splitByWildcard("js-proj"));
         assertTrue(js_proj_locations.size() == 1);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         
         List<Location> j_pr_oj_cts_locations = daoLocations
                 .getLocationsByNameParts(initiator, splitByWildcard("pr-j-cts-oj"));
         assertTrue(j_pr_oj_cts_locations.size() == 3);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
     }
 
     /**
@@ -135,11 +139,13 @@ public class H2DaoLocationsTest {
         
         Location location = new Location("films", "c:/content/media/movies");
         boolean created = daoLocations.saveNewLocation(initiator, location);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(created);
         
         int qtyAfter = testDataBase.countRowsInTable("locations");
         
         assertEquals(qtyBefore + 1, qtyAfter);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
     }
     
     @Test
@@ -148,10 +154,12 @@ public class H2DaoLocationsTest {
         
         Location location = new Location("films", "c:/content/media/movies");
         boolean created = daoLocations.saveNewLocation(initiator, location);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(created);
         
         Location locationClone = new Location("films", "c:/content/media/movies/another");
         boolean createdClone = daoLocations.saveNewLocation(initiator, locationClone);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertFalse(createdClone);
         
         int qtyAfter = testDataBase.countRowsInTable("locations");
@@ -167,6 +175,7 @@ public class H2DaoLocationsTest {
         int qtyBefore = testDataBase.countRowsInTable("locations");
         
         boolean deleted = daoLocations.removeLocation(initiator, "books");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(deleted);
         
         int qtyAfter = testDataBase.countRowsInTable("locations");
@@ -180,9 +189,11 @@ public class H2DaoLocationsTest {
     @Test
     public void testEditLocationPath() {
         boolean edited = daoLocations.editLocationPath(initiator, "books", "c:/new/path/for/books");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(edited);
         
         List<Location> locations = daoLocations.getLocationsByName(initiator, "boo");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(containsOne(locations));
         Location loc = getOne(locations);
         assertEquals("books", loc.getName());        
@@ -195,9 +206,11 @@ public class H2DaoLocationsTest {
     @Test
     public void testEditLocationName() {
         boolean edited = daoLocations.editLocationName(initiator, "books", "my_books");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(edited);
         
         List<Location> locations = daoLocations.getLocationsByName(initiator, "boo");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(containsOne(locations));
         Location loc = getOne(locations);
         assertEquals("my_books", loc.getName());
@@ -209,14 +222,17 @@ public class H2DaoLocationsTest {
     @Test
     public void testReplaceInPaths() {
         List<Location> locationsBefore = daoLocations.getLocationsByName(initiator, "proj");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         locationsBefore
                 .stream()
                 .forEach(location -> assertTrue(location.getPath().startsWith("D:/Tech/DEV")));
         
         boolean replaced = daoLocations.replaceInPaths(initiator, "d:/tech/dev", "C:/Dev");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(replaced);
         
         List<Location> locationsAfter = daoLocations.getLocationsByName(initiator, "proj");
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         locationsAfter
                 .stream()
                 .forEach(location -> assertTrue(location.getPath().startsWith("C:/Dev")));
@@ -228,6 +244,7 @@ public class H2DaoLocationsTest {
     @Test
     public void testGetAllLocations() {
         List<Location> locations = daoLocations.getAllLocations(initiator);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(locations.size() == 4);
     }
 

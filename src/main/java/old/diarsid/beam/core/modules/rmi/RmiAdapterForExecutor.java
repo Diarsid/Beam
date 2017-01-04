@@ -12,7 +12,7 @@ import java.util.Map;
 
 import old.diarsid.beam.core.modules.ExecutorModule;
 
-import diarsid.beam.core.domain.entities.Batch;
+import old.diarsid.beam.core.entities.OldBatch;
 
 import old.diarsid.beam.core.rmi.interfaces.RmiExecutorInterface;
 
@@ -73,12 +73,12 @@ class RmiAdapterForExecutor implements RmiExecutorInterface {
     }
     
     @Override
-    public List<Batch> getAllCommands() throws RemoteException {
+    public List<OldBatch> getAllCommands() throws RemoteException {
         return this.executorModule.getAllBatches();
     }
     
     @Override
-    public List<Batch> getCommand(String commandName) 
+    public List<OldBatch> getCommand(String commandName) 
             throws RemoteException {
         
         return this.executorModule.getBathesByName(commandName);

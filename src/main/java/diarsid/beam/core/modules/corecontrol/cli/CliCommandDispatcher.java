@@ -52,8 +52,6 @@ class CliCommandDispatcher implements CommandDispatcher {
             }    
             case RUN_PROGRAM:
                 break;
-            case RUN_MARKED_PROGRAM:
-                break;
             case CALL_BATCH:
                 break;
             case SEE_WEBPAGE:

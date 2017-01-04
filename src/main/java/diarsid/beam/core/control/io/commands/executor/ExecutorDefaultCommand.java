@@ -17,6 +17,10 @@ public class ExecutorDefaultCommand extends SingleArgumentCommand {
     public ExecutorDefaultCommand(String argument) {
         super(argument);
     }
+    
+    public ExecutorDefaultCommand(String argument, String extended) {
+        super(argument, extended);
+    }
 
     @Override
     public CommandType type() {

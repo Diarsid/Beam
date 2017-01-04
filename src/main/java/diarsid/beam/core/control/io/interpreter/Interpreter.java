@@ -13,7 +13,6 @@ import diarsid.beam.core.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
-import diarsid.beam.core.control.io.commands.executor.RunMarkedProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.control.io.interpreter.recognizers.CreateLocationRecognizer;
@@ -163,11 +162,11 @@ public class Interpreter {
                         new WordRecognizer(
                                 "start").priority(HIGH).pointsTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new RunMarkedProgramCommand(input.currentArg(), "start"))),
+                                                input -> new RunProgramCommand(input.currentArg() + "-start"))),
                         new WordRecognizer(
                                 "stop").priority(HIGH).pointsTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new RunMarkedProgramCommand(input.currentArg(), "stop"))),
+                                                input -> new RunProgramCommand(input.currentArg() + "-stop"))),
                         new WordsRecognizer(
                                 "edit", 
                                 "change", 
