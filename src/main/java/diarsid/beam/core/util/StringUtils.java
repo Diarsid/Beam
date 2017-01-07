@@ -85,8 +85,4 @@ public class StringUtils {
     public static List<String> splitBySpacesToList(String target) {
         return new ArrayList<>(asList(target.split("\\s+")));
     }
-    
-    public static boolean isNumeric(String s) {
-        return s.matches("\\d+");
-    }
 }

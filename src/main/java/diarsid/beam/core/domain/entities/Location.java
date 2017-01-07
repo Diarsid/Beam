@@ -10,11 +10,17 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
+import diarsid.beam.core.control.io.base.ConvertableToVariant;
+import diarsid.beam.core.control.io.base.Variant;
+
 /**
  *
  * @author Diarsid
  */
-public class Location implements Serializable {
+public class Location 
+        implements 
+                ConvertableToVariant,
+                Serializable {
 
     private final String name;
     private final String path;
@@ -34,7 +40,7 @@ public class Location implements Serializable {
 
     @Override
     public String toString() {
-        return "Location[" + this.name + "::" + this.path + "]";
+        return this.name + " :: " + this.path;
     }
     
     /**
@@ -87,5 +93,10 @@ public class Location implements Serializable {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Variant convertToVariant() {
+        return new Variant(this.name);
     }
 }

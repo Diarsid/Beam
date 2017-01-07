@@ -6,13 +6,16 @@
 
 package diarsid.beam.core.modules.corecontrol.cli;
 
+import java.util.Optional;
+
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.control.io.commands.EditEntityCommand;
 import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
-import diarsid.beam.core.modules.domain.keepers.LocationsKeeper;
+import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.modules.domain.LocationsKeeper;
 
 import static diarsid.beam.core.control.io.base.DomainToMessageConversion.toMessage;
 
@@ -32,10 +35,13 @@ public class CliAdapterForLocationsKeeper {
         this.ioEngine = ioEngine;
     }
     
-    void findLocationsAndReport(Initiator initiator, FindEntityCommand command) {
-        this.ioEngine.reportMessage(
-                initiator, 
-                toMessage(this.locationsKeeper.getLocations(initiator, command)));
+    void findLocationAndReport(Initiator initiator, FindEntityCommand command) {
+        Optional<Location> location = this.locationsKeeper.getLocation(initiator, command);
+        if ( location.isPresent() ) {
+            this.ioEngine.reportMessage(initiator, toMessage(location.get()));
+        } else {
+            this.ioEngine.report(initiator, "not found.");
+        }        
     }
     
     void editLocationAndReport(Initiator initiator, EditEntityCommand command) {

@@ -32,11 +32,11 @@ public class Variant implements Serializable {
         return ! this.displayText.isEmpty();
     }
 
-    public String get() {
+    public String getText() {
         return this.text;
     }
 
-    public String getDisplay() {
+    public String getDisplayText() {
         return this.displayText;
     }
 

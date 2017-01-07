@@ -6,7 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.modules.domain.keepers.LocationsKeeper;
+import diarsid.beam.core.modules.domain.LocationsKeeper;
 
 /**
  *

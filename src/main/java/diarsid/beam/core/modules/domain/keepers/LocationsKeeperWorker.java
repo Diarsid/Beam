@@ -8,21 +8,25 @@ package diarsid.beam.core.modules.domain.keepers;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.control.io.base.VariantAnswer;
+import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.control.io.commands.EditEntityCommand;
 import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
-
-import static java.util.Collections.emptyList;
+import diarsid.beam.core.modules.domain.LocationsKeeper;
 
 import static diarsid.beam.core.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.hasWildcard;
+import static diarsid.beam.core.util.CollectionsUtils.containsOne;
+import static diarsid.beam.core.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.util.PathUtils.pathIsDirectory;
 import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 
@@ -38,17 +42,37 @@ public class LocationsKeeperWorker implements LocationsKeeper {
     }
 
     @Override
-    public List<Location> getLocations(Initiator initiator, FindEntityCommand command) {
+    public Optional<Location> getLocation(Initiator initiator, FindEntityCommand command) {
         if ( this.isConsistent(command, initiator) ) {
-            if ( hasWildcard(command.getArg()) ) {
-                return this.dao.getLocationsByNameParts(
-                        initiator, splitByWildcard(command.getArg()));
+            List<Location> locations = this.getLocationsBy(command, initiator);
+            if ( locations.size() > 1 ) {
+                VariantAnswer answer = this.ioEngine.resolveVariants(
+                        initiator, new VariantsQuestion("choose location", locations));
+                if ( answer.isPresent() ) {
+                    return locations
+                            .stream()
+                            .filter(location -> location.getName().equals(answer.get().getText()))
+                            .findFirst();
+                } else {
+                    return Optional.empty();
+                }
+            } else if ( containsOne(locations) ) {
+                return Optional.of(getOne(locations));
             } else {
-                return this.dao.getLocationsByName(
-                        initiator, command.getArg());
+                return Optional.empty();
             }
         } else {
-            return emptyList();
+            return Optional.empty();
+        }
+    }
+
+    private List<Location> getLocationsBy(FindEntityCommand command, Initiator initiator) {
+        if ( hasWildcard(command.getArg()) ) {
+            return this.dao.getLocationsByNameParts(
+                    initiator, splitByWildcard(command.getArg()));
+        } else {
+            return this.dao.getLocationsByName(
+                    initiator, command.getArg());
         }
     }
 
@@ -118,12 +142,32 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public boolean editLocation(Initiator initiator, EditEntityCommand command) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if ( this.isConsistent(initiator, command) ) {
+            switch ( command.getTarget() ) {
+                case TARGET_NAME : {
+                    String newName = this.ioEngine.askForInput(initiator, "enter new name");
+                    return this.dao.editLocationName(initiator, command.getName(), newName);
+                }
+                case TARGET_PATH : {
+                    
+                }
+                default : {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    private boolean isConsistent(Initiator initiator, EditEntityCommand command) {
+        
     }
 
     @Override
     public boolean replaceInPaths(Initiator initiator, String replaceable, String replacement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
+        return this.dao.replaceInPaths(initiator, replaceable, replacement);
     }
 
     @Override

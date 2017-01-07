@@ -49,7 +49,7 @@ public class CoreControlModuleWorker implements CoreControlModule {
             if ( commandLine.equals("ask") ) {
                 VariantAnswer answer = this.ioModule.getInnerIoEngine().resolveVariants(initiator, new VariantsQuestion("choose").with("one").with("two").with("three"));
                 if ( answer.isPresent() ) {
-                    this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.get().get());
+                    this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.get().getText());
                 } else {
                     this.ioModule.getInnerIoEngine().report(initiator, "you have not chosen anything.");
                 }

@@ -132,7 +132,7 @@ class CliCommandDispatcher implements CommandDispatcher {
             case FIND_LOCATION: {
                 this.domainModuleAdapter
                         .getLocationsAdapter()
-                        .findLocationsAndReport(
+                        .findLocationAndReport(
                                 initiator, 
                                 (FindEntityCommand) command);
                 break;

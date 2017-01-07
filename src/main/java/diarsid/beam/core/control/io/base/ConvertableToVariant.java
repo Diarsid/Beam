@@ -3,18 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data;
-
-import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
+package diarsid.beam.core.control.io.base;
 
 /**
  *
  * @author Diarsid
  */
-public interface DataBase {
+public interface ConvertableToVariant {
     
-    JdbcTransactionFactory transactionFactory();
-    
-    void disconnect();
-    
+    Variant convertToVariant();
 }

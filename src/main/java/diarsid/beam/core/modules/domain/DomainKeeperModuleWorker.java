@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.domain;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
-import diarsid.beam.core.modules.domain.keepers.LocationsKeeper;
 import diarsid.beam.core.modules.domain.keepers.LocationsKeeperWorker;
 
 /**

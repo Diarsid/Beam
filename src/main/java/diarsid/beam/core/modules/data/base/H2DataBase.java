@@ -29,4 +29,9 @@ public class H2DataBase implements DataBase {
     public JdbcTransactionFactory transactionFactory() {
         return this.transactionFactory;
     }
+
+    @Override
+    public void disconnect() {
+        this.transactionFactory.close();
+    }
 }

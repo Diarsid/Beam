@@ -32,6 +32,14 @@ public class VariantsQuestion implements Serializable {
         this.variants = new ArrayList<>();
     }
     
+    public VariantsQuestion(String question, List<? extends ConvertableToVariant> variants) {
+        this.question = question;
+        this.variants = variants
+                .stream()
+                .map(convertable -> convertable.convertToVariant())
+                .collect(toList());
+    }
+    
     public VariantsQuestion with(Variant variant) {
         this.variants.add(variant);
         return this;
@@ -60,9 +68,9 @@ public class VariantsQuestion implements Serializable {
                 .stream()
                 .filter(variant -> { 
                     if ( variant.hasDisplayText() ) {
-                        return containsIgnoreCase(variant.getDisplay(), possibleFragment);
+                        return containsIgnoreCase(variant.getDisplayText(), possibleFragment);
                     } else {
-                        return containsIgnoreCase(variant.get(), possibleFragment);
+                        return containsIgnoreCase(variant.getText(), possibleFragment);
                     }
                 })
                 .map(variant -> answerOfVariant(variant))

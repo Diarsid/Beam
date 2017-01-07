@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.daos;
+package diarsid.beam.core.modules.data.daos.sql.h2;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +19,7 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchedCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.modules.data.daos.BeamDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.core.Params;
@@ -40,17 +41,16 @@ import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
-public class H2DaoBatches implements DaoBatches {
+class H2DaoBatches 
+        extends BeamDao 
+        implements DaoBatches {
     
-    private final DataBase dataBase;
-    private final InnerIoEngine ioEngine;
     private final PerRowConversion<String> rowToBatchNameConversion;
     private final PerRowConversion<ArgumentedCommand> rowToCommandConversion;
     private final Function<BatchedCommand, Params> batchedCommandToParams;
     
-    public H2DaoBatches(DataBase dataBase, InnerIoEngine ioEngine) {
-        this.dataBase = dataBase;
-        this.ioEngine = ioEngine;
+    H2DaoBatches(DataBase dataBase, InnerIoEngine ioEngine) {
+        super(dataBase, ioEngine);
         this.rowToBatchNameConversion = (row) -> {
             return (String) row.get("bat_name");
         };
@@ -71,24 +71,12 @@ public class H2DaoBatches implements DaoBatches {
             );
         };
     }
-    
-    private JdbcTransaction getDisposableTransaction() 
-            throws TransactionHandledSQLException {
-        return this.dataBase
-                .transactionFactory()
-                .createDisposableTransaction();
-    }
-    
-    private JdbcTransaction getTransaction() 
-            throws TransactionHandledSQLException {
-        return this.dataBase.transactionFactory().createTransaction();
-    }
 
     @Override
     public List<String> getBatchNamesByName(
             Initiator initiator, String batchName) {
         try {
-            return this.getDisposableTransaction()
+            return super.getDisposableTransaction()
                     .ifTrue( nonNullNonEmpty(batchName) )
                     .doQueryAndStreamVarargParams(
                             "SELECT bat_name " +
@@ -107,7 +95,7 @@ public class H2DaoBatches implements DaoBatches {
     @Override
     public List<String> getBatchNamesByNameParts(Initiator initiator, List<String> batchNameParts) {
         try {
-            return this.getDisposableTransaction()
+            return super.getDisposableTransaction()
                     .ifTrue( nonEmpty(batchNameParts) )
                     .doQueryAndStream(
                             "SELECT bat_name " +
@@ -125,8 +113,17 @@ public class H2DaoBatches implements DaoBatches {
     
     @Override
     public Optional<Batch> getBatchByName(Initiator initiator, String name) {
-        try {
-            List<ArgumentedCommand> commands = this.getDisposableTransaction()
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            boolean batchExists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT bat_name " +
+                            "FROM batches " + 
+                            "WHERE bat_name IS ? ",
+                            name);
+            
+            List<ArgumentedCommand> commands = transact
+                    .ifTrue( batchExists )
                     .doQueryAndStreamVarargParams(
                             "SELECT bat_command_type, " +
                             "       bat_command_original, " +
@@ -152,7 +149,7 @@ public class H2DaoBatches implements DaoBatches {
 
     @Override
     public boolean saveBatch(Initiator initiator, Batch batch) {        
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             boolean nameIsFree = ! transact
                     .doesQueryHaveResultsVarargParams(
@@ -198,7 +195,7 @@ public class H2DaoBatches implements DaoBatches {
 
     @Override
     public boolean removeBatch(Initiator initiator, String batchName) {
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             boolean nameRemoved = transact
                     .doUpdateVarargParams(
@@ -227,7 +224,7 @@ public class H2DaoBatches implements DaoBatches {
 
     @Override
     public boolean editBatchName(Initiator initiator, String batchName, String newName) {
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             
             
@@ -260,7 +257,7 @@ public class H2DaoBatches implements DaoBatches {
     @Override
     public boolean editBatchCommands(
             Initiator initiator, String batchName, List<ArgumentedCommand> newCommands) {
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             if ( newCommands.isEmpty() ) {
                 return false;
@@ -310,7 +307,7 @@ public class H2DaoBatches implements DaoBatches {
     @Override
     public boolean editBatchOneCommand(
             Initiator initiator, String batchName, int commandOrder, ArgumentedCommand newCommand) {
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             int modified = transact
                     .doUpdateVarargParams(
                             "UPDATE batch_commands " +
@@ -340,7 +337,7 @@ public class H2DaoBatches implements DaoBatches {
         try {
             Map<String, List<ArgumentedCommand>> collectedBatches = new HashMap<>();
             
-            this.getDisposableTransaction()
+            super.getDisposableTransaction()
                     .doQuery(
                             "SELECT bat_name, " + 
                             "        bat_command_type, " +

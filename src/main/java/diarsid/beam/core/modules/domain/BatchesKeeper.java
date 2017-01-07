@@ -3,38 +3,36 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.domain.keepers;
+package diarsid.beam.core.modules.domain;
 
 import java.util.List;
 
 import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.control.io.commands.CreateEntityCommand;
 import diarsid.beam.core.control.io.commands.EditEntityCommand;
 import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
-import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.domain.entities.Batch;
 
 /**
  *
  * @author Diarsid
  */
-public interface LocationsKeeper {
+public interface BatchesKeeper {
     
-    List<Location> getLocations(
+    Batch getBatch(
             Initiator initiator, FindEntityCommand command);
     
-    boolean createLocation(
-            Initiator initiator, CreateLocationCommand command);
+    List<Batch> getAllBatches(
+            Initiator initiator);
     
-    boolean removeLocation(
-            Initiator initiator, RemoveEntityCommand command);
+    boolean createBatch(
+            Initiator initiator, CreateEntityCommand command);
     
-    boolean editLocation(
+    boolean editBatch(
             Initiator initiator, EditEntityCommand command);
     
-    boolean replaceInPaths(
-            Initiator initiator, String replaceable, String replacement);
-            
-    List<Location> getAllLocations(
-            Initiator initiator);
+    boolean removeBatch(
+            Initiator initiator, RemoveEntityCommand command);
+    
 }

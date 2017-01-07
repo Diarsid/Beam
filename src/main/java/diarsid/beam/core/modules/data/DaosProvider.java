@@ -5,16 +5,13 @@
  */
 package diarsid.beam.core.modules.data;
 
-import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
-
 /**
  *
  * @author Diarsid
  */
-public interface DataBase {
+public interface DaosProvider {
     
-    JdbcTransactionFactory transactionFactory();
+    DaoLocations createDaoLocations();
     
-    void disconnect();
-    
+    DaoBatches createDaoBatches();
 }

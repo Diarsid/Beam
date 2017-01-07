@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.daos;
+package diarsid.beam.core.modules.data.daos.sql.h2;
+
+import diarsid.beam.core.modules.data.daos.sql.h2.H2DaoBatches;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +28,11 @@ import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.domain.entities.Batch;
+import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 
 import static org.junit.Assert.assertEquals;
@@ -43,6 +45,7 @@ import static diarsid.beam.core.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.control.io.commands.CommandType.SEE_WEBPAGE;
+import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -103,7 +106,7 @@ public class H2DaoBatchesTest {
                             params("workspace", SEE_WEBPAGE.name(),     2, "google", "google"),
                             params("tomcat", RUN_PROGRAM.name(),    0, "mysql_server", "mysql_server"),
                             params("tomcat", RUN_PROGRAM.name(),    1, "tomcat", "tomcat"),
-                            params("tomcat", BATCH_PAUSE.name(),    2, "3 " + SECONDS.name(), "3 " + SECONDS.name()),
+                            params("tomcat", BATCH_PAUSE.name(),    2, "3 SECONDS", "3 SECONDS"),
                             params("tomcat", SEE_WEBPAGE.name(),    3, "tomcat_root", "tomcat_root"),
                             params("open_space", OPEN_PATH.name(),        0, "books/common", "books/common"),
                             params("open_space", OPEN_LOCATION.name(),    1, "projects", "projects"),
@@ -170,6 +173,24 @@ public class H2DaoBatchesTest {
         
         Batch restoredBatch = daoBatches.getBatchByName(initiator, "workspace").get();
         assertEquals(batch, restoredBatch);
+    }
+    
+    @Test
+    public void testGetBatchByName_precise() {
+        
+        Batch restoredBatch = daoBatches.getBatchByName(initiator, "tomcat").get();
+        
+        RunProgramCommand com0run = (RunProgramCommand) restoredBatch.getCommands().get(0).command();
+        RunProgramCommand com1run = (RunProgramCommand) restoredBatch.getCommands().get(1).command();
+        BatchPauseCommand com2pause = (BatchPauseCommand) restoredBatch.getCommands().get(2).command();
+        SeePageCommand com3see = (SeePageCommand) restoredBatch.getCommands().get(3).command();
+        
+        assertEquals("mysql_server", com0run.argument().getOriginal());
+        assertEquals("tomcat", com1run.argument().getOriginal());
+        assertEquals("3 SECONDS", com2pause.stringifyOriginal());
+        assertEquals(3, com2pause.getPauseDuration());
+        assertEquals(SECONDS, com2pause.getTimePeriod());
+        assertEquals("tomcat_root", com3see.page().getOriginal());
     }
 
     /**

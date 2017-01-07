@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoLocations;
 
 /**
@@ -15,4 +16,6 @@ import diarsid.beam.core.modules.data.DaoLocations;
 public interface DataModule extends StoppableBeamModule  {
     
     DaoLocations getDaoLocations();
+    
+    DaoBatches getDaoBatches();
 }

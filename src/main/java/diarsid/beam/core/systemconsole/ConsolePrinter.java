@@ -50,10 +50,10 @@ class ConsolePrinter {
         for (int i = 0; i < question.getVariants().size(); i++) {
             variant = question.getVariants().get(i);
             if ( variant.hasDisplayText() ) {
-                this.writer.write(format("       %d : %s", i + 1, variant.getDisplay()));
+                this.writer.write(format("       %d : %s", i + 1, variant.getDisplayText()));
                 this.writer.newLine();
             } else {
-                this.writer.write(format("       %d : %s", i + 1, variant.get()));
+                this.writer.write(format("       %d : %s", i + 1, variant.getText()));
                 this.writer.newLine();
             }
         }

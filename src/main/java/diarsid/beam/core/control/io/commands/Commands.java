@@ -16,7 +16,7 @@ import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
 
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.valueOf;
-import static diarsid.beam.core.domain.entities.ExecutorPauseCommand.parsePauseCommandFrom;
+import static diarsid.beam.core.domain.entities.BatchPauseCommand.parsePauseCommandFrom;
 
 /**
  *

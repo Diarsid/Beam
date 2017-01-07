@@ -10,6 +10,10 @@ import java.util.List;
 
 import diarsid.beam.core.domain.entities.Location;
 
+import static java.util.stream.Collectors.toList;
+
+import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
+
 /**
  *
  * @author Diarsid
@@ -20,6 +24,14 @@ public class DomainToMessageConversion {
     }
     
     public static Message toMessage(List<Location> locations) {
-        return null;
+        return new TextMessage(INFO, locations
+                .stream()
+                .map(location -> location.toString())
+                .collect(toList())
+        );
+    }
+    
+    public static Message toMessage(Location location) {
+        return new TextMessage(INFO, location.toString());
     }
 }

@@ -17,11 +17,11 @@ import diarsid.jdbc.transactions.JdbcConnectionsSource;
  *
  * @author Diarsid
  */
-public class H2JdbcConnectionsSource implements JdbcConnectionsSource {
+class H2JdbcConnectionsSource implements JdbcConnectionsSource {
     
     private final JdbcConnectionPool conPool;
     
-    public H2JdbcConnectionsSource(String url) {
+    H2JdbcConnectionsSource(String url) {
         String user = "BeamServer";
         String pass = "admin";
         this.conPool = JdbcConnectionPool.create(url, user, pass);
@@ -31,5 +31,10 @@ public class H2JdbcConnectionsSource implements JdbcConnectionsSource {
     @Override
     public Connection getConnection() throws SQLException {
         return this.conPool.getConnection();
+    }
+
+    @Override
+    public void closeSource() {
+        this.conPool.dispose();
     }
 }

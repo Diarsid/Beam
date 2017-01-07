@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
@@ -54,6 +55,13 @@ public class CollectionsUtils {
 
     public static <T> List<T> toUnmodifiableList(T... array) {
         return unmodifiableList(asList(array));
+    }
+    
+    public static <T> List<T> toUnmodifiableList(List<T> list, List<T>... lists) {
+        List<T> joined = new ArrayList<>(list);
+        stream(lists)
+                .forEach(streamedList -> joined.addAll(streamedList));
+        return unmodifiableList(joined);
     }
 
     public static <T> Set<T> toUnmodifiableSet(T[] array) {

@@ -32,7 +32,7 @@ import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcce
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
-import static diarsid.beam.core.util.StringUtils.isNumeric;
+import static diarsid.beam.core.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.util.StringUtils.normalize;
 
 /**

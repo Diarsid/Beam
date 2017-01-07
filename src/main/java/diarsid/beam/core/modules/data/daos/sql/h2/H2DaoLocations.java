@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.daos;
+package diarsid.beam.core.modules.data.daos.sql.h2;
 
 import java.util.List;
 
@@ -13,6 +13,7 @@ import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.modules.data.daos.BeamDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -35,15 +36,14 @@ import static diarsid.beam.core.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
-public class H2DaoLocations implements DaoLocations {
+class H2DaoLocations 
+        extends BeamDao 
+        implements DaoLocations {
     
-    private final DataBase dataBase;                
-    private final InnerIoEngine ioEngine;
     private final PerRowConversion<Location> rowToLocationConversion;
     
-    public H2DaoLocations(DataBase dataBase, InnerIoEngine ioEngine) {
-        this.dataBase = dataBase;
-        this.ioEngine = ioEngine;
+    H2DaoLocations(DataBase dataBase, InnerIoEngine ioEngine) {
+        super(dataBase, ioEngine);
         this.rowToLocationConversion = (row) -> {
             return new Location(
                     (String) row.get("loc_name"),
@@ -51,23 +51,11 @@ public class H2DaoLocations implements DaoLocations {
         };
     }
 
-    private JdbcTransaction getDisposableTransaction() 
-            throws TransactionHandledSQLException {
-        return this.dataBase
-                .transactionFactory()
-                .createDisposableTransaction();
-    }
-
-    private JdbcTransaction getTransaction() 
-            throws TransactionHandledSQLException {
-        return this.dataBase.transactionFactory().createTransaction();
-    }
-
     @Override
     public List<Location> getLocationsByName(
             Initiator initiator, String locationName) {
         try {
-            return this.getDisposableTransaction()
+            return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
@@ -78,7 +66,7 @@ public class H2DaoLocations implements DaoLocations {
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.report(
+            super.ioEngine().report(
                     initiator, format("location search by name '%s' failed.", locationName));
             return emptyList();
         }
@@ -89,7 +77,7 @@ public class H2DaoLocations implements DaoLocations {
             Initiator initiator, List<String> nameParts) {
         
         try {
-            return this.getDisposableTransaction()
+            return super.getDisposableTransaction()
                     .ifTrue( nonEmpty(nameParts) )
                     .doQueryAndStream(
                             "SELECT loc_name, loc_path " +
@@ -101,7 +89,7 @@ public class H2DaoLocations implements DaoLocations {
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.reportMessage(initiator, error(
+            super.ioEngine().reportMessage(initiator, error(
                     "location search by name parts: ", 
                     "   " + join(" + ", nameParts),
                     "failed."));
@@ -113,7 +101,7 @@ public class H2DaoLocations implements DaoLocations {
     public boolean saveNewLocation(
             Initiator initiator, Location location) {
         try {
-            int updated = this.getDisposableTransaction()
+            int updated = super.getDisposableTransaction()
                     .doUpdateVarargParams(
                             "INSERT INTO locations (loc_name, loc_path) " +
                             "VALUES ( ?, ? ) ", 
@@ -121,7 +109,7 @@ public class H2DaoLocations implements DaoLocations {
             return ( updated == 1 );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.reportMessage(initiator, error(
+            super.ioEngine().reportMessage(initiator, error(
                     "Location saving failed:",
                     "   name: " + location.getName(),
                     "   path: " + location.getPath()));
@@ -133,7 +121,7 @@ public class H2DaoLocations implements DaoLocations {
     public boolean removeLocation(
             Initiator initiator, String locationName) {
         try {
-            int removed = this.getDisposableTransaction()
+            int removed = super.getDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM locations " +
                             "WHERE loc_name IS ? ", 
@@ -141,7 +129,7 @@ public class H2DaoLocations implements DaoLocations {
             return ( removed > 0 );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.report(
+            super.ioEngine().report(
                     initiator, format("Location removing by '%s' failed.", locationName));
             return false;
         }
@@ -150,7 +138,7 @@ public class H2DaoLocations implements DaoLocations {
     @Override
     public boolean editLocationPath(
             Initiator initiator, String locationName, String newPath) {
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             int modified = transact
                     .doUpdateVarargParams(
@@ -166,7 +154,7 @@ public class H2DaoLocations implements DaoLocations {
             return ( modified == 1 );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.reportMessage(
+            super.ioEngine().reportMessage(
                     initiator, 
                     error(
                             "Location path changing:", 
@@ -180,7 +168,7 @@ public class H2DaoLocations implements DaoLocations {
     @Override
     public boolean editLocationName(
             Initiator initiator, String locationName, String newName) {
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             int modified = transact
                     .doUpdateVarargParams(
@@ -196,7 +184,7 @@ public class H2DaoLocations implements DaoLocations {
             return ( modified == 1 );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.reportMessage(
+            super.ioEngine().reportMessage(
                     initiator, 
                     error(
                             "Location name changing:", 
@@ -210,7 +198,7 @@ public class H2DaoLocations implements DaoLocations {
     @Override
     public boolean replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
-        try (JdbcTransaction transact = this.getTransaction()) {
+        try (JdbcTransaction transact = super.getTransaction()) {
             
             List<Location> locationsToModify = transact
                     .doQueryAndStreamVarargParams(
@@ -242,7 +230,7 @@ public class H2DaoLocations implements DaoLocations {
             return ( modified > 0 );            
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.reportMessage(
+            super.ioEngine().reportMessage(
                     initiator, 
                     error(
                             "Locations path replacing:", 
@@ -257,7 +245,7 @@ public class H2DaoLocations implements DaoLocations {
     public List<Location> getAllLocations(
             Initiator initiator) {
         try {
-            return this.getDisposableTransaction()
+            return super.getDisposableTransaction()
                     .doQueryAndStream(
                             "SELECT loc_name, loc_path " +
                             "FROM locations", 
@@ -266,7 +254,7 @@ public class H2DaoLocations implements DaoLocations {
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
-            this.ioEngine.report(initiator, "All locations obtaining failed.");
+            super.ioEngine().report(initiator, "All locations obtaining failed.");
             return emptyList();
         }
     }

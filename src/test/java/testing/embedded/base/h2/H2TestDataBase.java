@@ -99,4 +99,9 @@ public class H2TestDataBase implements TestDataBase {
     public JdbcTransactionFactory transactionFactory() {
         return this.jdbcTransactionFactory;
     }
+
+    @Override
+    public void disconnect() {
+        this.jdbcTransactionFactory.close();
+    }
 }

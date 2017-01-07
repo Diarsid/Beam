@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.io.base;
 
+import java.util.List;
+
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 
 /**
@@ -20,6 +22,11 @@ public class TextMessage implements Message {
     public TextMessage(MessageType type, String... text) {
         this.type = type;
         this.text = text;
+    }
+    
+    public TextMessage(MessageType type, List<String> text) {
+        this.type = type;
+        this.text = (String[]) text.toArray();
     }
     
     public TextMessage(Exception exception) {

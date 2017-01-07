@@ -29,4 +29,9 @@ public class H2TestJdbcConnectionsSource implements JdbcConnectionsSource {
     public Connection getConnection() throws SQLException {
         return this.connectionPool.getConnection();
     }
+
+    @Override
+    public void closeSource() {
+        this.connectionPool.dispose();
+    }
 }

@@ -23,11 +23,13 @@ import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.domain.entities.BatchPauseCommand;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import static diarsid.beam.core.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.control.io.commands.CommandType.CREATE_LOCATION;
@@ -60,6 +62,8 @@ import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_PATH;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_PLACE;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_UNDEFINED;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_URL;
+import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
+import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
 
@@ -77,6 +81,29 @@ public class InterpreterTest {
     @BeforeClass
     public static void setUpClass() {
         interpreter = new Interpreter();
+    }
+    
+    
+    @Test
+    public void testInterprete_pause_number_seconds() {
+        Command c = interpreter.interprete("pause 3 sec");
+        assertEquals(BATCH_PAUSE, c.type());
+        
+        BatchPauseCommand c1 = (BatchPauseCommand) c;
+        assertTrue(c1.isValid());
+        assertEquals(3, c1.getPauseDuration());
+        assertEquals(SECONDS, c1.getTimePeriod());
+    }    
+    
+    @Test
+    public void testInterprete_pause_minutes_number() {
+        Command c = interpreter.interprete("pause min 10");
+        assertEquals(BATCH_PAUSE, c.type());
+        
+        BatchPauseCommand c1 = (BatchPauseCommand) c;
+        assertTrue(c1.isValid());
+        assertEquals(10, c1.getPauseDuration());
+        assertEquals(MINUTES, c1.getTimePeriod());
     }
 
     /**

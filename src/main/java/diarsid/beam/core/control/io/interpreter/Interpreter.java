@@ -7,6 +7,7 @@
 package diarsid.beam.core.control.io.interpreter;
 
 import diarsid.beam.core.control.io.commands.Command;
+import diarsid.beam.core.control.io.commands.CreateEntityCommand;
 import diarsid.beam.core.control.io.commands.EmptyCommand;
 import diarsid.beam.core.control.io.commands.ExecutorCommand;
 import diarsid.beam.core.control.io.commands.executor.CallBatchCommand;
@@ -23,6 +24,7 @@ import diarsid.beam.core.control.io.interpreter.recognizers.EditEntityRecognizer
 import diarsid.beam.core.control.io.interpreter.recognizers.InputCorrectnessRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.MultipleArgsRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.OneArgRecognizer;
+import diarsid.beam.core.control.io.interpreter.recognizers.PauseRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.PrefixRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.RelativePathRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.RemoveEntityByArgRecognizer;
@@ -167,6 +169,9 @@ public class Interpreter {
                                 "stop").priority(HIGH).pointsTo(
                                         new SimpleWordRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg() + "-stop"))),
+                        new WordRecognizer(
+                                "pause").priority(HIGH).pointsTo(
+                                        new PauseRecognizer()),
                         new WordsRecognizer(
                                 "edit", 
                                 "change", 
@@ -224,10 +229,10 @@ public class Interpreter {
                                                 "reminder", 
                                                 "rem", 
                                                 "remind").pointsTo(
-                                                        input -> new EmptyCommand(CREATE_REMINDER)),
+                                                        input -> new CreateEntityCommand(CREATE_REMINDER)),
                                         new WordRecognizer(
                                                 "event").pointsTo(
-                                                        input -> new EmptyCommand(CREATE_EVENT)),
+                                                        input -> new CreateEntityCommand(CREATE_EVENT)),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
@@ -249,7 +254,7 @@ public class Interpreter {
                                                 "bat", 
                                                 "batch", 
                                                 "exe").pointsTo(
-                                                        input -> new EmptyCommand(CREATE_BATCH))
+                                                        input -> new CreateEntityCommand(CREATE_BATCH))
                         ),
                         new WordsRecognizer(
                                 "-", 

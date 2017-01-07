@@ -7,57 +7,55 @@
 package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import diarsid.beam.core.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.control.io.commands.CommandType;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.concurrent.TimeUnit.valueOf;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 import static diarsid.beam.core.control.io.commands.CommandType.BATCH_PAUSE;
+import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 
 /**
  *
  * @author Diarsid
  */
-public class ExecutorPauseCommand implements ArgumentedCommand {
+public class BatchPauseCommand implements ArgumentedCommand {
     
-    private static final ExecutorPauseCommand NO_PAUSE;
+    private static final BatchPauseCommand NO_PAUSE;
     static {
-        NO_PAUSE = new ExecutorPauseCommand(0, SECONDS);
+        NO_PAUSE = new BatchPauseCommand(0, SECONDS);
     }
     
     private final int pauseDuration;
-    private final TimeUnit unit;
+    private final TimePeriod getTimePeriod;
     
-    public ExecutorPauseCommand(int pauseDuration, TimeUnit unit) {
+    public BatchPauseCommand(int pauseDuration, TimePeriod unit) {
         this.pauseDuration = pauseDuration;
-        this.unit = unit;
+        this.getTimePeriod = unit;
     }
     
-    public static ExecutorPauseCommand parsePauseCommandFrom(String stringifiedPauseCommand) {
+    public static BatchPauseCommand parsePauseCommandFrom(String stringifiedPauseCommand) {
         String[] pauseData = stringifiedPauseCommand.trim().split(" ");
         if ( pauseData.length != 2 ) {
             return NO_PAUSE;
         } 
         try {
-            return new ExecutorPauseCommand(
+            return new BatchPauseCommand(
                     parseInt(pauseData[0]), 
-                    valueOf(pauseData[1]));
+                    TimePeriod.valueOf(pauseData[1]));
         } catch (Exception e) {
-            getLogger(ExecutorPauseCommand.class).error(
+            getLogger(BatchPauseCommand.class).error(
                     format("String '%s' is not proper pause format.", stringifiedPauseCommand));
             return NO_PAUSE;
         }
     }
     
     private String stringifyPause() {
-        return format("%d %s", this.pauseDuration, this.unit.name());
+        return format("%d %s", this.pauseDuration, this.getTimePeriod.name());
     }
 
     @Override
@@ -70,6 +68,18 @@ public class ExecutorPauseCommand implements ArgumentedCommand {
         return this.stringifyPause();
     }
 
+    public int getPauseDuration() {
+        return this.pauseDuration;
+    }
+
+    public TimePeriod getTimePeriod() {
+        return this.getTimePeriod;
+    }     
+    
+    public boolean isValid() {
+        return this.pauseDuration != 0;
+    }
+
     @Override
     public CommandType type() {
         return BATCH_PAUSE;
@@ -79,7 +89,7 @@ public class ExecutorPauseCommand implements ArgumentedCommand {
     public int hashCode() {
         int hash = 5;
         hash = 11 * hash + this.pauseDuration;
-        hash = 11 * hash + Objects.hashCode(this.unit);
+        hash = 11 * hash + Objects.hashCode(this.getTimePeriod);
         return hash;
     }
 
@@ -94,11 +104,11 @@ public class ExecutorPauseCommand implements ArgumentedCommand {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final ExecutorPauseCommand other = ( ExecutorPauseCommand ) obj;
+        final BatchPauseCommand other = ( BatchPauseCommand ) obj;
         if ( this.pauseDuration != other.pauseDuration ) {
             return false;
         }
-        if ( this.unit != other.unit ) {
+        if ( this.getTimePeriod != other.getTimePeriod ) {
             return false;
         }
         return true;
