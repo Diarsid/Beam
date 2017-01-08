@@ -21,7 +21,9 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     
     public DomainKeeperModuleWorker(
             DataModule dataModule, InnerIoEngine ioEngine) {
-        this.locationsKeeper = new LocationsKeeperWorker(dataModule.getDaoLocations(), ioEngine);
+        CommandConsistencyChecker consistencyChecker = new CommandConsistencyChecker(ioEngine);
+        this.locationsKeeper = new LocationsKeeperWorker(
+                dataModule.getDaoLocations(), ioEngine, consistencyChecker);
     }
 
     @Override

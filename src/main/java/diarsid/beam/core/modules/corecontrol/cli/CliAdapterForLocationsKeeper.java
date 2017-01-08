@@ -36,7 +36,7 @@ public class CliAdapterForLocationsKeeper {
     }
     
     void findLocationAndReport(Initiator initiator, FindEntityCommand command) {
-        Optional<Location> location = this.locationsKeeper.getLocation(initiator, command);
+        Optional<Location> location = this.locationsKeeper.findLocation(initiator, command);
         if ( location.isPresent() ) {
             this.ioEngine.reportMessage(initiator, toMessage(location.get()));
         } else {

@@ -21,7 +21,9 @@ import diarsid.beam.core.domain.entities.Location;
  */
 public interface LocationsKeeper {
     
-    Optional<Location> getLocation(
+    Optional<Location> getLocation(Initiator initiator, String locationNamePattern);
+    
+    Optional<Location> findLocation(
             Initiator initiator, FindEntityCommand command);
     
     boolean createLocation(

@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules.domain;
 
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.commands.CreateEntityCommand;
@@ -20,7 +21,10 @@ import diarsid.beam.core.domain.entities.Batch;
  */
 public interface BatchesKeeper {
     
-    Batch getBatch(
+    Optional<Batch> getBatch(
+            Initiator initiator, String batchNamePattern);
+    
+    Optional<Batch> findBatch(
             Initiator initiator, FindEntityCommand command);
     
     List<Batch> getAllBatches(

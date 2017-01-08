@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.domain.keepers;
 
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
@@ -17,20 +18,31 @@ import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.domain.BatchesKeeper;
+import diarsid.beam.core.modules.domain.CommandConsistencyChecker;
 
 
 public class BatchesKeeperWorker implements BatchesKeeper {
     
     private final DaoBatches dao;
     private final InnerIoEngine ioEngine;
+    private final CommandConsistencyChecker consistencyChecker;
     
-    public BatchesKeeperWorker(DaoBatches daoBatches, InnerIoEngine ioEngine) {
+    public BatchesKeeperWorker(
+            DaoBatches daoBatches, 
+            InnerIoEngine ioEngine,
+            CommandConsistencyChecker consistencyChecker) {
         this.dao = daoBatches;
         this.ioEngine = ioEngine;
+        this.consistencyChecker = consistencyChecker;
     }
 
     @Override
-    public Batch getBatch(Initiator initiator, FindEntityCommand command) {
+    public Optional<Batch> getBatch(Initiator initiator, String batchNamePattern) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Optional<Batch> findBatch(Initiator initiator, FindEntityCommand command) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
