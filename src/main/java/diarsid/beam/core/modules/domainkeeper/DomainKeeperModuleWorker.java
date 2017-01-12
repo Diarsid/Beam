@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.domain;
+package diarsid.beam.core.modules.domainkeeper;
 
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
-import diarsid.beam.core.modules.domain.keepers.LocationsKeeperWorker;
+import diarsid.beam.core.modules.domainkeeper.keepers.LocationsKeeperWorker;
 
 /**
  *
@@ -21,7 +21,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     
     public DomainKeeperModuleWorker(
             DataModule dataModule, InnerIoEngine ioEngine) {
-        CommandConsistencyChecker consistencyChecker = new CommandConsistencyChecker(ioEngine);
+        KeeperDialogHelper consistencyChecker = new KeeperDialogHelper(ioEngine);
         this.locationsKeeper = new LocationsKeeperWorker(
                 dataModule.getDaoLocations(), ioEngine, consistencyChecker);
     }

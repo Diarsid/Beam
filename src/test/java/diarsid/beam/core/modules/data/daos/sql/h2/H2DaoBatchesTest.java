@@ -144,7 +144,7 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testGetBatchNamesByName() {
-        List<String> names = daoBatches.getBatchNamesByName(initiator, "SPAce");
+        List<String> names = daoBatches.getBatchNamesByNamePattern(initiator, "SPAce");
         assertTrue(names.size() == 2);
         assertTrue(names.contains("workspace"));
         assertTrue(names.contains("open_space"));
@@ -155,7 +155,7 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testGetBatchNamesByNameParts() {
-        List<String> names = daoBatches.getBatchNamesByNameParts(initiator, splitByWildcard("w-spa"));
+        List<String> names = daoBatches.getBatchNamesByNamePatternParts(initiator, splitByWildcard("w-spa"));
         assertTrue(names.size() == 1);
         assertTrue(names.contains("workspace"));
     }

@@ -5,14 +5,14 @@
  */
 package diarsid.beam.core.modules;
 
-import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
+import diarsid.beam.core.BeamModule;
+import diarsid.beam.core.control.io.interpreter.Interpreter;
 
 /**
  *
  * @author Diarsid
  */
-public interface DomainKeeperModule extends StoppableBeamModule  {
-    
-    LocationsKeeper getLocationsKeeper();
+public interface InterpreterHolderModule extends BeamModule {
+
+    Interpreter getInterpreter();
 }

@@ -84,7 +84,7 @@ public enum CommandType {
         this.operationType = type;
     }
     
-    public CommandOperationType getOperationType() {
+    public CommandOperationType operationType() {
         return this.operationType;
     }
     

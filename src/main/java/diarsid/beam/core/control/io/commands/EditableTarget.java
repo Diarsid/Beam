@@ -40,6 +40,16 @@ public enum EditableTarget {
                 .orElse(TARGET_UNDEFINED);
     }
     
+    public boolean isOneOf(EditableTarget... possibleTargets) {
+        return stream(possibleTargets)
+                .anyMatch(possibleTarget -> this.equals(possibleTarget));
+    }
+    
+    public boolean isNotOneOf(EditableTarget... possibleTargets) {
+        return stream(possibleTargets)
+                .noneMatch(possibleTarget -> this.equals(possibleTarget));
+    }
+    
     public static EditableTarget argToTarget(String arg) {
         switch ( lower(arg) ) {
             case "name" : {

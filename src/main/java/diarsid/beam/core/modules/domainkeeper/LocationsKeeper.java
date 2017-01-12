@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.domain;
+package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +21,14 @@ import diarsid.beam.core.domain.entities.Location;
  */
 public interface LocationsKeeper {
     
-    Optional<Location> getLocation(Initiator initiator, String locationNamePattern);
+    Optional<Location> getLocationByExactName(Initiator initiator, String exactName);
+    
+    Optional<Location> getLocationByNamePattern(Initiator initiator, String locationNamePattern);
     
     Optional<Location> findLocation(
             Initiator initiator, FindEntityCommand command);
+    
+    List<Location> getLocationsByNamePattern(Initiator initiator, String namePattern);
     
     boolean createLocation(
             Initiator initiator, CreateLocationCommand command);

@@ -18,10 +18,10 @@ import diarsid.beam.core.domain.entities.Batch;
  */
 public interface DaoBatches {
     
-    List<String> getBatchNamesByName(
+    List<String> getBatchNamesByNamePattern(
             Initiator initiator, String batchName);
     
-    List<String> getBatchNamesByNameParts(
+    List<String> getBatchNamesByNamePatternParts(
             Initiator initiator, List<String> batchNameParts);
     
     Optional<Batch> getBatchByName(Initiator initiator, String name);

@@ -15,7 +15,7 @@ import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.domain.LocationsKeeper;
+import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
 import static diarsid.beam.core.control.io.base.DomainToMessageConversion.toMessage;
 

@@ -59,6 +59,12 @@ public class ControlKeys {
                 containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_ARGUMENT_CHARS);
     }
     
+    public static boolean wordIsNotSimple(String word) {
+        return 
+                word.isEmpty() ||
+                containsPathSeparator(word);
+    }
+    
     public static boolean wordIsAcceptableAndSimple(String word) {
         return 
                 ! word.isEmpty() && 

@@ -28,7 +28,7 @@ public class Commands {
     private Commands() {
     }
     
-    public static ArgumentedCommand restoreFrom(
+    public static ArgumentedCommand restoreArgumentedCommandFrom(
             String operationType, 
             String originalArgs, 
             String extendedArgs) {

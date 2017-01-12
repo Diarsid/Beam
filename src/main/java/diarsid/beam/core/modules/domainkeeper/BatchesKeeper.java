@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.domain;
+package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;

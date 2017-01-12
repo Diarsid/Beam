@@ -7,6 +7,7 @@
 package diarsid.beam.core.control.io.commands;
 
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_UNDEFINED;
+import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
 
 
 public class EditEntityCommand extends DoubleStringCommand {
@@ -34,6 +35,18 @@ public class EditEntityCommand extends DoubleStringCommand {
     
     public String getName() {
         return super.getFirst();
+    }
+    
+    public void resetName(String name) {
+        if ( nonNullNonEmpty(name) ) {
+            super.resetFirst(name);
+        }
+    }
+    
+    public void resetTarget(EditableTarget target) {
+        if ( target.isDefined() ) {
+            super.resetSecond(target.name());
+        }        
     }
 
     @Override

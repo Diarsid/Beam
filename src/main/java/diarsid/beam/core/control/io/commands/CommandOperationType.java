@@ -27,7 +27,7 @@ public enum CommandOperationType {
     
     public static void onlyIfCommandHasAppropriateOperationType(
             CommandType command, CommandOperationType operation) {
-        if ( command.getOperationType().isNot(operation) ) {
+        if ( command.operationType().isNot(operation) ) {
             throw new WrongCommandOperationTypeException(
                     command.name() + " is not " + operation.name() + " operation type command.");
         }

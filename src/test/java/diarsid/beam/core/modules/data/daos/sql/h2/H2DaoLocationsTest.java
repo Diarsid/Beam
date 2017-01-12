@@ -7,9 +7,8 @@
 package diarsid.beam.core.modules.data.daos.sql.h2;
 
 
-import diarsid.beam.core.modules.data.daos.sql.h2.H2DaoLocations;
-
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -100,13 +99,20 @@ public class H2DaoLocationsTest {
     public void clearCase() {
         clearTestData();
     }
+    
+    @Test
+    public void testGetLocationsByExactName() {
+        Optional<Location> loc = daoLocations.getLocationByExactName(initiator, "my_projects");
+        assertTrue(loc.isPresent());
+        assertEquals("My_Projects", loc.get().getName());
+    }
 
     /**
      * Test of getLocationsByName method, of class H2DaoLocations.
      */
     @Test
-    public void testGetLocationsByName() {
-        List<Location> locations = daoLocations.getLocationsByName(initiator, "proj");
+    public void testGetLocationsByNamePattern() {
+        List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "proj");
         assertTrue(locations.size() == 3);
         assertTrue(testDataBase.ifAllConnectionsReleased());
     }
@@ -117,17 +123,17 @@ public class H2DaoLocationsTest {
     @Test
     public void testGetLocationsByNameParts() {
         List<Location> j_proj_locations = daoLocations
-                .getLocationsByNameParts(initiator, splitByWildcard("j-proj"));
+                .getLocationsByNamePatternParts(initiator, splitByWildcard("j-proj"));
         assertTrue(j_proj_locations.size() == 3);
         assertTrue(testDataBase.ifAllConnectionsReleased());
         
         List<Location> js_proj_locations = daoLocations
-                .getLocationsByNameParts(initiator, splitByWildcard("js-proj"));
+                .getLocationsByNamePatternParts(initiator, splitByWildcard("js-proj"));
         assertTrue(js_proj_locations.size() == 1);
         assertTrue(testDataBase.ifAllConnectionsReleased());
         
         List<Location> j_pr_oj_cts_locations = daoLocations
-                .getLocationsByNameParts(initiator, splitByWildcard("pr-j-cts-oj"));
+                .getLocationsByNamePatternParts(initiator, splitByWildcard("pr-j-cts-oj"));
         assertTrue(j_pr_oj_cts_locations.size() == 3);
         assertTrue(testDataBase.ifAllConnectionsReleased());
     }
@@ -194,7 +200,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(edited);
         
-        List<Location> locations = daoLocations.getLocationsByName(initiator, "boo");
+        List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "boo");
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(containsOne(locations));
         Location loc = getOne(locations);
@@ -211,7 +217,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(edited);
         
-        List<Location> locations = daoLocations.getLocationsByName(initiator, "boo");
+        List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "boo");
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(containsOne(locations));
         Location loc = getOne(locations);
@@ -223,7 +229,7 @@ public class H2DaoLocationsTest {
      */
     @Test
     public void testReplaceInPaths() {
-        List<Location> locationsBefore = daoLocations.getLocationsByName(initiator, "proj");
+        List<Location> locationsBefore = daoLocations.getLocationsByNamePattern(initiator, "proj");
         assertTrue(testDataBase.ifAllConnectionsReleased());
         locationsBefore
                 .stream()
@@ -233,7 +239,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(replaced);
         
-        List<Location> locationsAfter = daoLocations.getLocationsByName(initiator, "proj");
+        List<Location> locationsAfter = daoLocations.getLocationsByNamePattern(initiator, "proj");
         assertTrue(testDataBase.ifAllConnectionsReleased());
         locationsAfter
                 .stream()

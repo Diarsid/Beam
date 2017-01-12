@@ -7,13 +7,14 @@
 package diarsid.beam.core.modules.data.daos.sql.h2;
 
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine; 
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.core.modules.data.daos.BeamDao;
+import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -33,11 +34,12 @@ import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.replaceIgnoreCase;
+import static diarsid.beam.core.util.StringUtils.lower;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
 class H2DaoLocations 
-        extends BeamDao 
+        extends BeamCommonDao 
         implements DaoLocations {
     
     private final PerRowConversion<Location> rowToLocationConversion;
@@ -52,7 +54,27 @@ class H2DaoLocations
     }
 
     @Override
-    public List<Location> getLocationsByName(
+    public Optional<Location> getLocationByExactName(Initiator initiator, String exactName) {
+        try {
+            return super.getDisposableTransaction()
+                    .doQueryAndStreamVarargParams(
+                            "SELECT loc_name, loc_path " +
+                                    "FROM locations " +
+                                    "WHERE ( LOWER(loc_name) IS ? ) ",
+                            this.rowToLocationConversion,
+                            Location.class,
+                            lower(exactName))
+                    .findFirst();
+        } catch (TransactionHandledSQLException ex) {
+            logError(this.getClass(), ex);
+            super.ioEngine().report(
+                    initiator, format("location search by exact name '%s' failed.", exactName));
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public List<Location> getLocationsByNamePattern(
             Initiator initiator, String locationName) {
         try {
             return super.getDisposableTransaction()
@@ -73,7 +95,7 @@ class H2DaoLocations
     }
 
     @Override
-    public List<Location> getLocationsByNameParts(
+    public List<Location> getLocationsByNamePatternParts(
             Initiator initiator, List<String> nameParts) {
         
         try {

@@ -5,6 +5,7 @@
 package diarsid.beam.core.modules.data;
 
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.domain.entities.Location;
@@ -15,10 +16,12 @@ import diarsid.beam.core.domain.entities.Location;
  */
 public interface DaoLocations {
     
-    List<Location> getLocationsByName(
+    Optional<Location> getLocationByExactName(Initiator initiator, String exactName);
+    
+    List<Location> getLocationsByNamePattern(
             Initiator initiator, String locationName);
     
-    List<Location> getLocationsByNameParts(
+    List<Location> getLocationsByNamePatternParts(
             Initiator initiator, List<String> locationNameParts);
     
     boolean saveNewLocation(

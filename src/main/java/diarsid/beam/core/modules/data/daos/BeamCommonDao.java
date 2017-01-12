@@ -15,12 +15,12 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
  *
  * @author Diarsid
  */
-public abstract class BeamDao {
+public abstract class BeamCommonDao {
     
     private final DataBase dataBase;
     private final InnerIoEngine ioEngine;
     
-    public BeamDao(DataBase dataBase, InnerIoEngine ioEngine) {
+    public BeamCommonDao(DataBase dataBase, InnerIoEngine ioEngine) {
         this.dataBase = dataBase;
         this.ioEngine = ioEngine;
     }    

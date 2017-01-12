@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.domain.keepers;
+package diarsid.beam.core.modules.domainkeeper.keepers;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,20 +17,20 @@ import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.data.DaoBatches;
-import diarsid.beam.core.modules.domain.BatchesKeeper;
-import diarsid.beam.core.modules.domain.CommandConsistencyChecker;
+import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
+import diarsid.beam.core.modules.domainkeeper.KeeperDialogHelper;
 
 
 public class BatchesKeeperWorker implements BatchesKeeper {
     
     private final DaoBatches dao;
     private final InnerIoEngine ioEngine;
-    private final CommandConsistencyChecker consistencyChecker;
+    private final KeeperDialogHelper consistencyChecker;
     
     public BatchesKeeperWorker(
             DaoBatches daoBatches, 
             InnerIoEngine ioEngine,
-            CommandConsistencyChecker consistencyChecker) {
+            KeeperDialogHelper consistencyChecker) {
         this.dao = daoBatches;
         this.ioEngine = ioEngine;
         this.consistencyChecker = consistencyChecker;

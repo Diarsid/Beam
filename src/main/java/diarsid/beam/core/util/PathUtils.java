@@ -37,6 +37,10 @@ public class PathUtils {
     private PathUtils() {
     }
     
+    public static boolean pathIsDirectory(String path) {
+        return Files.exists(Paths.get(path)) && Files.isDirectory(Paths.get(path));
+    }
+    
     public static boolean pathIsDirectory(Path dir) {
         return Files.exists(dir) && Files.isDirectory(dir);
     }
