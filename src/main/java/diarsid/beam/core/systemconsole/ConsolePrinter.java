@@ -10,7 +10,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.Variant;
 
 import static java.lang.String.format;
@@ -43,7 +43,7 @@ class ConsolePrinter {
         this.writer.flush();
     }
 
-    void printQuestionAndVariants(VariantsQuestion question) throws IOException {
+    void printQuestionAndVariants(Question question) throws IOException {
         Variant variant;
         this.writer.write(format("     > %s", question.getQuestion()));
         this.writer.newLine();

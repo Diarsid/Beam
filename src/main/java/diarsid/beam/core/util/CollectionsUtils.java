@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -38,8 +39,12 @@ public class CollectionsUtils {
                 ! c.isEmpty() );
     }
     
-    public static boolean containsOne(Collection c) {
+    public static boolean hasOne(Collection c) {
         return c.size() == 1;
+    }
+    
+    public static boolean hasMany(Collection c) {
+        return c.size() > 1;
     }
     
     public static <T> T getOne(Collection<T> c) {
@@ -77,6 +82,14 @@ public class CollectionsUtils {
             map.get(key).add(value);
         } else {
             map.put(key, arrayListOf(value));
+        }
+    }
+    
+    public static <T> Optional<T> optionalGet(List<T> list, int i) {
+        if ( i > -1 && i < list.size() ) {
+            return Optional.of(list.get(i));
+        } else {
+            return Optional.empty();
         }
     }
 }

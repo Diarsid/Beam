@@ -11,11 +11,11 @@ package diarsid.beam.core.control.io.base;
  */
 public interface InnerIoEngine {
     
-    String askForInput(Initiator initiator, String inputQuestion);
+    String askInput(Initiator initiator, String inputQuestion);
     
-    Choice resolveYesOrNo(Initiator initiator, String yesOrNoQuestion);
+    Choice ask(Initiator initiator, String yesOrNoQuestion);
     
-    VariantAnswer resolveVariants(Initiator initiator, VariantsQuestion question);
+    Answer ask(Initiator initiator, Question question);
     
     void report(Initiator initiator, String string);
     

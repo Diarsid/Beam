@@ -13,12 +13,15 @@ import java.util.Objects;
 import diarsid.beam.core.control.io.base.ConvertableToVariant;
 import diarsid.beam.core.control.io.base.Variant;
 
+import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
+
 /**
  *
  * @author Diarsid
  */
 public class Location 
         implements 
+                NamedEntity, 
                 ConvertableToVariant,
                 Serializable {
 
@@ -30,8 +33,19 @@ public class Location
         this.path = path;
     }    
     
+    @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public Variant convertToVariant(int variantIndex) {
+        return new Variant(this.name, variantIndex);
+    }
+
+    @Override
+    public NamedEntityType getEntityType() {
+        return LOCATION;
     }
 
     public String getPath() {
@@ -93,10 +107,5 @@ public class Location
             return false;
         }
         return true;
-    }
-
-    @Override
-    public Variant convertToVariant() {
-        return new Variant(this.name);
     }
 }

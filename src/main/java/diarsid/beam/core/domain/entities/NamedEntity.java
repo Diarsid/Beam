@@ -3,17 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data;
+package diarsid.beam.core.domain.entities;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaosProvider {
+public interface NamedEntity {
     
-    DaoLocations createDaoLocations();
+    String getName();
     
-    DaoBatches createDaoBatches();
-    
-    DaoNamedEntities createDaoNamedEntities();
+    NamedEntityType getEntityType();
 }

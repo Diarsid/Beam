@@ -19,7 +19,7 @@ public interface OuterIoEngine {
     
     Choice resolveYesOrNo(String yesOrNoQuestion) throws IOException;
     
-    VariantAnswer resolveQuestion(VariantsQuestion question) throws IOException;
+    Answer resolveQuestion(Question question) throws IOException;
     
     void report(String string) throws IOException;
     

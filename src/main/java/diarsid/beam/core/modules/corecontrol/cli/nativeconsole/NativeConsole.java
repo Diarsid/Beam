@@ -12,14 +12,14 @@ import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.VariantAnswer;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
 
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
-import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
+import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 
 /**
  *
@@ -63,7 +63,7 @@ public class NativeConsole
     }
 
     @Override
-    public VariantAnswer resolveQuestion(VariantsQuestion question) {
+    public Answer resolveQuestion(Question question) {
         this.buffer.consoleIsWaitingForAnswer();
         // ...
         return noAnswerFromVariants();

@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.data.daos.sql.h2;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoLocations;
+import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DaosProvider;
 import diarsid.beam.core.modules.data.DataBase;
 
@@ -34,5 +35,10 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoBatches createDaoBatches() {
         return new H2DaoBatches(this.dataBase, this.ioModule.getInnerIoEngine());
+    }
+
+    @Override
+    public DaoNamedEntities createDaoNamedEntities() {
+        return new H2DaoNamedEntities(this.dataBase, this.ioModule.getInnerIoEngine());
     }
 }

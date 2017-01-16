@@ -11,5 +11,5 @@ package diarsid.beam.core.control.io.base;
  */
 public interface ConvertableToVariant {
     
-    Variant convertToVariant();
+    Variant convertToVariant(int variantIndex);
 }

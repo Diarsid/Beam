@@ -54,13 +54,29 @@ class H2DaoLocations
     }
 
     @Override
+    public boolean isNameFree(Initiator initiator, String exactName) {
+        try {
+            return ! super.getDisposableTransaction()
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT loc_name " +
+                            "FROM locations " +
+                            "WHERE LOWER(loc_name) IS ? ",
+                            lower(exactName));
+        } catch (TransactionHandledSQLException ex) {
+            logError(H2DaoLocations.class, ex);
+            super.ioEngine().report(initiator, "is name free request failed.");
+            return false;
+        }
+    }
+
+    @Override
     public Optional<Location> getLocationByExactName(Initiator initiator, String exactName) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             "SELECT loc_name, loc_path " +
-                                    "FROM locations " +
-                                    "WHERE ( LOWER(loc_name) IS ? ) ",
+                            "FROM locations " +
+                            "WHERE ( LOWER(loc_name) IS ? ) ",
                             this.rowToLocationConversion,
                             Location.class,
                             lower(exactName))
@@ -81,7 +97,7 @@ class H2DaoLocations
                     .doQueryAndStreamVarargParams(
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
-                            "WHERE ( LOWER(loc_name) LIKE ? ) ", 
+                            "WHERE LOWER(loc_name) LIKE ?  ", 
                             this.rowToLocationConversion,
                             Location.class, 
                             lowerWildcard(locationName))
@@ -122,13 +138,23 @@ class H2DaoLocations
     @Override
     public boolean saveNewLocation(
             Initiator initiator, Location location) {
-        try {
-            int updated = super.getDisposableTransaction()
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            boolean nameIsFree = ! transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT loc_name " +
+                            "FROM locations " +
+                            "WHERE LOWER(loc_name) IS ? ", 
+                            lower(location.getName()));
+            
+            int updated = transact
+                    .ifTrue( nameIsFree )
                     .doUpdateVarargParams(
                             "INSERT INTO locations (loc_name, loc_path) " +
                             "VALUES ( ?, ? ) ", 
                             location.getName(), location.getPath());
-            return ( updated == 1 );
+            
+            return ( updated == 1 && nameIsFree );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(initiator, error(
@@ -146,8 +172,8 @@ class H2DaoLocations
             int removed = super.getDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM locations " +
-                            "WHERE loc_name IS ? ", 
-                            locationName);
+                            "WHERE LOWER(loc_name) IS ? ", 
+                            lower(locationName));
             return ( removed > 0 );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
@@ -166,8 +192,8 @@ class H2DaoLocations
                     .doUpdateVarargParams(
                             "UPDATE locations " +
                             "SET loc_path = ? " +
-                            "WHERE loc_name IS ? ", 
-                            newPath, locationName);
+                            "WHERE LOWER(loc_name) IS ? ", 
+                            newPath, lower(locationName));
             
             transact
                     .ifTrue( modified != 1 )
@@ -192,12 +218,20 @@ class H2DaoLocations
             Initiator initiator, String locationName, String newName) {
         try (JdbcTransaction transact = super.getTransaction()) {
             
+            boolean nameIsFree = ! transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT loc_name " +
+                            "FROM locations " +
+                            "WHERE LOWER(loc_name) IS ? ", 
+                            lower(newName));
+            
             int modified = transact
+                    .ifTrue( nameIsFree )
                     .doUpdateVarargParams(
                             "UPDATE locations " +
                             "SET loc_name = ? " +
-                            "WHERE loc_name IS ? ", 
-                            newName, locationName);
+                            "WHERE LOWER(loc_name) IS ? ", 
+                            newName, lower(locationName));
             
             transact
                     .ifTrue( modified != 1 )

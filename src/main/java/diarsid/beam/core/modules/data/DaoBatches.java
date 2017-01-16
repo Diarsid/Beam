@@ -18,6 +18,8 @@ import diarsid.beam.core.domain.entities.Batch;
  */
 public interface DaoBatches {
     
+    boolean isNameFree(Initiator initiator, String exactName);
+    
     List<String> getBatchNamesByNamePattern(
             Initiator initiator, String batchName);
     

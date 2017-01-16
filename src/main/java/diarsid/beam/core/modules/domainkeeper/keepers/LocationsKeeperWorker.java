@@ -9,10 +9,9 @@ package diarsid.beam.core.modules.domainkeeper.keepers;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.VariantAnswer;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
 import diarsid.beam.core.control.io.commands.EditEntityCommand;
 import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
@@ -22,16 +21,17 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.domainkeeper.KeeperDialogHelper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
+import static diarsid.beam.core.control.io.base.Question.questionWithEntites;
 import static diarsid.beam.core.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_NAME;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_PATH;
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.hasWildcard;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
-import static diarsid.beam.core.util.CollectionsUtils.containsOne;
 import static diarsid.beam.core.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.util.CollectionsUtils.hasMany;
+import static diarsid.beam.core.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 
 
@@ -39,7 +39,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
     
     private final DaoLocations dao;
     private final InnerIoEngine ioEngine;
-    private final KeeperDialogHelper checker;
+    private final KeeperDialogHelper helper;
     
     public LocationsKeeperWorker(
             DaoLocations dao, 
@@ -47,14 +47,14 @@ public class LocationsKeeperWorker implements LocationsKeeper {
             KeeperDialogHelper consistencyChecker) {
         this.dao = dao;
         this.ioEngine = ioEngine;
-        this.checker = consistencyChecker;
+        this.helper = consistencyChecker;
     }
 
     private Optional<Location> getLocationUsingAnswer(
-            List<Location> locationsToRemove, VariantAnswer answer) {
+            List<Location> locationsToRemove, Answer answer) {
         return locationsToRemove
                 .stream()
-                .filter(location -> location.getName().equals(answer.get().getText()))
+                .filter(location -> location.getName().equals(answer.getText()))
                 .findFirst();
     }
     
@@ -75,7 +75,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public Optional<Location> findLocation(Initiator initiator, FindEntityCommand command) {
-        if ( this.checker.checkFinding(initiator, command, FIND_LOCATION) ) {
+        if ( this.helper.checkFinding(initiator, command, FIND_LOCATION) ) {
             return this.findExactlyOneLocationByPattern(command.getArg(), initiator);
         } else {
             return Optional.empty();
@@ -85,16 +85,20 @@ public class LocationsKeeperWorker implements LocationsKeeper {
     private Optional<Location> findExactlyOneLocationByPattern(
             String locationNamePattern, Initiator initiator) {
         List<Location> locations = this.getMatchingLocationsBy(locationNamePattern, initiator);
-        if ( containsOne(locations) ) {
+        if ( hasOne(locations) ) {
             return Optional.of(getOne(locations));
-        } else if ( locations.size() > 1 ) {
-            VariantAnswer answer = this.ioEngine.resolveVariants(
-                    initiator, new VariantsQuestion("choose location", locations));
-            if ( answer.isPresent() ) {
-                return this.getLocationUsingAnswer(locations, answer);
-            } else {
-                return Optional.empty();
-            }
+        } else if ( hasMany(locations) ) {
+            return this.manageWithManyLocations(initiator, locations);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Location> manageWithManyLocations(Initiator initiator, List<Location> locations) {
+        Answer answer = this.ioEngine.ask(
+                initiator, questionWithEntites("choose location", locations));
+        if ( answer.isGiven() ) {
+            return Optional.of(locations.get(answer.getIndex()));
         } else {
             return Optional.empty();
         }
@@ -113,7 +117,29 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public boolean createLocation(Initiator initiator, CreateLocationCommand command) {
-        if ( this.checker.check(initiator, command) ) {
+        if ( this.helper.check(initiator, command) ) {
+            
+            boolean nameIsNotValidOrFree = true;
+            String alternativeName = "";
+            while ( nameIsNotValidOrFree ) {
+                if ( this.dao.isNameFree(initiator, command.getName()) ) {
+                    nameIsNotValidOrFree = false;
+                } else {
+                    this.ioEngine.report(initiator, "this name is not free!");
+                    alternativeName = this.ioEngine.askInput(initiator, "name");
+                    if ( alternativeName.isEmpty() ) {
+                        return false;
+                    }
+                    alternativeName = this.helper.validateEntityNameInteractively(
+                            initiator, alternativeName);
+                    if ( alternativeName.isEmpty() ) {
+                        return false;
+                    } else {
+                        command.resetName(alternativeName);
+                    }                    
+                }
+            }
+            
             return this.dao.saveNewLocation(
                     initiator, 
                     new Location(
@@ -126,22 +152,21 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public boolean removeLocation(Initiator initiator, RemoveEntityCommand command) {
-        if ( this.checker.checkDeletion(initiator, command, DELETE_LOCATION) ) {
+        if ( this.helper.checkDeletion(initiator, command, DELETE_LOCATION) ) {
             List<Location> locationsToRemove = 
                     this.getMatchingLocationsBy(command.getArg(), initiator);
-            if ( containsOne(locationsToRemove) ) {
+            if ( hasOne(locationsToRemove) ) {
                 return this.dao.removeLocation(initiator, getOne(locationsToRemove).getName());
             } else if ( locationsToRemove.isEmpty() ) {
                 this.ioEngine.report(initiator, "no such locations.");
                 return false;
             } else {
-                VariantAnswer answer = this.ioEngine.resolveVariants(
-                        initiator, new VariantsQuestion("choose location", locationsToRemove));
-                if ( answer.isPresent() ) {
+                Answer answer = this.ioEngine.ask(
+                        initiator, questionWithEntites("choose location", locationsToRemove));
+                if ( answer.isGiven() ) {
                     return this.dao.removeLocation(
                             initiator, 
-                            this.getLocationUsingAnswer(locationsToRemove, answer)
-                                    .get().getName());                    
+                            locationsToRemove.get(answer.getIndex()).getName());                    
                 } else {
                     return false;
                 }
@@ -153,28 +178,28 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public boolean editLocation(Initiator initiator, EditEntityCommand command) {
-        if ( this.checker.checkEdition(
+        if ( this.helper.checkEdition(
                 initiator, command, EDIT_LOCATION, TARGET_NAME, TARGET_PATH) ) {
             Optional<Location> location = this.findExactlyOneLocationByPattern(
                     command.getName(), initiator);
             if ( location.isPresent() ) {
                 switch ( command.getTarget() ) {
                     case TARGET_NAME : {
-                        String newName = this.ioEngine.askForInput(initiator, "new name");
+                        String newName = this.ioEngine.askInput(initiator, "new name");
                         if ( newName.isEmpty() ) {
                             return false;
                         }
-                        newName = this.checker.checkArgumentValidity(
-                                initiator, newName, "new name", ENTITY_NAME);
+                        newName = this.helper.validateEntityNameInteractively(
+                                initiator, newName);
                         return this.dao.editLocationName(
                                 initiator, location.get().getName(), newName);
                     }
                     case TARGET_PATH : {
-                        String newPath = this.ioEngine.askForInput(initiator, "new path");
+                        String newPath = this.ioEngine.askInput(initiator, "new path");
                         if ( newPath.isEmpty() ) {
                             return false;
                         }
-                        newPath = this.checker.checkArgumentValidity(
+                        newPath = this.helper.validateInteractively(
                                 initiator, newPath, "new path", LOCAL_DIRECTORY_PATH);
                         return this.dao.editLocationPath(
                                 initiator, location.get().getName(), newPath);

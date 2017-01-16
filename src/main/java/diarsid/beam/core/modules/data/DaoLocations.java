@@ -16,6 +16,8 @@ import diarsid.beam.core.domain.entities.Location;
  */
 public interface DaoLocations {
     
+    boolean isNameFree(Initiator initiator, String exactName);
+    
     Optional<Location> getLocationByExactName(Initiator initiator, String exactName);
     
     List<Location> getLocationsByNamePattern(

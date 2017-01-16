@@ -15,12 +15,13 @@ import diarsid.beam.core.control.io.commands.ArgumentedCommand;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.control.io.commands.CommandType.CALL_BATCH;
+import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 
 /**
  *
  * @author Diarsid
  */
-public class Batch {
+public class Batch implements NamedEntity {
     
     private final String name;
     private final List<BatchedCommand> commands;
@@ -35,8 +36,14 @@ public class Batch {
                 .collect(toList());
     }
 
+    @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public NamedEntityType getEntityType() {
+        return BATCH;
     }
     
     public int getCommandsQty() {

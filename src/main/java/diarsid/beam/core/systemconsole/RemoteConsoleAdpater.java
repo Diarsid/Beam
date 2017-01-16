@@ -12,12 +12,12 @@ import java.rmi.RemoteException;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.VariantAnswer;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.rmi.RemoteOuterIoEngine;
 
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
-import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
+import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.util.Logs.logError;
 
@@ -66,7 +66,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public VariantAnswer resolveQuestion(VariantsQuestion question) throws RemoteException {
+    public Answer resolveQuestion(Question question) throws RemoteException {
         try {
             return this.console.resolveQuestion(question);
         } catch (IOException e) {

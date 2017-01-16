@@ -21,7 +21,7 @@ import diarsid.beam.core.domain.entities.Batch;
  */
 public interface BatchesKeeper {
     
-    Optional<Batch> getBatch(
+    Optional<Batch> getBatchByNamePattern(
             Initiator initiator, String batchNamePattern);
     
     Optional<Batch> findBatch(

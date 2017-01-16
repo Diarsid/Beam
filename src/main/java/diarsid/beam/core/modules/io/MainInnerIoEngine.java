@@ -16,8 +16,8 @@ import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
 import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.TimeScheduledIo;
-import diarsid.beam.core.control.io.base.VariantAnswer;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.modules.tasks.TimeMessage;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
@@ -25,7 +25,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
-import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
+import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndGet;
 import static diarsid.beam.core.util.Logs.logError;
@@ -54,7 +54,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public Choice resolveYesOrNo(Initiator initiator, String yesOrNoQuestion) {
+    public Choice ask(Initiator initiator, String yesOrNoQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return waitAndGet(() -> {
@@ -72,7 +72,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public VariantAnswer resolveVariants(Initiator initiator, VariantsQuestion question) {
+    public Answer ask(Initiator initiator, Question question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return waitAndGet(() -> {
@@ -90,7 +90,7 @@ public class MainInnerIoEngine
     }
     
     @Override
-    public String askForInput(Initiator initiator, String inputQuestion) {
+    public String askInput(Initiator initiator, String inputQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return waitAndGet(() -> {

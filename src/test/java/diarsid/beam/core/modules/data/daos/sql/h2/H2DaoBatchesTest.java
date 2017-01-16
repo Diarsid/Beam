@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.daos.sql.h2;
 
-import diarsid.beam.core.modules.data.daos.sql.h2.H2DaoBatches;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,6 +135,15 @@ public class H2DaoBatchesTest {
     @After
     public void clearCase() {
         clearTestData();
+    }
+    
+    @Test
+    public void testIsNameFree() {
+        boolean mustBeFree = daoBatches.isNameFree(initiator, "mysql");
+        assertTrue(mustBeFree);
+        
+        boolean notFree = daoBatches.isNameFree(initiator, "WORKspace");
+        assertFalse(notFree);
     }
 
     /**

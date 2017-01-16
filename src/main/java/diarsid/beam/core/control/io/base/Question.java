@@ -9,44 +9,64 @@ package diarsid.beam.core.control.io.base;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.control.io.base.VariantAnswer.answerOfVariant;
-import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
-import static diarsid.beam.core.util.CollectionsUtils.containsOne;
+import static diarsid.beam.core.control.io.base.Answer.answerOfVariant;
+import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.util.CollectionsUtils.hasOne;
 
 /**
  *
  * @author Diarsid
  */
-public class VariantsQuestion implements Serializable {
+public class Question implements Serializable {
     
     private final String question;
     private final List<Variant> variants;
     
-    public VariantsQuestion(String question) {
+    public Question(String question) {
         this.question = question;
         this.variants = new ArrayList<>();
     }
     
-    public VariantsQuestion(String question, List<? extends ConvertableToVariant> variants) {
+    public Question(String question, List<Variant> variants) {
         this.question = question;
-        this.variants = variants
-                .stream()
-                .map(convertable -> convertable.convertToVariant())
-                .collect(toList());
+        this.variants = new ArrayList<>();
     }
     
-    public VariantsQuestion with(Variant variant) {
+    public static Question questionWithEntites(
+            String question, List<? extends ConvertableToVariant> variants) {
+        AtomicInteger indexer = new AtomicInteger(0);
+        return new Question(
+                question, 
+                variants
+                        .stream()
+                        .map(convertable -> convertable.convertToVariant(indexer.getAndIncrement()))
+                        .collect(toList())
+        );
+    }
+    
+    public static Question questionWithStrings(String question, List<String> variants) {
+        AtomicInteger indexer = new AtomicInteger(0);
+        return new Question(
+                question, 
+                variants
+                        .stream()
+                        .map(variantString -> new Variant(variantString, indexer.getAndIncrement()))
+                        .collect(toList()));
+    }
+    
+    public Question with(Variant variant) {
         this.variants.add(variant);
         return this;
     }
     
-    public VariantsQuestion with(String variant) {
-        this.variants.add(new Variant(variant));
+    public Question withVariant(String variant) {
+        this.variants.add(new Variant(variant, this.variants.size()));
         return this;
     }
 
@@ -63,8 +83,8 @@ public class VariantsQuestion implements Serializable {
         return ( 0 < number ) && ( number < (this.variants.size() + 1) );
     }
     
-    public VariantAnswer ifPartOfAnyVariant(String possibleFragment) {
-        List<VariantAnswer> matches = this.variants
+    public Answer ifPartOfAnyVariant(String possibleFragment) {
+        List<Answer> matches = this.variants
                 .stream()
                 .filter(variant -> { 
                     if ( variant.hasDisplayText() ) {
@@ -75,14 +95,14 @@ public class VariantsQuestion implements Serializable {
                 })
                 .map(variant -> answerOfVariant(variant))
                 .collect(toList());
-        if ( containsOne(matches) ) {
+        if ( hasOne(matches) ) {
             return getOne(matches);
         } else {
             return noAnswerFromVariants();
         }
     }
     
-    public VariantAnswer answerWith(int choiceNumber) {
+    public Answer answerWith(int choiceNumber) {
         if ( this.isChoiceInVariantsNaturalRange(choiceNumber) ) {
             return answerOfVariant(this.variants.get(choiceNumber - 1));
         } else {

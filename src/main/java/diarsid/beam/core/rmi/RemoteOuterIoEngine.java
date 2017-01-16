@@ -12,8 +12,8 @@ import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.VariantAnswer;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Question;
 
 /**
  *
@@ -31,7 +31,7 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     Choice resolveYesOrNo(String yesOrNoQuestion) throws RemoteException;
     
     @Override
-    VariantAnswer resolveQuestion(VariantsQuestion question) throws RemoteException;
+    Answer resolveQuestion(Question question) throws RemoteException;
     
     @Override
     void report(String string) throws RemoteException;

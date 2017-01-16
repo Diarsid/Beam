@@ -14,8 +14,8 @@ import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.VariantAnswer;
-import diarsid.beam.core.control.io.base.VariantsQuestion;
+import diarsid.beam.core.control.io.base.Answer;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.util.StringHolder;
@@ -26,7 +26,7 @@ import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
 import static diarsid.beam.core.control.io.base.UserReaction.isRejection;
-import static diarsid.beam.core.control.io.base.VariantAnswer.noAnswerFromVariants;
+import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.findUnacceptableIn;
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
@@ -96,17 +96,17 @@ public class ConsoleController implements OuterIoEngine {
     }
 
     @Override
-    public VariantAnswer resolveQuestion(VariantsQuestion question) throws IOException {
+    public Answer resolveQuestion(Question question) throws IOException {
         this.printer.printQuestionAndVariants(question);
         return this.askForAnswer(question);
     }
 
-    private VariantAnswer askForAnswer(VariantsQuestion question) 
+    private Answer askForAnswer(Question question) 
             throws IOException, NumberFormatException {
         boolean notResolved = true;
         String line = "";
         int chosenVariantIndex = -1;
-        VariantAnswer answer = noAnswerFromVariants();
+        Answer answer = noAnswerFromVariants();
         while ( notResolved ) {
             line = this.reader.readLine();            
             if ( isNumeric(line) ) {
@@ -120,7 +120,7 @@ public class ConsoleController implements OuterIoEngine {
                 }
             } else {
                 answer = question.ifPartOfAnyVariant(line);
-                if ( answer.isPresent() ) {
+                if ( answer.isGiven() ) {
                     notResolved = false;
                 } else if ( isRejection(line) ) {
                     notResolved = false;

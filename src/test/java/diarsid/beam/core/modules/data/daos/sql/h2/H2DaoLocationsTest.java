@@ -31,8 +31,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import static diarsid.beam.core.util.CollectionsUtils.containsOne;
 import static diarsid.beam.core.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -98,6 +98,15 @@ public class H2DaoLocationsTest {
     @After
     public void clearCase() {
         clearTestData();
+    }
+    
+    @Test
+    public void testIsNameFree() {
+        boolean mustBeFree = daoLocations.isNameFree(initiator, "pictures");
+        assertTrue(mustBeFree);
+        
+        boolean notFree = daoLocations.isNameFree(initiator, "BOOKS");
+        assertFalse(notFree);
     }
     
     @Test
@@ -202,7 +211,7 @@ public class H2DaoLocationsTest {
         
         List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "boo");
         assertTrue(testDataBase.ifAllConnectionsReleased());
-        assertTrue(containsOne(locations));
+        assertTrue(hasOne(locations));
         Location loc = getOne(locations);
         assertEquals("books", loc.getName());        
         assertEquals("c:/new/path/for/books", loc.getPath());
@@ -219,7 +228,7 @@ public class H2DaoLocationsTest {
         
         List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "boo");
         assertTrue(testDataBase.ifAllConnectionsReleased());
-        assertTrue(containsOne(locations));
+        assertTrue(hasOne(locations));
         Location loc = getOne(locations);
         assertEquals("my_books", loc.getName());
     }

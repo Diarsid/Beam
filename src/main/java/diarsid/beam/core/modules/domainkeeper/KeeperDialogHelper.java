@@ -40,7 +40,7 @@ public class KeeperDialogHelper {
         this.ioEngine = ioEngine;
     }
     
-    public String checkArgumentValidity(
+    public String validateInteractively(
             Initiator initiator, String argument, String ioRequest, ValidationRule rule) {
         ValidationResult result = applyValidatationRule(argument, rule);
         if ( result.isOk() ) {
@@ -49,7 +49,7 @@ public class KeeperDialogHelper {
             String anotherValue = "";
             while ( result.isFail() ) {
                 this.ioEngine.report(initiator, result.getFailureMessage());
-                anotherValue = this.ioEngine.askForInput(initiator, ioRequest);            
+                anotherValue = this.ioEngine.askInput(initiator, ioRequest);            
                 if ( anotherValue.isEmpty() ) {
                     return "";
                 } 
@@ -59,10 +59,28 @@ public class KeeperDialogHelper {
         }
     } 
 
+    public String validateEntityNameInteractively(Initiator initiator, String argument) {
+        ValidationResult result = applyValidatationRule(argument, ENTITY_NAME);
+        if ( result.isOk() ) {
+            return argument;
+        } else {
+            String anotherValue = "";
+            while ( result.isFail() ) {
+                this.ioEngine.report(initiator, result.getFailureMessage());
+                anotherValue = this.ioEngine.askInput(initiator, "name");            
+                if ( anotherValue.isEmpty() ) {
+                    return "";
+                } 
+                result = applyValidatationRule(argument, ENTITY_NAME);
+            }
+            return anotherValue;
+        }
+    } 
+    
     private boolean processCommandWithEntityName(SingleStringCommand command, Initiator initiator) {
         String name;
         if ( command.hasNoArg() ) {
-            name = this.ioEngine.askForInput(initiator, "name");
+            name = this.ioEngine.askInput(initiator, "name");
             if ( name.isEmpty() ) {
                 return false;
             }
@@ -70,7 +88,7 @@ public class KeeperDialogHelper {
             name = command.getArg();
         } 
         
-        name = this.checkArgumentValidity(initiator, name, "name", ENTITY_NAME);
+        name = this.validateInteractively(initiator, name, "name", ENTITY_NAME);
         if ( name.isEmpty() ) {
             return false;
         } else {
@@ -97,12 +115,12 @@ public class KeeperDialogHelper {
         if ( command.hasName() ) {
             name = command.getName();
         } else {
-            name = this.ioEngine.askForInput(initiator, "name");
+            name = this.ioEngine.askInput(initiator, "name");
             if ( name.isEmpty() ) {
                 return false;
             }
         }
-        name = this.checkArgumentValidity(initiator, name, "name", ENTITY_NAME);
+        name = this.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
             return false;
         } else {
@@ -113,12 +131,12 @@ public class KeeperDialogHelper {
         if ( command.hasPath() ) {
             path = command.getPath();
         } else {
-            path = this.ioEngine.askForInput(initiator, "path");
+            path = this.ioEngine.askInput(initiator, "path");
             if ( path.isEmpty() ) {
                 return false;
             }
         }
-        path = this.checkArgumentValidity(initiator, path, "path", LOCAL_DIRECTORY_PATH);
+        path = this.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH);
         if ( path.isEmpty() ) {
             return false;
         } else {
@@ -142,7 +160,7 @@ public class KeeperDialogHelper {
         
         String name;        
         if ( command.hasName() ) { 
-            name = this.ioEngine.askForInput(initiator, "name");
+            name = this.ioEngine.askInput(initiator, "name");
             if ( name.isEmpty() ) {
                 return false;
             }
@@ -150,7 +168,7 @@ public class KeeperDialogHelper {
             name = command.getName();
         } 
         
-        name = this.checkArgumentValidity(initiator, name, "name", ENTITY_NAME);
+        name = this.validateInteractively(initiator, name, "name", ENTITY_NAME);
         if ( name.isEmpty() ) {
             return false;
         } else {
@@ -161,12 +179,14 @@ public class KeeperDialogHelper {
             EditableTarget target = TARGET_UNDEFINED;
             String targetName;
             while ( target.isNotDefined() ) {
-                targetName = this.ioEngine.askForInput(initiator, "target");
+                targetName = this.ioEngine.askInput(initiator, "target");
                 if ( targetName.isEmpty() ) {
                     return false;
                 }
                 target = argToTarget(targetName);
-                if ( target.isNotOneOf(possibleTargets) ) {
+                if ( target.isNotDefined() ) {
+                    this.ioEngine.report(initiator, "cannot recognize...");
+                } else if ( target.isNotOneOf(possibleTargets) ) {
                     this.ioEngine.report(initiator, "not editable in this context.");
                     target = TARGET_UNDEFINED;
                 }

@@ -17,15 +17,18 @@ public class Variant implements Serializable {
     
     private final String text;
     private final String displayText;
+    private final int variantIndex;
     
-    public Variant(String text) {
+    public Variant(String text, int variantIndex) {
         this.text = text;
         this.displayText = "";
+        this.variantIndex = variantIndex;
     }
     
-    public Variant(String text, String displayText) {
+    public Variant(String text, String displayText, int variantIndex) {
         this.text = text;
         this.displayText = displayText;
+        this.variantIndex = variantIndex;
     }
     
     public boolean hasDisplayText() {
@@ -38,6 +41,10 @@ public class Variant implements Serializable {
 
     public String getDisplayText() {
         return this.displayText;
+    }
+    
+    public int getIndex() {
+        return this.variantIndex;
     }
 
     @Override

@@ -39,6 +39,7 @@ import static diarsid.beam.core.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
+import static diarsid.beam.core.util.StringUtils.lower;
 import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -76,6 +77,22 @@ class H2DaoBatches
         this.entryToBatch = (entry) -> {
             return new Batch(entry.getKey(), entry.getValue());
         };
+    }
+
+    @Override
+    public boolean isNameFree(Initiator initiator, String exactName) {
+        try {
+            return ! super.getDisposableTransaction()
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT bat_name " +
+                            "FROM batches " +
+                            "WHERE LOWER(bat_name) IS ? ",
+                            lower(exactName));
+        } catch (TransactionHandledSQLException ex) {
+            logError(H2DaoBatches.class, ex);
+            super.ioEngine().report(initiator, "is name free request failed.");
+            return false;
+        }
     }
 
     @Override

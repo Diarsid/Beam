@@ -3,6 +3,7 @@ package diarsid.beam.core.domain.entities;
 import java.io.Serializable;
 import java.util.Objects;
 
+import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
 
@@ -16,7 +17,11 @@ import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
  *
  * @author Diarsid
  */
-public class WebPage implements Serializable, Comparable<WebPage> {
+public class WebPage 
+        implements 
+                NamedEntity, 
+                Serializable, 
+                Comparable<WebPage> {
     
     public final static String WEB_NAME_REGEXP = "[a-zA-Z0-9-_\\.>\\s]+";
     
@@ -76,10 +81,16 @@ public class WebPage implements Serializable, Comparable<WebPage> {
                 directory, pageOrder, dirOrder, browser);
     }
 
+    @Override
     public String getName() {
         return this.name;
     }
-
+    
+    @Override
+    public NamedEntityType getEntityType() {
+        return WEBPAGE;
+    }
+    
     public String getShortcuts() {
         return this.shortcuts;
     }
