@@ -9,23 +9,24 @@ package diarsid.beam.core.modules.io;
 import java.io.IOException;
 import java.util.List;
 
+import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Choice;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
+import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.control.io.base.TimeScheduledIo;
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.modules.tasks.TimeMessage;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
+import static diarsid.beam.core.Beam.getSystemInitiator;
+import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
-import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.ConcurrencyUtil.waitAndGet;
 import static diarsid.beam.core.util.Logs.logError;
@@ -46,11 +47,7 @@ public class MainInnerIoEngine
     public MainInnerIoEngine(OuterIoEnginesHolder ioEnginesHolder, Gui gui) {
         this.ioEnginesHolder = ioEnginesHolder;
         this.gui = gui;
-        this.systemInitiator = new Initiator();
-    }
-    
-    Initiator getSystemInitiator() {
-        return this.systemInitiator;
+        this.systemInitiator = getSystemInitiator();
     }
 
     @Override

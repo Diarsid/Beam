@@ -3,7 +3,7 @@
  * author: Diarsid
  */
 
-package diarsid.beam.core.modules.data.base.builder;
+package old.diarsid.beam.core.modules.data.base.builder;
 
 import java.sql.Connection;
 import java.sql.SQLException;

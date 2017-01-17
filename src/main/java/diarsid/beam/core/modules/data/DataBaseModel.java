@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package old.diarsid.beam.core.modules.data.base;
-
-import old.diarsid.beam.core.modules.data.DataBase;
+package diarsid.beam.core.modules.data;
 
 /**
  *
  * @author Diarsid
  */
-public interface TestDataBase extends DataBase {
+public interface DataBaseModel {
     
-    void setupRequiredTable(String tableCreationSQLScript);
 }

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.base;
+package diarsid.beam.core.modules.data.database.sql;
 
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;

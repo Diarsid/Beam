@@ -14,11 +14,13 @@ class DataModuleWorker implements DataModule {
     private final DataBase dataBase;
     private final DaoLocations daoLocations;
     private final DaoBatches daoBatches;
+    private final DaoNamedEntities daoNamedEntities;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
         this.daoLocations = daosProvider.createDaoLocations();
         this.daoBatches = daosProvider.createDaoBatches();
+        this.daoNamedEntities = daosProvider.createDaoNamedEntities();
     }
 
     @Override
@@ -34,5 +36,10 @@ class DataModuleWorker implements DataModule {
     @Override
     public void stopModule() {
         this.dataBase.disconnect();
+    }
+
+    @Override
+    public DaoNamedEntities getDaoNamedEntities() {
+        return this.daoNamedEntities;
     }
 }

@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.control.io.base;
+package diarsid.beam.core.modules.data.database.sql;
 
 /**
  *
  * @author Diarsid
  */
-public interface ConvertableToVariant {
+public interface SqlDataBaseInitializer extends DataBaseInitializer {
     
-    Variant toVariant(int variantIndex);
+    String initializeTableIfNecessaryAndProvideReport(SqlTable table);
 }

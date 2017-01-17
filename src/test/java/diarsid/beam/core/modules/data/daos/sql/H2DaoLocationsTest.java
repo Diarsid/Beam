@@ -4,8 +4,10 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.daos.sql.h2;
+package diarsid.beam.core.modules.data.daos.sql;
 
+
+import diarsid.beam.core.modules.data.daos.sql.H2DaoLocations;
 
 import java.util.List;
 import java.util.Optional;

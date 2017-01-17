@@ -39,7 +39,7 @@ public class Location
     }
 
     @Override
-    public Variant convertToVariant(int variantIndex) {
+    public Variant toVariant(int variantIndex) {
         return new Variant(this.name, variantIndex);
     }
 

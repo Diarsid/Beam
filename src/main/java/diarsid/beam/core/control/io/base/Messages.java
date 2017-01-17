@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.control.io.base;
 
+import java.util.List;
+
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
 
@@ -24,5 +26,13 @@ public class Messages {
     
     public static Message text(String... lines) {
         return new TextMessage(INFO, lines);
+    }
+    
+    public static Message text(List<String> lines) {
+        return new TextMessage(INFO, lines);
+    }
+    
+    public static Message fromException(Exception e) {
+        return new TextMessage(e);
     }
 }

@@ -24,6 +24,7 @@ import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
+import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
 import static diarsid.beam.core.config.Config.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.config.Config.CORE_PORT;
@@ -60,7 +61,7 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
             registry.bind(config.get(CORE_ACCESS_ENDPOINT_NAME), access);
             debug("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
-            this.io.getInnerIoEngine().reportMessageAndExitLater(this.io.getSystemInitiator(), 
+            this.io.getInnerIoEngine().reportMessageAndExitLater(getSystemInitiator(), 
                     new TextMessage(ERROR, 
                             "Export Beam.Server modules failure.",
                             "Program will be closed.")
@@ -81,7 +82,7 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
 //            registry.unbind(config.get(WEB_PAGES_HANDLER_NAME));
         } catch (NotBoundException|RemoteException e) {            
             this.io.getInnerIoEngine()
-                    .reportMessage(this.io.getSystemInitiator(), new TextMessage(e));
+                    .reportMessage(getSystemInitiator(), new TextMessage(e));
         }        
     }
 

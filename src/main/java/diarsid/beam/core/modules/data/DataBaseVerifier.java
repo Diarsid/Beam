@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.control.io.base;
+package diarsid.beam.core.modules.data;
+
+import java.util.List;
 
 /**
  *
  * @author Diarsid
  */
-public interface ConvertableToVariant {
+public interface DataBaseVerifier {
     
-    Variant toVariant(int variantIndex);
+    List<String> verify(DataBase dataBase, DataBaseModel dataBaseModel);
 }

@@ -4,16 +4,16 @@
  */
 package diarsid.beam.core;
 
+import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.util.Logs;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
 import static diarsid.beam.core.util.Logs.log;
-
-import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 
 /**
  *
@@ -23,6 +23,8 @@ import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
 public class Beam {
     
     public static final String CONFIG_FILE = "./../config/config.xml";
+    
+    private static final Initiator SYSTEM_INITIATOR = new Initiator();
     
     /**
      * Java RMI mechanism requires that remote objects that have been exported 
@@ -72,6 +74,10 @@ public class Beam {
             }
         };
         Runtime.getRuntime().addShutdownHook(new Thread(shutdownCallback));        
+    }
+    
+    public static Initiator getSystemInitiator() {
+        return SYSTEM_INITIATOR;
     }
     
     public static void exitBeamCoreNow() {

@@ -11,13 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.control.io.base.Answer.answerOfVariant;
 import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.util.CollectionsUtils.getOne;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsIgnoreCase;
 
 /**
  *
@@ -28,45 +29,71 @@ public class Question implements Serializable {
     private final String question;
     private final List<Variant> variants;
     
-    public Question(String question) {
+    private Question(String question) {
         this.question = question;
         this.variants = new ArrayList<>();
     }
     
-    public Question(String question, List<Variant> variants) {
+    private Question(String question, List<Variant> variants) {
         this.question = question;
         this.variants = new ArrayList<>();
     }
     
-    public static Question questionWithEntites(
-            String question, List<? extends ConvertableToVariant> variants) {
-        AtomicInteger indexer = new AtomicInteger(0);
-        return new Question(
-                question, 
-                variants
-                        .stream()
-                        .map(convertable -> convertable.convertToVariant(indexer.getAndIncrement()))
-                        .collect(toList())
-        );
+    public static Question question(String question) {
+        return new Question(question);
     }
     
-    public static Question questionWithStrings(String question, List<String> variants) {
-        AtomicInteger indexer = new AtomicInteger(0);
-        return new Question(
-                question, 
-                variants
-                        .stream()
-                        .map(variantString -> new Variant(variantString, indexer.getAndIncrement()))
-                        .collect(toList()));
-    }
-    
-    public Question with(Variant variant) {
+    public Question withAnswerVariant(Variant variant) {
         this.variants.add(variant);
         return this;
     }
     
-    public Question withVariant(String variant) {
+    public Question withAnswerString(String variant) {
         this.variants.add(new Variant(variant, this.variants.size()));
+        return this;
+    }
+    
+    public Question withAnswerEntity(ConvertableToVariant convertable) {
+        this.variants.add(convertable.toVariant(this.variants.size()));
+        return this;
+    }
+    
+    public Question withAnswerStrings(List<String> variants) {
+        AtomicInteger indexer = new AtomicInteger(0);
+        this.variants.addAll(variants
+                        .stream()
+                        .map(variantString -> 
+                                new Variant(
+                                        variantString, 
+                                        indexer.getAndIncrement()))
+                        .collect(toList())
+        );
+        return this;
+    }
+    
+    public Question withAnswerStrings(String... variants) {
+        AtomicInteger indexer = new AtomicInteger(0);
+        this.variants.addAll(stream(variants)
+                        .map(variantString -> 
+                                new Variant(
+                                        variantString, 
+                                        indexer.getAndIncrement()))
+                        .collect(toList()));
+        return this;
+    }
+    
+    public Question withAnswerVariants(List<Variant> variants) {
+        this.variants.addAll(variants);
+        return this;
+    }
+    
+    public Question withAnswerEntities(List<? extends ConvertableToVariant> variants) {
+        AtomicInteger indexer = new AtomicInteger(0);
+        this.variants.addAll(variants
+                        .stream()
+                        .map(convertable -> convertable.toVariant(indexer.getAndIncrement()))
+                        .collect(toList())
+        );
         return this;
     }
 

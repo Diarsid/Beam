@@ -21,7 +21,7 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.domainkeeper.KeeperDialogHelper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
-import static diarsid.beam.core.control.io.base.Question.questionWithEntites;
+import static diarsid.beam.core.control.io.base.Question.question;
 import static diarsid.beam.core.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.control.io.commands.CommandType.FIND_LOCATION;
@@ -96,7 +96,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
 
     private Optional<Location> manageWithManyLocations(Initiator initiator, List<Location> locations) {
         Answer answer = this.ioEngine.ask(
-                initiator, questionWithEntites("choose location", locations));
+                initiator, question("choose").withAnswerEntities(locations));
         if ( answer.isGiven() ) {
             return Optional.of(locations.get(answer.getIndex()));
         } else {
@@ -162,7 +162,7 @@ public class LocationsKeeperWorker implements LocationsKeeper {
                 return false;
             } else {
                 Answer answer = this.ioEngine.ask(
-                        initiator, questionWithEntites("choose location", locationsToRemove));
+                        initiator, question("choose").withAnswerEntities(locationsToRemove));
                 if ( answer.isGiven() ) {
                     return this.dao.removeLocation(
                             initiator, 

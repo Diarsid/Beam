@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data;
+package old.diarsid.beam.core.modules.data.base.builder;
 
 
 import old.diarsid.beam.core.modules.data.DataBase;

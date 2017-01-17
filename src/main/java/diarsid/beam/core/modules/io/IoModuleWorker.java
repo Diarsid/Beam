@@ -28,11 +28,6 @@ public class IoModuleWorker implements IoModule {
         this.ioEnginesHolder = ioEnginesHolder;
         this.mainIo = defaultIoEngine;
     }
-    
-    @Override
-    public Initiator getSystemInitiator() {
-        return this.mainIo.getSystemInitiator();
-    }
 
     @Override
     public InnerIoEngine getInnerIoEngine() {

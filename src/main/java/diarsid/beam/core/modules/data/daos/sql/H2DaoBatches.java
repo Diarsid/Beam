@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.daos.sql.h2;
+package diarsid.beam.core.modules.data.daos.sql;
 
 import java.util.HashMap;
 import java.util.List;

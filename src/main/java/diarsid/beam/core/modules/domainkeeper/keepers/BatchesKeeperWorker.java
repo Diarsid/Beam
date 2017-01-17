@@ -27,9 +27,8 @@ import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.KeeperDialogHelper;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.control.io.base.Question.questionWithStrings;
+import static diarsid.beam.core.control.io.base.Question.question;
 import static diarsid.beam.core.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.control.io.commands.CommandType.DELETE_BATCH;
 import static diarsid.beam.core.control.io.commands.CommandType.EDIT_BATCH;
@@ -75,7 +74,7 @@ public class BatchesKeeperWorker implements BatchesKeeper {
 
     private Optional<Batch> manageWithManyBatchNames(Initiator initiator, List<String> foundBatchNames) {
         Answer answer = this.ioEngine.ask(
-                initiator, questionWithStrings("choose batch", foundBatchNames));
+                initiator, question("choose batch").withAnswerStrings(foundBatchNames));
         if ( answer.isGiven() ) {
             return this.dao.getBatchByName(initiator, answer.getText());
         } else {
@@ -233,7 +232,9 @@ public class BatchesKeeperWorker implements BatchesKeeper {
     }
     
     private boolean editBatchCommands(Initiator initiator, Batch batch) {
-        Question question = new Question("edit all commands or just one?").withVariant("one").withVariant("all");
+        Question question = question("edit all commands or just one?")
+                .withAnswerString("one")
+                .withAnswerString("all");
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             if ( answer.is("one") ) {
@@ -247,12 +248,8 @@ public class BatchesKeeperWorker implements BatchesKeeper {
     }
     
     private boolean editBatchOneCommand(Initiator initiator, Batch batch) {
-        Question question = questionWithStrings(
-                "choose command", 
-                batch.getCommands()
-                        .stream()
-                        .map(batchedCommand -> batchedCommand.command().stringifyOriginal())
-                        .collect(toList()));
+        Question question = question("choose command")
+                .withAnswerStrings(batch.stringifyCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             Optional<ArgumentedCommand> newCommand = Optional.empty();
@@ -292,7 +289,7 @@ public class BatchesKeeperWorker implements BatchesKeeper {
                 return this.dao.removeBatch(initiator, getOne(batchNames));
             } else if ( hasMany(batchNames) ) {
                 Answer answer = this.ioEngine.ask(
-                        initiator, questionWithStrings("choose batch", batchNames));
+                        initiator, question("choose batch").withAnswerStrings(batchNames));
                 if ( answer.isGiven() ) {
                     return this.dao.removeBatch(initiator, batchNames.get(answer.getIndex()));
                 } else {

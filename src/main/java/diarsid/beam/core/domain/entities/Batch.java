@@ -53,6 +53,13 @@ public class Batch implements NamedEntity {
     public List<BatchedCommand> getCommands() {
         return this.commands;
     }
+    
+    public List<String> stringifyCommands() {
+        return this.commands
+                        .stream()
+                        .map(batchedCommand -> batchedCommand.command().stringifyOriginal())
+                        .collect(toList());
+    }
 
     @Override
     public int hashCode() {

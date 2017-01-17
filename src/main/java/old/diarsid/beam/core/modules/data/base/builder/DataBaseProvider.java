@@ -4,22 +4,19 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.data.base.builder;
+package old.diarsid.beam.core.modules.data.base.builder;
 
 import java.lang.reflect.Constructor;
 
-import diarsid.beam.core.exceptions.ModuleInitializationException;
-
 import old.diarsid.beam.core.modules.IoInnerModule;
-
 import old.diarsid.beam.core.modules.data.DataBase;
+
+import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.modules.ConfigHolderModule;
 
 import static diarsid.beam.core.config.Config.CORE_DB_LOCATION;
 import static diarsid.beam.core.config.Config.CORE_DB_NAME;
-import static diarsid.beam.core.config.Config.CORE_JDBC_DRIVER;
 import static diarsid.beam.core.config.Config.CORE_JDBC_URL;
-
-import diarsid.beam.core.modules.ConfigHolderModule;
 
 /**
  *
@@ -41,20 +38,8 @@ class DataBaseProvider {
         this.dataBaseClassPackage = dataBaseClassPackage;
     }
 
-    DataBase getDataBase() {        
-        this.loadDriver();
+    DataBase getDataBase() {       
         return this.dataBaseInstantiation();
-    }
-    
-    private void loadDriver() {
-        try {
-            Class.forName(this.config.get(CORE_JDBC_DRIVER));
-        } catch (Exception e) {
-            // If there is any problem during the database driver loading, 
-            // the program can not work further and must be finished.
-            this.handleExceptionAndExit(e, "Data Base Driver loading failure.");
-            throw new ModuleInitializationException();
-        }
     }
     
     private DataBase dataBaseInstantiation() {

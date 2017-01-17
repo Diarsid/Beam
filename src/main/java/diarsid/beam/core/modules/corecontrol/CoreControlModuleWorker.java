@@ -14,6 +14,7 @@ import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.exitBeamCoreNow;
+import static diarsid.beam.core.control.io.base.Question.question;
 import static diarsid.beam.core.util.Logs.debug;
 
 /**
@@ -47,7 +48,11 @@ public class CoreControlModuleWorker implements CoreControlModule {
                 }
             }
             if ( commandLine.equals("ask") ) {
-                Answer answer = this.ioModule.getInnerIoEngine().ask(initiator, new Question("choose").withVariant("one").withVariant("two").withVariant("three"));
+                Question question = question("choose")
+                        .withAnswerStrings("one", "two", "three");
+                Answer answer = this.ioModule
+                        .getInnerIoEngine()
+                        .ask(initiator, question);
                 if ( answer.isGiven() ) {
                     this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.getText());
                 } else {

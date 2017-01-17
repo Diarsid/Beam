@@ -21,8 +21,6 @@ public interface IoModule extends StoppableBeamModule {
     
     TimeScheduledIo getTimeScheduledIo();
     
-    Initiator getSystemInitiator();
-    
     void registerOuterIoEngine(OuterIoEngine ioEngine);
     
     boolean unregisterIoEngine(Initiator initiator);
