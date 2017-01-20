@@ -74,11 +74,11 @@ class H2DaoLocations
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
+                            Location.class,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE ( LOWER(loc_name) IS ? ) ",
                             this.rowToLocationConversion,
-                            Location.class,
                             lower(exactName))
                     .findFirst();
         } catch (TransactionHandledSQLException ex) {
@@ -95,11 +95,11 @@ class H2DaoLocations
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
+                            Location.class, 
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ?  ", 
                             this.rowToLocationConversion,
-                            Location.class, 
                             lowerWildcard(locationName))
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
@@ -118,11 +118,11 @@ class H2DaoLocations
             return super.getDisposableTransaction()
                     .ifTrue( nonEmpty(nameParts) )
                     .doQueryAndStream(
+                            Location.class,                            
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE " + multipleLowerLike("loc_name", nameParts.size(), AND), 
                             this.rowToLocationConversion,
-                            Location.class, 
                             lowerWildcardList(nameParts))                    
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
@@ -258,11 +258,11 @@ class H2DaoLocations
             
             List<Location> locationsToModify = transact
                     .doQueryAndStreamVarargParams(
+                            Location.class,                            
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_path) LIKE ? ", 
                             this.rowToLocationConversion, 
-                            Location.class, 
                             lowerWildcard(replaceable))
                     .collect(toList());            
 
@@ -303,10 +303,10 @@ class H2DaoLocations
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStream(
+                            Location.class,
                             "SELECT loc_name, loc_path " +
                             "FROM locations", 
-                            this.rowToLocationConversion, 
-                            Location.class)
+                            this.rowToLocationConversion)
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);

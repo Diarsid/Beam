@@ -41,7 +41,9 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
             this.dataBase.transactionFactory()
                     .createDisposableTransaction()
                     .useJdbcDirectly(connection -> {
-                        ResultSet rs = connection.getMetaData().getTables(null, null, "%", null);
+                        ResultSet rs = connection
+                                .getMetaData()
+                                .getTables(null, null, "%", null);
                         while ( rs.next() ) {
                             existingNames.add(rs.getString("TABLE_NAME"));
                         }
@@ -68,20 +70,21 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
 
     @Override
     public String initializeTableIfNecessaryAndProvideReport(SqlTable table) {
-        try {    
-            boolean needToCreateTable = this.tableNotFoundInExisting(table);
-            
+        if ( this.tableNotFoundInExisting(table) ) {
+            return this.initializeTableAndGetReport(table);
+        } else {
+            return "";
+        }
+    }
+    
+    private String initializeTableAndGetReport(SqlTable table) {
+        try {
             this.dataBase
                     .transactionFactory()
                     .createDisposableTransaction()
-                    .ifTrue( needToCreateTable )
-                    .doUpdate(table.getSqlCreationScript()) ; 
+                    .doUpdate(table.getSqlCreationScript()); 
             
-            if ( needToCreateTable ) {
-                return format("SQL table '%s' has been created.", table.getName());
-            } else {
-                return "";
-            }
+            return format("SQL table '%s' has been created.", table.getName());
         } catch (TransactionHandledSQLException ex) {
             logError(H2DataBaseInitializer.class, ex);
             this.ioEngine.reportAndExitLater(

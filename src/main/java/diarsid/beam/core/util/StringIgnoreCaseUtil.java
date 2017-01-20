@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.util.StringUtils.lower;
@@ -67,7 +68,7 @@ public class StringIgnoreCaseUtil {
     }
     
     public static boolean containsIgnoreCase(String whereToSearch, String searched) {
-        if ( searched == null || whereToSearch == null ) {
+        if ( isNull(searched) || isNull(whereToSearch) ) {
             return false;
         } else {
             return lower(whereToSearch).contains(lower(searched));
@@ -76,7 +77,7 @@ public class StringIgnoreCaseUtil {
     
     public static boolean containsWordInIgnoreCase(
             Collection<String> whereToSearch, String searched) {
-        if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
+        if ( isNull(whereToSearch) || whereToSearch.isEmpty() || isNull(searched) ) {
             return false;
         } else {
             return whereToSearch.stream()
@@ -88,7 +89,7 @@ public class StringIgnoreCaseUtil {
     
     public static boolean containsSnippetIgnoreCase(
             Collection<String> whereToSearch, String searched) {
-        if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
+        if ( isNull(whereToSearch) || whereToSearch.isEmpty() || isNull(searched) ) {
             return false;
         } else {
             return whereToSearch.stream()
@@ -118,7 +119,7 @@ public class StringIgnoreCaseUtil {
     }
     
     public static int indexOfIgnoreCase(List<String> whereToSearch, String searched) {
-        if ( whereToSearch == null || whereToSearch.isEmpty() || searched == null ) {
+        if ( isNull(whereToSearch) || whereToSearch.isEmpty() || isNull(searched) ) {
             return -1;
         } else {
             Optional<String> optionalElement =  whereToSearch.stream()
@@ -133,7 +134,7 @@ public class StringIgnoreCaseUtil {
     }
     
     public static boolean containsKeyIgnoreCase(Map<String, Object> mapToSearch, String searched) {
-        if ( mapToSearch == null || mapToSearch.isEmpty() || searched == null ) {
+        if ( isNull(mapToSearch) || mapToSearch.isEmpty() || isNull(searched) ) {
             return false;
         } else {
             return mapToSearch.keySet().stream()
@@ -144,7 +145,7 @@ public class StringIgnoreCaseUtil {
     }
     
     public static <T> T getIgnoreCase(Map<String, T> mapToSearch, String keyIgnoreCase) {
-        if ( mapToSearch == null || mapToSearch.isEmpty() || keyIgnoreCase == null ) {
+        if ( isNull(mapToSearch) || mapToSearch.isEmpty() || isNull(keyIgnoreCase) ) {
             return null;
         } else {
             Optional<String> optionalKey = mapToSearch.keySet().stream()

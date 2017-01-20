@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.modules.data.database.sql;
 
+import diarsid.beam.core.modules.data.DataBaseInitializer;
+
 /**
  *
  * @author Diarsid

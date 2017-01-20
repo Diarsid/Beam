@@ -7,9 +7,12 @@
 package diarsid.beam.core.control.io.base;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.Location;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
@@ -33,5 +36,15 @@ public class DomainToMessageConversion {
     
     public static Message toMessage(Location location) {
         return new TextMessage(INFO, location.toString());
+    }
+    
+    public static Message toMessage(Batch batch) {
+        AtomicInteger counter = new AtomicInteger(1);
+        List<String> batchText = batch.stringifyCommands()
+                .stream()
+                .map(command -> format(" %d) %s", counter.getAndIncrement(), command))
+                .collect(toList());
+        batchText.add(batch.getName());
+        return new TextMessage(INFO, batchText);
     }
 }

@@ -22,11 +22,11 @@ public class Pair <K, V> {
         this.v = v;
     }
 
-    public K getFirst() {
+    public K first() {
         return this.k;
     }
 
-    public V getSecond() {
+    public V second() {
         return this.v;
     }
 

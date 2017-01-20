@@ -8,7 +8,9 @@ package diarsid.beam.core.util;
 
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.generate;
@@ -37,6 +39,7 @@ public class SqlUtil {
         }
     }
     
+    
     private SqlUtil() {
     }
     
@@ -52,9 +55,22 @@ public class SqlUtil {
         return "%" + lower(part) + "%";
     }
     
+    public static List<String> lowerWildcardLists(List<String>... parts) {
+        return stream(parts)
+                .flatMap(partsList -> partsList.stream())
+                .map(part -> lowerWildcard(part))
+                .collect(toList());
+    }
+    
     public static List<String> lowerWildcardList(List<String> parts) {
         return parts
                 .stream()
+                .map(part -> lowerWildcard(part))
+                .collect(toList());
+    }
+    
+    public static List<String> lowerWildcardListAnd(List<String> parts, String... additionals) {
+        return Stream.concat(parts.stream(), stream(additionals))
                 .map(part -> lowerWildcard(part))
                 .collect(toList());
     }

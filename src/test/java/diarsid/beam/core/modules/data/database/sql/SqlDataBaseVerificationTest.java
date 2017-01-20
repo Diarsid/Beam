@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.data.database.sql;
 
 import java.util.List;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class SqlDataBaseVerificationTest {
     
     @BeforeClass
     public static void setUpClass() {
-        dataBase = new H2TestDataBase("testBase");
+        dataBase = new H2TestDataBase("data_verification");
         ioEngine = mock(InnerIoEngine.class);
         
         SqlDataBaseModel model = new H2DataBaseModel();
@@ -47,6 +48,11 @@ public class SqlDataBaseVerificationTest {
         List<String> reports = verifier.verify(dataBase, model);   
         reports.stream().forEach(report -> logger.info(report));
         assertEquals(reports.size(), model.getTables().size());
+    }
+    
+    @AfterClass
+    public static void clean() {
+        dataBase.disconnect();
     }
     
     @Test

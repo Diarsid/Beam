@@ -25,7 +25,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.fromString;
 import static diarsid.beam.core.util.Logs.logError;
 import static diarsid.beam.core.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
+import static diarsid.beam.core.util.SqlUtil.lowerWildcardLists;
 import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
 
 
@@ -62,6 +62,7 @@ class H2DaoNamedEntities
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
+                            NamedEntity.class,
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ? " +
@@ -74,7 +75,6 @@ class H2DaoNamedEntities
                             "FROM webpages " +
                             "WHERE LOWER(page_name) LIKE ? ",
                             this.rowToNamedEntityConversion,
-                            NamedEntity.class,
                             lowerWildcard(namePattern), 
                             lowerWildcard(namePattern), 
                             lowerWildcard(namePattern))
@@ -92,7 +92,8 @@ class H2DaoNamedEntities
             Initiator initiator, List<String> namePatternParts) {
         try {
             return super.getDisposableTransaction()
-                    .doQueryAndStreamVarargParams(
+                    .doQueryAndStream(
+                            NamedEntity.class,
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE " + multipleLowerLike("loc_name", namePatternParts.size(), AND) + 
@@ -105,10 +106,10 @@ class H2DaoNamedEntities
                             "FROM webpages " +
                             "WHERE " + multipleLowerLike("page_name", namePatternParts.size(), AND),
                             this.rowToNamedEntityConversion,
-                            NamedEntity.class,
-                            lowerWildcardList(namePatternParts), 
-                            lowerWildcardList(namePatternParts), 
-                            lowerWildcardList(namePatternParts))
+                            lowerWildcardLists(
+                                    namePatternParts, 
+                                    namePatternParts, 
+                                    namePatternParts))
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             logError(H2DaoNamedEntities.class, ex);

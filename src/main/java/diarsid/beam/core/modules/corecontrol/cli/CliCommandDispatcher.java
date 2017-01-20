@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.corecontrol.cli;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.commands.Command;
+import diarsid.beam.core.control.io.commands.CreateEntityCommand;
 import diarsid.beam.core.control.io.commands.EditEntityCommand;
 import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
@@ -51,12 +52,16 @@ class CliCommandDispatcher implements CommandDispatcher {
                 break;
             }    
             case RUN_PROGRAM:
+                
                 break;
             case CALL_BATCH:
+                
                 break;
             case SEE_WEBPAGE:
+                
                 break;
             case EXECUTOR_DEFAULT:
+                
                 break;
             case OPEN_NOTES:
                 break;
@@ -120,10 +125,25 @@ class CliCommandDispatcher implements CommandDispatcher {
             case EDIT_EVENT:
                 break;
             case DELETE_BATCH:
+                this.domainModuleAdapter
+                        .getBatchesAdapter()
+                        .removeBatchAndReport(
+                                initiator, 
+                                (RemoveEntityCommand) command);
                 break;
             case CREATE_BATCH:
+                this.domainModuleAdapter
+                        .getBatchesAdapter()
+                        .createBatchAndReport(
+                                initiator, 
+                                (CreateEntityCommand) command);
                 break;
             case EDIT_BATCH:
+                this.domainModuleAdapter
+                        .getBatchesAdapter()
+                        .editBatchAndReport(
+                                initiator, 
+                                (EditEntityCommand) command);
                 break;
             case LIST_LOCATION:
                 break;
@@ -150,6 +170,11 @@ class CliCommandDispatcher implements CommandDispatcher {
             case FIND_MEM:
                 break;
             case FIND_BATCH:
+                this.domainModuleAdapter
+                        .getBatchesAdapter()
+                        .findBatchAndReport(
+                                initiator, 
+                                (FindEntityCommand) command);
                 break;
             case EXIT : {
                 this.ioModule.unregisterIoEngine(initiator);

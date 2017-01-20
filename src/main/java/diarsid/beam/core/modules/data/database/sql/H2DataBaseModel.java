@@ -41,9 +41,27 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "       PRIMARY KEY (bat_name, bat_command_order) )", 
                 5);
         
-        tables.add(locations);
-        tables.add(batches); 
-        tables.add(batchCommands);
+        SqlTable keyValue = new H2SqlTable(
+                "key_value", 
+                "CREATE TABLE key_value (" +
+                "key    VARCHAR     NOT NULL PRIMARY KEY," +
+                "value  VARCHAR     NOT NULL)", 
+                2);
+        
+        SqlTable commands = new H2SqlTable(
+                "commands", 
+                "CREATE TABLE commands (" +
+                "com_id         INTEGER     NOT NULL PRIMARY KEY," +
+                "com_type       VARCHAR     NOT NULL, " +
+                "com_original   VARCHAR     NOT NULL," +
+                "com_extended   VARCHAR     NOT NULL)", 
+                4);
+        
+        this.tables.add(locations);
+        this.tables.add(batches); 
+        this.tables.add(batchCommands);
+        this.tables.add(keyValue);
+        this.tables.add(commands);
     }
 
     @Override

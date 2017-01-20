@@ -16,4 +16,8 @@ public interface DaosProvider {
     DaoBatches createDaoBatches();
     
     DaoNamedEntities createDaoNamedEntities();
+    
+    DaoCommands createDaoCommands();
+    
+    DaoKeyValueStorage createDaoKeyValueStorage();
 }

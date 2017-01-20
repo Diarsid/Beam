@@ -15,12 +15,16 @@ class DataModuleWorker implements DataModule {
     private final DaoLocations daoLocations;
     private final DaoBatches daoBatches;
     private final DaoNamedEntities daoNamedEntities;
+    private final DaoCommands daoCommands;
+    private final DaoKeyValueStorage daoKeyValueStorage;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
         this.daoLocations = daosProvider.createDaoLocations();
         this.daoBatches = daosProvider.createDaoBatches();
         this.daoNamedEntities = daosProvider.createDaoNamedEntities();
+        this.daoCommands = daosProvider.createDaoCommands();
+        this.daoKeyValueStorage = daosProvider.createDaoKeyValueStorage();
     }
 
     @Override
@@ -41,5 +45,15 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoNamedEntities getDaoNamedEntities() {
         return this.daoNamedEntities;
+    }
+
+    @Override
+    public DaoCommands getDaoCommands() {
+        return this.daoCommands;
+    }
+
+    @Override
+    public DaoKeyValueStorage getDaoKeyValueStorage() {
+        return this.daoKeyValueStorage;
     }
 }

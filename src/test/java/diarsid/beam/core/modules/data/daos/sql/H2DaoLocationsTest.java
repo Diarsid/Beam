@@ -7,12 +7,11 @@
 package diarsid.beam.core.modules.data.daos.sql;
 
 
-import diarsid.beam.core.modules.data.daos.sql.H2DaoLocations;
-
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,12 +55,17 @@ public class H2DaoLocationsTest {
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
         initiator = new Initiator();
-        testDataBase = new H2TestDataBase("testBase");
+        testDataBase = new H2TestDataBase("locations_test");
         daoLocations = new H2DaoLocations(testDataBase, ioEngine);
         testDataBase.setupRequiredTable(
                 "CREATE TABLE locations (" +
                 "loc_name   VARCHAR(300)    NOT NULL PRIMARY KEY," +
                 "loc_path   VARCHAR(300)    NOT NULL)");
+    }
+    
+    @AfterClass
+    public static void clean() {
+        testDataBase.disconnect();
     }
     
     private static void setupTestData() {

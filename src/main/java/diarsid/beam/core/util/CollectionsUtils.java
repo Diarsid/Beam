@@ -19,6 +19,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -75,6 +76,12 @@ public class CollectionsUtils {
     
     public static <T> List<T> arrayListOf(T... t) {
         return new ArrayList<>(asList(t));
+    }
+    
+    public static <T> List<T> joinLists(List<T>... lists) {
+        return stream(lists)
+                .flatMap(list -> list.stream())
+                .collect(toList());
     }
     
     public static <K, V> void mergeInMapWithArrayLists(Map<K, List<V>> map, K key, V value) {

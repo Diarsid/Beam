@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
 /**
@@ -15,4 +16,6 @@ import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 public interface DomainKeeperModule extends StoppableBeamModule  {
     
     LocationsKeeper getLocationsKeeper();
+    
+    BatchesKeeper getBatchesKeeper();
 }

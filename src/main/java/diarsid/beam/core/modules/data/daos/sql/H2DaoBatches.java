@@ -102,11 +102,11 @@ class H2DaoBatches
             return super.getDisposableTransaction()
                     .ifTrue( nonNullNonEmpty(batchName) )
                     .doQueryAndStreamVarargParams(
+                            String.class,
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE LOWER(bat_name) LIKE ? ",
                             this.rowToBatchNameConversion,
-                            String.class,
                             lowerWildcard(batchName))
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
@@ -123,11 +123,11 @@ class H2DaoBatches
             return super.getDisposableTransaction()
                     .ifTrue( nonEmpty(batchNameParts) )
                     .doQueryAndStream(
+                            String.class,
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE " + multipleLowerLike("bat_name", batchNameParts.size(), AND),
                             this.rowToBatchNameConversion,
-                            String.class,
                             lowerWildcardList(batchNameParts))
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
@@ -154,6 +154,7 @@ class H2DaoBatches
             List<ArgumentedCommand> commands = transact
                     .ifTrue( batchExists )
                     .doQueryAndStreamVarargParams(
+                            ArgumentedCommand.class,
                             "SELECT bat_command_type, " +
                             "       bat_command_original, " +
                             "       bat_command_extended " +
@@ -161,7 +162,6 @@ class H2DaoBatches
                             "WHERE bat_name IS ? " +
                             "ORDER BY bat_command_order" ,
                             this.rowToCommandConversion,
-                            ArgumentedCommand.class,
                             name)
                     .collect(toList());
             

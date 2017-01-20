@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.domainkeeper.keepers;
+package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +18,6 @@ import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
-import diarsid.beam.core.modules.domainkeeper.KeeperDialogHelper;
-import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
 import static diarsid.beam.core.control.io.base.Question.question;
 import static diarsid.beam.core.control.io.commands.CommandType.DELETE_LOCATION;
@@ -35,13 +33,13 @@ import static diarsid.beam.core.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.util.StringUtils.splitByWildcard;
 
 
-public class LocationsKeeperWorker implements LocationsKeeper {
+class LocationsKeeperWorker implements LocationsKeeper {
     
     private final DaoLocations dao;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     
-    public LocationsKeeperWorker(
+    LocationsKeeperWorker(
             DaoLocations dao, 
             InnerIoEngine ioEngine, 
             KeeperDialogHelper consistencyChecker) {

@@ -16,15 +16,23 @@ import diarsid.beam.core.modules.DomainKeeperModule;
 public class DomainModuleToCliAdapter {
     
     private final CliAdapterForLocationsKeeper locationsKeeperAdapter;
+    private final CliAdapterForBatchesKeeper batchesKeeperAdapter;
     
     public DomainModuleToCliAdapter(
             DomainKeeperModule domainModule, InnerIoEngine ioEngine) {
         this.locationsKeeperAdapter = 
                 new CliAdapterForLocationsKeeper(
                         domainModule.getLocationsKeeper(), ioEngine);
+        this.batchesKeeperAdapter = 
+                new CliAdapterForBatchesKeeper(
+                        domainModule.getBatchesKeeper(), ioEngine);
     }
     
     CliAdapterForLocationsKeeper getLocationsAdapter() {
         return this.locationsKeeperAdapter;
+    }
+    
+    CliAdapterForBatchesKeeper getBatchesAdapter() {
+        return this.batchesKeeperAdapter;
     }
 }

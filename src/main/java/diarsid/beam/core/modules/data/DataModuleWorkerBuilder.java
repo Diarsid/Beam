@@ -14,7 +14,6 @@ import diarsid.beam.core.modules.ConfigHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.daos.sql.H2DaosProvider;
-import diarsid.beam.core.modules.data.database.sql.DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBase;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;

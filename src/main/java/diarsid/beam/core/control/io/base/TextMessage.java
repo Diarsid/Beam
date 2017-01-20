@@ -34,6 +34,7 @@ public class TextMessage implements Message {
         this.text = new String[] {exception.getMessage()};
     }
 
+    @Override
     public MessageType getType() {
         return this.type;
     }
