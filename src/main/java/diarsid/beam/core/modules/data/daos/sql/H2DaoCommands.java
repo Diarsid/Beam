@@ -29,7 +29,6 @@ import static diarsid.beam.core.control.io.commands.Commands.restoreArgumentedCo
 import static diarsid.beam.core.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcardListAnd;
 import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
 import static diarsid.beam.core.util.StringUtils.lower;
 
@@ -153,6 +152,8 @@ class H2DaoCommands
     public List<ArgumentedCommand> fullSearchByOriginalPatternPartsOfType(
             Initiator initiator, List<String> patternParts, CommandType type) {
         try {
+            List<String> params = lowerWildcardList(patternParts);
+            params.add(type.name());
             return super.getDisposableTransaction()
                     .doQueryAndStream(
                             ArgumentedCommand.class,
@@ -162,7 +163,7 @@ class H2DaoCommands
                                     multipleLowerLike("com_original", patternParts.size(), AND) + 
                                     " ) AND ( com_type IS ? ) ",
                             this.rowToCommandConversion,
-                            lowerWildcardListAnd(patternParts, type.name()))
+                            params)
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             
@@ -231,6 +232,8 @@ class H2DaoCommands
     public List<ArgumentedCommand> fullSearchByExtendedPatternPartsOfType(
             Initiator initiator, List<String> patternParts, CommandType type) {
         try {
+            List<String> params = lowerWildcardList(patternParts);
+            params.add(type.name());
             return super.getDisposableTransaction()
                     .doQueryAndStream(
                             ArgumentedCommand.class,
@@ -240,7 +243,7 @@ class H2DaoCommands
                                     multipleLowerLike("com_extended", patternParts.size(), AND) + 
                                     " ) AND ( com_type IS ? ) ",
                             this.rowToCommandConversion,
-                            lowerWildcardListAnd(patternParts, type.name()))
+                            params)
                     .collect(toList());
         } catch (TransactionHandledSQLException ex) {
             

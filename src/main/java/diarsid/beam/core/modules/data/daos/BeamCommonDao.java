@@ -34,7 +34,9 @@ public abstract class BeamCommonDao {
     
     protected JdbcTransaction getTransaction() 
             throws TransactionHandledSQLException {
-        return this.dataBase.transactionFactory().createTransaction();
+        return this.dataBase
+                .transactionFactory()
+                .createTransaction();
     }
     
     protected InnerIoEngine ioEngine() {
