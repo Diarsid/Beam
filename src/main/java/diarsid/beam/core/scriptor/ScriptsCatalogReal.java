@@ -9,13 +9,19 @@ package diarsid.beam.core.scriptor;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.config.Configuration;
+
 /**
  *
  * @author Diarsid
  */
-class ScriptsCatalogReal implements ScriptsCatalog {
+public class ScriptsCatalogReal implements ScriptsCatalog {
     
-    ScriptsCatalogReal(String path) {
+    ScriptsCatalogReal(Configuration configuration, String path) {
+    }
+    
+    public static ScriptsCatalog getScriptsCatalog(Configuration configuration) {
+        return new ScriptsCatalogReal(configuration, "./");
     }
     
     @Override
@@ -31,5 +37,10 @@ class ScriptsCatalogReal implements ScriptsCatalog {
     @Override
     public Optional<Script> getScriptByName() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void rewriteScripts() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

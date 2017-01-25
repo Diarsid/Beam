@@ -6,15 +6,12 @@
 
 package diarsid.beam.core.modules.config;
 
-import java.io.File;
-
-import diarsid.beam.core.config.ConfigFileReader;
 import diarsid.beam.core.config.Configuration;
 import diarsid.beam.core.modules.ConfigHolderModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.Beam.CONFIG_FILE;
+import static diarsid.beam.core.config.Configuration.readConfiguration;
 
 /**
  * ConfigHolderModule builder.
@@ -30,9 +27,7 @@ public class ConfigHolderModuleWorkerBuilder implements GemModuleBuilder<ConfigH
     
     @Override
     public ConfigHolderModule buildModule() {        
-        File configXML = new File(CONFIG_FILE);
-        ConfigFileReader configReader = new ConfigFileReader();
-        Configuration configuration = configReader.readConfigurationFile(configXML);
+        Configuration configuration = readConfiguration();
         ConfigHolderModule configModule = new ConfigHolderModuleWorker(configuration);
         return configModule;
     }

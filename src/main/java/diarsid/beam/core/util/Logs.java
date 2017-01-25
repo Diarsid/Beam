@@ -15,20 +15,46 @@ import org.slf4j.LoggerFactory;
  */
 public class Logs {
     
-    private final static Logger DEBUGGER;    
+    private static Logger fileDebugger; 
+    private static Logger consoleDebugger; 
+    private static boolean useFileDebugging;
+    private static boolean useConsoleDebugging;
+    private static boolean useConsoleLogging;
+    
     static {
-        DEBUGGER = LoggerFactory.getLogger("debugger");
+        useConsoleLogging = true;
+        useConsoleDebugging = true;
+        useFileDebugging = true;
+        fileDebugger = LoggerFactory.getLogger("fileDebugger");
+        consoleDebugger = LoggerFactory.getLogger("consoleDebugger");
     }
     
     private Logs() {
     }
     
+    public static void disableFileDebugging() {
+        useFileDebugging = false;
+    }
+    
+    public static void disableConsoleDebugging() {
+        useConsoleDebugging = false;
+    }
+    
     public static void debug(String log) {
-        DEBUGGER.debug(log); 
+        if ( useConsoleDebugging ) {
+            consoleDebugger.debug(log);
+        }
+        if ( useFileDebugging ) {
+            fileDebugger.debug(log); 
+        }
     }
     
     public static void log(Class clazz, String log) {
         LoggerFactory.getLogger(clazz).info(log);
+    }
+    
+    public static void warn(Class clazz, String warning) {
+        LoggerFactory.getLogger(clazz).warn(warning);
     }
     
     public static void logError(Class clazz, String log, String... description) {
@@ -37,6 +63,10 @@ public class Logs {
         for (String s : description) {
             l.error(s);
         }
+    }
+    
+    public static void logError(Class clazz, String log) {
+        LoggerFactory.getLogger(clazz).error(log); 
     }
     
     public static void logError(Class clazz, Throwable e) {

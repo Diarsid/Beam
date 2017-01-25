@@ -6,7 +6,10 @@
 
 package diarsid.beam.core.config;
 
+import java.io.File;
 import java.util.Map;
+
+import static diarsid.beam.core.Beam.CONFIG_FILE;
 
 /**
  *
@@ -18,6 +21,12 @@ public class Configuration {
     
     public Configuration(Map<Config, String> configs) {
         this.configs = configs;
+    }
+    
+    public static Configuration readConfiguration() {
+        File configXML = new File(CONFIG_FILE);
+        ConfigFileReader configReader = new ConfigFileReader();
+        return configReader.readConfigurationFile(configXML);
     }
     
     public String get(Config config) {

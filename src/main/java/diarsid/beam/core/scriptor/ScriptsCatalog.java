@@ -18,5 +18,7 @@ public interface ScriptsCatalog {
 
     Optional<Script> getScriptByName();
 
-    String getCatalogPath();    
+    String getCatalogPath();
+
+    void rewriteScripts();
 }
