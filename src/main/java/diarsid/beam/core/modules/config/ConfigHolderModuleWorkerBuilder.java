@@ -11,7 +11,7 @@ import diarsid.beam.core.modules.ConfigHolderModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.config.Configuration.readConfiguration;
+import static diarsid.beam.core.config.Configuration.getConfiguration;
 
 /**
  * ConfigHolderModule builder.
@@ -27,7 +27,7 @@ public class ConfigHolderModuleWorkerBuilder implements GemModuleBuilder<ConfigH
     
     @Override
     public ConfigHolderModule buildModule() {        
-        Configuration configuration = readConfiguration();
+        Configuration configuration = getConfiguration();
         ConfigHolderModule configModule = new ConfigHolderModuleWorker(configuration);
         return configModule;
     }

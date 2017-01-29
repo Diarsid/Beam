@@ -17,16 +17,22 @@ import static diarsid.beam.core.Beam.CONFIG_FILE;
  */
 public class Configuration {
     
+    private static final Configuration CONFIGURATION;
+    
+    static {
+        File configXML = new File(CONFIG_FILE);
+        ConfigFileReader configReader = new ConfigFileReader();
+        CONFIGURATION = configReader.readConfigurationFile(configXML);
+    }
+    
     private final Map<Config, String> configs;
     
     public Configuration(Map<Config, String> configs) {
         this.configs = configs;
     }
     
-    public static Configuration readConfiguration() {
-        File configXML = new File(CONFIG_FILE);
-        ConfigFileReader configReader = new ConfigFileReader();
-        return configReader.readConfigurationFile(configXML);
+    public static Configuration getConfiguration() {
+        return CONFIGURATION;
     }
     
     public String get(Config config) {

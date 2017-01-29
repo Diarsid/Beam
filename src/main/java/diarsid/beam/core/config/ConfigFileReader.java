@@ -23,9 +23,9 @@ import static diarsid.beam.core.util.classloading.CustomClassLoader.getCustomLoa
  *
  * @author Diarsid
  */
-public class ConfigFileReader {
+class ConfigFileReader {
     
-    public ConfigFileReader() {
+    ConfigFileReader() {
     }
     
     public Configuration readConfigurationFile(File configFile) {

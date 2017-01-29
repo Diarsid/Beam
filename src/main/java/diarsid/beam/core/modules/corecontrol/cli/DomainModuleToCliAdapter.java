@@ -17,6 +17,7 @@ public class DomainModuleToCliAdapter {
     
     private final CliAdapterForLocationsKeeper locationsKeeperAdapter;
     private final CliAdapterForBatchesKeeper batchesKeeperAdapter;
+    private final CliAdapterForProgramsKeeper programsKeeperAdapter;
     
     public DomainModuleToCliAdapter(
             DomainKeeperModule domainModule, InnerIoEngine ioEngine) {
@@ -26,6 +27,10 @@ public class DomainModuleToCliAdapter {
         this.batchesKeeperAdapter = 
                 new CliAdapterForBatchesKeeper(
                         domainModule.getBatchesKeeper(), ioEngine);
+        this.programsKeeperAdapter = 
+                new CliAdapterForProgramsKeeper(
+                        domainModule.getProgramsKeeper(), ioEngine);
+        
     }
     
     CliAdapterForLocationsKeeper getLocationsAdapter() {
@@ -34,5 +39,9 @@ public class DomainModuleToCliAdapter {
     
     CliAdapterForBatchesKeeper getBatchesAdapter() {
         return this.batchesKeeperAdapter;
+    }
+    
+    CliAdapterForProgramsKeeper getProgramsAdapter() {
+        return this.programsKeeperAdapter;
     }
 }

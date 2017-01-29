@@ -157,6 +157,13 @@ class CliCommandDispatcher implements CommandDispatcher {
                                 (FindEntityCommand) command);
                 break;
             }
+            case FIND_PROGRAM : {
+                this.domainModuleAdapter
+                        .getProgramsAdapter()
+                        .findProgramAndReport(
+                                initiator, 
+                                (FindEntityCommand) command);
+            }
             case FIND_TASK:
                 break;
             case FIND_EVENT:

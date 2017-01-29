@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.domain.Attribute;
+import diarsid.beam.core.domain.entities.Attribute;
 
 /**
  *

@@ -16,16 +16,20 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 import diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache;
 import diarsid.beam.core.modules.executor.context.ExecutorContextWorker;
 import diarsid.beam.core.modules.executor.os.OSProvider;
-import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
-import diarsid.beam.core.modules.executor.os.search.FileSearcher;
+
+import old.diarsid.beam.core.os.actions.SystemActionsExecutor;
+
+import diarsid.beam.core.os.search.FileSearcher;
 import diarsid.beam.core.modules.executor.processors.workers.ProcessorsBuilderImpl;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.modules.executor.commandscache.SmartConsoleCommandsCache.buildCache;
 import static diarsid.beam.core.modules.executor.context.ExecutorContextWorker.createContext;
-import static diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor.getExecutor;
-import static diarsid.beam.core.modules.executor.os.search.FileSearcher.getSearcherWithDepthsOf;
+
+import static old.diarsid.beam.core.os.actions.SystemActionsExecutor.getExecutor;
+
+import static diarsid.beam.core.os.search.FileSearcher.getSearcherWithDepthsOf;
 
 import diarsid.beam.core.modules.ConfigHolderModule;
 

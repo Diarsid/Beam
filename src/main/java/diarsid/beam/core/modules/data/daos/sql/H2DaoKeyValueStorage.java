@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.domain.Attribute;
+import diarsid.beam.core.domain.entities.Attribute;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
@@ -22,7 +22,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.domain.Attribute.optionalAttribute;
+import static diarsid.beam.core.domain.entities.Attribute.optionalAttribute;
 import static diarsid.beam.core.util.StringUtils.lower;
 
 

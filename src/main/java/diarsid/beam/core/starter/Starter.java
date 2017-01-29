@@ -6,22 +6,23 @@
 
 package diarsid.beam.core.starter;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.config.Configuration;
-import diarsid.beam.core.scriptor.ScriptsCatalog;
+import diarsid.beam.core.applicationhome.ScriptsCatalog;
 
 import static java.lang.String.join;
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.config.Configuration.readConfiguration;
-import static diarsid.beam.core.scriptor.ScriptsCatalogReal.getScriptsCatalog;
+import static diarsid.beam.core.applicationhome.ScriptsCatalogReal.getScriptsCatalog;
 import static diarsid.beam.core.starter.Flags.flagOf;
 import static diarsid.beam.core.starter.Flags.formatToPrintables;
 import static diarsid.beam.core.util.ArraysUtil.isEmpty;
 import static diarsid.beam.core.util.Logs.log;
 import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.config.Configuration.getConfiguration;
 
 /**
  *
@@ -39,10 +40,10 @@ public class Starter {
         } else {
             try {
                 log(Starter.class, "launched with: " + join(", ", args));
-                Configuration configuration = readConfiguration();
+                Configuration configuration = getConfiguration();
                 ScriptsCatalog scriptsCatalog = getScriptsCatalog(configuration);
                 Procedure procedure = readFlags(args);
-                Environment environment = new Environment(configuration, scriptsCatalog);                
+                StartRunner environment = new StartRunner(configuration, scriptsCatalog);                
                 environment.process(procedure);
             } catch (NoClassDefFoundError error) {
                 logError(Starter.class, "some class is missed:", error);

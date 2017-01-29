@@ -6,12 +6,7 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.interpreter.Interpreter;
-import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
-import diarsid.beam.core.modules.InterpreterHolderModule;
-import diarsid.beam.core.modules.IoModule;
 
 /**
  *
@@ -21,23 +16,15 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     
     private final LocationsKeeper locationsKeeper;
     private final BatchesKeeper batchesKeeper;
-    
+    private final ProgramsKeeper programsKeeper;
+
     public DomainKeeperModuleWorker(
-            DataModule dataModule, 
-            IoModule ioModule, 
-            InterpreterHolderModule interpreterHolderModule) {
-        InnerIoEngine ioEngine = ioModule.getInnerIoEngine();
-        Interpreter interpreter = interpreterHolderModule.getInterpreter();
-        KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
-        this.locationsKeeper = new LocationsKeeperWorker(
-                dataModule.getDaoLocations(), 
-                ioEngine, 
-                dialogHelper);
-        this.batchesKeeper = new BatchesKeeperWorker(
-                dataModule.getDaoBatches(), 
-                ioEngine, 
-                dialogHelper, 
-                interpreter);
+            LocationsKeeper locationsKeeper, 
+            BatchesKeeper batchesKeeper, 
+            ProgramsKeeper programsKeeper) {
+        this.locationsKeeper = locationsKeeper;
+        this.batchesKeeper = batchesKeeper;
+        this.programsKeeper = programsKeeper;
     }
 
     @Override
@@ -53,5 +40,10 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     @Override
     public void stopModule() {
         // do nothing;
+    }
+
+    @Override
+    public ProgramsKeeper getProgramsKeeper() {
+        return this.programsKeeper;
     }
 }

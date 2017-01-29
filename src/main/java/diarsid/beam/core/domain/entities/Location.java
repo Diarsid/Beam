@@ -6,14 +6,22 @@
 
 package diarsid.beam.core.domain.entities;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Objects;
 
 import diarsid.beam.core.control.io.base.ConvertableToVariant;
 import diarsid.beam.core.control.io.base.Variant;
+import diarsid.beam.core.domain.actions.Callback;
+
+import static java.lang.String.format;
 
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
+import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.util.Logs.logError;
 
 /**
  *
@@ -35,7 +43,7 @@ public class Location
     
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     @Override
@@ -47,41 +55,65 @@ public class Location
     public NamedEntityType getEntityType() {
         return LOCATION;
     }
+    
+    public void open(
+            String target, 
+            Callback successCallback,
+            Callback exceptionCallback, 
+            Callback locationNotFoundCallback,
+            Callback targetNotFoundCallback) {
+        asyncDo(() -> {
+            File location = new File(this.path);
+            File finalTarget = new File(this.path + "/" + target);
+            if ( location.exists() && location.isDirectory() ) {
+                if ( finalTarget.exists() ) {
+                    try {
+                        Desktop.getDesktop().open(location);   
+                        successCallback.call();
+                    } catch (IOException | IllegalArgumentException e) {
+                        exceptionCallback.call();
+                        logError(this.getClass(), e);
+                    }
+                } else {
+                    targetNotFoundCallback.call();
+                    debug(format("Target '%s' not found in %s.", target, this.name));
+                }                
+            } else {
+                locationNotFoundCallback.call();
+                debug(format("%s path '%s' does not exist.", this.name, this.path));
+            }            
+        });
+    }
+    
+    public void open(
+            Callback successCallback,
+            Callback exceptionCallback, 
+            Callback locationNotFoundCallback) {
+        asyncDo(() -> {
+            File location = new File(this.path);
+            if ( location.exists() && location.isDirectory() ) {
+                try {
+                    Desktop.getDesktop().open(location);   
+                    successCallback.call();
+                } catch (IOException | IllegalArgumentException e) {
+                    exceptionCallback.call();
+                    logError(this.getClass(), e);
+                }
+            } else {
+                locationNotFoundCallback.call();
+                debug(format("%s path '%s' does not exist.", this.name, this.path));
+            }            
+        });
+    }
 
     public String getPath() {
-        return path;
+        return this.path;
     }
 
     @Override
     public String toString() {
         return this.name + " :: " + this.path;
     }
-    
-    /**
-     * Method for formatted locations printing. Allows to get location description String 
-     * with specified length between the beginning of location name and ":" delimiter to 
-     * get string of this format:
-     *    loc1        : path/to/loc1
-     *    exampleLoc  : another/path
-     *    locName     : path/to/another/loc
-     * Parameter int locationPartLength specified the span length. If parameter is less 
-     * than or equal to locationName.length(), it will be increased by 10 until it became 
-     * longer than locationName.length().     * 
-     * 
-     * @param locationPartLength specifies space between the beginning of formatted string 
-     * and ":" delimiter.
-     * @return Formatted string of format "locationName : locationPath", where space between 
-     * the beginning of string and ":" delimiter is determined by parameter value.
-     */
-    public String printLocationInFormat(int locationPartLength) {
-        int length = this.name.length();
-        while ( locationPartLength <= length ) {
-            locationPartLength += 10;
-        }
-        char[] result = Arrays.copyOf(this.name.toCharArray(), locationPartLength);
-        Arrays.fill(result, this.name.length(), locationPartLength, ' ');  
-        return String.copyValueOf(result) + ": " + this.path;
-    } 
 
     @Override
     public int hashCode() {

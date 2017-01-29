@@ -23,20 +23,22 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
-import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
-import diarsid.beam.core.modules.executor.os.listing.FileLister;
-import diarsid.beam.core.modules.executor.os.search.FileSearcher;
-import diarsid.beam.core.modules.executor.os.search.result.FileSearchFailure;
-import diarsid.beam.core.modules.executor.os.search.result.FileSearchResult;
-import diarsid.beam.core.modules.executor.os.search.result.FileSearchSuccess;
+
+import old.diarsid.beam.core.os.actions.SystemActionsExecutor;
+
+import diarsid.beam.core.os.listing.FileLister;
+import diarsid.beam.core.os.search.FileSearcher;
+import diarsid.beam.core.os.search.result.FileSearchFailure;
+import diarsid.beam.core.os.search.result.FileSearchResult;
+import diarsid.beam.core.os.search.result.FileSearchSuccess;
 import diarsid.beam.core.control.flow.OperationResult;
 import diarsid.beam.core.config.Config;
 
 import static java.util.Optional.of;
 
-import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.ALL;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FILES_ONLY;
-import static diarsid.beam.core.modules.executor.os.search.FileSearchMode.FOLDERS_ONLY;
+import static diarsid.beam.core.os.search.FileSearchMode.ALL;
+import static diarsid.beam.core.os.search.FileSearchMode.FILES_ONLY;
+import static diarsid.beam.core.os.search.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.control.flow.OperationResultImpl.success;
 import static diarsid.beam.core.util.Logs.debug;
@@ -116,7 +118,7 @@ public class OSWorker implements OS {
         // targetName pattern: myPr / myFil
         // corrected target name: myProject / myFile.ext or "" if not exists
         FileSearchResult result = this.fileSearcher
-                .findTarget(target, location.getPath(), ALL);
+                .find(target, location.getPath(), ALL);
         if ( result.isOk() ) {
             this.processSuccess(result.success(), target, location);
         } else {
@@ -162,7 +164,7 @@ public class OSWorker implements OS {
         // program pattern: notep, NetBe
         // corrected program names: notepad.exe, NetBeans.lnk or "" if not exists
         FileSearchResult result = this.fileSearcher
-                .findTarget(program, this.programsLocationPath, FILES_ONLY);        
+                .find(program, this.programsLocationPath, FILES_ONLY);        
         if ( result.isOk() ) {
             this.context.adjustCurrentlyExecutedCommand("run " + program);
             this.processProgramFound(result.success(), "run", program);
@@ -174,7 +176,7 @@ public class OSWorker implements OS {
     @Override
     public void runMarkedProgram(String program, String mark) {
         FileSearchResult result = this.fileSearcher
-                .findTarget(program + "-" + mark, this.programsLocationPath, FILES_ONLY); 
+                .find(program + "-" + mark, this.programsLocationPath, FILES_ONLY); 
         if ( result.isOk() ) {
             this.context.adjustCurrentlyExecutedCommand(mark + " " + program);
             this.processProgramFound(result.success(), mark, program);
@@ -269,7 +271,7 @@ public class OSWorker implements OS {
         
         Optional<List<String>> listResult;        
         FileSearchResult targetResult = 
-                this.fileSearcher.findTarget(relativePath, location.getPath(), FOLDERS_ONLY);
+                this.fileSearcher.find(relativePath, location.getPath(), FOLDERS_ONLY);
         if ( targetResult.isOk() ) {
             listResult = this.listLocationAndPath(targetResult.success(), location, depth);
         } else {

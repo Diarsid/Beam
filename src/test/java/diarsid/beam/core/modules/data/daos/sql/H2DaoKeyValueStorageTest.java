@@ -23,7 +23,7 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.domain.Attribute;
+import diarsid.beam.core.domain.entities.Attribute;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DataBaseVerifier;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;

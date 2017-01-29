@@ -12,12 +12,12 @@ import java.util.Map;
  *
  * @author Diarsid
  */
-public final class XmlContent {
+final class XmlContent {
     
     private final Map<String, String> elementsText;
     private final Map<String, Map<String, String>> elementsAttrs;
     
-    public XmlContent(
+    XmlContent(
             Map<String, String> texts, 
             Map<String, Map<String, String>> attrs) {
         

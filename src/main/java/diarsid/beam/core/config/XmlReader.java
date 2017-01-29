@@ -11,7 +11,7 @@ import java.io.File;
  *
  * @author Diarsid
  */
-public interface XmlReader {
+interface XmlReader {
     
     XmlContent read(File configFile);
 }

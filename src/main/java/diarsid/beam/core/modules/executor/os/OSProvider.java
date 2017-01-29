@@ -11,11 +11,13 @@ import old.diarsid.beam.core.modules.IoInnerModule;
 
 import diarsid.beam.core.modules.executor.OS;
 import diarsid.beam.core.modules.executor.context.ExecutorContext;
-import diarsid.beam.core.modules.executor.os.actions.SystemActionsExecutor;
-import diarsid.beam.core.modules.executor.os.listing.FileLister;
-import diarsid.beam.core.modules.executor.os.search.FileSearcher;
 
-import static diarsid.beam.core.modules.executor.os.listing.FileLister.getLister;
+import old.diarsid.beam.core.os.actions.SystemActionsExecutor;
+
+import diarsid.beam.core.os.listing.FileLister;
+import diarsid.beam.core.os.search.FileSearcher;
+
+import static diarsid.beam.core.os.listing.FileLister.getLister;
 
 import diarsid.beam.core.modules.ConfigHolderModule;
 
