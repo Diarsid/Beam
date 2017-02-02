@@ -10,7 +10,7 @@ import java.util.List;
 
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ConfigHolderModule;
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.daos.sql.H2DaosProvider;
@@ -36,18 +36,21 @@ import static diarsid.beam.core.util.Logs.logError;
 public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
     private final IoModule ioModule;
-    private final ConfigHolderModule configHolderModule;
+    private final ApplicationComponentsHolderModule appComponentsHolderModule;
     
-    public DataModuleWorkerBuilder(IoModule ioModule, ConfigHolderModule configHolderModule) {
+    public DataModuleWorkerBuilder(
+            IoModule ioModule, 
+            ApplicationComponentsHolderModule configHolderModule) {
         this.ioModule = ioModule;
-        this.configHolderModule = configHolderModule;
+        this.appComponentsHolderModule = configHolderModule;
     }
 
     @Override
     public DataModule buildModule() {
         this.loadDriver();
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
-        DataBase dataBase = new H2DataBase(this.configHolderModule.get(CORE_JDBC_URL));
+        DataBase dataBase = new H2DataBase(
+                this.appComponentsHolderModule.getConfiguration().get(CORE_JDBC_URL));
         
         DataBaseModel model = new H2DataBaseModel();
         DataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);
@@ -64,7 +67,8 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
     private void loadDriver() {
         try {
-            Class.forName(this.configHolderModule.get(CORE_JDBC_DRIVER));
+            Class.forName(
+                    this.appComponentsHolderModule.getConfiguration().get(CORE_JDBC_DRIVER));
         } catch (Exception e) {
             logError(DataModuleWorkerBuilder.class, e);
             this.ioModule

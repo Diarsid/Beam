@@ -1,0 +1,148 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package diarsid.beam.core.modules.tasks;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.control.io.base.TimeMessage;
+import diarsid.beam.core.control.io.base.TimeMessagesIo;
+import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import static diarsid.beam.core.modules.tasks.TimeUtil.getMillisFromNowToTime;
+import static diarsid.beam.core.modules.tasks.TimeUtil.getNextMonthBeginning;
+import static diarsid.beam.core.modules.tasks.TimeUtil.getNextWeekBeginning;
+import static diarsid.beam.core.modules.tasks.TimeUtil.getThisWeekBeginning;
+import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
+
+/**
+ *
+ * @author Diarsid
+ */
+class TasksNotificationScheduler {
+    
+    private final TimeMessagesIo tasksIo;
+    private final TasksKeeper tasksKeeper;
+    private final Initiator ownInitiator;
+    private final ScheduledThreadPoolExecutor scheduler;
+    private final Object notificationLock;
+    
+    // contains  the reference to Runnable scheduled in
+    // this.scheduler for now and represents time 
+    // of user notification about weekly and monthly tasks;
+    // Is refreshed every time when notification are 
+    // being executed.
+    private ScheduledFuture currentNotification;
+
+    public TasksNotificationScheduler(
+            TimeMessagesIo tasksIo, 
+            TasksKeeper tasksKeeper, 
+            ScheduledThreadPoolExecutor scheduler,
+            Initiator ownInitiator) {
+        this.tasksIo = tasksIo;
+        this.tasksKeeper = tasksKeeper;
+        this.scheduler = scheduler;
+        this.notificationLock = new Object();
+        this.ownInitiator = ownInitiator;
+    }
+
+    void beginNotificationsProcessing() {
+        synchronized (this.notificationLock) {
+            this.scheduleNextRegularTasksSurvey();
+            LocalDateTime thisWeekBeginning = getThisWeekBeginning();
+            this.notifyUserAboutTasksInWeek(thisWeekBeginning);
+        }        
+    }
+    
+    /**
+     * Program notifies its user about every non-hourly and 
+     * non-daily tasks that have been scheduled earlier.
+     * It notifies user about upcoming tasks in two cases - 
+     * at every Monday and at every 1-st day of month.
+     * 
+     * This method schedules new time when user should be notified  
+     * about tasks that will be executed during upcoming month or 
+     * week which has just begun.
+     * 
+     * Set time of new notification to next Monday, 12:00:00:000 or
+     * to next month's first day, 12:00:00:000, depending on which
+     * time is earlier.
+     */
+    private void scheduleNextRegularTasksSurvey() {
+        synchronized ( this.notificationLock ) {
+            this.purgeCurrentNotificationIfAny();
+            
+            // get time of next Monday, 12:00:00:000
+            LocalDateTime nextWeekBeginning = getNextWeekBeginning();
+            
+            // get time of next month's first day, 12:00:00:000
+            LocalDateTime nextMonthBeginning = getNextMonthBeginning();
+            // what happens earlier - begining of the next week or 
+            // of the next month            
+            
+            Runnable scheduledNotificationAction;
+            LocalDateTime nextNotificationTime;
+            if ( nextWeekBeginning.isBefore(nextMonthBeginning) ) {
+                nextNotificationTime = nextWeekBeginning;
+                scheduledNotificationAction = () -> {
+                    this.notifyUserAboutTasksInWeek(nextWeekBeginning);
+                };
+            } else {
+                nextNotificationTime = nextMonthBeginning;
+                scheduledNotificationAction = () -> {
+                    this.notifyUserAboutTasksInMonth(nextMonthBeginning);
+                };
+            }
+            this.currentNotification = this.scheduler.schedule( 
+                    scheduledNotificationAction,
+                    getMillisFromNowToTime(nextNotificationTime), 
+                    MILLISECONDS);
+        }
+    }
+
+    private void purgeCurrentNotificationIfAny() {
+        // if there is older notification have been scheduled
+        // clear them.
+        if ( this.isCurrentNotificationAlive() ) {
+            this.currentNotification.cancel(false);
+            this.currentNotification = null;
+        }
+    }
+
+    private boolean isCurrentNotificationAlive() {
+        return 
+                this.currentNotification != null && 
+                ! this.currentNotification.isDone();
+    }
+    
+    private void notifyUserAboutTasksInMonth(LocalDateTime monthBeginning) {
+        synchronized (this.notificationLock) {
+            List<TimeMessage> tasks = this.tasksKeeper
+                    .getCalendarTasksForNextMonth(this.ownInitiator, monthBeginning);
+            asyncDo(() -> {
+                this.tasksIo.showTasksNotification("month", tasks);
+            });
+            this.scheduleNextRegularTasksSurvey();
+        }
+    }
+    
+    private void notifyUserAboutTasksInWeek(LocalDateTime weekBeginning) {
+        synchronized (this.notificationLock) {
+            List<TimeMessage> tasks = this.tasksKeeper
+                    .getCalendarTasksForNextWeek(this.ownInitiator, weekBeginning);
+            asyncDo(() -> {
+                this.tasksIo.showTasksNotification("week", tasks);
+            });
+            this.scheduleNextRegularTasksSurvey();
+        }
+    }
+}

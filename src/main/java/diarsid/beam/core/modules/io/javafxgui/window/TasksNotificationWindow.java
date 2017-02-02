@@ -22,7 +22,7 @@ import javafx.scene.layout.VBox;
 
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
-import diarsid.beam.core.modules.tasks.TimeMessage;
+import diarsid.beam.core.control.io.base.TimeMessage;
 
 
 /**
@@ -88,7 +88,7 @@ class TasksNotificationWindow extends BeamWindow implements Runnable {
                 taskBox.setAlignment(Pos.TOP_LEFT);
 
                 Label taskTimeLabel = new Label();
-                taskTimeLabel.setText(this.tasks.get(i).getTime());
+                taskTimeLabel.setText(this.tasks.get(i).stringifyTime());
                 taskTimeLabel.setPadding(new Insets(0, 0, 8, 0));
 
                 Label taskTextLabel = new Label(); 

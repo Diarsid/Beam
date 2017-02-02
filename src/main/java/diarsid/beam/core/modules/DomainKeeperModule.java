@@ -9,6 +9,7 @@ import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 import diarsid.beam.core.modules.domainkeeper.ProgramsKeeper;
+import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 /**
  *
@@ -21,4 +22,6 @@ public interface DomainKeeperModule extends StoppableBeamModule  {
     BatchesKeeper getBatchesKeeper();
     
     ProgramsKeeper getProgramsKeeper();
+    
+    TasksKeeper getTasksKeeper();
 }

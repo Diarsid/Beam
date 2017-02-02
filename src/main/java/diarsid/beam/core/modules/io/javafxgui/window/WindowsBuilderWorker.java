@@ -12,7 +12,7 @@ import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
 import diarsid.beam.core.modules.io.javafxgui.WindowsBuilder;
-import diarsid.beam.core.modules.tasks.TimeMessage;
+import diarsid.beam.core.control.io.base.TimeMessage;
 
 /**
  *

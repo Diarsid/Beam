@@ -8,9 +8,9 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.control.io.interpreter.Interpreter;
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
-import diarsid.beam.core.modules.InterpreterHolderModule;
 import diarsid.beam.core.modules.IoModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
@@ -23,44 +23,49 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
     
     private final DataModule dataModule;
     private final IoModule ioModule;
-    private final InterpreterHolderModule interpreterHolderModule;
+    private final ApplicationComponentsHolderModule appComponentsHolderModule;
     
     public DomainKeeperModuleWorkerBuilder(
             DataModule dataModule, 
             IoModule ioModule, 
-            InterpreterHolderModule interpreterHolderModule) {
+            ApplicationComponentsHolderModule appComponentsHolderModule) {
         this.dataModule = dataModule;
         this.ioModule = ioModule;
-        this.interpreterHolderModule = interpreterHolderModule;
+        this.appComponentsHolderModule = appComponentsHolderModule;
     }
 
     @Override
     public DomainKeeperModule buildModule() {
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
-        Interpreter interpreter = this.interpreterHolderModule.getInterpreter();
+        Interpreter interpreter = this.appComponentsHolderModule.getInterpreter();
         KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
         
         LocationsKeeper locationsKeeper;
         BatchesKeeper batchesKeeper;
         ProgramsKeeper programsKeeper;
+        TasksKeeper tasksKeeper;
         
         locationsKeeper = new LocationsKeeperWorker(
-                dataModule.getDaoLocations(), 
+                this.dataModule.getDaoLocations(), 
                 ioEngine, 
                 dialogHelper);
         batchesKeeper = new BatchesKeeperWorker(
-                dataModule.getDaoBatches(), 
+                this.dataModule.getDaoBatches(), 
                 ioEngine, 
                 dialogHelper, 
                 interpreter);
         programsKeeper = new ProgramsKeeperWorker(
-                ioEngine, 
-                programsCatalog, 
+                ioEngine,
+                this.appComponentsHolderModule.getProgramsCatalog(), 
                 dialogHelper);
+        tasksKeeper = new TasksKeeperWorker(
+                ioEngine, 
+                dataModule.getDaoTasks());
         
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
                 batchesKeeper, 
-                programsKeeper);
+                programsKeeper, 
+                tasksKeeper);
     }
 }

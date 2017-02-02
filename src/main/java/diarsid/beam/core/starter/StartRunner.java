@@ -7,7 +7,7 @@
 package diarsid.beam.core.starter;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.core.applicationhome.ScriptsCatalog;
+import diarsid.beam.core.application.ScriptsCatalog;
 import diarsid.beam.core.config.Configuration;
 import diarsid.beam.core.starter.FlagConfigurable;
 import diarsid.beam.core.starter.FlagExecutable;

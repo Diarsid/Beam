@@ -7,9 +7,9 @@
 package diarsid.beam.core.modules.corecontrol;
 
 import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
-import diarsid.beam.core.modules.InterpreterHolderModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.corecontrol.cli.CommandLineProcessorBuilder;
 
@@ -22,15 +22,15 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 public class CoreControlModuleWorkerBuilder implements GemModuleBuilder<CoreControlModule> {
     
     private final IoModule ioModule;
-    private final InterpreterHolderModule interpreterModule;
+    private final ApplicationComponentsHolderModule appComponentsHolderModule;
     private final DomainKeeperModule domainModule;
     
     public CoreControlModuleWorkerBuilder(
             IoModule ioModule, 
-            InterpreterHolderModule interpreterModule,
+            ApplicationComponentsHolderModule appComponentsHolderModule,
             DomainKeeperModule domainModule) {
         this.ioModule = ioModule;
-        this.interpreterModule = interpreterModule;
+        this.appComponentsHolderModule = appComponentsHolderModule;
         this.domainModule = domainModule;
     }
 
@@ -39,7 +39,7 @@ public class CoreControlModuleWorkerBuilder implements GemModuleBuilder<CoreCont
         CommandLineProcessorBuilder cliBuilder = new CommandLineProcessorBuilder();
         CommandLineProcessor cli = cliBuilder.build(
                 this.ioModule, 
-                this.interpreterModule,
+                this.appComponentsHolderModule,
                 this.domainModule);
 //        OuterIoEngine nativeConsole = new NativeConsoleBuilder().build(cli);
 //        this.ioModule.registerOuterIoEngine(nativeConsole);

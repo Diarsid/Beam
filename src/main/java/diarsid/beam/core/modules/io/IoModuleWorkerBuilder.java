@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.io;
 
 
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.io.javafxgui.GuiJavaFX;
 
@@ -14,23 +15,22 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.config.Config.IMAGES_LOCATION;
 
-import diarsid.beam.core.modules.ConfigHolderModule;
-
 /**
  *
  * @author Diarsid
  */
 class IoModuleWorkerBuilder implements GemModuleBuilder<IoModule> {
     
-    private final ConfigHolderModule configModule;
+    private final ApplicationComponentsHolderModule appComponentsHolderModule;
     
-    IoModuleWorkerBuilder(ConfigHolderModule configModule) {
-        this.configModule = configModule;
+    IoModuleWorkerBuilder(ApplicationComponentsHolderModule configModule) {
+        this.appComponentsHolderModule = configModule;
     }
     
     @Override
     public IoModule buildModule() {
-        Gui gui = new GuiJavaFX(this.configModule.get(IMAGES_LOCATION));
+        Gui gui = new GuiJavaFX(
+                this.appComponentsHolderModule.getConfiguration().get(IMAGES_LOCATION));
         OuterIoEnginesHolder ioEnginesHolder = new OuterIoEnginesHolder();
         MainInnerIoEngine mainIo = new MainInnerIoEngine(ioEnginesHolder, gui);
         return new IoModuleWorker(ioEnginesHolder, mainIo);

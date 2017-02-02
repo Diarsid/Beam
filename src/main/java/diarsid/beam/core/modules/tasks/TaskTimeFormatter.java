@@ -13,8 +13,9 @@ import java.time.format.DateTimeParseException;
 
 import old.diarsid.beam.core.modules.data.DaoTasks;
 
-import diarsid.beam.core.modules.tasks.exceptions.TaskTimeFormatInvalidException;
-import diarsid.beam.core.modules.tasks.exceptions.TaskTimeInvalidException;
+import diarsid.beam.core.domain.entities.Task;
+import diarsid.beam.core.domain.entities.exceptions.TaskTimeFormatInvalidException;
+import diarsid.beam.core.domain.entities.exceptions.TaskTimeInvalidException;
 
 /**
  *
@@ -40,7 +41,8 @@ class TaskTimeFormatter {
         
         LocalDateTime time = null;
         // get length of incoming string to define it's format
-        parsing: switch (timeString.length()){
+        parsing: 
+        switch (timeString.length()) {
             // time format: uuuu-MM-dd HH:mm - 16 chars
             // full format
             case (16) : {                    
@@ -105,7 +107,7 @@ class TaskTimeFormatter {
         * time if it represents past date. If mustBeFuture is FALSE, it is allowed to return
         * time which represents past date.
         */
-        if (mustBeFuture && LocalDateTime.now().isAfter(time)){
+        if ( mustBeFuture && LocalDateTime.now().isAfter(time) ) {
             // Time must be future.
             throw new TaskTimeInvalidException();
         } else {

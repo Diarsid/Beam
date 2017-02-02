@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 class Timer implements Runnable {
     
     // Fields =============================================================================
-    private final TaskManagerModuleWorker taskManager;
+    private final TasksWatcherModuleWorker taskManager;
 
     // Constructor ========================================================================
     
-    Timer(TaskManagerModuleWorker tm){
+    Timer(TasksWatcherModuleWorker tm){
         this.taskManager = tm;
     }
 

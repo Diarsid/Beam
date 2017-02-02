@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.io.javafxgui;
 
 import java.util.List;
 
-import diarsid.beam.core.modules.tasks.TimeMessage;
+import diarsid.beam.core.control.io.base.TimeMessage;
 
 /**
  *

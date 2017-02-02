@@ -9,7 +9,7 @@ package diarsid.beam.core.scriptor.wincmd;
 import java.util.List;
 
 import diarsid.beam.core.scriptor.Script;
-import diarsid.beam.core.applicationhome.ScriptsCatalog;
+import diarsid.beam.core.application.ScriptsCatalog;
 
 /**
  *

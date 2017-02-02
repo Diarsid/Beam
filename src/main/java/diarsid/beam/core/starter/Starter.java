@@ -10,19 +10,19 @@ package diarsid.beam.core.starter;
 import java.util.ArrayList;
 import java.util.List;
 
+import diarsid.beam.core.application.ScriptsCatalog;
 import diarsid.beam.core.config.Configuration;
-import diarsid.beam.core.applicationhome.ScriptsCatalog;
 
 import static java.lang.String.join;
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.applicationhome.ScriptsCatalogReal.getScriptsCatalog;
+import static diarsid.beam.core.application.ApplicationCatalogs.getScriptsCatalog;
+import static diarsid.beam.core.config.Configuration.getConfiguration;
 import static diarsid.beam.core.starter.Flags.flagOf;
 import static diarsid.beam.core.starter.Flags.formatToPrintables;
 import static diarsid.beam.core.util.ArraysUtil.isEmpty;
 import static diarsid.beam.core.util.Logs.log;
 import static diarsid.beam.core.util.Logs.logError;
-import static diarsid.beam.core.config.Configuration.getConfiguration;
 
 /**
  *
@@ -41,7 +41,7 @@ public class Starter {
             try {
                 log(Starter.class, "launched with: " + join(", ", args));
                 Configuration configuration = getConfiguration();
-                ScriptsCatalog scriptsCatalog = getScriptsCatalog(configuration);
+                ScriptsCatalog scriptsCatalog = getScriptsCatalog();
                 Procedure procedure = readFlags(args);
                 StartRunner environment = new StartRunner(configuration, scriptsCatalog);                
                 environment.process(procedure);

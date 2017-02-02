@@ -17,8 +17,8 @@ import diarsid.beam.core.control.io.base.Message;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
 import diarsid.beam.core.control.io.base.Question;
 import diarsid.beam.core.control.io.base.TextMessage;
-import diarsid.beam.core.control.io.base.TimeScheduledIo;
-import diarsid.beam.core.modules.tasks.TimeMessage;
+import diarsid.beam.core.control.io.base.TimeMessagesIo;
+import diarsid.beam.core.control.io.base.TimeMessage;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
@@ -38,7 +38,7 @@ import static diarsid.beam.core.util.Logs.logError;
 public class MainInnerIoEngine 
         implements 
                 InnerIoEngine,
-                TimeScheduledIo {
+                TimeMessagesIo {
     
     private final OuterIoEnginesHolder ioEnginesHolder;
     private final Gui gui;
@@ -173,8 +173,13 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public void showTask(TimeMessage task) {
+    public void show(TimeMessage task) {
         this.gui.showTask(task);
+    }
+
+    @Override
+    public void showAll(List<TimeMessage> tasks) {
+        tasks.stream().forEach(task -> this.gui.showTask(task));
     }
 
     @Override

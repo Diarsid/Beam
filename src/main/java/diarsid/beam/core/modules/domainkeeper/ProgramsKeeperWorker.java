@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.applicationhome.ProgramsCatalog;
+import diarsid.beam.core.application.ProgramsCatalog;
 import diarsid.beam.core.control.io.base.Answer;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;

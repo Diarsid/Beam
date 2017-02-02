@@ -17,7 +17,7 @@ import javafx.scene.layout.VBox;
 import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
-import diarsid.beam.core.modules.tasks.TimeMessage;
+import diarsid.beam.core.control.io.base.TimeMessage;
 
 /**
  *
@@ -37,7 +37,7 @@ class TaskWindow extends BeamWindow implements ReusableTaskWindow {
             WindowResources resources) { 
         
         super(resources, controller);
-        this.taskTime = task.getTime();
+        this.taskTime = task.stringifyTime();
         StringJoiner joiner = new StringJoiner("\n");
         for(String s : task.getContent()){
             joiner.add(s);
@@ -65,7 +65,7 @@ class TaskWindow extends BeamWindow implements ReusableTaskWindow {
      */
     @Override
     public void reuseWithNewTask(TimeMessage task) {
-        this.taskTime = task.getTime();
+        this.taskTime = task.stringifyTime();
         StringJoiner joiner = new StringJoiner("\n");
         for(String s : task.getContent()){
             joiner.add(s);

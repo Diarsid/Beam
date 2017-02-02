@@ -17,14 +17,17 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     private final LocationsKeeper locationsKeeper;
     private final BatchesKeeper batchesKeeper;
     private final ProgramsKeeper programsKeeper;
+    private final TasksKeeper tasksKeeper;
 
     public DomainKeeperModuleWorker(
             LocationsKeeper locationsKeeper, 
             BatchesKeeper batchesKeeper, 
-            ProgramsKeeper programsKeeper) {
+            ProgramsKeeper programsKeeper,
+            TasksKeeper tasksKeeper) {
         this.locationsKeeper = locationsKeeper;
         this.batchesKeeper = batchesKeeper;
         this.programsKeeper = programsKeeper;
+        this.tasksKeeper = tasksKeeper;
     }
 
     @Override
@@ -45,5 +48,10 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     @Override
     public ProgramsKeeper getProgramsKeeper() {
         return this.programsKeeper;
+    }
+
+    @Override
+    public TasksKeeper getTasksKeeper() {
+        return this.tasksKeeper;
     }
 }

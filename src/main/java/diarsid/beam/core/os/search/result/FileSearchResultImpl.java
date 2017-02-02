@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.os.search.result;
 
-import diarsid.beam.core.modules.executor.os.ResultOperationNotAllowedException;
-
 
 public class FileSearchResultImpl implements FileSearchResult {
     

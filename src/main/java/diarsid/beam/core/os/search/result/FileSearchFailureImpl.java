@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.os.search.result;
 
-import diarsid.beam.core.modules.executor.os.ResultOperationNotAllowedException;
-
 
 public class FileSearchFailureImpl implements FileSearchFailure {
     
@@ -51,7 +49,7 @@ public class FileSearchFailureImpl implements FileSearchFailure {
     public static FileSearchFailure targetInvalidMessage(String failMessage) {
         if ( failMessage == null || failMessage.isEmpty() ) {
             throw new ResultOperationNotAllowedException(
-                    "Failure message cannot be not empty neither null.");
+                    "Failure message cannot be nor empty neither null.");
         }
         return new FileSearchFailureImpl(TARGET_NOT_ACCESSIBLE, failMessage);
     }

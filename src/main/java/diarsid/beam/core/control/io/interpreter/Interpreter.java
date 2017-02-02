@@ -16,6 +16,8 @@ import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.control.io.commands.executor.StartProgramCommand;
+import diarsid.beam.core.control.io.commands.executor.StopProgramCommand;
 import diarsid.beam.core.control.io.interpreter.recognizers.CreateLocationRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.CreateTaskRecognizer;
 import diarsid.beam.core.control.io.interpreter.recognizers.CreateWebDirectoryRecognizer;
@@ -109,8 +111,10 @@ public class Interpreter {
                                                 input -> new SeePageCommand(input.currentArg()))),
                         new PrefixRecognizer(
                                 "r/", 
-                                "p/").pointsTo(
+                                "p/").branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
+                                                input -> new RunProgramCommand(input.currentArg())),
+                                        new RelativePathRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg()))),
                         new PrefixRecognizer(
                                 "b/", 
@@ -158,17 +162,23 @@ public class Interpreter {
                         ), 
                         new WordsRecognizer(
                                 "r", 
-                                "run").priority(HIGH).pointsTo(
+                                "run").priority(HIGH).branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
+                                                input -> new RunProgramCommand(input.currentArg())),
+                                        new RelativePathRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg()))),
                         new WordRecognizer(
-                                "start").priority(HIGH).pointsTo(
+                                "start").priority(HIGH).branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg() + "-start"))),
+                                                input -> new StartProgramCommand(input.currentArg())),
+                                        new RelativePathRecognizer().pointsTo(
+                                                input -> new StartProgramCommand(input.currentArg()))),
                         new WordRecognizer(
-                                "stop").priority(HIGH).pointsTo(
+                                "stop").priority(HIGH).branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg() + "-stop"))),
+                                                input -> new StopProgramCommand(input.currentArg())),
+                                        new RelativePathRecognizer().pointsTo(
+                                                input -> new StopProgramCommand(input.currentArg()))),
                         new WordRecognizer(
                                 "pause").priority(HIGH).pointsTo(
                                         new PauseRecognizer()),

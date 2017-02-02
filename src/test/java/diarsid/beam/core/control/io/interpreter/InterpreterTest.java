@@ -23,6 +23,8 @@ import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.control.io.commands.executor.StartProgramCommand;
+import diarsid.beam.core.control.io.commands.executor.StopProgramCommand;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 
 import static org.junit.Assert.assertEquals;
@@ -54,6 +56,8 @@ import static diarsid.beam.core.control.io.commands.CommandType.OPEN_PATH_IN_NOT
 import static diarsid.beam.core.control.io.commands.CommandType.OPEN_TARGET_IN_NOTE;
 import static diarsid.beam.core.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.control.io.commands.CommandType.SEE_WEBPAGE;
+import static diarsid.beam.core.control.io.commands.CommandType.START_PROGRAM;
+import static diarsid.beam.core.control.io.commands.CommandType.STOP_PROGRAM;
 import static diarsid.beam.core.control.io.commands.CommandType.UNDEFINED;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_COMMANDS;
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_NAME;
@@ -214,21 +218,48 @@ public class InterpreterTest {
     }
     
     @Test
-    public void testInterprete_startProgram() {
-        Command c = interpreter.interprete("START Prog");
+    public void testInterprete_runSubpathProgram() {
+        Command c = interpreter.interprete("run util/prog");
         assertEquals(RUN_PROGRAM, c.type());
         
         RunProgramCommand c1 = (RunProgramCommand) c;
-        assertEquals("Prog-start", c1.argument().getOriginal());
+        assertEquals("util/prog", c1.argument().getOriginal());
+    }
+    
+    @Test
+    public void testInterprete_startProgram() {
+        Command c = interpreter.interprete("START Prog");
+        assertEquals(START_PROGRAM, c.type());
+        
+        StartProgramCommand c1 = (StartProgramCommand) c;
+        assertEquals("Prog", c1.argument().getOriginal());
+    }
+    
+    @Test
+    public void testInterprete_startSubpathProgram() {
+        Command c = interpreter.interprete("START util/Prog");
+        assertEquals(START_PROGRAM, c.type());
+        
+        StartProgramCommand c1 = (StartProgramCommand) c;
+        assertEquals("util/Prog", c1.argument().getOriginal());
     }
     
     @Test
     public void testInterprete_stopProgram() {
         Command c = interpreter.interprete("stop prog");
-        assertEquals(RUN_PROGRAM, c.type());
+        assertEquals(STOP_PROGRAM, c.type());
         
-        RunProgramCommand c1 = (RunProgramCommand) c;
-        assertEquals("prog-stop", c1.argument().getOriginal());
+        StopProgramCommand c1 = (StopProgramCommand) c;
+        assertEquals("prog", c1.argument().getOriginal());
+    }
+    
+    @Test
+    public void testInterprete_stopSubpathProgram() {
+        Command c = interpreter.interprete("stop util/prog");
+        assertEquals(STOP_PROGRAM, c.type());
+        
+        StopProgramCommand c1 = (StopProgramCommand) c;
+        assertEquals("util/prog", c1.argument().getOriginal());
     }
     
     @Test

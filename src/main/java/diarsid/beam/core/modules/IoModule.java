@@ -9,7 +9,7 @@ import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.TimeScheduledIo;
+import diarsid.beam.core.control.io.base.TimeMessagesIo;
 
 /**
  *
@@ -19,7 +19,7 @@ public interface IoModule extends StoppableBeamModule {
     
     InnerIoEngine getInnerIoEngine();
     
-    TimeScheduledIo getTimeScheduledIo();
+    TimeMessagesIo getTimeScheduledIo();
     
     void registerOuterIoEngine(OuterIoEngine ioEngine);
     

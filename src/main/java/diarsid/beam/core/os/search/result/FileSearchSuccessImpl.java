@@ -9,8 +9,6 @@ package diarsid.beam.core.os.search.result;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.modules.executor.os.ResultOperationNotAllowedException;
-
 import static java.util.Objects.isNull;
 
 
