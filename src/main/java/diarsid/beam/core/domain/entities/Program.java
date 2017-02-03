@@ -16,7 +16,7 @@ import diarsid.beam.core.domain.actions.Callback;
 import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.util.Logs.logError;
 import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
-import static diarsid.beam.core.util.PathUtils.indexOfLastFileSeparator;
+import static diarsid.beam.core.util.PathUtils.indexOfLastPathSeparator;
 
 /**
  *
@@ -34,8 +34,7 @@ public class Program {
     
     public String getSimpleName() {
         if ( containsPathSeparator(this.fullName) ) {
-            return this.fullName.substring(
-                    indexOfLastFileSeparator(this.fullName), 
+            return this.fullName.substring(indexOfLastPathSeparator(this.fullName), 
                     this.fullName.length());
         } else {
             return this.fullName;
@@ -44,9 +43,8 @@ public class Program {
     
     public String getSubPath() {
         if ( containsPathSeparator(this.fullName) ) {
-            return this.fullName.substring(
-                    0, 
-                    indexOfLastFileSeparator(this.fullName));
+            return this.fullName.substring(0, 
+                    indexOfLastPathSeparator(this.fullName));
         } else {
             return "";
         }

@@ -45,7 +45,7 @@ public class PathUtils {
         return Files.exists(dir) && Files.isDirectory(dir);
     }
     
-    public static int indexOfFirstFileSeparator(String target) {
+    public static int indexOfFirstPathSeparator(String target) {
         int indexOfSlash = target.indexOf("/");
         int indexOfBackSlash = target.indexOf("\\");
         if ( indexOfBackSlash < 0 ) {
@@ -61,7 +61,26 @@ public class PathUtils {
         return Paths.get(normalizeSeparators(join("/", fragments)));
     }
     
-    public static int indexOfLastFileSeparator(String target) {
+    public static int indexOfNextPathSeparatorAfter(String target, String pattern) {
+        int indexOfNextSlash = target.indexOf("/", target.indexOf(pattern));
+        int indexOfNextBackSlash = target.indexOf("\\", target.indexOf(pattern));
+        if ( indexOfNextBackSlash < 0 ) {
+            return indexOfNextSlash;
+        } else if ( indexOfNextSlash < 0 ) {
+            return indexOfNextBackSlash;
+        } else {
+            return ( indexOfNextSlash < indexOfNextBackSlash ) ? indexOfNextSlash : indexOfNextBackSlash; 
+        }
+    } 
+    
+    public static String subpathToPattern(String target, String pattern) {
+        if ( containsPathSeparator(pattern) ) {
+            pattern = pattern.substring(indexOfLastPathSeparator(pattern) + 1, pattern.length());
+        }
+        return target.substring(0, indexOfNextPathSeparatorAfter(target, pattern));
+    }
+    
+    public static int indexOfLastPathSeparator(String target) {
         int indexOfSlash = target.lastIndexOf("/");
         int indexOfBackSlash = target.lastIndexOf("\\");
         if ( indexOfBackSlash < 0 ) {
@@ -95,16 +114,16 @@ public class PathUtils {
     public static boolean isAcceptableRelativePath(String target) {
         return ( 
                 wordIsAcceptable(target) &&
-                indexOfFirstFileSeparator(target) > 1 && 
-                indexOfLastFileSeparator(target) < target.length() - 2);
+                indexOfFirstPathSeparator(target) > 1 && 
+                indexOfLastPathSeparator(target) < target.length() - 2);
     }
     
     public static String extractLocationFromPath(String path) {
-        return path.substring(0, indexOfFirstFileSeparator(path));
+        return path.substring(0, indexOfFirstPathSeparator(path));
     }
     
     public static String extractTargetFromPath(String path) {
-        return path.substring(indexOfFirstFileSeparator(path) + 1);
+        return path.substring(indexOfFirstPathSeparator(path) + 1);
     }
     
     public static String trimSeparatorsInBothEnds(String target) {
