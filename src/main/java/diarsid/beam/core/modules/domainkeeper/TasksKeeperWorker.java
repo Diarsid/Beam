@@ -40,10 +40,12 @@ public class TasksKeeperWorker implements TasksKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoTasks dao;
+    private final KeeperDialogHelper helper;
 
-    public TasksKeeperWorker(InnerIoEngine ioEngine, DaoTasks dao) {
+    public TasksKeeperWorker(InnerIoEngine ioEngine, DaoTasks dao, KeeperDialogHelper helper) {
         this.ioEngine = ioEngine;
         this.dao = dao;
+        this.helper = helper;
     }
 
     @Override
@@ -126,7 +128,7 @@ public class TasksKeeperWorker implements TasksKeeper {
     @Override
     public boolean deleteTask(Initiator initiator, RemoveEntityCommand command) {
         boolean removed = false;
-        //
+        
         fireAsync("tasks_updated");
         return removed;
     }

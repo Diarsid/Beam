@@ -60,7 +60,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 dialogHelper);
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
-                dataModule.getDaoTasks());
+                dataModule.getDaoTasks(), 
+                dialogHelper);
         
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 

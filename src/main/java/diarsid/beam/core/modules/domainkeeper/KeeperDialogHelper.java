@@ -26,7 +26,6 @@ import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_UNDEFI
 import static diarsid.beam.core.control.io.commands.EditableTarget.argToTarget;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.applyValidatationRule;
 
 /**
  *
@@ -42,38 +41,38 @@ public class KeeperDialogHelper {
     
     public String validateInteractively(
             Initiator initiator, String argument, String ioRequest, ValidationRule rule) {
-        ValidationResult result = applyValidatationRule(argument, rule);
+        ValidationResult result = rule.apply(argument);
         if ( result.isOk() ) {
             return argument;
         } else {
-            String anotherValue = "";
-            while ( result.isFail() ) {
-                this.ioEngine.report(initiator, result.getFailureMessage());
-                anotherValue = this.ioEngine.askInput(initiator, ioRequest);            
-                if ( anotherValue.isEmpty() ) {
-                    return "";
-                } 
-                result = applyValidatationRule(argument, rule);
-            }
-            return anotherValue;
+            return this.inputAndValidateInLoop(result, initiator, ioRequest, rule, argument);
         }
     } 
 
+    private String inputAndValidateInLoop(
+            ValidationResult result, 
+            Initiator initiator, 
+            String ioRequest, 
+            ValidationRule rule, 
+            String argument) {
+        String anotherValue = "";
+        while ( result.isFail() ) {
+            this.ioEngine.report(initiator, result.getFailureMessage());
+            anotherValue = this.ioEngine.askInput(initiator, ioRequest);
+            if ( anotherValue.isEmpty() ) {
+                return "";
+            }
+            result = rule.apply(argument);
+        }
+        return anotherValue;
+    }
+
     public String validateEntityNameInteractively(Initiator initiator, String argument) {
-        ValidationResult result = applyValidatationRule(argument, ENTITY_NAME);
+        ValidationResult result = ENTITY_NAME.apply(argument);
         if ( result.isOk() ) {
             return argument;
         } else {
-            String anotherValue = "";
-            while ( result.isFail() ) {
-                this.ioEngine.report(initiator, result.getFailureMessage());
-                anotherValue = this.ioEngine.askInput(initiator, "name");            
-                if ( anotherValue.isEmpty() ) {
-                    return "";
-                } 
-                result = applyValidatationRule(argument, ENTITY_NAME);
-            }
-            return anotherValue;
+            return this.inputAndValidateInLoop(result, initiator, "name", ENTITY_NAME, argument);
         }
     } 
     

@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.domain.entities.validation;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.findUnacceptableIn;
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotSimple;
@@ -21,7 +23,7 @@ public enum ValidationRule {
     
     WEB_URL {
         @Override
-        ValidationResult apply(String target) {
+        public ValidationResult apply(String target) {
             if ( isAcceptableWebPath(target) ) {
                 return validationOk();
             } else {
@@ -32,7 +34,7 @@ public enum ValidationRule {
     
     LOCAL_DIRECTORY_PATH {
         @Override
-        ValidationResult apply(String target) {
+        public ValidationResult apply(String target) {
             if ( ! pathIsDirectory(target) ) {
                 return validationFailsWith("this path is not a directory.");
             }
@@ -42,10 +44,11 @@ public enum ValidationRule {
     
     ENTITY_NAME {
         @Override
-        ValidationResult apply(String target) {
+        public ValidationResult apply(String target) {
             if ( wordIsNotAcceptable(target) ) {
-                return validationFailsWith(
-                        "symbol '" + findUnacceptableIn(target) + "' is not allowed in entity name.");
+                return validationFailsWith(format(
+                        "symbol '%s' is not allowed in entity name.", 
+                        findUnacceptableIn(target)));
             }
             if ( wordIsNotSimple(target) ) {
                 return validationFailsWith(target + " is not a plain word or a group of words.");
@@ -54,7 +57,7 @@ public enum ValidationRule {
         }
     };
     
-    abstract ValidationResult apply(String target);
+    public abstract ValidationResult apply(String target);
     
     public static ValidationResult applyValidatationRule(String target, ValidationRule rule) {
         return rule.apply(target);
