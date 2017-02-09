@@ -20,7 +20,6 @@ import diarsid.beam.core.control.io.base.TimeMessage;
 import diarsid.beam.core.control.io.commands.CreateEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateTaskCommand;
-import diarsid.beam.core.domain.actions.Callback;
 import diarsid.beam.core.domain.entities.SchedulableType;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.exceptions.TaskTimeFormatInvalidException;
@@ -34,18 +33,17 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.beam.core.domain.entities.SchedulableType.MONTHLY_REPEAT;
 import static diarsid.beam.core.domain.entities.SchedulableType.NO_REPEAT;
 import static diarsid.beam.core.domain.entities.SchedulableType.YEARLY_REPEAT;
+import static diarsid.beam.core.events.BeamEventRuntime.fireAsync;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoTasks dao;
-    private Optional<Callback> tasksUpdatedCallback;
 
     public TasksKeeperWorker(InnerIoEngine ioEngine, DaoTasks dao) {
         this.ioEngine = ioEngine;
         this.dao = dao;
-        this.tasksUpdatedCallback = Optional.empty();
     }
 
     @Override
@@ -73,13 +71,6 @@ public class TasksKeeperWorker implements TasksKeeper {
     @Override
     public Optional<LocalDateTime> getTimeOfFirstTask(Initiator initiator) {
         return this.dao.getTimeOfFirstActiveTask(initiator);
-    }
-
-    @Override
-    public void registerTasksUpdatingCallback(Callback callback) {
-        if ( ! this.tasksUpdatedCallback.isPresent() ) {
-            this.tasksUpdatedCallback = Optional.of(callback);
-        }
     }
 
     @Override
@@ -111,28 +102,32 @@ public class TasksKeeperWorker implements TasksKeeper {
     @Override
     public boolean createTask(Initiator initiator, CreateTaskCommand command) {
         boolean created = false;
-        this.tasksUpdatedCallback.ifPresent(Callback::call);
+        //
+        fireAsync("tasks_updated");
         return created;
     }
 
     @Override
     public boolean createReminder(Initiator initiator, CreateEntityCommand command) {
         boolean created = false;
-        this.tasksUpdatedCallback.ifPresent(Callback::call);
+        //
+        fireAsync("tasks_updated");
         return created;
     }
 
     @Override
     public boolean createEvent(Initiator initiator, CreateEntityCommand command) {
         boolean created = false;
-        this.tasksUpdatedCallback.ifPresent(Callback::call);
+        //
+        fireAsync("tasks_updated");
         return created;
     }
 
     @Override
     public boolean deleteTask(Initiator initiator, RemoveEntityCommand command) {
         boolean removed = false;
-        this.tasksUpdatedCallback.ifPresent(Callback::call);
+        //
+        fireAsync("tasks_updated");
         return removed;
     }
     

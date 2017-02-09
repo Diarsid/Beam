@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openAsync the template in the editor.
  */
 
 package diarsid.beam.core.domain.entities;
@@ -14,7 +14,6 @@ import java.util.Objects;
 
 import diarsid.beam.core.control.io.base.ConvertableToVariant;
 import diarsid.beam.core.control.io.base.Variant;
-import diarsid.beam.core.domain.actions.Callback;
 
 import static java.lang.String.format;
 
@@ -22,6 +21,8 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.util.Logs.debug;
 import static diarsid.beam.core.util.Logs.logError;
+
+import diarsid.beam.core.domain.actions.EmptyCallback;
 
 /**
  *
@@ -56,12 +57,12 @@ public class Location
         return LOCATION;
     }
     
-    public void open(
+    public void openAsync(
             String target, 
-            Callback successCallback,
-            Callback exceptionCallback, 
-            Callback locationNotFoundCallback,
-            Callback targetNotFoundCallback) {
+            EmptyCallback successCallback,
+            EmptyCallback exceptionCallback, 
+            EmptyCallback locationNotFoundCallback,
+            EmptyCallback targetNotFoundCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             File finalTarget = new File(this.path + "/" + target);
@@ -85,10 +86,10 @@ public class Location
         });
     }
     
-    public void open(
-            Callback successCallback,
-            Callback exceptionCallback, 
-            Callback locationNotFoundCallback) {
+    public void openAsync(
+            EmptyCallback successCallback,
+            EmptyCallback exceptionCallback, 
+            EmptyCallback locationNotFoundCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             if ( location.exists() && location.isDirectory() ) {

@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package diarsid.beam.core.modules.tasks;
+package diarsid.beam.core.modules.taskswatcher;
 
 import java.time.LocalDateTime;
 

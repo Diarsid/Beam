@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 import diarsid.beam.core.application.ProgramsCatalog;
-import diarsid.beam.core.domain.actions.Callback;
+import diarsid.beam.core.domain.actions.EmptyCallback;
 
 import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.util.Logs.logError;
@@ -54,12 +54,16 @@ public class Program {
         return this.fullName;
     }
     
-    public void invoke(Callback programNotFoundCallback, Callback exceptionCallback) {
+    public void runAsync(
+            EmptyCallback successCallback, 
+            EmptyCallback programNotFoundCallback, 
+            EmptyCallback exceptionCallback) {
         asyncDo(() -> {
             File program = this.programsCatalog.asFile(this);
             if ( program.exists() && program.isFile() ) {
                 try {
-                    Desktop.getDesktop().open(program);            
+                    Desktop.getDesktop().open(program);  
+                    successCallback.call();
                 } catch (IOException | IllegalArgumentException e) {
                     exceptionCallback.call();
                     logError(this.getClass(), e);

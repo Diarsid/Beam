@@ -6,10 +6,10 @@
 
 package diarsid.beam.core.events;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import static diarsid.beam.core.events.BeamEventRuntime.registerCallbackForType;
+import diarsid.beam.core.domain.actions.Callback;
+
 import static diarsid.beam.core.events.BeamEventRuntime.unregisterCallbacksFor;
 
 /**
@@ -19,17 +19,15 @@ import static diarsid.beam.core.events.BeamEventRuntime.unregisterCallbacksFor;
 public class Subscription {
     
     private final String type;
-    private final Set<EventCallback> callbacks;
+    private final Set<Callback> callbacks;
     
-    public Subscription(String type) {
+    public Subscription(String type, Set<Callback> callbacks) {
         this.type = type;
-        this.callbacks = new HashSet<>();
+        this.callbacks = callbacks;
     }
     
-    public Subscription withCallback(EventCallback callback) {
-        registerCallbackForType(this.type, callback);
-        this.callbacks.add(callback);
-        return this;
+    public String type() {
+        return this.type;
     }
     
     public void unsubscribe() {

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.tasks;
+package diarsid.beam.core.modules.taskswatcher;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +23,10 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.domain.entities.SchedulableType.DAILY_REPEAT;
 import static diarsid.beam.core.domain.entities.SchedulableType.HOURLY_REPEAT;
-import static diarsid.beam.core.modules.tasks.LagType.LAG_AFTER_INITIAL_START;
-import static diarsid.beam.core.modules.tasks.LagType.LAG_AFTER_TEMPORARY_PAUSE;
-import static diarsid.beam.core.modules.tasks.TimeUtil.getMillisFromNowToTime;
-import static diarsid.beam.core.modules.tasks.TimeUtil.getMinutesFromPastToNow;
+import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_INITIAL_START;
+import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_TEMPORARY_PAUSE;
+import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;
+import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMinutesFromPastToNow;
 import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.util.Logs.debug;
 

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.tasks;
+package diarsid.beam.core.modules.taskswatcher;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;

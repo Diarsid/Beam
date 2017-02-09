@@ -13,9 +13,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import diarsid.beam.core.domain.actions.Callback;
+
 import static java.lang.Runtime.getRuntime;
 
-import static diarsid.beam.core.util.CollectionsUtils.nonNullNonEmpty;
+import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.util.Logs.log;
 
 /**
@@ -24,12 +26,14 @@ import static diarsid.beam.core.util.Logs.log;
  */
 public class BeamEventRuntime {
     
-    private static final Map<String, Set<EventCallback>> CALLBACKS;
+    private static final Map<String, Set<EmptyEventCallback>> EMPTY_CALLBACKS;
+    private static final Map<String, Set<PayloadEventCallback>> PAYLOAD_CALLBACKS;
     private static final ExecutorService EXECUTOR;
     private static final Object CALLBACKS_SYNC_MONITOR;
     
     static {
-        CALLBACKS = new HashMap<>();
+        EMPTY_CALLBACKS = new HashMap<>();
+        PAYLOAD_CALLBACKS = new HashMap<>();
         EXECUTOR = new ScheduledThreadPoolExecutor(5);
         CALLBACKS_SYNC_MONITOR = new Object();
         getRuntime().addShutdownHook(new Thread(() -> shutdownEventRuntime()));
@@ -38,8 +42,8 @@ public class BeamEventRuntime {
     private BeamEventRuntime() {
     }
     
-    public static Subscription subscribeOn(String type) {
-        return new Subscription(type);
+    public static SubscriptionBuilder subscribeOn(String type) {
+        return new SubscriptionBuilder(type);
     }
     
     private static void shutdownEventRuntime() {
@@ -47,32 +51,60 @@ public class BeamEventRuntime {
         log(BeamEventRuntime.class, "shutdown.");
     }
     
-    static void registerCallbackForType(String type, EventCallback callback) {
-        if ( CALLBACKS.containsKey(type) ) {
-            synchronized ( CALLBACKS_SYNC_MONITOR ) {
-                CALLBACKS.get(type).add(callback);
-            }
-        } else {
-            synchronized ( CALLBACKS_SYNC_MONITOR ) {
-                CALLBACKS.put(type, new HashSet<>());
-                CALLBACKS.get(type).add(callback);
-            }            
-        }
-    }
-    
-    static void unregisterCallbacksFor(String type, Set<EventCallback> callbacksToUnreg) {
-        Set<EventCallback> callbacksOfType = CALLBACKS.get(type);
-        if ( nonNullNonEmpty(callbacksOfType) ) {
-            synchronized ( CALLBACKS_SYNC_MONITOR ) { 
-                callbacksOfType.removeAll(callbacksToUnreg);
+    static void registerCallbackForType(String type, EmptyEventCallback callback) {
+        synchronized ( CALLBACKS_SYNC_MONITOR ) {
+            if ( EMPTY_CALLBACKS.containsKey(type) ) {            
+                EMPTY_CALLBACKS.get(type).add(callback);
+            } else {                
+                EMPTY_CALLBACKS.put(type, new HashSet<>());
+                EMPTY_CALLBACKS.get(type).add(callback);
             }
         }
     }
     
-    public static void fireAsync(Event event) {
-        Set<EventCallback> callbacks = CALLBACKS.get(event.type());
-        if ( nonNullNonEmpty(callbacks) ) {
-            callbacks.forEach((callback) -> EXECUTOR.submit(() -> callback.onEvent(event)));         
+    static void registerCallbackForType(String type, PayloadEventCallback callback) {
+        synchronized ( CALLBACKS_SYNC_MONITOR ) {
+            if ( PAYLOAD_CALLBACKS.containsKey(type) ) {            
+                PAYLOAD_CALLBACKS.get(type).add(callback);
+            } else {                
+                PAYLOAD_CALLBACKS.put(type, new HashSet<>());
+                PAYLOAD_CALLBACKS.get(type).add(callback);
+            }
         }
+    }
+    
+    static void unregisterCallbacksFor(String type, Set<Callback> callbacksToUnreg) {
+        synchronized ( CALLBACKS_SYNC_MONITOR ) {
+            PAYLOAD_CALLBACKS.get(type).removeAll(callbacksToUnreg);
+            EMPTY_CALLBACKS.get(type).removeAll(callbacksToUnreg);
+        }
+    }
+    
+    public static void fireAsync(String eventType) {
+        asyncDo(() -> {
+            EMPTY_CALLBACKS
+                    .get(eventType)
+                    .stream()
+                    .forEach(emptyCallback -> {
+                        emptyCallback.onEvent(eventType);
+                    });
+        });
+    }
+    
+    public static void fireAsync(String eventType, Object payload) {
+        asyncDo(() -> {
+            EMPTY_CALLBACKS
+                    .get(eventType)
+                    .stream()
+                    .forEach(emptyCallback -> {
+                        emptyCallback.onEvent(eventType);
+                    });
+            PAYLOAD_CALLBACKS
+                    .get(eventType)
+                    .stream()
+                    .forEach(payloadCallback -> {
+                        payloadCallback.onEvent(eventType, payload);
+                    });
+        });
     }
 }

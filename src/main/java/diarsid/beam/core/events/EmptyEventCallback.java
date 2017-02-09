@@ -3,12 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.actions;
+package diarsid.beam.core.events;
+
+import diarsid.beam.core.domain.actions.Callback;
 
 /**
  *
  * @author Diarsid
  */
-public interface Callback {
-    
+@FunctionalInterface
+public interface EmptyEventCallback extends Callback {    
+    public void onEvent(String eventType);
 }

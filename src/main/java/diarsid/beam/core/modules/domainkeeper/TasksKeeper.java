@@ -14,7 +14,6 @@ import diarsid.beam.core.control.io.base.TimeMessage;
 import diarsid.beam.core.control.io.commands.CreateEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateTaskCommand;
-import diarsid.beam.core.domain.actions.Callback;
 import diarsid.beam.core.domain.entities.Task;
 
 /**
@@ -43,9 +42,6 @@ public interface TasksKeeper {
     
     Optional<LocalDateTime> getTimeOfFirstTask(
             Initiator initiator);
-    
-    void registerTasksUpdatingCallback(
-            Callback callback);
     
     boolean createTask(
             Initiator initiator, CreateTaskCommand command);

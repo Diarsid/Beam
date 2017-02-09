@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.tasks;
+package diarsid.beam.core.modules.taskswatcher;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,10 +18,10 @@ import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import static diarsid.beam.core.modules.tasks.TimeUtil.getMillisFromNowToTime;
-import static diarsid.beam.core.modules.tasks.TimeUtil.getNextMonthBeginning;
-import static diarsid.beam.core.modules.tasks.TimeUtil.getNextWeekBeginning;
-import static diarsid.beam.core.modules.tasks.TimeUtil.getThisWeekBeginning;
+import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;
+import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextMonthBeginning;
+import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextWeekBeginning;
+import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getThisWeekBeginning;
 import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
 
 /**

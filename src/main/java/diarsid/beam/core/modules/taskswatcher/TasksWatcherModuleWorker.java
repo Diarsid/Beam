@@ -2,12 +2,14 @@
  * project: Beam
  * author: Diarsid
  */
-package diarsid.beam.core.modules.tasks;
+package diarsid.beam.core.modules.taskswatcher;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
+
+import static diarsid.beam.core.events.BeamEventRuntime.subscribeOn;
 
 
 /**
@@ -50,9 +52,10 @@ class TasksWatcherModuleWorker implements TasksWatcherModule {
     void beginWork() {
         this.executionScheduler.beginTasksProcessing();
         this.notificationScheduler.beginNotificationsProcessing();
-        this.tasksKeeper.registerTasksUpdatingCallback(() -> {
-            this.executionScheduler.refresh();
-        });
+        subscribeOn("tasks_udpated")
+                .withCallback(event -> {
+                    this.executionScheduler.refresh();
+                }).done();
     }
     
 }

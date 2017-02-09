@@ -9,6 +9,7 @@ package diarsid.beam.core.domain.actions;
  *
  * @author Diarsid
  */
-public interface Callback {
-    
+@FunctionalInterface
+public interface EmptyCallback extends Callback {
+    void call();
 }

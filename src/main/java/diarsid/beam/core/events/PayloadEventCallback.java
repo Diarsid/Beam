@@ -5,12 +5,13 @@
  */
 package diarsid.beam.core.events;
 
+import diarsid.beam.core.domain.actions.Callback;
+
 /**
  *
  * @author Diarsid
  */
 @FunctionalInterface
-public interface EventCallback {
-    
-    public void onEvent(Event event);
+public interface PayloadEventCallback extends Callback {
+    void onEvent(String eventType, Object payload);
 }
