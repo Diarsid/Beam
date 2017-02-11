@@ -7,16 +7,13 @@
 package diarsid.beam.core.modules.web.core.container;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import diarsid.beam.core.modules.web.core.rest.RestUrlParamsParser;
-
-import static java.util.Collections.emptyMap;
+import static diarsid.beam.core.util.StringUtils.randomString;
 
 
 public abstract class Resource 
@@ -31,17 +28,12 @@ public abstract class Resource
     private final String name;
     private final String mappingUrlSchema;
     private final String mappingUrlRegexp;
-    private final RestUrlParamsParser paramsParser;
 
-    public Resource(
-            String name, 
-            String mappingUrlSchema,
-            RestUrlParamsParser paramsParser) {
-        this.name = name;
+    public Resource(String mappingUrlSchema) {
+        this.name = randomString(13);
         this.mappingUrlSchema = mappingUrlSchema;
         this.mappingUrlRegexp = mappingUrlSchema
                 .replaceAll("\\{[a-zA-Z0-9-_\\.>\\s]+\\}", PARAMETER_REGEXP);
-        this.paramsParser = paramsParser;
     }
     
     @Override
@@ -101,20 +93,11 @@ public abstract class Resource
     }
     
     private ResourceRequest wrap(HttpServletRequest servletRequest) {
-        return new ResourceRequest(servletRequest, this.provideParameters(servletRequest));
+        return new ResourceRequest(servletRequest, this.mappingUrlSchema);
     }
     
     private ResourceResponse wrap(HttpServletResponse servletResponse) {
         return new ResourceResponse(servletResponse);
-    }
-
-    private Map<String, String> provideParameters(HttpServletRequest servletRequest) {
-        String requestUrl = servletRequest.getRequestURL().toString();
-        if ( this.paramsParser.ifHasParams(requestUrl) ) {
-            return this.paramsParser.parse(this.mappingUrlSchema, requestUrl);
-        } else {
-            return emptyMap();
-        }        
     }
     
     protected void GET(ResourceRequest request, ResourceResponse response) throws IOException {

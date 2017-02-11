@@ -11,6 +11,10 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static java.util.Objects.isNull;
+
+import static diarsid.beam.core.modules.web.core.container.RestUrlParametersUtil.parse;
+
 /**
  *
  * @author Diarsid
@@ -18,16 +22,23 @@ import javax.servlet.http.HttpServletRequest;
 public class ResourceRequest {
     
     private final HttpServletRequest servletRequest;
-    private final Map<String, String> requestParams;
+    private final String urlSchema;
+    private Map<String, String> params;
     
-    public ResourceRequest(
-            HttpServletRequest servletRequest, 
-            Map<String, String> requestParams) {
+    public ResourceRequest(HttpServletRequest servletRequest, String urlSchema) {
         this.servletRequest = servletRequest;
-        this.requestParams = requestParams;
+        this.urlSchema = urlSchema;
+        this.params = null;
+    }
+    
+    private void parseParams() {
+        this.params = parse(this.urlSchema, this.servletRequest.getPathInfo());
     }
     
     public Optional<String> getParam(String param) {
-        return Optional.ofNullable(this.requestParams.get(param));
+        if ( isNull(this.params) ) {
+            this.parseParams();
+        }
+        return Optional.ofNullable(this.params.get(param));
     }
 }

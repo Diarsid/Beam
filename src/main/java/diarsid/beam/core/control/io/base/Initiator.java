@@ -9,7 +9,7 @@ package diarsid.beam.core.control.io.base;
 import java.io.Serializable;
 import java.util.Objects;
 
-import diarsid.beam.core.util.RandomHexadecimalStringGenerator;
+import static diarsid.beam.core.util.StringUtils.randomString;
 
 /**
  *
@@ -17,16 +17,10 @@ import diarsid.beam.core.util.RandomHexadecimalStringGenerator;
  */
 public final class Initiator implements Serializable {
     
-    private final static RandomHexadecimalStringGenerator GENERATOR;
-    
-    static {
-        GENERATOR = new RandomHexadecimalStringGenerator();
-    }
-    
     private final String id;
     
     public Initiator() {
-        this.id = GENERATOR.randomString(7);
+        this.id = randomString(7);
     }
     
     public String getId() {

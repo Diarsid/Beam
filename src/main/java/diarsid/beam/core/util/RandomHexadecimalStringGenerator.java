@@ -6,8 +6,8 @@
 
 package diarsid.beam.core.util;
 
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
@@ -16,10 +16,7 @@ import java.util.UUID;
 
 public class RandomHexadecimalStringGenerator {
     
-    private final Random random;
-    
-    public RandomHexadecimalStringGenerator() {
-        this.random = new Random();
+    RandomHexadecimalStringGenerator() {
     }
     
     public String randomString(int length) {
@@ -50,7 +47,7 @@ public class RandomHexadecimalStringGenerator {
     public String randomString(int minLength, int maxLength) {
         int randomLength = -1;
         while ( randomLength < minLength ) {            
-            randomLength = random.nextInt(maxLength + 1);
+            randomLength = ThreadLocalRandom.current().nextInt(maxLength + 1);
         }
         return this.randomString(randomLength);
     }

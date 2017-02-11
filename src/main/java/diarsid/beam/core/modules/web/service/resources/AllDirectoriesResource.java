@@ -13,13 +13,13 @@ import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.web.core.container.Resource;
 import diarsid.beam.core.modules.web.core.container.ResourceRequest;
 import diarsid.beam.core.modules.web.core.container.ResourceResponse;
-import diarsid.beam.core.modules.web.core.rest.RestUrlParamsParser;
 
 import static java.util.Objects.nonNull;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import static diarsid.beam.core.domain.entities.WebPlace.argToPlacement;
+import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.jsonError;
 
 /**
  *
@@ -27,11 +27,8 @@ import static diarsid.beam.core.domain.entities.WebPlace.argToPlacement;
  */
 public class AllDirectoriesResource extends Resource {
         
-    public AllDirectoriesResource(RestUrlParamsParser parser) {
-        super(
-                "ALL_DIRECTORIES_RESOURCE", 
-                "/resources/{placement}/directories", 
-                parser);
+    public AllDirectoriesResource() {
+        super("/resources/{placement}/directories");
     }
     
     @Override
@@ -53,10 +50,10 @@ public class AllDirectoriesResource extends Resource {
             if ( nonNull(place) ) {
                 response.writeOkJson(this.getJsonDirectoriesFrom(place));
             } else {
-                response.writeErrorJson(json, SC_BAD_REQUEST);
+                response.writeErrorJson(jsonError("web place is not specified."), SC_BAD_REQUEST);
             }            
         } else {
-            response.writeErrorJson(SC_BAD_REQUEST);
+            response.writeErrorJson(jsonError("web place is not specified."), SC_BAD_REQUEST);
         }
     }
     

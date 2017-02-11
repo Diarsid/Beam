@@ -21,7 +21,17 @@ import static java.util.stream.Collectors.toList;
  */
 public class StringUtils {
     
+    private final static RandomHexadecimalStringGenerator GENERATOR;
+    
+    static {
+        GENERATOR = new RandomHexadecimalStringGenerator();
+    }
+    
     private StringUtils() {
+    }
+    
+    public static String randomString(int length) {
+        return GENERATOR.randomString(length);
     }
     
     public static String lower(String target) {

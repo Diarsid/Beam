@@ -4,48 +4,50 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.web.core.rest;
+package diarsid.beam.core.modules.web.core.container;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import diarsid.beam.core.modules.web.core.exceptions.ResourceUrlParsingException;
 
 /**
  *
  * @author Diarsid
  */
-public class RestUrlParamsParser {
+public class RestUrlParametersUtil {
 
-    public RestUrlParamsParser() {
+    private RestUrlParametersUtil() {
     }
     
-    public boolean ifHasParams(String requestUrl) {
+    public static boolean ifHasParams(String requestUrl) {
         return 
                 requestUrl.contains("{") && 
                 requestUrl.contains("}");
     }
     
-    String extractParamName(String param) {
-        return param
-                .replace("{", "")
-                .replace("}", "")
-                .trim();
+    private static String extractParamName(String param) {
+        param = param.trim();
+        if ( isParam(param) ) {
+            // {param} -> param 
+            return param.substring(1, param.length() - 1);
+        } else {
+            return param;
+        }
     }
 
-    boolean isParam(String templateUrlPart) {
+    private static boolean isParam(String templateUrlPart) {
         return 
                 templateUrlPart.startsWith("{") && 
                 templateUrlPart.endsWith("}");
     }
     
-    public Map<String, String> parse(String urlTemplate, String actualUrl) {
-        return this.v1parse(urlTemplate, actualUrl);
+    public static Map<String, String> parse(String urlTemplate, String actualUrl) {
+        return v1parse(urlTemplate, actualUrl);
     } 
 
-    private Map<String, String> v1parse(String urlTemplate, String actualUrl) 
+    private static Map<String, String> v1parse(String urlTemplate, String actualUrl) 
             throws ResourceUrlParsingException {
         List<String> templateUrlParts = Arrays.asList(urlTemplate.split("/"));
         List<String> actualUrlParts = Arrays.asList(actualUrl.split("/"));
@@ -58,9 +60,9 @@ public class RestUrlParamsParser {
         
         for (int i = 0; i < templateUrlParts.size(); i++) {
             currentUrlTemplatePart = templateUrlParts.get(i);
-            if ( this.isParam(currentUrlTemplatePart) ) {
+            if ( isParam(currentUrlTemplatePart) ) {
                 resolvedPathParams.put(
-                        this.extractParamName(currentUrlTemplatePart), 
+                        extractParamName(currentUrlTemplatePart), 
                         actualUrlParts.get(i));
             }
         }    
