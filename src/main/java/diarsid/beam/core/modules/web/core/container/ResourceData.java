@@ -11,9 +11,7 @@ package diarsid.beam.core.modules.web.core.container;
  */
 public interface ResourceData {
     
-    String getName();
+    String name();
     
-    String getUrlMappingSchema();
-    
-    String getUrlMappingSchemaRegexp();
+    String url();
 }

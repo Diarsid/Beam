@@ -20,7 +20,8 @@ import static java.util.Collections.emptyMap;
 
 
 public abstract class Resource 
-        extends HttpServlet {
+        extends HttpServlet 
+        implements ResourceData {
     
     private static final String PARAMETER_REGEXP;
     static {        
@@ -43,11 +44,17 @@ public abstract class Resource
         this.paramsParser = paramsParser;
     }
     
-    public String name() {
+    @Override
+    public final String name() {
         return this.name;
     }
     
-    public boolean matchesUrl(String url) {
+    @Override
+    public final String url() {
+        return this.mappingUrlSchema;
+    }
+    
+    public final boolean matchesUrl(String url) {
         return url.matches(this.mappingUrlRegexp);
     }
     

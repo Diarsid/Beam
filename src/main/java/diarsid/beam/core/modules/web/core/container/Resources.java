@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.web.core.container;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toSet;
@@ -31,5 +32,9 @@ public class Resources {
                 .filter(resource -> resource.matchesUrl(url))
                 .map(resource -> resource.name())
                 .findFirst();
+    }
+    
+    public void doForEach(Consumer<Resource> action) {
+        this.resources.forEach(action);
     }
 }

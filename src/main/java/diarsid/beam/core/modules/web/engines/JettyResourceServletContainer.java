@@ -24,7 +24,6 @@ import diarsid.beam.core.config.Configuration;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
-import diarsid.beam.core.modules.web.core.container.Resource;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 
@@ -134,11 +133,11 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     @Override
     public void install(AbstractDispatcherServlet dispatcher, Resources resources) {
         this.jettyContext.addServlet(new ServletHolder("{dispatcher}", dispatcher), "/*");
-        for (Resource resource : resources.getAll()) {
-            this.jettyContext.addServlet(
-                    new ServletHolder(resource.getName(), resource), 
-                    resource.getUrlMappingSchema());
-        }
+        resources.doForEach(resource -> {
+                this.jettyContext.addServlet(
+                    new ServletHolder(resource.name(), resource), 
+                    resource.url());
+        });
     }
     
     @Override
