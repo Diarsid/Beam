@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import static java.lang.String.format;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
@@ -45,31 +46,45 @@ public class ResourceResponse {
         }
     }
     
-    public void writeOk() throws IOException {
+    public void ok() throws IOException {
         this.servletResponse.setStatus(SC_OK);
         this.servletResponse.getWriter().close();
     }
     
-    public void writeError(int status) throws IOException {
+    public void badRequest() throws IOException {
+        this.servletResponse.setStatus(SC_BAD_REQUEST);
+        this.servletResponse.getWriter().close();
+    }
+    
+    public void status(int status) throws IOException {
         this.servletResponse.setStatus(status);
         this.servletResponse.getWriter().close();
     }
     
-    public void writeOkJson(String json) throws IOException {
+    public void okWithJson(String json) throws IOException {
         this.servletResponse.setStatus(SC_OK);
         this.servletResponse.setContentType("application/json");
         this.servletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = this.servletResponse.getWriter()) {
-            
-        }
+        this.servletResponse.setContentLength(json.length());
+        this.servletResponse.getWriter().write(json);
+        this.servletResponse.getWriter().close();
     }
     
-    public void writeErrorJson(String json, int status) throws IOException {
+    public void badRequestWithJson(String json) throws IOException {
+        this.servletResponse.setStatus(SC_BAD_REQUEST);
+        this.servletResponse.setContentType("application/json");
+        this.servletResponse.setCharacterEncoding("UTF-8");
+        this.servletResponse.setContentLength(json.length());
+        this.servletResponse.getWriter().write(json);
+        this.servletResponse.getWriter().close();
+    }
+    
+    public void statusWithJson(String json, int status) throws IOException {
         this.servletResponse.setStatus(status);
         this.servletResponse.setContentType("application/json");
         this.servletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = this.servletResponse.getWriter()) {
-            
-        }
+        this.servletResponse.setContentLength(json.length());
+        this.servletResponse.getWriter().write(json);
+        this.servletResponse.getWriter().close();
     }
 }

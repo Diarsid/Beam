@@ -6,9 +6,7 @@
 
 package diarsid.beam.core.modules.web.core.container;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -46,26 +44,61 @@ public class RestUrlParametersUtil {
     public static Map<String, String> parse(String urlTemplate, String actualUrl) {
         return v1parse(urlTemplate, actualUrl);
     } 
+    
+    public static void main(String[] args) {
+        Map<String, String> params = v1parse(
+                "{user}", 
+                "John");
+        System.out.println("params qty: " + params.size());
+        params.forEach((key, value) -> System.out.println(key + " : " + value));
+    }
+    
+    private static Map<String, String> v2parse(String urlTemplate, String actualUrl) 
+            throws ResourceUrlParsingException {
+        Map<String, String> pathParams = new HashMap<>();
+        int indexOfCurrentTemplatePathPart = 0;
+        int indexOfCurrentActualPathPart = 0;
+        int indexOfTemplateSeparator = urlTemplate.indexOf("/");
+        int indexOfActualSeparator = actualUrl.indexOf("/");
+        String currentTemplatePathPart;
+        String currentActualPathPart;
+        
+        do {
+            if ( indexOfTemplateSeparator == -1 || indexOfActualSeparator == -1 ) {
+                currentTemplatePathPart = urlTemplate.substring(indexOfCurrentTemplatePathPart, urlTemplate.length());
+                currentActualPathPart = actualUrl.substring(indexOfCurrentActualPathPart, actualUrl.length());
+            } else {
+                currentTemplatePathPart = urlTemplate.substring(indexOfCurrentTemplatePathPart, indexOfTemplateSeparator);
+                currentActualPathPart = actualUrl.substring(indexOfCurrentActualPathPart, indexOfActualSeparator);
+            }            
+            if ( isParam(currentTemplatePathPart) ) {
+                pathParams.put(extractParamName(currentTemplatePathPart), currentActualPathPart);
+            }
+            indexOfCurrentTemplatePathPart = indexOfTemplateSeparator + 1;
+            indexOfCurrentActualPathPart = indexOfActualSeparator + 1;
+            indexOfTemplateSeparator = urlTemplate.indexOf("/", indexOfTemplateSeparator + 1);
+            indexOfActualSeparator = actualUrl.indexOf("/", indexOfActualSeparator + 1);
+        } while ( indexOfCurrentTemplatePathPart != 0 && indexOfCurrentActualPathPart != 0 );
+        
+        return pathParams;
+    }
 
     private static Map<String, String> v1parse(String urlTemplate, String actualUrl) 
             throws ResourceUrlParsingException {
-        List<String> templateUrlParts = Arrays.asList(urlTemplate.split("/"));
-        List<String> actualUrlParts = Arrays.asList(actualUrl.split("/"));
-        Map<String, String> resolvedPathParams = new HashMap<>();
-        String currentUrlTemplatePart;
+        String[] templateUrlParts = urlTemplate.split("/");
+        String[] actualUrlParts = actualUrl.split("/");
+        Map<String, String> pathParams = new HashMap<>();
         
-        if ( templateUrlParts.size() != actualUrlParts.size() ) {
+        if ( templateUrlParts.length != actualUrlParts.length ) {
             throw new ResourceUrlParsingException("actual url doesnt match expcted template.");
-        }        
+        }   
+        int partsQty = templateUrlParts.length;
         
-        for (int i = 0; i < templateUrlParts.size(); i++) {
-            currentUrlTemplatePart = templateUrlParts.get(i);
-            if ( isParam(currentUrlTemplatePart) ) {
-                resolvedPathParams.put(
-                        extractParamName(currentUrlTemplatePart), 
-                        actualUrlParts.get(i));
+        for (int i = 0; i < partsQty; i++) {
+            if ( isParam(templateUrlParts[i]) ) {
+                pathParams.put(extractParamName(templateUrlParts[i]), actualUrlParts[i]);
             }
         }    
-        return resolvedPathParams;
+        return pathParams;
     } 
 }

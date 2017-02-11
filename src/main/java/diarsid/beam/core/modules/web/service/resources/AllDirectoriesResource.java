@@ -16,10 +16,8 @@ import diarsid.beam.core.modules.web.core.container.ResourceResponse;
 
 import static java.util.Objects.nonNull;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-
-import static diarsid.beam.core.domain.entities.WebPlace.argToPlacement;
-import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.jsonError;
+import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
+import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 
 /**
  *
@@ -46,14 +44,14 @@ public class AllDirectoriesResource extends Resource {
                 throws IOException {
         Optional<String> optPlace = request.getParam("placement");
         if ( optPlace.isPresent() ) {
-            WebPlace place = argToPlacement(optPlace.get());
+            WebPlace place = parsePlace(optPlace.get());
             if ( nonNull(place) ) {
-                response.writeOkJson(this.getJsonDirectoriesFrom(place));
+                response.okWithJson(this.getJsonDirectoriesFrom(place));
             } else {
-                response.writeErrorJson(jsonError("web place is not specified."), SC_BAD_REQUEST);
+                response.badRequestWithJson(errorJson("web place is not specified."));
             }            
         } else {
-            response.writeErrorJson(jsonError("web place is not specified."), SC_BAD_REQUEST);
+            response.badRequestWithJson(errorJson("web place is not specified."));
         }
     }
     

@@ -24,7 +24,7 @@ public enum WebPlace implements Serializable {
         this.place = place;
     }    
 
-    public static WebPlace argToPlacement(String arg) {
+    public static WebPlace parsePlace(String arg) {
         switch ( lower(arg) ) {
             case "webp":
             case "webpanel":

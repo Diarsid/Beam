@@ -18,11 +18,11 @@ import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsAccepta
 import static diarsid.beam.core.control.io.interpreter.StreamArgumentsInterceptor.ArgumentInterception.INTERCEPTED;
 import static diarsid.beam.core.control.io.interpreter.StreamArgumentsInterceptor.ArgumentInterception.NOT_INTERCEPTED;
 import static diarsid.beam.core.domain.entities.TimePeriod.isAppropriateAsTimePeriod;
-import static diarsid.beam.core.domain.entities.WebPlace.argToPlacement;
 import static diarsid.beam.core.util.PathUtils.isAcceptableFilePath;
 import static diarsid.beam.core.util.PathUtils.isAcceptableRelativePath;
 import static diarsid.beam.core.util.PathUtils.isAcceptableWebPath;
 import static diarsid.beam.core.util.StringNumberUtils.isNumeric;
+import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 
 /**
  *
@@ -39,7 +39,7 @@ public class StreamArgumentsInterceptor {
                         wordIsAcceptable(arg) && 
                         ! isAcceptableWebPath(arg) && ! 
                         isAcceptableFilePath(arg) && 
-                        isNull(argToPlacement(arg)) &&
+                        isNull(parsePlace(arg)) &&
                         argToTarget(arg).isNotDefined();
             }
         },
@@ -82,12 +82,12 @@ public class StreamArgumentsInterceptor {
         WEB_PLACEMENT {
             @Override
             boolean isAppropriateFor(String arg) {
-                return nonNull(argToPlacement(arg));
+                return nonNull(parsePlace(arg));
             }
             
             @Override
             String convertIfNecessary(String arg) {
-                return argToPlacement(arg).name();
+                return parsePlace(arg).name();
             }
         },
         
