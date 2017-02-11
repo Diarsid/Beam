@@ -20,8 +20,12 @@ import static java.util.Collections.emptyMap;
 
 
 public abstract class Resource 
-        extends HttpServlet 
-        implements ResourceData {
+        extends HttpServlet {
+    
+    private static final String PARAMETER_REGEXP;
+    static {        
+        PARAMETER_REGEXP = "[a-zA-Z0-9-_\\.>\\s]+";
+    }
     
     private final String name;
     private final String mappingUrlSchema;
@@ -30,28 +34,21 @@ public abstract class Resource
 
     public Resource(
             String name, 
-            String mappingUrlSchema, 
-            String mappingUrlRegexp, 
+            String mappingUrlSchema,
             RestUrlParamsParser paramsParser) {
         this.name = name;
         this.mappingUrlSchema = mappingUrlSchema;
-        this.mappingUrlRegexp = mappingUrlRegexp;
+        this.mappingUrlRegexp = mappingUrlSchema
+                .replaceAll("\\{[a-zA-Z0-9-_\\.>\\s]+\\}", PARAMETER_REGEXP);
         this.paramsParser = paramsParser;
     }
-
-    @Override
-    public String getName() {
+    
+    public String name() {
         return this.name;
     }
-
-    @Override
-    public String getUrlMappingSchema() {
-        return this.mappingUrlSchema;
-    }
-
-    @Override
-    public String getUrlMappingSchemaRegexp() {
-        return this.mappingUrlRegexp;
+    
+    public boolean matchesUrl(String url) {
+        return url.matches(this.mappingUrlRegexp);
     }
     
     @Override

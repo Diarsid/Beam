@@ -13,18 +13,18 @@ import static diarsid.beam.core.util.StringUtils.lower;
  *
  * @author Diarsid
  */
-public enum WebPlacement implements Serializable {
+public enum WebPlace implements Serializable {
     
     BOOKMARKS ("bookmarks"),
     WEBPANEL ("webpanel");
     
     private final String place;
     
-    private WebPlacement(String place) {    
+    private WebPlace(String place) {    
         this.place = place;
     }    
 
-    public static WebPlacement argToPlacement(String arg) {
+    public static WebPlace argToPlacement(String arg) {
         switch ( lower(arg) ) {
             case "webp":
             case "webpanel":

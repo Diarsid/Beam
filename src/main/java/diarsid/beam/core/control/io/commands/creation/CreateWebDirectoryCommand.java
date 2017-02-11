@@ -8,10 +8,10 @@ package diarsid.beam.core.control.io.commands.creation;
 
 import diarsid.beam.core.control.io.commands.CommandType;
 import diarsid.beam.core.control.io.commands.DoubleStringCommand;
-import diarsid.beam.core.domain.entities.WebPlacement;
+import diarsid.beam.core.domain.entities.WebPlace;
 
 import static diarsid.beam.core.control.io.commands.CommandType.CREATE_PAGE_DIR;
-import static diarsid.beam.core.domain.entities.WebPlacement.valueOf;
+import static diarsid.beam.core.domain.entities.WebPlace.valueOf;
 
 
 public class CreateWebDirectoryCommand extends DoubleStringCommand {
@@ -28,7 +28,7 @@ public class CreateWebDirectoryCommand extends DoubleStringCommand {
         return super.getFirst();
     }
 
-    public WebPlacement getPlacement() {
+    public WebPlace getPlacement() {
         return valueOf(super.getSecond());
     }
     

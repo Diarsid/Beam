@@ -18,7 +18,7 @@ import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsAccepta
 import static diarsid.beam.core.control.io.interpreter.StreamArgumentsInterceptor.ArgumentInterception.INTERCEPTED;
 import static diarsid.beam.core.control.io.interpreter.StreamArgumentsInterceptor.ArgumentInterception.NOT_INTERCEPTED;
 import static diarsid.beam.core.domain.entities.TimePeriod.isAppropriateAsTimePeriod;
-import static diarsid.beam.core.domain.entities.WebPlacement.argToPlacement;
+import static diarsid.beam.core.domain.entities.WebPlace.argToPlacement;
 import static diarsid.beam.core.util.PathUtils.isAcceptableFilePath;
 import static diarsid.beam.core.util.PathUtils.isAcceptableRelativePath;
 import static diarsid.beam.core.util.PathUtils.isAcceptableWebPath;

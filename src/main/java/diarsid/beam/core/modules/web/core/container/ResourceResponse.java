@@ -24,13 +24,14 @@ public class ResourceResponse {
     
     private final HttpServletResponse servletResponse;
 
-    public ResourceResponse(HttpServletResponse servletResponse) {
+    ResourceResponse(HttpServletResponse servletResponse) {
         this.servletResponse = servletResponse;
     }
     
     void sendHttpMethodNotSupported(String method) throws IOException {
         this.servletResponse.setStatus(SC_METHOD_NOT_ALLOWED);
-        this.servletResponse.setContentType("text/html;charset=UTF-8");
+        this.servletResponse.setContentType("text/html");
+        this.servletResponse.setCharacterEncoding("UTF-8");
         try (PrintWriter writer = this.servletResponse.getWriter()) {
             writer.println("<html>");
             writer.println("<head>");
@@ -44,11 +45,31 @@ public class ResourceResponse {
         }
     }
     
-    void writeJson(String json) throws IOException {
+    public void writeOk() throws IOException {
         this.servletResponse.setStatus(SC_OK);
-        this.servletResponse.setContentType("application/json;charset=UTF-8");
+        this.servletResponse.getWriter().close();
+    }
+    
+    public void writeError(int status) throws IOException {
+        this.servletResponse.setStatus(status);
+        this.servletResponse.getWriter().close();
+    }
+    
+    public void writeOkJson(String json) throws IOException {
+        this.servletResponse.setStatus(SC_OK);
+        this.servletResponse.setContentType("application/json");
+        this.servletResponse.setCharacterEncoding("UTF-8");
         try (PrintWriter writer = this.servletResponse.getWriter()) {
-            writer.println(format("{\"type\":\"%s\"}", json));
+            
+        }
+    }
+    
+    public void writeErrorJson(String json, int status) throws IOException {
+        this.servletResponse.setStatus(status);
+        this.servletResponse.setContentType("application/json");
+        this.servletResponse.setCharacterEncoding("UTF-8");
+        try (PrintWriter writer = this.servletResponse.getWriter()) {
+            
         }
     }
 }

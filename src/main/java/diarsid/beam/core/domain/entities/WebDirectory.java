@@ -8,8 +8,8 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
-import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
+import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 
 /**
  *
@@ -18,16 +18,16 @@ import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
 public class WebDirectory implements Comparable<WebDirectory> {
     
     private final String name;
-    private final WebPlacement placement;
+    private final WebPlace placement;
     private int order = -1; 
     
-    public WebDirectory(String name, WebPlacement place, int order) {
+    public WebDirectory(String name, WebPlace place, int order) {
         this.name = name;
         this.placement = place;
         this.order = order;
     }
     
-    public WebDirectory(String name, WebPlacement place) {
+    public WebDirectory(String name, WebPlace place) {
         this.name = name;
         this.placement = place;
     }
@@ -36,7 +36,7 @@ public class WebDirectory implements Comparable<WebDirectory> {
         return this.name;
     }
 
-    public WebPlacement getPlacement() {
+    public WebPlace getPlacement() {
         return this.placement;
     }
 

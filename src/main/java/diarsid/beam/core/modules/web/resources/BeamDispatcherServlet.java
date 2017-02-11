@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.simple.JSONObject;
 
 import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
-import diarsid.beam.core.modules.web.core.container.NamedResources;
+import diarsid.beam.core.modules.web.core.container.Resources;
 
 /**
  *
@@ -24,8 +24,8 @@ import diarsid.beam.core.modules.web.core.container.NamedResources;
  */
 public class BeamDispatcherServlet extends AbstractDispatcherServlet {
     
-    public BeamDispatcherServlet(NamedResources namedResources) {
-        super(namedResources);
+    public BeamDispatcherServlet(Resources resources) {
+        super(resources);
     }
     
     /**

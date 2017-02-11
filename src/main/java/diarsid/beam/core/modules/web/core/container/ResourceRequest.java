@@ -27,7 +27,7 @@ public class ResourceRequest {
         this.requestParams = requestParams;
     }
     
-    Optional<String> getParam(String param) {
+    public Optional<String> getParam(String param) {
         return Optional.ofNullable(this.requestParams.get(param));
     }
 }

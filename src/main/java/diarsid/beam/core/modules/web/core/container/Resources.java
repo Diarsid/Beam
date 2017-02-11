@@ -6,9 +6,8 @@
 
 package diarsid.beam.core.modules.web.core.container;
 
+import java.util.Optional;
 import java.util.Set;
-
-import diarsid.beam.core.modules.web.core.exceptions.ResourceRegistrationException;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toSet;
@@ -23,22 +22,14 @@ public class Resources {
     
     public Resources(Resource... resources) {
         this.resources = stream(resources)
-                .peek(resource -> this.validate(resource))
                 .collect(toSet());
     }
     
-    public Set<Resource> getAll() {
-        return this.resources;
-    }
-    
-    private void validate(Resource resource) {
-        boolean schemaValid = resource.getUrlMappingSchema()
-                .replaceAll("\\{[a-zA-Z0-9]+\\}", "param")
-                .matches(resource.getUrlMappingSchemaRegexp());
-        if ( ! schemaValid ) {
-            throw new ResourceRegistrationException("Resource " + resource.getClass().getName() + 
-                    "is invalid: URL mapping schema " + resource.getUrlMappingSchema() + 
-                    "does not match mapping URL regexp.");
-        }
+    Optional<String> getMatchingResourceNameFor(String url) {
+        return this.resources
+                .stream()
+                .filter(resource -> resource.matchesUrl(url))
+                .map(resource -> resource.name())
+                .findFirst();
     }
 }

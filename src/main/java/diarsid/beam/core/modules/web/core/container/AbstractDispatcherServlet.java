@@ -21,21 +21,23 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class AbstractDispatcherServlet extends HttpServlet {
     
-    private final NamedResources namedResources;
+    private final Resources resources;
 
-    public AbstractDispatcherServlet(NamedResources namedResources) {
-        this.namedResources = namedResources;
+    public AbstractDispatcherServlet(Resources namedResources) {
+        this.resources = namedResources;
     }
     
-    public final Optional<String> getResourceNameForUrl(String url) {
-        return this.namedResources.getResourceNameOf(url);
+    protected final Optional<String> getResourceNameForUrl(String url) {
+        return this.resources.getMatchingResourceNameFor(url);
     }
     
-    public final void dispatchRequestForwardToNamedResource(
+    protected final void dispatchRequestForwardToNamedResource(
             HttpServletRequest req, 
             HttpServletResponse resp, 
-            String resourceName) 
+            String name) 
                 throws ServletException, IOException  {
-        super.getServletContext().getNamedDispatcher(resourceName).forward(req, resp);
+        super.getServletContext()
+                .getNamedDispatcher(name)
+                .forward(req, resp);
     }
 }

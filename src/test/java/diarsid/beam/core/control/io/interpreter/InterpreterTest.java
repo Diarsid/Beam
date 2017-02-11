@@ -68,8 +68,8 @@ import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_UNDEFI
 import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_URL;
 import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
-import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
+import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 
 /**
  *

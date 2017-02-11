@@ -13,7 +13,6 @@ import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.WebModule;
 import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
-import diarsid.beam.core.modules.web.core.container.NamedResources;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 import diarsid.beam.core.modules.web.engines.JettyResourceServletContainer;
@@ -43,7 +42,6 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     @Override
     public WebModule buildModule() {
         Resources resources;
-        NamedResources namedResources;
         InnerIoEngine ioEngine;
         Configuration configuration;
         
@@ -51,12 +49,11 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
         ResourceServletContainer container;
         
         resources = new Resources();
-        namedResources = new NamedResources(resources);
         
         ioEngine = this.ioModule.getInnerIoEngine();
         configuration = this.applicationComponentsHolderModule.getConfiguration();
         
-        dispatcherServlet = new BeamDispatcherServlet(namedResources);
+        dispatcherServlet = new BeamDispatcherServlet(resources);
         container = new JettyResourceServletContainer(ioEngine, configuration);
         
         container.install(dispatcherServlet, resources);

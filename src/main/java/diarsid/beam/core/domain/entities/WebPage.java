@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.domain.entities.WebPlacement.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPlacement.WEBPANEL;
+import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -28,7 +28,7 @@ public class WebPage
     private final String name;
     private final String shortcuts;
     private final String urlAddress;
-    private final WebPlacement placement;
+    private final WebPlace placement;
     private final String directory;    
     private final int directoryOrder;
     private final String browser;
@@ -39,7 +39,7 @@ public class WebPage
             String name, 
             String shortcuts,             
             String urlAddress, 
-            WebPlacement placement,
+            WebPlace placement,
             String directory, 
             int pageOrder,
             int dirOrder,
@@ -59,7 +59,7 @@ public class WebPage
             String name, 
             String shortcuts,             
             String urlAddress, 
-            WebPlacement placement,
+            WebPlace placement,
             String directory,
             String browser) {
         
@@ -71,7 +71,7 @@ public class WebPage
             String name, 
             String shortcuts,             
             String urlAddress, 
-            WebPlacement placement,
+            WebPlace placement,
             String directory,
             int pageOrder,
             int dirOrder,
@@ -99,7 +99,7 @@ public class WebPage
         return this.urlAddress;
     }
 
-    public WebPlacement getPlacement() {
+    public WebPlace getPlacement() {
         return this.placement;
     }
 
