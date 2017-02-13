@@ -64,7 +64,7 @@ class TasksExecutionScheduler {
     
     void refresh() {
         synchronized ( this.taskExecutionLock ) { 
-            this.updateCurrentExecution(this.tasksKeeper.getTimeOfFirstTask(this.ownInitiator));
+            this.updateCurrentExecution();
         }
     }
     
@@ -78,10 +78,8 @@ class TasksExecutionScheduler {
             // switch all tasks
             expiredTasks.stream().forEach(Task::switchTime);
 
-            // update expired tasks and schedule new execution.        
-            Optional<LocalDateTime> newExecutionTime = this.tasksKeeper
-                    .updateTasksAndGetNextFirstTime(this.ownInitiator, expiredTasks);
-            this.updateCurrentExecution(newExecutionTime);
+            // update expired tasks     
+            this.tasksKeeper.updateTasks(this.ownInitiator, expiredTasks);
         }
     }
 
@@ -98,14 +96,16 @@ class TasksExecutionScheduler {
         }
     }
     
-    private void updateCurrentExecution(Optional<LocalDateTime> possibleNewTimeToSchedule) {                   
-        this.purgeCurrentExecutionIfAny();   
+    private void updateCurrentExecution() {                   
+        this.purgeCurrentExecutionIfAny();
+        Optional<LocalDateTime> probableNewTimeToSchedule = 
+                this.tasksKeeper.getTimeOfFirstTask(this.ownInitiator);
         // if there is new LocalDateTime to update scheduler, update it;
         // if there isn't it means that there are no
         // actual tasks and there is no need to update scheduler, but
         // all operations have been performed properly.
-        if ( possibleNewTimeToSchedule.isPresent() ) {
-            LocalDateTime scheduledTime = possibleNewTimeToSchedule.get();
+        if ( probableNewTimeToSchedule.isPresent() ) {
+            LocalDateTime scheduledTime = probableNewTimeToSchedule.get();
             this.currentExecution = this.scheduler.schedule(
                     // runnable to execute when scheduled time comes
                     () -> {
@@ -119,11 +119,8 @@ class TasksExecutionScheduler {
                             // switch all tasks
                             tasks.stream().forEach(Task::switchTime);               
 
-                            // udpate tasks in storage, obtain new execution 
-                            // time, compute and set new execution moment                        
-                            Optional<LocalDateTime> newExecutionTime = this.tasksKeeper
-                                    .updateTasksAndGetNextFirstTime(this.ownInitiator, tasks);
-                            this.updateCurrentExecution(newExecutionTime);
+                            // udpate tasks in storage                    
+                            this.tasksKeeper.updateTasks(this.ownInitiator, tasks);
                         }
                     },
                     // calculate runnable's delay

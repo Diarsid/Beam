@@ -10,15 +10,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.domain.actions.Callback;
 
-import static java.lang.Runtime.getRuntime;
-
 import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.util.Logs.log;
 
 /**
  *
@@ -28,15 +23,12 @@ public class BeamEventRuntime {
     
     private static final Map<String, Set<EmptyEventCallback>> EMPTY_CALLBACKS;
     private static final Map<String, Set<PayloadEventCallback>> PAYLOAD_CALLBACKS;
-    private static final ExecutorService EXECUTOR;
     private static final Object CALLBACKS_SYNC_MONITOR;
     
     static {
         EMPTY_CALLBACKS = new HashMap<>();
         PAYLOAD_CALLBACKS = new HashMap<>();
-        EXECUTOR = new ScheduledThreadPoolExecutor(5);
         CALLBACKS_SYNC_MONITOR = new Object();
-        getRuntime().addShutdownHook(new Thread(() -> shutdownEventRuntime()));
     }
     
     private BeamEventRuntime() {
@@ -44,11 +36,6 @@ public class BeamEventRuntime {
     
     public static SubscriptionBuilder subscribeOn(String type) {
         return new SubscriptionBuilder(type);
-    }
-    
-    private static void shutdownEventRuntime() {
-        EXECUTOR.shutdown();
-        log(BeamEventRuntime.class, "shutdown.");
     }
     
     static void registerCallbackForType(String type, EmptyEventCallback callback) {

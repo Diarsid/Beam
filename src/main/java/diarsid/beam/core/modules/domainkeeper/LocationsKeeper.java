@@ -21,14 +21,17 @@ import diarsid.beam.core.domain.entities.Location;
  */
 public interface LocationsKeeper {
     
-    Optional<Location> getLocationByExactName(Initiator initiator, String exactName);
+    Optional<Location> getLocationByExactName(
+            Initiator initiator, String exactName);
     
-    Optional<Location> getLocationByNamePattern(Initiator initiator, String locationNamePattern);
+    Optional<Location> getLocationByNamePattern(
+            Initiator initiator, String locationNamePattern);
     
     Optional<Location> findLocation(
             Initiator initiator, FindEntityCommand command);
     
-    List<Location> getLocationsByNamePattern(Initiator initiator, String namePattern);
+    List<Location> getLocationsByNamePattern(
+            Initiator initiator, String namePattern);
     
     boolean createLocation(
             Initiator initiator, CreateLocationCommand command);

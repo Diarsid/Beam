@@ -17,6 +17,7 @@ import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Collections.emptySet;
@@ -30,8 +31,15 @@ class H2DaoKeyValueStorage
         extends BeamCommonDao
         implements DaoKeyValueStorage {
     
+    private final PerRowConversion<Attribute> rowToAttributeConversion;
+    
     H2DaoKeyValueStorage(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
+        this.rowToAttributeConversion = (row) -> {
+            return new Attribute(
+                    (String) row.get("key"),
+                    (String) row.get("value"));
+        };
     }
 
     @Override
@@ -63,22 +71,27 @@ class H2DaoKeyValueStorage
                             "WHERE LOWER(key) IS ? ",
                             lower(key));
             
+            int saved;
             if ( exists ) {
-                return transact
+                saved = transact
                         .doUpdateVarargParams(
                                 "UPDATE key_value " +
                                 "SET value = ? " +
                                 "WHERE LOWER(key) IS ? ", 
-                                value, lower(key)) 
-                        == 1;
+                                value, lower(key));
             } else {
-                return transact
+                saved = transact
                         .doUpdateVarargParams(
                                 "INSERT INTO key_value (key, value) " +
                                 "VALUES ( ?, ? )", 
-                                key, value)
-                        == 1;
+                                key, value);
             }
+            
+            transact
+                    .ifTrue( saved != 1 )
+                    .rollbackAndProceed();
+            
+            return ( saved == 1 );
         } catch (TransactionHandledSQLException ex) {
             
             return false;
@@ -142,11 +155,7 @@ class H2DaoKeyValueStorage
                             Attribute.class,
                             "SELECT key, value " +
                             "FROM key_value",
-                            (row) -> {
-                                return new Attribute(
-                                        (String) row.get("key"),
-                                        (String) row.get("value"));
-                            })
+                            this.rowToAttributeConversion)
                     .collect(toSet());
         } catch (TransactionHandledSQLException ex) {
             

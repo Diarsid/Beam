@@ -31,6 +31,18 @@ public interface DaoTasks {
     List<Task> getFirstActiveTasks(
             Initiator initiator);
     
-    Optional<LocalDateTime> updateTasks(
+    boolean updateTasks(
             Initiator initiator, List<Task> tasks);
+    
+    boolean saveTask(
+            Initiator initiator, Task task);
+    
+    boolean deleteTaskById(
+            Initiator initiator, int id);
+    
+    boolean editTaskText(
+            Initiator initiator, int taskId, String[] newText);
+    
+    boolean editTaskTime(
+            Initiator initiator, int taskId, LocalDateTime newTime);
 }

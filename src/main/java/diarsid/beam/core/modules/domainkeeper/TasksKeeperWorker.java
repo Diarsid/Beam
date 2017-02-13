@@ -18,6 +18,8 @@ import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.control.io.base.TimeMessage;
 import diarsid.beam.core.control.io.commands.CreateEntityCommand;
+import diarsid.beam.core.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateTaskCommand;
 import diarsid.beam.core.domain.entities.SchedulableType;
@@ -65,9 +67,11 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public Optional<LocalDateTime> updateTasksAndGetNextFirstTime(
+    public boolean updateTasks(
             Initiator initiator, List<Task> tasks) {
-        return this.dao.updateTasks(initiator, tasks);
+        boolean updated = this.dao.updateTasks(initiator, tasks);
+        fireAsync("tasks_updated");
+        return updated;
     }
 
     @Override
@@ -162,6 +166,16 @@ public class TasksKeeperWorker implements TasksKeeper {
             this.tasksIo.reportMessage("Time verifying: Invalid dates out of range.");
         } 
         return false;
+    }
+
+    @Override
+    public boolean editTask(Initiator initiator, EditEntityCommand command) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<Task> findTasks(Initiator initiator, FindEntityCommand findEntityCommand) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     

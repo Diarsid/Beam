@@ -31,9 +31,9 @@ import static diarsid.beam.core.control.io.interpreter.ControlKeys.findUnaccepta
 import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
-import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
 import static diarsid.beam.core.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.util.StringUtils.normalize;
+import static diarsid.beam.core.util.ConcurrencyUtil.awaitDo;
 
 /**
  *
@@ -72,7 +72,7 @@ public class ConsoleController implements OuterIoEngine {
                     command.set(this.reader.readLine()); 
                     this.isInDialogMode.set(true);
                     if ( command.isNotEmpty() ) {
-                        waitAndDo(() -> {
+                        awaitDo(() -> {
                             try {
                                 this.remoteAccess.executeCommand(this.initiator, command.get());
                             } catch (RemoteException ex) {

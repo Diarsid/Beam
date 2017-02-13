@@ -27,9 +27,9 @@ import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
-import static diarsid.beam.core.util.ConcurrencyUtil.waitAndDo;
-import static diarsid.beam.core.util.ConcurrencyUtil.waitAndGet;
 import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.util.ConcurrencyUtil.awaitDo;
+import static diarsid.beam.core.util.ConcurrencyUtil.awaitGet;
 
 /**
  *
@@ -54,7 +54,7 @@ public class MainInnerIoEngine
     public Choice ask(Initiator initiator, String yesOrNoQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
-            return waitAndGet(() -> {
+            return awaitGet(() -> {
                 try {
                     return ioEngine.resolveYesOrNo(yesOrNoQuestion);
                 } catch (Exception ex) {
@@ -72,7 +72,7 @@ public class MainInnerIoEngine
     public Answer ask(Initiator initiator, Question question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
-            return waitAndGet(() -> {
+            return awaitGet(() -> {
                 try {
                     return ioEngine.resolveQuestion(question);
                 } catch (IOException ex) {
@@ -90,7 +90,7 @@ public class MainInnerIoEngine
     public String askInput(Initiator initiator, String inputQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
-            return waitAndGet(() -> {
+            return awaitGet(() -> {
                 try {
                     return ioEngine.askForInput(inputQuestion);
                 } catch (IOException ex) {
@@ -108,7 +108,7 @@ public class MainInnerIoEngine
     public void report(Initiator initiator, String string) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
-            waitAndDo(() -> {
+            awaitDo(() -> {
                 try {
                     ioEngine.report(string);
                 } catch (IOException ex) {
@@ -142,7 +142,7 @@ public class MainInnerIoEngine
     public void reportMessage(Initiator initiator, Message message) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
-            waitAndDo(() -> {
+            awaitDo(() -> {
                 try {
                     ioEngine.reportMessage(message);
                 } catch (IOException ex) {

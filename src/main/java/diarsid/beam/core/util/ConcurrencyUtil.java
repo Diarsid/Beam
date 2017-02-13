@@ -25,7 +25,7 @@ public class ConcurrencyUtil {
     
     private static final ScheduledThreadPoolExecutor EXECUTOR;
     static {
-        EXECUTOR = new ScheduledThreadPoolExecutor(5);
+        EXECUTOR = new ScheduledThreadPoolExecutor(10);
         EXECUTOR.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         EXECUTOR.setRemoveOnCancelPolicy(false);
         getRuntime().addShutdownHook(new Thread(() -> shutdownConcurrentRuntime()));
@@ -34,7 +34,7 @@ public class ConcurrencyUtil {
     private ConcurrencyUtil() {
     }
     
-    public static <T> Optional<T>  waitAndGet(Callable<T> callable) {
+    public static <T> Optional<T>  awaitGet(Callable<T> callable) {
         try {
             return Optional.of(EXECUTOR.submit(callable).get());
         } catch (InterruptedException | ExecutionException e) {
@@ -43,7 +43,7 @@ public class ConcurrencyUtil {
         } 
     }
     
-    public static void waitAndDo(Runnable runnable) {
+    public static void awaitDo(Runnable runnable) {
         try {
             EXECUTOR.submit(runnable).get();
         } catch (InterruptedException | ExecutionException e) {

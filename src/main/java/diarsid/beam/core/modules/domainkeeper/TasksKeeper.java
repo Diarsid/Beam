@@ -12,6 +12,8 @@ import java.util.Optional;
 import diarsid.beam.core.control.io.base.Initiator;
 import diarsid.beam.core.control.io.base.TimeMessage;
 import diarsid.beam.core.control.io.commands.CreateEntityCommand;
+import diarsid.beam.core.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
 import diarsid.beam.core.control.io.commands.creation.CreateTaskCommand;
 import diarsid.beam.core.domain.entities.Task;
@@ -37,7 +39,7 @@ public interface TasksKeeper {
     Optional<Long> getInactivePeriodMinutes(
             Initiator initiator);
     
-    Optional<LocalDateTime> updateTasksAndGetNextFirstTime(
+    boolean updateTasks(
             Initiator initiator, List<Task> tasks);
     
     Optional<LocalDateTime> getTimeOfFirstTask(
@@ -54,4 +56,10 @@ public interface TasksKeeper {
     
     boolean deleteTask(
             Initiator initiator, RemoveEntityCommand command);
+    
+    boolean editTask(
+            Initiator initiator, EditEntityCommand command);
+    
+    List<Task> findTasks(
+            Initiator initiator, FindEntityCommand findEntityCommand);
 }
