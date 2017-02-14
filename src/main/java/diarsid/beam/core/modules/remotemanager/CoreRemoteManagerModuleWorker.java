@@ -13,7 +13,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import diarsid.beam.core.config.Configuration;
+import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.control.io.base.TextMessage;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
@@ -27,9 +27,8 @@ import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
-import static diarsid.beam.core.config.Config.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.config.Config.CORE_PORT;
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
+import static diarsid.beam.core.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.util.Logs.debug;
 
 
@@ -54,13 +53,13 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
         saveRmiInterfacesInStaticContext(this);
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
         try {
-            int beamCorePort = Integer.parseInt(configuration.get(CORE_PORT));
+            int beamCorePort = Integer.parseInt(configuration.getSingle("rmi.core.port"));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RemoteCoreAccessEndpoint access = 
                     (RemoteCoreAccessEndpoint) UnicastRemoteObject.exportObject(
                             this.remoteAccessEndpoint, beamCorePort);
 
-            registry.bind(configuration.get(CORE_ACCESS_ENDPOINT_NAME), access);
+            registry.bind(CORE_ACCESS_ENDPOINT_NAME, access);
             debug("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
             this.io.getInnerIoEngine().reportMessageAndExitLater(getSystemInitiator(), 
@@ -75,10 +74,10 @@ public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
     @Override
     public void stopModule() {
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
-        int beamCorePort = Integer.parseInt(configuration.get(CORE_PORT));
+        int beamCorePort = Integer.parseInt(configuration.getSingle("rmi.core.port"));
         try {            
             Registry registry = getRegistry(beamCorePort);
-            registry.unbind(configuration.get(CORE_ACCESS_ENDPOINT_NAME));
+            registry.unbind(CORE_ACCESS_ENDPOINT_NAME);
 //            registry.unbind(config.get(EXECUTOR_NAME));
 //            registry.unbind(config.get(TASK_MANAGER_NAME));
 //            registry.unbind(config.get(LOCATIONS_HANDLER_NAME));

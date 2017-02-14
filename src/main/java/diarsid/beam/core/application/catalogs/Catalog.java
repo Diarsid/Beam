@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.config;
-
-import java.io.File;
+package diarsid.beam.core.application.catalogs;
 
 /**
  *
  * @author Diarsid
  */
-interface XmlReader {
-    
-    XmlContent read(File configFile);
+public interface Catalog {
+    String getCatalogPath();
 }

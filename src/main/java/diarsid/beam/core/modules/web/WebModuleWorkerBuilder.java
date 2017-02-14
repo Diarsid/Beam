@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.modules.web;
 
-import diarsid.beam.core.config.Configuration;
+import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;

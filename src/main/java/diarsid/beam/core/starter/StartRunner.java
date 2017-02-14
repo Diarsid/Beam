@@ -7,12 +7,8 @@
 package diarsid.beam.core.starter;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.core.application.ScriptsCatalog;
-import diarsid.beam.core.config.Configuration;
-import diarsid.beam.core.starter.FlagConfigurable;
-import diarsid.beam.core.starter.FlagExecutable;
-import diarsid.beam.core.starter.FlagStartable;
-import diarsid.beam.core.starter.Procedure;
+import diarsid.beam.core.application.catalogs.ScriptsCatalog;
+import diarsid.beam.core.application.configuration.Configuration;
 
 import static diarsid.beam.core.util.Logs.disableConsoleDebugging;
 import static diarsid.beam.core.util.Logs.disableFileDebugging;

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.application;
+package diarsid.beam.core.application.catalogs;
 
 import java.util.List;
 import java.util.Optional;

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application;
+package diarsid.beam.core.application.catalogs;
 
 import java.io.File;
 

@@ -15,9 +15,9 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import diarsid.beam.core.control.io.base.Message;
+import diarsid.beam.core.control.io.base.TimeMessage;
 import diarsid.beam.core.modules.io.Gui;
 import diarsid.beam.core.modules.io.javafxgui.window.WindowsBuilderWorker;
-import diarsid.beam.core.control.io.base.TimeMessage;
 
 import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
 import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
@@ -41,7 +41,7 @@ public class GuiJavaFX
         Platform.setImplicitExit(false);
     }
     
-    private final String pathToCssFile = "file:./../config/BeamWindow.css";
+    private final String pathToCssFile = "file:./../config/beam.css";
     private final WindowController windowsController;  
     private final WindowsBuilder windowsBuilder;
     private final PriorityQueue<ReusableTaskWindow> taskWindows;
@@ -61,21 +61,18 @@ public class GuiJavaFX
         this.taskWindows = new PriorityQueue<>();
         // any work with Java FX objects is possible
         // only within Java FX Application Thread, so
-        // it is necessary to init them in run() {...}
-        // that will be executed inside Java FX platform.
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                buttonShadow = new DropShadow();
-                buttonShadow.setColor(Color.YELLOW);
+        // it is necessary to init them inside of Runnable.run() {...}
+        // that will be executed inside the Java FX platform own thread.
+        Platform.runLater(() -> {
+            buttonShadow = new DropShadow();
+            buttonShadow.setColor(Color.YELLOW);
 
-                taskIcon = new Image("file:"+ imagesLocation + "task_ico.png");
-                taskImage = new Image("file:"+ imagesLocation + "task.png");                
-                messageIcon = new Image("file:"+ imagesLocation + "message_ico.png");                
-                messageImage = new Image("file:"+ imagesLocation + "message.png");
-                errorIcon = new Image("file:"+ imagesLocation + "exception_ico.png");
-                errorImage = new Image("file:"+ imagesLocation + "exception.png");
-            }
+            taskIcon = new Image("file:"+ imagesLocation + "task_ico.png");
+            taskImage = new Image("file:"+ imagesLocation + "task.png");                
+            messageIcon = new Image("file:"+ imagesLocation + "message_ico.png");                
+            messageImage = new Image("file:"+ imagesLocation + "message.png");
+            errorIcon = new Image("file:"+ imagesLocation + "exception_ico.png");
+            errorImage = new Image("file:"+ imagesLocation + "exception.png");           
         });
     }
     

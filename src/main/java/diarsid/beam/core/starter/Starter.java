@@ -10,14 +10,14 @@ package diarsid.beam.core.starter;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.application.ScriptsCatalog;
-import diarsid.beam.core.config.Configuration;
+import diarsid.beam.core.application.catalogs.ScriptsCatalog;
+import diarsid.beam.core.application.configuration.Configuration;
 
 import static java.lang.String.join;
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.application.ApplicationCatalogs.getScriptsCatalog;
-import static diarsid.beam.core.config.Configuration.getConfiguration;
+import static diarsid.beam.core.application.catalogs.ApplicationCatalogs.getScriptsCatalog;
+import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
 import static diarsid.beam.core.starter.Flags.flagOf;
 import static diarsid.beam.core.starter.Flags.formatToPrintables;
 import static diarsid.beam.core.util.ArraysUtil.isEmpty;

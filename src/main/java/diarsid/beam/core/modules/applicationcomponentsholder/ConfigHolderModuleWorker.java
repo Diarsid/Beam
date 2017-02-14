@@ -6,10 +6,11 @@
 
 package diarsid.beam.core.modules.applicationcomponentsholder;
 
-import diarsid.beam.core.application.ApplicationCatalogs;
-import diarsid.beam.core.application.NotesCatalog;
-import diarsid.beam.core.application.ProgramsCatalog;
-import diarsid.beam.core.config.Configuration;
+import diarsid.beam.core.application.catalogs.ApplicationCatalogs;
+import diarsid.beam.core.application.catalogs.NotesCatalog;
+import diarsid.beam.core.application.catalogs.ProgramsCatalog;
+import diarsid.beam.core.application.configuration.ApplicationConfiguration;
+import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 
@@ -30,7 +31,7 @@ class ConfigHolderModuleWorker implements ApplicationComponentsHolderModule {
     private final NotesCatalog notesCatalog;
     
     ConfigHolderModuleWorker() {    
-        this.configuration = Configuration.getConfiguration();
+        this.configuration = ApplicationConfiguration.getConfiguration();
         this.interpreter = new Interpreter();
         this.programsCatalog = ApplicationCatalogs.getProgramsCatalog();
         this.notesCatalog = ApplicationCatalogs.getNotesCatalog();

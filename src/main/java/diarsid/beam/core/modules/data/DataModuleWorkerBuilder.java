@@ -10,7 +10,6 @@ import java.util.List;
 
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.daos.sql.H2DaosProvider;
@@ -22,8 +21,6 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.config.Config.CORE_JDBC_DRIVER;
-import static diarsid.beam.core.config.Config.CORE_JDBC_URL;
 import static diarsid.beam.core.control.io.base.Messages.text;
 import static diarsid.beam.core.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.util.Logs.logError;
@@ -36,21 +33,16 @@ import static diarsid.beam.core.util.Logs.logError;
 public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
     private final IoModule ioModule;
-    private final ApplicationComponentsHolderModule appComponentsHolderModule;
     
-    public DataModuleWorkerBuilder(
-            IoModule ioModule, 
-            ApplicationComponentsHolderModule configHolderModule) {
+    public DataModuleWorkerBuilder(IoModule ioModule) {
         this.ioModule = ioModule;
-        this.appComponentsHolderModule = configHolderModule;
     }
 
     @Override
     public DataModule buildModule() {
         this.loadDriver();
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
-        DataBase dataBase = new H2DataBase(
-                this.appComponentsHolderModule.getConfiguration().get(CORE_JDBC_URL));
+        DataBase dataBase = new H2DataBase("jdbc:h2:./../res/data/BeamData");
         
         DataBaseModel model = new H2DataBaseModel();
         DataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);
@@ -61,14 +53,13 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
             ioEngine.reportMessage(getSystemInitiator(), text(reports));
         }
         
-        DaosProvider daosProvider = new H2DaosProvider(dataBase, ioModule);
+        DaosProvider daosProvider = new H2DaosProvider(dataBase, this.ioModule);
         return new DataModuleWorker(dataBase, daosProvider);
     }
     
     private void loadDriver() {
         try {
-            Class.forName(
-                    this.appComponentsHolderModule.getConfiguration().get(CORE_JDBC_DRIVER));
+            Class.forName("org.h2.Driver");
         } catch (Exception e) {
             logError(DataModuleWorkerBuilder.class, e);
             this.ioModule

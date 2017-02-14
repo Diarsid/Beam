@@ -20,7 +20,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import diarsid.beam.core.config.Configuration;
+import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.control.io.base.InnerIoEngine;
 import diarsid.beam.core.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
@@ -28,11 +28,6 @@ import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.config.Config.WEB_BEAM_CORE_CONTEXT_PATH;
-import static diarsid.beam.core.config.Config.WEB_INTERNET_HOST;
-import static diarsid.beam.core.config.Config.WEB_INTERNET_PORT;
-import static diarsid.beam.core.config.Config.WEB_LOCAL_HOST;
-import static diarsid.beam.core.config.Config.WEB_LOCAL_PORT;
 import static diarsid.beam.core.util.Logs.logError;
 
 /**
@@ -55,7 +50,7 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
         
         this.jettyContext = new ServletContextHandler(
                 ServletContextHandler.NO_SESSIONS);   
-        this.jettyContext.setContextPath(config.get(WEB_BEAM_CORE_CONTEXT_PATH));
+        this.jettyContext.setContextPath(config.getSingle("web.local.path"));
         
         this.jettyServer.setHandler(this.jettyContext);
         this.configureServerAddresses(config);
@@ -65,23 +60,17 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     
     private void configureServerAddresses(Configuration config) {
         try {
-            if (    ! config.get(WEB_LOCAL_HOST).isEmpty() ||
-                    ! config.get(WEB_LOCAL_PORT).isEmpty()) {
-                this.addInetAddress(
-                        config.get(WEB_LOCAL_HOST), 
-                        Integer.parseInt(config.get(WEB_LOCAL_PORT)),
-                        this.localConnectorName);
-            }
-            if (    ! config.get(WEB_INTERNET_HOST).isEmpty() ||
-                    ! config.get(WEB_INTERNET_PORT).isEmpty()) {
-                this.addInetAddress(
-                        config.get(WEB_INTERNET_HOST), 
-                        Integer.parseInt(config.get(WEB_INTERNET_PORT)),
-                        this.internetConnectorName);
+            String localHost = config.getSingle("web.local.host");
+            int localPort = Integer.parseInt(config.getSingle("web.local.port"));
+            this.addInetAddress(localHost, localPort, this.localConnectorName);
+            if ( config.hasSingle("web.internet.host") && config.hasSingle("web.internet.port") ) {
+                String internetHost = config.getSingle("web.internet.host");
+                int internetPort = Integer.parseInt(config.getSingle("web.internet.port"));
+                this.addInetAddress(internetHost, internetPort, this.internetConnectorName);
             }
         } catch (NumberFormatException e) {
             throw new ModuleInitializationException(
-                    "Web ports in config/config.xml have wrong format.");
+                    "Web ports in beam.config have wrong format.");
         }
     }
     

@@ -3,12 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application;
+package diarsid.beam.core.application.catalogs;
+
+import java.util.List;
 
 /**
  *
  * @author Diarsid
  */
-public interface Catalog {
-    String getCatalogPath();
+public interface LibrariesCatalog extends Catalog {
+    
+    List<String> getLibraries();
 }

@@ -4,12 +4,9 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.application;
+package diarsid.beam.core.application.catalogs;
 
-import diarsid.beam.core.config.Configuration;
-
-import static diarsid.beam.core.config.Config.PROGRAMS_LOCATION;
-import static diarsid.beam.core.config.Configuration.getConfiguration;
+import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
 import static diarsid.beam.core.os.search.FileSearcher.getSearcherWithDepthsOf;
 
 /**
@@ -17,11 +14,6 @@ import static diarsid.beam.core.os.search.FileSearcher.getSearcherWithDepthsOf;
  * @author Diarsid
  */
 public class ApplicationCatalogs {
-    
-    private static final Configuration CONFIGURATION;
-    static {
-        CONFIGURATION = getConfiguration();
-    }
 
     private ApplicationCatalogs() {
     }
@@ -36,7 +28,7 @@ public class ApplicationCatalogs {
 
     public static ProgramsCatalog getProgramsCatalog() {
         return new ProgramsCatalogReal(
-                CONFIGURATION.get(PROGRAMS_LOCATION), 
+                getConfiguration().getSingle("catalogs.programs"), 
                 getSearcherWithDepthsOf(3, 3));
     }
 
