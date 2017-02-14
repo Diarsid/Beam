@@ -11,7 +11,7 @@ import diarsid.beam.core.application.catalogs.NotesCatalog;
 import diarsid.beam.core.application.catalogs.ProgramsCatalog;
 import diarsid.beam.core.application.configuration.ApplicationConfiguration;
 import diarsid.beam.core.application.configuration.Configuration;
-import diarsid.beam.core.control.io.interpreter.Interpreter;
+import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 
 /**

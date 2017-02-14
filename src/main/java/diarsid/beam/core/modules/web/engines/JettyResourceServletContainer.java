@@ -21,14 +21,14 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import diarsid.beam.core.application.configuration.Configuration;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *

@@ -11,13 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *

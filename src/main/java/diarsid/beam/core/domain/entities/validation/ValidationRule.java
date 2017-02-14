@@ -7,13 +7,13 @@ package diarsid.beam.core.domain.entities.validation;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.findUnacceptableIn;
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotSimple;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableIn;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotSimple;
 import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
 import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
-import static diarsid.beam.core.util.PathUtils.isAcceptableWebPath;
-import static diarsid.beam.core.util.PathUtils.pathIsDirectory;
+import static diarsid.beam.core.base.util.PathUtils.isAcceptableWebPath;
+import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
 
 /**
  *

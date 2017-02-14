@@ -6,10 +6,10 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 
 /**
  *

@@ -12,17 +12,17 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-import diarsid.beam.core.control.io.base.ConvertableToVariant;
-import diarsid.beam.core.control.io.base.Variant;
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
-import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.util.Logs.debug;
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logs.logError;
 
-import diarsid.beam.core.domain.actions.EmptyCallback;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 
 /**
  *
@@ -59,10 +59,10 @@ public class Location
     
     public void openAsync(
             String target, 
-            EmptyCallback successCallback,
-            EmptyCallback exceptionCallback, 
-            EmptyCallback locationNotFoundCallback,
-            EmptyCallback targetNotFoundCallback) {
+            CallbackEmpty successCallback,
+            CallbackEmpty exceptionCallback, 
+            CallbackEmpty locationNotFoundCallback,
+            CallbackEmpty targetNotFoundCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             File finalTarget = new File(this.path + "/" + target);
@@ -87,9 +87,9 @@ public class Location
     }
     
     public void openAsync(
-            EmptyCallback successCallback,
-            EmptyCallback exceptionCallback, 
-            EmptyCallback locationNotFoundCallback) {
+            CallbackEmpty successCallback,
+            CallbackEmpty exceptionCallback, 
+            CallbackEmpty locationNotFoundCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             if ( location.exists() && location.isDirectory() ) {

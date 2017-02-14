@@ -9,9 +9,9 @@ package diarsid.beam.core.systemconsole;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.base.Variant;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 

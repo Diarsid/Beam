@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchedCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
@@ -31,16 +31,16 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.control.io.commands.Commands.restoreArgumentedCommandFrom;
-import static diarsid.beam.core.util.CollectionsUtils.mergeInMapWithArrayLists;
-import static diarsid.beam.core.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.util.Logs.logError;
-import static diarsid.beam.core.util.SqlUtil.SqlOperator.AND;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
-import static diarsid.beam.core.util.StringUtils.lower;
-import static diarsid.beam.core.util.StringUtils.nonNullNonEmpty;
+import static diarsid.beam.core.base.control.io.commands.Commands.restoreArgumentedCommandFrom;
+import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
+import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.nonNullNonEmpty;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 

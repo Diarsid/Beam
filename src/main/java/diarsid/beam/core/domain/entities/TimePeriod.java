@@ -9,8 +9,8 @@ import java.util.List;
 
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.util.CollectionsUtils.toUnmodifiableList;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.base.util.CollectionsUtils.toUnmodifiableList;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
 /**
  *

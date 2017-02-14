@@ -6,20 +6,20 @@
 
 package diarsid.beam.core.modules.corecontrol.cli;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.commands.Command;
-import diarsid.beam.core.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
-import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.control.io.commands.executor.OpenPathCommand;
-import diarsid.beam.core.control.io.interpreter.CommandDispatcher;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
 import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.exitBeamCoreNow;
-import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *

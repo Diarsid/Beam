@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.control.io.commands.CommandType.CALL_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 
 /**

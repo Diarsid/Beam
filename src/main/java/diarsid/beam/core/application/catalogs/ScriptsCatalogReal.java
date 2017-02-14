@@ -9,9 +9,9 @@ package diarsid.beam.core.application.catalogs;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.os.search.FileSearcher;
-import diarsid.beam.core.os.search.result.FileSearchResult;
-import diarsid.beam.core.scriptor.Script;
+import diarsid.beam.core.base.os.search.FileSearcher;
+import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.starter.scripts.Script;
 
 /**
  *

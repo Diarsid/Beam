@@ -10,9 +10,9 @@ import diarsid.beam.core.Beam;
 import diarsid.beam.core.application.catalogs.ScriptsCatalog;
 import diarsid.beam.core.application.configuration.Configuration;
 
-import static diarsid.beam.core.util.Logs.disableConsoleDebugging;
-import static diarsid.beam.core.util.Logs.disableFileDebugging;
-import static diarsid.beam.core.util.Logs.log;
+import static diarsid.beam.core.base.util.Logs.disableConsoleDebugging;
+import static diarsid.beam.core.base.util.Logs.disableFileDebugging;
+import static diarsid.beam.core.base.util.Logs.log;
 
 /**
  *

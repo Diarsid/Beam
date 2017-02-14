@@ -7,7 +7,7 @@ package diarsid.beam.core.domain.entities;
 
 import java.io.Serializable;
 
-import static diarsid.beam.core.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
  *

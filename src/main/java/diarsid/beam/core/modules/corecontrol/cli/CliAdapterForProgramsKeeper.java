@@ -8,9 +8,9 @@ package diarsid.beam.core.modules.corecontrol.cli;
 
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.modules.domainkeeper.ProgramsKeeper;
 

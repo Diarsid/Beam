@@ -7,8 +7,8 @@ package diarsid.beam.core.modules.data;
 
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
-import diarsid.beam.core.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 
 /**
  *

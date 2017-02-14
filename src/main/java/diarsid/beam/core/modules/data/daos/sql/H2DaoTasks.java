@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.SchedulableType;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.data.DaoTasks;

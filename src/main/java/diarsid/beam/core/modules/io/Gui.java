@@ -6,8 +6,8 @@ package diarsid.beam.core.modules.io;
 
 import java.util.List;
 
-import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
 
 /*
  * 'Native' program`s output interface.

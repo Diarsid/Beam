@@ -11,10 +11,10 @@ package diarsid.beam.core.modules.data.daos.sql;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
-import diarsid.beam.core.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
@@ -25,12 +25,12 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.control.io.commands.Commands.restoreArgumentedCommandFrom;
-import static diarsid.beam.core.util.SqlUtil.SqlOperator.AND;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
-import static diarsid.beam.core.util.StringUtils.lower;
+import static diarsid.beam.core.base.control.io.commands.Commands.restoreArgumentedCommandFrom;
+import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
 class H2DaoCommands 

@@ -10,34 +10,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
-import diarsid.beam.core.control.io.commands.Command;
-import diarsid.beam.core.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.control.io.interpreter.Interpreter;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.control.io.base.Question.question;
-import static diarsid.beam.core.control.io.commands.CommandType.CREATE_BATCH;
-import static diarsid.beam.core.control.io.commands.CommandType.DELETE_BATCH;
-import static diarsid.beam.core.control.io.commands.CommandType.EDIT_BATCH;
-import static diarsid.beam.core.control.io.commands.CommandType.FIND_BATCH;
-import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_COMMANDS;
-import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_NAME;
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.hasWildcard;
-import static diarsid.beam.core.util.CollectionsUtils.getOne;
-import static diarsid.beam.core.util.CollectionsUtils.hasMany;
-import static diarsid.beam.core.util.CollectionsUtils.hasOne;
-import static diarsid.beam.core.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
+import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_COMMANDS;
+import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_NAME;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 
 
 class BatchesKeeperWorker implements BatchesKeeper {

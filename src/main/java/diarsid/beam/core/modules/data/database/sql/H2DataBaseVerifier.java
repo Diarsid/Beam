@@ -16,7 +16,7 @@ import diarsid.beam.core.modules.data.DataBaseVerifier;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.util.StringUtils.nonEmpty;
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 
 
 public class H2DataBaseVerifier implements DataBaseVerifier {

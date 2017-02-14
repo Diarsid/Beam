@@ -9,18 +9,18 @@ package diarsid.beam.core.systemconsole;
 import java.io.IOException;
 
 import diarsid.beam.core.application.configuration.Configuration;
-import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.rmi.RemoteOuterIoEngine;
+import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
+import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.System.exit;
 import static java.lang.Thread.sleep;
 
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
-import static diarsid.beam.core.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
 import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *

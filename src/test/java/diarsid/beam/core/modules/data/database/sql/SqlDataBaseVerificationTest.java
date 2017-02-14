@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import testing.embedded.base.h2.H2TestDataBase;
 import testing.embedded.base.h2.TestDataBase;
 
-import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.modules.data.DataBaseVerifier;
 
 import static org.junit.Assert.assertEquals;

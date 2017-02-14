@@ -14,13 +14,13 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
-import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
 import diarsid.beam.core.modules.io.Gui;
 import diarsid.beam.core.modules.io.javafxgui.window.WindowsBuilderWorker;
 
-import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
-import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 
 /*
  * Main class for JavaFX based gui.

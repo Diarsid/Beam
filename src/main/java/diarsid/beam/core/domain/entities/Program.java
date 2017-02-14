@@ -11,12 +11,13 @@ import java.io.File;
 import java.io.IOException;
 
 import diarsid.beam.core.application.catalogs.ProgramsCatalog;
-import diarsid.beam.core.domain.actions.EmptyCallback;
 
-import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.util.Logs.logError;
-import static diarsid.beam.core.util.PathUtils.containsPathSeparator;
-import static diarsid.beam.core.util.PathUtils.indexOfLastPathSeparator;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.indexOfLastPathSeparator;
+
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 
 /**
  *
@@ -55,9 +56,9 @@ public class Program {
     }
     
     public void runAsync(
-            EmptyCallback successCallback, 
-            EmptyCallback programNotFoundCallback, 
-            EmptyCallback exceptionCallback) {
+            CallbackEmpty successCallback, 
+            CallbackEmpty programNotFoundCallback, 
+            CallbackEmpty exceptionCallback) {
         asyncDo(() -> {
             File program = this.programsCatalog.asFile(this);
             if ( program.exists() && program.isFile() ) {

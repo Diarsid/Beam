@@ -14,22 +14,22 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.application.configuration.Configuration;
-import diarsid.beam.core.control.io.base.TextMessage;
-import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
+import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteAccessEndpointHolder;
-import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
-import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
-import static diarsid.beam.core.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
+import static diarsid.beam.core.base.util.Logs.debug;
 
 
 public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {

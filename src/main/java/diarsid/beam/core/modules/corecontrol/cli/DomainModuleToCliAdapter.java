@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.modules.corecontrol.cli;
 
-import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.modules.DomainKeeperModule;
 
 /**

@@ -20,9 +20,9 @@ import static diarsid.beam.core.application.catalogs.ApplicationCatalogs.getScri
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
 import static diarsid.beam.core.starter.Flags.flagOf;
 import static diarsid.beam.core.starter.Flags.formatToPrintables;
-import static diarsid.beam.core.util.ArraysUtil.isEmpty;
-import static diarsid.beam.core.util.Logs.log;
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.util.ArraysUtil.isEmpty;
+import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *

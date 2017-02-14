@@ -15,15 +15,15 @@ import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.application.configuration.Configuration;
-import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
-import diarsid.beam.core.rmi.RemoteOuterIoEngine;
+import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
 import static java.lang.Integer.parseInt;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
 import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.systemconsole.SystemConsoleLog.consoleDebug;
 

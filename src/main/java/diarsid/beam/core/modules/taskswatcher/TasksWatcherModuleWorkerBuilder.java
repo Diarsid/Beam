@@ -8,8 +8,8 @@ package diarsid.beam.core.modules.taskswatcher;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.TasksWatcherModule;

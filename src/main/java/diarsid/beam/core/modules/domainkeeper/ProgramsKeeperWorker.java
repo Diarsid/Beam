@@ -10,20 +10,20 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.application.catalogs.ProgramsCatalog;
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.domain.entities.Program;
-import diarsid.beam.core.os.search.result.FileSearchResult;
+import diarsid.beam.core.base.os.search.result.FileSearchResult;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.control.io.base.Question.question;
-import static diarsid.beam.core.control.io.commands.CommandType.FIND_PROGRAM;
-import static diarsid.beam.core.util.CollectionsUtils.arrayListOf;
+import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
+import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 
 
 class ProgramsKeeperWorker implements ProgramsKeeper {

@@ -4,16 +4,16 @@
  */
 package diarsid.beam.core;
 
-import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
-import diarsid.beam.core.util.Logs;
+import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.base.util.Logs;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
-import static diarsid.beam.core.util.Logs.log;
+import static diarsid.beam.core.base.util.Logs.log;
 
 /**
  *

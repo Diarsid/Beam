@@ -7,7 +7,7 @@
 package diarsid.beam.core.application.catalogs;
 
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
-import static diarsid.beam.core.os.search.FileSearcher.getSearcherWithDepthsOf;
+import static diarsid.beam.core.base.os.search.FileSearcher.getSearcherWithDepthsOf;
 
 /**
  *

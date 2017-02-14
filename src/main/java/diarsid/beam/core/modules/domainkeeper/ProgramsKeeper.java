@@ -8,8 +8,8 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
 import diarsid.beam.core.domain.entities.Program;
 
 /**

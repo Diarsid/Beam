@@ -9,28 +9,28 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 
-import static diarsid.beam.core.control.io.base.Question.question;
-import static diarsid.beam.core.control.io.commands.CommandType.DELETE_LOCATION;
-import static diarsid.beam.core.control.io.commands.CommandType.EDIT_LOCATION;
-import static diarsid.beam.core.control.io.commands.CommandType.FIND_LOCATION;
-import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_NAME;
-import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_PATH;
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.hasWildcard;
+import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_NAME;
+import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_PATH;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
-import static diarsid.beam.core.util.CollectionsUtils.getOne;
-import static diarsid.beam.core.util.CollectionsUtils.hasMany;
-import static diarsid.beam.core.util.CollectionsUtils.hasOne;
-import static diarsid.beam.core.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 
 
 class LocationsKeeperWorker implements LocationsKeeper {

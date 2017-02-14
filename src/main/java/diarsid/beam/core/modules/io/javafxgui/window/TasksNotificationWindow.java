@@ -22,7 +22,7 @@ import javafx.scene.layout.VBox;
 
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
-import diarsid.beam.core.control.io.base.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
 
 
 /**

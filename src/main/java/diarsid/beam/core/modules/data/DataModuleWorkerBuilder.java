@@ -8,8 +8,8 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.daos.sql.H2DaosProvider;
@@ -21,9 +21,9 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.control.io.base.Messages.text;
-import static diarsid.beam.core.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.text;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 
 /**

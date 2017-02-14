@@ -9,8 +9,8 @@ package diarsid.beam.core.application.catalogs;
 import java.io.File;
 
 import diarsid.beam.core.domain.entities.Program;
-import diarsid.beam.core.os.search.FileSearcher;
-import diarsid.beam.core.os.search.result.FileSearchResult;
+import diarsid.beam.core.base.os.search.FileSearcher;
+import diarsid.beam.core.base.os.search.result.FileSearchResult;
 
 
 public class ProgramsCatalogReal 

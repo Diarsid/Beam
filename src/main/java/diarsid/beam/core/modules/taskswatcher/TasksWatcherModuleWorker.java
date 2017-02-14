@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
-import static diarsid.beam.core.events.BeamEventRuntime.subscribeOn;
+import static diarsid.beam.core.base.events.BeamEventRuntime.subscribeOn;
 
 
 /**

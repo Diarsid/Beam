@@ -6,16 +6,16 @@
 
 package diarsid.beam.core.modules.corecontrol;
 
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.exitBeamCoreNow;
-import static diarsid.beam.core.control.io.base.Question.question;
-import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *

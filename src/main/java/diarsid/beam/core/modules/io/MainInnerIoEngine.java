@@ -9,27 +9,27 @@ package diarsid.beam.core.modules.io;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Choice;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.base.TextMessage;
-import diarsid.beam.core.control.io.base.TimeMessagesIo;
-import diarsid.beam.core.control.io.base.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
+import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
-import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
-import static diarsid.beam.core.control.io.base.Message.MessageType.ERROR;
-import static diarsid.beam.core.control.io.base.Message.MessageType.INFO;
-import static diarsid.beam.core.util.Logs.logError;
-import static diarsid.beam.core.util.ConcurrencyUtil.awaitDo;
-import static diarsid.beam.core.util.ConcurrencyUtil.awaitGet;
+import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
 
 /**
  *

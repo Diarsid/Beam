@@ -6,7 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.BeamModule;
-import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
 
 /**
  *

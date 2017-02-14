@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.TimeMessage;
-import diarsid.beam.core.control.io.base.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -22,7 +22,7 @@ import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowTo
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextMonthBeginning;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextWeekBeginning;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getThisWeekBeginning;
-import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 
 /**
  *

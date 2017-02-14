@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static diarsid.beam.core.util.StringUtils.randomString;
+import static diarsid.beam.core.base.util.StringUtils.randomString;
 
 
 public abstract class Resource 

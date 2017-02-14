@@ -8,18 +8,18 @@ package diarsid.beam.core.modules.corecontrol.cli.nativeconsole;
 
 import java.io.IOException;
 
-import diarsid.beam.core.control.io.base.Choice;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.control.io.base.Choice.CHOICE_NOT_MADE;
-import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
+import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 
 /**
  *

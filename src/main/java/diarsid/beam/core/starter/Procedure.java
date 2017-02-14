@@ -12,8 +12,8 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.util.Logs.log;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.log;
 
 /**
  *

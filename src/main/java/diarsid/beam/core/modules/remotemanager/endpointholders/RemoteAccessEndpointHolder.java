@@ -10,14 +10,14 @@ package diarsid.beam.core.modules.remotemanager.endpointholders;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-import diarsid.beam.core.control.io.base.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.rmi.RemoteOuterIoEngine;
+import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
-import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 
 
 public class RemoteAccessEndpointHolder implements RemoteCoreAccessEndpoint {

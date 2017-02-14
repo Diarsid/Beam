@@ -6,24 +6,24 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.commands.CommandType;
-import diarsid.beam.core.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.control.io.commands.EditableTarget;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.control.io.commands.SingleStringCommand;
-import diarsid.beam.core.control.io.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EditableTarget;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
 import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
 
-import static diarsid.beam.core.control.io.commands.CommandOperationType.EDIT_ENTITY;
-import static diarsid.beam.core.control.io.commands.CommandOperationType.FIND_ENTITY;
-import static diarsid.beam.core.control.io.commands.CommandOperationType.REMOVE_ENTITY;
-import static diarsid.beam.core.control.io.commands.CommandType.CREATE_LOCATION;
-import static diarsid.beam.core.control.io.commands.EditableTarget.TARGET_UNDEFINED;
-import static diarsid.beam.core.control.io.commands.EditableTarget.argToTarget;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.EDIT_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.FIND_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.REMOVE_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_UNDEFINED;
+import static diarsid.beam.core.base.control.io.commands.EditableTarget.argToTarget;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
 

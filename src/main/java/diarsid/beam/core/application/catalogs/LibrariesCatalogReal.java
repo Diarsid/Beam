@@ -15,7 +15,7 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 
 public class LibrariesCatalogReal 

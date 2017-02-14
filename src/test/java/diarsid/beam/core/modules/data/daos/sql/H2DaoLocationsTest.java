@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import testing.embedded.base.h2.H2TestDataBase;
 import testing.embedded.base.h2.TestDataBase;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -32,9 +32,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import static diarsid.beam.core.util.CollectionsUtils.getOne;
-import static diarsid.beam.core.util.CollectionsUtils.hasOne;
-import static diarsid.beam.core.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**

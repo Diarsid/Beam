@@ -8,8 +8,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import diarsid.beam.core.control.io.base.TimeMessage;
-import diarsid.beam.core.exceptions.TemporaryCodeException;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.exceptions.TemporaryCodeException;
 
 import static java.lang.Integer.MIN_VALUE;
 

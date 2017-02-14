@@ -6,8 +6,8 @@
 
 package diarsid.beam.core.modules.corecontrol.cli;
 
-import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
-import diarsid.beam.core.control.io.interpreter.Interpreter;
+import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;

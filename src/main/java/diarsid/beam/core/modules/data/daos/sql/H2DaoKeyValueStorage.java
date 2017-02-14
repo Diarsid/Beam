@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.control.io.base.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.Attribute;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DataBase;
@@ -24,7 +24,7 @@ import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.domain.entities.Attribute.optionalAttribute;
-import static diarsid.beam.core.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
 class H2DaoKeyValueStorage 

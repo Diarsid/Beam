@@ -10,30 +10,30 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import diarsid.beam.core.control.io.base.Choice;
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.Message;
-import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.base.Answer;
-import diarsid.beam.core.control.io.base.Question;
-import diarsid.beam.core.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.rmi.RemoteCoreAccessEndpoint;
-import diarsid.beam.core.util.StringHolder;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
+import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.base.util.StringHolder;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.control.io.base.Choice.choiceOfPattern;
-import static diarsid.beam.core.control.io.base.UserReaction.isRejection;
-import static diarsid.beam.core.control.io.base.Answer.noAnswerFromVariants;
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.findUnacceptableIn;
-import static diarsid.beam.core.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
+import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
+import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableIn;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
 import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
-import static diarsid.beam.core.util.StringNumberUtils.isNumeric;
-import static diarsid.beam.core.util.StringUtils.normalize;
-import static diarsid.beam.core.util.ConcurrencyUtil.awaitDo;
+import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
+import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 
 /**
  *

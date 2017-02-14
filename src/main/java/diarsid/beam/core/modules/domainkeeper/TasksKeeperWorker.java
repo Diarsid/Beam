@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.base.TimeMessage;
-import diarsid.beam.core.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.control.io.commands.creation.CreateTaskCommand;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.commands.creation.CreateTaskCommand;
 import diarsid.beam.core.domain.entities.SchedulableType;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.exceptions.TaskTimeFormatInvalidException;
@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.beam.core.domain.entities.SchedulableType.MONTHLY_REPEAT;
 import static diarsid.beam.core.domain.entities.SchedulableType.NO_REPEAT;
 import static diarsid.beam.core.domain.entities.SchedulableType.YEARLY_REPEAT;
-import static diarsid.beam.core.events.BeamEventRuntime.fireAsync;
+import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
 
 
 public class TasksKeeperWorker implements TasksKeeper {

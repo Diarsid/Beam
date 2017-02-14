@@ -10,8 +10,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.exceptions.ModuleInitializationException;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -19,8 +19,8 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.util.Logs.logError;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
 
 public class H2DataBaseInitializer implements SqlDataBaseInitializer {

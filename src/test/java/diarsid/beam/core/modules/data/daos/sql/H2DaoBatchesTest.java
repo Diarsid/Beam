@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
 import testing.embedded.base.h2.H2TestDataBase;
 import testing.embedded.base.h2.TestDataBase;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine;
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
-import diarsid.beam.core.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
+import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
@@ -40,13 +40,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import static diarsid.beam.core.control.io.commands.CommandType.BATCH_PAUSE;
-import static diarsid.beam.core.control.io.commands.CommandType.OPEN_LOCATION;
-import static diarsid.beam.core.control.io.commands.CommandType.OPEN_PATH;
-import static diarsid.beam.core.control.io.commands.CommandType.RUN_PROGRAM;
-import static diarsid.beam.core.control.io.commands.CommandType.SEE_WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
-import static diarsid.beam.core.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**

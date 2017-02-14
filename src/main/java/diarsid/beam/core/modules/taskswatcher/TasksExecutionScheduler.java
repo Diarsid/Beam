@@ -12,9 +12,9 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.TimeMessage;
-import diarsid.beam.core.control.io.base.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
@@ -27,8 +27,8 @@ import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_INITIAL_S
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_TEMPORARY_PAUSE;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMinutesFromPastToNow;
-import static diarsid.beam.core.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.util.Logs.debug;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *

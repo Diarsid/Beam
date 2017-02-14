@@ -8,7 +8,7 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
-import diarsid.beam.core.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 
 /**
  *

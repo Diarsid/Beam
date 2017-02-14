@@ -6,8 +6,8 @@
 
 package diarsid.beam.core.modules.corecontrol.cli.nativeconsole;
 
-import diarsid.beam.core.control.io.base.OuterIoEngine;
-import diarsid.beam.core.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
 
 /**
  *

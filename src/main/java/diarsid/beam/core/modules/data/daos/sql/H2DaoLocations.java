@@ -9,8 +9,8 @@ package diarsid.beam.core.modules.data.daos.sql;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.control.io.base.Initiator;
-import diarsid.beam.core.control.io.base.InnerIoEngine; 
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine; 
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DataBase;
@@ -26,15 +26,15 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.control.io.base.Messages.error;
-import static diarsid.beam.core.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.util.Logs.logError;
-import static diarsid.beam.core.util.SqlUtil.SqlOperator.AND;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.util.SqlUtil.multipleLowerLike;
-import static diarsid.beam.core.util.StringIgnoreCaseUtil.replaceIgnoreCase;
-import static diarsid.beam.core.util.StringUtils.lower;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
