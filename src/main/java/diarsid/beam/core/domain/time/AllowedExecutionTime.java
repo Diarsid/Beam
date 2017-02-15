@@ -11,31 +11,75 @@ import java.util.Set;
 
 import diarsid.beam.core.domain.entities.exceptions.TaskTimeInvalidException;
 
+import static java.util.Arrays.stream;
+
 /**
  *
  * @author Diarsid
  */
-public class ExecutionTime {
+public class AllowedExecutionTime {
         
     private final Set<Integer> hours;
     private final Set<Integer> days;
             
-    ExecutionTime() {
+    AllowedExecutionTime() {
         this.hours = new HashSet<>();
         this.days = new HashSet<>();
     }    
     
-    public static ExecutionTime executionTime() {
-        return new ExecutionTime();
+    public static AllowedExecutionTime emptyTime() {
+        return new AllowedExecutionTime();
+    }
+    
+    public Set<Integer> getHours() {
+        return this.hours;
+    }
+    
+    public Set<Integer> getDays() {
+        return this.days;
+    }
+    
+    public boolean isEmpty() {
+        return ( this.hours.isEmpty() && this.days.isEmpty() );
+    }
+    
+    public boolean hasHours() {
+        return ! this.hours.isEmpty();
+    }
+    
+    public boolean hasDays() {
+        return ! this.days.isEmpty();
+    }
+    
+    public boolean hasNotHours() {
+        return this.hours.isEmpty();
+    }
+    
+    public boolean hasNotDays() {
+        return this.days.isEmpty();
+    }
+    
+    public boolean containsDays(int... days) {
+        return stream(days).allMatch(day -> this.days.contains(day));
+    }
+    
+    public boolean containsHours(int... hours) {
+        return stream(hours).allMatch(hour -> this.hours.contains(hour));
+    }
+    
+    public AllowedExecutionTime merge(AllowedExecutionTime other) {
+        this.hours.addAll(other.hours);
+        this.days.addAll(other.days);
+        return this;
     }
        
-    public ExecutionTime includeHourOfDay(int givenHour) {
+    public AllowedExecutionTime includeHourOfDay(int givenHour) {
         this.verifyHours(givenHour);
         this.hours.add(givenHour);
         return this;
     }
     
-    public ExecutionTime includeHoursOfDayBetween(int fromHourInclusive, int toHourExclusive) {
+    public AllowedExecutionTime includeHoursOfDayBetween(int fromHourInclusive, int toHourExclusive) {
         this.verifyHours(fromHourInclusive, toHourExclusive);
         if ( fromHourInclusive == toHourExclusive ) {
             return this;
@@ -61,13 +105,13 @@ public class ExecutionTime {
         return this;
     }
     
-    public ExecutionTime includeDayOfWeek(int givenDay) {
+    public AllowedExecutionTime includeDayOfWeek(int givenDay) {
         this.verifyDays(givenDay);
         this.days.add(givenDay);
         return this;
     }
     
-    public ExecutionTime includeDaysOfWeekBetween(int fromDayInclusive, int toDayInclusive) {
+    public AllowedExecutionTime includeDaysOfWeekBetween(int fromDayInclusive, int toDayInclusive) {
         this.verifyDays(fromDayInclusive, toDayInclusive);
         if ( fromDayInclusive == toDayInclusive ) {
             this.days.add(fromDayInclusive);
@@ -88,14 +132,6 @@ public class ExecutionTime {
             }
         }
         return this;
-    }
-    
-    public Set<Integer> aggregateHours() {
-        return this.hours;
-    }
-    
-    public Set<Integer> aggregateDays() {
-        return this.days;
     }
     
     private void verifyHours(Integer... givenHours) {

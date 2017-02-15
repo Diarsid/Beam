@@ -14,9 +14,9 @@ import java.util.Set;
  */
 public class TimePatternDectectorsHolder {
     
-    private final Set<TimePatternDetector> detectors;
+    private final Set<? extends TimePatternDetector> detectors;
     
-    public TimePatternDectectorsHolder(Set<TimePatternDetector> detectors) {
+    TimePatternDectectorsHolder(Set<? extends TimePatternDetector> detectors) {
         this.detectors = detectors;
     }
     

@@ -18,11 +18,11 @@ public class TimePatternParsersHolder {
     
     private final Set<TimePatternParser> parsers;
     
-    public TimePatternParsersHolder(Set<TimePatternParser> parsers) {
+    TimePatternParsersHolder(Set<TimePatternParser> parsers) {
         this.parsers = parsers;
     }
     
-    Optional<LocalDateTime> parseTimeFrom(String timePattern) {
+    public Optional<LocalDateTime> parseTimeFrom(String timePattern) {
         return this.parsers
                 .stream()
                 .filter(parser -> parser.isApplicableTo(timePattern))

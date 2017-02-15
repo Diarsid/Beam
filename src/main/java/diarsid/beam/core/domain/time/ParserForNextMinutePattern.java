@@ -12,9 +12,9 @@ import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
 
 
-public class ParserForNextMinutePattern implements TimePatternParser {
+class ParserForNextMinutePattern implements TimePatternParser {
     
-    public ParserForNextMinutePattern() {
+    ParserForNextMinutePattern() {
     }
 
     private int parseMinutes(String timePattern) {

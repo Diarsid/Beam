@@ -57,6 +57,10 @@ public class StringUtils {
         return ! s.isEmpty();
     }
     
+    public static String normalizeSpaces(String target) {
+        return target.replaceAll("\\s+", " ");
+    }
+    
     public static String normalize(String target) {
         return target
                 // replaces multiple spaces with single space

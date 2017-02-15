@@ -9,6 +9,7 @@ package diarsid.beam.core.domain.time;
  *
  * @author Diarsid
  */
-public interface TimePatternDetector {
+interface TimePatternDetector {
+    
     boolean isApplicableTo(String timePattern);
 }

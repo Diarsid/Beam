@@ -17,13 +17,11 @@ import static java.util.Arrays.asList;
  */
 public class TimeParsing {
     
-    private final static Set<TimePatternDetector> DETECTORS;
-    private final static Set<TimePatternParser> PARSERS;
+    private final static TimePatternDectectorsHolder DETECTORS_HOLDER;
+    private final static TimePatternParsersHolder PARSERS_HOLDER;
+    private final static AllowedExecutionTimeParser ALLOWED_TIME_PARSER;
     
-    static {
-        DETECTORS = new HashSet<>();
-        PARSERS = new HashSet<>();
-        
+    static {        
         Set<TimePatternParser> allDefined = new HashSet<>(asList(
                 new ParserForPlusHourMinutePattern(),
                 new ParserForPlusHoursPattern(),
@@ -36,18 +34,24 @@ public class TimeParsing {
                 new ParserForFullDatePattern()
         ));
         
-        DETECTORS.addAll(allDefined);
-        PARSERS.addAll(allDefined);
+        DETECTORS_HOLDER = new TimePatternDectectorsHolder(allDefined);
+        PARSERS_HOLDER = new TimePatternParsersHolder(allDefined);
+        
+        ALLOWED_TIME_PARSER = new AllowedExecutionTimeParser();
     }
     
     private TimeParsing() {
     }
     
     public static TimePatternDectectorsHolder dectectorsHolder() {
-        return new TimePatternDectectorsHolder(DETECTORS);
+        return DETECTORS_HOLDER;
     }
     
     public static TimePatternParsersHolder parsersHolder() {
-        return new TimePatternParsersHolder(PARSERS);
+        return PARSERS_HOLDER;
+    }
+    
+    public static AllowedExecutionTimeParser allowedExecutionTimeParser() {
+        return ALLOWED_TIME_PARSER;
     }
 }

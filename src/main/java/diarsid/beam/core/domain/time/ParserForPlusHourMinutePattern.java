@@ -12,9 +12,9 @@ import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
 
 
-public class ParserForPlusHourMinutePattern implements TimePatternParser {
+class ParserForPlusHourMinutePattern implements TimePatternParser {
     
-    public ParserForPlusHourMinutePattern() {
+    ParserForPlusHourMinutePattern() {
     }
 
     @Override

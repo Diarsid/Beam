@@ -13,9 +13,9 @@ import static java.time.LocalDateTime.now;
 import static java.time.Year.isLeap;
 
 
-public class ParserForNextMonthDayHourMinutPattern implements TimePatternParser {
+class ParserForNextMonthDayHourMinutPattern implements TimePatternParser {
     
-    public ParserForNextMonthDayHourMinutPattern() {
+    ParserForNextMonthDayHourMinutPattern() {
     }
 
     @Override

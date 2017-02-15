@@ -95,6 +95,14 @@ public enum TimePeriod {
     
     public abstract boolean isAppropriateFormat(String timeString);
     
+    public boolean is(TimePeriod other) {
+        return this.equals(other);
+    }
+    
+    public boolean isNot(TimePeriod other) {
+        return ! this.equals(other);
+    }
+    
     public boolean isDefined() {
         return ! this.equals(UNDEFINED);
     }

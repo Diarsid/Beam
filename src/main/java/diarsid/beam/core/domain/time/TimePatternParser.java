@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  *
  * @author Diarsid
  */
-public interface TimePatternParser extends TimePatternDetector {
+interface TimePatternParser extends TimePatternDetector {
     
     LocalDateTime parse(String timePattern);
 }

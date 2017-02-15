@@ -13,9 +13,9 @@ import static java.time.LocalDateTime.now;
 import static java.time.Year.isLeap;
 
 
-public class ParserForFullDatePattern implements TimePatternParser {
+class ParserForFullDatePattern implements TimePatternParser {
     
-    public ParserForFullDatePattern() {
+    ParserForFullDatePattern() {
     }
 
     @Override
