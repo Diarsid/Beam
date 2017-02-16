@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.base.control.io.interpreter;
 
-import diarsid.beam.core.base.control.io.interpreter.Interpreter;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -514,7 +512,7 @@ public class InterpreterTest {
     }
     
     @Test
-    public void testInterprete_createTask_time() {
+    public void testInterprete_createTask_dayHourMinute() {
         Command c1 = interpreter.interprete("+ task 10 22:00");
         assertEquals(CREATE_TASK, c1.type());
         
@@ -524,7 +522,47 @@ public class InterpreterTest {
     }
     
     @Test
-    public void testInterprete_createTask_plusTimeAndTask() {
+    public void testInterprete_createTask_dayMonthHourMinute() {
+        Command c1 = interpreter.interprete("+ task 10.05 22:00");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("10.05 22:00", c1casted.getTimeString());
+        assertFalse(c1casted.hasTask());
+    }
+    
+    @Test
+    public void testInterprete_createTask_dayMonthHourMinute_text() {
+        Command c1 = interpreter.interprete("+ task 10.05 22:00 to do");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("10.05 22:00", c1casted.getTimeString());
+        assertEquals("to do", c1casted.getTaskString());
+    }
+    
+    @Test
+    public void testInterprete_createTask_onlyNextMinutes() {
+        Command c1 = interpreter.interprete("+ task 10");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("10", c1casted.getTimeString());
+        assertFalse(c1casted.hasTask());
+    }
+    
+    @Test
+    public void testInterprete_createTask_onlyNextMinutesM() {
+        Command c1 = interpreter.interprete("+ task 10m");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("10m", c1casted.getTimeString());
+        assertFalse(c1casted.hasTask());
+    }
+    
+    @Test
+    public void testInterprete_createTask_plusMinutesAndTask() {
         Command c1 = interpreter.interprete("+ task +10 to do someth");
         assertEquals(CREATE_TASK, c1.type());
         
@@ -534,13 +572,73 @@ public class InterpreterTest {
     }
     
     @Test
-    public void testInterprete_createTask_plusTime() {
+    public void testInterprete_createTask_plusHouresAndTask() {
+        Command c1 = interpreter.interprete("+ task +1h to do someth");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("+1h", c1casted.getTimeString());
+        assertEquals("to do someth", c1casted.getTaskString());
+    }
+    
+    @Test
+    public void testInterprete_createTask_plusMinutesMAndTask() {
+        Command c1 = interpreter.interprete("+ task +10m to do someth");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("+10m", c1casted.getTimeString());
+        assertEquals("to do someth", c1casted.getTaskString());
+    }
+    
+    @Test
+    public void testInterprete_createTask_plusMinutes() {
         Command c1 = interpreter.interprete("+ task +10");
         assertEquals(CREATE_TASK, c1.type());
         
         CreateTaskCommand c1casted = (CreateTaskCommand) c1;
         assertEquals("+10", c1casted.getTimeString());
         assertFalse(c1casted.hasTask());
+    }
+    
+    @Test
+    public void testInterprete_createTask_plusHoursMinutes() {
+        Command c1 = interpreter.interprete("+ task +1:30");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("+1:30", c1casted.getTimeString());
+        assertFalse(c1casted.hasTask());
+    }
+    
+    @Test
+    public void testInterprete_createTask_plusHoursMinutes_text() {
+        Command c1 = interpreter.interprete("+ task +1:30 to do someth");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("+1:30", c1casted.getTimeString());
+        assertEquals("to do someth", c1casted.getTaskString());
+    }
+    
+    @Test
+    public void testInterprete_createTask_fullDate_1_text() {
+        Command c1 = interpreter.interprete("+ task 10.9.2019 12:20 to do someth");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("10.9.2019 12:20", c1casted.getTimeString());
+        assertEquals("to do someth", c1casted.getTaskString());
+    }
+    
+    @Test
+    public void testInterprete_createTask_fullDate_2_text() {
+        Command c1 = interpreter.interprete("+ task 2019-10-9 12:20 to do someth");
+        assertEquals(CREATE_TASK, c1.type());
+        
+        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        assertEquals("2019-10-9 12:20", c1casted.getTimeString());
+        assertEquals("to do someth", c1casted.getTaskString());
     }
     
     @Test
