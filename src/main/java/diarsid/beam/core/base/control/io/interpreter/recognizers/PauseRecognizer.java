@@ -9,13 +9,13 @@ package diarsid.beam.core.base.control.io.interpreter.recognizers;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.Recognizer;
-import diarsid.beam.core.base.control.io.interpreter.StreamArgumentsInterceptor;
+import diarsid.beam.core.domain.inputparsing.ArgumentsInterceptor;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.TimePeriod;
 
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.base.control.io.interpreter.StreamArgumentsInterceptor.ArgumentType.NUMBER;
-import static diarsid.beam.core.base.control.io.interpreter.StreamArgumentsInterceptor.ArgumentType.TIME_PERIOD;
+import static diarsid.beam.core.domain.inputparsing.ArgumentType.NUMBER;
+import static diarsid.beam.core.domain.inputparsing.ArgumentType.TIME_PERIOD;
 import static diarsid.beam.core.domain.entities.TimePeriod.parseTimePeriodFrom;
 import static diarsid.beam.core.base.util.StringNumberUtils.parseNumberElseZero;
 
@@ -31,15 +31,15 @@ public class PauseRecognizer implements Recognizer {
     @Override
     public Command assess(Input input) {
         if ( this.hasTwoArguments(input) ) {
-            StreamArgumentsInterceptor args = new StreamArgumentsInterceptor();
+            ArgumentsInterceptor args = new ArgumentsInterceptor();
             input.allRemainingArgs()
                     .stream()
                     .filter(arg -> args.interceptArgumentOfType(arg, NUMBER).ifContinue())
                     .filter(arg -> args.interceptArgumentOfType(arg, TIME_PERIOD).ifContinue())
                     .count();
             
-            int pauseDuration = parseNumberElseZero(args.of(NUMBER));
-            TimePeriod timePeriod = parseTimePeriodFrom(args.of(TIME_PERIOD));
+            int pauseDuration = parseNumberElseZero(args.argOfType(NUMBER));
+            TimePeriod timePeriod = parseTimePeriodFrom(args.argOfType(TIME_PERIOD));
             if ( pauseDuration > 0 && timePeriod.isDefined() ) {
                 return new BatchPauseCommand(pauseDuration, timePeriod);
             } else {

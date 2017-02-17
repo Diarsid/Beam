@@ -10,7 +10,7 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.modules.domainkeeper.ProgramsKeeper;
 
@@ -28,7 +28,7 @@ class CliAdapterForProgramsKeeper {
         this.programsKeeper = programsKeeper;
     }
     
-    void findProgramAndReport(Initiator initiator, FindEntityCommand command) {
+    void findProgramAndReport(Initiator initiator, SingleStringCommand command) {
         Optional<Program> optionalProgram = this.programsKeeper.findProgram(initiator, command);
         if ( optionalProgram.isPresent() ) {
             this.ioEngine.report(initiator, optionalProgram.get().getFullName());

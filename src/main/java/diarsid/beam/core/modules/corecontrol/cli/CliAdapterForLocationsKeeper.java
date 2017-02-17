@@ -8,12 +8,11 @@ package diarsid.beam.core.modules.corecontrol.cli;
 
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
@@ -24,41 +23,37 @@ import static diarsid.beam.core.base.control.io.base.interaction.DomainToMessage
  *
  * @author Diarsid
  */
-public class CliAdapterForLocationsKeeper {
+public class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     
     private final LocationsKeeper locationsKeeper;
-    private final InnerIoEngine ioEngine;
     
     public CliAdapterForLocationsKeeper(
             LocationsKeeper locationsKeeper, InnerIoEngine ioEngine) {
+        super(ioEngine);
         this.locationsKeeper = locationsKeeper;
-        this.ioEngine = ioEngine;
     }
     
-    void findLocationAndReport(Initiator initiator, FindEntityCommand command) {
+    void findLocationAndReport(Initiator initiator, SingleStringCommand command) {
         Optional<Location> location = this.locationsKeeper.findLocation(initiator, command);
         if ( location.isPresent() ) {
-            this.ioEngine.reportMessage(initiator, toMessage(location.get()));
+            super.report(initiator, toMessage(location.get()));
         } else {
-            this.ioEngine.report(initiator, "not found.");
+            super.report(initiator, "not found.");
         }        
     }
     
-    void editLocationAndReport(Initiator initiator, EditEntityCommand command) {
-        if ( this.locationsKeeper.editLocation(initiator, command) ) {
-            this.ioEngine.report(initiator, "done!");
-        }
+    void editLocationAndReport(Initiator initiator, SingleStringCommand command) {
+        OperationFlow flow = this.locationsKeeper.editLocation(initiator, command);
+        super.reportOperationFlow(initiator, flow, "done!");
     }
     
-    void createLocationAndReport(Initiator initiator, CreateLocationCommand command) {
-        if ( this.locationsKeeper.createLocation(initiator, command) ) {
-            this.ioEngine.report(initiator, "created!");
-        }
+    void createLocationAndReport(Initiator initiator, MultiStringCommand command) {
+        OperationFlow flow = this.locationsKeeper.createLocation(initiator, command);
+        super.reportOperationFlow(initiator, flow, "created!");        
     }
     
-    void removeLocationAndReport(Initiator initiator, RemoveEntityCommand command) {
-        if ( this.locationsKeeper.removeLocation(initiator, command) ) {
-            this.ioEngine.report(initiator, "removed.");
-        }
+    void removeLocationAndReport(Initiator initiator, SingleStringCommand command) {
+        OperationFlow flow = this.locationsKeeper.removeLocation(initiator, command);
+        super.reportOperationFlow(initiator, flow, "created!");  
     }
 }

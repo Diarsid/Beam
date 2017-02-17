@@ -9,13 +9,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
-import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateTaskCommand;
+import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Task;
 
 /**
@@ -45,21 +43,15 @@ public interface TasksKeeper {
     Optional<LocalDateTime> getTimeOfFirstTask(
             Initiator initiator);
     
-    boolean createTask(
-            Initiator initiator, CreateTaskCommand command);
+    OperationFlow createTask(
+            Initiator initiator, MultiStringCommand command);
     
-    boolean createReminder(
-            Initiator initiator, CreateEntityCommand command);
+    OperationFlow deleteTask(
+            Initiator initiator, SingleStringCommand command);
     
-    boolean createEvent(
-            Initiator initiator, CreateEntityCommand command);
-    
-    boolean deleteTask(
-            Initiator initiator, RemoveEntityCommand command);
-    
-    boolean editTask(
-            Initiator initiator, EditEntityCommand command);
+    OperationFlow editTask(
+            Initiator initiator, SingleStringCommand command);
     
     List<Task> findTasks(
-            Initiator initiator, FindEntityCommand findEntityCommand);
+            Initiator initiator, SingleStringCommand findEntityCommand);
 }

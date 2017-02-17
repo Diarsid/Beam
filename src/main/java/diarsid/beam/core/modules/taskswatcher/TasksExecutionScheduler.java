@@ -21,8 +21,8 @@ import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.domain.entities.SchedulableType.DAILY_REPEAT;
-import static diarsid.beam.core.domain.entities.SchedulableType.HOURLY_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeatType.DAILY_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeatType.HOURLY_REPEAT;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_INITIAL_START;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_TEMPORARY_PAUSE;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;

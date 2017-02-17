@@ -37,12 +37,12 @@ public class Task
     private LocalDateTime time;
     private final String[] content;
     private boolean activeStatus;
-    private final SchedulableType type;
+    private final TaskRepeatType type;
     private final Set<Integer> activeHours;
     private final Set<Integer> activeDays;
         
     Task(
-            SchedulableType type, 
+            TaskRepeatType type, 
             LocalDateTime time, 
             String[] content, 
             Set<Integer> days, 
@@ -58,7 +58,7 @@ public class Task
     
     Task(
             int id, 
-            SchedulableType type, 
+            TaskRepeatType type, 
             LocalDateTime time, 
             String[] content, 
             boolean status, 
@@ -97,7 +97,7 @@ public class Task
         return activeStatus;
     }
 
-    public SchedulableType type() {
+    public TaskRepeatType type() {
         return type;
     }
 

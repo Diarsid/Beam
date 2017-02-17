@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Program;
 
 /**
@@ -19,7 +19,7 @@ import diarsid.beam.core.domain.entities.Program;
 public interface ProgramsKeeper {
     
     Optional<Program> findProgram(
-            Initiator initiator, FindEntityCommand command);
+            Initiator initiator, SingleStringCommand command);
     
     Optional<Program> getOneProgramByStrictName(
             Initiator initiator, String strictName);

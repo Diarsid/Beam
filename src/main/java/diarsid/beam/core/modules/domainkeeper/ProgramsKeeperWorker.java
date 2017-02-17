@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.application.catalogs.ProgramsCatalog;
-import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.domain.entities.Program;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.domain.entities.Program;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -52,12 +52,24 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     }
 
     @Override
-    public Optional<Program> findProgram(Initiator initiator, FindEntityCommand command) {
-        if ( this.helper.checkFinding(initiator, command, FIND_PROGRAM) ) {
-            return this.getOneProgramByPattern(initiator, command.getArg());
-        } else {
+    public Optional<Program> findProgram(Initiator initiator, SingleStringCommand command) {
+        if ( command.type().isNot(FIND_PROGRAM) ) {
             return Optional.empty();
         }
+        
+        String name;
+        if ( command.hasArg() ) {
+            name = command.getArg();
+        } else {
+            name = "";
+        }
+        
+        name = this.helper.validateEntityNameInteractively(initiator, name);
+        if ( name.isEmpty() ) {
+            return Optional.empty();
+        }
+        
+        return this.getOneProgramByPattern(initiator, command.getArg());        
     }
 
     @Override

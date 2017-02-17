@@ -10,13 +10,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
+import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
 import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
-import diarsid.beam.core.base.control.io.commands.TimeEntityEditCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateTaskCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateWebDirectoryCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateWebPageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
@@ -59,17 +54,17 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE
 import static diarsid.beam.core.base.control.io.commands.CommandType.START_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.STOP_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.UNDEFINED;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_COMMANDS;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_NAME;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_ORDER;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_PATH;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_PLACE;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_UNDEFINED;
-import static diarsid.beam.core.base.control.io.commands.EditableTarget.TARGET_URL;
 import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY_UNDEFINED;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLACE;
 
 /**
  *
@@ -372,9 +367,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ loc books C:/path/to/my_books");
         assertEquals(CREATE_LOCATION, c1.type());
         
-        CreateLocationCommand c1casted = (CreateLocationCommand) c1;
-        assertEquals("books", c1casted.getName());
-        assertEquals("C:/path/to/my_books", c1casted.getPath());
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
+        assertEquals("books C:/path/to/my_books", c1casted.joinedArguments());
     }
     
     @Test
@@ -382,9 +376,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ loc C:/path/to/my_books books ");
         assertEquals(CREATE_LOCATION, c1.type());
         
-        CreateLocationCommand c1casted = (CreateLocationCommand) c1;
-        assertEquals("books", c1casted.getName());
-        assertEquals("C:/path/to/my_books", c1casted.getPath());
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
+        assertEquals("C:/path/to/my_books", c1casted.joinedArguments());
     }
     
     @Test
@@ -392,7 +385,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ loc C:/path/to/my_books ");
         assertEquals(CREATE_LOCATION, c1.type());
         
-        CreateLocationCommand c1casted = (CreateLocationCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertFalse(c1casted.hasName());
         assertEquals("C:/path/to/my_books", c1casted.getPath());
     }
@@ -402,7 +395,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ loc books ");
         assertEquals(CREATE_LOCATION, c1.type());
         
-        CreateLocationCommand c1casted = (CreateLocationCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertEquals("books", c1casted.getName());
         assertFalse(c1casted.hasPath());
     }
@@ -412,7 +405,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ loc");
         assertEquals(CREATE_LOCATION, c1.type());
         
-        CreateLocationCommand c1casted = (CreateLocationCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertFalse(c1casted.hasName());
         assertFalse(c1casted.hasPath());
     }
@@ -423,7 +416,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page google https://google.com");
         assertEquals(CREATE_PAGE, c1.type());
         
-        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertEquals("google", c1casted.getName());
         assertEquals("https://google.com", c1casted.getUrl());
     }
@@ -433,7 +426,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page https://google.com google");
         assertEquals(CREATE_PAGE, c1.type());
         
-        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertEquals("google", c1casted.getName());
         assertEquals("https://google.com", c1casted.getUrl());
     }
@@ -443,7 +436,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page https://google.com google panel");
         assertEquals(CREATE_PAGE, c1.type());
         
-        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertEquals("google", c1casted.getName());
         assertEquals("https://google.com", c1casted.getUrl());
         assertEquals(WEBPANEL.name(), c1casted.getPlace());
@@ -454,7 +447,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page https://google.com ");
         assertEquals(CREATE_PAGE, c1.type());
         
-        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertFalse(c1casted.hasName());
         assertEquals("https://google.com", c1casted.getUrl());
     }
@@ -464,7 +457,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page https://google.com panel");
         assertEquals(CREATE_PAGE, c1.type());
         
-        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertFalse(c1casted.hasName());
         assertEquals("https://google.com", c1casted.getUrl());
         assertEquals(WEBPANEL.name(), c1casted.getPlace());
@@ -475,7 +468,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page google ");
         assertEquals(CREATE_PAGE, c1.type());
         
-        CreateWebPageCommand c1casted = (CreateWebPageCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertEquals("google", c1casted.getName());
         assertFalse(c1casted.hasUrl());
     }
@@ -506,7 +499,7 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ task 10 22:00 to do someth");
         assertEquals(CREATE_TASK, c1.type());
         
-        CreateTaskCommand c1casted = (CreateTaskCommand) c1;
+        MultiStringCommand c1casted = (MultiStringCommand) c1;
         assertEquals("10 22:00", c1casted.getTimeString());
         assertEquals("to do someth", c1casted.getTaskString());
     }
@@ -667,7 +660,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_UNDEFINED, command.getTarget());
+        assertEquals(PROPERTY_UNDEFINED, command.getTarget());
         assertFalse(command.isTargetDefined());
         assertFalse(command.hasName());
     }
@@ -678,7 +671,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_NAME, command.getTarget());
+        assertEquals(NAME, command.getTarget());
         assertTrue(command.isTargetDefined());
         assertFalse(command.hasName());
     }
@@ -689,7 +682,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_COMMANDS, command.getTarget());
+        assertEquals(COMMANDS, command.getTarget());
         assertTrue(command.isTargetDefined());
         assertFalse(command.hasName());
     }
@@ -700,7 +693,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_UNDEFINED, command.getTarget());
+        assertEquals(PROPERTY_UNDEFINED, command.getTarget());
         assertFalse(command.isTargetDefined());
         assertTrue(command.hasName());
         assertEquals("mysql", command.getName());
@@ -712,7 +705,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_NAME, command.getTarget());
+        assertEquals(NAME, command.getTarget());
         assertTrue(command.isTargetDefined());
         assertTrue(command.hasName());
         assertEquals("mysql", command.getName());
@@ -724,7 +717,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_NAME, command.getTarget());
+        assertEquals(NAME, command.getTarget());
         assertTrue(command.isTargetDefined());
         assertTrue(command.hasName());
         assertEquals("mysql", command.getName());
@@ -737,7 +730,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_COMMANDS, command.getTarget());
+        assertEquals(COMMANDS, command.getTarget());
         assertTrue(command.isTargetDefined());
         assertTrue(command.hasName());
         assertEquals("mysql", command.getName());
@@ -749,7 +742,7 @@ public class InterpreterTest {
         assertEquals(EDIT_BATCH, c.type());
         
         EditEntityCommand command = (EditEntityCommand) c;
-        assertEquals(TARGET_COMMANDS, command.getTarget());
+        assertEquals(COMMANDS, command.getTarget());
         assertTrue(command.isTargetDefined());
         assertTrue(command.hasName());
         assertEquals("mysql", command.getName());
@@ -864,7 +857,7 @@ public class InterpreterTest {
         
         EditEntityCommand com = (EditEntityCommand) c;
         assertEquals("google", com.getName());
-        assertEquals(TARGET_NAME, com.getTarget());
+        assertEquals(NAME, com.getTarget());
     }
     
     @Test
@@ -883,7 +876,7 @@ public class InterpreterTest {
         assertEquals(EDIT_PAGE, c.type());
         
         EditEntityCommand com = (EditEntityCommand) c;
-        assertEquals(TARGET_URL, com.getTarget());
+        assertEquals(WEB_URL, com.getTarget());
         assertFalse(com.hasName());
     }
     
@@ -916,8 +909,8 @@ public class InterpreterTest {
         EditEntityCommand com1 = (EditEntityCommand) c1;
         
         assertEquals("common", com.getName());
-        assertEquals(TARGET_NAME, com.getTarget());
-        assertEquals(TARGET_PLACE, com1.getTarget());
+        assertEquals(NAME, com.getTarget());
+        assertEquals(WEB_PLACE, com1.getTarget());
     }
     
     @Test
@@ -926,7 +919,7 @@ public class InterpreterTest {
         assertEquals(EDIT_PAGE_DIR, c1.type());
         EditEntityCommand com1 = (EditEntityCommand) c1;
         assertEquals("common", com1.getName());
-        assertEquals(TARGET_ORDER, com1.getTarget());
+        assertEquals(ORDER, com1.getTarget());
     }
         
     @Test
@@ -936,7 +929,7 @@ public class InterpreterTest {
         
         EditEntityCommand com = (EditEntityCommand) c;
         assertFalse(com.hasName());
-        assertEquals(TARGET_PLACE, com.getTarget());
+        assertEquals(WEB_PLACE, com.getTarget());
     }
     
     @Test
@@ -946,7 +939,7 @@ public class InterpreterTest {
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertEquals("boo", c1.getName());
-        assertEquals(TARGET_NAME, c1.getTarget());
+        assertEquals(NAME, c1.getTarget());
     }  
     
     @Test
@@ -956,7 +949,7 @@ public class InterpreterTest {
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertEquals("boo", c1.getName());
-        assertEquals(TARGET_PATH, c1.getTarget());
+        assertEquals(FILE_URL, c1.getTarget());
     }  
     
     @Test
@@ -966,7 +959,7 @@ public class InterpreterTest {
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertFalse(c1.hasName());
-        assertEquals(TARGET_NAME, c1.getTarget());
+        assertEquals(NAME, c1.getTarget());
     }  
     
     @Test
@@ -976,7 +969,7 @@ public class InterpreterTest {
         
         EditEntityCommand c1 = (EditEntityCommand) c;
         assertFalse(c1.hasName());
-        assertEquals(TARGET_PATH, c1.getTarget());
+        assertEquals(FILE_URL, c1.getTarget());
     }  
     
     @Test

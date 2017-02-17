@@ -8,11 +8,10 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Location;
 
 /**
@@ -28,21 +27,21 @@ public interface LocationsKeeper {
             Initiator initiator, String locationNamePattern);
     
     Optional<Location> findLocation(
-            Initiator initiator, FindEntityCommand command);
+            Initiator initiator, SingleStringCommand command);
     
     List<Location> getLocationsByNamePattern(
             Initiator initiator, String namePattern);
     
-    boolean createLocation(
-            Initiator initiator, CreateLocationCommand command);
+    OperationFlow createLocation(
+            Initiator initiator, MultiStringCommand command);
     
-    boolean removeLocation(
-            Initiator initiator, RemoveEntityCommand command);
+    OperationFlow removeLocation(
+            Initiator initiator, SingleStringCommand command);
     
-    boolean editLocation(
-            Initiator initiator, EditEntityCommand command);
+    OperationFlow editLocation(
+            Initiator initiator, SingleStringCommand command);
     
-    boolean replaceInPaths(
+    OperationFlow replaceInPaths(
             Initiator initiator, String replaceable, String replacement);
             
     List<Location> getAllLocations(

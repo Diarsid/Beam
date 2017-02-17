@@ -7,9 +7,7 @@
 package diarsid.beam.core.base.control.io.interpreter;
 
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
-import diarsid.beam.core.base.control.io.commands.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
@@ -18,39 +16,33 @@ import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StartProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StopProgramCommand;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.CreateLocationRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.CreateTaskRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.CreateWebDirectoryRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.CreateWebPageRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.EditEntityRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.InputCorrectnessRecognizer;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.MultiArgumentsOperationRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.MultipleArgsRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.OneArgRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PauseRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PrefixRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.RelativePathRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.RemoveEntityByArgRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.SimpleWordRecognizer;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.SingleArgumentOperationRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.WordRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.WordsRecognizer;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
-import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_EVENT;
-import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_REMINDER;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE_DIR;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
-import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_EVENT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE_DIR;
-import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_REMINDER;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
-import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_EVENT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE_DIR;
-import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_REMINDER;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
@@ -63,8 +55,8 @@ import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.L
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.lowerThan;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.RemoveEntityByArgRecognizer.ArgumentsMode.JOIN_ALL_REMAINING_ARGS;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.RemoveEntityByArgRecognizer.ArgumentsMode.USE_FIRST_REMAINING_ARG;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.SingleArgumentOperationRecognizer.ArgumentsMode.JOIN_ALL_REMAINING_ARGS;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.SingleArgumentOperationRecognizer.ArgumentsMode.USE_FIRST_REMAINING_ARG;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
 
 /**
@@ -94,8 +86,7 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return new InputCorrectnessRecognizer().branchesTo(
-                new OneArgRecognizer().priority(HIGH).branchesTo(
+        return new InputCorrectnessRecognizer().branchesTo(new OneArgRecognizer().priority(HIGH).branchesTo(
                         new PrefixRecognizer(
                                 "/", 
                                 "l/").branchesTo(
@@ -185,44 +176,29 @@ public class Interpreter {
                         new WordsRecognizer(
                                 "edit", 
                                 "change", 
-                                "alter").branchesTo(
-                                        new WordsRecognizer(
+                                "alter").branchesTo(new WordsRecognizer(
                                                 "loc", 
-                                                "location").pointsTo(
-                                                        new EditEntityRecognizer(EDIT_LOCATION)),
+                                                "location").pointsTo(new MultiArgumentsOperationRecognizer(EDIT_LOCATION)),
                                         new WordRecognizer(
-                                                "task").pointsTo(
-                                                        new TimeEntityEditRecognizer(EDIT_TASK)),
-                                        new WordsRecognizer(
-                                                "reminder", 
-                                                "rem", 
-                                                "remind").pointsTo(
-                                                        new TimeEntityEditRecognizer(EDIT_REMINDER)),
-                                        new WordRecognizer(
-                                                "event").pointsTo(
-                                                        new TimeEntityEditRecognizer(EDIT_EVENT)),
+                                                "task").pointsTo(new MultiArgumentsOperationRecognizer(EDIT_TASK)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").priority(HIGH).pointsTo(
-                                                                        new EditEntityRecognizer(EDIT_PAGE_DIR)),
-                                                        new EditEntityRecognizer(EDIT_PAGE)                                        
+                                                                "directory").priority(HIGH).pointsTo(new MultiArgumentsOperationRecognizer(EDIT_PAGE_DIR)),
+                                                        new MultiArgumentsOperationRecognizer(EDIT_PAGE)                                        
                                         ),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(
-                                                        new EditEntityRecognizer(EDIT_PAGE_DIR)),
+                                                "directory").pointsTo(new MultiArgumentsOperationRecognizer(EDIT_PAGE_DIR)),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(
-                                                        new EditEntityRecognizer(EDIT_BATCH))
+                                                "exe").pointsTo(new SingleArgumentOperationRecognizer(EDIT_BATCH, USE_FIRST_REMAINING_ARG))
                         ),
                         new WordsRecognizer(
                                 "+", 
@@ -230,98 +206,70 @@ public class Interpreter {
                                 "new", 
                                 "create").branchesTo(new WordsRecognizer(
                                                 "loc", 
-                                                "location").pointsTo(
-                                                        new CreateLocationRecognizer()),
+                                                "location").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_LOCATION)),
                                         new WordRecognizer(
-                                                "task").pointsTo(
-                                                        new CreateTaskRecognizer()),
-                                        new WordsRecognizer(
-                                                "reminder", 
-                                                "rem", 
-                                                "remind").pointsTo(
-                                                        input -> new CreateEntityCommand(CREATE_REMINDER)),
-                                        new WordRecognizer(
-                                                "event").pointsTo(
-                                                        input -> new CreateEntityCommand(CREATE_EVENT)),
+                                                "task").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_TASK)),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(
-                                                        new CreateWebDirectoryRecognizer()),
+                                                "directory").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_PAGE_DIR)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").pointsTo(
-                                                                        new CreateWebDirectoryRecognizer()), 
-                                                        new CreateWebPageRecognizer().priority(lowerThan(LOWEST))
+                                                                "directory").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_PAGE_DIR)), 
+                                                        new MultiArgumentsOperationRecognizer(CREATE_PAGE).priority(lowerThan(LOWEST))
                                         ),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
                                                 "exe").pointsTo(
-                                                        input -> new CreateEntityCommand(CREATE_BATCH))
+                                                        new SingleArgumentOperationRecognizer(CREATE_BATCH, USE_FIRST_REMAINING_ARG))
                         ),
                         new WordsRecognizer(
                                 "-", 
                                 "del", 
                                 "delete", 
-                                "remove").branchesTo(
-                                        new WordsRecognizer(
+                                "remove").branchesTo(new WordsRecognizer(
                                                 "loc", 
                                                 "location").pointsTo(
-                                                        new RemoveEntityByArgRecognizer(
+                                                        new SingleArgumentOperationRecognizer(
                                                                 DELETE_LOCATION, 
                                                                 USE_FIRST_REMAINING_ARG)),
                                         new WordRecognizer(
                                                 "task").pointsTo(
-                                                        new RemoveEntityByArgRecognizer(
+                                                        new SingleArgumentOperationRecognizer(
                                                                 DELETE_TASK, 
-                                                                JOIN_ALL_REMAINING_ARGS)),
-                                        new WordsRecognizer(
-                                                "reminder", 
-                                                "rem", 
-                                                "remind").pointsTo(
-                                                        new RemoveEntityByArgRecognizer(
-                                                                DELETE_REMINDER, 
-                                                                JOIN_ALL_REMAINING_ARGS)),
-                                        new WordRecognizer(
-                                                "event").pointsTo(
-                                                        new RemoveEntityByArgRecognizer(
-                                                                DELETE_EVENT, 
                                                                 JOIN_ALL_REMAINING_ARGS)),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
                                                 "directory").pointsTo(
-                                                        new RemoveEntityByArgRecognizer(
+                                                        new SingleArgumentOperationRecognizer(
                                                                 DELETE_PAGE_DIR, 
                                                                 USE_FIRST_REMAINING_ARG)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
                                                                 "directory").pointsTo(
-                                                                        new RemoveEntityByArgRecognizer(
+                                                                        new SingleArgumentOperationRecognizer(
                                                                                 DELETE_PAGE_DIR, 
                                                                                 USE_FIRST_REMAINING_ARG)),
-                                                        new RemoveEntityByArgRecognizer(
+                                                        new SingleArgumentOperationRecognizer(
                                                                 DELETE_PAGE, 
                                                                 USE_FIRST_REMAINING_ARG)
                                         ),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(
-                                                        new RemoveEntityByArgRecognizer(
+                                                "exe").pointsTo(new SingleArgumentOperationRecognizer(
                                                                 DELETE_BATCH, 
                                                                 USE_FIRST_REMAINING_ARG))
                         ),
@@ -357,26 +305,18 @@ public class Interpreter {
                         new WordRecognizer(
                                 "list").branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new ExecutorCommand(
-                                                        input.currentArg(), 
-                                                        LIST_LOCATION)), 
+                                                new SingleArgumentOperationRecognizer(LIST_LOCATION, USE_FIRST_REMAINING_ARG)), 
                                         new RelativePathRecognizer().pointsTo(
-                                                input -> new ExecutorCommand(
-                                                        input.currentArg(), 
-                                                        LIST_PATH))
+                                                new SingleArgumentOperationRecognizer(LIST_PATH, USE_FIRST_REMAINING_ARG))
                         ),
                         new WordsRecognizer(
                                 "n", 
                                 "note", 
                                 "notes").priority(LOW).branchesTo(
                                         new RelativePathRecognizer().pointsTo(
-                                                input -> new ExecutorCommand(
-                                                        input.currentArg(), 
-                                                        OPEN_PATH_IN_NOTE)), 
+                                                new SingleArgumentOperationRecognizer(OPEN_PATH_IN_NOTE, USE_FIRST_REMAINING_ARG)), 
                                         new SimpleWordRecognizer().pointsTo(
-                                                input -> new ExecutorCommand(
-                                                        input.currentArg(), 
-                                                        OPEN_TARGET_IN_NOTE))
+                                                new SingleArgumentOperationRecognizer(OPEN_TARGET_IN_NOTE, USE_FIRST_REMAINING_ARG))
                         )
                 )
         );

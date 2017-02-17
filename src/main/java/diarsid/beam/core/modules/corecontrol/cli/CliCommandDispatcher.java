@@ -8,11 +8,8 @@ package diarsid.beam.core.modules.corecontrol.cli;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
-import diarsid.beam.core.base.control.io.commands.creation.CreateLocationCommand;
+import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
@@ -88,7 +85,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getLocationsAdapter()
                         .removeLocationAndReport(
                                 initiator, 
-                                (RemoveEntityCommand) command);
+                                (SingleStringCommand) command);
                 break;
             }                
             case CREATE_LOCATION: {
@@ -96,14 +93,14 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getLocationsAdapter()
                         .createLocationAndReport(
                                 initiator, 
-                                (CreateLocationCommand) command);
+                                (MultiStringCommand) command);
                 break;
             } case EDIT_LOCATION: {
                 this.domainModuleAdapter
                         .getLocationsAdapter()
                         .editLocationAndReport(
                                 initiator, 
-                                (EditEntityCommand) command);
+                                (SingleStringCommand) command);
                 break;
             }                
             case DELETE_TASK:
@@ -112,38 +109,25 @@ class CliCommandDispatcher implements CommandDispatcher {
                 break;
             case EDIT_TASK:
                 break;
-            case DELETE_REMINDER:
-                break;
-            case CREATE_REMINDER:
-                break;
-            case EDIT_REMINDER:
-                break;
-            case DELETE_EVENT:
-                break;
-            case CREATE_EVENT:
-                break;
-            case EDIT_EVENT:
-                break;
             case DELETE_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
                         .removeBatchAndReport(
                                 initiator, 
-                                (RemoveEntityCommand) command);
+                                (SingleStringCommand) command);
                 break;
             case CREATE_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
-                        .createBatchAndReport(
-                                initiator, 
-                                (CreateEntityCommand) command);
+                        .createBatchAndReport(initiator, 
+                                (SingleStringCommand) command);
                 break;
             case EDIT_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
                         .editBatchAndReport(
                                 initiator, 
-                                (EditEntityCommand) command);
+                                (SingleStringCommand) command);
                 break;
             case LIST_LOCATION:
                 break;
@@ -154,7 +138,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getLocationsAdapter()
                         .findLocationAndReport(
                                 initiator, 
-                                (FindEntityCommand) command);
+                                (SingleStringCommand) command);
                 break;
             }
             case FIND_PROGRAM : {
@@ -162,13 +146,9 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getProgramsAdapter()
                         .findProgramAndReport(
                                 initiator, 
-                                (FindEntityCommand) command);
+                                (SingleStringCommand) command);
             }
             case FIND_TASK:
-                break;
-            case FIND_EVENT:
-                break;
-            case FIND_REMINDER:
                 break;
             case FIND_PAGE:
                 break;
@@ -181,7 +161,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getBatchesAdapter()
                         .findBatchAndReport(
                                 initiator, 
-                                (FindEntityCommand) command);
+                                (SingleStringCommand) command);
                 break;
             case EXIT : {
                 this.ioModule.unregisterIoEngine(initiator);

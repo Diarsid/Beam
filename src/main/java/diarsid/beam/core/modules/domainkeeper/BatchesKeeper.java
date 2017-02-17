@@ -8,11 +8,9 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Batch;
 
 /**
@@ -25,18 +23,18 @@ public interface BatchesKeeper {
             Initiator initiator, String batchNamePattern);
     
     Optional<Batch> findBatch(
-            Initiator initiator, FindEntityCommand command);
+            Initiator initiator, SingleStringCommand command);
     
     List<Batch> getAllBatches(
             Initiator initiator);
     
-    boolean createBatch(
-            Initiator initiator, CreateEntityCommand command);
+    OperationFlow createBatch(
+            Initiator initiator, SingleStringCommand command);
     
-    boolean editBatch(
-            Initiator initiator, EditEntityCommand command);
+    OperationFlow editBatch(
+            Initiator initiator, SingleStringCommand command);
     
-    boolean removeBatch(
-            Initiator initiator, RemoveEntityCommand command);
+    OperationFlow removeBatch(
+            Initiator initiator, SingleStringCommand command);
     
 }

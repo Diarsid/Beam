@@ -8,18 +8,19 @@ package diarsid.beam.core.base.control.io.commands;
 
 import java.util.Objects;
 
-import static diarsid.beam.core.base.util.StringUtils.nonNullNonEmpty;
 
-
-public abstract class SingleStringCommand extends StringCommand {
+public class SingleStringCommand implements Command {
     
-    private String arg;
+    private final String arg;
     private final CommandType type;
     
-    public SingleStringCommand(String arg, CommandType type) {
-        super();
-        super.onlyNonNullArgument(arg);
+    public SingleStringCommand(CommandType type, String arg) {
         this.arg = arg;
+        this.type = type;
+    }
+    
+    public SingleStringCommand(CommandType type) {
+        this.arg = "";
         this.type = type;
     }
 
@@ -29,12 +30,6 @@ public abstract class SingleStringCommand extends StringCommand {
 
     public boolean hasArg() {
         return ( ! this.arg.isEmpty() );
-    }
-    
-    public void resetArg(String newArg) {
-        if ( nonNullNonEmpty(newArg) ) {
-            this.arg = newArg;
-        }
     }
     
     public boolean hasNoArg() {

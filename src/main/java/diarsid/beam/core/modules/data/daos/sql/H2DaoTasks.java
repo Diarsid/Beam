@@ -12,7 +12,7 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.SchedulableType;
+import diarsid.beam.core.domain.entities.TaskRepeatType;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DataBase;
@@ -35,7 +35,7 @@ class H2DaoTasks
 
     @Override
     public List<Task> getActiveTasksOfTypeBetweenDates(
-            Initiator initiator, LocalDateTime from, LocalDateTime to, SchedulableType... type) {
+            Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeatType... type) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

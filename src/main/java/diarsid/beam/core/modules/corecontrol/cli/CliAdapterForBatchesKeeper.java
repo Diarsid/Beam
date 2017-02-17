@@ -8,12 +8,10 @@ package diarsid.beam.core.modules.corecontrol.cli;
 
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.CreateEntityCommand;
-import diarsid.beam.core.base.control.io.commands.EditEntityCommand;
-import diarsid.beam.core.base.control.io.commands.FindEntityCommand;
-import diarsid.beam.core.base.control.io.commands.RemoveEntityCommand;
+import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 
@@ -23,40 +21,36 @@ import static diarsid.beam.core.base.control.io.base.interaction.DomainToMessage
  *
  * @author Diarsid
  */
-class CliAdapterForBatchesKeeper {
+class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
     
     private final BatchesKeeper batchesKeeper;
-    private final InnerIoEngine ioEngine;
     
     CliAdapterForBatchesKeeper(BatchesKeeper batchesKeeper, InnerIoEngine ioEngine) {
+        super(ioEngine);
         this.batchesKeeper = batchesKeeper;
-        this.ioEngine = ioEngine;
     }
     
-    void findBatchAndReport(Initiator initiator, FindEntityCommand command) {
+    void findBatchAndReport(Initiator initiator, SingleStringCommand command) {
         Optional<Batch> possibleBatch = this.batchesKeeper.findBatch(initiator, command);
         if ( possibleBatch.isPresent() ) {
-            this.ioEngine.reportMessage(initiator, toMessage(possibleBatch.get()));
+            super.report(initiator, toMessage(possibleBatch.get()));
         } else {
-            this.ioEngine.report(initiator, "not found.");
+            super.report(initiator, "not found.");
         }
     }
     
-    void editBatchAndReport(Initiator initiator, EditEntityCommand command) {
-        if ( this.batchesKeeper.editBatch(initiator, command) ) {
-            this.ioEngine.report(initiator, "done!");
-        }
+    void editBatchAndReport(Initiator initiator, SingleStringCommand command) {
+        OperationFlow flow = this.batchesKeeper.editBatch(initiator, command);
+        super.reportOperationFlow(initiator, flow, "done!");
     }
     
-    void createBatchAndReport(Initiator initiator, CreateEntityCommand command) {
-        if ( this.batchesKeeper.createBatch(initiator, command) ) {
-            this.ioEngine.report(initiator, "created!");
-        }
+    void createBatchAndReport(Initiator initiator, SingleStringCommand command) {
+        OperationFlow flow = this.batchesKeeper.createBatch(initiator, command);
+        super.reportOperationFlow(initiator, flow, "created!");
     }
     
-    void removeBatchAndReport(Initiator initiator, RemoveEntityCommand command) {
-        if ( this.batchesKeeper.removeBatch(initiator, command) ) {
-            this.ioEngine.report(initiator, "removed.");
-        }
+    void removeBatchAndReport(Initiator initiator, SingleStringCommand command) {
+        OperationFlow flow = this.batchesKeeper.removeBatch(initiator, command);
+        super.reportOperationFlow(initiator, flow, "removed.");
     }
 }
