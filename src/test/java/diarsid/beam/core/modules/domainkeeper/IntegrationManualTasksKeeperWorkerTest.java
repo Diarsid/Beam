@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 
 import mocks.MockInnerIoEngine;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
@@ -30,6 +29,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timeAndTextParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
+
+import diarsid.beam.core.base.control.flow.VoidOperation;
 
 /**
  *
@@ -57,7 +58,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
         
         String input = "";
         MultiStringCommand command;
-        OperationFlow flow;
+        VoidOperation flow;
         while ( true ) {
             System.out.print("command : ");            
             input = reader.readLine();

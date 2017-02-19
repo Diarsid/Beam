@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
@@ -173,17 +173,17 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public void show(TimeMessage task) {
+    public void show(TaskMessage task) {
         this.gui.showTask(task);
     }
 
     @Override
-    public void showAll(List<TimeMessage> tasks) {
+    public void showAll(List<TaskMessage> tasks) {
         tasks.stream().forEach(task -> this.gui.showTask(task));
     }
 
     @Override
-    public void showTasksNotification(String periodOfNotification, List<TimeMessage> tasks) {
+    public void showTasksNotification(String periodOfNotification, List<TaskMessage> tasks) {
         this.gui.showTasks(periodOfNotification, tasks);
     }
 }

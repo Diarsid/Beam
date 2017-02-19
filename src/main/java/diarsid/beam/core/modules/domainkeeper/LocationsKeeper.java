@@ -8,11 +8,12 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
 import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 
 /**
  *
@@ -26,22 +27,22 @@ public interface LocationsKeeper {
     Optional<Location> getLocationByNamePattern(
             Initiator initiator, String locationNamePattern);
     
-    Optional<Location> findLocation(
-            Initiator initiator, SingleStringCommand command);
-    
     List<Location> getLocationsByNamePattern(
             Initiator initiator, String namePattern);
     
-    OperationFlow createLocation(
+    ReturnOperation<Location> findLocation(
+            Initiator initiator, SingleStringCommand command);
+    
+    VoidOperation createLocation(
             Initiator initiator, MultiStringCommand command);
     
-    OperationFlow removeLocation(
+    VoidOperation removeLocation(
             Initiator initiator, SingleStringCommand command);
     
-    OperationFlow editLocation(
+    VoidOperation editLocation(
             Initiator initiator, SingleStringCommand command);
     
-    OperationFlow replaceInPaths(
+    VoidOperation replaceInPaths(
             Initiator initiator, String replaceable, String replacement);
             
     List<Location> getAllLocations(

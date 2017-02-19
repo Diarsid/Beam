@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -25,9 +24,10 @@ import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.flow.Operations.operationFailedWith;
-import static diarsid.beam.core.base.control.flow.Operations.operationStopped;
-import static diarsid.beam.core.base.control.flow.Operations.success;
+import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.returnOperationStopped;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
@@ -42,6 +42,13 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY_UNDEFINED;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
+
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
+
+import static diarsid.beam.core.base.control.flow.Operations.ok;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
 
 
 class BatchesKeeperWorker implements BatchesKeeper {
@@ -95,10 +102,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public Optional<Batch> findBatch(Initiator initiator, SingleStringCommand command) {
+    public ReturnOperation<Batch> findBatch(Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(FIND_BATCH) ) {
-            this.ioEngine.report(initiator, "wrong command type!");
-            return Optional.empty();
+            return returnOperationFail("wrong command type!");
         }
         
         String name;
@@ -110,10 +116,10 @@ class BatchesKeeperWorker implements BatchesKeeper {
         }
         
         if ( name.isEmpty() ) {
-            return Optional.empty();
+            return returnOperationStopped();
         }
         
-        return this.getBatchByNamePattern(initiator, command.getArg());
+        return okWith(this.getBatchByNamePattern(initiator, command.getArg()));
     }
 
     @Override
@@ -122,9 +128,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public OperationFlow createBatch(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation createBatch(Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(CREATE_BATCH) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String name;
@@ -136,7 +142,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }      
         
         boolean nameNotValidOrNotFree = true;
@@ -147,35 +153,35 @@ class BatchesKeeperWorker implements BatchesKeeper {
                 this.ioEngine.report(initiator, "this name is not free!");
                 name = this.ioEngine.askInput(initiator, "name");
                 if ( name.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
                 name = this.helper.validateEntityNameInteractively(initiator, name);
                 if ( name.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
             }
         }
         
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         List<ArgumentedCommand> batchCommands = this.inputNewCommands(initiator);        
         if ( batchCommands.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         Batch newBatch = new Batch(name, batchCommands);
         if ( this.dao.saveBatch(initiator, newBatch) ) {
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to save new batch.");
+            return voidOperationFail("DAO failed to save new batch.");
         }
     }
 
     private List<ArgumentedCommand> inputNewCommands(Initiator initiator) {
         List<ArgumentedCommand> batchCommands = new ArrayList<>();
-        String input = "";
+        String input;
         Command interpretedCommand;
         Optional<ArgumentedCommand> possibleCommand;
         boolean work = true;
@@ -219,9 +225,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public OperationFlow editBatch(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation editBatch(Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(EDIT_BATCH) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String name;
@@ -240,13 +246,13 @@ class BatchesKeeperWorker implements BatchesKeeper {
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         property = this.helper.validatePropertyInteractively(
                 initiator, property, NAME, COMMANDS);
         if ( property.isNotDefined() ) {
-            return operationStopped();
+            return voidOperationStopped();
         } 
         
         Optional<Batch> editedBatch = this.getBatchByNamePattern(initiator, name);
@@ -259,25 +265,25 @@ class BatchesKeeperWorker implements BatchesKeeper {
                     return this.editBatchCommands(initiator, editedBatch.get());
                 } 
                 default : {
-                    return operationFailedWith("unexpected property.");
+                    return voidOperationFail("unexpected property.");
                 }
             }
         } else {
-            return operationFailedWith("there is no such batch.");
+            return voidOperationFail("there is no such batch.");
         }
     }
     
-    private OperationFlow editBatchName(Initiator initiator, Batch batch) {
+    private VoidOperation editBatchName(Initiator initiator, Batch batch) {
         boolean nameIsNotFreeOrValid = true;
         String newName = "";
         while ( nameIsNotFreeOrValid ) {
             newName = this.ioEngine.askInput(initiator, "new name");
             if ( newName.isEmpty() ) {
-                return operationStopped();
+                return voidOperationStopped();
             }
             newName = this.helper.validateEntityNameInteractively(initiator, newName);
             if ( newName.isEmpty() ) {
-                return operationStopped();
+                return voidOperationStopped();
             }
             if ( this.dao.isNameFree(initiator, newName) ) {
                 nameIsNotFreeOrValid = false;
@@ -286,13 +292,13 @@ class BatchesKeeperWorker implements BatchesKeeper {
             }
         }
         if ( this.dao.editBatchName(initiator, batch.getName(), newName) ) {
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to rename batch.");
+            return voidOperationFail("DAO failed to rename batch.");
         }
     }
     
-    private OperationFlow editBatchCommands(Initiator initiator, Batch batch) {
+    private VoidOperation editBatchCommands(Initiator initiator, Batch batch) {
         Question question = question("edit all commands or just one?")
                 .withAnswerString("one")
                 .withAnswerString("all");
@@ -304,11 +310,11 @@ class BatchesKeeperWorker implements BatchesKeeper {
                 return this.editBatchAllCommands(initiator, batch);
             }
         } else {
-            return operationStopped();
+            return voidOperationStopped();
         }
     }
     
-    private OperationFlow editBatchOneCommand(Initiator initiator, Batch batch) {
+    private VoidOperation editBatchOneCommand(Initiator initiator, Batch batch) {
         Question question = question("choose command")
                 .withAnswerStrings(batch.stringifyCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
@@ -320,7 +326,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             while ( newCommandIsNotValid ) {
                 newCommandString = this.ioEngine.askInput(initiator, "new command");
                 if ( newCommandString.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
                 interpertedCommand = this.interpreter.interprete(newCommandString);
                 newCommand = this.checkInterpreted(initiator, interpertedCommand);
@@ -329,36 +335,36 @@ class BatchesKeeperWorker implements BatchesKeeper {
                 }
             }
             if ( ! newCommand.isPresent() ) {
-                return operationStopped();
+                return voidOperationStopped();
             }
             if ( this.dao.editBatchOneCommand(
                     initiator, batch.getName(), answer.index(), newCommand.get()) ) {
-                return success();
+                return ok();
             } else {
-                return operationFailedWith("DAO failed to change one command.");
+                return voidOperationFail("DAO failed to change one command.");
             }
         } else {
-            return operationStopped();
+            return voidOperationStopped();
         }
     }
     
-    private OperationFlow editBatchAllCommands(Initiator initiator, Batch batch) {
+    private VoidOperation editBatchAllCommands(Initiator initiator, Batch batch) {
         List<ArgumentedCommand> newCommands = this.inputNewCommands(initiator);
         if ( newCommands.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         if ( this.dao.editBatchCommands(initiator, batch.getName(), newCommands) ) {
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to change all commands.");
+            return voidOperationFail("DAO failed to change all commands.");
         }
     }
 
     @Override
-    public OperationFlow removeBatch(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation removeBatch(Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(DELETE_BATCH) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String name;
@@ -370,30 +376,30 @@ class BatchesKeeperWorker implements BatchesKeeper {
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         List<String> batchNames = this.getMatchingBatches(initiator, name);
         if ( hasOne(batchNames) ) {
             if ( this.dao.removeBatch(initiator, getOne(batchNames)) ) {
-                return success();
+                return ok();
             } else {
-                return operationFailedWith("DAO failed to remove batch");
+                return voidOperationFail("DAO failed to remove batch");
             }
         } else if ( hasMany(batchNames) ) {
             Question question = question("choose batch").withAnswerStrings(batchNames);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 if ( this.dao.removeBatch(initiator, batchNames.get(answer.index())) ) {
-                    return success();
+                    return ok();
                 } else {
-                    return operationFailedWith("DAO failed to remove batch.");
+                    return voidOperationFail("DAO failed to remove batch.");
                 }
             } else {
-                return operationStopped();
+                return voidOperationStopped();
             }
         } else {
-            return operationFailedWith("this is not the batch you are looking for.");
+            return voidOperationFail("this is not the batch you are looking for.");
         }        
     }
 }

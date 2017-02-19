@@ -17,7 +17,7 @@ import javafx.scene.layout.VBox;
 import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 /**
  *
@@ -32,14 +32,14 @@ class TaskWindow extends BeamWindow implements ReusableTaskWindow {
     private boolean alreadyInitAndCanBeReused;
     
     TaskWindow(
-            TimeMessage task,
+            TaskMessage task,
             WindowController controller, 
             WindowResources resources) { 
         
         super(resources, controller);
-        this.taskTime = task.stringifyTime();
+        this.taskTime = task.time();
         StringJoiner joiner = new StringJoiner("\n");
-        for(String s : task.getContent()){
+        for(String s : task.text()){
             joiner.add(s);
         }
         this.taskText = joiner.toString();
@@ -64,10 +64,10 @@ class TaskWindow extends BeamWindow implements ReusableTaskWindow {
      * reuseThisWindowObject() invocation. 
      */
     @Override
-    public void reuseWithNewTask(TimeMessage task) {
-        this.taskTime = task.stringifyTime();
+    public void reuseWithNewTask(TaskMessage task) {
+        this.taskTime = task.time();
         StringJoiner joiner = new StringJoiner("\n");
-        for(String s : task.getContent()){
+        for(String s : task.text()){
             joiner.add(s);
         }
         this.taskText = joiner.toString();

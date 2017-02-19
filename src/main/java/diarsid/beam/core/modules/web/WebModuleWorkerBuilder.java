@@ -16,7 +16,6 @@ import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 import diarsid.beam.core.modules.web.engines.JettyResourceServletContainer;
-import diarsid.beam.core.modules.web.resources.BeamDispatcherServlet;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 

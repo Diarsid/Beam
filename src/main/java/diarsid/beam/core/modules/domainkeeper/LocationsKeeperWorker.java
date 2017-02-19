@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -22,9 +21,10 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.modules.data.DaoLocations;
 
-import static diarsid.beam.core.base.control.flow.Operations.operationFailedWith;
-import static diarsid.beam.core.base.control.flow.Operations.operationStopped;
-import static diarsid.beam.core.base.control.flow.Operations.success;
+import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
@@ -41,6 +41,13 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
+
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
+
+import static diarsid.beam.core.base.control.flow.Operations.ok;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
 
 
 
@@ -63,24 +70,28 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
     
     @Override
-    public Optional<Location> getLocationByExactName(Initiator initiator, String exactName) {
+    public Optional<Location> getLocationByExactName(
+            Initiator initiator, String exactName) {
         return this.dao.getLocationByExactName(initiator, exactName);
     }
     
     @Override
-    public List<Location> getLocationsByNamePattern(Initiator initiator, String namePattern) {
+    public List<Location> getLocationsByNamePattern(
+            Initiator initiator, String namePattern) {
         return this.getMatchingLocationsBy(initiator, namePattern);
     }
     
     @Override
-    public Optional<Location> getLocationByNamePattern(Initiator initiator, String locationNamePattern) {
+    public Optional<Location> getLocationByNamePattern(
+            Initiator initiator, String locationNamePattern) {
         return this.findExactlyOneLocationByPattern(initiator, locationNamePattern);
     }
     
     @Override
-    public Optional<Location> findLocation(Initiator initiator, SingleStringCommand command) {
+    public ReturnOperation<Location> findLocation(
+            Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(FIND_LOCATION) ) {
-            return Optional.empty();
+            return returnOperationFail("wrong command type!");
         }
         String namePattern = "";
         if ( command.hasArg() ) {
@@ -89,9 +100,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         namePattern = this.helper.validateInteractively(initiator, namePattern, "name", ENTITY_NAME);
         if ( namePattern.isEmpty() ) {
-            return Optional.empty();
+            return successEmpty();
         } else {
-            return this.findExactlyOneLocationByPattern(initiator, namePattern);
+            return okWith(this.findExactlyOneLocationByPattern(initiator, namePattern));
         }
     }
 
@@ -130,9 +141,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
 
     @Override
-    public OperationFlow createLocation(Initiator initiator, MultiStringCommand command) {
+    public VoidOperation createLocation(Initiator initiator, MultiStringCommand command) {
         if ( command.type().isNot(CREATE_LOCATION) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String name;
@@ -148,12 +159,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         path = this.helper.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH);
         if ( path.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
             
         boolean nameIsNotValidOrFree = true;
@@ -164,11 +175,11 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 this.ioEngine.report(initiator, "this name is not free!");
                 name = this.ioEngine.askInput(initiator, "name");
                 if ( name.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
                 name = this.helper.validateEntityNameInteractively(initiator, name);
                 if ( name.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 } else {
                     nameIsNotValidOrFree = false;
                 }                    
@@ -176,16 +187,16 @@ class LocationsKeeperWorker implements LocationsKeeper {
         }
 
         if ( this.dao.saveNewLocation(initiator, new Location(name, path)) ) {
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to save Location.");
+            return voidOperationFail("DAO failed to save Location.");
         }     
     }
 
     @Override
-    public OperationFlow removeLocation(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation removeLocation(Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(DELETE_LOCATION) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String name;
@@ -197,39 +208,39 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         List<Location> locationsToRemove = this.getMatchingLocationsBy(initiator, name);
         if ( hasOne(locationsToRemove) ) {
             String locationName = getOne(locationsToRemove).getName();
             if ( this.dao.removeLocation(initiator, locationName) ) {
-                return success();
+                return ok();
             } else {
-                return operationFailedWith("DAO failed to remove location.");
+                return voidOperationFail("DAO failed to remove location.");
             }
         } else if ( locationsToRemove.isEmpty() ) {
-            return operationFailedWith("no such location.");
+            return voidOperationFail("no such location.");
         } else {
             Question question = question("choose").withAnswerEntities(locationsToRemove);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 String locationName = locationsToRemove.get(answer.index()).getName();
                 if ( this.dao.removeLocation(initiator, locationName) ) {
-                    return success();
+                    return ok();
                 } else {
-                    return operationFailedWith("DAO failed to remove location.");
+                    return voidOperationFail("DAO failed to remove location.");
                 }                    
             } else {
-                return operationStopped();
+                return voidOperationStopped();
             }
         }        
     }
 
     @Override
-    public OperationFlow editLocation(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation editLocation(Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(EDIT_LOCATION) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String name;
@@ -248,12 +259,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
         property = this.helper.validatePropertyInteractively(
                 initiator, property, NAME, FILE_URL);
         if ( property.isNotDefined() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         Optional<Location> location = this.findExactlyOneLocationByPattern(initiator, name);
@@ -262,50 +273,50 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 case NAME : {
                     String newName = this.ioEngine.askInput(initiator, "new name");                    
                     if ( newName.isEmpty() ) {
-                        return operationStopped();
+                        return voidOperationStopped();
                     }
                     newName = this.helper.validateEntityNameInteractively(initiator, newName);
                     if ( newName.isEmpty() ) {
-                        return operationStopped();
+                        return voidOperationStopped();
                     }
                     if ( this.dao.editLocationName(initiator, location.get().getName(), newName) ) {
-                        return success();
+                        return ok();
                     } else {
-                        return operationFailedWith("DAO failed to edit name.");
+                        return voidOperationFail("DAO failed to edit name.");
                     }
                 }
                 case FILE_URL : {
                     String newPath = this.ioEngine.askInput(initiator, "new path");
                     if ( newPath.isEmpty() ) {
-                        return operationStopped();
+                        return voidOperationStopped();
                     }
                     newPath = this.helper.validateInteractively(
                             initiator, newPath, "new path", LOCAL_DIRECTORY_PATH);
                     if ( newPath.isEmpty() ) {
-                        return operationStopped();
+                        return voidOperationStopped();
                     }
                     if ( this.dao.editLocationPath(initiator, location.get().getName(), newPath) ) {
-                        return success();
+                        return ok();
                     } else {
-                        return operationFailedWith("DAO failed to edit path.");
+                        return voidOperationFail("DAO failed to edit path.");
                     }
                 }
                 default : {
-                    return operationFailedWith("unexpected property.");
+                    return voidOperationFail("unexpected property.");
                 }
             }
         } else {
-            return operationFailedWith("no such location.");
+            return voidOperationFail("no such location.");
         }          
     }
 
     @Override
-    public OperationFlow replaceInPaths(
+    public VoidOperation replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
         if ( this.dao.replaceInPaths(initiator, replaceable, replacement) ) {
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to replace path fragment.");
+            return voidOperationFail("DAO failed to replace path fragment.");
         }
     }
 

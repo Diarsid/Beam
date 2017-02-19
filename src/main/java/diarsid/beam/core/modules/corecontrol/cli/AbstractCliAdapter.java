@@ -6,12 +6,25 @@
 
 package diarsid.beam.core.modules.corecontrol.cli;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
+
+import java.util.function.Function;
+
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 
+import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
+import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
 import static diarsid.beam.core.base.control.flow.Operations.asFail;
+
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.OkReturnOperation;
+
+import static diarsid.beam.core.base.control.flow.OperationResult.OK;
+
+import diarsid.beam.core.base.control.flow.VoidOperation;
+
+import static diarsid.beam.core.base.control.flow.Operations.asOk;
 
 /**
  *
@@ -33,9 +46,10 @@ abstract class AbstractCliAdapter {
         this.ioEngine.reportMessage(initiator, message);
     }
 
-    protected final void reportOperationFlow(Initiator initiator, OperationFlow flow, String onSuccess) {
+    protected final void reportVoidOperationFlow(
+            Initiator initiator, VoidOperation flow, String onSuccess) {
         switch ( flow.result() ) {
-            case SUCCESS : {
+            case OK : {
                 this.ioEngine.report(initiator, onSuccess);
                 break;
             }         
@@ -50,5 +64,33 @@ abstract class AbstractCliAdapter {
                 this.ioEngine.report(initiator, "unkown operation result.");
             }
         }        
+    }
+    
+    protected final void reportReturnOperationFlow(
+            Initiator initiator, 
+            ReturnOperation flow, 
+            Function<OkReturnOperation, Message> ifNonEmptyFunction, 
+            String ifEmptyMessage) {
+        switch ( flow.result() ) {
+            case OK : {
+                OkReturnOperation success = asOk(flow);
+                if ( success.hasReturn() ) {
+                    this.ioEngine.reportMessage(initiator, ifNonEmptyFunction.apply(success));
+                } else {
+                    this.ioEngine.report(initiator, ifEmptyMessage);
+                }                
+                break;
+            }         
+            case FAIL : {
+                this.ioEngine.report(initiator, asFail(flow).getReason());
+                break;
+            }         
+            case STOP : {
+                break;
+            }         
+            default : {
+                this.ioEngine.report(initiator, "unkown operation result.");
+            }
+        }
     }
 }

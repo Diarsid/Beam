@@ -13,22 +13,22 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
 import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_INITIAL_START;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_TEMPORARY_PAUSE;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMinutesFromPastToNow;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *
@@ -72,7 +72,7 @@ class TasksExecutionScheduler {
         synchronized ( this.taskExecutionLock ) {
             // get lag, expired tasks, and show them
             Optional<Long> possibleLag = this.tasksKeeper.getInactivePeriodMinutes(this.ownInitiator);
-            List<Task> expiredTasks = this.tasksKeeper.getExpiredTasks(this.ownInitiator); 
+            List<Task> expiredTasks = this.tasksKeeper.getPastActiveTasks(this.ownInitiator); 
             this.showExpiredTasks(possibleLag, expiredTasks);
 
             // switch all tasks
@@ -88,7 +88,7 @@ class TasksExecutionScheduler {
         // tasks to measure lag between their expired but active execution time
         // and present moment
         if ( possibleLag.isPresent() ) {
-            List<TimeMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
+            List<TaskMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
                     expiredTasks, possibleLag.get(), LAG_AFTER_INITIAL_START);
             asyncDo(() -> {
                 this.tasksIo.showAll(tasksToShow);
@@ -113,7 +113,7 @@ class TasksExecutionScheduler {
                             debug("...first tasks delayed execution.");
                             // get all first tasks, compute the lag (if any) and 
                             // create appropriate displayable messages and show them
-                            List<Task> tasks = this.tasksKeeper.getFirstTasks(this.ownInitiator); // getExpiredTasks() to avoid possible multiple executions?
+                            List<Task> tasks = this.tasksKeeper.getPastActiveTasks(this.ownInitiator); // getPastActiveTasks() to avoid possible multiple executions?
                             this.showFirstTasks(tasks, scheduledTime);
 
                             // switch all tasks
@@ -146,14 +146,14 @@ class TasksExecutionScheduler {
 
     private void showFirstTasks(List<Task> tasks, LocalDateTime scheduledTime) {
         long lag = getMinutesFromPastToNow(scheduledTime);
-        List<TimeMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
+        List<TaskMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
                 tasks, lag, LAG_AFTER_TEMPORARY_PAUSE);
         asyncDo(() -> {
             this.tasksIo.showAll(tasksToShow);
         });
     }
     
-    private List<TimeMessage> filterAccordingToLagAndConvertToMessages(
+    private List<TaskMessage> filterAccordingToLagAndConvertToMessages(
             List<Task> tasks, long minutes, LagType lagType) {
         if ( lagType.isShort(minutes) ) {
             return tasks

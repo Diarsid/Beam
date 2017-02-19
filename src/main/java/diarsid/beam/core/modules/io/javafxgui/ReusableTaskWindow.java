@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.modules.io.javafxgui;
 
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 /**
  *
@@ -13,5 +13,5 @@ import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
  */
 public interface ReusableTaskWindow extends Runnable  {
     
-    void reuseWithNewTask(TimeMessage task);
+    void reuseWithNewTask(TaskMessage task);
 }

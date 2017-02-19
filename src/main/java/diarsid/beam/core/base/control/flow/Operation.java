@@ -9,8 +9,6 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public enum OperationResult {
-    OK,
-    FAIL,
-    STOP
+public interface Operation {
+    OperationResult result();    
 }

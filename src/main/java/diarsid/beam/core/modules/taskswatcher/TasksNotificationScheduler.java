@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
@@ -126,7 +126,7 @@ class TasksNotificationScheduler {
     
     private void notifyUserAboutTasksInMonth(LocalDateTime monthBeginning) {
         synchronized (this.notificationLock) {
-            List<TimeMessage> tasks = this.tasksKeeper
+            List<TaskMessage> tasks = this.tasksKeeper
                     .getCalendarTasksForNextMonth(this.ownInitiator, monthBeginning);
             asyncDo(() -> {
                 this.tasksIo.showTasksNotification("month", tasks);
@@ -137,7 +137,7 @@ class TasksNotificationScheduler {
     
     private void notifyUserAboutTasksInWeek(LocalDateTime weekBeginning) {
         synchronized (this.notificationLock) {
-            List<TimeMessage> tasks = this.tasksKeeper
+            List<TaskMessage> tasks = this.tasksKeeper
                     .getCalendarTasksForNextWeek(this.ownInitiator, weekBeginning);
             asyncDo(() -> {
                 this.tasksIo.showTasksNotification("week", tasks);

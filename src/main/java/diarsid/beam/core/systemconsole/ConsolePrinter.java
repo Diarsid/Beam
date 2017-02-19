@@ -38,6 +38,13 @@ public class ConsolePrinter {
         this.writer.flush();
     }
     
+    void printNonDialogReportLine(String report) throws IOException {
+        this.writer.write(format("Beam[3] > %s", report));
+        this.writer.newLine();
+        this.writer.write("Beam[3] > ");
+        this.writer.flush();
+    }
+    
     void printYesNoQuestion(String yesNoQuestion) throws IOException {
         this.writer.write(format("     > %s?", yesNoQuestion));
         this.writer.newLine();
@@ -81,13 +88,6 @@ public class ConsolePrinter {
             this.writer.write(format("     > %s", s));
         }
         this.writer.newLine();
-        this.writer.flush();
-    }
-    
-    void printNonDialogReport(String report) throws IOException {
-        this.writer.write(format("Beam[3] > %s", report));
-        this.writer.newLine();
-        this.writer.write("Beam[3] > ");
         this.writer.flush();
     }
 

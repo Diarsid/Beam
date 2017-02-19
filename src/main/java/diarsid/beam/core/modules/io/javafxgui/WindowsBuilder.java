@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.io.javafxgui;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 /**
  *
@@ -26,13 +26,13 @@ public interface WindowsBuilder {
             WindowController controller);
     
     ReusableTaskWindow newTaskWindow(
-            TimeMessage task, 
+            TaskMessage task, 
             WindowResources resources, 
             WindowController controller);
     
     Runnable newNotificationWindow(
             String period,
-            List<TimeMessage> tasks, 
+            List<TaskMessage> tasks, 
             WindowResources resources, 
             WindowController controller);
 }

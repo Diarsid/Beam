@@ -6,16 +6,20 @@
 
 package diarsid.beam.core.modules.corecontrol.cli;
 
-import java.util.Optional;
+import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 
-import static diarsid.beam.core.base.control.io.base.interaction.DomainToMessageConversion.toMessage;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.toMessage;
+
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.OkReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 
 /**
  *
@@ -31,26 +35,25 @@ class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
     }
     
     void findBatchAndReport(Initiator initiator, SingleStringCommand command) {
-        Optional<Batch> possibleBatch = this.batchesKeeper.findBatch(initiator, command);
-        if ( possibleBatch.isPresent() ) {
-            super.report(initiator, toMessage(possibleBatch.get()));
-        } else {
-            super.report(initiator, "not found.");
-        }
+        ReturnOperation<Batch> flow = this.batchesKeeper.findBatch(initiator, command);
+        Function<OkReturnOperation, Message> ifSuccess = (success) -> {
+            return toMessage((Batch) success.getOrThrow());
+        };
+        super.reportReturnOperationFlow(initiator, flow, ifSuccess, "batch not found.");
     }
     
     void editBatchAndReport(Initiator initiator, SingleStringCommand command) {
-        OperationFlow flow = this.batchesKeeper.editBatch(initiator, command);
-        super.reportOperationFlow(initiator, flow, "done!");
+        VoidOperation flow = this.batchesKeeper.editBatch(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow, "done!");
     }
     
     void createBatchAndReport(Initiator initiator, SingleStringCommand command) {
-        OperationFlow flow = this.batchesKeeper.createBatch(initiator, command);
-        super.reportOperationFlow(initiator, flow, "created!");
+        VoidOperation flow = this.batchesKeeper.createBatch(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow, "created!");
     }
     
     void removeBatchAndReport(Initiator initiator, SingleStringCommand command) {
-        OperationFlow flow = this.batchesKeeper.removeBatch(initiator, command);
-        super.reportOperationFlow(initiator, flow, "removed.");
+        VoidOperation flow = this.batchesKeeper.removeBatch(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow, "removed.");
     }
 }

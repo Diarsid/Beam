@@ -15,7 +15,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.modules.io.Gui;
 import diarsid.beam.core.modules.io.javafxgui.window.WindowsBuilderWorker;
 
@@ -82,7 +82,7 @@ public class GuiJavaFX
     }
     
     @Override
-    public void showTask(TimeMessage task) { 
+    public void showTask(TaskMessage task) { 
         ReusableTaskWindow window;
         synchronized ( this.taskWindows ) {            
             if ( this.taskWindows.isEmpty() ) {
@@ -97,7 +97,7 @@ public class GuiJavaFX
     }
     
     @Override
-    public void showTasks(String period, List<TimeMessage> tasks) {         
+    public void showTasks(String period, List<TaskMessage> tasks) {         
         Runnable window = this.windowsBuilder.newNotificationWindow(
                 period, tasks, (WindowResources) this, this.windowsController);
         Platform.runLater(window);        

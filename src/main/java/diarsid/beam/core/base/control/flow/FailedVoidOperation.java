@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package diarsid.beam.core.base.control.flow;
 
 /**
  *
  * @author Diarsid
  */
-public interface OperationFlow {
-    OperationResult result();    
+public interface FailedVoidOperation extends VoidOperation {    
+    String getReason();
 }

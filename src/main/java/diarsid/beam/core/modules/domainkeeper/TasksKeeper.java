@@ -9,12 +9,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
 import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Task;
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 
 /**
  *
@@ -22,16 +23,13 @@ import diarsid.beam.core.domain.entities.Task;
  */
 public interface TasksKeeper {
     
-    List<Task> getExpiredTasks(
+    List<Task> getPastActiveTasks(
             Initiator initiator);
     
-    List<Task> getFirstTasks(
-            Initiator initiator);
-    
-    List<TimeMessage> getCalendarTasksForNextMonth(
+    List<TaskMessage> getCalendarTasksForNextMonth(
             Initiator initiator, LocalDateTime nextMonthBeginning);
     
-    List<TimeMessage> getCalendarTasksForNextWeek(
+    List<TaskMessage> getCalendarTasksForNextWeek(
             Initiator initiator, LocalDateTime nextWeekBeginning);
     
     Optional<Long> getInactivePeriodMinutes(
@@ -43,15 +41,15 @@ public interface TasksKeeper {
     Optional<LocalDateTime> getTimeOfFirstTask(
             Initiator initiator);
     
-    OperationFlow createTask(
+    VoidOperation createTask(
             Initiator initiator, MultiStringCommand command);
     
-    OperationFlow deleteTask(
+    VoidOperation deleteTask(
             Initiator initiator, SingleStringCommand command);
     
-    OperationFlow editTask(
+    VoidOperation editTask(
             Initiator initiator, SingleStringCommand command);
     
-    List<Task> findTasks(
-            Initiator initiator, SingleStringCommand findEntityCommand);
+    ReturnOperation<List<Task>> findTasks(
+            Initiator initiator, SingleStringCommand command);
 }

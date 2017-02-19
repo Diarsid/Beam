@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.io;
 import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 /*
  * 'Native' program`s output interface.
@@ -24,12 +24,12 @@ public interface Gui {
     /*
      * Method used to show user`s tasks.
      */
-    void showTask(TimeMessage task);
+    void showTask(TaskMessage task);
     
     /*
      * Method to show bunch of tasks to user.
      */
-    void showTasks(String description, List<TimeMessage> tasks);
+    void showTasks(String description, List<TaskMessage> tasks);
     
     /*
      * Used to show program`s messages, typically errors, warnings or notifications.

@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
 import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Task;
@@ -34,13 +33,16 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Operations.operationFailedWith;
-import static diarsid.beam.core.base.control.flow.Operations.operationStopped;
-import static diarsid.beam.core.base.control.flow.Operations.success;
+import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.returnOperationStopped;
+import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -55,6 +57,13 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
+
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
+
+import static diarsid.beam.core.base.control.flow.Operations.ok;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -82,9 +91,9 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public List<Task> getExpiredTasks(
+    public List<Task> getPastActiveTasks(
             Initiator initiator) {
-        return this.dao.getExpiredTasks(initiator, LocalDateTime.now());
+        return this.dao.getActiveTasksBeforeTime(initiator, now().plusSeconds(1));
     }
 
     @Override
@@ -92,12 +101,6 @@ public class TasksKeeperWorker implements TasksKeeper {
             Initiator initiator) {
         return this.dao.getTimeOfFirstActiveTask(initiator)
                 .map(time -> Duration.between(time, now()).toMinutes());
-    }
-
-    @Override
-    public List<Task> getFirstTasks(
-            Initiator initiator) {
-        return this.dao.getFirstActiveTasks(initiator);
     }
 
     @Override
@@ -115,7 +118,7 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public List<TimeMessage> getCalendarTasksForNextMonth(
+    public List<TaskMessage> getCalendarTasksForNextMonth(
             Initiator initiator, LocalDateTime nextMonthBeginning) {
         return this.dao.getActiveTasksOfTypeBetweenDates(
                 initiator,
@@ -128,7 +131,7 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public List<TimeMessage> getCalendarTasksForNextWeek(
+    public List<TaskMessage> getCalendarTasksForNextWeek(
             Initiator initiator, LocalDateTime nextWeekBeginning) {
         return this.dao.getActiveTasksOfTypeBetweenDates(
                 initiator,
@@ -141,10 +144,10 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public OperationFlow createTask(
+    public VoidOperation createTask(
             Initiator initiator, MultiStringCommand command) {
         if ( command.type().isNot(CREATE_TASK) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         TasksTimeAndText timeAndText = this.timeAndTextParser.parse(command.arguments());        
         Optional<TaskTime> optTime = timeAndText.getTime();
@@ -160,7 +163,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             while ( isNull(taskTime) ) {
                 timePattern = this.ioEngine.askInput(initiator, "time");
                 if ( timePattern.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
                 parsedTime = this.timeParser.parse(timePattern);
                 if ( parsedTime.isPresent() ) {
@@ -172,11 +175,11 @@ public class TasksKeeperWorker implements TasksKeeper {
         }
         
         if ( isNull(taskTime) ) {
-            return operationFailedWith("unexpected null.");
+            return voidOperationFail("unexpected null.");
         }
         LocalDateTime time = taskTime.actualizedTime();
         if ( time.isBefore(now()) ) {
-            return operationFailedWith("unexpected past time.");
+            return voidOperationFail("unexpected past time.");
         }  
         
         TaskRepeat repeat;
@@ -188,11 +191,11 @@ public class TasksKeeperWorker implements TasksKeeper {
             if ( answer.isGiven() ) {
                 repeat = repeatByItsName(answer.getText());
             } else {
-                return operationStopped();
+                return voidOperationStopped();
             }
         }        
         if ( repeat.isUndefined() ) {
-            return operationFailedWith("unexpected undefined task repeat.");
+            return voidOperationFail("unexpected undefined task repeat.");
         }
         
         List<String> text = new ArrayList<>();
@@ -211,7 +214,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             }
         }
         if ( text.isEmpty() ) {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         Task task;
@@ -223,22 +226,22 @@ public class TasksKeeperWorker implements TasksKeeper {
                 task = newReminderTask(
                         repeat, time, periods.get().days(), periods.get().hours(), text);
             } else {
-                return operationStopped();
+                return voidOperationStopped();
             }            
         } else if ( repeat.isOneOf(MONTHLY_REPEAT, YEARLY_REPEAT) ) {
             task = newEventTask(repeat, time, text);
         } else {
-            return operationFailedWith("unexpected TaskRepeat value.");
+            return voidOperationFail("unexpected TaskRepeat value.");
         }
         if ( isNull(task) ) {
-            return operationFailedWith("unexpected NULL task");
+            return voidOperationFail("unexpected NULL task");
         }
         
         if ( this.dao.saveTask(initiator, task) ) {
             fireAsync("tasks_updated");
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to save task.");
+            return voidOperationFail("DAO failed to save task.");
         }
     }
     
@@ -272,10 +275,10 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public OperationFlow deleteTask(
+    public VoidOperation deleteTask(
             Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(DELETE_TASK) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }
         
         String text;
@@ -284,14 +287,14 @@ public class TasksKeeperWorker implements TasksKeeper {
         } else {
             text = this.ioEngine.askInput(initiator, "text");
             if ( text.isEmpty() ) {
-                return operationStopped();
+                return voidOperationStopped();
             }
         }
         
         List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
         Task taskToRemove;
         if ( matchingTasks.isEmpty() ) {
-            return operationFailedWith("no tasks with this text.");
+            return voidOperationFail("no tasks with this text.");
         } else if ( hasOne(matchingTasks) ) {
             taskToRemove = getOne(matchingTasks);
         } else {
@@ -300,23 +303,23 @@ public class TasksKeeperWorker implements TasksKeeper {
             if ( answer.isGiven() ) {
                 taskToRemove = matchingTasks.get(answer.index());
             } else {
-                return operationStopped();
+                return voidOperationStopped();
             }
         }
         
         if ( this.dao.deleteTaskById(initiator, taskToRemove.getId()) ) {
             fireAsync("tasks_updated");
-            return success();
+            return ok();
         } else {
-            return operationFailedWith("DAO failed to remove task.");
+            return voidOperationFail("DAO failed to remove task.");
         }
     }
 
     @Override
-    public OperationFlow editTask(
+    public VoidOperation editTask(
             Initiator initiator, SingleStringCommand command) {
         if ( command.type().isNot(EDIT_TASK) ) {
-            return operationFailedWith("wrong command type!");
+            return voidOperationFail("wrong command type!");
         }        
         
         String text;
@@ -325,14 +328,14 @@ public class TasksKeeperWorker implements TasksKeeper {
         } else {
             text = this.ioEngine.askInput(initiator, "text");
             if ( text.isEmpty() ) {
-                return operationStopped();
+                return voidOperationStopped();
             }
         }
         
         List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
         Task taskToEdit;
         if ( matchingTasks.isEmpty() ) {
-            return operationFailedWith("no tasks with this text.");
+            return voidOperationFail("no tasks with this text.");
         } else if ( hasOne(matchingTasks) ) {
             taskToEdit = getOne(matchingTasks);
         } else {
@@ -341,7 +344,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             if ( answer.isGiven() ) {
                 taskToEdit = matchingTasks.get(answer.index());
             } else {
-                return operationStopped();
+                return voidOperationStopped();
             }
         }
         
@@ -351,7 +354,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         if ( answer.isGiven() ) {
             target = answer.getText();
         } else {
-            return operationStopped();
+            return voidOperationStopped();
         }
         
         if ( target.equals("time") ) {
@@ -360,41 +363,83 @@ public class TasksKeeperWorker implements TasksKeeper {
             while ( ! optNewTime.isPresent() ) {                
                 timePattern = this.ioEngine.askInput(initiator, "wrong format, try again");
                 if ( timePattern.isEmpty() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
                 optNewTime = this.timeParser.parse(timePattern);
             }
             TaskTime newTime = optNewTime.get();
             if ( taskToEdit.type().isOneOf(HOURLY_REPEAT, DAILY_REPEAT) ) {
                 if ( this.ioEngine.ask(initiator, "edit days/hours").isNotPositive() ) {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
                 Optional<AllowedTimePeriod> newPeriods = this.askForAllowedTimePeriod(initiator);
                 if ( newPeriods.isPresent() ) {
-                    
+                    if ( this.dao.editTaskTime(
+                            initiator, taskToEdit.getId(), newTime.actualizedTime(), newPeriods.get()) ) {
+                        fireAsync("tasks_updated");
+                        return ok();
+                    } else {
+                        return voidOperationFail("DAO failed to edit task time and periods.");
+                    }
                 } else {
-                    return operationStopped();
+                    return voidOperationStopped();
                 }
             } else {
                 if ( this.dao.editTaskTime(initiator, taskToEdit.getId(), newTime.actualizedTime()) ) {
-                    
+                    fireAsync("tasks_updated");
+                    return ok();
                 } else {
-                    
+                    return voidOperationFail("DAO failed to edit task time.");
                 }
             }            
         } else if ( target.equals("text") ) {
-            
+            List<String> newText = new ArrayList<>();
+            String line;
+            boolean input = true;
+            while ( input ) {                
+                line = this.ioEngine.askInput(initiator, "text");
+                if ( nonEmpty(line) ) {
+                    newText.add(line);
+                } else {
+                    input = false;
+                }
+            }
+            if ( newText.isEmpty() ) {
+                return voidOperationStopped();
+            }
+            if ( this.dao.editTaskText(initiator, taskToEdit.getId(), newText) ) {
+                return ok();
+            } else {
+                return voidOperationFail("DAO failed to edit task text.");
+            }
         } else {
-            return operationFailedWith("unexpected target to edit: " + target);
+            return voidOperationFail("unexpected target to edit: " + target);
         }
-        
-        fireAsync("tasks_updated");
     }
 
     @Override
-    public List<Task> findTasks(
-            Initiator initiator, SingleStringCommand findEntityCommand) {
+    public ReturnOperation<List<Task>> findTasks(
+            Initiator initiator, SingleStringCommand command) {
+        if ( command.type().isNot(FIND_TASK) ) {
+            return returnOperationFail("wrong command type!");
+        }        
         
+        String text;
+        if ( command.hasArg() ) {
+            text = command.getArg();
+        } else {
+            text = this.ioEngine.askInput(initiator, "text");
+            if ( text.isEmpty() ) {
+                return returnOperationStopped();
+            }
+        }
+        
+        List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
+        if ( matchingTasks.isEmpty() ) {
+            return successEmpty();
+        } else {
+            return okWith(matchingTasks);
+        }
     }  
     
 }

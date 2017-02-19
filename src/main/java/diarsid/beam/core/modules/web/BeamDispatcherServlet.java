@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.web.resources;
+package diarsid.beam.core.modules.web;
 
 import java.io.IOException;
 import java.util.Optional;

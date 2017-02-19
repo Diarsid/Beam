@@ -16,8 +16,8 @@ import diarsid.beam.core.modules.web.core.container.ResourceResponse;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
 
 /**
  *
@@ -26,23 +26,17 @@ import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 public class AllDirectoriesResource extends Resource {
         
     public AllDirectoriesResource() {
-        super("/resources/{placement}/directories");
+        super("/resources/{place}/directories");
     }
     
     @Override
-    protected void OPTIONS(
-            ResourceRequest request, 
-            ResourceResponse response)
-                throws IOException {
+    protected void OPTIONS(ResourceRequest request, ResourceResponse response) throws IOException {
         
     }
     
     @Override
-    protected void GET(
-            ResourceRequest request, 
-            ResourceResponse response)
-                throws IOException {
-        Optional<String> optPlace = request.getParam("placement");
+    protected void GET(ResourceRequest request, ResourceResponse response) throws IOException {
+        Optional<String> optPlace = request.getParam("place");
         if ( optPlace.isPresent() ) {
             WebPlace place = parsePlace(optPlace.get());
             if ( nonNull(place) ) {
@@ -60,10 +54,7 @@ public class AllDirectoriesResource extends Resource {
     }
     
     @Override
-    protected void POST(
-            ResourceRequest request, 
-            ResourceResponse response)
-                throws IOException {
+    protected void POST(ResourceRequest request, ResourceResponse response) throws IOException {
         
     }
 }

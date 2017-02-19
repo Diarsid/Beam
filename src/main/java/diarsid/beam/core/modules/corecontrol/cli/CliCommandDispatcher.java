@@ -103,12 +103,30 @@ class CliCommandDispatcher implements CommandDispatcher {
                                 (SingleStringCommand) command);
                 break;
             }                
-            case DELETE_TASK:
+            case DELETE_TASK : {
+                this.domainModuleAdapter
+                        .getTasksAdapter()
+                        .removeTaskAndReport(
+                                initiator, 
+                                (SingleStringCommand) command);
                 break;
-            case CREATE_TASK:
+            }                
+            case CREATE_TASK : {
+                this.domainModuleAdapter
+                        .getTasksAdapter()
+                        .createTaskAndReport(
+                                initiator, 
+                                (MultiStringCommand) command);
                 break;
-            case EDIT_TASK:
+            }                
+            case EDIT_TASK : {
+                this.domainModuleAdapter
+                        .getTasksAdapter()
+                        .editTaskAndReport(
+                                initiator, 
+                                (SingleStringCommand) command);
                 break;
+            }                
             case DELETE_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
@@ -119,7 +137,8 @@ class CliCommandDispatcher implements CommandDispatcher {
             case CREATE_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
-                        .createBatchAndReport(initiator, 
+                        .createBatchAndReport(
+                                initiator, 
                                 (SingleStringCommand) command);
                 break;
             case EDIT_BATCH:
@@ -148,8 +167,14 @@ class CliCommandDispatcher implements CommandDispatcher {
                                 initiator, 
                                 (SingleStringCommand) command);
             }
-            case FIND_TASK:
+            case FIND_TASK : {
+                this.domainModuleAdapter
+                        .getTasksAdapter()
+                        .findTasksAndReport(
+                                initiator, 
+                                (SingleStringCommand) command);
                 break;
+            }                
             case FIND_PAGE:
                 break;
             case FIND_WEBDIRECTORY:

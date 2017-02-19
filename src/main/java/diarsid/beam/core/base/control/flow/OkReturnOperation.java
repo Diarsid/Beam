@@ -9,8 +9,11 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public enum OperationResult {
-    OK,
-    FAIL,
-    STOP
+public interface OkReturnOperation<T extends Object> extends ReturnOperation<T> {
+    
+    boolean hasReturn();
+    
+    T getOrThrow();
+    
+    T getOrDefault(T defaultT);
 }

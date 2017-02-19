@@ -6,9 +6,11 @@
 
 package diarsid.beam.core.base.control.flow;
 
+import java.util.Optional;
+
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
+import static diarsid.beam.core.base.control.flow.OperationResult.OK;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
-import static diarsid.beam.core.base.control.flow.OperationResult.SUCCESS;
 
 /**
  *
@@ -16,27 +18,89 @@ import static diarsid.beam.core.base.control.flow.OperationResult.SUCCESS;
  */
 public class Operations {
     
-    private final static OperationFlow SUCCEDED_OPERATION;
-    private final static OperationFlow STOPPED_OPERATION;
+    private static final VoidOperation OK_VOID_OPERATION;
+    private static final VoidOperation STOPPED_VOID_OPERATION;
+    private static final ReturnOperation STOPPED_RETURN_OPERATION;
     
     static {
-        SUCCEDED_OPERATION = () -> SUCCESS;
-        STOPPED_OPERATION = () -> STOP;
+        OK_VOID_OPERATION = () -> OK;
+        STOPPED_VOID_OPERATION = () -> STOP;
+        STOPPED_RETURN_OPERATION = () -> STOP;
     }
     
     private Operations() {
     }
     
-    public static OperationFlow success() {
-        return SUCCEDED_OPERATION;
+    public static VoidOperation ok() {
+        return OK_VOID_OPERATION;
     }
     
-    public static OperationFlow operationStopped() {
-        return STOPPED_OPERATION;
+    public static <T extends Object> ReturnOperation<T> okWith(Optional<T> optT) {
+        if ( optT.isPresent() ) {
+            return okWith(optT.get());
+        } else {
+            return successEmpty();
+        }
     }
     
-    public static FailedOperationFlow operationFailedWith(String failMessage) {
-        return new FailedOperationFlow() {
+    public static <T extends Object> ReturnOperation<T> okWith(T t) {
+        return new OkReturnOperation<T>() {
+            @Override
+            public boolean hasReturn() {
+                return true;
+            }
+
+            @Override
+            public T getOrThrow() {
+                return t;
+            }
+
+            @Override
+            public T getOrDefault(T defaultT) {
+                return t;
+            }
+
+            @Override
+            public OperationResult result() {
+                return OK;
+            }
+        };
+    }
+    
+    public static <T extends Object> ReturnOperation<T> successEmpty() {
+        return new OkReturnOperation<T>() {
+            @Override
+            public boolean hasReturn() {
+                return false;
+            }
+
+            @Override
+            public T getOrThrow() {
+                throw new IllegalStateException("This is empty return.");
+            }
+
+            @Override
+            public T getOrDefault(T defaultT) {
+                return defaultT;
+            }
+
+            @Override
+            public OperationResult result() {
+                return OK;
+            }
+        };
+    }
+    
+    public static VoidOperation voidOperationStopped() {
+        return STOPPED_VOID_OPERATION;
+    }
+    
+    public static ReturnOperation returnOperationStopped() {
+        return STOPPED_RETURN_OPERATION;
+    }
+    
+    public static FailedVoidOperation voidOperationFail(String failMessage) {
+        return new FailedVoidOperation() {
             @Override
             public String getReason() {
                 return failMessage;
@@ -49,7 +113,29 @@ public class Operations {
         };
     }
     
-    public static FailedOperationFlow asFail(OperationFlow operationFlow) {
-        return (FailedOperationFlow) operationFlow;
+    public static FailedReturnOperation returnOperationFail(String failMessage) {
+        return new FailedReturnOperation() {
+            @Override
+            public String getReason() {
+                return failMessage;
+            }
+
+            @Override
+            public OperationResult result() {
+                return FAIL;
+            }
+        };
+    }
+    
+    public static FailedVoidOperation asFail(VoidOperation operationFlow) {
+        return (FailedVoidOperation) operationFlow;
+    }
+    
+    public static FailedReturnOperation asFail(ReturnOperation operationFlow) {
+        return (FailedReturnOperation) operationFlow;
+    }
+    
+    public static OkReturnOperation asOk(ReturnOperation operationFlow) {
+        return (OkReturnOperation) operationFlow;
     }
 }

@@ -12,6 +12,7 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
+import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
 
 /**
  *
@@ -25,7 +26,7 @@ public interface DaoTasks {
     List<Task> getActiveTasksOfTypeBetweenDates(
             Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeat... type);
     
-    List<Task> getExpiredTasks(
+    List<Task> getActiveTasksBeforeTime(
             Initiator initiator, LocalDateTime fromNow);
     
     List<Task> getFirstActiveTasks(
@@ -43,6 +44,12 @@ public interface DaoTasks {
     boolean deleteTaskById(
             Initiator initiator, int id);
     
-    boolean updateTask(
-            Initiator initiator, Task task);
+    boolean editTaskText(
+            Initiator initiator, int taskId, List<String> newText);
+    
+    boolean editTaskTime(
+            Initiator initiator, int taskId, LocalDateTime newTime);
+    
+    boolean editTaskTime(
+            Initiator initiator, int taskId, LocalDateTime newTime, AllowedTimePeriod timePeriod);
 }

@@ -156,7 +156,7 @@ public class ConsoleController implements OuterIoEngine {
         if ( this.isInDialogMode.get() ) {
             this.printer.printInDialogReportLine(report);
         } else {
-            this.printer.printNonDialogReport(report);
+            this.printer.printNonDialogReportLine(report);
         }
     }
 

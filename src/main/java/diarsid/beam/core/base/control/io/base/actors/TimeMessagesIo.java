@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.base.control.io.base.actors;
 
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 import java.util.List;
 
@@ -16,9 +16,9 @@ import java.util.List;
  */
 public interface TimeMessagesIo {
     
-    void show(TimeMessage task);  
+    void show(TaskMessage task);  
     
-    void showAll(List<TimeMessage> tasks);  
+    void showAll(List<TaskMessage> tasks);  
     
-    void showTasksNotification(String periodOfNotification, List<TimeMessage> tasks);
+    void showTasksNotification(String periodOfNotification, List<TaskMessage> tasks);
 }

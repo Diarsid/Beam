@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
-import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.time.LocalDateTime.now;
@@ -76,8 +76,8 @@ public abstract class Task
         return this.id != NEW_TASK_ID;
     }
     
-    public final TimeMessage toTimeMessage() {
-        return new TimeMessage(this.stringifyTime(), this.text);
+    public final TaskMessage toTimeMessage() {
+        return new TaskMessage(this.stringifyTime(), this.text);
     }
     
     public final String stringifyText() {
@@ -94,6 +94,10 @@ public abstract class Task
 
     public final LocalDateTime getTime() {
         return this.time;
+    }
+    
+    public List<String> getText() {
+        return this.text;
     }
 
     public final boolean getStatus() {
