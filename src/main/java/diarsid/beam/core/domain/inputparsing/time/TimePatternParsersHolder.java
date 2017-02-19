@@ -21,8 +21,8 @@ public class TimePatternParsersHolder {
         this.parsers = parsers;
     }
     
-    public Optional<TasksTime> parse(String timePattern) {
-        Optional<TasksTime> time;
+    public Optional<TaskTime> parse(String timePattern) {
+        Optional<TaskTime> time;
         for (TimePatternParser parser : this.parsers) {
             time = parser.parse(timePattern);
             if ( time.isPresent() ) {

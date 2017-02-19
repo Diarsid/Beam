@@ -15,25 +15,25 @@ import static java.util.Arrays.stream;
  *
  * @author Diarsid
  */
-public class AllowedExecutionTime {
+public class AllowedTimePeriod {
         
     private final Set<Integer> hours;
     private final Set<Integer> days;
             
-    AllowedExecutionTime() {
+    AllowedTimePeriod() {
         this.hours = new HashSet<>();
         this.days = new HashSet<>();
     }    
     
-    public static AllowedExecutionTime emptyTime() {
-        return new AllowedExecutionTime();
+    public static AllowedTimePeriod emptyTime() {
+        return new AllowedTimePeriod();
     }
     
-    public Set<Integer> getHours() {
+    public Set<Integer> hours() {
         return this.hours;
     }
     
-    public Set<Integer> getDays() {
+    public Set<Integer> days() {
         return this.days;
     }
     
@@ -65,7 +65,7 @@ public class AllowedExecutionTime {
         return stream(hours).allMatch(hour -> this.hours.contains(hour));
     }
     
-    public void merge(AllowedExecutionTime other) {
+    public void merge(AllowedTimePeriod other) {
         this.hours.addAll(other.hours);
         this.days.addAll(other.days);
     }

@@ -12,8 +12,8 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.TaskRepeatType;
 import diarsid.beam.core.domain.entities.Task;
+import diarsid.beam.core.domain.entities.TaskRepeat;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
@@ -35,7 +35,7 @@ class H2DaoTasks
 
     @Override
     public List<Task> getActiveTasksOfTypeBetweenDates(
-            Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeatType... type) {
+            Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeat... type) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -78,6 +78,11 @@ class H2DaoTasks
     @Override
     public boolean editTaskTime(
             Initiator initiator, int taskId, LocalDateTime newTime) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<Task> findTasksByTextPattern(Initiator initiator, String textPattern) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

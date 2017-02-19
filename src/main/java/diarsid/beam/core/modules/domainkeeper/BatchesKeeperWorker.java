@@ -332,7 +332,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                 return operationStopped();
             }
             if ( this.dao.editBatchOneCommand(
-                    initiator, batch.getName(), answer.getIndex(), newCommand.get()) ) {
+                    initiator, batch.getName(), answer.index(), newCommand.get()) ) {
                 return success();
             } else {
                 return operationFailedWith("DAO failed to change one command.");
@@ -384,7 +384,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             Question question = question("choose batch").withAnswerStrings(batchNames);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
-                if ( this.dao.removeBatch(initiator, batchNames.get(answer.getIndex())) ) {
+                if ( this.dao.removeBatch(initiator, batchNames.get(answer.index())) ) {
                     return success();
                 } else {
                     return operationFailedWith("DAO failed to remove batch.");

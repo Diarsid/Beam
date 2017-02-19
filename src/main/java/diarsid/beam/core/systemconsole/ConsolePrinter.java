@@ -19,7 +19,7 @@ import static java.lang.String.format;
  *
  * @author Diarsid
  */
-class ConsolePrinter {
+public class ConsolePrinter {
     
     private final BufferedWriter writer;     
     
@@ -35,6 +35,13 @@ class ConsolePrinter {
     void printInDialogReportLine(String report) throws IOException {
         this.writer.write(format("     > %s", report));
         this.writer.newLine();
+        this.writer.flush();
+    }
+    
+    void printYesNoQuestion(String yesNoQuestion) throws IOException {
+        this.writer.write(format("     > %s?", yesNoQuestion));
+        this.writer.newLine();
+        this.writer.write("     > yes / no : ");
         this.writer.flush();
     }
 
@@ -57,7 +64,7 @@ class ConsolePrinter {
                 this.writer.newLine();
             }
         }
-        printInDialogInviteLine("choose");
+        this.printInDialogInviteLine("choose");
     }
     
     void printNonDialogMultilineReport(Message message) throws IOException {

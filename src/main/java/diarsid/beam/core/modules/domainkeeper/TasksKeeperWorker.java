@@ -6,24 +6,25 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
-import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.OperationFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.base.interaction.TimeMessage;
 import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
 import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.domain.entities.Task;
-import diarsid.beam.core.domain.entities.TaskRepeatType;
-import diarsid.beam.core.domain.entities.Tasks;
-import diarsid.beam.core.domain.inputparsing.time.TasksTime;
+import diarsid.beam.core.domain.entities.TaskRepeat;
+import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
+import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
+import diarsid.beam.core.domain.inputparsing.time.TaskTime;
 import diarsid.beam.core.domain.inputparsing.time.TasksTimeAndText;
 import diarsid.beam.core.domain.inputparsing.time.TimeAndTextParser;
 import diarsid.beam.core.domain.inputparsing.time.TimePatternParsersHolder;
@@ -35,12 +36,25 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.flow.Operations.operationFailedWith;
 import static diarsid.beam.core.base.control.flow.Operations.operationStopped;
+import static diarsid.beam.core.base.control.flow.Operations.success;
+import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
+import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
-import static diarsid.beam.core.domain.entities.TaskRepeatType.MONTHLY_REPEAT;
-import static diarsid.beam.core.domain.entities.TaskRepeatType.NO_REPEAT;
-import static diarsid.beam.core.domain.entities.TaskRepeatType.YEARLY_REPEAT;
-
-
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeat.MONTHLY_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeat.NO_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeat.YEARLY_REPEAT;
+import static diarsid.beam.core.domain.entities.TaskRepeat.repeatByItsName;
+import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
+import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
+import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
+import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -50,18 +64,21 @@ public class TasksKeeperWorker implements TasksKeeper {
     private final KeeperDialogHelper helper;
     private final TimeAndTextParser timeAndTextParser;
     private final TimePatternParsersHolder timeParser;
+    private final AllowedTimePeriodsParser timePeriodsParser;
 
     public TasksKeeperWorker(
             InnerIoEngine ioEngine, 
             DaoTasks dao, 
             KeeperDialogHelper helper, 
             TimeAndTextParser timeAndTextParser,
-            TimePatternParsersHolder timeParser) {
+            TimePatternParsersHolder timeParser,
+            AllowedTimePeriodsParser timePeriodsParser) {
         this.ioEngine = ioEngine;
         this.dao = dao;
         this.helper = helper;
         this.timeAndTextParser = timeAndTextParser;
         this.timeParser = timeParser;
+        this.timePeriodsParser = timePeriodsParser;
     }
 
     @Override
@@ -126,18 +143,20 @@ public class TasksKeeperWorker implements TasksKeeper {
     @Override
     public OperationFlow createTask(
             Initiator initiator, MultiStringCommand command) {
-        OperationFlow flow = operationFailedWith("initial");
-        
+        if ( command.type().isNot(CREATE_TASK) ) {
+            return operationFailedWith("wrong command type!");
+        }
         TasksTimeAndText timeAndText = this.timeAndTextParser.parse(command.arguments());        
-        Optional<TasksTime> optTime = timeAndText.getTime();
-        String text = timeAndText.getText();
+        Optional<TaskTime> optTime = timeAndText.getTime();
+        String initialText = timeAndText.getText();
         
-        TasksTime taskTime = null;
+        TaskTime taskTime;
         if ( optTime.isPresent() ) {
             taskTime = optTime.get();
         } else {
             String timePattern;
-            Optional<TasksTime> parsedTime;
+            Optional<TaskTime> parsedTime;
+            taskTime = null;
             while ( isNull(taskTime) ) {
                 timePattern = this.ioEngine.askInput(initiator, "time");
                 if ( timePattern.isEmpty() ) {
@@ -158,72 +177,224 @@ public class TasksKeeperWorker implements TasksKeeper {
         LocalDateTime time = taskTime.actualizedTime();
         if ( time.isBefore(now()) ) {
             return operationFailedWith("unexpected past time.");
-        }        
-        TaskRepeatType taskType = taskTime.defineTasksType();
+        }  
         
-        if ( text.isEmpty() ) {
-            
+        TaskRepeat repeat;
+        if ( taskTime.isTimeRelative() ) {
+            repeat = NO_REPEAT;
+        } else {
+            Question question = question("choose repeat").withAnswerStrings(repeatNames());
+            Answer answer = this.ioEngine.ask(initiator, question);
+            if ( answer.isGiven() ) {
+                repeat = repeatByItsName(answer.getText());
+            } else {
+                return operationStopped();
+            }
+        }        
+        if ( repeat.isUndefined() ) {
+            return operationFailedWith("unexpected undefined task repeat.");
         }
         
-        Task task = Tasks.newTask(type, time, days, hours, content);
-        this.dao.saveTask(initiator, task);
+        List<String> text = new ArrayList<>();
+        if ( nonEmpty(initialText) ) {
+            text.add(initialText);
+        } else {
+            String line;
+            boolean input = true;
+            while ( input ) {                
+                line = this.ioEngine.askInput(initiator, "text");
+                if ( nonEmpty(line) ) {
+                    text.add(line);
+                } else {
+                    input = false;
+                }
+            }
+        }
+        if ( text.isEmpty() ) {
+            return operationStopped();
+        }
         
-        fireAsync("tasks_updated");
-        return flow;
+        Task task;
+        if ( repeat.equals(NO_REPEAT) ) {
+            task = newInstantTask(repeat, time, text);
+        } else if ( repeat.isOneOf(HOURLY_REPEAT, DAILY_REPEAT) ) {
+            Optional<AllowedTimePeriod> periods = this.askForAllowedTimePeriod(initiator);
+            if ( periods.isPresent() ) {
+                task = newReminderTask(
+                        repeat, time, periods.get().days(), periods.get().hours(), text);
+            } else {
+                return operationStopped();
+            }            
+        } else if ( repeat.isOneOf(MONTHLY_REPEAT, YEARLY_REPEAT) ) {
+            task = newEventTask(repeat, time, text);
+        } else {
+            return operationFailedWith("unexpected TaskRepeat value.");
+        }
+        if ( isNull(task) ) {
+            return operationFailedWith("unexpected NULL task");
+        }
+        
+        if ( this.dao.saveTask(initiator, task) ) {
+            fireAsync("tasks_updated");
+            return success();
+        } else {
+            return operationFailedWith("DAO failed to save task.");
+        }
+    }
+    
+    private Optional<AllowedTimePeriod> askForAllowedTimePeriod(Initiator initiator) {
+        String daysTimePattern = this.ioEngine.askInput(initiator, "allowed days");
+        if ( daysTimePattern.isEmpty() ) {
+            return Optional.empty();
+        }
+        AllowedTimePeriod periods = this.timePeriodsParser.parseAllowedDays(daysTimePattern);
+        while ( periods.hasNotDays() ) {                
+            daysTimePattern = this.ioEngine.askInput(initiator, "unknown format, try again");
+            if ( daysTimePattern.isEmpty() ) {
+                return Optional.empty();
+            }
+            periods.merge(this.timePeriodsParser.parseAllowedDays(daysTimePattern));
+        }
+
+        String hoursTimePattern = this.ioEngine.askInput(initiator, "allowed hours");
+        if ( hoursTimePattern.isEmpty() ) {
+            return Optional.empty();
+        }
+        periods.merge(this.timePeriodsParser.parseAllowedHours(hoursTimePattern));
+        while ( periods.hasNotHours() ) {
+            hoursTimePattern = this.ioEngine.askInput(initiator, "unknown format, try again");
+            if ( hoursTimePattern.isEmpty() ) {
+                return Optional.empty();
+            }
+            periods.merge(this.timePeriodsParser.parseAllowedHours(hoursTimePattern));
+        }
+        return Optional.of(periods);
     }
 
     @Override
     public OperationFlow deleteTask(
             Initiator initiator, SingleStringCommand command) {
-        boolean removed = false;
+        if ( command.type().isNot(DELETE_TASK) ) {
+            return operationFailedWith("wrong command type!");
+        }
         
-        fireAsync("tasks_updated");
-        return removed;
+        String text;
+        if ( command.hasArg() ) {
+            text = command.getArg();
+        } else {
+            text = this.ioEngine.askInput(initiator, "text");
+            if ( text.isEmpty() ) {
+                return operationStopped();
+            }
+        }
+        
+        List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
+        Task taskToRemove;
+        if ( matchingTasks.isEmpty() ) {
+            return operationFailedWith("no tasks with this text.");
+        } else if ( hasOne(matchingTasks) ) {
+            taskToRemove = getOne(matchingTasks);
+        } else {
+            Question question = question("choose task").withAnswerEntities(matchingTasks);
+            Answer answer = this.ioEngine.ask(initiator, question);
+            if ( answer.isGiven() ) {
+                taskToRemove = matchingTasks.get(answer.index());
+            } else {
+                return operationStopped();
+            }
+        }
+        
+        if ( this.dao.deleteTaskById(initiator, taskToRemove.getId()) ) {
+            fireAsync("tasks_updated");
+            return success();
+        } else {
+            return operationFailedWith("DAO failed to remove task.");
+        }
     }
 
     @Override
     public OperationFlow editTask(
             Initiator initiator, SingleStringCommand command) {
+        if ( command.type().isNot(EDIT_TASK) ) {
+            return operationFailedWith("wrong command type!");
+        }        
+        
+        String text;
+        if ( command.hasArg() ) {
+            text = command.getArg();
+        } else {
+            text = this.ioEngine.askInput(initiator, "text");
+            if ( text.isEmpty() ) {
+                return operationStopped();
+            }
+        }
+        
+        List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
+        Task taskToEdit;
+        if ( matchingTasks.isEmpty() ) {
+            return operationFailedWith("no tasks with this text.");
+        } else if ( hasOne(matchingTasks) ) {
+            taskToEdit = getOne(matchingTasks);
+        } else {
+            Question question = question("choose task").withAnswerEntities(matchingTasks);
+            Answer answer = this.ioEngine.ask(initiator, question);
+            if ( answer.isGiven() ) {
+                taskToEdit = matchingTasks.get(answer.index());
+            } else {
+                return operationStopped();
+            }
+        }
+        
+        Question whatToEdit = question("edit").withAnswerStrings("time", "text");
+        Answer answer = this.ioEngine.ask(initiator, whatToEdit);
+        String target;
+        if ( answer.isGiven() ) {
+            target = answer.getText();
+        } else {
+            return operationStopped();
+        }
+        
+        if ( target.equals("time") ) {
+            String timePattern = this.ioEngine.askInput(initiator, "new time");
+            Optional<TaskTime> optNewTime = this.timeParser.parse(timePattern);
+            while ( ! optNewTime.isPresent() ) {                
+                timePattern = this.ioEngine.askInput(initiator, "wrong format, try again");
+                if ( timePattern.isEmpty() ) {
+                    return operationStopped();
+                }
+                optNewTime = this.timeParser.parse(timePattern);
+            }
+            TaskTime newTime = optNewTime.get();
+            if ( taskToEdit.type().isOneOf(HOURLY_REPEAT, DAILY_REPEAT) ) {
+                if ( this.ioEngine.ask(initiator, "edit days/hours").isNotPositive() ) {
+                    return operationStopped();
+                }
+                Optional<AllowedTimePeriod> newPeriods = this.askForAllowedTimePeriod(initiator);
+                if ( newPeriods.isPresent() ) {
+                    
+                } else {
+                    return operationStopped();
+                }
+            } else {
+                if ( this.dao.editTaskTime(initiator, taskToEdit.getId(), newTime.actualizedTime()) ) {
+                    
+                } else {
+                    
+                }
+            }            
+        } else if ( target.equals("text") ) {
+            
+        } else {
+            return operationFailedWith("unexpected target to edit: " + target);
+        }
+        
         fireAsync("tasks_updated");
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public List<Task> findTasks(
             Initiator initiator, SingleStringCommand findEntityCommand) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public boolean createNewTask(TaskRepeatType type, String time, String[] task, 
-            Set<Integer> days, Set<Integer> hours) {
         
-        try {
-            LocalDateTime taskTime = this.formatter.ofFormat(time, true);            
-            LocalDateTime newTime = this.tasksDao
-                    .addTask(Task.newTask(type, taskTime, task, days, hours));
-            
-            if (newTime == null) {
-                this.tasksIo.reportError(
-                        "Task was not saved.",
-                        "Something has gone wrong :(");
-                return false;
-            }
-            return this.updateTimer(newTime);
-        } catch (TaskTypeInvalidException e) {
-            this.tasksIo.reportMessage("Invalid task type: " + e.getMessage());
-        } catch (TaskTimeFormatInvalidException e) {
-            this.tasksIo.reportMessage("Time verifying: Unrecognizable time format.");
-        } catch (TaskTimeInvalidException e) {
-            this.tasksIo.reportMessage("Time verifying: Given time is past. It must be future!");
-        } catch (NumberFormatException e) {
-            this.tasksIo.reportMessage("Time verifying: Wrong characters have been inputted!");
-        } catch (DateTimeParseException e) {
-            this.tasksIo.reportMessage("Time verifying: Wrong time format.");
-        } catch (DateTimeException e) {
-            this.tasksIo.reportMessage("Time verifying: Invalid dates out of range.");
-        } 
-        return false;
-    }
-    
+    }  
     
 }

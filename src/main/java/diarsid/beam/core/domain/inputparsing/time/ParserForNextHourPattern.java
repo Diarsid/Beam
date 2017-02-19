@@ -25,7 +25,7 @@ class ParserForNextHourPattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{1,2}h") ) {
             int hours = this.parseHours(timePattern);
             if ( hours >= 0 && hours < 24 ) {
@@ -33,7 +33,7 @@ class ParserForNextHourPattern implements TimePatternParser {
                         .withHour(hours)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TasksTime(time, NEXT_HOURS));
+                return Optional.of(new TaskTime(time, NEXT_HOURS));
             } else {
                 return Optional.empty();
             }

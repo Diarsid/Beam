@@ -25,7 +25,7 @@ class ParserForPlusMinutesPattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\+\\d{1,2}m?") ) {
             int minutes = this.parseMinutes(timePattern);
             if ( minutes > 0 && minutes < 100 ) {
@@ -33,7 +33,7 @@ class ParserForPlusMinutesPattern implements TimePatternParser {
                         .plusMinutes(this.parseMinutes(timePattern))
                         .withSecond(0)
                         .withNano(0);
-                TasksTime schedulableTime = new TasksTime(time, PLUS_MINUTES);
+                TaskTime schedulableTime = new TaskTime(time, PLUS_MINUTES);
                 return Optional.of(schedulableTime);
             } else {
                 return Optional.empty();

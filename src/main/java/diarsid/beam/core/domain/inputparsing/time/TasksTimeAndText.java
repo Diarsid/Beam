@@ -16,10 +16,10 @@ import static java.util.Objects.nonNull;
  *
  * @author Diarsid
  */
-public class TasksTimeAndText extends Pair<TasksTime, String> {
+public class TasksTimeAndText extends Pair<TaskTime, String> {
     
     
-    TasksTimeAndText(TasksTime time, String text) {
+    TasksTimeAndText(TaskTime time, String text) {
         super(time, text);
     }
     
@@ -27,7 +27,7 @@ public class TasksTimeAndText extends Pair<TasksTime, String> {
         super(null, text);
     }
     
-    public TasksTimeAndText(TasksTime time) {
+    public TasksTimeAndText(TaskTime time) {
         super(time, "");
     }
     
@@ -39,7 +39,7 @@ public class TasksTimeAndText extends Pair<TasksTime, String> {
         return ! super.second().isEmpty();
     }
     
-    public Optional<TasksTime> getTime() {
+    public Optional<TaskTime> getTime() {
         return Optional.ofNullable(super.first());
     }
     

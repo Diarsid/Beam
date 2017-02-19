@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.domain.entities.TaskRepeatType;
 import diarsid.beam.core.domain.entities.Task;
+import diarsid.beam.core.domain.entities.TaskRepeat;
 
 /**
  *
@@ -23,13 +23,16 @@ public interface DaoTasks {
             Initiator initiator);
     
     List<Task> getActiveTasksOfTypeBetweenDates(
-            Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeatType... type);
+            Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeat... type);
     
     List<Task> getExpiredTasks(
             Initiator initiator, LocalDateTime fromNow);
     
     List<Task> getFirstActiveTasks(
             Initiator initiator);
+    
+    List<Task> findTasksByTextPattern(
+            Initiator initiator, String textPattern);
     
     boolean updateTasks(
             Initiator initiator, List<Task> tasks);
@@ -40,9 +43,6 @@ public interface DaoTasks {
     boolean deleteTaskById(
             Initiator initiator, int id);
     
-    boolean editTaskText(
-            Initiator initiator, int taskId, String[] newText);
-    
-    boolean editTaskTime(
-            Initiator initiator, int taskId, LocalDateTime newTime);
+    boolean updateTask(
+            Initiator initiator, Task task);
 }

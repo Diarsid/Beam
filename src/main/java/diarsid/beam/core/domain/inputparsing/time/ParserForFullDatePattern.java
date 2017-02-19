@@ -22,7 +22,7 @@ class ParserForFullDatePattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{4}y?(\\.|-)\\d{1,2}m?(\\.|-)\\d{1,2}d? \\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.replace("d", "").replace("h", "").replace("m", "").replace("y", "");
             int spaceIndex = timePattern.indexOf(" ");
@@ -58,7 +58,7 @@ class ParserForFullDatePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TasksTime(time, FULL_DATE));
+                return Optional.of(new TaskTime(time, FULL_DATE));
             } else {
                 return Optional.empty();
             }
@@ -97,7 +97,7 @@ class ParserForFullDatePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TasksTime(time, FULL_DATE));
+                return Optional.of(new TaskTime(time, FULL_DATE));
             } else {
                 return Optional.empty();
             }

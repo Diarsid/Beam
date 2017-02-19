@@ -13,5 +13,5 @@ import java.util.Optional;
  */
 interface TimePatternParser {
     
-    Optional<TasksTime> parse(String timePattern);
+    Optional<TaskTime> parse(String timePattern);
 }

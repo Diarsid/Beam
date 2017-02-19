@@ -25,12 +25,12 @@ class ParserForPlusHoursPattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\+\\d{1,2}h") ) {
             int hours = this.parseHours(timePattern);
             if ( hours > 0 && hours < 100 ) {
                 LocalDateTime time = now().plusHours(this.parseHours(timePattern)).withSecond(0).withNano(0);
-                return Optional.of(new TasksTime(time, PLUS_HOURS));
+                return Optional.of(new TaskTime(time, PLUS_HOURS));
             } else {
                 return Optional.empty();
             }

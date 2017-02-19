@@ -7,6 +7,7 @@
 package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -15,9 +16,9 @@ import java.io.Serializable;
 public class TimeMessage implements Serializable {
     
     private final String time;
-    private final String[] content;
+    private final List<String> content;
 
-    public TimeMessage(String time, String[] content) {
+    public TimeMessage(String time, List<String> content) {
         this.time = time;
         this.content = content;
     }
@@ -26,7 +27,7 @@ public class TimeMessage implements Serializable {
         return this.time;
     }
 
-    public String[] getContent() {
+    public List<String> getContent() {
         return this.content;
     }
 }

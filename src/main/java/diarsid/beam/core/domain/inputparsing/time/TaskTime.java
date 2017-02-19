@@ -9,20 +9,18 @@ package diarsid.beam.core.domain.inputparsing.time;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import diarsid.beam.core.domain.entities.TaskRepeatType;
-
 import static java.time.LocalDateTime.now;
 
 /**
  *
  * @author Diarsid
  */
-public class TasksTime {
+public class TaskTime {
     
     private final LocalDateTime time;
     private final TasksTimeType timeType;
 
-    TasksTime(LocalDateTime time, TasksTimeType timeType) {
+    TaskTime(LocalDateTime time, TasksTimeType timeType) {
         this.time = time;
         this.timeType = timeType;
     }
@@ -35,8 +33,12 @@ public class TasksTime {
         }        
     }
     
-    public TaskRepeatType defineTasksType() {
-        return this.timeType.getAppropriateTaskType();
+    public boolean isTimeAbsolute(){
+        return this.timeType.isAbsolute();
+    }
+    
+    public boolean isTimeRelative(){
+        return this.timeType.isRelative();
     }
 
     @Override
@@ -58,7 +60,7 @@ public class TasksTime {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final TasksTime other = ( TasksTime ) obj;
+        final TaskTime other = ( TaskTime ) obj;
         if ( !Objects.equals(this.time, other.time) ) {
             return false;
         }

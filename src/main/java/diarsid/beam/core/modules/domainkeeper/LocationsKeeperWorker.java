@@ -112,7 +112,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         Answer answer = this.ioEngine.ask(
                 initiator, question("choose").withAnswerEntities(locations));
         if ( answer.isGiven() ) {
-            return Optional.of(locations.get(answer.getIndex()));
+            return Optional.of(locations.get(answer.index()));
         } else {
             return Optional.empty();
         }
@@ -214,7 +214,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             Question question = question("choose").withAnswerEntities(locationsToRemove);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
-                String locationName = locationsToRemove.get(answer.getIndex()).getName();
+                String locationName = locationsToRemove.get(answer.index()).getName();
                 if ( this.dao.removeLocation(initiator, locationName) ) {
                     return success();
                 } else {

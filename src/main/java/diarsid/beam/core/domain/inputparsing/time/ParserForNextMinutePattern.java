@@ -25,7 +25,7 @@ class ParserForNextMinutePattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{1,2}m?") ) {
             int minutes = this.parseMinutes(timePattern);
             if ( minutes >= 0 && minutes < 60 ) {
@@ -33,7 +33,7 @@ class ParserForNextMinutePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TasksTime(time, NEXT_MINUTES));
+                return Optional.of(new TaskTime(time, NEXT_MINUTES));
             } else {
                 return Optional.empty();
             }

@@ -7,12 +7,9 @@ package diarsid.beam.core.domain.inputparsing.time;
 
 import java.time.LocalDateTime;
 
-import diarsid.beam.core.domain.entities.TaskRepeatType;
-
 import static java.time.LocalDateTime.now;
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.domain.entities.TaskRepeatType.NO_REPEAT;
 import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.Relativeness.ABSOLUTE_TIME;
 import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.Relativeness.RELATIVE_TIME;
 
@@ -30,11 +27,6 @@ public enum TasksTimeType {
             }
             return time;
         }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            return NO_REPEAT;
-        }
     },
     PLUS_HOURS (RELATIVE_TIME) {
         @Override
@@ -43,11 +35,6 @@ public enum TasksTimeType {
                 time = time.plusHours(1);
             }
             return time;
-        }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            return NO_REPEAT;
         }
     },
     PLUS_HOURS_AND_MINUTES (RELATIVE_TIME) {
@@ -58,11 +45,6 @@ public enum TasksTimeType {
             }
             return time;
         }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            return NO_REPEAT;
-        }
     },
     NEXT_MINUTES (ABSOLUTE_TIME) {
         @Override
@@ -71,11 +53,6 @@ public enum TasksTimeType {
                 time = time.plusHours(1);
             }
             return time;
-        }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            
         }
     },
     NEXT_HOURS (ABSOLUTE_TIME) {
@@ -86,11 +63,6 @@ public enum TasksTimeType {
             }
             return time;
         }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            
-        }
     },
     NEXT_HOURS_AND_MINUTES (ABSOLUTE_TIME) {
         @Override
@@ -99,11 +71,6 @@ public enum TasksTimeType {
                 time = time.plusDays(1);
             }
             return time;
-        }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            
         }
     },
     NEXT_DAYS_HOURS_AND_MINUTES (ABSOLUTE_TIME) {
@@ -114,11 +81,6 @@ public enum TasksTimeType {
             }
             return time;
         }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            
-        }
     },
     NEXT_MONTH_DAY_HOURS_AND_MINUTES (ABSOLUTE_TIME) {
         @Override
@@ -128,11 +90,6 @@ public enum TasksTimeType {
             }
             return time;
         }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            
-        }
     },
     FULL_DATE (ABSOLUTE_TIME) {
         @Override
@@ -141,11 +98,6 @@ public enum TasksTimeType {
                 time = time.plusYears(1);
             }
             return time;
-        }
-        
-        @Override
-        public TaskRepeatType getAppropriateTaskType() {
-            
         }
     };
     
@@ -161,8 +113,6 @@ public enum TasksTimeType {
     }
     
     public abstract LocalDateTime leapToFutureAccordingToType(LocalDateTime pastTime);
-    
-    public abstract TaskRepeatType getAppropriateTaskType();
     
     public boolean is(TasksTimeType other) {
         return this.equals(other);

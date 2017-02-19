@@ -52,7 +52,7 @@ public class Answer implements Serializable {
         return this.chosen.getText().equals(text);
     }
     
-    public int getIndex() {
+    public int index() {
         return this.chosen.getIndex();
     }
 }

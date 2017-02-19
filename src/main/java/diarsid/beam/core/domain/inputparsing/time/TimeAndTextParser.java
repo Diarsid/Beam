@@ -28,7 +28,7 @@ public class TimeAndTextParser {
         
     public TasksTimeAndText parse(List<String> args) {
         if ( hasOne(args) ) {
-            Optional<TasksTime> probableTime = this.timePatternParsers.parse(getOne(args));
+            Optional<TaskTime> probableTime = this.timePatternParsers.parse(getOne(args));
             if ( probableTime.isPresent() ) {
                 return new TasksTimeAndText(probableTime.get());
             } else {
@@ -36,12 +36,12 @@ public class TimeAndTextParser {
             }
         } else {            
             String twoArgTimePattern = join(" ", args.get(0), args.get(1));            
-            Optional<TasksTime> probableTwoArgTime = this.timePatternParsers.parse(twoArgTimePattern);
+            Optional<TaskTime> probableTwoArgTime = this.timePatternParsers.parse(twoArgTimePattern);
             if ( probableTwoArgTime.isPresent() ) {
                 return new TasksTimeAndText(probableTwoArgTime.get(), join(" ", args.subList(2, args.size())));
             } else {
                 String oneArgTimePattern = getOne(args);
-                Optional<TasksTime> probableOneArgTime = this.timePatternParsers.parse(oneArgTimePattern);
+                Optional<TaskTime> probableOneArgTime = this.timePatternParsers.parse(oneArgTimePattern);
                 if ( probableOneArgTime.isPresent() ) {
                     return new TasksTimeAndText(probableOneArgTime.get(), join(" ", args.subList(1, args.size())));                    
                 } else {

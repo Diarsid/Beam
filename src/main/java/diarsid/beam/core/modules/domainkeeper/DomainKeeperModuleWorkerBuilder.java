@@ -8,12 +8,20 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
+import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
+import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
+import diarsid.beam.core.domain.inputparsing.time.TimeAndTextParser;
+import diarsid.beam.core.domain.inputparsing.time.TimePatternParsersHolder;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
+import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timeAndTextParser;
+import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
 
 /**
  *
@@ -40,6 +48,16 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         Interpreter interpreter = this.appComponentsHolderModule.getInterpreter();
         KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
         
+        LocationsInputParser locationsInputParser;
+        TimeAndTextParser timeAndTextParser;
+        TimePatternParsersHolder timeParser;
+        AllowedTimePeriodsParser timePeriodsParser;
+        
+        locationsInputParser = new LocationsInputParser();
+        timeAndTextParser = timeAndTextParser();
+        timeParser = timePatternParsersHolder();
+        timePeriodsParser = allowedTimePeriodsParser();
+        
         LocationsKeeper locationsKeeper;
         BatchesKeeper batchesKeeper;
         ProgramsKeeper programsKeeper;
@@ -48,7 +66,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         locationsKeeper = new LocationsKeeperWorker(
                 this.dataModule.getDaoLocations(), 
                 ioEngine, 
-                dialogHelper);
+                dialogHelper, 
+                locationsInputParser);
         batchesKeeper = new BatchesKeeperWorker(
                 this.dataModule.getDaoBatches(), 
                 ioEngine, 
@@ -60,8 +79,11 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 dialogHelper);
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
-                dataModule.getDaoTasks(), 
-                dialogHelper);
+                this.dataModule.getDaoTasks(), 
+                dialogHelper, 
+                timeAndTextParser, 
+                timeParser, 
+                timePeriodsParser);
         
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 

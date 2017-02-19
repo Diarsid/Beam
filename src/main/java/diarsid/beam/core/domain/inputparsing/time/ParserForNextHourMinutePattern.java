@@ -21,7 +21,7 @@ class ParserForNextHourMinutePattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.trim().replace("h", "").replace("m", "");
             int semicolonIndex = timePattern.indexOf(":");
@@ -35,7 +35,7 @@ class ParserForNextHourMinutePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TasksTime(time, NEXT_HOURS_AND_MINUTES));
+                return Optional.of(new TaskTime(time, NEXT_HOURS_AND_MINUTES));
             } else {
                 return Optional.empty();
             }

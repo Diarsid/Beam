@@ -38,6 +38,10 @@ public enum Choice implements Serializable {
         return this.equals(POSTIVE);
     }
     
+    public boolean isNotPositive() {
+        return ! this.equals(POSTIVE);
+    }
+    
     public boolean isNegative() {
         return this.equals(NEGATIVE);
     }

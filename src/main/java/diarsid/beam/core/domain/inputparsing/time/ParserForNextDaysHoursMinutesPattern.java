@@ -22,7 +22,7 @@ class ParserForNextDaysHoursMinutesPattern implements TimePatternParser {
     }
 
     @Override
-    public Optional<TasksTime> parse(String timePattern) {
+    public Optional<TaskTime> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{1,2}d? \\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.replace("d", "").replace("h", "").replace("m", "");
             int spaceIndex = timePattern.indexOf(" ");
@@ -42,7 +42,7 @@ class ParserForNextDaysHoursMinutesPattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TasksTime(time, NEXT_DAYS_HOURS_AND_MINUTES));
+                return Optional.of(new TaskTime(time, NEXT_DAYS_HOURS_AND_MINUTES));
             } else {
                 return Optional.empty();
             }

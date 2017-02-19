@@ -16,15 +16,15 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.TimePeriod.DAYS;
 import static diarsid.beam.core.domain.entities.TimePeriod.HOURS;
-import static diarsid.beam.core.domain.inputparsing.time.AllowedExecutionTime.emptyTime;
+import static diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod.emptyTime;
 
 /**
  *
  * @author Diarsid
  */
-public class AllowedExecutionTimeParser {
+public class AllowedTimePeriodsParser {
     
-    AllowedExecutionTimeParser() {
+    AllowedTimePeriodsParser() {
     }
 
     private String[] normalizePatternAndSplitByComma(String timePattern) {
@@ -35,12 +35,14 @@ public class AllowedExecutionTimeParser {
         return numbers;
     }
 
-    private AllowedExecutionTime parseAllowedTimeWithUnit(String timePattern, TimePeriod period) {
+    private AllowedTimePeriod parseAllowedTimeWithUnit(String timePattern, TimePeriod period) {
         String[] numbers = this.normalizePatternAndSplitByComma(timePattern);
-        AllowedExecutionTime time = emptyTime();
+        AllowedTimePeriod time = emptyTime();
         stream(numbers)
                 .filter(numberString -> nonEmpty(numberString))
+                .filter(numberString -> isNumeric(numberString) || numberString.matches("\\d+-\\d+") )
                 .forEach(numberString -> {
+                    System.out.println("parsing " + period.name() + " from " + numberString);
                     if ( isNumeric(numberString) ) {
                         if ( period.is(HOURS) ) {
                             time.includeHourOfDay(parseInt(numberString));
@@ -61,11 +63,11 @@ public class AllowedExecutionTimeParser {
         return time;
     }
     
-    public AllowedExecutionTime parseAllowedHours(String timePattern) {
+    public AllowedTimePeriod parseAllowedHours(String timePattern) {
         return parseAllowedTimeWithUnit(timePattern, HOURS);
     }
     
-    public AllowedExecutionTime parseAllowedDays(String timePattern) {
+    public AllowedTimePeriod parseAllowedDays(String timePattern) {
         return parseAllowedTimeWithUnit(timePattern, DAYS);
     }
 }
