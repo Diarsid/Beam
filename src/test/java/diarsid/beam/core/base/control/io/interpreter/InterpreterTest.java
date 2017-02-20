@@ -9,9 +9,8 @@ package diarsid.beam.core.base.control.io.interpreter;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
@@ -56,8 +55,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.STOP_PROGRA
 import static diarsid.beam.core.base.control.io.commands.CommandType.UNDEFINED;
 import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 
 /**
  *
@@ -294,8 +291,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("note todo");
         assertEquals(OPEN_TARGET_IN_NOTE, c.type());
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertEquals("todo", c1.getArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("todo", c1.joinedArguments());
     }
     
     @Test
@@ -303,8 +300,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("n project/todo");
         assertEquals(OPEN_PATH_IN_NOTE, c.type());
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertEquals("project/todo", c1.getArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("project/todo", c1.joinedArguments());
     }
     
     @Test
@@ -333,8 +330,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("del task my text");
         assertEquals(DELETE_TASK, c.type());
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertEquals("my text", c1.getArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("my text", c1.joinedArguments());
     }
     
     @Test
@@ -342,8 +339,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("del loc name asasd");
         assertEquals(DELETE_LOCATION, c.type());
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertEquals("name", c1.getArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("name asasd", c1.joinedArguments());
     }
     
     @Test
@@ -351,8 +348,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("del loc");
         assertEquals(DELETE_LOCATION, c.type());
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertFalse(c1.hasArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertFalse(c1.hasArguments());
     }
     
     @Test
@@ -370,7 +367,7 @@ public class InterpreterTest {
         assertEquals(CREATE_LOCATION, c1.type());
         
         ArgumentsCommand c1casted = (ArgumentsCommand) c1;
-        assertEquals("C:/path/to/my_books", c1casted.joinedArguments());
+        assertEquals("C:/path/to/my_books books", c1casted.joinedArguments());
     }
     
     @Test
@@ -451,8 +448,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("edit batch");
         assertEquals(EDIT_BATCH, c.type());
         
-        SingleStringCommand command = (SingleStringCommand) c;
-        assertFalse(command.hasArg());
+        ArgumentsCommand command = (ArgumentsCommand) c;
+        assertFalse(command.hasArguments());
     }
     
     @Test
@@ -460,9 +457,9 @@ public class InterpreterTest {
         Command c = interpreter.interprete("edit batch name");
         assertEquals(EDIT_BATCH, c.type());
         
-        SingleStringCommand command = (SingleStringCommand) c;
-        assertTrue(command.hasArg());
-        assertEquals("name", command.getArg());
+        ArgumentsCommand command = (ArgumentsCommand) c;
+        assertTrue(command.hasArguments());
+        assertEquals("name", command.joinedArguments());
     }
     
     @Test
@@ -515,9 +512,8 @@ public class InterpreterTest {
     public void testInterprete_editPage() {
         Command c = interpreter.interprete("edit page ");
         assertEquals(EDIT_PAGE, c.type());
-        EditEntityCommand com = (EditEntityCommand) c;
-        assertFalse(com.hasName());
-        assertFalse(com.isTargetDefined());
+        ArgumentsCommand com = (ArgumentsCommand) c;
+        assertFalse(com.hasArguments());
     }
     
     @Test
@@ -526,7 +522,7 @@ public class InterpreterTest {
         assertEquals(EDIT_PAGE, c.type());
         
         ArgumentsCommand com = (ArgumentsCommand) c;
-        assertEquals("google name", com.arguments());
+        assertEquals("google name", com.joinedArguments());
     }
     
     @Test
@@ -553,10 +549,10 @@ public class InterpreterTest {
         assertEquals(EDIT_PAGE_DIR, c1.type());
         
         ArgumentsCommand com = (ArgumentsCommand) c;
-       ArgumentsCommand com1 = (ArgumentsCommand) c1;
+        ArgumentsCommand com1 = (ArgumentsCommand) c1;
         
         assertEquals("common name", com.joinedArguments());
-        assertEquals("common place", com.joinedArguments());
+        assertEquals("common place", com1.joinedArguments());
     }
     
     @Test
@@ -564,9 +560,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("edit location boo name");        
         assertEquals(EDIT_LOCATION, c.type());      
         
-        EditEntityCommand c1 = (EditEntityCommand) c;
-        assertEquals("boo", c1.getName());
-        assertEquals(NAME, c1.getTarget());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("boo name", c1.joinedArguments());
     }  
     
     @Test
@@ -574,89 +569,26 @@ public class InterpreterTest {
         Command c = interpreter.interprete("edit location boo path");        
         assertEquals(EDIT_LOCATION, c.type());      
         
-        EditEntityCommand c1 = (EditEntityCommand) c;
-        assertEquals("boo", c1.getName());
-        assertEquals(FILE_URL, c1.getTarget());
-    }  
-    
-    @Test
-    public void testInterprete_editLocation_onlyTargetName() {
-        Command c = interpreter.interprete("edit location name");        
-        assertEquals(EDIT_LOCATION, c.type());      
-        
-        EditEntityCommand c1 = (EditEntityCommand) c;
-        assertFalse(c1.hasName());
-        assertEquals(NAME, c1.getTarget());
-    }  
-    
-    @Test
-    public void testInterprete_editLocation_onlyTargetPath() {
-        Command c = interpreter.interprete("edit location path");        
-        assertEquals(EDIT_LOCATION, c.type());      
-        
-        EditEntityCommand c1 = (EditEntityCommand) c;
-        assertFalse(c1.hasName());
-        assertEquals(FILE_URL, c1.getTarget());
-    }  
-    
-    @Test
-    public void testInterprete_editLocation_onlyName() {
-        Command c = interpreter.interprete("edit location books");        
-        assertEquals(EDIT_LOCATION, c.type());      
-        
-        EditEntityCommand c1 = (EditEntityCommand) c;
-        assertFalse(c1.isTargetDefined());
-        assertEquals("books", c1.getName());
-    } 
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("boo path", c1.joinedArguments());
+    }
     
     @Test
     public void testInterprete_editTask_textAndTime() {
         Command c = interpreter.interprete("edit task 10:10 task text");        
         assertEquals(EDIT_TASK, c.type());        
         
-        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
-        assertEquals("10:10", c1.getTime());
-        assertEquals("task text", c1.getText());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("10:10 task text", c1.joinedArguments());
     }
     
     @Test
     public void testInterprete_editTask_textAndTime_1() {
-        Command c = interpreter.interprete("edit task 12 10:15 task text");        
+        Command c = interpreter.interprete("edit task ");        
         assertEquals(EDIT_TASK, c.type());        
         
-        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
-        assertEquals("12 10:15", c1.getTime());
-        assertEquals("task text", c1.getText());
-    }
-    
-    @Test
-    public void testInterprete_editTask_text() {
-        Command c = interpreter.interprete("edit task task text");        
-        assertEquals(EDIT_TASK, c.type());        
-        
-        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
-        assertFalse(c1.hasTime());
-        assertEquals("task text", c1.getText());
-    }
-    
-    @Test
-    public void testInterprete_editTask_timet() {
-        Command c = interpreter.interprete("edit task 10:15");        
-        assertEquals(EDIT_TASK, c.type());        
-        
-        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
-        assertFalse(c1.hasText());
-        assertEquals("10:15", c1.getTime());
-    }
-    
-    @Test
-    public void testInterprete_editTask_empty() {
-        Command c = interpreter.interprete("edit task");        
-        assertEquals(EDIT_TASK, c.type());        
-        
-        TimeEntityEditCommand c1 = (TimeEntityEditCommand) c;
-        assertFalse(c1.hasText());
-        assertFalse(c1.hasTime());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertFalse(c1.hasArguments());
     }
         
     @Test
@@ -676,8 +608,8 @@ public class InterpreterTest {
         Command c = interpreter.interprete("list books");
         assertEquals(LIST_LOCATION, c.type()); 
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertEquals("books", c1.getArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("books", c1.getFirstArg());
     }  
     
     @Test
@@ -685,7 +617,7 @@ public class InterpreterTest {
         Command c = interpreter.interprete("list books/tech/java");
         assertEquals(LIST_PATH, c.type()); 
         
-        SingleStringCommand c1 = (SingleStringCommand) c;
-        assertEquals("books/tech/java", c1.getArg());
+        ArgumentsCommand c1 = (ArgumentsCommand) c;
+        assertEquals("books/tech/java", c1.getFirstArg());
     }  
 }

@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.corecontrol.cli;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -33,6 +34,7 @@ public class CliCommandDispatcherTest {
     /**
      * Test of dispatch method, of class CliCommandDispatcher.
      */
+    @Ignore
     @Test
     public void testDispatch() {
         Command command = interpreter.interprete("+ page google");

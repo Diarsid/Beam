@@ -34,7 +34,7 @@ public class ArgumentsCommand implements Command {
     
     public String getFirstArg() {
         if ( this.arguments.size() > 0 ) {
-            return this.arguments.get(1);
+            return this.arguments.get(0);
         } else {
             return "";
         }        

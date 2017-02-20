@@ -129,6 +129,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(12)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusDays(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -142,6 +145,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(12)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusDays(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -155,6 +161,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(12)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusDays(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -168,6 +177,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(12)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusDays(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -190,6 +202,9 @@ public class TimePatternParsersHolderTest {
                     .withMinute(10)
                     .withSecond(0)
                     .withNano(0);
+            if ( expected.isBefore(now()) ) {
+                expected = expected.plusMonths(1);
+            }
             assertEquals(expected, optTime.get().actualizedTime());
         } else {
             assertFalse(optTime.isPresent());
@@ -207,6 +222,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(10)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusMonths(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());        
     }
     
@@ -219,6 +237,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(35)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusHours(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -231,6 +252,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(35)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusHours(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -243,6 +267,9 @@ public class TimePatternParsersHolderTest {
                 .withHour(14)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusDays(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -258,6 +285,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(30)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusYears(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -273,6 +303,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(30)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusYears(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -289,6 +322,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(30)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusYears(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -305,6 +341,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(30)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusYears(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -321,6 +360,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(30)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusYears(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
     
@@ -337,6 +379,9 @@ public class TimePatternParsersHolderTest {
                 .withMinute(30)
                 .withSecond(0)
                 .withNano(0);
+        if ( expected.isBefore(now()) ) {
+            expected = expected.plusYears(1);
+        }
         assertEquals(expected, optTime.get().actualizedTime());
     }
 
