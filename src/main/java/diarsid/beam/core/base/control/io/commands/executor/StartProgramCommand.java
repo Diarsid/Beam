@@ -7,7 +7,7 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.SingleArgumentCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.START_PROGRAM;
 
@@ -15,7 +15,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.START_PROGR
  *
  * @author Diarsid
  */
-public class StartProgramCommand extends SingleArgumentCommand {
+public class StartProgramCommand extends ExtendableCommonCommand {
     
     public StartProgramCommand(String program) {
         super(program);

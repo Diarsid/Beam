@@ -9,6 +9,6 @@ package diarsid.beam.core.modules.domainkeeper;
  *
  * @author Diarsid
  */
-public interface WebObjectsKeeper {
+public interface AllEntitiesKeeper {
     
 }

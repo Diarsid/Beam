@@ -12,13 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
@@ -33,6 +34,8 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.flow.Operations.ok;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
 import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.returnOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
@@ -57,13 +60,6 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
-
-import diarsid.beam.core.base.control.flow.ReturnOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.ok;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -145,7 +141,7 @@ public class TasksKeeperWorker implements TasksKeeper {
 
     @Override
     public VoidOperation createTask(
-            Initiator initiator, MultiStringCommand command) {
+            Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_TASK) ) {
             return voidOperationFail("wrong command type!");
         }
@@ -276,14 +272,14 @@ public class TasksKeeperWorker implements TasksKeeper {
 
     @Override
     public VoidOperation deleteTask(
-            Initiator initiator, SingleStringCommand command) {
+            Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(DELETE_TASK) ) {
             return voidOperationFail("wrong command type!");
         }
         
         String text;
-        if ( command.hasArg() ) {
-            text = command.getArg();
+        if ( command.hasArguments()) {
+            text = command.joinedArguments();
         } else {
             text = this.ioEngine.askInput(initiator, "text");
             if ( text.isEmpty() ) {
@@ -317,14 +313,14 @@ public class TasksKeeperWorker implements TasksKeeper {
 
     @Override
     public VoidOperation editTask(
-            Initiator initiator, SingleStringCommand command) {
+            Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(EDIT_TASK) ) {
             return voidOperationFail("wrong command type!");
         }        
         
         String text;
-        if ( command.hasArg() ) {
-            text = command.getArg();
+        if ( command.hasArguments()) {
+            text = command.joinedArguments();
         } else {
             text = this.ioEngine.askInput(initiator, "text");
             if ( text.isEmpty() ) {
@@ -419,14 +415,14 @@ public class TasksKeeperWorker implements TasksKeeper {
 
     @Override
     public ReturnOperation<List<Task>> findTasks(
-            Initiator initiator, SingleStringCommand command) {
+            Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_TASK) ) {
             return returnOperationFail("wrong command type!");
         }        
         
         String text;
-        if ( command.hasArg() ) {
-            text = command.getArg();
+        if ( command.hasArguments()) {
+            text = command.joinedArguments();
         } else {
             text = this.ioEngine.askInput(initiator, "text");
             if ( text.isEmpty() ) {

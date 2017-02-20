@@ -13,7 +13,7 @@ import mocks.MockInnerIoEngine;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
 import diarsid.beam.core.domain.inputparsing.time.TimeAndTextParser;
 import diarsid.beam.core.domain.inputparsing.time.TimePatternParsersHolder;
@@ -57,7 +57,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
                 ioEngine, dao, helper, timeAndTextParser, timeParser, timePeriodsParser);
         
         String input = "";
-        MultiStringCommand command;
+        ArgumentsCommand command;
         VoidOperation flow;
         while ( true ) {
             System.out.print("command : ");            
@@ -65,7 +65,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
             if ( input.equals("exit") ) {
                 break;
             }
-            command = new MultiStringCommand(CREATE_TASK, asList(input.split(" ")));
+            command = new ArgumentsCommand(CREATE_TASK, asList(input.split(" ")));
             flow = tasksKeeper.createTask(initiator, command);
             if ( flow.result().equals(FAIL)) {
                 System.out.println(asFail(flow).getReason());

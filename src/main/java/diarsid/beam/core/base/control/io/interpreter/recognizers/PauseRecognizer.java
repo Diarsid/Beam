@@ -9,13 +9,13 @@ package diarsid.beam.core.base.control.io.interpreter.recognizers;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.Recognizer;
-import diarsid.beam.core.domain.inputparsing.ArgumentsInterceptor;
+import diarsid.beam.core.domain.inputparsing.common.ArgumentsInterceptor;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.TimePeriod;
 
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.domain.inputparsing.ArgumentType.NUMBER;
-import static diarsid.beam.core.domain.inputparsing.ArgumentType.TIME_PERIOD;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.NUMBER;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.TIME_PERIOD;
 import static diarsid.beam.core.domain.entities.TimePeriod.parseTimePeriodFrom;
 import static diarsid.beam.core.base.util.StringNumberUtils.parseNumberElseZero;
 

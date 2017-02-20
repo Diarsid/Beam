@@ -23,7 +23,6 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
@@ -48,6 +47,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
+
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -174,7 +175,7 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testGetBatchByName() {
-        List<ArgumentedCommand> commands = new ArrayList<>();
+        List<ExtendableCommand> commands = new ArrayList<>();
         commands.add(new RunProgramCommand("netbeans", "netbeans"));
         commands.add(new OpenLocationCommand("projects", "projects"));
         commands.add(new SeePageCommand("google", "google"));
@@ -207,7 +208,7 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testSaveNewBatch() {
-        List<ArgumentedCommand> commands = new ArrayList<>();
+        List<ExtendableCommand> commands = new ArrayList<>();
         commands.add(new RunProgramCommand("xxx", "xxx"));
         commands.add(new OpenLocationCommand("yyy", "yyy"));
         commands.add(new SeePageCommand("zzz", "zzz"));
@@ -218,7 +219,7 @@ public class H2DaoBatchesTest {
         assertEquals(11 + 3, testDataBase.countRowsInTable("batch_commands"));
         assertEquals(3 + 1, testDataBase.countRowsInTable("batches"));
         
-        List<ArgumentedCommand> oneMoreBatchCommands = new ArrayList<>();
+        List<ExtendableCommand> oneMoreBatchCommands = new ArrayList<>();
         oneMoreBatchCommands.add(new OpenLocationCommand("QQQ", "QQQ"));
         oneMoreBatchCommands.add(new SeePageCommand("RRR", "RRR"));
         Batch sameNameBatch = new Batch("aaa", oneMoreBatchCommands);
@@ -268,7 +269,7 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testEditBatchCommands() {
-        List<ArgumentedCommand> newCommands = new ArrayList<>();
+        List<ExtendableCommand> newCommands = new ArrayList<>();
         newCommands.add(new RunProgramCommand("xxx", "xxx"));
         newCommands.add(new OpenLocationCommand("yyy", "yyy"));
         
@@ -290,7 +291,7 @@ public class H2DaoBatchesTest {
     public void testEditBatchOneCommand() {
         Batch previous = daoBatches.getBatchByName(initiator, "workspace").get();
         
-        ArgumentedCommand newCommand = new OpenLocationCommand("yyy", "yyy");
+        ExtendableCommand newCommand = new OpenLocationCommand("yyy", "yyy");
         int newCommandOrder = 1;
         boolean edited = daoBatches.editBatchOneCommand(initiator, "workspace", newCommandOrder, newCommand);
         assertTrue(edited);
@@ -321,7 +322,7 @@ public class H2DaoBatchesTest {
         assertTrue(names.contains("tomcat"));
         assertTrue(names.contains("open_space"));
         
-        List<ArgumentedCommand> allCommands = new ArrayList<>();
+        List<ExtendableCommand> allCommands = new ArrayList<>();
         batchs.stream()
                 .map(batch -> batch.getCommands())
                 .forEach(commands -> { 

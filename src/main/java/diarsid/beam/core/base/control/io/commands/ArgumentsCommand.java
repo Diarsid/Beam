@@ -13,23 +13,31 @@ import static java.lang.String.join;
 import static java.util.Collections.emptyList;
 
 
-public class MultiStringCommand implements Command {
+public class ArgumentsCommand implements Command {
     
     private final List<String> arguments;
     private final CommandType type;
     
-    public MultiStringCommand(CommandType type, List<String> arguments) {
+    public ArgumentsCommand(CommandType type, List<String> arguments) {
         this.arguments = arguments;
         this.type = type;
     }
     
-    public MultiStringCommand(CommandType type) {
+    public ArgumentsCommand(CommandType type) {
         this.arguments = emptyList();
         this.type = type;
     }
     
     public boolean hasArguments() {
         return ! this.arguments.isEmpty();
+    }
+    
+    public String getFirstArg() {
+        if ( this.arguments.size() > 0 ) {
+            return this.arguments.get(1);
+        } else {
+            return "";
+        }        
     }
     
     public boolean hasNoArguments() {
@@ -68,7 +76,7 @@ public class MultiStringCommand implements Command {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final MultiStringCommand other = ( MultiStringCommand ) obj;
+        final ArgumentsCommand other = ( ArgumentsCommand ) obj;
         if ( !Objects.equals(this.arguments, other.arguments) ) {
             return false;
         }

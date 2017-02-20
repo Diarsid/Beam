@@ -9,18 +9,23 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
+import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.modules.data.DaoLocations;
 
+import static diarsid.beam.core.base.control.flow.Operations.ok;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
 import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
@@ -38,16 +43,8 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY_UNDEFINED;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
-
-import diarsid.beam.core.base.control.flow.ReturnOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.ok;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
 
 
 
@@ -56,17 +53,20 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final DaoLocations dao;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
-    private final LocationsInputParser parser;
+    private final LocationsInputParser locationInpurParser;
+    private final PropertyAndTextParser propertyTextParser;
     
     LocationsKeeperWorker(
             DaoLocations dao, 
             InnerIoEngine ioEngine, 
             KeeperDialogHelper consistencyChecker,
-            LocationsInputParser parser) {
+            LocationsInputParser parser,
+            PropertyAndTextParser propertyTextParser) {
         this.dao = dao;
         this.ioEngine = ioEngine;
         this.helper = consistencyChecker;
-        this.parser = parser;
+        this.locationInpurParser = parser;
+        this.propertyTextParser = propertyTextParser;
     }
     
     @Override
@@ -89,13 +89,13 @@ class LocationsKeeperWorker implements LocationsKeeper {
     
     @Override
     public ReturnOperation<Location> findLocation(
-            Initiator initiator, SingleStringCommand command) {
+            Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_LOCATION) ) {
             return returnOperationFail("wrong command type!");
         }
         String namePattern = "";
-        if ( command.hasArg() ) {
-            namePattern = command.getArg();
+        if ( command.hasArguments()) {
+            namePattern = command.getFirstArg();
         } 
         
         namePattern = this.helper.validateInteractively(initiator, namePattern, "name", ENTITY_NAME);
@@ -141,7 +141,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
 
     @Override
-    public VoidOperation createLocation(Initiator initiator, MultiStringCommand command) {
+    public VoidOperation createLocation(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_LOCATION) ) {
             return voidOperationFail("wrong command type!");
         }
@@ -149,7 +149,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         String name;
         String path;
         if ( command.hasArguments() ) { 
-            LocationNameAndPath nameAndPath = this.parser.parse(command.arguments());
+            LocationNameAndPath nameAndPath = this.locationInpurParser.parse(command.arguments());
             name = nameAndPath.getName();
             path = nameAndPath.getPath();
         } else {
@@ -194,14 +194,14 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
 
     @Override
-    public VoidOperation removeLocation(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation removeLocation(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(DELETE_LOCATION) ) {
             return voidOperationFail("wrong command type!");
         }
         
         String name;
-        if ( command.hasArg() ) {
-            name = command.getArg();
+        if ( command.hasArguments()) {
+            name = command.getFirstArg();
         } else {
             name = "";
         }
@@ -238,22 +238,20 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
 
     @Override
-    public VoidOperation editLocation(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation editLocation(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(EDIT_LOCATION) ) {
             return voidOperationFail("wrong command type!");
         }
         
         String name;
-        EntityProperty property = PROPERTY_UNDEFINED;
-        if ( command.hasArg() ) {
-            property = argToProperty(command.getArg());
-            if ( property.isNotDefined() ) {
-                name = command.getArg();
-            } else {
-                name = "";
-            }            
+        EntityProperty property;
+        if ( command.hasArguments() ) {
+            PropertyAndText propText = this.propertyTextParser.parse(command.arguments());
+            name = propText.text();
+            property = propText.property();
         } else {
             name = "";
+            property = PROPERTY_UNDEFINED;
         }        
         
         property = this.helper.validatePropertyInteractively(

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.domain.entities.Batch;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -38,10 +38,10 @@ public interface DaoBatches {
             Initiator initiator, String batchName, String newName);
     
     boolean editBatchCommands(
-            Initiator initiator, String batchName, List<ArgumentedCommand> newCommands);
+            Initiator initiator, String batchName, List<ExtendableCommand> newCommands);
     
     boolean editBatchOneCommand(
-            Initiator initiator, String batchName, int commandOrder, ArgumentedCommand newCommand);
+            Initiator initiator, String batchName, int commandOrder, ExtendableCommand newCommand);
     
     List<Batch> getAllBatches(
             Initiator initiator);

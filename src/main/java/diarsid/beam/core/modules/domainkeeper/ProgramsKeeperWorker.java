@@ -14,7 +14,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
 import diarsid.beam.core.domain.entities.Program;
 
@@ -52,14 +52,14 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     }
 
     @Override
-    public Optional<Program> findProgram(Initiator initiator, SingleStringCommand command) {
+    public Optional<Program> findProgram(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_PROGRAM) ) {
             return Optional.empty();
         }
         
         String name;
-        if ( command.hasArg() ) {
-            name = command.getArg();
+        if ( command.hasArguments()) {
+            name = command.getFirstArg();
         } else {
             name = "";
         }
@@ -69,7 +69,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             return Optional.empty();
         }
         
-        return this.getOneProgramByPattern(initiator, command.getArg());        
+        return this.getOneProgramByPattern(initiator, name);        
     }
 
     @Override

@@ -4,15 +4,15 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.domain.inputparsing;
+package diarsid.beam.core.domain.inputparsing.common;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.domain.inputparsing.ArgumentInterception.INTERCEPTED;
-import static diarsid.beam.core.domain.inputparsing.ArgumentInterception.NOT_INTERCEPTED;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentInterception.INTERCEPTED;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentInterception.NOT_INTERCEPTED;
 
 /**
  *

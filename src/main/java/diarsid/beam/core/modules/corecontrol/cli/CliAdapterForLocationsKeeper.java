@@ -8,19 +8,17 @@ package diarsid.beam.core.modules.corecontrol.cli;
 
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.OkReturnOperation;
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.toMessage;
-
-import diarsid.beam.core.base.control.flow.ReturnOperation;
-import diarsid.beam.core.base.control.flow.OkReturnOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 
 
 /**
@@ -37,7 +35,7 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
         this.locationsKeeper = locationsKeeper;
     }
     
-    void findLocationAndReport(Initiator initiator, SingleStringCommand command) {
+    void findLocationAndReport(Initiator initiator, ArgumentsCommand command) {
         ReturnOperation<Location> flow = this.locationsKeeper.findLocation(initiator, command);
         Function<OkReturnOperation, Message> ifSuccess = (success) -> {
             return toMessage((Location) success.getOrThrow());
@@ -45,17 +43,17 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
         super.reportReturnOperationFlow(initiator, flow, ifSuccess, "location not found");
     }
     
-    void editLocationAndReport(Initiator initiator, SingleStringCommand command) {
+    void editLocationAndReport(Initiator initiator, ArgumentsCommand command) {
         VoidOperation flow = this.locationsKeeper.editLocation(initiator, command);
         super.reportVoidOperationFlow(initiator, flow, "done!");
     }
     
-    void createLocationAndReport(Initiator initiator, MultiStringCommand command) {
+    void createLocationAndReport(Initiator initiator, ArgumentsCommand command) {
         VoidOperation flow = this.locationsKeeper.createLocation(initiator, command);
         super.reportVoidOperationFlow(initiator, flow, "created!");        
     }
     
-    void removeLocationAndReport(Initiator initiator, SingleStringCommand command) {
+    void removeLocationAndReport(Initiator initiator, ArgumentsCommand command) {
         VoidOperation flow = this.locationsKeeper.removeLocation(initiator, command);
         super.reportVoidOperationFlow(initiator, flow, "created!");  
     }

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -18,41 +18,41 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
  */
 public interface DaoCommands {
     
-    Optional<ArgumentedCommand> getByExactOriginalOfType(
+    Optional<ExtendableCommand> getByExactOriginalOfType(
             Initiator initiator, String original, CommandType type);
     
-    List<ArgumentedCommand> getByExactOriginalOfAnyType(
+    List<ExtendableCommand> getByExactOriginalOfAnyType(
             Initiator initiator, String original);
     
-    List<ArgumentedCommand> fullSearchByOriginalPattern(
+    List<ExtendableCommand> fullSearchByOriginalPattern(
             Initiator initiator, String pattern);
     
-    List<ArgumentedCommand> fullSearchByOriginalPatternParts(
+    List<ExtendableCommand> fullSearchByOriginalPatternParts(
             Initiator initiator, List<String> patternParts);
     
-    List<ArgumentedCommand> fullSearchByOriginalPatternOfType(
+    List<ExtendableCommand> fullSearchByOriginalPatternOfType(
             Initiator initiator, String pattern, CommandType type);
     
-    List<ArgumentedCommand> fullSearchByOriginalPatternPartsOfType(
+    List<ExtendableCommand> fullSearchByOriginalPatternPartsOfType(
             Initiator initiator, List<String> patternParts, CommandType type);
     
-    List<ArgumentedCommand> fullSearchByExtendedPattern(
+    List<ExtendableCommand> fullSearchByExtendedPattern(
             Initiator initiator, String pattern);
     
-    List<ArgumentedCommand> fullSearchByExtendedPatternParts(
+    List<ExtendableCommand> fullSearchByExtendedPatternParts(
             Initiator initiator, List<String> patternParts);
     
-    List<ArgumentedCommand> fullSearchByExtendedPatternOfType(
+    List<ExtendableCommand> fullSearchByExtendedPatternOfType(
             Initiator initiator, String pattern, CommandType type);
     
-    List<ArgumentedCommand> fullSearchByExtendedPatternPartsOfType(
+    List<ExtendableCommand> fullSearchByExtendedPatternPartsOfType(
             Initiator initiator, List<String> patternParts, CommandType type);
     
     boolean save(
-            Initiator initiator, ArgumentedCommand command);
+            Initiator initiator, ExtendableCommand command);
     
     boolean delete(
-            Initiator initiator, ArgumentedCommand command);
+            Initiator initiator, ExtendableCommand command);
     
     boolean deleteByExactOriginalOfAllTypes(
             Initiator initiator, String original);

@@ -20,7 +20,7 @@ import static java.util.stream.Collectors.toList;
  *
  * @author Diarsid
  */
-public class Arguments {    
+public class ExtendableArguments {    
     
     private static final String STRINGIFY_PATTERN;    
     private static final String ARGUMENT_STRINGIFY_SEPARATOR;    
@@ -31,13 +31,13 @@ public class Arguments {
     }
     
     
-    private Arguments() {
+    private ExtendableArguments() {
     }
     
         
-    public static Argument parseSingleFrom(String stringified) {
+    public static ExtendableArgument parseSingleFrom(String stringified) {
         singleArgumentOnly(stringified);
-        return new Argument(stringified.replace("{", "").replace("}", ""));
+        return new ExtendableArgument(stringified.replace("{", "").replace("}", ""));
     }
 
     private static void singleArgumentOnly(String stringified) 
@@ -47,21 +47,21 @@ public class Arguments {
         }
     }
     
-    public static Argument parseSingleFrom(String stringifiedOriginal, String stringifiedExtended) {
+    public static ExtendableArgument parseSingleFrom(String stringifiedOriginal, String stringifiedExtended) {
         singleArgumentOnly(stringifiedOriginal);
         singleArgumentOnly(stringifiedExtended);
-        return new Argument(
+        return new ExtendableArgument(
                 stringifiedOriginal.replace("{", "").replace("}", ""), 
                 stringifiedExtended.replace("{", "").replace("}", ""));
     }
     
-    public static String stringifyOriginalsOf(Argument... args) {
+    public static String stringifyOriginalsOf(ExtendableArgument... args) {
         return stream(args)
                 .map(arg -> arg.getOriginal())
                 .collect(joining(ARGUMENT_STRINGIFY_SEPARATOR));
     }
     
-    public static String stringifyExtendedsOf(Argument... args) {
+    public static String stringifyExtendedsOf(ExtendableArgument... args) {
         return stream(args)
                 .map(arg -> arg.getExtended())
                 .collect(joining(ARGUMENT_STRINGIFY_SEPARATOR));
@@ -71,20 +71,20 @@ public class Arguments {
         return perhapsJoinedArgs.contains(ARGUMENT_STRINGIFY_SEPARATOR);
     }
     
-    public static List<Argument> parseMultipleFrom(String joinedArgs) {
+    public static List<ExtendableArgument> parseMultipleFrom(String joinedArgs) {
         return stream(joinedArgs.split(";"))
                 .map(stringified -> parseSingleFrom(stringified))
                 .collect(toList());
     }
     
-    public static List<Argument> parseMultipleFrom(
+    public static List<ExtendableArgument> parseMultipleFrom(
             String joinedOriginalArgs, String joinedExtendedArgs) {
         String[] originals = joinedOriginalArgs.split(ARGUMENT_STRINGIFY_SEPARATOR);
         String[] extendeds = joinedExtendedArgs.split(ARGUMENT_STRINGIFY_SEPARATOR);
         if ( originals.length != extendeds.length ) {
             throw new ArgumentsParsingException();
         }
-        List<Argument> args = new ArrayList<>();
+        List<ExtendableArgument> args = new ArrayList<>();
         for (int i = 0; i < originals.length; i++) {
             args.add(parseSingleFrom(originals[i], extendeds[i]));
         }

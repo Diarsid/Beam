@@ -10,7 +10,7 @@ package diarsid.beam.core.base.control.io.commands;
  *
  * @author Diarsid
  */
-public interface ArgumentedCommand extends Command {
+public interface ExtendableCommand extends Command {
     
     String stringifyOriginal();
     

@@ -14,7 +14,6 @@ import java.util.function.Function;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchedCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
@@ -43,15 +42,17 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.nonNullNonEmpty;
 import static diarsid.jdbc.transactions.core.Params.params;
 
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+
 
 class H2DaoBatches 
         extends BeamCommonDao 
         implements DaoBatches {
     
     private final PerRowConversion<String> rowToBatchNameConversion;
-    private final PerRowConversion<ArgumentedCommand> rowToCommandConversion;
+    private final PerRowConversion<ExtendableCommand> rowToCommandConversion;
     private final Function<BatchedCommand, Params> batchedCommandToParams;
-    private final Function<Map.Entry<String, List<ArgumentedCommand>>, Batch> entryToBatch;
+    private final Function<Map.Entry<String, List<ExtendableCommand>>, Batch> entryToBatch;
     
     H2DaoBatches(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
@@ -151,10 +152,9 @@ class H2DaoBatches
                             "WHERE bat_name IS ? ",
                             name);
             
-            List<ArgumentedCommand> commands = transact
+            List<ExtendableCommand> commands = transact
                     .ifTrue( batchExists )
-                    .doQueryAndStreamVarargParams(
-                            ArgumentedCommand.class,
+                    .doQueryAndStreamVarargParams(ExtendableCommand.class,
                             "SELECT bat_command_type, " +
                             "       bat_command_original, " +
                             "       bat_command_extended " +
@@ -290,7 +290,7 @@ class H2DaoBatches
 
     @Override
     public boolean editBatchCommands(
-            Initiator initiator, String batchName, List<ArgumentedCommand> newCommands) {
+            Initiator initiator, String batchName, List<ExtendableCommand> newCommands) {
         try (JdbcTransaction transact = super.getTransaction()) {
             
             if ( newCommands.isEmpty() ) {
@@ -341,7 +341,7 @@ class H2DaoBatches
 
     @Override
     public boolean editBatchOneCommand(
-            Initiator initiator, String batchName, int commandOrder, ArgumentedCommand newCommand) {
+            Initiator initiator, String batchName, int commandOrder, ExtendableCommand newCommand) {
         try (JdbcTransaction transact = super.getTransaction()) {
             int modified = transact
                     .doUpdateVarargParams(
@@ -371,7 +371,7 @@ class H2DaoBatches
     @Override
     public List<Batch> getAllBatches(Initiator initiator) {
         try {
-            Map<String, List<ArgumentedCommand>> collectedBatches = new HashMap<>();
+            Map<String, List<ExtendableCommand>> collectedBatches = new HashMap<>();
             
             super.getDisposableTransaction()
                     .doQuery(

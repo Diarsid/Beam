@@ -8,7 +8,7 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -17,10 +17,10 @@ import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 public class BatchedCommand {
     
     private final Batch enclosingBatch;
-    private final ArgumentedCommand command;
+    private final ExtendableCommand command;
     private final int orderInBatch;
     
-    public BatchedCommand(Batch batch, int orderInBatch, ArgumentedCommand command) {
+    public BatchedCommand(Batch batch, int orderInBatch, ExtendableCommand command) {
         this.enclosingBatch = batch;
         this.command = command;
         this.orderInBatch = orderInBatch;
@@ -34,7 +34,7 @@ public class BatchedCommand {
         return this.enclosingBatch;
     }
 
-    public ArgumentedCommand command() {
+    public ExtendableCommand command() {
         return this.command;
     }
 

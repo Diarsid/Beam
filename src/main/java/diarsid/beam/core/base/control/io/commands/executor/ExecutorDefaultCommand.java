@@ -7,12 +7,12 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.SingleArgumentCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 
 
-public class ExecutorDefaultCommand extends SingleArgumentCommand {
+public class ExecutorDefaultCommand extends ExtendableCommonCommand {
 
     public ExecutorDefaultCommand(String argument) {
         super(argument);

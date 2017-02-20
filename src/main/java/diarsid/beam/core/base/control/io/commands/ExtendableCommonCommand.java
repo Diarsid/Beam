@@ -9,16 +9,16 @@ package diarsid.beam.core.base.control.io.commands;
 import java.util.Objects;
 
 
-public abstract class SingleArgumentCommand implements ArgumentedCommand {
+public abstract class ExtendableCommonCommand implements ExtendableCommand {
     
-    private final Argument argument;
+    private final ExtendableArgument argument;
     
-    public SingleArgumentCommand(String argument) {
-        this.argument = new Argument(argument);
+    public ExtendableCommonCommand(String argument) {
+        this.argument = new ExtendableArgument(argument);
     }
     
-    public SingleArgumentCommand(String argument, String extendedArgument) {
-        this.argument = new Argument(argument, extendedArgument);
+    public ExtendableCommonCommand(String argument, String extendedArgument) {
+        this.argument = new ExtendableArgument(argument, extendedArgument);
     }
 
     @Override
@@ -31,7 +31,7 @@ public abstract class SingleArgumentCommand implements ArgumentedCommand {
         return this.argument.getExtended();
     }
     
-    public final Argument argument() {
+    public final ExtendableArgument argument() {
         return this.argument;
     }
 
@@ -53,7 +53,7 @@ public abstract class SingleArgumentCommand implements ArgumentedCommand {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final SingleArgumentCommand other = ( SingleArgumentCommand ) obj;
+        final ExtendableCommonCommand other = ( ExtendableCommonCommand ) obj;
         if ( !Objects.equals(this.argument, other.argument) ) {
             return false;
         }

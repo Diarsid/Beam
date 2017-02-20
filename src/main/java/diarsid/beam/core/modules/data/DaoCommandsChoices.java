@@ -7,8 +7,8 @@ package diarsid.beam.core.modules.data;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -18,11 +18,11 @@ public interface DaoCommandsChoices {
     
     Optional<CommandType> getChoiceFor(String pattern);
     
-    boolean saveChoice(ArgumentedCommand command);
+    boolean saveChoice(ExtendableCommand command);
     
     boolean saveChoice(CommandType type, String pattern);
     
-    boolean deleteChoice(ArgumentedCommand command);
+    boolean deleteChoice(ExtendableCommand command);
     
     boolean deleteChoice(CommandType type, String pattern);
 }

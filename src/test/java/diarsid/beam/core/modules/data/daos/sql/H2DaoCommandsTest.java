@@ -21,7 +21,6 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DataBaseVerifier;
@@ -42,6 +41,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
+
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -116,7 +117,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testGetByExactOriginalOfType() {
-        Optional<ArgumentedCommand> optCom = dao.getByExactOriginalOfType(initiator, "NEtb", RUN_PROGRAM);
+        Optional<ExtendableCommand> optCom = dao.getByExactOriginalOfType(initiator, "NEtb", RUN_PROGRAM);
         assertTrue(optCom.isPresent());
         assertTrue(optCom.get().type().equals(RUN_PROGRAM));
         assertEquals("dev/NetBeans_8.2", optCom.get().stringifyExtended());
@@ -127,7 +128,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testGetByExactOriginalOfAnyType() {
-        List<ArgumentedCommand> commands = dao.getByExactOriginalOfAnyType(initiator, "neTb");
+        List<ExtendableCommand> commands = dao.getByExactOriginalOfAnyType(initiator, "neTb");
         assertEquals(2, commands.size());
     }
 
@@ -136,7 +137,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByOriginalPattern() {
-        List<ArgumentedCommand> commands = dao.fullSearchByOriginalPattern(initiator, "netb");
+        List<ExtendableCommand> commands = dao.fullSearchByOriginalPattern(initiator, "netb");
         assertEquals(7, commands.size());
     }
 
@@ -145,7 +146,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByOriginalPatternParts() {
-        List<ArgumentedCommand> commands = dao
+        List<ExtendableCommand> commands = dao
                 .fullSearchByOriginalPatternParts(initiator, splitByWildcard("net-pro"));
         assertEquals(5, commands.size());
     }
@@ -155,7 +156,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByOriginalPatternOfType() {
-        List<ArgumentedCommand> commands = dao
+        List<ExtendableCommand> commands = dao
                 .fullSearchByOriginalPatternOfType(initiator, "netb", OPEN_LOCATION);
         assertEquals(3, commands.size());
     }
@@ -165,7 +166,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByOriginalPatternPartsOfType() {
-        List<ArgumentedCommand> commands = dao
+        List<ExtendableCommand> commands = dao
                 .fullSearchByOriginalPatternPartsOfType(initiator, splitByWildcard("net-pro"), OPEN_LOCATION);
         assertEquals(2, commands.size());
     }
@@ -175,10 +176,10 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByExtendedPattern() {
-        List<ArgumentedCommand> commands = dao.fullSearchByExtendedPattern(initiator, "tomca");
+        List<ExtendableCommand> commands = dao.fullSearchByExtendedPattern(initiator, "tomca");
         assertEquals(1, commands.size());
         
-        List<ArgumentedCommand> commands1 = dao.fullSearchByExtendedPattern(initiator, "mysq");
+        List<ExtendableCommand> commands1 = dao.fullSearchByExtendedPattern(initiator, "mysq");
         assertEquals(2, commands1.size());
     }
 
@@ -187,7 +188,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByExtendedPatternParts() {
-        List<ArgumentedCommand> commands = dao
+        List<ExtendableCommand> commands = dao
                 .fullSearchByExtendedPatternParts(initiator, splitByWildcard("se-api"));
         assertEquals(3, commands.size());
     }
@@ -197,7 +198,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByExtendedPatternOfType() {
-        List<ArgumentedCommand> commands = dao
+        List<ExtendableCommand> commands = dao
                 .fullSearchByExtendedPatternOfType(initiator, "mysq", RUN_PROGRAM);
         assertEquals(1, commands.size());
     }
@@ -207,7 +208,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByExtendedPatternPartsOfType() {
-        List<ArgumentedCommand> commands = dao
+        List<ExtendableCommand> commands = dao
                 .fullSearchByExtendedPatternPartsOfType(initiator, splitByWildcard("netbeans-proj"), OPEN_LOCATION);
         assertEquals(3, commands.size());
     }

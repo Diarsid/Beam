@@ -8,26 +8,27 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.commands.Argument;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableArgument;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
-public class SeePageCommand implements ArgumentedCommand {
+
+public class SeePageCommand implements ExtendableCommand {
     
-    private final Argument pageArgument;
+    private final ExtendableArgument pageArgument;
     
     public SeePageCommand(String pageName) {
-        this.pageArgument = new Argument(pageName);
+        this.pageArgument = new ExtendableArgument(pageName);
     }
     
     public SeePageCommand(String pageName, String extendedPageName) {
-        this.pageArgument = new Argument(pageName, extendedPageName);
+        this.pageArgument = new ExtendableArgument(pageName, extendedPageName);
     }
     
-    public Argument page() {
+    public ExtendableArgument page() {
         return this.pageArgument;
     }
 

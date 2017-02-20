@@ -14,18 +14,18 @@ import diarsid.beam.core.base.control.io.commands.exceptions.EmptyArgumentExcept
  *
  * @author Diarsid
  */
-public class Argument {
+public class ExtendableArgument {
     
     private final String originalArgument;
     private String extendedArgument;
     
-    public Argument(String originalArgument) {
+    public ExtendableArgument(String originalArgument) {
         this.onlyNonEmptyArgument(originalArgument);
         this.originalArgument = originalArgument;
         this.extendedArgument = "";
     }
     
-    public Argument(String originalArgument, String improvedArgument) {
+    public ExtendableArgument(String originalArgument, String improvedArgument) {
         this.onlyNonEmptyArgument(originalArgument);
         this.originalArgument = originalArgument;
         this.onlyNonEmptyArgument(improvedArgument);
@@ -85,7 +85,7 @@ public class Argument {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final Argument other = ( Argument ) obj;
+        final ExtendableArgument other = ( ExtendableArgument ) obj;
         if ( !Objects.equals(this.originalArgument, other.originalArgument) ) {
             return false;
         }

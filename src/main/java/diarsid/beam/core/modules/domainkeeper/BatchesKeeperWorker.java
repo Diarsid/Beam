@@ -10,20 +10,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ReturnOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
+import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.flow.Operations.ok;
+import static diarsid.beam.core.base.control.flow.Operations.okWith;
 import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.returnOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
@@ -41,14 +47,6 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY_UNDEFINED;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
-
-import diarsid.beam.core.base.control.flow.ReturnOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.ok;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
 
 
 class BatchesKeeperWorker implements BatchesKeeper {
@@ -57,16 +55,19 @@ class BatchesKeeperWorker implements BatchesKeeper {
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final Interpreter interpreter;
+    private final PropertyAndTextParser propertyAndTextParser;
     
     BatchesKeeperWorker(
             DaoBatches daoBatches, 
             InnerIoEngine ioEngine,
             KeeperDialogHelper helper,
-            Interpreter interpreter) {
+            Interpreter interpreter,
+            PropertyAndTextParser propertyAndTextParser) {
         this.dao = daoBatches;
         this.ioEngine = ioEngine;
         this.helper = helper;
         this.interpreter = interpreter;
+        this.propertyAndTextParser = propertyAndTextParser;
     }
 
     @Override
@@ -102,14 +103,14 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public ReturnOperation<Batch> findBatch(Initiator initiator, SingleStringCommand command) {
+    public ReturnOperation<Batch> findBatch(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_BATCH) ) {
             return returnOperationFail("wrong command type!");
         }
         
         String name;
-        if ( command.hasArg() ) {
-            name = command.getArg();
+        if ( command.hasArguments()) {
+            name = command.getFirstArg();
         } else {
             name = "";
             name = this.helper.validateEntityNameInteractively(initiator, name);
@@ -119,7 +120,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             return returnOperationStopped();
         }
         
-        return okWith(this.getBatchByNamePattern(initiator, command.getArg()));
+        return okWith(this.getBatchByNamePattern(initiator, name));
     }
 
     @Override
@@ -128,14 +129,14 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public VoidOperation createBatch(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation createBatch(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_BATCH) ) {
             return voidOperationFail("wrong command type!");
         }
         
         String name;
-        if ( command.hasArg() ) {
-            name = command.getArg();
+        if ( command.hasArguments()) {
+            name = command.getFirstArg();
         } else {
             name = "";
         }  
@@ -166,7 +167,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             return voidOperationStopped();
         }
         
-        List<ArgumentedCommand> batchCommands = this.inputNewCommands(initiator);        
+        List<ExtendableCommand> batchCommands = this.inputNewCommands(initiator);        
         if ( batchCommands.isEmpty() ) {
             return voidOperationStopped();
         }
@@ -179,11 +180,11 @@ class BatchesKeeperWorker implements BatchesKeeper {
         }
     }
 
-    private List<ArgumentedCommand> inputNewCommands(Initiator initiator) {
-        List<ArgumentedCommand> batchCommands = new ArrayList<>();
+    private List<ExtendableCommand> inputNewCommands(Initiator initiator) {
+        List<ExtendableCommand> batchCommands = new ArrayList<>();
         String input;
         Command interpretedCommand;
-        Optional<ArgumentedCommand> possibleCommand;
+        Optional<ExtendableCommand> possibleCommand;
         boolean work = true;
         while ( work ) {
             input = this.ioEngine.askInput(
@@ -201,7 +202,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         return batchCommands;
     }
     
-    private Optional<ArgumentedCommand> checkInterpreted(
+    private Optional<ExtendableCommand> checkInterpreted(
             Initiator initiator, Command batchCommand) {        
         switch ( batchCommand.type() ) {
             case BATCH_PAUSE : 
@@ -209,7 +210,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             case OPEN_PATH : 
             case OPEN_LOCATION :
             case RUN_PROGRAM : {
-                ArgumentedCommand argumented = (ArgumentedCommand) batchCommand;
+                ExtendableCommand argumented = (ExtendableCommand) batchCommand;
                 this.ioEngine.report(initiator, "...accepted.");
                 return Optional.of(argumented);
             }
@@ -225,20 +226,17 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public VoidOperation editBatch(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation editBatch(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(EDIT_BATCH) ) {
             return voidOperationFail("wrong command type!");
         }
         
         String name;
         EntityProperty property;
-        if ( command.hasArg() ) {
-            property = argToProperty(command.getArg());
-            if ( property.isDefined() ) {
-                name = "";
-            } else {
-                name = command.getArg();
-            }
+        if ( command.hasArguments()) {
+            PropertyAndText propAndText = this.propertyAndTextParser.parse(command.arguments());
+            name = propAndText.text();
+            property = propAndText.property();
         } else {
             name = "";
             property = PROPERTY_UNDEFINED;
@@ -319,7 +317,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                 .withAnswerStrings(batch.stringifyCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
-            Optional<ArgumentedCommand> newCommand = Optional.empty();
+            Optional<ExtendableCommand> newCommand = Optional.empty();
             Command interpertedCommand;
             String newCommandString;
             boolean newCommandIsNotValid = true;
@@ -349,7 +347,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
     
     private VoidOperation editBatchAllCommands(Initiator initiator, Batch batch) {
-        List<ArgumentedCommand> newCommands = this.inputNewCommands(initiator);
+        List<ExtendableCommand> newCommands = this.inputNewCommands(initiator);
         if ( newCommands.isEmpty() ) {
             return voidOperationStopped();
         }
@@ -362,14 +360,14 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public VoidOperation removeBatch(Initiator initiator, SingleStringCommand command) {
+    public VoidOperation removeBatch(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(DELETE_BATCH) ) {
             return voidOperationFail("wrong command type!");
         }
         
         String name;
-        if ( command.hasArg() ) {
-            name = command.getArg();
+        if ( command.hasArguments()) {
+            name = command.getFirstArg();
         } else {
             name = "";
         }

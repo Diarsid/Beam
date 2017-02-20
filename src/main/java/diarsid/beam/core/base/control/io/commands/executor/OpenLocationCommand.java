@@ -7,12 +7,12 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.SingleArgumentCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 
 
-public class OpenLocationCommand extends SingleArgumentCommand {
+public class OpenLocationCommand extends ExtendableCommonCommand {
         
     public OpenLocationCommand(String originalLocation) {
         super(originalLocation);

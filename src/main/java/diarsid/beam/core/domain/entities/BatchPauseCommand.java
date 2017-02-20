@@ -8,7 +8,6 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 
 import static java.lang.Integer.parseInt;
@@ -19,11 +18,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+
 /**
  *
  * @author Diarsid
  */
-public class BatchPauseCommand implements ArgumentedCommand {
+public class BatchPauseCommand implements ExtendableCommand {
     
     private static final BatchPauseCommand NO_PAUSE;
     static {

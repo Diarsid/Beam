@@ -8,11 +8,11 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
-import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.domain.entities.Batch;
 
 /**
  *
@@ -27,15 +27,15 @@ public interface BatchesKeeper {
             Initiator initiator);
     
     ReturnOperation<Batch> findBatch(
-            Initiator initiator, SingleStringCommand command);
+            Initiator initiator, ArgumentsCommand command);
     
     VoidOperation createBatch(
-            Initiator initiator, SingleStringCommand command);
+            Initiator initiator, ArgumentsCommand command);
     
     VoidOperation editBatch(
-            Initiator initiator, SingleStringCommand command);
+            Initiator initiator, ArgumentsCommand command);
     
     VoidOperation removeBatch(
-            Initiator initiator, SingleStringCommand command);
+            Initiator initiator, ArgumentsCommand command);
     
 }

@@ -7,12 +7,12 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.SingleArgumentCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 
 
-public class RunProgramCommand extends SingleArgumentCommand {
+public class RunProgramCommand extends ExtendableCommonCommand {
         
     public RunProgramCommand(String program) {
         super(program);

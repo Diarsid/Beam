@@ -28,14 +28,14 @@ public class Commands {
     private Commands() {
     }
     
-    public static ArgumentedCommand restoreArgumentedCommandFrom(
+    public static ExtendableCommand restoreArgumentedCommandFrom(
             String operationType, 
             String originalArgs, 
             String extendedArgs) {
         return defineCommand(operationType, originalArgs, extendedArgs);
     }
 
-    private static ArgumentedCommand defineCommand(
+    private static ExtendableCommand defineCommand(
             String operationType, 
             String originalArgs, 
             String extendedArgs) {

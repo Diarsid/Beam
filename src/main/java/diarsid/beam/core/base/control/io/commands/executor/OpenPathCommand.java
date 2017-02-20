@@ -8,39 +8,40 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.commands.Argument;
-import diarsid.beam.core.base.control.io.commands.ArgumentedCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableArgument;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
 
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
-public class OpenPathCommand implements ArgumentedCommand {
+
+public class OpenPathCommand implements ExtendableCommand {
     
-    private final Argument locationArgument;
-    private final Argument targetArgument;
+    private final ExtendableArgument locationArgument;
+    private final ExtendableArgument targetArgument;
     
     public OpenPathCommand(String originalPath) {
-        this.locationArgument = new Argument(extractLocationFromPath(originalPath));
-        this.targetArgument = new Argument(extractTargetFromPath(originalPath));
+        this.locationArgument = new ExtendableArgument(extractLocationFromPath(originalPath));
+        this.targetArgument = new ExtendableArgument(extractTargetFromPath(originalPath));
     }
     
     public OpenPathCommand(String originalPath, String extendedPath) {
-        this.locationArgument = new Argument(
+        this.locationArgument = new ExtendableArgument(
                 extractLocationFromPath(originalPath), 
                 extractTargetFromPath(originalPath));
-        this.targetArgument = new Argument(
+        this.targetArgument = new ExtendableArgument(
                 extractLocationFromPath(extendedPath), 
                 extractTargetFromPath(extendedPath));
     }
 
-    public Argument location() {
+    public ExtendableArgument location() {
         return this.locationArgument;
     }
 
-    public Argument target() {
+    public ExtendableArgument target() {
         return this.targetArgument;
     }
 

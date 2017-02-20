@@ -7,9 +7,8 @@
 package diarsid.beam.core.modules.corecontrol.cli;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.MultiStringCommand;
-import diarsid.beam.core.base.control.io.commands.SingleStringCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
@@ -85,22 +84,20 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getLocationsAdapter()
                         .removeLocationAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             }                
             case CREATE_LOCATION: {
                 this.domainModuleAdapter
                         .getLocationsAdapter()
-                        .createLocationAndReport(
-                                initiator, 
-                                (MultiStringCommand) command);
+                        .createLocationAndReport(initiator, 
+                                (ArgumentsCommand) command);
                 break;
             } case EDIT_LOCATION: {
                 this.domainModuleAdapter
                         .getLocationsAdapter()
-                        .editLocationAndReport(
-                                initiator, 
-                                (SingleStringCommand) command);
+                        .editLocationAndReport(initiator, 
+                                (ArgumentsCommand) command);
                 break;
             }                
             case DELETE_TASK : {
@@ -108,15 +105,14 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getTasksAdapter()
                         .removeTaskAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             }                
             case CREATE_TASK : {
                 this.domainModuleAdapter
                         .getTasksAdapter()
-                        .createTaskAndReport(
-                                initiator, 
-                                (MultiStringCommand) command);
+                        .createTaskAndReport(initiator, 
+                                (ArgumentsCommand) command);
                 break;
             }                
             case EDIT_TASK : {
@@ -124,7 +120,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getTasksAdapter()
                         .editTaskAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             }                
             case DELETE_BATCH:
@@ -132,21 +128,21 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getBatchesAdapter()
                         .removeBatchAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             case CREATE_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
                         .createBatchAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             case EDIT_BATCH:
                 this.domainModuleAdapter
                         .getBatchesAdapter()
                         .editBatchAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             case LIST_LOCATION:
                 break;
@@ -157,7 +153,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getLocationsAdapter()
                         .findLocationAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             }
             case FIND_PROGRAM : {
@@ -165,14 +161,14 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getProgramsAdapter()
                         .findProgramAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
             }
             case FIND_TASK : {
                 this.domainModuleAdapter
                         .getTasksAdapter()
                         .findTasksAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             }                
             case FIND_PAGE:
@@ -186,7 +182,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                         .getBatchesAdapter()
                         .findBatchAndReport(
                                 initiator, 
-                                (SingleStringCommand) command);
+                                (ArgumentsCommand) command);
                 break;
             case EXIT : {
                 this.ioModule.unregisterIoEngine(initiator);

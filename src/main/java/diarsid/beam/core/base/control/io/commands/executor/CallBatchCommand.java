@@ -7,12 +7,12 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.SingleArgumentCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 
 
-public class CallBatchCommand extends SingleArgumentCommand {
+public class CallBatchCommand extends ExtendableCommonCommand {
         
     public CallBatchCommand(String batchName) {
         super(batchName);

@@ -16,15 +16,14 @@ import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StartProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StopProgramCommand;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.ArgumentsRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.InputCorrectnessRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.MultiArgumentsOperationRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.MultipleArgsRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.OneArgRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PauseRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PrefixRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.RelativePathRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.SimpleWordRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.SingleArgumentOperationRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.WordRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.WordsRecognizer;
 
@@ -55,8 +54,6 @@ import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.L
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.lowerThan;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.SingleArgumentOperationRecognizer.ArgumentsMode.JOIN_ALL_REMAINING_ARGS;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.SingleArgumentOperationRecognizer.ArgumentsMode.USE_FIRST_REMAINING_ARG;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
 
 /**
@@ -86,7 +83,8 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return new InputCorrectnessRecognizer().branchesTo(new OneArgRecognizer().priority(HIGH).branchesTo(
+        return new InputCorrectnessRecognizer().branchesTo(
+                new OneArgRecognizer().priority(HIGH).branchesTo(
                         new PrefixRecognizer(
                                 "/", 
                                 "l/").branchesTo(
@@ -178,27 +176,31 @@ public class Interpreter {
                                 "change", 
                                 "alter").branchesTo(new WordsRecognizer(
                                                 "loc", 
-                                                "location").pointsTo(new MultiArgumentsOperationRecognizer(EDIT_LOCATION)),
+                                                "location").pointsTo(
+                                                        new ArgumentsRecognizer(EDIT_LOCATION)),
                                         new WordRecognizer(
-                                                "task").pointsTo(new MultiArgumentsOperationRecognizer(EDIT_TASK)),
+                                                "task").pointsTo(
+                                                        new ArgumentsRecognizer(EDIT_TASK)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(new WordsRecognizer(
+                                                "web").branchesTo(
+                                                        new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").priority(HIGH).pointsTo(new MultiArgumentsOperationRecognizer(EDIT_PAGE_DIR)),
-                                                        new MultiArgumentsOperationRecognizer(EDIT_PAGE)                                        
+                                                                "directory").priority(HIGH).pointsTo(new ArgumentsRecognizer(EDIT_PAGE_DIR)),
+                                                        new ArgumentsRecognizer(EDIT_PAGE)                                        
                                         ),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(new MultiArgumentsOperationRecognizer(EDIT_PAGE_DIR)),
+                                                "directory").pointsTo(new ArgumentsRecognizer(EDIT_PAGE_DIR)),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(new SingleArgumentOperationRecognizer(EDIT_BATCH, USE_FIRST_REMAINING_ARG))
+                                                "exe").pointsTo(
+                                                        new ArgumentsRecognizer(EDIT_BATCH))
                         ),
                         new WordsRecognizer(
                                 "+", 
@@ -206,13 +208,13 @@ public class Interpreter {
                                 "new", 
                                 "create").branchesTo(new WordsRecognizer(
                                                 "loc", 
-                                                "location").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_LOCATION)),
+                                                "location").pointsTo(new ArgumentsRecognizer(CREATE_LOCATION)),
                                         new WordRecognizer(
-                                                "task").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_TASK)),
+                                                "task").pointsTo(new ArgumentsRecognizer(CREATE_TASK)),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_PAGE_DIR)),
+                                                "directory").pointsTo(new ArgumentsRecognizer(CREATE_PAGE_DIR)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
@@ -220,58 +222,49 @@ public class Interpreter {
                                                 "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").pointsTo(new MultiArgumentsOperationRecognizer(CREATE_PAGE_DIR)), 
-                                                        new MultiArgumentsOperationRecognizer(CREATE_PAGE).priority(lowerThan(LOWEST))
+                                                                "directory").pointsTo(new ArgumentsRecognizer(CREATE_PAGE_DIR)), 
+                                                        new ArgumentsRecognizer(CREATE_PAGE).priority(lowerThan(LOWEST))
                                         ),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
                                                 "exe").pointsTo(
-                                                        new SingleArgumentOperationRecognizer(CREATE_BATCH, USE_FIRST_REMAINING_ARG))
+                                                        new ArgumentsRecognizer(CREATE_BATCH))
                         ),
                         new WordsRecognizer(
                                 "-", 
                                 "del", 
                                 "delete", 
-                                "remove").branchesTo(new WordsRecognizer(
+                                "remove").branchesTo(
+                                        new WordsRecognizer(
                                                 "loc", 
                                                 "location").pointsTo(
-                                                        new SingleArgumentOperationRecognizer(
-                                                                DELETE_LOCATION, 
-                                                                USE_FIRST_REMAINING_ARG)),
+                                                        new ArgumentsRecognizer(DELETE_LOCATION)),
                                         new WordRecognizer(
                                                 "task").pointsTo(
-                                                        new SingleArgumentOperationRecognizer(
-                                                                DELETE_TASK, 
-                                                                JOIN_ALL_REMAINING_ARGS)),
+                                                        new ArgumentsRecognizer(DELETE_TASK)),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
                                                 "directory").pointsTo(
-                                                        new SingleArgumentOperationRecognizer(
-                                                                DELETE_PAGE_DIR, 
-                                                                USE_FIRST_REMAINING_ARG)),
+                                                        new ArgumentsRecognizer(DELETE_PAGE_DIR)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(new WordsRecognizer(
+                                                "web").branchesTo(
+                                                        new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
                                                                 "directory").pointsTo(
-                                                                        new SingleArgumentOperationRecognizer(
-                                                                                DELETE_PAGE_DIR, 
-                                                                                USE_FIRST_REMAINING_ARG)),
-                                                        new SingleArgumentOperationRecognizer(
-                                                                DELETE_PAGE, 
-                                                                USE_FIRST_REMAINING_ARG)
+                                                                        new ArgumentsRecognizer(DELETE_PAGE_DIR)),
+                                                        new ArgumentsRecognizer(DELETE_PAGE)
                                         ),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(new SingleArgumentOperationRecognizer(
-                                                                DELETE_BATCH, 
-                                                                USE_FIRST_REMAINING_ARG))
+                                                "exe").pointsTo(
+                                                        new ArgumentsRecognizer(DELETE_BATCH))
                         ),
                         new WordsRecognizer(
                                 "?", 
@@ -305,18 +298,18 @@ public class Interpreter {
                         new WordRecognizer(
                                 "list").branchesTo(
                                         new SimpleWordRecognizer().pointsTo(
-                                                new SingleArgumentOperationRecognizer(LIST_LOCATION, USE_FIRST_REMAINING_ARG)), 
+                                                new ArgumentsRecognizer(LIST_LOCATION)), 
                                         new RelativePathRecognizer().pointsTo(
-                                                new SingleArgumentOperationRecognizer(LIST_PATH, USE_FIRST_REMAINING_ARG))
+                                                new ArgumentsRecognizer(LIST_PATH))
                         ),
                         new WordsRecognizer(
                                 "n", 
                                 "note", 
                                 "notes").priority(LOW).branchesTo(
                                         new RelativePathRecognizer().pointsTo(
-                                                new SingleArgumentOperationRecognizer(OPEN_PATH_IN_NOTE, USE_FIRST_REMAINING_ARG)), 
+                                                new ArgumentsRecognizer(OPEN_PATH_IN_NOTE)), 
                                         new SimpleWordRecognizer().pointsTo(
-                                                new SingleArgumentOperationRecognizer(OPEN_TARGET_IN_NOTE, USE_FIRST_REMAINING_ARG))
+                                                new ArgumentsRecognizer(OPEN_TARGET_IN_NOTE))
                         )
                 )
         );

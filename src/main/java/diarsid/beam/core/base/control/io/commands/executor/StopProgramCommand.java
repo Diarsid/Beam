@@ -7,7 +7,7 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.SingleArgumentCommand;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.STOP_PROGRAM;
 
@@ -15,7 +15,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.STOP_PROGRA
  *
  * @author Diarsid
  */
-public class StopProgramCommand extends SingleArgumentCommand {
+public class StopProgramCommand extends ExtendableCommonCommand {
     
     public StopProgramCommand(String program) {
         super(program);
