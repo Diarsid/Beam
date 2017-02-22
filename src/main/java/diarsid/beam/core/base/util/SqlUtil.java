@@ -75,9 +75,9 @@ public class SqlUtil {
                 .collect(toList());
     }
     
-    public static String multipleEnumValues(Enum... enumValues) {
-        return stream(enumValues)
-                .map(enumValue -> enumValue.name())
+    public static String multipleValues(int size) {
+        return generate(() -> " ? ")
+                .limit(size)
                 .collect(joining(", ", " ( ", " ) "));
     }
     

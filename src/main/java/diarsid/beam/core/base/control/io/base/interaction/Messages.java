@@ -45,7 +45,7 @@ public class Messages {
         List<String> lines = new ArrayList<>();
         tasks.stream().forEach(task -> {
             lines.add(task.stringifyTime());
-            lines.addAll(task.getText());
+            lines.addAll(task.text());
             lines.add(" ");
         });
         return new TextMessage(INFO, lines);

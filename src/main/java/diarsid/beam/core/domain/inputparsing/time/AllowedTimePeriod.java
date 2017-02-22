@@ -11,6 +11,8 @@ import java.util.Set;
 
 import static java.util.Arrays.stream;
 
+import static diarsid.beam.core.domain.entities.Tasks.stringifyTimePeriods;
+
 /**
  *
  * @author Diarsid
@@ -27,6 +29,14 @@ public class AllowedTimePeriod {
     
     public static AllowedTimePeriod emptyTime() {
         return new AllowedTimePeriod();
+    }
+    
+    public String stringifyDays() {
+        return stringifyTimePeriods(this.days);
+    }
+    
+    public String stringifyHours() {
+        return stringifyTimePeriods(this.hours);
     }
     
     public Set<Integer> hours() {

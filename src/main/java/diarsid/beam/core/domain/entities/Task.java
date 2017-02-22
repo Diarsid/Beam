@@ -60,7 +60,15 @@ public abstract class Task
             displayText = displayText + "...";
         }         
         return new Variant(String.valueOf(this.id), displayText, variantIndex);
-    }    
+    }
+
+    public String days() {
+        return "";
+    }
+    
+    public String hours() {
+        return "";
+    }
     
     public abstract void switchTime();
     
@@ -88,19 +96,19 @@ public abstract class Task
         return this.time.format(TIME_PRINT_FORMAT);
     }
 
-    public final int getId() {
+    public final int id() {
         return this.id;
     }
 
-    public final LocalDateTime getTime() {
+    public final LocalDateTime time() {
         return this.time;
     }
     
-    public List<String> getText() {
+    public List<String> text() {
         return this.text;
     }
 
-    public final boolean getStatus() {
+    public final boolean status() {
         return this.activeStatus;
     }
     

@@ -36,13 +36,13 @@ class TaskEvent extends Task {
             case MONTHLY_REPEAT : {
                 // if task is monthly, its time should be reseted to
                 // + 1 month from its current time and stored in DB.
-                super.setTime(super.getTime().plusMonths(1));
+                super.setTime(super.time().plusMonths(1));
                 break typeSwitch;
             }
             case YEARLY_REPEAT : {
                 // if task is yearly, its time should be reseted to
                 // + 1 year from its current time and stored in DB.
-                super.setTime(super.getTime().plusYears(1));
+                super.setTime(super.time().plusYears(1));
                 break typeSwitch;
             }
             default: {

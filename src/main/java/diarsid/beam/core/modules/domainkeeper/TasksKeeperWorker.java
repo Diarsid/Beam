@@ -303,7 +303,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             }
         }
         
-        if ( this.dao.deleteTaskById(initiator, taskToRemove.getId()) ) {
+        if ( this.dao.deleteTaskById(initiator, taskToRemove.id()) ) {
             fireAsync("tasks_updated");
             return ok();
         } else {
@@ -371,7 +371,7 @@ public class TasksKeeperWorker implements TasksKeeper {
                 Optional<AllowedTimePeriod> newPeriods = this.askForAllowedTimePeriod(initiator);
                 if ( newPeriods.isPresent() ) {
                     if ( this.dao.editTaskTime(
-                            initiator, taskToEdit.getId(), newTime.actualizedTime(), newPeriods.get()) ) {
+                            initiator, taskToEdit.id(), newTime.actualizedTime(), newPeriods.get()) ) {
                         fireAsync("tasks_updated");
                         return ok();
                     } else {
@@ -381,7 +381,7 @@ public class TasksKeeperWorker implements TasksKeeper {
                     return voidOperationStopped();
                 }
             } else {
-                if ( this.dao.editTaskTime(initiator, taskToEdit.getId(), newTime.actualizedTime()) ) {
+                if ( this.dao.editTaskTime(initiator, taskToEdit.id(), newTime.actualizedTime()) ) {
                     fireAsync("tasks_updated");
                     return ok();
                 } else {
@@ -403,7 +403,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             if ( newText.isEmpty() ) {
                 return voidOperationStopped();
             }
-            if ( this.dao.editTaskText(initiator, taskToEdit.getId(), newText) ) {
+            if ( this.dao.editTaskText(initiator, taskToEdit.id(), newText) ) {
                 return ok();
             } else {
                 return voidOperationFail("DAO failed to edit task text.");

@@ -16,8 +16,11 @@ import static java.lang.String.join;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 
 /**
  *
@@ -35,20 +38,29 @@ public class Tasks {
     private Tasks() {
     }
     
-    static String stringifyTimePeriods(Set<Integer> times) {
-        return times
-                .stream()
-                .map(time -> String.valueOf(time))
-                .collect(joining(" "));
+    public static String stringifyTimePeriods(Set<Integer> times) {
+        if ( times.isEmpty() ) {
+            return "";
+        } else {
+            return times
+                    .stream()
+                    .map(time -> time.toString())
+                    .collect(joining(" "));
+        }        
     }
     
     static Set<Integer> collectTimePeriods(String timePeriodsString) {
-        return stream(timePeriodsString.split(" "))
-                .map(time -> Integer.getInteger(time))
-                .collect(toSet());
+        if ( timePeriodsString.isEmpty() ) {
+            return emptySet();
+        } else {
+            return stream(timePeriodsString.split(" "))
+                    .filter(timeString -> nonEmpty(timeString))
+                    .map(time -> Integer.parseInt(time))
+                    .collect(toSet());
+        }        
     }
     
-    static String stringifyTaskText(List<String> text) {
+    public static String stringifyTaskText(List<String> text) {
         return join(" \\ ", text);
     }
     
@@ -86,7 +98,7 @@ public class Tasks {
             boolean status, 
             String daysString, 
             String hoursString,
-            String textString) { 
+            String textString) {    
         switch ( type ) {
             case NO_REPEAT : {
                 return new TaskInstant(id, time, status, collectTaskText(textString));

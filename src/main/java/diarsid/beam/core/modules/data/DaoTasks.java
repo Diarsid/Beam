@@ -29,9 +29,6 @@ public interface DaoTasks {
     List<Task> getActiveTasksBeforeTime(
             Initiator initiator, LocalDateTime fromNow);
     
-    List<Task> getFirstActiveTasks(
-            Initiator initiator);
-    
     List<Task> findTasksByTextPattern(
             Initiator initiator, String textPattern);
     

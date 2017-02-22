@@ -57,11 +57,24 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "       PRIMARY KEY (com_type, com_original) )", 
                 3);
         
+        SqlTable tasks = new H2SqlTable(
+                "tasks", 
+                "CREATE TABLE tasks (" + 
+                "id     INTEGER     NOT NULL AUTO_INCREMENT PRIMARY KEY, " + 
+                "time   TIMESTAMP   NOT NULL, " +
+                "status BOOLEAN     NOT NULL, " + 
+                "text   VARCHAR     NOT NULL, " +
+                "type   VARCHAR     NOT NULL, " +
+                "days   VARCHAR     NOT NULL, " +
+                "hours  VARCHAR     NOT NULL )", 
+                7);
+        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
         this.tables.add(keyValue);
         this.tables.add(commands);
+        this.tables.add(tasks);
     }
 
     @Override

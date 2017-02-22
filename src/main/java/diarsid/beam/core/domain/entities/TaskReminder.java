@@ -14,6 +14,7 @@ import static java.time.LocalDateTime.now;
 
 import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
+import static diarsid.beam.core.domain.entities.Tasks.stringifyTimePeriods;
 
 /**
  *
@@ -35,9 +36,19 @@ class TaskReminder extends Task {
         if ( type.isNot(HOURLY_REPEAT, DAILY_REPEAT) ) {
             throw new IllegalArgumentException(
                     "TaskRepeat type should be HOURLY_REPEAT or DAILY_REPEAT.");
-        }        
+        }
         this.allowedDays = allowedDays;
         this.allowedHours = allowedHours;
+    }
+    
+    @Override
+    public String hours() {
+        return stringifyTimePeriods(this.allowedHours);
+    }
+    
+    @Override
+    public String days() {
+        return stringifyTimePeriods(this.allowedDays);
     }
     
     @Override
@@ -70,7 +81,7 @@ class TaskReminder extends Task {
         // If new execution time of this task does not
         // contained in list of permitted days it will be
         // postponed to the next day with and verified again.
-        LocalDateTime time = super.getTime();
+        LocalDateTime time = super.time();
         LocalDateTime now = now();
         time = time.plusDays(1);
         if ( time.isBefore(now) ) {
@@ -102,7 +113,7 @@ class TaskReminder extends Task {
         // If new execution time of this task does not
         // contained in list of permitted hours it will be
         // postponed to the next hour and verified again.
-        LocalDateTime time = super.getTime();
+        LocalDateTime time = super.time();
         LocalDateTime now = now();
         time = time.plusHours(1);
         if ( time.isBefore(now) ) {
