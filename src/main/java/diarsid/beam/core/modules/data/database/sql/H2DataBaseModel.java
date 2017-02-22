@@ -57,20 +57,11 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "       PRIMARY KEY (com_type, com_original) )", 
                 3);
         
-        SqlTable commandsChoices = new H2SqlTable(
-                "commands_choices", 
-                "CREATE TABLE commands_choices (" +
-                "com_type_choice    VARCHAR     NOT NULL, " +
-                "com_pattern        VARCHAR     NOT NULL," + 
-                "       PRIMARY KEY (com_type_choice, com_pattern) )", 
-                2);
-        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
         this.tables.add(keyValue);
         this.tables.add(commands);
-        this.tables.add(commandsChoices);
     }
 
     @Override

@@ -4,28 +4,29 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.corecontrol;
+package diarsid.beam.core.modules.control;
 
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
-import diarsid.beam.core.modules.CoreControlModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.modules.corecontrol.cli.CommandLineProcessorBuilder;
+import diarsid.beam.core.modules.control.cli.CommandLineProcessorBuilder;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import diarsid.beam.core.modules.ControlModule;
 
 /**
  *
  * @author Diarsid
  */
-public class CoreControlModuleWorkerBuilder implements GemModuleBuilder<CoreControlModule> {
+public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModule> {
     
     private final IoModule ioModule;
     private final ApplicationComponentsHolderModule appComponentsHolderModule;
     private final DomainKeeperModule domainModule;
     
-    public CoreControlModuleWorkerBuilder(
+    public ControlModuleWorkerBuilder(
             IoModule ioModule, 
             ApplicationComponentsHolderModule appComponentsHolderModule,
             DomainKeeperModule domainModule) {
@@ -35,7 +36,7 @@ public class CoreControlModuleWorkerBuilder implements GemModuleBuilder<CoreCont
     }
 
     @Override
-    public CoreControlModule buildModule() {
+    public ControlModule buildModule() {
         CommandLineProcessorBuilder cliBuilder = new CommandLineProcessorBuilder();
         CommandLineProcessor cli = cliBuilder.build(
                 this.ioModule, 
@@ -43,7 +44,7 @@ public class CoreControlModuleWorkerBuilder implements GemModuleBuilder<CoreCont
                 this.domainModule);
 //        OuterIoEngine nativeConsole = new NativeConsoleBuilder().build(cli);
 //        this.ioModule.registerOuterIoEngine(nativeConsole);
-        CoreControlModule coreControlModule = new CoreControlModuleWorker(this.ioModule, cli);
+        ControlModule coreControlModule = new ControlModuleWorker(this.ioModule, cli);
         return coreControlModule;
     }
 }

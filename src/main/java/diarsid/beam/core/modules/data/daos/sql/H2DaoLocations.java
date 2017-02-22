@@ -32,10 +32,10 @@ import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 
 
 class H2DaoLocations 
@@ -117,11 +117,10 @@ class H2DaoLocations
         try {
             return super.getDisposableTransaction()
                     .ifTrue( nonEmpty(nameParts) )
-                    .doQueryAndStream(
-                            Location.class,                            
+                    .doQueryAndStream(Location.class,                            
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
-                            "WHERE " + multipleLowerLike("loc_name", nameParts.size(), AND), 
+                            "WHERE " + multipleLowerLIKE("loc_name", nameParts.size(), AND), 
                             this.rowToLocationConversion,
                             lowerWildcardList(nameParts))                    
                     .collect(toList());

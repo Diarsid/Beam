@@ -3,9 +3,13 @@ package diarsid.beam.core.domain.entities;
 import java.io.Serializable;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
+
+import static java.lang.Integer.MIN_VALUE;
+
+import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -20,65 +24,53 @@ import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 public class WebPage 
         implements 
                 NamedEntity, 
+                Orderable, 
                 Serializable, 
-                Comparable<WebPage> {
-    
-    public final static String WEB_NAME_REGEXP = "[a-zA-Z0-9-_\\.>\\s]+";
+                ConvertableToVariant {    
     
     private final String name;
     private final String shortcuts;
-    private final String urlAddress;
-    private final WebPlace placement;
-    private final String directory;    
+    private final String url;
+    private final WebPlace place;
+    private final int directoryId;
+    private final String directoryName;    
     private final int directoryOrder;
-    private final String browser;
-    
-    private int pageInDirectoryOrder;
+    private int pageOrder;
         
-    private WebPage(
+    WebPage(
             String name, 
             String shortcuts,             
-            String urlAddress, 
-            WebPlace placement,
-            String directory, 
+            String url,
             int pageOrder,
-            int dirOrder,
-            String browser) {
-        
+            WebPlace place,
+            int directoryId,
+            String directoryName,
+            int directoryOrder) {        
         this.name = name;
         this.shortcuts = shortcuts;
-        this.urlAddress = urlAddress;
-        this.placement = placement;
-        this.directory = directory;
-        this.pageInDirectoryOrder = pageOrder;
-        this.directoryOrder = dirOrder;
-        this.browser = browser;
+        this.url = url;
+        this.place = place;
+        this.directoryId = directoryId;
+        this.directoryName = directoryName;
+        this.pageOrder = pageOrder;
+        this.directoryOrder = directoryOrder;
     }
     
-    public static WebPage newPage(
+    WebPage(
             String name, 
             String shortcuts,             
-            String urlAddress, 
-            WebPlace placement,
-            String directory,
-            String browser) {
-        
-        return new WebPage(name, shortcuts, urlAddress, placement, 
-                directory, -1, -1, browser);
-    }
-    
-    public static WebPage restorePage(
-            String name, 
-            String shortcuts,             
-            String urlAddress, 
-            WebPlace placement,
-            String directory,
-            int pageOrder,
-            int dirOrder,
-            String browser) {
-        
-        return new WebPage(name, shortcuts, urlAddress, placement, 
-                directory, pageOrder, dirOrder, browser);
+            String url,
+            WebPlace place,
+            int directoryId,
+            String directoryName) {        
+        this.name = name;
+        this.shortcuts = shortcuts;
+        this.url = url;
+        this.place = place;
+        this.directoryId = directoryId;
+        this.directoryName = directoryName;
+        this.pageOrder = MIN_VALUE;
+        this.directoryOrder = MIN_VALUE;
     }
 
     @Override
@@ -91,124 +83,94 @@ public class WebPage
         return WEBPAGE;
     }
     
-    public String getShortcuts() {
-        return this.shortcuts;
-    }
-
-    public String getUrlAddress() {
-        return this.urlAddress;
-    }
-
-    public WebPlace getPlacement() {
-        return this.placement;
-    }
-
-    public String getDirectory() {
-        return this.directory;
-    }
-    
-    public int getPageOrder() {
-        return this.pageInDirectoryOrder;
-    }
-    
-    public int getDirectoryOrder() {
-        return this.directoryOrder;
-    }
-
-    public String getBrowser() {
-        return this.browser;
-    }
-    
-    public void setOrder(int newOrder) {
-        this.pageInDirectoryOrder = newOrder;
-    }
-    
-    public boolean useDefaultBrowser() {
-        return "default".equals(this.browser);
-    }
-    
-    public void incrementPageOrder() {
-        this.pageInDirectoryOrder++;
-    }
-    
-    public void decrementPageOrder() {
-        this.pageInDirectoryOrder--;
-    }
-    
-    public void incrementPageDirectoryOrder() {
-        
+    @Override
+    public int order() {
+        return this.pageOrder;
     }
     
     @Override
-    public int compareTo(WebPage another) {
-        if (this.placement.equals(BOOKMARKS) && another.placement.equals(WEBPANEL)) {
-            return -1;
-        } else if (this.placement.equals(WEBPANEL) && another.placement.equals(BOOKMARKS)) {
-            return 1;
-        } else {
-            if (this.directoryOrder < another.directoryOrder) {
-                return -1;
-            } else if (this.directoryOrder > another.directoryOrder) {
-                return 1;
-            } else {
-                if (this.pageInDirectoryOrder < another.pageInDirectoryOrder) {
-                    return -1;
-                }  else if (this.pageInDirectoryOrder > another.pageInDirectoryOrder) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        }          
+    public void setOrder(int newOrder) {
+        this.pageOrder = newOrder;
+    }
+
+    @Override
+    public WebPlace place() {
+        return this.place;
+    }
+    
+    public boolean isConsistent() {
+        return  
+                this.pageOrder != MIN_VALUE && 
+                this.directoryOrder != MIN_VALUE;
+    }
+
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return new Variant(
+                this.name, 
+                this.name + " :: " + this.directoryName + " :: " + lower(this.place.name()), 
+                variantIndex);        
+    }
+    
+    public String shortcuts() {
+        return this.shortcuts;
+    }
+
+    public String url() {
+        return this.url;
+    }
+
+    public String directoryName() {
+        return this.directoryName;
+    }
+    
+    public int directoryId() {
+        return this.directoryId;
+    }
+    
+    public int directoryOrder() {
+        return this.directoryOrder;
+    }
+    
+    public void incrementPageOrder() {
+        this.pageOrder++;
+    }
+    
+    public void decrementPageOrder() {
+        this.pageOrder--;
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.name);
-        hash = 59 * hash + Objects.hashCode(this.shortcuts);
-        hash = 59 * hash + Objects.hashCode(this.urlAddress);
-        hash = 59 * hash + Objects.hashCode(this.placement);
-        hash = 59 * hash + Objects.hashCode(this.directory);
-        hash = 59 * hash + this.pageInDirectoryOrder;
-        hash = 59 * hash + this.directoryOrder;
-        hash = 59 * hash + Objects.hashCode(this.browser);
+        hash = 17 * hash + Objects.hashCode(this.name);
+        hash = 17 * hash + Objects.hashCode(this.shortcuts);
+        hash = 17 * hash + Objects.hashCode(this.url);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final WebPage other = (WebPage) obj;
-        if (!Objects.equals(this.name, other.name)) {
+        final WebPage other = ( WebPage ) obj;
+        if ( !Objects.equals(this.name, other.name) ) {
             return false;
         }
-        if (!Objects.equals(this.shortcuts, other.shortcuts)) {
+        if ( !Objects.equals(this.shortcuts, other.shortcuts) ) {
             return false;
         }
-        if (!Objects.equals(this.urlAddress, other.urlAddress)) {
-            return false;
-        }
-        if (this.placement != other.placement) {
-            return false;
-        }
-        if (!Objects.equals(this.directory, other.directory)) {
-            return false;
-        }
-        if (this.pageInDirectoryOrder != other.pageInDirectoryOrder) {
-            return false;
-        }
-        if (this.directoryOrder != other.directoryOrder) {
-            return false;
-        }
-        if (!Objects.equals(this.browser, other.browser)) {
+        if ( !Objects.equals(this.url, other.url) ) {
             return false;
         }
         return true;
     }
+    
 }

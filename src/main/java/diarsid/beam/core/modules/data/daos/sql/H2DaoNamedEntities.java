@@ -26,7 +26,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardLists;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 
 
 class H2DaoNamedEntities 
@@ -92,19 +92,18 @@ class H2DaoNamedEntities
             Initiator initiator, List<String> namePatternParts) {
         try {
             return super.getDisposableTransaction()
-                    .doQueryAndStream(
-                            NamedEntity.class,
+                    .doQueryAndStream(NamedEntity.class,
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
-                            "WHERE " + multipleLowerLike("loc_name", namePatternParts.size(), AND) + 
+                            "WHERE " + multipleLowerLIKE("loc_name", namePatternParts.size(), AND) + 
                             "       UNION ALL " +
                             "SELECT bat_name, 'batch' " +
                             "FROM batches " +
-                            "WHERE " + multipleLowerLike("bat_name", namePatternParts.size(), AND) + 
+                            "WHERE " + multipleLowerLIKE("bat_name", namePatternParts.size(), AND) + 
                             "       UNION ALL " +
                             "SELECT page_name, 'webpage' " +
                             "FROM webpages " +
-                            "WHERE " + multipleLowerLike("page_name", namePatternParts.size(), AND),
+                            "WHERE " + multipleLowerLIKE("page_name", namePatternParts.size(), AND),
                             this.rowToNamedEntityConversion,
                             lowerWildcardLists(
                                     namePatternParts, 

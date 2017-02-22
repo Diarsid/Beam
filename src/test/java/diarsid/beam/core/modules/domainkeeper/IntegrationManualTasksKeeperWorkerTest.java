@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import mocks.MockInnerIoEngine;
+import mocks.InnerIoEngineForManualTests;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -44,7 +44,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
     }
     
     public static void main(String[] args) throws Exception {
-        InnerIoEngine ioEngine = new MockInnerIoEngine(reader);
+        InnerIoEngine ioEngine = new InnerIoEngineForManualTests(reader);
         KeeperDialogHelper helper = new KeeperDialogHelper(ioEngine);
         Initiator initiator = new Initiator();
         DaoTasks dao = mock(DaoTasks.class);

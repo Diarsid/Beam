@@ -31,11 +31,11 @@ import static diarsid.beam.core.base.util.StringUtils.normalize;
  *
  * @author Diarsid
  */
-public class MockInnerIoEngine implements InnerIoEngine {
+public class InnerIoEngineForManualTests implements InnerIoEngine {
     
     private final BufferedReader reader;
     
-    public MockInnerIoEngine(BufferedReader reader) {
+    public InnerIoEngineForManualTests(BufferedReader reader) {
         this.reader = reader;
     }
 

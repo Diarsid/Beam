@@ -75,7 +75,13 @@ public class SqlUtil {
                 .collect(toList());
     }
     
-    public static String multipleLowerLike(
+    public static String multipleEnumValues(Enum... enumValues) {
+        return stream(enumValues)
+                .map(enumValue -> enumValue.name())
+                .collect(joining(", ", " ( ", " ) "));
+    }
+    
+    public static String multipleLowerLIKE(
             String column, int partsSize, SqlOperator sqlOperator) {
         return generate(() -> "( LOWER(column) LIKE ? )")
                 .limit(partsSize)

@@ -5,14 +5,16 @@
  */
 package diarsid.beam.core.modules;
 
-import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.BeamModule;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
 
 /**
  *
  * @author Diarsid
  */
-public interface CoreRemoteManagerModule extends StoppableBeamModule {
+public interface ControlModule extends BeamModule {
     
-    RemoteCoreAccessEndpoint getRemoteAccessEndpoint();
+    void exitBeam();    
+    
+    void executeCommand(Initiator initiator, String commandLine);
 }

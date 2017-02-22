@@ -42,7 +42,6 @@ public class AllowedTimePeriodsParser {
                 .filter(numberString -> nonEmpty(numberString))
                 .filter(numberString -> isNumeric(numberString) || numberString.matches("\\d+-\\d+") )
                 .forEach(numberString -> {
-                    System.out.println("parsing " + period.name() + " from " + numberString);
                     if ( isNumeric(numberString) ) {
                         if ( period.is(HOURS) ) {
                             time.includeHourOfDay(parseInt(numberString));

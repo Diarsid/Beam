@@ -5,10 +5,10 @@
 package diarsid.beam.core;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.modules.CoreRemoteManagerModule;
-import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.util.Logs;
+import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.modules.RemoteManagerModule;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
@@ -62,7 +62,7 @@ public class Beam {
             public void run() {
                 Container container = GemInjector.getContainer(CORE_CONTAINER);                
                 container.getModule(IoModule.class).stopModule();
-                container.getModule(CoreRemoteManagerModule.class).stopModule();
+                container.getModule(RemoteManagerModule.class).stopModule();
 //                container.getModule(TaskManagerModule.class).stopModule();
 //                container.getModule(ExecutorModule.class).stopModule();
 //                container.getModule(DataModule.class).stopModule();
@@ -86,7 +86,7 @@ public class Beam {
     }
     
     public static void saveRmiInterfacesInStaticContext(
-            CoreRemoteManagerModule remoteManagerModule) {
+            RemoteManagerModule remoteManagerModule) {
         remoteAccessEndpoint = remoteManagerModule.getRemoteAccessEndpoint();
 //        rmiRemoteControlInterface = rmiModule.getRmiRemoteControlInterface();
 //        rmiExecutorInterface = rmiModule.getRmiExecutorInterface();

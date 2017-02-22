@@ -4,13 +4,13 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.corecontrol;
+package diarsid.beam.core.modules.control;
 
-import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
-import diarsid.beam.core.modules.CoreControlModule;
+import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.exitBeamCoreNow;
@@ -21,12 +21,12 @@ import static diarsid.beam.core.base.util.Logs.debug;
  *
  * @author Diarsid
  */
-public class CoreControlModuleWorker implements CoreControlModule {
+public class ControlModuleWorker implements ControlModule {
     
     private final IoModule ioModule;
     private final CommandLineProcessor cliProcessor;
     
-    public CoreControlModuleWorker(IoModule ioModule, CommandLineProcessor cliProcessor) {
+    public ControlModuleWorker(IoModule ioModule, CommandLineProcessor cliProcessor) {
         this.ioModule = ioModule;
         this.cliProcessor = cliProcessor;
     }

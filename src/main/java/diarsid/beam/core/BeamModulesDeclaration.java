@@ -9,8 +9,6 @@ package diarsid.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import diarsid.beam.core.modules.CoreControlModule;
-import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
 
 import com.drs.gem.injector.core.Declaration;
@@ -18,6 +16,8 @@ import com.drs.gem.injector.core.GemModuleDeclaration;
 import com.drs.gem.injector.core.GemModuleType;
 
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+import diarsid.beam.core.modules.ControlModule;
+import diarsid.beam.core.modules.RemoteManagerModule;
 
 /**
  *
@@ -43,12 +43,12 @@ class BeamModulesDeclaration implements Declaration {
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(
-                CoreControlModule.class.getCanonicalName(), 
+                ControlModule.class.getCanonicalName(), 
                 "diarsid.beam.core.modules.corecontrol.CoreControlModuleWorker",
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(
-                CoreRemoteManagerModule.class.getCanonicalName(), 
+                RemoteManagerModule.class.getCanonicalName(), 
                 "diarsid.beam.core.modules.remotemanager.CoreRemoteManagerModuleWorker",
                 GemModuleType.SINGLETON));
         

@@ -28,10 +28,11 @@ import static diarsid.beam.core.base.control.io.commands.Commands.restoreArgumen
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 
 
 class H2DaoCommands 
@@ -116,7 +117,7 @@ class H2DaoCommands
                     .doQueryAndStream(ExtendableCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE " + multipleLowerLike("com_original", patternParts.size(), AND),
+                            "WHERE " + multipleLowerLIKE("com_original", patternParts.size(), AND),
                             this.rowToCommandConversion,
                             lowerWildcardList(patternParts))
                     .collect(toList());
@@ -155,7 +156,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( " + 
-                                    multipleLowerLike("com_original", patternParts.size(), AND) + 
+                                    multipleLowerLIKE("com_original", patternParts.size(), AND) + 
                                     " ) AND ( com_type IS ? ) ",
                             this.rowToCommandConversion,
                             params)
@@ -192,7 +193,7 @@ class H2DaoCommands
                     .doQueryAndStream(ExtendableCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE " + multipleLowerLike("com_extended", patternParts.size(), AND),
+                            "WHERE " + multipleLowerLIKE("com_extended", patternParts.size(), AND),
                             this.rowToCommandConversion,
                             lowerWildcardList(patternParts))
                     .collect(toList());
@@ -231,7 +232,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( " + 
-                                    multipleLowerLike("com_extended", patternParts.size(), AND) + 
+                                    multipleLowerLIKE("com_extended", patternParts.size(), AND) + 
                                     " ) AND ( com_type IS ? ) ",
                             this.rowToCommandConversion,
                             params)

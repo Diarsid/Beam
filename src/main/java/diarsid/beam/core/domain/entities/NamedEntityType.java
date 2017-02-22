@@ -12,8 +12,10 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  * @author Diarsid
  */
 public enum NamedEntityType {
+    
     LOCATION,
     WEBPAGE,
+    WEBDIRECTORY,
     PROGRAM,
     BATCH;
     

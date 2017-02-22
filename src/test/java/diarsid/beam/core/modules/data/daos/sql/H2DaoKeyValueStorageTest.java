@@ -104,7 +104,7 @@ public class H2DaoKeyValueStorageTest {
     }
 
     /**
-     * Test of get method, of class H2DaoKeyValueStorage.
+     * Test of list method, of class H2DaoKeyValueStorage.
      */
     @Test
     public void testGet() {

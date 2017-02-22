@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.corecontrol.cli;
+package diarsid.beam.core.modules.control.cli;
 
 import java.util.Optional;
 

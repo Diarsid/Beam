@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.corecontrol.cli.nativeconsole;
+package diarsid.beam.core.modules.control.cli.nativeconsole;
 
 /**
  *
  * @author Diarsid
  */
-public interface InputDistributor {
+public interface InputReciever {
     
-    void consoleIsWaitingForAnswer();
+    void submit(String commandLine);
 }

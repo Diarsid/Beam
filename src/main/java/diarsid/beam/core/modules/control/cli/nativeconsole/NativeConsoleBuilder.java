@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.corecontrol.cli.nativeconsole;
+package diarsid.beam.core.modules.control.cli.nativeconsole;
 
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;

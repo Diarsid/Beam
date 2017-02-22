@@ -23,14 +23,14 @@ import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
  * 
  * @author Diarsid
  */
-class ConfigHolderModuleWorker implements ApplicationComponentsHolderModule {
+class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHolderModule {
     
     private final Configuration configuration;  
     private final Interpreter interpreter;
     private final ProgramsCatalog programsCatalog;
     private final NotesCatalog notesCatalog;
     
-    ConfigHolderModuleWorker() {    
+    ApplicationComponentsHolderModuleWorker() {    
         this.configuration = ApplicationConfiguration.getConfiguration();
         this.interpreter = new Interpreter();
         this.programsCatalog = ApplicationCatalogs.getProgramsCatalog();

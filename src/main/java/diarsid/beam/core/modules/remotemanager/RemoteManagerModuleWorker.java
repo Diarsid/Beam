@@ -17,8 +17,6 @@ import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
-import diarsid.beam.core.modules.CoreControlModule;
-import diarsid.beam.core.modules.CoreRemoteManagerModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteAccessEndpointHolder;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
@@ -31,17 +29,20 @@ import static diarsid.beam.core.base.control.io.base.interaction.Message.Message
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.util.Logs.debug;
 
+import diarsid.beam.core.modules.ControlModule;
+import diarsid.beam.core.modules.RemoteManagerModule;
 
-public class CoreRemoteManagerModuleWorker implements CoreRemoteManagerModule {
+
+public class RemoteManagerModuleWorker implements RemoteManagerModule {
     
     private final RemoteCoreAccessEndpoint remoteAccessEndpoint;
     
     private final ApplicationComponentsHolderModule appComponentsHolderModule;
     private final IoModule io;
     
-    public CoreRemoteManagerModuleWorker(
+    public RemoteManagerModuleWorker(
             ApplicationComponentsHolderModule configModule, 
-            CoreControlModule coreControlModule, 
+            ControlModule coreControlModule, 
             IoModule ioModule) {
         this.appComponentsHolderModule = configModule;
         this.io = ioModule;
