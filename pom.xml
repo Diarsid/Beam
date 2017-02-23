@@ -68,13 +68,13 @@
                     <id>copy-resources</id>
                     <phase>validate</phase>
                     <goals>
-                      <goal>copy-resources</goal>
+                        <goal>copy-resources</goal>
                     </goals>
                     <configuration>
                         <outputDirectory>${basedir}/target/classes</outputDirectory>
                         <resources>          
                             <resource>
-                                <directory>src/main/external-resources</directory>
+                                <directory>src/main/resources</directory>
                             </resource>
                         </resources>              
                     </configuration>            
@@ -91,10 +91,10 @@
                         <id>copy-dependencies</id>
                         <phase>compile</phase>
                         <goals>
-                          <goal>copy-dependencies</goal>
+                            <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/src/main/external-resources/lib/</outputDirectory>
+                            <outputDirectory>${project.basedir}/src/main/resources/lib/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>false</overWriteIfNewer>
@@ -158,21 +158,25 @@
                 <artifactId>cobertura-maven-plugin</artifactId>  
                 <version>2.6</version>  
                 <dependencies>  
+                    
                     <dependency>
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm</artifactId>
                         <version>5.0.3</version>
                     </dependency>
+                    
                     <dependency>
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm-util</artifactId>
                         <version>5.0.3</version>
                     </dependency>
+                    
                     <dependency>
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm-commons</artifactId>
                         <version>5.0.3</version>
                     </dependency>  
+                    
                 </dependencies>  
             </plugin>
             
@@ -282,12 +286,14 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.21</version>
         </dependency>
+        
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <scope>test</scope>
             <version>2.44.0</version>
         </dependency>
+        
         <dependency>
             <groupId>com.opera</groupId>
             <artifactId>operadriver</artifactId>
