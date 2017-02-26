@@ -22,7 +22,12 @@ public class WebDirectories {
     }
     
     public static WebDirectory restoreDirectory(
+            String name, WebPlace place, int order) {
+        return new WebDirectory(name, place, order);
+    }
+    
+    public static WebDirectoryPages restoreDirectoryPages(
             int id, String name, WebPlace place, int order, List<WebPage> pages) {
-        return new WebDirectory(id, name, place, order, pages);
+        return new WebDirectoryPages(name, place, order, pages);
     }
 }

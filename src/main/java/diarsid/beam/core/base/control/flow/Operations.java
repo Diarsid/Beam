@@ -20,7 +20,7 @@ public class Operations {
     
     private static final VoidOperation OK_VOID_OPERATION;
     private static final VoidOperation STOPPED_VOID_OPERATION;
-    private static final ReturnOperation STOPPED_RETURN_OPERATION;
+    private static final ValueOperation STOPPED_RETURN_OPERATION;
     
     static {
         OK_VOID_OPERATION = () -> OK;
@@ -31,20 +31,20 @@ public class Operations {
     private Operations() {
     }
     
-    public static VoidOperation ok() {
+    public static VoidOperation voidCompleted() {
         return OK_VOID_OPERATION;
     }
     
-    public static <T extends Object> ReturnOperation<T> okWith(Optional<T> optT) {
+    public static <T extends Object> ValueOperation<T> valueFound(Optional<T> optT) {
         if ( optT.isPresent() ) {
-            return okWith(optT.get());
+            return Operations.valueFound(optT.get());
         } else {
             return successEmpty();
         }
     }
     
-    public static <T extends Object> ReturnOperation<T> okWith(T t) {
-        return new OkReturnOperation<T>() {
+    public static <T extends Object> ValueOperation<T> valueFound(T t) {
+        return new OkValueOperation<T>() {
             @Override
             public boolean hasReturn() {
                 return true;
@@ -67,8 +67,8 @@ public class Operations {
         };
     }
     
-    public static <T extends Object> ReturnOperation<T> successEmpty() {
-        return new OkReturnOperation<T>() {
+    public static <T extends Object> ValueOperation<T> successEmpty() {
+        return new OkValueOperation<T>() {
             @Override
             public boolean hasReturn() {
                 return false;
@@ -95,7 +95,7 @@ public class Operations {
         return STOPPED_VOID_OPERATION;
     }
     
-    public static ReturnOperation returnOperationStopped() {
+    public static ValueOperation valueOperationStopped() {
         return STOPPED_RETURN_OPERATION;
     }
     
@@ -113,8 +113,8 @@ public class Operations {
         };
     }
     
-    public static FailedReturnOperation returnOperationFail(String failMessage) {
-        return new FailedReturnOperation() {
+    public static FailedValueOperation valueOperationFail(String failMessage) {
+        return new FailedValueOperation() {
             @Override
             public String getReason() {
                 return failMessage;
@@ -131,11 +131,11 @@ public class Operations {
         return (FailedVoidOperation) operationFlow;
     }
     
-    public static FailedReturnOperation asFail(ReturnOperation operationFlow) {
-        return (FailedReturnOperation) operationFlow;
+    public static FailedValueOperation asFail(ValueOperation operationFlow) {
+        return (FailedValueOperation) operationFlow;
     }
     
-    public static OkReturnOperation asOk(ReturnOperation operationFlow) {
-        return (OkReturnOperation) operationFlow;
+    public static OkValueOperation asOk(ValueOperation operationFlow) {
+        return (OkValueOperation) operationFlow;
     }
 }

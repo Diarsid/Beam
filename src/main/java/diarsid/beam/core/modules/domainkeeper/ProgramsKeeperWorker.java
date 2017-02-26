@@ -83,7 +83,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
                         result.success().getMultipleFoundFiles());
                 Answer answer = this.ioEngine.ask(initiator, question);
                 if ( answer.isGiven() ) {
-                    return this.optionalProgram(answer.getText());
+                    return this.optionalProgram(answer.text());
                 } else {
                     return Optional.empty();
                 }

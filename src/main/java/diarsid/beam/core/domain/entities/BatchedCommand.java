@@ -41,7 +41,7 @@ public class BatchedCommand {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 61 * hash + Objects.hashCode(this.enclosingBatch.getName());
+        hash = 61 * hash + Objects.hashCode(this.enclosingBatch.name());
         hash = 61 * hash + Objects.hashCode(this.command);
         return hash;
     }
@@ -58,7 +58,7 @@ public class BatchedCommand {
             return false;
         }
         final BatchedCommand other = ( BatchedCommand ) obj;
-        if ( !Objects.equals(this.enclosingBatch.getName(), other.enclosingBatch.getName()) ) {
+        if ( !Objects.equals(this.enclosingBatch.name(), other.enclosingBatch.name()) ) {
             return false;
         }
         if ( !Objects.equals(this.enclosingBatch.getCommands().size(), other.enclosingBatch.getCommands().size()) ) {

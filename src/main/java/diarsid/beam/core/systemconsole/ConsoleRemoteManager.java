@@ -42,13 +42,13 @@ public class ConsoleRemoteManager {
     private final String coreAccessEndpointName;
     
     public ConsoleRemoteManager(Configuration config) {               
-        this.consoleRegistryPort = parseInt(config.getSingle("rmi.sysconsole.port"));
-        this.consoleRegistryHost = config.getSingle("rmi.sysconsole.host");
+        this.consoleRegistryPort = parseInt(config.getAsString("rmi.sysconsole.port"));
+        this.consoleRegistryHost = config.getAsString("rmi.sysconsole.host");
         this.consoleName = SYS_CONSOLE_NAME;
         
         this.coreAccessEndpointName = CORE_ACCESS_ENDPOINT_NAME;
-        this.coreRegistryPort = parseInt(config.getSingle("rmi.core.port"));
-        this.coreRegistryHost = config.getSingle("rmi.core.host");        
+        this.coreRegistryPort = parseInt(config.getAsString("rmi.core.port"));
+        this.coreRegistryHost = config.getAsString("rmi.core.host");        
     }
     
     void export(ConsoleController console) {

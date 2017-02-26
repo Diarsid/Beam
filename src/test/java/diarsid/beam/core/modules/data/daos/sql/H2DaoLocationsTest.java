@@ -119,7 +119,7 @@ public class H2DaoLocationsTest {
     public void testGetLocationsByExactName() {
         Optional<Location> loc = daoLocations.getLocationByExactName(initiator, "my_projects");
         assertTrue(loc.isPresent());
-        assertEquals("My_Projects", loc.get().getName());
+        assertEquals("My_Projects", loc.get().name());
     }
 
     /**
@@ -219,7 +219,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(hasOne(locations));
         Location loc = getOne(locations);
-        assertEquals("books", loc.getName());        
+        assertEquals("books", loc.name());        
         assertEquals("c:/new/path/for/books", loc.getPath());
     }
 
@@ -236,7 +236,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         assertTrue(hasOne(locations));
         Location loc = getOne(locations);
-        assertEquals("my_books", loc.getName());
+        assertEquals("my_books", loc.name());
     }
 
     /**

@@ -9,8 +9,6 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.List;
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.OkReturnOperation;
-import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -20,6 +18,9 @@ import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToMessage;
+
+import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.OkValueOperation;
 
 /**
  *
@@ -50,8 +51,8 @@ public class CliAdapterForTasksKeeper extends AbstractCliAdapter {
     }
     
     void findTasksAndReport(Initiator initiator, ArgumentsCommand command) {
-        ReturnOperation<List<Task>> flow = this.tasksKeeper.findTasks(initiator, command);
-        Function<OkReturnOperation, Message> ifSuccess = (success) -> {
+        ValueOperation<List<Task>> flow = this.tasksKeeper.findTasks(initiator, command);
+        Function<OkValueOperation, Message> ifSuccess = (success) -> {
             return tasksToMessage((List<Task>) success.getOrThrow());
         };
         super.reportReturnOperationFlow(initiator, flow, ifSuccess, "tasks not found.");

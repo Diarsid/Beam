@@ -8,11 +8,11 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Batch;
+import diarsid.beam.core.base.control.flow.ValueOperation;
 
 /**
  *
@@ -26,7 +26,7 @@ public interface BatchesKeeper {
     List<Batch> getAllBatches(
             Initiator initiator);
     
-    ReturnOperation<Batch> findBatch(
+    ValueOperation<Batch> findBatch(
             Initiator initiator, ArgumentsCommand command);
     
     VoidOperation createBatch(

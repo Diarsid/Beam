@@ -18,9 +18,9 @@ import static java.lang.Thread.sleep;
 
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
-import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
@@ -42,7 +42,7 @@ public class SystemConsole {
         try {
             Configuration configuration = getConfiguration();
             PASSPORT.setName(SYS_CONSOLE_NAME);
-            PASSPORT.setPort(parseInt(configuration.getSingle("rmi.sysconsole.port")));
+            PASSPORT.setPort(parseInt(configuration.getAsString("rmi.sysconsole.port")));
             ConsolePrinter printer = new ConsolePrinter(provideWriter());
             ConsoleReader reader = new ConsoleReader(provideReader());
             ConsoleController console = new ConsoleController(printer, reader);

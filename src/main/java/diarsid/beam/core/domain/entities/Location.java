@@ -43,7 +43,7 @@ public class Location
     }    
     
     @Override
-    public String getName() {
+    public String name() {
         return this.name;
     }
 
@@ -53,7 +53,7 @@ public class Location
     }
 
     @Override
-    public NamedEntityType getEntityType() {
+    public NamedEntityType entityType() {
         return LOCATION;
     }
     

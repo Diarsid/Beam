@@ -45,14 +45,6 @@ public class RestUrlParametersUtil {
         return v1parse(urlTemplate, actualUrl);
     } 
     
-    public static void main(String[] args) {
-        Map<String, String> params = v1parse(
-                "{user}", 
-                "John");
-        System.out.println("params qty: " + params.size());
-        params.forEach((key, value) -> System.out.println(key + " : " + value));
-    }
-    
     private static Map<String, String> v2parse(String urlTemplate, String actualUrl) 
             throws ResourceUrlParsingException {
         Map<String, String> pathParams = new HashMap<>();

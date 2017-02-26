@@ -37,12 +37,12 @@ public class Batch implements NamedEntity {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return this.name;
     }
 
     @Override
-    public NamedEntityType getEntityType() {
+    public NamedEntityType entityType() {
         return BATCH;
     }
     

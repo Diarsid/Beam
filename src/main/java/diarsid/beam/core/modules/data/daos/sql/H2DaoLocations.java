@@ -144,21 +144,21 @@ class H2DaoLocations
                             "SELECT loc_name " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) IS ? ", 
-                            lower(location.getName()));
+                            lower(location.name()));
             
             int updated = transact
                     .ifTrue( nameIsFree )
                     .doUpdateVarargParams(
                             "INSERT INTO locations (loc_name, loc_path) " +
                             "VALUES ( ?, ? ) ", 
-                            location.getName(), location.getPath());
+                            location.name(), location.getPath());
             
             return ( updated == 1 && nameIsFree );
         } catch (TransactionHandledSQLException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(initiator, error(
                     "Location saving failed:",
-                    "   name: " + location.getName(),
+                    "   name: " + location.name(),
                     "   path: " + location.getPath()));
             return false;
         }
@@ -278,7 +278,7 @@ class H2DaoLocations
                                                     location.getPath(),
                                                     replaceable, 
                                                     replacement), 
-                                            location.getName()))
+                                            location.name()))
                                     .collect(toSet()))
             ).sum();
                 

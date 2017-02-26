@@ -16,10 +16,12 @@ import java.rmi.server.UnicastRemoteObject;
 import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
-import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteAccessEndpointHolder;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+import diarsid.beam.core.modules.ControlModule;
+import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.modules.RemoteManagerModule;
+import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteAccessEndpointHolder;
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
@@ -28,9 +30,6 @@ import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.util.Logs.debug;
-
-import diarsid.beam.core.modules.ControlModule;
-import diarsid.beam.core.modules.RemoteManagerModule;
 
 
 public class RemoteManagerModuleWorker implements RemoteManagerModule {
@@ -54,7 +53,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
         saveRmiInterfacesInStaticContext(this);
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
         try {
-            int beamCorePort = Integer.parseInt(configuration.getSingle("rmi.core.port"));
+            int beamCorePort = Integer.parseInt(configuration.getAsString("rmi.core.port"));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RemoteCoreAccessEndpoint access = 
                     (RemoteCoreAccessEndpoint) UnicastRemoteObject.exportObject(
@@ -75,7 +74,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
     @Override
     public void stopModule() {
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
-        int beamCorePort = Integer.parseInt(configuration.getSingle("rmi.core.port"));
+        int beamCorePort = Integer.parseInt(configuration.getAsString("rmi.core.port"));
         try {            
             Registry registry = getRegistry(beamCorePort);
             registry.unbind(CORE_ACCESS_ENDPOINT_NAME);

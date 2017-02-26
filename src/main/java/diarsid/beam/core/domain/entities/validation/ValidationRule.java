@@ -10,10 +10,10 @@ import static java.lang.String.format;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableIn;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotSimple;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
 import static diarsid.beam.core.base.util.PathUtils.isAcceptableWebPath;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
+import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
 
 /**
  *
@@ -21,9 +21,12 @@ import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
  */
 public enum ValidationRule {
     
-    WEB_URL {
+    WEB_URL_RULE {
         @Override
         public ValidationResult apply(String target) {
+            if ( target.isEmpty() ) {
+                return validationFailsWith("cannot be empty.");
+            }
             if ( isAcceptableWebPath(target) ) {
                 return validationOk();
             } else {
@@ -32,9 +35,12 @@ public enum ValidationRule {
         }
     },
     
-    LOCAL_DIRECTORY_PATH {
+    LOCAL_DIRECTORY_PATH_RULE {
         @Override
         public ValidationResult apply(String target) {
+            if ( target.isEmpty() ) {
+                return validationFailsWith("cannot be empty.");
+            }
             if ( ! pathIsDirectory(target) ) {
                 return validationFailsWith("this path is not a directory.");
             }
@@ -42,9 +48,12 @@ public enum ValidationRule {
         }
     },
     
-    ENTITY_NAME {
+    ENTITY_NAME_RULE {
         @Override
         public ValidationResult apply(String target) {
+            if ( target.isEmpty() ) {
+                return validationFailsWith("cannot be empty.");
+            }
             if ( wordIsNotAcceptable(target) ) {
                 return validationFailsWith(format(
                         "symbol '%s' is not allowed in entity name.", 

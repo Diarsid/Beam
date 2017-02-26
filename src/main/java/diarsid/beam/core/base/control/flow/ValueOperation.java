@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.entities;
+package diarsid.beam.core.base.control.flow;
 
 /**
  *
  * @author Diarsid
  */
-public interface NamedEntity {
+public interface ValueOperation<T extends Object> extends Operation {
     
-    String name();
-    
-    NamedEntityType entityType();
 }

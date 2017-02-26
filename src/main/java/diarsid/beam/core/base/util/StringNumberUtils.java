@@ -21,6 +21,10 @@ public class StringNumberUtils {
         return s.matches("\\d+");
     }
     
+    public static boolean notNumeric(String s) {
+        return ! s.matches("\\d+");
+    }
+    
     public static int parseNumberElseZero(String s) {
         try {
             return parseInt(s);

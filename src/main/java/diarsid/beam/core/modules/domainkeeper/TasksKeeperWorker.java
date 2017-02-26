@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -34,10 +33,6 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Operations.ok;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
-import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.returnOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
@@ -60,6 +55,14 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
+
+import diarsid.beam.core.base.control.flow.ValueOperation;
+
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -185,7 +188,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             Question question = question("choose repeat").withAnswerStrings(repeatNames());
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
-                repeat = repeatByItsName(answer.getText());
+                repeat = repeatByItsName(answer.text());
             } else {
                 return voidOperationStopped();
             }
@@ -235,7 +238,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         
         if ( this.dao.saveTask(initiator, task) ) {
             fireAsync("tasks_updated");
-            return ok();
+            return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save task.");
         }
@@ -305,7 +308,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         
         if ( this.dao.deleteTaskById(initiator, taskToRemove.id()) ) {
             fireAsync("tasks_updated");
-            return ok();
+            return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to remove task.");
         }
@@ -348,7 +351,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         Answer answer = this.ioEngine.ask(initiator, whatToEdit);
         String target;
         if ( answer.isGiven() ) {
-            target = answer.getText();
+            target = answer.text();
         } else {
             return voidOperationStopped();
         }
@@ -373,7 +376,7 @@ public class TasksKeeperWorker implements TasksKeeper {
                     if ( this.dao.editTaskTime(
                             initiator, taskToEdit.id(), newTime.actualizedTime(), newPeriods.get()) ) {
                         fireAsync("tasks_updated");
-                        return ok();
+                        return voidCompleted();
                     } else {
                         return voidOperationFail("DAO failed to edit task time and periods.");
                     }
@@ -383,7 +386,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             } else {
                 if ( this.dao.editTaskTime(initiator, taskToEdit.id(), newTime.actualizedTime()) ) {
                     fireAsync("tasks_updated");
-                    return ok();
+                    return voidCompleted();
                 } else {
                     return voidOperationFail("DAO failed to edit task time.");
                 }
@@ -404,7 +407,7 @@ public class TasksKeeperWorker implements TasksKeeper {
                 return voidOperationStopped();
             }
             if ( this.dao.editTaskText(initiator, taskToEdit.id(), newText) ) {
-                return ok();
+                return voidCompleted();
             } else {
                 return voidOperationFail("DAO failed to edit task text.");
             }
@@ -414,10 +417,10 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public ReturnOperation<List<Task>> findTasks(
+    public ValueOperation<List<Task>> findTasks(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_TASK) ) {
-            return returnOperationFail("wrong command type!");
+            return valueOperationFail("wrong command type!");
         }        
         
         String text;
@@ -426,7 +429,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         } else {
             text = this.ioEngine.askInput(initiator, "text");
             if ( text.isEmpty() ) {
-                return returnOperationStopped();
+                return valueOperationStopped();
             }
         }
         
@@ -434,7 +437,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         if ( matchingTasks.isEmpty() ) {
             return successEmpty();
         } else {
-            return okWith(matchingTasks);
+            return valueFound(matchingTasks);
         }
     }  
     

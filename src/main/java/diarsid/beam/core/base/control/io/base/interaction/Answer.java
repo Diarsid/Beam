@@ -44,7 +44,7 @@ public class Answer implements Serializable {
         return isNull(this.chosen);
     }
     
-    public String getText() {
+    public String text() {
         return this.chosen.getText();
     }
     

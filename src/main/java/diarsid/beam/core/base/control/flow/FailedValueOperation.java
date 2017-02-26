@@ -9,6 +9,6 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public interface ReturnOperation<T extends Object> extends Operation {
-    
+public interface FailedValueOperation extends ValueOperation {
+    String getReason();
 }

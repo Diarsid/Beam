@@ -17,14 +17,15 @@ import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
 import static diarsid.beam.core.base.control.flow.Operations.asFail;
 
-import diarsid.beam.core.base.control.flow.ReturnOperation;
-import diarsid.beam.core.base.control.flow.OkReturnOperation;
 
 import static diarsid.beam.core.base.control.flow.OperationResult.OK;
 
 import diarsid.beam.core.base.control.flow.VoidOperation;
 
 import static diarsid.beam.core.base.control.flow.Operations.asOk;
+
+import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.OkValueOperation;
 
 /**
  *
@@ -68,12 +69,12 @@ abstract class AbstractCliAdapter {
     
     protected final void reportReturnOperationFlow(
             Initiator initiator, 
-            ReturnOperation flow, 
-            Function<OkReturnOperation, Message> ifNonEmptyFunction, 
+            ValueOperation flow, 
+            Function<OkValueOperation, Message> ifNonEmptyFunction, 
             String ifEmptyMessage) {
         switch ( flow.result() ) {
             case OK : {
-                OkReturnOperation success = asOk(flow);
+                OkValueOperation success = asOk(flow);
                 if ( success.hasReturn() ) {
                     this.ioEngine.reportMessage(initiator, ifNonEmptyFunction.apply(success));
                 } else {

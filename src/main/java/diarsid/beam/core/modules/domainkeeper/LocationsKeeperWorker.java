@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -24,9 +23,6 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.modules.data.DaoLocations;
 
-import static diarsid.beam.core.base.control.flow.Operations.ok;
-import static diarsid.beam.core.base.control.flow.Operations.okWith;
-import static diarsid.beam.core.base.control.flow.Operations.returnOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
@@ -42,9 +38,16 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY_UNDEFINED;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+
+import diarsid.beam.core.base.control.flow.ValueOperation;
+
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 
 
 
@@ -88,21 +91,21 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
     
     @Override
-    public ReturnOperation<Location> findLocation(
+    public ValueOperation<Location> findLocation(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_LOCATION) ) {
-            return returnOperationFail("wrong command type!");
+            return valueOperationFail("wrong command type!");
         }
         String namePattern = "";
         if ( command.hasArguments()) {
             namePattern = command.getFirstArg();
         } 
         
-        namePattern = this.helper.validateInteractively(initiator, namePattern, "name", ENTITY_NAME);
+        namePattern = this.helper.validateInteractively(initiator, namePattern, "name", ENTITY_NAME_RULE);
         if ( namePattern.isEmpty() ) {
             return successEmpty();
         } else {
-            return okWith(this.findExactlyOneLocationByPattern(initiator, namePattern));
+            return valueFound(this.findExactlyOneLocationByPattern(initiator, namePattern));
         }
     }
 
@@ -162,7 +165,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             return voidOperationStopped();
         }
         
-        path = this.helper.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH);
+        path = this.helper.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH_RULE);
         if ( path.isEmpty() ) {
             return voidOperationStopped();
         }
@@ -187,7 +190,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         }
 
         if ( this.dao.saveNewLocation(initiator, new Location(name, path)) ) {
-            return ok();
+            return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save Location.");
         }     
@@ -213,9 +216,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         List<Location> locationsToRemove = this.getMatchingLocationsBy(initiator, name);
         if ( hasOne(locationsToRemove) ) {
-            String locationName = getOne(locationsToRemove).getName();
+            String locationName = getOne(locationsToRemove).name();
             if ( this.dao.removeLocation(initiator, locationName) ) {
-                return ok();
+                return voidCompleted();
             } else {
                 return voidOperationFail("DAO failed to remove location.");
             }
@@ -225,9 +228,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
             Question question = question("choose").withAnswerEntities(locationsToRemove);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
-                String locationName = locationsToRemove.get(answer.index()).getName();
+                String locationName = locationsToRemove.get(answer.index()).name();
                 if ( this.dao.removeLocation(initiator, locationName) ) {
-                    return ok();
+                    return voidCompleted();
                 } else {
                     return voidOperationFail("DAO failed to remove location.");
                 }                    
@@ -251,12 +254,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
             property = propText.property();
         } else {
             name = "";
-            property = PROPERTY_UNDEFINED;
+            property = UNDEFINED_PROPERTY;
         }        
         
         property = this.helper.validatePropertyInteractively(
                 initiator, property, NAME, FILE_URL);
-        if ( property.isNotDefined() ) {
+        if ( property.isUndefined() ) {
             return voidOperationStopped();
         }
         
@@ -277,8 +280,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
                     if ( newName.isEmpty() ) {
                         return voidOperationStopped();
                     }
-                    if ( this.dao.editLocationName(initiator, location.get().getName(), newName) ) {
-                        return ok();
+                    if ( this.dao.editLocationName(initiator, location.get().name(), newName) ) {
+                        return voidCompleted();
                     } else {
                         return voidOperationFail("DAO failed to edit name.");
                     }
@@ -288,13 +291,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
                     if ( newPath.isEmpty() ) {
                         return voidOperationStopped();
                     }
-                    newPath = this.helper.validateInteractively(
-                            initiator, newPath, "new path", LOCAL_DIRECTORY_PATH);
+                    newPath = this.helper.validateInteractively(initiator, newPath, "new path", LOCAL_DIRECTORY_PATH_RULE);
                     if ( newPath.isEmpty() ) {
                         return voidOperationStopped();
                     }
-                    if ( this.dao.editLocationPath(initiator, location.get().getName(), newPath) ) {
-                        return ok();
+                    if ( this.dao.editLocationPath(initiator, location.get().name(), newPath) ) {
+                        return voidCompleted();
                     } else {
                         return voidOperationFail("DAO failed to edit path.");
                     }
@@ -312,7 +314,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     public VoidOperation replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
         if ( this.dao.replaceInPaths(initiator, replaceable, replacement) ) {
-            return ok();
+            return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to replace path fragment.");
         }

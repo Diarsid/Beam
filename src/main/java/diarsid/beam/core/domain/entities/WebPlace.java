@@ -16,13 +16,22 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 public enum WebPlace implements Serializable {
     
     BOOKMARKS ("bookmarks"),
-    WEBPANEL ("webpanel");
+    WEBPANEL ("webpanel"),
+    UNDEFINED_PLACE ("undefined");    
     
     private final String place;
     
     private WebPlace(String place) {    
         this.place = place;
-    }    
+    }   
+    
+    public boolean isUndefined() {
+        return this.equals(UNDEFINED_PLACE);
+    }
+    
+    public boolean isDefined() {
+        return ! this.equals(UNDEFINED_PLACE);
+    }
 
     public static WebPlace parsePlace(String arg) {
         switch ( lower(arg) ) {
@@ -39,7 +48,7 @@ public enum WebPlace implements Serializable {
                 return BOOKMARKS;
             }
             default: {
-                return null;
+                return UNDEFINED_PLACE;
             }
         }
     }

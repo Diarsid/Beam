@@ -19,7 +19,7 @@ public interface ResourceServletContainer {
     
     void stopServer();
     
-    void install(AbstractDispatcherServlet dispatcher, Resources resources);
+    void install(ResourceDispatcherServlet dispatcher, Resources resources);
     
     void addFilter(
             Filter filter, 

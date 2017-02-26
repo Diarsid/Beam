@@ -12,7 +12,8 @@ import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.WebModule;
-import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
+import diarsid.beam.core.modules.web.core.container.ExceptionToJsonMapper;
+import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 import diarsid.beam.core.modules.web.engines.JettyResourceServletContainer;
@@ -44,15 +45,17 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
         InnerIoEngine ioEngine;
         Configuration configuration;
         
-        AbstractDispatcherServlet dispatcherServlet;
+        ExceptionToJsonMapper exceptionMapper;
+        ResourceDispatcherServlet dispatcherServlet;
         ResourceServletContainer container;
         
         resources = new Resources();
+        exceptionMapper = new ExceptionToJsonMapper();
         
         ioEngine = this.ioModule.getInnerIoEngine();
         configuration = this.applicationComponentsHolderModule.getConfiguration();
         
-        dispatcherServlet = new BeamDispatcherServlet(resources);
+        dispatcherServlet = new ResourceDispatcherServlet(resources, exceptionMapper);
         container = new JettyResourceServletContainer(ioEngine, configuration);
         
         container.install(dispatcherServlet, resources);

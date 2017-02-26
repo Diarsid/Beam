@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Task;
+import diarsid.beam.core.base.control.flow.ValueOperation;
 
 /**
  *
@@ -49,6 +49,6 @@ public interface TasksKeeper {
     VoidOperation editTask(
             Initiator initiator, ArgumentsCommand command);
     
-    ReturnOperation<List<Task>> findTasks(
+    ValueOperation<List<Task>> findTasks(
             Initiator initiator, ArgumentsCommand command);
 }

@@ -69,7 +69,7 @@ public class Messages {
                 .stream()
                 .map(command -> format(" %d) %s", counter.getAndIncrement(), command))
                 .collect(toList());
-        batchText.add(batch.getName());
+        batchText.add(batch.name());
         return new TextMessage(INFO, batchText);
     }
     

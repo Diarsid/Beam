@@ -53,12 +53,15 @@ class ApplicationConfigurationReading {
     }
     
     static Configuration parse(Stream<String> lines) {
-        final Map<String, String> singleOptions = new HashMap<>();
-        final Map<String, List<String>> multipleOptions = new HashMap<>();
+        Map<String, String> singleOptions = new HashMap<>();
+        Map<String, List<String>> multipleOptions = new HashMap<>();
         lines
                 .map(line -> parsePair(line))
                 .forEach(pair -> mergePairIntoMaps(pair, singleOptions, multipleOptions));
-        return new Configuration(singleOptions, multipleOptions);
+        Map<String, Object> options = new HashMap<>();
+        options.putAll(singleOptions);
+        options.putAll(multipleOptions);
+        return new Configuration(options);
     }
     
     private static void mergePairIntoMaps(

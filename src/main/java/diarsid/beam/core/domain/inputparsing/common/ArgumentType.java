@@ -22,7 +22,7 @@ public enum ArgumentType {
     SIMPLE_WORD {
         @Override
         boolean isAppropriateFor(String arg) {
-            return ControlKeys.wordIsAcceptable(arg) && !PathUtils.isAcceptableWebPath(arg) && !PathUtils.isAcceptableFilePath(arg) && Objects.isNull(WebPlace.parsePlace(arg)) && EntityProperty.argToProperty(arg).isNotDefined();
+            return ControlKeys.wordIsAcceptable(arg) && !PathUtils.isAcceptableWebPath(arg) && !PathUtils.isAcceptableFilePath(arg) && Objects.isNull(WebPlace.parsePlace(arg)) && EntityProperty.argToProperty(arg).isUndefined();
         }
     },
     NUMBER {

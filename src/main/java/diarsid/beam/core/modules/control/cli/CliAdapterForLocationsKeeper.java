@@ -8,8 +8,6 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.OkReturnOperation;
-import diarsid.beam.core.base.control.flow.ReturnOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -19,6 +17,9 @@ import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.toMessage;
+
+import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.OkValueOperation;
 
 
 /**
@@ -36,8 +37,8 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     }
     
     void findLocationAndReport(Initiator initiator, ArgumentsCommand command) {
-        ReturnOperation<Location> flow = this.locationsKeeper.findLocation(initiator, command);
-        Function<OkReturnOperation, Message> ifSuccess = (success) -> {
+        ValueOperation<Location> flow = this.locationsKeeper.findLocation(initiator, command);
+        Function<OkValueOperation, Message> ifSuccess = (success) -> {
             return toMessage((Location) success.getOrThrow());
         };
         super.reportReturnOperationFlow(initiator, flow, ifSuccess, "location not found");

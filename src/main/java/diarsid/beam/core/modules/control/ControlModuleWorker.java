@@ -54,7 +54,7 @@ public class ControlModuleWorker implements ControlModule {
                         .getInnerIoEngine()
                         .ask(initiator, question);
                 if ( answer.isGiven() ) {
-                    this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.getText());
+                    this.ioModule.getInnerIoEngine().report(initiator, "your choice is : " + answer.text());
                 } else {
                     this.ioModule.getInnerIoEngine().report(initiator, "you have not chosen anything.");
                 }

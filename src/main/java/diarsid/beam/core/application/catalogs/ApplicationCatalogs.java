@@ -28,7 +28,7 @@ public class ApplicationCatalogs {
 
     public static ProgramsCatalog getProgramsCatalog() {
         return new ProgramsCatalogReal(
-                getConfiguration().getSingle("catalogs.programs"), 
+                getConfiguration().getAsString("catalogs.programs"), 
                 getSearcherWithDepthsOf(3, 3));
     }
 

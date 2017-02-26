@@ -10,92 +10,34 @@ import java.util.Objects;
 
 import diarsid.beam.core.domain.entities.WebPlace;
 
-import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
-
 /**
  *
  * @author Diarsid
  */
 public class WebPageNameUrlAndPlace {
     
-    private String name;
-    private String url;
-    private WebPlace place;
-    private boolean rejected;
+    private final String name;
+    private final String url;
+    private final WebPlace place;
 
     WebPageNameUrlAndPlace(String name, String url, WebPlace place) {
         this.name = name;
         this.url = url;
         this.place = place;
-        this.rejected = false;
-    }
-    
-    public boolean isActual() {
-        return ! this.rejected;
-    }
-    
-    public boolean isRejected() {
-        return this.rejected;
-    }
-    
-    public void ifTrueReject(boolean condition) {
-        this.rejected = condition;
-    }
-    
-    public boolean hasName() {
-        return ! this.name.isEmpty();
-    }
-    
-    public boolean hasNotName() {
-        return this.name.isEmpty();
-    }
-    
-    public boolean hasUrl() {
-        return ! this.url.isEmpty();
-    }
-    
-    public boolean hasNotUrl() {
-        return this.url.isEmpty();
-    }
-    
-    public boolean hasPlace() {
-        return this.place != null;
-    }
-    
-    public boolean hasNotPlace() {
-        return this.place == null;
     }
 
-    public String getName() {
+    public String name() {
         return this.name;
     }
 
-    public void ifTrueSetName(boolean condition, String name) {
-        if ( condition ) {
-            this.name = name;
-        }        
-    }
-
-    public String getUrl() {
+    public String url() {
         return this.url;
     }
 
-    public void ifTrueSetUrl(boolean condition, String url) {
-        if ( condition ) {
-            this.url = url;
-        }            
-    }
-
-    public WebPlace getPlace() {
+    public WebPlace place() {
         return this.place;
     }
-
-    public void ifTrueSetPlaceOf(boolean condition, String place) {
-        if ( condition ) {
-            this.place = parsePlace(place);
-        }    
-    }
-
+    
     @Override
     public int hashCode() {
         int hash = 5;

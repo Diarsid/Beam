@@ -23,7 +23,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.web.core.container.AbstractDispatcherServlet;
+import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 
@@ -50,7 +50,7 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
         
         this.jettyContext = new ServletContextHandler(
                 ServletContextHandler.NO_SESSIONS);   
-        this.jettyContext.setContextPath(config.getSingle("web.local.path"));
+        this.jettyContext.setContextPath(config.getAsString("web.local.path"));
         
         this.jettyServer.setHandler(this.jettyContext);
         this.configureServerAddresses(config);
@@ -60,12 +60,12 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     
     private void configureServerAddresses(Configuration config) {
         try {
-            String localHost = config.getSingle("web.local.host");
-            int localPort = Integer.parseInt(config.getSingle("web.local.port"));
+            String localHost = config.getAsString("web.local.host");
+            int localPort = Integer.parseInt(config.getAsString("web.local.port"));
             this.addInetAddress(localHost, localPort, this.localConnectorName);
-            if ( config.hasSingle("web.internet.host") && config.hasSingle("web.internet.port") ) {
-                String internetHost = config.getSingle("web.internet.host");
-                int internetPort = Integer.parseInt(config.getSingle("web.internet.port"));
+            if ( config.hasString("web.internet.host") && config.hasString("web.internet.port") ) {
+                String internetHost = config.getAsString("web.internet.host");
+                int internetPort = Integer.parseInt(config.getAsString("web.internet.port"));
                 this.addInetAddress(internetHost, internetPort, this.internetConnectorName);
             }
         } catch (NumberFormatException e) {
@@ -120,12 +120,11 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     }
     
     @Override
-    public void install(AbstractDispatcherServlet dispatcher, Resources resources) {
+    public void install(ResourceDispatcherServlet dispatcher, Resources resources) {
         this.jettyContext.addServlet(new ServletHolder("{dispatcher}", dispatcher), "/*");
         resources.doForEach(resource -> {
-                this.jettyContext.addServlet(
-                    new ServletHolder(resource.name(), resource), 
-                    resource.url());
+            this.jettyContext.addServlet(
+                    new ServletHolder(resource.name(), resource), resource.url());
         });
     }
     

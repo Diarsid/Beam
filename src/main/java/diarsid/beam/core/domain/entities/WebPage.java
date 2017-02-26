@@ -28,14 +28,17 @@ public class WebPage
                 Serializable, 
                 ConvertableToVariant {    
     
+    // page info
     private final String name;
     private final String shortcuts;
     private final String url;
+    private int pageOrder;
+    
+    // directory info page belongs to
     private final WebPlace place;
-    private final int directoryId;
     private final String directoryName;    
     private final int directoryOrder;
-    private int pageOrder;
+    
         
     WebPage(
             String name, 
@@ -43,14 +46,12 @@ public class WebPage
             String url,
             int pageOrder,
             WebPlace place,
-            int directoryId,
             String directoryName,
             int directoryOrder) {        
         this.name = name;
         this.shortcuts = shortcuts;
         this.url = url;
         this.place = place;
-        this.directoryId = directoryId;
         this.directoryName = directoryName;
         this.pageOrder = pageOrder;
         this.directoryOrder = directoryOrder;
@@ -61,25 +62,23 @@ public class WebPage
             String shortcuts,             
             String url,
             WebPlace place,
-            int directoryId,
             String directoryName) {        
         this.name = name;
         this.shortcuts = shortcuts;
         this.url = url;
         this.place = place;
-        this.directoryId = directoryId;
         this.directoryName = directoryName;
         this.pageOrder = MIN_VALUE;
         this.directoryOrder = MIN_VALUE;
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return this.name;
     }
     
     @Override
-    public NamedEntityType getEntityType() {
+    public NamedEntityType entityType() {
         return WEBPAGE;
     }
     
@@ -96,6 +95,10 @@ public class WebPage
     @Override
     public WebPlace place() {
         return this.place;
+    }
+    
+    public WebDirectory directory() {
+        return new WebDirectory(this.directoryName, this.place, this.directoryOrder);
     }
     
     public boolean isConsistent() {
@@ -122,10 +125,6 @@ public class WebPage
 
     public String directoryName() {
         return this.directoryName;
-    }
-    
-    public int directoryId() {
-        return this.directoryId;
     }
     
     public int directoryOrder() {

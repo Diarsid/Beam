@@ -27,25 +27,16 @@
       <fileSet>
           <directory>src/main/resources/config</directory>
           <outputDirectory>config</outputDirectory>
-          <includes>
-              <include>*.*</include>
-          </includes>    
       </fileSet>
 
       <fileSet>
-          <directory>src/main/resources/data</directory>
-          <outputDirectory>data</outputDirectory>
-          <includes>
-              <include>*.*</include>
-          </includes>    
+          <directory>src/main/resources/res</directory>
+          <outputDirectory>res</outputDirectory>
       </fileSet>
-
+      
       <fileSet>
-          <directory>src/main/resources/data/images</directory>
-          <outputDirectory>data/images</outputDirectory>
-          <includes>
-              <include>*.*</include>
-          </includes>    
+          <directory>src/main/resources/env</directory>
+          <outputDirectory>env</outputDirectory>
       </fileSet>
 
       <fileSet>

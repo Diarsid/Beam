@@ -21,12 +21,12 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.domain.entities.NamedEntityType.fromString;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardLists;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.domain.entities.NamedEntityType.fromString;
 
 
 class H2DaoNamedEntities 
@@ -44,12 +44,12 @@ class H2DaoNamedEntities
                 private final NamedEntityType type = fromString((String) row.get("entity_type"));
                 
                 @Override
-                public String getName() {
+                public String name() {
                     return this.name;
                 }
 
                 @Override
-                public NamedEntityType getEntityType() {
+                public NamedEntityType entityType() {
                     return this.type;
                 }
             };

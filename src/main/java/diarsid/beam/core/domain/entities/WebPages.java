@@ -20,9 +20,8 @@ public class WebPages {
             String shortcuts,             
             String url, 
             WebPlace place,
-            int directoryId,
             String directoryName) {        
-        return new WebPage(name, shortcuts, url, place, directoryId, directoryName);
+        return new WebPage(name, shortcuts, url, place, directoryName);
     }
     
     public static WebPage restorePage(
@@ -30,7 +29,6 @@ public class WebPages {
             String shortcuts,             
             String url, 
             WebPlace place,
-            int directoryId,
             String directoryName,
             int pageOrder,
             int directoryOrder,
@@ -41,7 +39,6 @@ public class WebPages {
                 url, 
                 pageOrder, 
                 place, 
-                directoryId, 
                 directoryName, 
                 directoryOrder);
     }

@@ -17,6 +17,7 @@ public class StringHolder {
     private String string;
     
     public StringHolder() {
+        this.string = "";
     }
 
     public String get() {

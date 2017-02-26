@@ -316,7 +316,7 @@ public class H2DaoBatchesTest {
         assertTrue(batchs.size() == 3);
         List<String> names = batchs
                 .stream()
-                .map(batch -> batch.getName())
+                .map(batch -> batch.name())
                 .collect(toList());
         assertTrue(names.contains("workspace"));
         assertTrue(names.contains("tomcat"));

@@ -20,25 +20,26 @@ public enum EntityProperty {
     TEXT,
     ORDER,
     WEB_PLACE,
+    WEB_DIRECTORY,
     WEB_URL,
     SHORTCUTS,
     FILE_URL,
     
-    PROPERTY_UNDEFINED;
+    UNDEFINED_PROPERTY;
 
     public boolean isDefined() {
-        return this != PROPERTY_UNDEFINED;
+        return this != UNDEFINED_PROPERTY;
     }
     
-    public boolean isNotDefined() {
-        return this == PROPERTY_UNDEFINED;
+    public boolean isUndefined() {
+        return this == UNDEFINED_PROPERTY;
     }
     
     public static EntityProperty propertyOf(String property) {
         return stream(values())
                 .filter(value -> lower(value.name()).equals(lower(property)))
                 .findFirst()
-                .orElse(PROPERTY_UNDEFINED);
+                .orElse(UNDEFINED_PROPERTY);
     }
     
     public boolean isOneOf(EntityProperty... possibleProperties) {
@@ -78,6 +79,12 @@ public enum EntityProperty {
             case "shortcut" : {
                 return SHORTCUTS;
             }   
+            case "dir" :
+            case "webdir" : 
+            case "directory" : 
+            case "webdirectory" : {
+                return WEB_DIRECTORY;
+            }    
             case "url" :
             case "address" :
             case "link" : {
@@ -88,7 +95,7 @@ public enum EntityProperty {
             }
             
             default : {
-                return PROPERTY_UNDEFINED;
+                return UNDEFINED_PROPERTY;
             }
         }    
     }

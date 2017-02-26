@@ -69,7 +69,7 @@ class H2DaoBatches
         };
         this.batchedCommandToParams = (batchedCommand) -> {
             return params(
-                batchedCommand.batch().getName(),
+                batchedCommand.batch().name(),
                 batchedCommand.command().type().name(),
                 batchedCommand.orderInBatch(),
                 batchedCommand.command().stringifyOriginal(),
@@ -187,14 +187,14 @@ class H2DaoBatches
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE bat_name IS ? ", 
-                            batch.getName());
+                            batch.name());
             
             int nameSavedCount = transact
                     .ifTrue( nameIsFree )
                     .doUpdateVarargParams(
                             "INSERT INTO batches (bat_name) " +
                             "VALUES ( ? )", 
-                            batch.getName());
+                            batch.name());
             
             int commandSavedCount = stream(transact
                     .ifTrue( nameIsFree )

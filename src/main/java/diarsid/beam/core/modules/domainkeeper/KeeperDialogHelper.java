@@ -12,12 +12,14 @@ import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.util.StringNumberUtils.notNumeric;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.PROPERTY_UNDEFINED;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 
 /**
  *
@@ -61,21 +63,21 @@ public class KeeperDialogHelper {
 
     public String validateEntityNameInteractively(
             Initiator initiator, String argument) {
-        ValidationResult result = ENTITY_NAME.apply(argument);
+        ValidationResult result = ENTITY_NAME_RULE.apply(argument);
         if ( result.isOk() ) {
             return argument;
         } else {
-            return this.inputAndValidateInLoop(result, initiator, "name", ENTITY_NAME, argument);
+            return this.inputAndValidateInLoop(result, initiator, "name", ENTITY_NAME_RULE, argument);
         }
     }
     
     public EntityProperty validatePropertyInteractively(
             Initiator initiator, EntityProperty property, EntityProperty... possibleProperties) {
         String propertyArg;
-        while ( property.isNotDefined() || property.isNotOneOf(possibleProperties) ) { 
+        while ( property.isUndefined() || property.isNotOneOf(possibleProperties) ) { 
             propertyArg = this.ioEngine.askInput(initiator, "property to edit");
             if ( propertyArg.isEmpty() ) {
-                return PROPERTY_UNDEFINED;
+                return UNDEFINED_PROPERTY;
             }
             property = argToProperty(propertyArg);
             if ( property.isDefined() && property.isNotOneOf(possibleProperties) ) {
@@ -85,5 +87,30 @@ public class KeeperDialogHelper {
             }
         }
         return property;
+    }
+    
+    public int discussIntInRange(
+            Initiator initiator, int fromInclusive, int toInclusive, String request) {
+        int i = -1;
+        boolean intNotDefined = true;
+        String intInput;
+        intDefining: while ( intNotDefined ) {            
+            intInput = this.ioEngine.askInput(initiator, request);
+            if ( intInput.isEmpty() ) {
+                i = -1;
+                intNotDefined = false;
+            }
+            if ( notNumeric(intInput) ) {
+                this.ioEngine.report(initiator, "not a number.");
+                continue intDefining;
+            }
+            i = parseInt(intInput);
+            if ( i < fromInclusive || i > toInclusive ) {
+                this.ioEngine.report(initiator, format("out of range %d-%d", fromInclusive, toInclusive));
+                continue intDefining;
+            }
+            intNotDefined = false;
+        }
+        return i;
     }
 }
