@@ -2,7 +2,9 @@
 *desktop.ini
 /target/*
 /dev_private/*
-/src/main/external-resources/lib/*
+/src/main/resources/lib/*
+!/src/main/resources/lib/gem-injector*
+!/src/main/resources/lib/JdbcTransactions*
 /*directory_key*
 /beam_home_bin*
 /nbproject/
