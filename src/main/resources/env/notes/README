@@ -1,0 +1,3 @@
+/env/notes is intended as initial default place where user's notes will be stored.
+Notes destination folder can be changed using /config/beam.config file by adding following line:
+[config] catalogs.notes = path/to/your/custom/notes/catalog

@@ -23,6 +23,9 @@ public class ApplicationConfiguration {
     static {
         Path configFile = Paths.get("./../config/beam.config");
         Configuration defaultConfig = parse(
+                "data.store = ./../res/data",
+                "data.user = root",
+                "data.pass = root",
                 "catalogs.programs = ./../env/programs",
                 "catalogs.notes = ./../env/notes",
                 "web.local.host = 127.0.0.1",

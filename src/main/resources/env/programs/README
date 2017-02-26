@@ -1,0 +1,3 @@
+/env/programs is intended as initial default place where user's executables will be stored.
+Programs destination folder can be changed using /config/beam.config file by adding following line:
+[config] catalogs.programs = path/to/your/custom/programs/catalog

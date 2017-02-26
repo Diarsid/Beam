@@ -17,8 +17,8 @@ public class H2DataBase implements DataBase {
     
     private final JdbcTransactionFactory transactionFactory;
     
-    public H2DataBase(String dataBaseUrl) {
-        JdbcConnectionsSource source = new H2JdbcConnectionsSource(dataBaseUrl);
+    public H2DataBase(String dataBaseUrl, String user, String pass) {
+        JdbcConnectionsSource source = new H2JdbcConnectionsSource(dataBaseUrl, user, pass);
         JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(1);
         JdbcPreparedStatementSetter paramsSetter = new JdbcPreparedStatementSetter();
         this.transactionFactory = new JdbcTransactionFactory(

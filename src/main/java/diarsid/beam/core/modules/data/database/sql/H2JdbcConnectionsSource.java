@@ -21,9 +21,7 @@ class H2JdbcConnectionsSource implements JdbcConnectionsSource {
     
     private final JdbcConnectionPool conPool;
     
-    H2JdbcConnectionsSource(String url) {
-        String user = "BeamServer";
-        String pass = "admin";
+    H2JdbcConnectionsSource(String url, String user, String pass) {
         this.conPool = JdbcConnectionPool.create(url, user, pass);
         this.conPool.setMaxConnections(5);
     }

@@ -1,0 +1,7 @@
+Initial folder to store H2 database files.
+can be changed using /config/beam.config file by adding following line:
+[config] data.store = path/to/your/custom/folder/with/data/files
+
+Database user and password can be changed using following lines:
+[config] data.user = ...  ('root' by default)
+[config] data.pass = ...  ('root' by default)
