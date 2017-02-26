@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.starter;
+package diarsid.beam.core.application.starter.scripts;
 
 /**
  *
  * @author Diarsid
  */
-public enum FlagType {
+public interface ScriptExecutablePart extends ScriptPart {
     
-    STARTABLE,
-    CONFIGURABLE,
-    EXECUTABLE;
 }

@@ -273,8 +273,6 @@ class H2DaoTasks
         try (JdbcTransaction transact = super.getTransaction()) {
             String days = timePeriod.stringifyDays();
             String hours = timePeriod.stringifyHours();
-            System.out.println("[dao] days: " + days);
-            System.out.println("[dao] hours: " + hours);
             int updated = transact
                     .doUpdateVarargParams(
                             "UPDATE tasks " +

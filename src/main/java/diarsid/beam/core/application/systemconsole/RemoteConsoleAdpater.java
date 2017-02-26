@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.systemconsole;
+package diarsid.beam.core.application.systemconsole;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -18,7 +18,7 @@ import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
-import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.base.util.Logs.logError;
 
 /**

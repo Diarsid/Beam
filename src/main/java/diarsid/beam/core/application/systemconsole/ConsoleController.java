@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.systemconsole;
+package diarsid.beam.core.application.systemconsole;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -32,8 +32,8 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNo
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
-import static diarsid.beam.core.systemconsole.SystemConsole.exitSystemConsole;
-import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
+import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 
 /**
  *

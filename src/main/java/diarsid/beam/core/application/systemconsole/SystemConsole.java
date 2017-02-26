@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.systemconsole;
+package diarsid.beam.core.application.systemconsole;
 
 import java.io.IOException;
 
@@ -19,8 +19,8 @@ import static java.lang.Thread.sleep;
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.systemconsole.SystemIO.provideReader;
-import static diarsid.beam.core.systemconsole.SystemIO.provideWriter;
+import static diarsid.beam.core.application.systemconsole.SystemIO.provideReader;
+import static diarsid.beam.core.application.systemconsole.SystemIO.provideWriter;
 
 /**
  *

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.systemconsole;
+package diarsid.beam.core.application.systemconsole;
 
 /**
  *

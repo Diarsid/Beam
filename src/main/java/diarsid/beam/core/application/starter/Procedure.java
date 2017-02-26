@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.starter;
+package diarsid.beam.core.application.starter;
 
 import java.util.HashSet;
 import java.util.Optional;

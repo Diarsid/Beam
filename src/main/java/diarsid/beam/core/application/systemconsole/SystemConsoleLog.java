@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.systemconsole;
+package diarsid.beam.core.application.systemconsole;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
+import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 
 /**
  *

@@ -9,27 +9,26 @@ package diarsid.beam.core.modules.io;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-
-import static java.util.concurrent.CompletableFuture.runAsync;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
@@ -53,11 +52,12 @@ public class MainInnerIoEngine
     @Override
     public Choice ask(Initiator initiator, String yesOrNoQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return awaitGet(() -> {
                 try {
-                    return ioEngine.resolveYesOrNo(yesOrNoQuestion);
-                } catch (Exception ex) {
+                    return this.ioEnginesHolder
+                            .getEngine(initiator)
+                            .resolveYesOrNo(yesOrNoQuestion);
+                } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
                     return CHOICE_NOT_MADE;
@@ -71,10 +71,11 @@ public class MainInnerIoEngine
     @Override
     public Answer ask(Initiator initiator, Question question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return awaitGet(() -> {
                 try {
-                    return ioEngine.resolveQuestion(question);
+                    return this.ioEnginesHolder
+                            .getEngine(initiator)
+                            .resolveQuestion(question);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
@@ -89,10 +90,11 @@ public class MainInnerIoEngine
     @Override
     public String askInput(Initiator initiator, String inputQuestion) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             return awaitGet(() -> {
                 try {
-                    return ioEngine.askForInput(inputQuestion);
+                    return this.ioEnginesHolder
+                            .getEngine(initiator)
+                            .askForInput(inputQuestion);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
@@ -107,10 +109,11 @@ public class MainInnerIoEngine
     @Override
     public void report(Initiator initiator, String string) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             awaitDo(() -> {
                 try {
-                    ioEngine.report(string);
+                    this.ioEnginesHolder
+                            .getEngine(initiator)
+                            .report(string);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
@@ -126,7 +129,7 @@ public class MainInnerIoEngine
         this.ioEnginesHolder
                 .all()
                 .forEach(ioEngine -> {
-                    runAsync(() -> {
+                    asyncDo(() -> {
                         try {
                             ioEngine.report(string);
                         } catch (IOException ex) {
@@ -160,7 +163,7 @@ public class MainInnerIoEngine
         this.ioEnginesHolder
                 .all()
                 .forEach(ioEngine -> {
-                    runAsync(() -> {
+                    asyncDo(() -> {
                         try {
                             ioEngine.reportMessage(message);
                         } catch (IOException ex) {

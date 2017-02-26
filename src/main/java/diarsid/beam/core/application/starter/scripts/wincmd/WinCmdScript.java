@@ -4,11 +4,11 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.starter.scripts.wincmd;
+package diarsid.beam.core.application.starter.scripts.wincmd;
 
 import java.util.List;
 
-import diarsid.beam.core.starter.scripts.Script;
+import diarsid.beam.core.application.starter.scripts.Script;
 import diarsid.beam.core.application.catalogs.ScriptsCatalog;
 
 /**

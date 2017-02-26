@@ -3,17 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.starter;
+package diarsid.beam.core.application.starter.scripts;
+
+import java.util.List;
 
 /**
  *
  * @author Diarsid
  */
-public interface Flag {
+public interface ScriptPart {
     
-    String text();
-    
-    FlagType type();
-    
-    String description();
+    List<String> getLines();
 }

@@ -4,9 +4,9 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.starter;
+package diarsid.beam.core.application.starter;
 
-import static diarsid.beam.core.starter.FlagType.CONFIGURABLE;
+import static diarsid.beam.core.application.starter.FlagType.CONFIGURABLE;
 
 /**
  *

@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.data.database.sql;
 
+import java.util.Objects;
+
 
 public class H2SqlTable implements SqlTable {
     
@@ -32,5 +34,38 @@ public class H2SqlTable implements SqlTable {
     @Override
     public int getColumnsQty() {
         return this.columnsQty;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + Objects.hashCode(this.name);
+        hash = 53 * hash + Objects.hashCode(this.sql);
+        hash = 53 * hash + this.columnsQty;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final H2SqlTable other = ( H2SqlTable ) obj;
+        if ( this.columnsQty != other.columnsQty ) {
+            return false;
+        }
+        if ( !Objects.equals(this.name, other.name) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.sql, other.sql) ) {
+            return false;
+        }
+        return true;
     }
 }

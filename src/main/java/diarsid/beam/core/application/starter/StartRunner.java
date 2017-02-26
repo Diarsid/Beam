@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.starter;
+package diarsid.beam.core.application.starter;
 
 import diarsid.beam.core.Beam;
 import diarsid.beam.core.application.catalogs.ScriptsCatalog;

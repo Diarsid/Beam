@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.starter;
+package diarsid.beam.core.application.starter;
 
 
 import java.util.ArrayList;
@@ -18,8 +18,8 @@ import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.application.catalogs.ApplicationCatalogs.getScriptsCatalog;
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
-import static diarsid.beam.core.starter.Flags.flagOf;
-import static diarsid.beam.core.starter.Flags.formatToPrintables;
+import static diarsid.beam.core.application.starter.Flags.flagOf;
+import static diarsid.beam.core.application.starter.Flags.formatToPrintables;
 import static diarsid.beam.core.base.util.ArraysUtil.isEmpty;
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;

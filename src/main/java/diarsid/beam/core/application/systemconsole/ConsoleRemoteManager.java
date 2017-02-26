@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.systemconsole;
+package diarsid.beam.core.application.systemconsole;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
@@ -24,8 +24,8 @@ import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.systemconsole.SystemConsole.getPassport;
-import static diarsid.beam.core.systemconsole.SystemConsoleLog.consoleDebug;
+import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
+import static diarsid.beam.core.application.systemconsole.SystemConsoleLog.consoleDebug;
 
 /**
  *
