@@ -14,6 +14,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
+import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
 
 /**
  *
@@ -40,8 +41,10 @@ public interface WebPagesKeeper {
             Initiator initiator, String name);
     
     boolean createWebPage(
-            Initiator initiator, String name, String url, WebPlace place, String directory);
+            Initiator initiator, String name, String url, WebPlace place, String directory)
+            throws DomainConsistencyException;
     
     boolean editWebPageName(
-            Initiator initiator, String name, String newName);
+            Initiator initiator, String name, String newName)
+            throws DomainConsistencyException;
 }

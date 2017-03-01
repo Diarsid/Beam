@@ -21,6 +21,7 @@ import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
@@ -63,37 +64,38 @@ class TasksExecutionScheduler {
     }
     
     void refresh() {
-        synchronized ( this.taskExecutionLock ) { 
+        synchronized ( this.taskExecutionLock ) {             
             this.updateCurrentExecution();
         }
     }
     
     void beginTasksProcessing() {
         synchronized ( this.taskExecutionLock ) {
-            // get lag, expired tasks, and show them
+            // if possible lag is not present it means that there are no active
+            // tasks to measure lag between their expired but active execution time
+            // and present moment
             Optional<Long> possibleLag = this.tasksKeeper.getInactivePeriodMinutes(this.ownInitiator);
-            List<Task> expiredTasks = this.tasksKeeper.getPastActiveTasks(this.ownInitiator); 
-            this.showExpiredTasks(possibleLag, expiredTasks);
-
-            // switch all tasks
-            expiredTasks.stream().forEach(Task::switchTime);
-
-            // update expired tasks     
-            this.tasksKeeper.updateTasks(this.ownInitiator, expiredTasks);
+            if ( possibleLag.isPresent() ) {
+                // get lag, expired tasks, and show them
+                List<Task> expiredTasks = this.tasksKeeper.getPastActiveTasks(this.ownInitiator); 
+                this.showExpiredTasks(possibleLag.get(), expiredTasks);
+                if ( nonEmpty(expiredTasks) ) {
+                    // switch all tasks
+                    expiredTasks.stream().forEach(Task::switchTime);
+                    // update expired tasks     
+                    this.tasksKeeper.updateTasks(this.ownInitiator, expiredTasks);
+                }  
+            }        
         }
     }
 
-    private void showExpiredTasks(Optional<Long> possibleLag, List<Task> expiredTasks) {
-        // if possible lag is not present it means that there are no active
-        // tasks to measure lag between their expired but active execution time
-        // and present moment
-        if ( possibleLag.isPresent() ) {
-            List<TaskMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
-                    expiredTasks, possibleLag.get(), LAG_AFTER_INITIAL_START);
-            asyncDo(() -> {
-                this.tasksIo.showAll(tasksToShow);
-            });
-        }
+    private void showExpiredTasks(long lag, List<Task> expiredTasks) {
+        
+        List<TaskMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
+                    expiredTasks, lag, LAG_AFTER_INITIAL_START);
+        asyncDo(() -> {
+            this.tasksIo.showAll(tasksToShow);
+        });
     }
     
     private void updateCurrentExecution() {                   

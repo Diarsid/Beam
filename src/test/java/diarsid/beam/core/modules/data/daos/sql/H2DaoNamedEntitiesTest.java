@@ -27,6 +27,7 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -122,7 +123,7 @@ public class H2DaoNamedEntitiesTest {
                 throw new IllegalArgumentException();
             }
             
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }        
     }

@@ -34,6 +34,7 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.Integer.MIN_VALUE;
@@ -167,7 +168,7 @@ public class H2DaoTasksTest {
             dataBase.transactionFactory()
                     .createDisposableTransaction()
                     .doUpdate("DELETE FROM tasks");
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logger.error("clearing case error", ex);
         }
     }

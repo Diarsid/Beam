@@ -4,29 +4,26 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.application.catalogs;
+package diarsid.beam.core.application.environment;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.base.os.search.FileSearcher;
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.domain.entities.Program;
 
 
 public class ProgramsCatalogReal 
         extends SearcheableCatalog
         implements ProgramsCatalog {
     
-    private final String catalogPath;
+    private final Path catalogPath;
     
     public ProgramsCatalogReal(String catalogPath, FileSearcher fileSearcher) {
         super(catalogPath, fileSearcher);
-        this.catalogPath = catalogPath;
-    }
-
-    @Override
-    public String getCatalogPath() {
-        return this.catalogPath;
+        this.catalogPath = Paths.get(catalogPath).toAbsolutePath().normalize();
     }
 
     @Override
@@ -42,5 +39,10 @@ public class ProgramsCatalogReal
     @Override
     public File asFile(Program program) {
         return super.getPath().resolve(program.getFullName()).toFile();
+    }
+
+    @Override
+    public Path path() {
+        return this.catalogPath;
     }
 }

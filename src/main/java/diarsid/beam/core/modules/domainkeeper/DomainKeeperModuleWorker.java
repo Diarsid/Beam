@@ -18,6 +18,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     private final BatchesKeeper batchesKeeper;
     private final ProgramsKeeper programsKeeper;
     private final TasksKeeper tasksKeeper;
+    //private final WebPagesKeeper webPagesKeeper;
 
     public DomainKeeperModuleWorker(
             LocationsKeeper locationsKeeper, 
@@ -28,6 +29,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
         this.batchesKeeper = batchesKeeper;
         this.programsKeeper = programsKeeper;
         this.tasksKeeper = tasksKeeper;
+        //this.webPagesKeeper = webPagesKeeper;
     }
 
     @Override
@@ -53,5 +55,10 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     @Override
     public TasksKeeper getTasksKeeper() {
         return this.tasksKeeper;
+    }
+    
+    @Override
+    public WebPagesKeeper getPagesKeeper() {
+        throw new UnsupportedOperationException();
     }
 }

@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
-
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -57,7 +57,7 @@ public class Batch implements NamedEntity {
     public List<String> stringifyCommands() {
         return this.commands
                         .stream()
-                        .map(batchedCommand -> batchedCommand.command().stringifyOriginal())
+                        .map(batchedCommand -> batchedCommand.command().stringify())
                         .collect(toList());
     }
 

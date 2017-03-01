@@ -8,7 +8,7 @@ package diarsid.beam.core.base.control.io.commands;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.commands.exceptions.EmptyArgumentException;
+import static diarsid.beam.core.base.util.Requirements.requireNonEmpty;
 
 /**
  *
@@ -20,22 +20,15 @@ public class ExtendableArgument {
     private String extendedArgument;
     
     public ExtendableArgument(String originalArgument) {
-        this.onlyNonEmptyArgument(originalArgument);
+        requireNonEmpty(originalArgument, "command original argument cannot be empty.");
         this.originalArgument = originalArgument;
         this.extendedArgument = "";
     }
     
-    public ExtendableArgument(String originalArgument, String improvedArgument) {
-        this.onlyNonEmptyArgument(originalArgument);
+    public ExtendableArgument(String originalArgument, String extendedArgument) {
+        requireNonEmpty(originalArgument, "command original argument cannot be empty.");
         this.originalArgument = originalArgument;
-        this.onlyNonEmptyArgument(improvedArgument);
-        this.extendedArgument = improvedArgument;
-    }
-    
-    private void onlyNonEmptyArgument(String arg) {
-        if ( arg.isEmpty() ) {
-            throw new EmptyArgumentException();
-        }
+        this.extendedArgument = extendedArgument;
     }
 
     public String getExtended() {

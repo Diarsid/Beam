@@ -29,15 +29,15 @@ public class Messages {
     private Messages() {
     }
     
-    public static Message error(String... lines) {
-        return new TextMessage(ERROR, lines);
+    public static Message error(String line, String... lines) {
+        return new TextMessage(ERROR, line, lines);
     }
     
-    public static Message text(String... lines) {
-        return new TextMessage(INFO, lines);
+    public static Message text(String line, String... lines) {
+        return new TextMessage(INFO, line, lines);
     }
     
-    public static Message text(List<String> lines) {
+    public static Message textToMessage(List<String> lines) {
         return new TextMessage(INFO, lines);
     }
     

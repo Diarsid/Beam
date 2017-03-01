@@ -9,6 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
+import diarsid.beam.core.domain.entities.exceptions.DomainOperationException;
+
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
@@ -24,6 +28,12 @@ public class ExceptionToJsonMapper {
     
     public ExceptionToJsonMapper() {
         this.mappers = new HashMap<>();
+        this.mappers.put(DomainConsistencyException.class, (throwable) -> {
+            return new JsonError(SC_BAD_REQUEST, errorJson(throwable.getMessage()));
+        });
+        this.mappers.put(DomainOperationException.class, (throwable) -> {
+            return new JsonError(SC_INTERNAL_SERVER_ERROR, errorJson(throwable.getMessage()));
+        });
         this.defaultMapper = (throwable) -> {
             return new JsonError(SC_INTERNAL_SERVER_ERROR, errorJson(throwable.getMessage()));
         };

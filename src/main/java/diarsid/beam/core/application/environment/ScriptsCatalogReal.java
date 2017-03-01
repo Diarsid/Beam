@@ -1,0 +1,145 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package diarsid.beam.core.application.environment;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+
+import diarsid.beam.core.Beam;
+import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.starter.Starter;
+import diarsid.beam.core.application.systemconsole.SystemConsole;
+import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
+
+import static java.nio.file.Files.isRegularFile;
+import static java.util.stream.Collectors.toList;
+
+import static diarsid.beam.core.application.starter.FlagLaunchable.START_ALL;
+import static diarsid.beam.core.base.util.Logs.logError;
+
+/**
+ *
+ * @author Diarsid
+ */
+public class ScriptsCatalogReal implements ScriptsCatalog {
+    
+    private final Path catalogPath;
+    private final LibrariesCatalog librariesCatalog;
+    private final Configuration config;
+    private final ScriptSyntax scriptSyntax;
+    
+    ScriptsCatalogReal(
+            String catalogPath, 
+            LibrariesCatalog librariesCatalog,
+            Configuration config,
+            ScriptSyntax scriptSyntax) {
+        this.catalogPath = Paths.get(catalogPath).toAbsolutePath().normalize();
+        this.librariesCatalog = librariesCatalog;
+        this.config = config;
+        this.scriptSyntax = scriptSyntax;
+    }
+    
+    ScriptsCatalog refreshScripts() {
+        
+        this.newScript("beam.core")
+                .invokeClass(Beam.class)
+                .usingJavaw()
+                .withClasspath(this.librariesCatalog.getLibraries())
+                .withJvmOptions(this.config.getAsList("core.jvm.option"))
+                .complete()
+                .save();
+
+        this.newScript("beam.sysconsole")
+                .invokeClass(SystemConsole.class)
+                .withClasspath(this.librariesCatalog.getLibrariesWithAny("log", "slf"))
+                .withJvmOptions(this.config.getAsList("sysconsole.jvm.option"))
+                .complete()
+                .save();
+
+        this.newScript("beam")
+                .invokeClass(Starter.class)
+                .usingJavaw()
+                .withClasspath(this.librariesCatalog.getLibraries())
+                .withJvmOptions(this.config.getAsList("starter.jvm.option"))
+                .withArguments(START_ALL.text())
+                .complete()
+                .save();            
+        
+        return this;
+    }
+    
+    @Override
+    public ScriptBuilder newScript(String name) {
+        return new ScriptBuilder(name, this.catalogPath, this.scriptSyntax);
+    }
+    
+    @Override
+    public List<Script> getScripts() {
+        try {
+            return Files.list(this.catalogPath)
+                    .filter(path -> isRegularFile(path))
+                    .filter(path -> this.ifFileHasScriptExtension(path))
+                    .map(scriptPath -> toScript(scriptPath)) 
+                    .collect(toList());
+        } catch (IOException ex) {
+            logError(this.getClass(), ex);
+            throw new WorkflowBrokenException("unable to obtain scripts.");
+        }
+    }
+    
+    private Script toScript(Path path) {
+        return new ScriptReal(path.getFileName().toString(), this.catalogPath);
+    }
+    
+    @Override
+    public Optional<Script> getScriptByName(String name) {
+        String nameWithExtension = this.scriptSyntax.addExtensionTo(name);
+        try {
+            return Files.find(this.catalogPath, 
+                    1, 
+                    (path, attributes) -> {
+                        return 
+                                attributes.isRegularFile() && 
+                                this.ifFileHasScriptExtension(path) &&
+                                path.getFileName().toString().equals(nameWithExtension);
+                    })
+                    .findFirst()
+                    .map(path -> this.toScript(path));
+        } catch (IOException ex) {
+            logError(this.getClass(), ex);
+            throw new WorkflowBrokenException("unable to obtain scripts.");
+        }
+    }
+
+    private boolean ifFileHasScriptExtension(Path path) {
+        return this.scriptSyntax.examineExtension(path.getFileName().toString());
+    }
+
+    @Override
+    public boolean notContains(Script script) {
+        try {
+            return Files.list(this.catalogPath)
+                    .filter(path -> isRegularFile(path))
+                    .filter(path -> this.ifFileHasScriptExtension(path))
+                    .filter(path -> script.name().equals(path.getFileName().toString()))
+                    .findFirst()
+                    .isPresent();
+        } catch (IOException ex) {
+            logError(this.getClass(), ex);
+            throw new WorkflowBrokenException("unable to list scripts.");
+        }
+    }
+
+    @Override
+    public Path path() {
+        return this.catalogPath;
+    }
+}

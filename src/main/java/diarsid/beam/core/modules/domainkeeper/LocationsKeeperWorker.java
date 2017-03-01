@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -24,6 +25,9 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.modules.data.DaoLocations;
 
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
@@ -39,15 +43,8 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-
-import diarsid.beam.core.base.control.flow.ValueOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
 
 
 
@@ -160,20 +157,18 @@ class LocationsKeeperWorker implements LocationsKeeper {
             path = "";
         }
         
-        name = this.helper.validateEntityNameInteractively(initiator, name);
-        if ( name.isEmpty() ) {
-            return voidOperationStopped();
-        }
-        
         path = this.helper.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH_RULE);
         if ( path.isEmpty() ) {
             return voidOperationStopped();
-        }
-            
-        boolean nameIsNotValidOrFree = true;
-        while ( nameIsNotValidOrFree ) {
+        }        
+        
+        name = this.helper.validateEntityNameInteractively(initiator, name);
+        if ( name.isEmpty() ) {
+            return voidOperationStopped();
+        }    
+        nameDefining: while ( true ) {
             if ( this.dao.isNameFree(initiator, name) ) {
-                nameIsNotValidOrFree = false;
+                break nameDefining;
             } else {
                 this.ioEngine.report(initiator, "this name is not free!");
                 name = this.ioEngine.askInput(initiator, "name");
@@ -183,8 +178,6 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 name = this.helper.validateEntityNameInteractively(initiator, name);
                 if ( name.isEmpty() ) {
                     return voidOperationStopped();
-                } else {
-                    nameIsNotValidOrFree = false;
                 }                    
             }
         }

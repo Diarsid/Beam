@@ -23,7 +23,7 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.text;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.textToMessage;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 
@@ -60,7 +60,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         List<String> reports = verifier.verify(dataBase, model);        
         
         if ( nonEmpty(reports) ) {
-            ioEngine.reportMessage(getSystemInitiator(), text(reports));
+            ioEngine.reportMessage(getSystemInitiator(), textToMessage(reports));
         }
         
         DaosProvider daosProvider = new H2DaosProvider(dataBase, this.ioModule);

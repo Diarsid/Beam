@@ -8,6 +8,8 @@ package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.util.List;
 
+import static java.util.Arrays.asList;
+
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 
 /**
@@ -17,21 +19,22 @@ import static diarsid.beam.core.base.control.io.base.interaction.Message.Message
 public class TextMessage implements Message {
     
     private final MessageType type;
-    private final String[] text;
+    private final List<String> text;
     
-    public TextMessage(MessageType type, String... text) {
+    public TextMessage(MessageType type, String text1, String... text) {
         this.type = type;
-        this.text = text;
+        this.text = asList(text);
+        this.text.add(0, text1);
     }
     
     public TextMessage(MessageType type, List<String> text) {
         this.type = type;
-        this.text = (String[]) text.toArray();
+        this.text = text;
     }
     
     public TextMessage(Exception exception) {
         this.type = ERROR;
-        this.text = new String[] {exception.getMessage()};
+        this.text = asList(exception.getMessage());
     }
 
     @Override
@@ -40,7 +43,7 @@ public class TextMessage implements Message {
     }
 
     @Override
-    public String[] toText() {
+    public List<String> toText() {
         return this.text;
     }
 }

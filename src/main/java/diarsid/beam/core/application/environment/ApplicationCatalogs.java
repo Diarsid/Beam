@@ -4,9 +4,10 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.application.catalogs;
+package diarsid.beam.core.application.environment;
 
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
+import static diarsid.beam.core.application.environment.ScriptSyntax.getScriptSyntax;
 import static diarsid.beam.core.base.os.search.FileSearcher.getSearcherWithDepthsOf;
 
 /**
@@ -19,11 +20,13 @@ public class ApplicationCatalogs {
     }
 
     public static ScriptsCatalog getScriptsCatalog() {
-        return new ScriptsCatalogReal("./", getSearcherWithDepthsOf(3, 3));
+        return new ScriptsCatalogReal(
+                ".", getLibrariesCatalog(), getConfiguration(), getScriptSyntax())
+                .refreshScripts();
     }
 
     public static LibrariesCatalog getLibrariesCatalog() {
-        throw new UnsupportedOperationException();
+        return new LibrariesCatalogReal(".", "../lib");
     }
 
     public static ProgramsCatalog getProgramsCatalog() {
@@ -33,7 +36,9 @@ public class ApplicationCatalogs {
     }
 
     public static NotesCatalog getNotesCatalog() {
-        throw new UnsupportedOperationException();
+        return new NotesCatalogReal(
+                getConfiguration().getAsString("catalogs.notes"), 
+                getSearcherWithDepthsOf(3, 3));
     }
     
 }

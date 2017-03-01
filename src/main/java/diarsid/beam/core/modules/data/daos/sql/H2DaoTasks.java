@@ -24,10 +24,12 @@ import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.core.Params;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -88,9 +90,14 @@ class H2DaoTasks
                             "FROM tasks " +
                             "WHERE status IS TRUE", 
                             (row) -> {
-                                return Optional.of(((Timestamp) row.get("time")).toLocalDateTime());
+                                Object time = row.get("time");
+                                if ( nonNull(time) ) {
+                                    return Optional.of(((Timestamp) time).toLocalDateTime());
+                                } else {
+                                    return Optional.empty();
+                                }                                
                             });
-        } catch (TransactionHandledSQLException e) {
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
             logError(this.getClass(), e);
             
             return Optional.empty();
@@ -112,7 +119,7 @@ class H2DaoTasks
                             this.rowToTaskConversion,
                             types, from, to)
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return emptyList();
@@ -132,7 +139,7 @@ class H2DaoTasks
                             this.rowToTaskConversion,
                             tillNow)
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return emptyList();
@@ -162,7 +169,7 @@ class H2DaoTasks
             transact.ifTrue( ! isOk ).rollbackAndProceed();
             
             return isOk;
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return false;
@@ -195,7 +202,7 @@ class H2DaoTasks
             transact.ifTrue( updated != 1 ).rollbackAndProceed();
             
             return ( updated == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return false;
@@ -216,7 +223,7 @@ class H2DaoTasks
             transact.ifTrue( removed != 1 ).rollbackAndProceed();
             
             return ( removed == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return false;
@@ -238,7 +245,7 @@ class H2DaoTasks
             transact.ifTrue( updated != 1 ).rollbackAndProceed();
             
             return ( updated == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return false;
@@ -260,7 +267,7 @@ class H2DaoTasks
             transact.ifTrue( updated != 1 ).rollbackAndProceed();
             
             return ( updated == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return false;
@@ -286,7 +293,7 @@ class H2DaoTasks
             transact.ifTrue( updated != 1 ).rollbackAndProceed();
             
             return ( updated == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return false;
@@ -319,7 +326,7 @@ class H2DaoTasks
                         lowerWildcard(textPattern))
                     .collect(toList());
         }
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             
             return emptyList();

@@ -8,14 +8,14 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.commands.ExtendableArgument;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ExtendableArgument;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
-
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 
 public class OpenPathCommand implements ExtendableCommand {
@@ -49,14 +49,24 @@ public class OpenPathCommand implements ExtendableCommand {
     public CommandType type() {
         return OPEN_PATH;
     }
+    
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.stringify(), variantIndex);
+    }
 
     @Override
-    public String stringifyOriginal() {
+    public String stringify() {
+        return "open " + this.stringifyOriginalArgs();
+    }
+
+    @Override
+    public String stringifyOriginalArgs() {
         return this.locationArgument.getOriginal() + "/" + this.targetArgument.getOriginal();
     }
 
     @Override
-    public String stringifyExtended() {
+    public String stringifyExtendedArgs() {
         return this.locationArgument.getExtended()+ "/" + this.targetArgument.getExtended();
     }
 

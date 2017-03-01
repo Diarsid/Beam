@@ -19,8 +19,12 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
+import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
+import diarsid.beam.core.domain.entities.exceptions.DomainOperationException;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.entities.validation.ValidationResult;
+import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
+import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
@@ -63,19 +67,22 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
     private final DaoWebDirectories daoDirectories;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
-    private final WebObjectsInputParser parser;
+    private final PropertyAndTextParser propetyTextParser;
+    private final WebObjectsInputParser webObjectsParser;
     
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
             DaoWebDirectories daoDirectories,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper helper,
+            PropertyAndTextParser propetyTextParser,
             WebObjectsInputParser parser) {
         this.daoPages = dao;
         this.daoDirectories = daoDirectories;
         this.ioEngine = ioEngine;
         this.helper = helper;
-        this.parser = parser;
+        this.propetyTextParser = propetyTextParser;
+        this.webObjectsParser = parser;
     }
     
     private WebPlace discussWebPlace(Initiator initiator) {
@@ -110,7 +117,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         return shortcuts;
     }
     
-    private Optional<WebPage> discussPage(Initiator initiator, String pagePattern) {
+    private Optional<WebPage> discussExistingPage(Initiator initiator, String pagePattern) {
         Optional<WebPage> optPage = Optional.empty();
         List<WebPage> foundPages;
         boolean pageNotDefined = true;
@@ -149,7 +156,25 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         return optPage;
     }
     
-    private String discussDirectoryName(Initiator initiator, WebPlace place) {
+    private String discussPageNewName(Initiator initiator) {
+        String pageNewName = "";
+        boolean newNameNotDefined = true;
+        newNameDefining: while ( newNameNotDefined ) {            
+            pageNewName = this.ioEngine.askInput(initiator, "new name");
+            if ( pageNewName.isEmpty() ) {
+                return "";
+            }
+            pageNewName = this.helper.validateEntityNameInteractively(initiator, pageNewName);
+            if ( pageNewName.isEmpty() ) {
+                return "";
+            } else {
+                return pageNewName;
+            }
+        }
+        return pageNewName;
+    }
+    
+    private String discussExistingDirectoryName(Initiator initiator, WebPlace place) {
         String directoryName = "";
         List<WebDirectory> foundDirectories;
         boolean directoryNotDefined = true;
@@ -184,13 +209,13 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         return directoryName;
     }
     
-    private Optional<WebDirectory> discussWebDirectory(Initiator initiator) {
+    private Optional<WebDirectory> discussExistingWebDirectory(Initiator initiator) {
         WebPlace place = this.discussWebPlace(initiator);
         if ( place.isUndefined() ) {
             return Optional.empty();
         }
         
-        String directoryName = "";
+        String directoryName;
         Optional<WebDirectory> optDirectory = Optional.empty();
         List<WebDirectory> foundDirectories;
         boolean directoryNotDefined = true;
@@ -238,7 +263,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         String name;
         String url;
         if ( command.hasArguments() ) {
-            WebPageNameUrlAndPlace data = this.parser.parseNameUrlAndPlace(command.arguments());
+            WebPageNameUrlAndPlace data = this.webObjectsParser.parseNameUrlAndPlace(command.arguments());
             place = data.place();
             name = data.name();
             url = data.url();
@@ -274,7 +299,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         
         String shortcuts = this.discussShortcuts(initiator);
         
-        String directoryName = this.discussDirectoryName(initiator, place);
+        String directoryName = this.discussExistingDirectoryName(initiator, place);
         if ( directoryName.isEmpty() ) {
             return voidOperationStopped();
         }        
@@ -295,19 +320,22 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         }
         
         String pagePattern;
+        EntityProperty propertyToEdit;
         if ( command.hasArguments() ) {
-            pagePattern = command.joinedArguments();
+            PropertyAndText propertyText = this.propetyTextParser.parse(command.arguments());
+            propertyToEdit = propertyText.property();
+            pagePattern = propertyText.text();
         } else {
             pagePattern = "";
+            propertyToEdit = UNDEFINED_PROPERTY;
         }
         
-        Optional<WebPage> optPage = this.discussPage(initiator, pagePattern);
+        Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( ! optPage.isPresent() ) {
             return voidOperationStopped();
         }
         WebPage page = optPage.get();
         
-        EntityProperty propertyToEdit = UNDEFINED_PROPERTY;
         propertyToEdit = this.helper.validatePropertyInteractively(
                 initiator, propertyToEdit, SHORTCUTS, WEB_URL, NAME, ORDER, WEB_DIRECTORY);
         if ( propertyToEdit.isUndefined() ) {
@@ -337,7 +365,15 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
     }
     
     private VoidOperation editPageName(Initiator initiator, String pageName) {
-        
+        String newName = this.discussPageNewName(initiator);
+        if ( newName.isEmpty() ) {
+            return voidOperationStopped();
+        }
+        if ( this.daoPages.editName(initiator, pageName, newName) ) {
+            return voidCompleted();
+        } else {
+            return voidOperationFail("DAO failed to rename page.");
+        }
     }
     
     private VoidOperation editPageShortcuts(Initiator initiator, String pageName) {
@@ -383,7 +419,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
     
     private VoidOperation editPageWebDirectory(Initiator initiator, WebPage page) {
         this.ioEngine.report(initiator, "choosing new page directory...");
-        Optional<WebDirectory> optDirectory = this.discussWebDirectory(initiator);
+        Optional<WebDirectory> optDirectory = this.discussExistingWebDirectory(initiator);
         if ( ! optDirectory.isPresent() ) {
             return voidOperationStopped();
         }
@@ -417,7 +453,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
             pagePattern = "";
         }
         
-        Optional<WebPage> optPage = this.discussPage(initiator, pagePattern);
+        Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( ! optPage.isPresent() ) {
             return voidOperationStopped();
         }
@@ -443,7 +479,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
             pagePattern = "";
         }
         
-        Optional<WebPage> optPage = this.discussPage(initiator, pagePattern);
+        Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( optPage.isPresent() ) {
             return valueFound(optPage.get());
         } else {
@@ -465,10 +501,13 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
 
     @Override
     public boolean createWebPage(
-            Initiator initiator, String name, String url, WebPlace place, String directory) {
+            Initiator initiator, String name, String url, WebPlace place, String directory) 
+            throws 
+                    DomainConsistencyException, 
+                    DomainOperationException {
         Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(initiator, name);
         if ( ! freeNameIndex.isPresent() ) {
-            // throw
+            throw new DomainOperationException("Cannot get free name next index.");
         }
         if ( freeNameIndex.get() > 0 ) {
             name = format("%s (%d)", name, freeNameIndex.get());
@@ -476,16 +515,17 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         
         ValidationResult urlValidity = WEB_URL_RULE.apply(url);
         if ( urlValidity.isFail() ) {
-            // throw
+            throw new DomainConsistencyException(urlValidity.getFailureMessage());
         }
         
         ValidationResult dirNameValidity = ENTITY_NAME_RULE.apply(directory);
         if ( dirNameValidity.isFail() ) {
-            // throw
+            throw new DomainConsistencyException(dirNameValidity.getFailureMessage());
         }
         
         if ( ! this.daoDirectories.exists(initiator, directory, place) ) {
-            // throw
+            throw new DomainConsistencyException(
+                    format("%s does not exist in %s", directory, place.name()));
         }
         
         return this.daoPages.save(initiator, newWebPage(name, "", url, place, directory));
@@ -493,7 +533,23 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
 
     @Override
     public boolean editWebPageName(
-            Initiator initiator, String name, String newName) {
-        throw new UnsupportedOperationException("Not supported yet.");
+            Initiator initiator, String name, String newName) 
+            throws 
+                    DomainConsistencyException, 
+                    DomainOperationException {
+        Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(initiator, newName);
+        if ( ! freeNameIndex.isPresent() ) {
+            throw new DomainOperationException("Cannot get free name next index.");
+        }
+        if ( freeNameIndex.get() > 0 ) {
+            newName = format("%s (%d)", newName, freeNameIndex.get());
+        }
+        
+        ValidationResult newNameValidity = ENTITY_NAME_RULE.apply(newName);
+        if ( newNameValidity.isFail() ) {
+            throw new DomainConsistencyException(newNameValidity.getFailureMessage());
+        }
+        
+        return this.daoPages.editName(initiator, name, newName);        
     }
 }

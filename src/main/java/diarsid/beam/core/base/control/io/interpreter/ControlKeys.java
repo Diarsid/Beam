@@ -6,14 +6,12 @@
 
 package diarsid.beam.core.base.control.io.interpreter;
 
-import java.util.Collection;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
-import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsAnySnippetsInAnyWordsIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.findAnyInIgnoreCase;
 
@@ -29,11 +27,16 @@ public class ControlKeys {
     public static final String REMOVE = "-";
     public static final String WILDCARD = "-";
     
-    public static final List<String> UNACCEPTABLE_ARGUMENT_CHARS = unmodifiableList(asList(
+    public static final List<String> UNACCEPTABLE_DOMAIN_CHARS = unmodifiableList(asList(
             "`", "?", "$", "@", "!", 
             "#", "%", "^", "{", "}", 
             "*", ";", ":", "+", "=",
-            "\"", "~", "<"
+            "~", "<"
+    ));
+    public static final List<String> UNACCEPTABLE_TEXT_CHARS = unmodifiableList(asList(
+            "`", "$", "@", "^", "{", 
+            "}", "*", ";", "\"", "~", 
+            "<"
     ));
     
     private ControlKeys() {
@@ -43,42 +46,41 @@ public class ControlKeys {
         return word.contains(WILDCARD);
     }
     
-    public static String findUnacceptableIn(String word) {
-        return findAnyInIgnoreCase(word, UNACCEPTABLE_ARGUMENT_CHARS);
+    public static String findUnacceptableInDomainWord(String word) {
+        return findAnyInIgnoreCase(word, UNACCEPTABLE_DOMAIN_CHARS);
     }
     
-    public static boolean wordIsAcceptable(String word) {
+    public static String findUnacceptableInText(String text) {
+        return findAnyInIgnoreCase(text, UNACCEPTABLE_TEXT_CHARS);
+    }
+    
+    public static boolean textIsAcceptable(String text) {
+        return 
+                ! text.isEmpty() && 
+                ! containsIgnoreCaseAnyFragment(text, UNACCEPTABLE_TEXT_CHARS);
+    }
+    
+    public static boolean textIsNotAcceptable(String text) {
+        return 
+                text.isEmpty() || 
+                containsIgnoreCaseAnyFragment(text, UNACCEPTABLE_TEXT_CHARS);
+    }
+    
+    public static boolean domainWordIsAcceptable(String word) {
         return 
                 ! word.isEmpty() && 
-                ! containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_ARGUMENT_CHARS);
+                ! containsPathSeparator(word) &&
+                ! containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_DOMAIN_CHARS);
     }
     
-    public static boolean wordIsNotAcceptable(String word) {
+    public static boolean domainWordIsNotAcceptable(String word) {
         return 
                 word.isEmpty() ||  
-                containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_ARGUMENT_CHARS);
+                containsPathSeparator(word) ||
+                containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_DOMAIN_CHARS);
     }
     
-    public static boolean wordIsNotSimple(String word) {
-        return 
-                word.isEmpty() ||
-                containsPathSeparator(word);
-    }
-    
-    public static boolean wordIsAcceptableAndSimple(String word) {
-        return 
-                ! word.isEmpty() && 
-                ! containsPathSeparator(word) && 
-                ! containsIgnoreCaseAnyFragment(word, UNACCEPTABLE_ARGUMENT_CHARS);
-    }
-    
-    public static boolean wordsAreAcceptable(String... words) {
-        return ( ! containsAnySnippetsInAnyWordsIgnoreCase(
-                        asList(words), UNACCEPTABLE_ARGUMENT_CHARS));
-    }
-    
-    public static boolean wordsAreAcceptable(Collection<String> words) {
-        return ( ! containsAnySnippetsInAnyWordsIgnoreCase(
-                        words, UNACCEPTABLE_ARGUMENT_CHARS));
+    public static boolean charsAreDomainAcceptable(String target) {
+        return ! containsIgnoreCaseAnyFragment(target, UNACCEPTABLE_DOMAIN_CHARS);
     }
 }

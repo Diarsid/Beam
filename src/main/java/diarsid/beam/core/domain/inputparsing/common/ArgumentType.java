@@ -5,76 +5,97 @@
  */
 package diarsid.beam.core.domain.inputparsing.common;
 
-import java.util.Objects;
-
-import diarsid.beam.core.base.control.io.interpreter.ControlKeys;
-import diarsid.beam.core.base.util.PathUtils;
-import diarsid.beam.core.base.util.StringNumberUtils;
-import diarsid.beam.core.domain.entities.TimePeriod;
 import diarsid.beam.core.domain.entities.WebPlace;
-import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+
+import static java.util.Objects.nonNull;
+
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWordIsAcceptable;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsAcceptable;
+import static diarsid.beam.core.base.util.PathUtils.isAcceptableFilePath;
+import static diarsid.beam.core.base.util.PathUtils.isAcceptableRelativePath;
+import static diarsid.beam.core.base.util.PathUtils.isAcceptableWebPath;
+import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
+import static diarsid.beam.core.domain.entities.TimePeriod.isAppropriateAsTimePeriod;
+import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 
 /**
  *
  * @author Diarsid
  */
 public enum ArgumentType {
-    SIMPLE_WORD {
+    TEXT {
         @Override
         boolean isAppropriateFor(String arg) {
-            return ControlKeys.wordIsAcceptable(arg) && !PathUtils.isAcceptableWebPath(arg) && !PathUtils.isAcceptableFilePath(arg) && Objects.isNull(WebPlace.parsePlace(arg)) && EntityProperty.argToProperty(arg).isUndefined();
+            return 
+                    textIsAcceptable(arg) && 
+                    ! isAcceptableWebPath(arg) && 
+                    ! isAcceptableFilePath(arg) && 
+                    WebPlace.parsePlace(arg).isUndefined() && 
+                    argToProperty(arg).isUndefined();
+        }
+    },
+    DOMAIN_WORD {
+        @Override
+        boolean isAppropriateFor(String arg) {
+            return 
+                    domainWordIsAcceptable(arg) && 
+                    ! isAcceptableWebPath(arg) && 
+                    ! isAcceptableFilePath(arg) && 
+                    WebPlace.parsePlace(arg).isUndefined() && 
+                    argToProperty(arg).isUndefined();
         }
     },
     NUMBER {
         @Override
         boolean isAppropriateFor(String arg) {
-            return StringNumberUtils.isNumeric(arg);
+            return isNumeric(arg);
         }
     },
     TIME_PERIOD {
         @Override
         boolean isAppropriateFor(String arg) {
-            return TimePeriod.isAppropriateAsTimePeriod(arg);
+            return isAppropriateAsTimePeriod(arg);
         }
     },
     FILE_PATH {
         @Override
         boolean isAppropriateFor(String arg) {
-            return PathUtils.isAcceptableFilePath(arg);
+            return isAcceptableFilePath(arg);
         }
     },
     WEB_PATH {
         @Override
         boolean isAppropriateFor(String arg) {
-            return PathUtils.isAcceptableWebPath(arg);
+            return isAcceptableWebPath(arg);
         }
     },
     RELATIVE_PATH {
         @Override
         boolean isAppropriateFor(String arg) {
-            return PathUtils.isAcceptableRelativePath(arg);
+            return isAcceptableRelativePath(arg);
         }
     },
     WEB_PLACE {
         @Override
         boolean isAppropriateFor(String arg) {
-            return Objects.nonNull(WebPlace.parsePlace(arg));
+            return nonNull(WebPlace.parsePlace(arg));
         }
 
         @Override
         String convertIfNecessary(String arg) {
-            return WebPlace.parsePlace(arg).name();
+            return parsePlace(arg).name();
         }
     },
     ENTITY_PROPERTY {
         @Override
         boolean isAppropriateFor(String arg) {
-            return EntityProperty.argToProperty(arg).isDefined();
+            return argToProperty(arg).isDefined();
         }
 
         @Override
         String convertIfNecessary(String arg) {
-            return EntityProperty.argToProperty(arg).name();
+            return argToProperty(arg).name();
         }
     };
 

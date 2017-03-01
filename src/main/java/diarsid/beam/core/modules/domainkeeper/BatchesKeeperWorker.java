@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -27,6 +28,10 @@ import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
@@ -42,14 +47,6 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
-
-import diarsid.beam.core.base.control.flow.ValueOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 
 
 class BatchesKeeperWorker implements BatchesKeeper {
@@ -248,29 +245,29 @@ class BatchesKeeperWorker implements BatchesKeeper {
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
             return voidOperationStopped();
+        } 
+        
+        Optional<Batch> editedBatch = this.getBatchByNamePattern(initiator, name);
+        if ( ! editedBatch.isPresent() ) {
+            return voidOperationFail("there is no such batch.");
         }
         
         property = this.helper.validatePropertyInteractively(
                 initiator, property, NAME, COMMANDS);
         if ( property.isUndefined() ) {
             return voidOperationStopped();
-        } 
+        }
         
-        Optional<Batch> editedBatch = this.getBatchByNamePattern(initiator, name);
-        if ( editedBatch.isPresent() ) {
-            switch ( property ) {
-                case NAME : {
-                    return this.editBatchName(initiator, editedBatch.get());
-                } 
-                case COMMANDS : {
-                    return this.editBatchCommands(initiator, editedBatch.get());
-                } 
-                default : {
-                    return voidOperationFail("unexpected property.");
-                }
+        switch ( property ) {
+            case NAME : {
+                return this.editBatchName(initiator, editedBatch.get());
+            } 
+            case COMMANDS : {
+                return this.editBatchCommands(initiator, editedBatch.get());
+            } 
+            default : {
+                return voidOperationFail("unexpected property.");
             }
-        } else {
-            return voidOperationFail("there is no such batch.");
         }
     }
     
@@ -316,8 +313,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
     
     private VoidOperation editBatchOneCommand(Initiator initiator, Batch batch) {
-        Question question = question("choose command")
-                .withAnswerStrings(batch.stringifyCommands());
+        Question question = question("choose command").withAnswerEntities(batch.getCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             Optional<ExtendableCommand> newCommand = Optional.empty();

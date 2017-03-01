@@ -8,7 +8,9 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -17,8 +19,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
-
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -54,18 +54,28 @@ public class BatchPauseCommand implements ExtendableCommand {
             return NO_PAUSE;
         }
     }
+
+    @Override
+    public String stringify() {
+        return this.stringifyPause();
+    }
+
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.stringifyPause(), variantIndex);
+    }
     
     private String stringifyPause() {
         return format("%d %s", this.pauseDuration, this.getTimePeriod.name());
     }
 
     @Override
-    public String stringifyOriginal() {
+    public String stringifyOriginalArgs() {
         return this.stringifyPause();
     }
 
     @Override
-    public String stringifyExtended() {
+    public String stringifyExtendedArgs() {
         return this.stringifyPause();
     }
 

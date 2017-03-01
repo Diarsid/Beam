@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -34,6 +35,10 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
@@ -55,14 +60,6 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
-
-import diarsid.beam.core.base.control.flow.ValueOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -148,9 +145,17 @@ public class TasksKeeperWorker implements TasksKeeper {
         if ( command.type().isNot(CREATE_TASK) ) {
             return voidOperationFail("wrong command type!");
         }
-        TasksTimeAndText timeAndText = this.timeAndTextParser.parse(command.arguments());        
-        Optional<TaskTime> optTime = timeAndText.getTime();
-        String initialText = timeAndText.getText();
+        
+        Optional<TaskTime> optTime;
+        String initialText;
+        if ( command.hasArguments() ) {
+            TasksTimeAndText timeAndText = this.timeAndTextParser.parse(command.arguments());        
+            optTime = timeAndText.getTime();
+            initialText = timeAndText.getText();
+        } else {
+            optTime = Optional.empty();
+            initialText = "";
+        }       
         
         TaskTime taskTime;
         if ( optTime.isPresent() ) {

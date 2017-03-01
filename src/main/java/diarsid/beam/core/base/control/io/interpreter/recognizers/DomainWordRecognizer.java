@@ -11,20 +11,18 @@ import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.NodeRecognizer;
 
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsAcceptable;
-import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWordIsAcceptable;
 
 
-public class SimpleWordRecognizer extends NodeRecognizer {
+public class DomainWordRecognizer extends NodeRecognizer {
     
-    public SimpleWordRecognizer() {
+    public DomainWordRecognizer() {
     }
     
     private boolean argIsSimpleAcceptableWord(Input input) {
         return 
                 input.hasNotRecognizedArgs() && 
-                ! containsPathSeparator(input.currentArg()) && 
-                wordIsAcceptable(input.currentArg());
+                domainWordIsAcceptable(input.currentArg());
     }
 
     @Override

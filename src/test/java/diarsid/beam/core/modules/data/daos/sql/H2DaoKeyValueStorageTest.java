@@ -31,6 +31,7 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -86,7 +87,7 @@ public class H2DaoKeyValueStorageTest {
                             params("counter", "123"),
                             params("own_address", "127.0.0.1"),
                             params("user_name", "John Doe"));
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoKeyValueStorageTest.class, ex);
         }
     }
@@ -98,7 +99,7 @@ public class H2DaoKeyValueStorageTest {
                     .createDisposableTransaction()
                     .doUpdate(
                             "DELETE FROM key_value");
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoKeyValueStorageTest.class, ex);
         }
     }

@@ -92,8 +92,7 @@ public enum EntityProperty {
             }   
             case "path" : {
                 return FILE_URL;
-            }
-            
+            }            
             default : {
                 return UNDEFINED_PROPERTY;
             }

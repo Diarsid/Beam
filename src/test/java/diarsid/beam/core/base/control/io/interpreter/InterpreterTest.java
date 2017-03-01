@@ -105,7 +105,7 @@ public class InterpreterTest {
         assertEquals(OPEN_LOCATION, c.type());
         
         OpenLocationCommand c1 = (OpenLocationCommand) c;
-        assertEquals("books", c1.stringifyOriginal());
+        assertEquals("books", c1.stringifyOriginalArgs());
     }
     
     @Test
@@ -114,7 +114,7 @@ public class InterpreterTest {
         assertEquals(OPEN_LOCATION, c.type());
         
         OpenLocationCommand c1 = (OpenLocationCommand) c;
-        assertEquals("books", c1.stringifyOriginal());
+        assertEquals("books", c1.stringifyOriginalArgs());
     }
     
     @Test
@@ -143,7 +143,7 @@ public class InterpreterTest {
         assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
-        assertEquals("google", c1.page().getOriginal());
+        assertEquals("google", c1.argument().getOriginal());
     }
     
     @Test
@@ -152,7 +152,7 @@ public class InterpreterTest {
         assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
-        assertEquals("google", c1.page().getOriginal());
+        assertEquals("google", c1.argument().getOriginal());
     }
     
     @Test
@@ -179,7 +179,7 @@ public class InterpreterTest {
         assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
-        assertEquals("google", c1.page().getOriginal());
+        assertEquals("google", c1.argument().getOriginal());
     }   
     
     
@@ -253,7 +253,7 @@ public class InterpreterTest {
         assertEquals(OPEN_LOCATION, c.type());
         
         OpenLocationCommand c1 = (OpenLocationCommand) c;
-        assertEquals("books", c1.stringifyOriginal());
+        assertEquals("books", c1.stringifyOriginalArgs());
     }
     
     @Test
@@ -262,7 +262,7 @@ public class InterpreterTest {
         assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
-        assertEquals("books/tolkien", c1.stringifyOriginal());
+        assertEquals("books/tolkien", c1.stringifyOriginalArgs());
     }
     
     @Test
@@ -310,7 +310,7 @@ public class InterpreterTest {
         assertEquals(EXECUTOR_DEFAULT, c.type());
         
         ExecutorDefaultCommand c1 = (ExecutorDefaultCommand) c;
-        assertEquals("books", c1.stringifyOriginal());
+        assertEquals("books", c1.stringifyOriginalArgs());
     }
     
     @Test
@@ -319,7 +319,7 @@ public class InterpreterTest {
         assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
-        assertEquals("books/fant/tolkien", c1.stringifyOriginal());
+        assertEquals("books/fant/tolkien", c1.stringifyOriginalArgs());
         
         assertEquals("books", c1.location().getOriginal());
         assertEquals("fant/tolkien", c1.target().getOriginal());

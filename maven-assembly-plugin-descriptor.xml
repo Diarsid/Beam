@@ -44,6 +44,7 @@
           <outputDirectory>lib</outputDirectory>
           <includes>
               <include>h2*.jar</include>
+              <include>jdbc-transactions*.jar</include>
               <include>gem-injector*.jar</include>
               <include>javax.servlet*.jar</include>
               <include>*jetty*.jar</include>

@@ -7,9 +7,11 @@ package diarsid.beam.core.domain.entities.validation;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableIn;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotSimple;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWordIsNotAcceptable;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInDomainWord;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsAcceptable;
+import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.isAcceptableWebPath;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
 import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
@@ -20,6 +22,22 @@ import static diarsid.beam.core.domain.entities.validation.ValidationResults.val
  * @author Diarsid
  */
 public enum ValidationRule {
+    
+    TEXT_RULE {
+        @Override
+        public ValidationResult apply(String target) {
+            if ( target.isEmpty() ) {
+                return validationFailsWith("cannot be empty.");
+            }
+            if ( textIsAcceptable(target) ) {
+                return validationOk();
+            } else {
+                return validationFailsWith(format(
+                        "symbol '%s' is not allowed in text.", 
+                        findUnacceptableInText(target)));
+            }
+        }
+    },
     
     WEB_URL_RULE {
         @Override
@@ -54,13 +72,13 @@ public enum ValidationRule {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
-            if ( wordIsNotAcceptable(target) ) {
+            if ( containsPathSeparator(target) ) {
+                return validationFailsWith(target + " separators are not allowed here.");
+            }
+            if ( domainWordIsNotAcceptable(target) ) {
                 return validationFailsWith(format(
                         "symbol '%s' is not allowed in entity name.", 
-                        findUnacceptableIn(target)));
-            }
-            if ( wordIsNotSimple(target) ) {
-                return validationFailsWith(target + " is not a plain word or a group of words.");
+                        findUnacceptableInDomainWord(target)));
             }
             return validationOk();
         }

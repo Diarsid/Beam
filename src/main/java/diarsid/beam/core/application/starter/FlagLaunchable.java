@@ -11,7 +11,7 @@ import static diarsid.beam.core.application.starter.FlagType.STARTABLE;
  *
  * @author Diarsid
  */
-public enum FlagStartable implements Flag {
+public enum FlagLaunchable implements Flag {
     
     START_ALL (
             1000,
@@ -21,25 +21,17 @@ public enum FlagStartable implements Flag {
             800,
             "-core", 
             "launches only core as a separate process"),
-    START_CORE_INLINE (
-            800,
-            "-core-inline", 
-            "launches only core in current terminal process"),
     START_SYSTEM_CONSOLE (
             600,
             "-sysconsole", 
-            "launches only sysconsole as a separate process"),
-    START_SYSTEM_CONSOLE_INLINE (
-            600,
-            "-sysconsole-inline", 
-            "launches only sysconsole in current terminal process");
+            "launches only sysconsole as a separate process");
     
     private final int priority;
     private final String flag;
     private final FlagType type;
     private final String description;
     
-    private FlagStartable(int priority, String flag, String description) {
+    private FlagLaunchable(int priority, String flag, String description) {
         this.priority = priority;
         this.flag = flag;
         this.description = description;
@@ -61,7 +53,7 @@ public enum FlagStartable implements Flag {
         return this.type;
     }
     
-    boolean hasLowerPriorityThan(FlagStartable anotherFlag) {
+    boolean hasLowerPriorityThan(FlagLaunchable anotherFlag) {
         return ( this.priority < anotherFlag.priority);
     }
     

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.catalogs;
+package diarsid.beam.core.application.environment;
 
 import java.util.List;
 
@@ -14,4 +14,6 @@ import java.util.List;
 public interface LibrariesCatalog extends Catalog {
     
     List<String> getLibraries();
+    
+    List<String> getLibrariesWithAny(String... fragments);
 }

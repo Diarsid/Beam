@@ -241,7 +241,7 @@
         
         <dependency>
             <groupId>diarsid</groupId>
-            <artifactId>JdbcTransactions</artifactId>
+            <artifactId>jdbc-transactions</artifactId>
             <version>1.0</version>
         </dependency>
         

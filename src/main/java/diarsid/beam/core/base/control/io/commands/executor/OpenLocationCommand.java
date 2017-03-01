@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.base.control.io.commands.executor;
 
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
@@ -25,5 +26,15 @@ public class OpenLocationCommand extends ExtendableCommonCommand {
     @Override
     public CommandType type() {
         return OPEN_LOCATION;
+    }
+    
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.stringify(), variantIndex);
+    }
+
+    @Override
+    public String stringify() {
+        return "open " + super.stringifyOriginalArgs();
     }
 }

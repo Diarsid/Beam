@@ -6,69 +6,35 @@
 
 package diarsid.beam.core.base.control.io.commands.executor;
 
-import java.util.Objects;
-
-import diarsid.beam.core.base.control.io.commands.ExtendableArgument;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
-
-public class SeePageCommand implements ExtendableCommand {
-    
-    private final ExtendableArgument pageArgument;
+public class SeePageCommand extends ExtendableCommonCommand {
     
     public SeePageCommand(String pageName) {
-        this.pageArgument = new ExtendableArgument(pageName);
+        super(pageName);
     }
     
     public SeePageCommand(String pageName, String extendedPageName) {
-        this.pageArgument = new ExtendableArgument(pageName, extendedPageName);
-    }
-    
-    public ExtendableArgument page() {
-        return this.pageArgument;
+        super(pageName, extendedPageName);
     }
 
     @Override
     public CommandType type() {
         return SEE_WEBPAGE;
     }
-
+    
     @Override
-    public String stringifyOriginal() {
-        return this.pageArgument.getOriginal();
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.stringify(), variantIndex);
     }
 
     @Override
-    public String stringifyExtended() {
-        return this.pageArgument.getExtended();
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 53 * hash + Objects.hashCode(this.pageArgument);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if ( this == obj ) {
-            return true;
-        }
-        if ( obj == null ) {
-            return false;
-        }
-        if ( getClass() != obj.getClass() ) {
-            return false;
-        }
-        final SeePageCommand other = ( SeePageCommand ) obj;
-        if ( !Objects.equals(this.pageArgument, other.pageArgument) ) {
-            return false;
-        }
-        return true;
+    public String stringify() {
+        return "see " + super.stringifyOriginalArgs();
     }
 }

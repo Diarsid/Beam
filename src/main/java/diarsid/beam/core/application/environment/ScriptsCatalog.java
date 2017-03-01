@@ -3,22 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.catalogs;
+package diarsid.beam.core.application.environment;
 
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.application.starter.scripts.Script;
 
 /**
  *
  * @author Diarsid
  */
 public interface ScriptsCatalog extends Catalog {
+    
+    ScriptBuilder newScript(String name);
 
     List<Script> getScripts();
+    
+    boolean notContains(Script script);
 
     Optional<Script> getScriptByName(String name);
-
-    void rewriteScripts();
 }

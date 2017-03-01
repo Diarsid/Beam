@@ -11,9 +11,9 @@ import java.util.List;
 import diarsid.beam.core.domain.inputparsing.common.ArgumentsInterceptor;
 
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
-import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.SIMPLE_WORD;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.WEB_PATH;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.WEB_PLACE;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.DOMAIN_WORD;
 
 /**
  *
@@ -29,11 +29,11 @@ public class WebObjectsInputParser {
         arguments
                 .stream()
                 .filter(arg -> interceptor.interceptArgumentOfType(arg, WEB_PLACE).ifContinue())
-                .filter(arg -> interceptor.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, DOMAIN_WORD).ifContinue())
                 .count();
 
         return new WebDirectoryNameAndPlace(
-                interceptor.argOfType(SIMPLE_WORD), 
+                interceptor.argOfType(DOMAIN_WORD), 
                 parsePlace(interceptor.argOfType(WEB_PLACE))
         );           
     }
@@ -44,11 +44,11 @@ public class WebObjectsInputParser {
                 .stream()
                 .filter(arg -> interceptor.interceptArgumentOfType(arg, WEB_PATH).ifContinue())
                 .filter(arg -> interceptor.interceptArgumentOfType(arg, WEB_PLACE).ifContinue())
-                .filter(arg -> interceptor.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, DOMAIN_WORD).ifContinue())
                 .count();
 
         return new WebPageNameUrlAndPlace(
-                interceptor.argOfType(SIMPLE_WORD), 
+                interceptor.argOfType(DOMAIN_WORD), 
                 interceptor.argOfType(WEB_PATH), 
                 parsePlace(interceptor.argOfType(WEB_PLACE))
         );

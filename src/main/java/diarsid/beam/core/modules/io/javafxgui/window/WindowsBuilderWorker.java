@@ -8,11 +8,11 @@ package diarsid.beam.core.modules.io.javafxgui.window;
 
 import java.util.List;
 
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
 import diarsid.beam.core.modules.io.javafxgui.WindowsBuilder;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 /**
  *
@@ -25,7 +25,7 @@ public class WindowsBuilderWorker implements WindowsBuilder {
     
     @Override
     public Runnable newMessageWindow(
-            String[] message,
+            List<String> message,
             WindowResources resources, 
             WindowController controller) {
         
@@ -35,7 +35,7 @@ public class WindowsBuilderWorker implements WindowsBuilder {
     
     @Override
     public Runnable newErrorWindow(
-            String[] message,
+            List<String> message,
             WindowResources resources, 
             WindowController controller) {
         

@@ -17,13 +17,13 @@ import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StartProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StopProgramCommand;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.ArgumentsRecognizer;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.DomainWordRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.InputCorrectnessRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.MultipleArgsRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.OneArgRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PauseRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PrefixRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.RelativePathRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.SimpleWordRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.WordRecognizer;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.WordsRecognizer;
 
@@ -83,33 +83,27 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return new InputCorrectnessRecognizer().branchesTo(
-                new OneArgRecognizer().priority(HIGH).branchesTo(
-                        new PrefixRecognizer(
+        return new InputCorrectnessRecognizer().branchesTo(new OneArgRecognizer().priority(HIGH).branchesTo(new PrefixRecognizer(
                                 "/", 
-                                "l/").branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "l/").branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new OpenLocationCommand(input.currentArg())),
                                         new RelativePathRecognizer().pointsTo(
                                                 input -> new OpenPathCommand(input.currentArg()))
                         ),
                         new PrefixRecognizer(
                                 "w/", 
-                                "i/").pointsTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "i/").pointsTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new SeePageCommand(input.currentArg()))),
                         new PrefixRecognizer(
                                 "r/", 
-                                "p/").branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "p/").branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg())),
                                         new RelativePathRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg()))),
                         new PrefixRecognizer(
                                 "b/", 
                                 "e/", 
-                                "c/").pointsTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "c/").pointsTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new CallBatchCommand(input.currentArg()))),
                         new WordRecognizer(
                                 "exit").pointsTo(
@@ -122,22 +116,21 @@ public class Interpreter {
                                 "note", 
                                 "notes").pointsTo(
                                         input -> new EmptyCommand(OPEN_NOTES)),
-                        new SimpleWordRecognizer().priority(LOWEST).pointsTo(
+                        new DomainWordRecognizer().priority(LOWEST).pointsTo(
                                 input -> new ExecutorDefaultCommand(input.currentArg())), 
                         new RelativePathRecognizer().priority(LOWER).pointsTo(
                                 input -> new OpenPathCommand(input.currentArg()))
                 ),
                 new MultipleArgsRecognizer().branchesTo(new WordsRecognizer(
                                 "see", 
-                                "www").priority(HIGH).pointsTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "www").priority(HIGH).pointsTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new SeePageCommand(input.currentArg()))
                         ), 
                         new WordsRecognizer(
                                 "o", 
                                 "op", 
                                 "open").priority(HIGH).branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                        new DomainWordRecognizer().pointsTo(
                                                 input -> new OpenLocationCommand(input.currentArg())),
                                         new RelativePathRecognizer().pointsTo(
                                                 input -> new OpenPathCommand(input.currentArg()))
@@ -145,26 +138,22 @@ public class Interpreter {
                         new WordsRecognizer(
                                 "call", 
                                 "exe", 
-                                "exec").priority(HIGH).pointsTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "exec").priority(HIGH).pointsTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new CallBatchCommand(input.currentArg()))
                         ), 
                         new WordsRecognizer(
                                 "r", 
-                                "run").priority(HIGH).branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "run").priority(HIGH).branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg())),
                                         new RelativePathRecognizer().pointsTo(
                                                 input -> new RunProgramCommand(input.currentArg()))),
                         new WordRecognizer(
-                                "start").priority(HIGH).branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "start").priority(HIGH).branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new StartProgramCommand(input.currentArg())),
                                         new RelativePathRecognizer().pointsTo(
                                                 input -> new StartProgramCommand(input.currentArg()))),
                         new WordRecognizer(
-                                "stop").priority(HIGH).branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "stop").priority(HIGH).branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new StopProgramCommand(input.currentArg())),
                                         new RelativePathRecognizer().pointsTo(
                                                 input -> new StopProgramCommand(input.currentArg()))),
@@ -296,8 +285,7 @@ public class Interpreter {
                                         "exe")
                         ),
                         new WordRecognizer(
-                                "list").branchesTo(
-                                        new SimpleWordRecognizer().pointsTo(
+                                "list").branchesTo(new DomainWordRecognizer().pointsTo(
                                                 new ArgumentsRecognizer(LIST_LOCATION)), 
                                         new RelativePathRecognizer().pointsTo(
                                                 new ArgumentsRecognizer(LIST_PATH))
@@ -305,10 +293,9 @@ public class Interpreter {
                         new WordsRecognizer(
                                 "n", 
                                 "note", 
-                                "notes").priority(LOW).branchesTo(
-                                        new RelativePathRecognizer().pointsTo(
+                                "notes").priority(LOW).branchesTo(new RelativePathRecognizer().pointsTo(
                                                 new ArgumentsRecognizer(OPEN_PATH_IN_NOTE)), 
-                                        new SimpleWordRecognizer().pointsTo(
+                                        new DomainWordRecognizer().pointsTo(
                                                 new ArgumentsRecognizer(OPEN_TARGET_IN_NOTE))
                         )
                 )

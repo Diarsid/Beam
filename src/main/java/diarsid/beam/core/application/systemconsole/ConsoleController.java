@@ -24,16 +24,16 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
+import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableIn;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsNotAcceptable;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
-import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
-import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 
 /**
  *
@@ -142,10 +142,11 @@ public class ConsoleController implements OuterIoEngine {
             if ( isRejection(input) ) {
                 input = "";
                 answerIsNotGiven = false;
-            } 
-            if ( wordIsNotAcceptable(input) ) {
+            } else if ( textIsNotAcceptable(input) ) {
                 this.printer.printInDialogReportLine(
-                        format("character %s is not allowed.", findUnacceptableIn(input)));
+                        format("character %s is not allowed.", findUnacceptableInText(input)));
+            } else {
+                answerIsNotGiven = false;
             }
         }
         return input;

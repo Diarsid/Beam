@@ -25,6 +25,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static org.junit.Assert.assertEquals;
@@ -80,7 +81,7 @@ public class H2DaoLocationsTest {
                             params("My_Projects", "D:/Tech/DEV/projects"),
                             params("java_projects", "D:/Tech/DEV/projects/java"),
                             params("js_projects", "D:/Tech/DEV/projects/js"));
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }
     }
@@ -91,7 +92,7 @@ public class H2DaoLocationsTest {
                     .transactionFactory()
                     .createDisposableTransaction()
                     .doUpdate("DELETE FROM locations");
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }
     }

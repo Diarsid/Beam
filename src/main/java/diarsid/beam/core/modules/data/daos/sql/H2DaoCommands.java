@@ -14,11 +14,13 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Collections.emptyList;
@@ -28,11 +30,8 @@ import static diarsid.beam.core.base.control.io.commands.Commands.restoreArgumen
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.StringUtils.lower;
-
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
 class H2DaoCommands 
@@ -67,7 +66,7 @@ class H2DaoCommands
                                         (String) firstRow.get("com_extended")));
                             },
                             type.name(), lower(original));
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return Optional.empty();
         }
@@ -85,7 +84,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lower(original))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -103,7 +102,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcard(pattern))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -121,7 +120,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcardList(patternParts))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -139,7 +138,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcard(pattern), type.name())
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -161,7 +160,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             params)
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -179,7 +178,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcard(pattern))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -197,7 +196,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcardList(patternParts))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -215,7 +214,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcard(pattern), type.name())
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -237,7 +236,7 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             params)
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
         }
@@ -253,7 +252,7 @@ class H2DaoCommands
                             "SELECT * " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                            lower(command.stringifyOriginal()), command.type().name());
+                            lower(command.stringifyOriginalArgs()), command.type().name());
                         
             if ( commandExists ) {
                 return transact
@@ -261,8 +260,8 @@ class H2DaoCommands
                                 "UDPATE commands " +
                                 "SET com_extended = ? " +
                                 "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                                command.stringifyExtended(), 
-                                lower(command.stringifyOriginal()), 
+                                command.stringifyExtendedArgs(), 
+                                lower(command.stringifyOriginalArgs()), 
                                 command.type().name())
                         == 1;
             } else {
@@ -271,12 +270,12 @@ class H2DaoCommands
                                 "INSERT INTO commands ( com_type, com_original, com_extended )" +
                                 "VALUES ( ?, ?, ? ) " , 
                                 command.type().name(),
-                                command.stringifyOriginal(),
-                                command.stringifyExtended())
+                                command.stringifyOriginalArgs(),
+                                command.stringifyExtendedArgs())
                         == 1;
             }
             
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }
@@ -290,8 +289,8 @@ class H2DaoCommands
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
-                            lower(command.stringifyOriginal()), command.type().name());
-        } catch (TransactionHandledSQLException ex) {
+                            lower(command.stringifyOriginalArgs()), command.type().name());
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }
@@ -306,7 +305,7 @@ class H2DaoCommands
                             "DELETE FROM commands " +
                             "WHERE LOWER(com_original) IS ? ",
                             lower(original));
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }
@@ -321,7 +320,7 @@ class H2DaoCommands
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
                             lower(original), type.name());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }

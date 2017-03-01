@@ -14,6 +14,7 @@ import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
 
 import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
@@ -44,10 +45,15 @@ public class Beam {
     }    
            
     public static void main(String... args) {
-        Logs.log(Beam.class, "start Beam.core");
-        initApplication();
-        setJVMShutdownHook();
-        Logs.log(Beam.class, "Beam.core started successfully");
+        try {
+            log(Beam.class, "start Beam.core");
+            initApplication();
+            setJVMShutdownHook();
+            log(Beam.class, "Beam.core started successfully");
+        } catch (Exception e) {
+            logError(Beam.class, e);
+            exitBeamCoreNow();
+        }
     }
     
     private static void initApplication() {

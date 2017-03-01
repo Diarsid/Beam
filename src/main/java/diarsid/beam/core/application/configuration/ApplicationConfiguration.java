@@ -21,13 +21,13 @@ public class ApplicationConfiguration {
     private static final Configuration CONFIGURATION;
     
     static {
-        Path configFile = Paths.get("./../config/beam.config");
+        Path configFile = Paths.get("../config/beam.config");
         Configuration defaultConfig = parse(
-                "data.store = ./../res/data",
+                "data.store = ../res/data",
                 "data.user = root",
                 "data.pass = root",
-                "catalogs.programs = ./../env/programs",
-                "catalogs.notes = ./../env/notes",
+                "catalogs.programs = ../env/programs",
+                "catalogs.notes = ../env/notes",
                 "web.local.host = 127.0.0.1",
                 "web.local.port = 32001",
                 "web.local.path = /beam/core",
@@ -35,10 +35,20 @@ public class ApplicationConfiguration {
                 "rmi.core.host = 127.0.0.1",
                 "rmi.sysconsole.port = 43005",
                 "rmi.sysconsole.host = 127.0.0.1",
+                "core.jvm.option = -Djava.rmi.server.hostname=127.0.0.1",
+                "core.jvm.option = -Dfile.encoding=UTF-8",
+                "core.jvm.option = -Dlog4j.configuration=file:../config/log4j.properties",
                 "core.jvm.option = -Xms32m",
                 "core.jvm.option = -Xmx32m",
+                "sysconsole.jvm.option = -Djava.rmi.server.hostname=127.0.0.1",
+                "sysconsole.jvm.option = -Dfile.encoding=UTF-8",
+                "sysconsole.jvm.option = -Dlog4j.configuration=file:../config/log4j.properties",
                 "sysconsole.jvm.option = -Xms4m",
-                "sysconsole.jvm.option = -Xmx4m");
+                "sysconsole.jvm.option = -Xmx4m",
+                "starter.jvm.option = -Xmx32m",
+                "starter.jvm.option = -Xms32m",
+                "starter.jvm.option = -Dfile.encoding=UTF-8",
+                "starter.jvm.option = -Dlog4j.configuration=file:../config/log4j.properties");
         Configuration actualConfig = parse(readConfigEntriesAsLinesFrom(configFile));
         CONFIGURATION = actualConfig.merge(defaultConfig);
     }

@@ -65,6 +65,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         BatchesKeeper batchesKeeper;
         ProgramsKeeper programsKeeper;
         TasksKeeper tasksKeeper;
+        WebPagesKeeper pagesKeeper;
         
         locationsKeeper = new LocationsKeeperWorker(
                 this.dataModule.getDaoLocations(), 
@@ -89,6 +90,10 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 timeAndTextParser, 
                 timeParser, 
                 timePeriodsParser);
+//        pagesKeeper = new WebPagesKeeperWorker(
+//                this.dataModule, 
+//                daoDirectories, 
+//                ioEngine, dialogHelper, propetyTextParser, parser);
         
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 

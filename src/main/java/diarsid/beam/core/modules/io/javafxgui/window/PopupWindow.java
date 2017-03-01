@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.io.javafxgui.window;
 
+import java.util.List;
 import java.util.StringJoiner;
 
 import javafx.geometry.Insets;
@@ -26,11 +27,11 @@ import diarsid.beam.core.modules.io.javafxgui.WindowResources;
 class PopupWindow extends BeamWindow implements Runnable {
     
     private final String title;
-    private final String[] message;
+    private final List<String> message;
     
     PopupWindow(
             String title,
-            String[] message, 
+            List<String> message, 
             WindowResources resources, 
             WindowController controller) {
         
@@ -39,7 +40,7 @@ class PopupWindow extends BeamWindow implements Runnable {
         this.message = message;
     }
         
-    private String getTextFromMessage(String[] strings) {        
+    private String getTextFromMessage(List<String> strings) {        
         StringJoiner joiner = new StringJoiner("\n");
         for(String line : strings){
             joiner.add(line);
@@ -83,7 +84,7 @@ class PopupWindow extends BeamWindow implements Runnable {
         messageLabel.setWrapText(true);
         messageLabel.setPadding(new Insets(0, 0, 0, 0));
         
-        messageLabel.setText(getTextFromMessage(this.message));
+        messageLabel.setText(this.getTextFromMessage(this.message));
         
         messageTextBox.getChildren().addAll(messageLabel);
         hBox.getChildren().addAll(picture, messageTextBox);

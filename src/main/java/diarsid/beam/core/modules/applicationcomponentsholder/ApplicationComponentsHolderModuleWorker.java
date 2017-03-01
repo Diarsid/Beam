@@ -6,9 +6,9 @@
 
 package diarsid.beam.core.modules.applicationcomponentsholder;
 
-import diarsid.beam.core.application.catalogs.ApplicationCatalogs;
-import diarsid.beam.core.application.catalogs.NotesCatalog;
-import diarsid.beam.core.application.catalogs.ProgramsCatalog;
+import diarsid.beam.core.application.environment.ApplicationCatalogs;
+import diarsid.beam.core.application.environment.NotesCatalog;
+import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.application.configuration.ApplicationConfiguration;
 import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;

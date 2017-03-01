@@ -10,16 +10,14 @@ package diarsid.beam.core.application.starter;
 import java.util.ArrayList;
 import java.util.List;
 
-import diarsid.beam.core.application.catalogs.ScriptsCatalog;
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.base.exceptions.RequirementException;
+import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 
 import static java.lang.String.join;
-import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.application.catalogs.ApplicationCatalogs.getScriptsCatalog;
-import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
-import static diarsid.beam.core.application.starter.Flags.flagOf;
 import static diarsid.beam.core.application.starter.Flags.formatToPrintables;
+import static diarsid.beam.core.application.starter.Launcher.getLauncher;
+import static diarsid.beam.core.application.starter.Procedure.defineProcedure;
 import static diarsid.beam.core.base.util.ArraysUtil.isEmpty;
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -39,15 +37,18 @@ public class Starter {
             printPromptAndExit();
         } else {
             try {
-                log(Starter.class, "launched with: " + join(", ", args));
-                Configuration configuration = getConfiguration();
-                ScriptsCatalog scriptsCatalog = getScriptsCatalog();
-                Procedure procedure = readFlags(args);
-                StartRunner environment = new StartRunner(configuration, scriptsCatalog);                
-                environment.process(procedure);
+                log(Starter.class, "starting with: " + join(", ", args));                
+                Procedure procedure = defineProcedure(args);
+                if ( procedure.hasLaunchable() ) {     
+                    getLauncher().launch(procedure);
+                } else {
+                    log(Starter.class, "there is nothing to launch.");
+                }                
             } catch (NoClassDefFoundError error) {
-                logError(Starter.class, "some class is missed:", error);
+                logError(Starter.class, "some class is missed: ", error);
                 logError(Starter.class, "check your classpath statement.");
+            } catch (RequirementException | WorkflowBrokenException e) {
+                logError(Starter.class, e.getMessage());
             }
         }
     }
@@ -63,24 +64,11 @@ public class Starter {
         prompt.add("  No options specified.");
         prompt.add("");
         prompt.add("  Options specifying which part should be launched:");
-        prompt.addAll(formatToPrintables(FlagStartable.values()));
+        prompt.addAll(formatToPrintables(FlagLaunchable.values()));
         prompt.add("");
         prompt.add("  Options specifying how launched part could be configured:");
         prompt.addAll(formatToPrintables(FlagConfigurable.values()));
         prompt.add("");
-        prompt.add("  Options specifying additional utility operations:");
-        prompt.addAll(formatToPrintables(FlagExecutable.values()));
         prompt.stream().forEach(System.out::println);
-    }
-    
-    private static Procedure readFlags(String[] flags) {
-        Procedure procedure = new Procedure();
-        stream(flags)
-                .map(flagString -> flagOf(flagString))
-                .filter(optionalFlag -> optionalFlag.isPresent())      
-                .map(optionalFlag -> optionalFlag.get())
-                .forEach(flag -> procedure.acceptFlag(flag));
-        procedure.flagsAccepted();
-        return procedure;
     }
 }

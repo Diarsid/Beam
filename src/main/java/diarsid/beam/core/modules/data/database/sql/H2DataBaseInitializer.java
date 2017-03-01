@@ -49,15 +49,13 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
                         }
                     });
             
-        } catch (TransactionHandledSQLException ex) {
-            this.handleExceptionAndTerminate(ex);
-        } catch (TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             this.handleExceptionAndTerminate(ex);
         }
         return existingNames;
     }            
 
-    private void handleExceptionAndTerminate(TransactionHandledException ex) {
+    private void handleExceptionAndTerminate(Exception ex) {
         logError(H2DataBaseInitializer.class, ex);
         this.ioEngine.reportAndExitLater(
                 getSystemInitiator(), "Cannot verify existing data base tables.");
@@ -85,7 +83,7 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
                     .doUpdate(table.getSqlCreationScript()); 
             
             return format("SQL table '%s' has been created.", table.getName());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DataBaseInitializer.class, ex);
             this.ioEngine.reportAndExitLater(
                     getSystemInitiator(), format("Cannot create '%s' SQL table.", table.getName()));

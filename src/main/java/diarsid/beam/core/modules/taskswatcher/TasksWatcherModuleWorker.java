@@ -10,6 +10,7 @@ import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static diarsid.beam.core.base.events.BeamEventRuntime.subscribeOn;
+import static diarsid.beam.core.base.util.Logs.debug;
 
 
 /**
@@ -52,8 +53,9 @@ class TasksWatcherModuleWorker implements TasksWatcherModule {
     void beginWork() {
         this.executionScheduler.beginTasksProcessing();
         this.notificationScheduler.beginNotificationsProcessing();
-        subscribeOn("tasks_udpated")
+        subscribeOn("tasks_updated")
                 .withCallback(event -> {
+                    debug("async tasks refreshing...");
                     this.executionScheduler.refresh();
                 }).done();
     }

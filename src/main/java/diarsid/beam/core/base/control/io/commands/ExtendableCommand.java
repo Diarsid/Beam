@@ -6,13 +6,17 @@
 
 package diarsid.beam.core.base.control.io.commands;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+
 /**
  *
  * @author Diarsid
  */
-public interface ExtendableCommand extends Command {
+public interface ExtendableCommand extends Command, ConvertableToVariant {
     
-    String stringifyOriginal();
+    String stringifyOriginalArgs();
     
-    String stringifyExtended();
+    String stringifyExtendedArgs();
+    
+    String stringify();
 }

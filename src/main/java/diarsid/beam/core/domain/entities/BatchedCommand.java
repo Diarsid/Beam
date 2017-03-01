@@ -8,13 +8,15 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
  * @author Diarsid
  */
-public class BatchedCommand {
+public class BatchedCommand implements ConvertableToVariant {
     
     private final Batch enclosingBatch;
     private final ExtendableCommand command;
@@ -24,6 +26,11 @@ public class BatchedCommand {
         this.enclosingBatch = batch;
         this.command = command;
         this.orderInBatch = orderInBatch;
+    }
+
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return this.command.toVariant(variantIndex);
     }
     
     public int orderInBatch() {

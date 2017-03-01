@@ -82,18 +82,10 @@ class ApplicationConfigurationReading {
     }
     
     private static Pair<String, String> parsePair(String line) {
-        if ( line.contains(" = ") ) {
-            return splitToPair(line, " = ");
-        } else {
-            return splitToPair(line, "=");
-        } 
-    }
-
-    private static Pair<String, String> splitToPair(String line, String dilimiter) {
         line = line.trim();
         return new Pair<>(
-                line.substring(0, line.indexOf(dilimiter)),
-                line.substring(line.indexOf(dilimiter) + dilimiter.length(), line.length()));
+                line.trim().substring(0, line.indexOf("=")).trim(),
+                line.trim().substring(line.indexOf("=") + "=".length(), line.length()).trim());
     }
 
     private static String clean(String line) {

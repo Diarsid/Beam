@@ -38,21 +38,15 @@ public class Configuration {
     }
     
     public boolean hasString(String option) {
-        if ( this.has(option) ) {
-            return this.options.get(option) instanceof String;
-        } else {
-            throw new IllegalArgumentException(
-                    format("There isn't configured '%s' option.", option));
-        }
+        return 
+                this.has(option) && 
+                this.options.get(option) instanceof String;
     } 
     
-    public boolean isList(String option) {
-        if ( this.has(option) ) {
-            return this.options.get(option) instanceof List;
-        } else {
-            throw new IllegalArgumentException(
-                    format("There isn't configured '%s' option.", option));
-        }
+    public boolean hasList(String option) {
+        return 
+                this.has(option) && 
+                this.options.get(option) instanceof List;
     }
     
     public String getAsString(String option) {

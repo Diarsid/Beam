@@ -11,7 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static java.util.Arrays.stream;
 
+import static diarsid.beam.core.application.starter.Flags.flagOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.log;
 
@@ -21,16 +23,25 @@ import static diarsid.beam.core.base.util.Logs.log;
  */
 public class Procedure {
     
-    private Optional<FlagStartable> startable;
+    private Optional<FlagLaunchable> launchable;
     private boolean procedureIsSet;
     private final Set<FlagConfigurable> configurables;
-    private final Set<FlagExecutable> executables;
     
     public Procedure() {
         this.procedureIsSet = false;
-        this.startable = Optional.empty();
+        this.launchable = Optional.empty();
         this.configurables = new HashSet<>();
-        this.executables = new HashSet<>();
+    }
+    
+    static Procedure defineProcedure(String[] flags) {
+        Procedure procedure = new Procedure();
+        stream(flags)
+                .map(flagString -> flagOf(flagString))
+                .filter(optionalFlag -> optionalFlag.isPresent())      
+                .map(optionalFlag -> optionalFlag.get())
+                .forEach(flag -> procedure.acceptFlag(flag));
+        procedure.flagsAccepted();
+        return procedure;
     }
     
     void acceptFlag(Flag newFlag) {
@@ -39,21 +50,17 @@ public class Procedure {
         }
         switch ( newFlag.type() ) {
             case STARTABLE : {
-                FlagStartable startableFlag = (FlagStartable) newFlag;
-                if ( this.startable.isPresent() ) {
-                    if ( this.startable.get().hasLowerPriorityThan(startableFlag) ) {
+                FlagLaunchable startableFlag = (FlagLaunchable) newFlag;
+                if ( this.launchable.isPresent() ) {
+                    if ( this.launchable.get().hasLowerPriorityThan(startableFlag) ) {
                         this.warnThatPreviousFlagIsSuppressed(startableFlag);
-                        this.startable = Optional.of(startableFlag);
+                        this.launchable = Optional.of(startableFlag);
                     } else {
                         this.warnThatNewFlagIsSuppressed(startableFlag);
                     }
                 } else {
-                    this.startable = Optional.of(startableFlag);
+                    this.launchable = Optional.of(startableFlag);
                 }    
-                break;
-            }
-            case EXECUTABLE : {
-                this.executables.add((FlagExecutable) newFlag);
                 break;
             }
             case CONFIGURABLE : {
@@ -64,40 +71,32 @@ public class Procedure {
         }
     }
 
-    private void warnThatPreviousFlagIsSuppressed(FlagStartable startableFlag) {
+    private void warnThatPreviousFlagIsSuppressed(FlagLaunchable startableFlag) {
         log(Procedure.class, format(" %s is suppressed by %s",
-                this.startable.get().text(),
+                this.launchable.get().text(),
                 startableFlag.text()));
     }
 
-    private void warnThatNewFlagIsSuppressed(FlagStartable startableFlag) {
+    private void warnThatNewFlagIsSuppressed(FlagLaunchable startableFlag) {
         log(Procedure.class, format(" %s is suppressed by %s",
                 startableFlag.text(),
-                this.startable.get().text()));
+                this.launchable.get().text()));
     }
     
     void flagsAccepted() {
         this.procedureIsSet = true;
     }
     
-    boolean hasStartable() {
-        return this.startable.isPresent();
-    }
-    
-    boolean hasAnyExecutables() {
-        return nonEmpty(this.executables);
+    boolean hasLaunchable() {
+        return this.launchable.isPresent();
     }
     
     boolean hasAnyConfigurables() {
         return nonEmpty(this.configurables);
     }
     
-    FlagStartable getStartable() {
-        return this.startable.get();
-    }
-
-    public Set<FlagExecutable> getExecutables() {
-        return this.executables;
+    FlagLaunchable getLaunchable() {
+        return this.launchable.get();
     }
 
     public Set<FlagConfigurable> getConfigurables() {

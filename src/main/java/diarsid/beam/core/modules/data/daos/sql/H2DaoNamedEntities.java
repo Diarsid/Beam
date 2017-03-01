@@ -16,6 +16,7 @@ import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.PerRowConversion;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Collections.emptyList;
@@ -79,7 +80,7 @@ class H2DaoNamedEntities
                             lowerWildcard(namePattern), 
                             lowerWildcard(namePattern))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoNamedEntities.class, ex);
             super.ioEngine().report(
                     initiator, "named entities obtaining by name pattern failed.");
@@ -110,7 +111,7 @@ class H2DaoNamedEntities
                                     namePatternParts, 
                                     namePatternParts))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoNamedEntities.class, ex);
             super.ioEngine().report(
                     initiator, "named entities obtaining by name pattern parts failed.");

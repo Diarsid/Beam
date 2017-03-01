@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.daos.sql;
 
-import diarsid.beam.core.modules.data.daos.sql.H2DaoBatches;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +21,7 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
@@ -30,6 +29,7 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.stream.Collectors.toList;
@@ -44,11 +44,9 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
-import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.jdbc.transactions.core.Params.params;
-
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 /**
  *
@@ -116,7 +114,7 @@ public class H2DaoBatchesTest {
             if ( modified.length != 11 ) {
                 throw new IllegalArgumentException();
             }
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }
     }
@@ -125,7 +123,7 @@ public class H2DaoBatchesTest {
         try (JdbcTransaction transact = testDataBase.transactionFactory().createTransaction()) {
             transact.doUpdate("DELETE FROM batches");
             transact.doUpdate("DELETE FROM batch_commands");
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }
     }
@@ -197,10 +195,10 @@ public class H2DaoBatchesTest {
         
         assertEquals("mysql_server", com0run.argument().getOriginal());
         assertEquals("tomcat", com1run.argument().getOriginal());
-        assertEquals("3 SECONDS", com2pause.stringifyOriginal());
+        assertEquals("3 SECONDS", com2pause.stringifyOriginalArgs());
         assertEquals(3, com2pause.getPauseDuration());
         assertEquals(SECONDS, com2pause.getTimePeriod());
-        assertEquals("tomcat_root", com3see.page().getOriginal());
+        assertEquals("tomcat_root", com3see.argument().getOriginal());
     }
 
     /**

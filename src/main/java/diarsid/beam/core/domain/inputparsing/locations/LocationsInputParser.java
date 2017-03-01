@@ -11,7 +11,7 @@ import java.util.List;
 import diarsid.beam.core.domain.inputparsing.common.ArgumentsInterceptor;
 
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.FILE_PATH;
-import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.SIMPLE_WORD;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.DOMAIN_WORD;
 
 /**
  *
@@ -27,11 +27,11 @@ public class LocationsInputParser {
         arguments
                 .stream()                
                 .filter(arg -> interceptor.interceptArgumentOfType(arg, FILE_PATH).ifContinue())
-                .filter(arg -> interceptor.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, DOMAIN_WORD).ifContinue())
                 .count();
         
         return new LocationNameAndPath(
-                interceptor.argOfType(SIMPLE_WORD), 
+                interceptor.argOfType(DOMAIN_WORD), 
                 interceptor.argOfType(FILE_PATH));
     }
 }

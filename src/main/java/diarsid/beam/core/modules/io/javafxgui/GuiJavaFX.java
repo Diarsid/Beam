@@ -111,12 +111,14 @@ public class GuiJavaFX
                         message.toText(), 
                         (WindowResources) this, 
                         this.windowsController));
+                break;
             }
             case ERROR : {
                 Platform.runLater(this.windowsBuilder.newErrorWindow(
                         message.toText(), 
                         (WindowResources) this, 
                         this.windowsController));
+                break;
             }
             default : {
                 // show as usual message

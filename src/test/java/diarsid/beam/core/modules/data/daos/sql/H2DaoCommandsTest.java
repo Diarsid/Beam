@@ -120,7 +120,7 @@ public class H2DaoCommandsTest {
         Optional<ExtendableCommand> optCom = dao.getByExactOriginalOfType(initiator, "NEtb", RUN_PROGRAM);
         assertTrue(optCom.isPresent());
         assertTrue(optCom.get().type().equals(RUN_PROGRAM));
-        assertEquals("dev/NetBeans_8.2", optCom.get().stringifyExtended());
+        assertEquals("dev/NetBeans_8.2", optCom.get().stringifyExtendedArgs());
     }
 
     /**

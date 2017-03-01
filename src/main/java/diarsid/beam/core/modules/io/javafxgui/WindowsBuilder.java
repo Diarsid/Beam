@@ -16,12 +16,12 @@ import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 public interface WindowsBuilder {
     
     Runnable newMessageWindow(
-            String[] message,
+            List<String> message,
             WindowResources resources, 
             WindowController controller);
     
     Runnable newErrorWindow(
-            String[] message,
+            List<String> message,
             WindowResources resources, 
             WindowController controller);
     

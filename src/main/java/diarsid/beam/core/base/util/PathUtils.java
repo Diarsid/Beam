@@ -18,8 +18,8 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.wordIsAcceptable;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.charsAreDomainAcceptable;
 
 /**
  *
@@ -99,7 +99,9 @@ public class PathUtils {
     public static boolean isAcceptableWebPath(String target) {        
         try {            
             // validate possible url.
-            return ! new URL(target).toURI().toString().isEmpty();
+            return 
+                    target.contains("/") && 
+                    ! new URL(target).toURI().toString().isEmpty();
         } catch (MalformedURLException|URISyntaxException e) {
             return false;
         }
@@ -107,13 +109,14 @@ public class PathUtils {
     
     public static boolean isAcceptableFilePath(String target) {
         return 
+                ! target.isEmpty() &&
                 ! containsIgnoreCaseAnyFragment(target, UNACCEPTABLE_FILEPATH_CHARS) &&
                 containsPathSeparator(target);
     }
     
     public static boolean isAcceptableRelativePath(String target) {
         return ( 
-                wordIsAcceptable(target) &&
+                charsAreDomainAcceptable(target) &&
                 indexOfFirstPathSeparator(target) > 1 && 
                 indexOfLastPathSeparator(target) < target.length() - 2);
     }

@@ -18,13 +18,14 @@ import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.domain.entities.Attribute.optionalAttribute;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.domain.entities.Attribute.optionalAttribute;
 
 
 class H2DaoKeyValueStorage 
@@ -55,7 +56,7 @@ class H2DaoKeyValueStorage
                                 return Optional.of( (String) firstRow.get("value"));
                             },
                             lower(key));
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return Optional.empty();
         }
@@ -92,7 +93,7 @@ class H2DaoKeyValueStorage
                     .rollbackAndProceed();
             
             return ( saved == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }        
@@ -107,7 +108,7 @@ class H2DaoKeyValueStorage
                             "WHERE LOWER(key) IS ? ", 
                             lower(key)) 
                     == 1;
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }
@@ -126,7 +127,7 @@ class H2DaoKeyValueStorage
                                         (String) row.get("key"), 
                                         (String) row.get("value"));
                             });
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }
         return all;
@@ -157,7 +158,7 @@ class H2DaoKeyValueStorage
                             "FROM key_value",
                             this.rowToAttributeConversion)
                     .collect(toSet());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptySet();
         }

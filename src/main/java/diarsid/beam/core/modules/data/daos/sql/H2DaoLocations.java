@@ -17,6 +17,7 @@ import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.PerRowConversion;
+import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
@@ -32,10 +33,10 @@ import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.jdbc.transactions.core.Params.params;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 
 
 class H2DaoLocations 
@@ -62,7 +63,7 @@ class H2DaoLocations
                             "FROM locations " +
                             "WHERE LOWER(loc_name) IS ? ",
                             lower(exactName));
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoLocations.class, ex);
             super.ioEngine().report(initiator, "is name free request failed.");
             return false;
@@ -81,7 +82,7 @@ class H2DaoLocations
                             this.rowToLocationConversion,
                             lower(exactName))
                     .findFirst();
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().report(
                     initiator, format("location search by exact name '%s' failed.", exactName));
@@ -102,7 +103,7 @@ class H2DaoLocations
                             this.rowToLocationConversion,
                             lowerWildcard(locationName))
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().report(
                     initiator, format("location search by name '%s' failed.", locationName));
@@ -124,7 +125,7 @@ class H2DaoLocations
                             this.rowToLocationConversion,
                             lowerWildcardList(nameParts))                    
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(initiator, error(
                     "location search by name parts: ", 
@@ -154,7 +155,7 @@ class H2DaoLocations
                             location.name(), location.getPath());
             
             return ( updated == 1 && nameIsFree );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(initiator, error(
                     "Location saving failed:",
@@ -174,7 +175,7 @@ class H2DaoLocations
                             "WHERE LOWER(loc_name) IS ? ", 
                             lower(locationName));
             return ( removed > 0 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().report(
                     initiator, format("Location removing by '%s' failed.", locationName));
@@ -199,7 +200,7 @@ class H2DaoLocations
                     .rollbackAndProceed();
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(
                     initiator, 
@@ -237,7 +238,7 @@ class H2DaoLocations
                     .rollbackAndProceed();
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(
                     initiator, 
@@ -283,7 +284,7 @@ class H2DaoLocations
             ).sum();
                 
             return ( modified > 0 );            
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().reportMessage(
                     initiator, 
@@ -307,7 +308,7 @@ class H2DaoLocations
                             "FROM locations", 
                             this.rowToLocationConversion)
                     .collect(toList());
-        } catch (TransactionHandledSQLException ex) {
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().report(initiator, "All locations obtaining failed.");
             return emptyList();

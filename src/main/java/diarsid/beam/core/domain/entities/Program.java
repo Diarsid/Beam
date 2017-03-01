@@ -10,7 +10,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 
-import diarsid.beam.core.application.catalogs.ProgramsCatalog;
+import diarsid.beam.core.application.environment.ProgramsCatalog;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;

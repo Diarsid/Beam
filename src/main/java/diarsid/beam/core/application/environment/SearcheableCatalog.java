@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.application.catalogs;
+package diarsid.beam.core.application.environment;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

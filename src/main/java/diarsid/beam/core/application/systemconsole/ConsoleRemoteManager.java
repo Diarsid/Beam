@@ -9,23 +9,23 @@ package diarsid.beam.core.application.systemconsole;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
-import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
 import static java.lang.Integer.parseInt;
+import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
+import static java.rmi.server.UnicastRemoteObject.exportObject;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.application.systemconsole.SystemConsoleLog.consoleDebug;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
 
 /**
  *
@@ -61,7 +61,7 @@ public class ConsoleRemoteManager {
             int otherConsolesCounter = 0;
             while ( registryNotCreated ) {                
                 try {
-                    registry = LocateRegistry.createRegistry(this.consoleRegistryPort); 
+                    registry = createRegistry(this.consoleRegistryPort); 
                     registryNotCreated = false;
                     consoleDebug("port: " + this.consoleRegistryPort + " is free.");
                     getPassport().setPort(this.consoleRegistryPort);
@@ -78,8 +78,7 @@ public class ConsoleRemoteManager {
             
             RemoteOuterIoEngine remoteConsole = new RemoteConsoleAdpater(console);
             RemoteOuterIoEngine consoleStub =
-                    (RemoteOuterIoEngine) UnicastRemoteObject.exportObject(
-                            remoteConsole, this.consoleRegistryPort);
+                    (RemoteOuterIoEngine) exportObject(remoteConsole, this.consoleRegistryPort);
             
             this.consoleName = this.consoleName + otherConsolesCounter;
             

@@ -11,7 +11,7 @@ import java.util.List;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.ENTITY_PROPERTY;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.FILE_PATH;
-import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.SIMPLE_WORD;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.DOMAIN_WORD;
 
 /**
  *
@@ -27,7 +27,7 @@ public class PropertyAndTextParser {
         arguments
                 .stream()                
                 .filter(arg -> interceptor.interceptArgumentOfType(arg, ENTITY_PROPERTY).ifContinue())
-                .filter(arg -> interceptor.interceptArgumentOfType(arg, SIMPLE_WORD).ifContinue())
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, DOMAIN_WORD).ifContinue())
                 .count();
         
         return new PropertyAndText(

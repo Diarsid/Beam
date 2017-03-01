@@ -17,6 +17,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.StringNumberUtils.notNumeric;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
@@ -35,40 +36,48 @@ public class KeeperDialogHelper {
     
     public String validateInteractively(
             Initiator initiator, String argument, String ioRequest, ValidationRule rule) {
-        ValidationResult result = rule.apply(argument);
-        if ( result.isOk() ) {
-            return argument;
-        } else {
-            return this.inputAndValidateInLoop(result, initiator, ioRequest, rule, argument);
-        }
+        return this.validate(initiator, ioRequest, rule, argument);
     } 
 
-    private String inputAndValidateInLoop(
-            ValidationResult result, 
+    private String validate( 
             Initiator initiator, 
             String ioRequest, 
             ValidationRule rule, 
             String argument) {
-        String anotherValue = "";
-        while ( result.isFail() ) {
-            this.ioEngine.report(initiator, result.getFailureMessage());
-            anotherValue = this.ioEngine.askInput(initiator, ioRequest);
-            if ( anotherValue.isEmpty() ) {
-                return "";
+        if ( nonEmpty(argument) ) {
+            ValidationResult result = rule.apply(argument);
+            if ( result.isOk() ) {
+                return argument;
+            } else {
+                return this.loopValidation(initiator, ioRequest, rule);
             }
-            result = rule.apply(argument);
+        } else {
+            return this.loopValidation(initiator, ioRequest, rule);
         }
-        return anotherValue;
+    }
+    
+    private String loopValidation(
+            Initiator initiator, String ioRequest, ValidationRule rule) {
+        String value;
+        ValidationResult validity;
+        valueDefining: while ( true ) {
+            value = this.ioEngine.askInput(initiator, ioRequest);
+            if ( value.isEmpty() ) {
+                return "";
+            } else {
+                validity = rule.apply(value);
+                if ( validity.isOk() ) {
+                    return value;
+                } else {
+                    this.ioEngine.report(initiator, validity.getFailureMessage());
+                }
+            }
+        }        
     }
 
     public String validateEntityNameInteractively(
             Initiator initiator, String argument) {
-        ValidationResult result = ENTITY_NAME_RULE.apply(argument);
-        if ( result.isOk() ) {
-            return argument;
-        } else {
-            return this.inputAndValidateInLoop(result, initiator, "name", ENTITY_NAME_RULE, argument);
-        }
+        return this.validate(initiator, "name", ENTITY_NAME_RULE, argument);
     }
     
     public EntityProperty validatePropertyInteractively(

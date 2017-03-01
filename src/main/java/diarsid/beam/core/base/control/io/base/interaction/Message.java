@@ -6,6 +6,7 @@
 package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -18,7 +19,7 @@ public interface Message extends Serializable {
         ERROR
     }
     
-    String[] toText();
+    List<String> toText();
     
     MessageType getType();
 }
