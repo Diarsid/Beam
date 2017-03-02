@@ -10,25 +10,23 @@ import java.io.IOException;
 
 import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.System.exit;
 import static java.lang.Thread.sleep;
 
 import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
-import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.application.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.application.systemconsole.SystemIO.provideWriter;
+import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
  * @author Diarsid
  */
 public class SystemConsole {
-        
-    private static RemoteOuterIoEngine SYSTEM_CONSOLE;
+    
     private static final ConsolePassport PASSPORT;
     
     static {
@@ -53,10 +51,6 @@ public class SystemConsole {
             logError(SystemConsole.class, e);
             delayedShutdown();
         }
-    }
-    
-    public static void saveRemoteOuterIoEngine(RemoteOuterIoEngine remoteOuterIoEngine) {
-        SYSTEM_CONSOLE = remoteOuterIoEngine;
     }
     
     public static ConsolePassport getPassport() {

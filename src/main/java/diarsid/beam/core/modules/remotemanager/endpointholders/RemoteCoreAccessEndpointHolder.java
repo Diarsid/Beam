@@ -19,12 +19,12 @@ import diarsid.beam.core.modules.IoModule;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
 
-public class RemoteAccessEndpointHolder implements RemoteCoreAccessEndpoint {
+public class RemoteCoreAccessEndpointHolder implements RemoteCoreAccessEndpoint {
     
     private final IoModule ioModule;
     private final ControlModule coreControlModule;
     
-    public RemoteAccessEndpointHolder(IoModule ioModule, ControlModule coreControlModule) {
+    public RemoteCoreAccessEndpointHolder(IoModule ioModule, ControlModule coreControlModule) {
         this.ioModule = ioModule;
         this.coreControlModule = coreControlModule;
     }

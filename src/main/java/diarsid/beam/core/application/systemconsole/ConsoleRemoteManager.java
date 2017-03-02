@@ -53,8 +53,9 @@ public class ConsoleRemoteManager {
     
     void export(ConsoleController console) {
         try {            
-            RemoteCoreAccessEndpoint remoteAccess = importRemoteAccess();            
+            RemoteCoreAccessEndpoint remoteAccess = this.importRemoteAccess();            
             console.setRemoteAccess(remoteAccess);
+            ConsoleRemoteObjectsHolder.holdedRemoteCoreAccess = remoteAccess;
                         
             Registry registry = null;
             boolean registryNotCreated = true;
@@ -73,7 +74,8 @@ public class ConsoleRemoteManager {
             }            
             if ( isNull(registry) ) {
                 throw new StartupFailedException("Cannot create or obtain RMI Registry.");
-            }             
+            }      
+            ConsoleRemoteObjectsHolder.holdedRegistry = registry;
             consoleDebug("registry created.");
             
             RemoteOuterIoEngine remoteConsole = new RemoteConsoleAdpater(console);
@@ -82,7 +84,8 @@ public class ConsoleRemoteManager {
             
             this.consoleName = this.consoleName + otherConsolesCounter;
             
-            registry.bind(this.consoleName, consoleStub);            
+            registry.bind(this.consoleName, consoleStub);  
+            ConsoleRemoteObjectsHolder.holdedRemoteConsole = consoleStub;
             getPassport().setName(this.consoleName);
             remoteAccess.acceptRemoteOuterIoEngine(
                     this.consoleName, 

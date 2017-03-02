@@ -25,11 +25,11 @@ import static diarsid.beam.core.base.util.Logs.logError;
  */
 public class OuterIoEnginesHolder {
     
-    private final Map<Initiator, OuterIoEngine> ioEngines;
+    private final static Map<Initiator, OuterIoEngine> IO_ENGINES = new HashMap<>();
+    
     private final Object enginesLock;
     
     public OuterIoEnginesHolder() {
-        this.ioEngines = new HashMap<>();
         this.enginesLock = new Object();
     }
     
@@ -43,35 +43,35 @@ public class OuterIoEnginesHolder {
                 logError(this.getClass(), 
                         "exception during ioEngine initiator token accepting.", ex);
             }
-            this.ioEngines.put(initiator, ioEngine);
+            IO_ENGINES.put(initiator, ioEngine);
             debug("ioEngine accepted.");
         } 
     }
     
     OuterIoEngine getEngine(Initiator initiator) {
-        return this.ioEngines.get(initiator);
+        return IO_ENGINES.get(initiator);
     }
     
     boolean deleteEngine(Initiator initiator) {
         synchronized ( this.enginesLock ) {
             try {
-                this.ioEngines.get(initiator).close();
+                IO_ENGINES.get(initiator).close();
             } catch (IOException e) {
                 logError(this.getClass(), "exception during ioEngine closing attempt.", e);
             }
             debug("ioEngine with initiator: " + initiator.getId() + " has been removed.");
-            return nonNull(this.ioEngines.remove(initiator));            
+            return nonNull(IO_ENGINES.remove(initiator));            
         }    
     }
     
     boolean hasEngine(Initiator initiator) {
-        return this.ioEngines.keySet().contains(initiator);
+        return IO_ENGINES.keySet().contains(initiator);
     }
     
     void closeAllEngines() {
         synchronized ( this.enginesLock ) {
             
-            this.ioEngines
+            IO_ENGINES
                     .values()
                     .forEach(outerIoEngine -> {
                         try {
@@ -83,11 +83,11 @@ public class OuterIoEnginesHolder {
                                     "exception during ioEngine closing attempt.", ex);
                         }
                     });
-            this.ioEngines.clear();
+            IO_ENGINES.clear();
         }
     }
     
     Stream<OuterIoEngine> all() {
-        return this.ioEngines.values().stream();
+        return IO_ENGINES.values().stream();
     }
 }

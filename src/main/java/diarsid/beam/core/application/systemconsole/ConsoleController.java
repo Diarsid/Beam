@@ -40,13 +40,14 @@ import static diarsid.beam.core.base.util.StringUtils.normalize;
  * @author Diarsid
  */
 public class ConsoleController implements OuterIoEngine {
+    
+    private static RemoteCoreAccessEndpoint remoteAccess;
         
     private final ConsolePrinter printer;
     private final ConsoleReader reader;     
     private final AtomicBoolean isInDialogMode;
     private final AtomicBoolean isWorking;
-    private Initiator initiator;
-    private RemoteCoreAccessEndpoint remoteAccess;    
+    private Initiator initiator;        
     
     public ConsoleController(ConsolePrinter printer, ConsoleReader reader) {
         this.printer = printer;
@@ -55,8 +56,8 @@ public class ConsoleController implements OuterIoEngine {
         this.isWorking = new AtomicBoolean(true);
     }
 
-    public void setRemoteAccess(RemoteCoreAccessEndpoint remoteAccess) {
-        this.remoteAccess = remoteAccess;
+    public void setRemoteAccess(RemoteCoreAccessEndpoint access) {
+        remoteAccess = access;
     }
     
     private void startConsoleRunner() {
@@ -74,7 +75,7 @@ public class ConsoleController implements OuterIoEngine {
                     if ( command.isNotEmpty() ) {
                         awaitDo(() -> {
                             try {
-                                this.remoteAccess.executeCommand(this.initiator, command.get());
+                                remoteAccess.executeCommand(this.initiator, command.get());
                             } catch (RemoteException ex) {
                                 throw new WorkflowBrokenException(ex);
                             }
@@ -103,8 +104,8 @@ public class ConsoleController implements OuterIoEngine {
     private Answer askForAnswer(Question question) 
             throws IOException, NumberFormatException {
         boolean notResolved = true;
-        String line = "";
-        int chosenVariantIndex = -1;
+        String line;
+        int chosenVariantIndex;
         Answer answer = noAnswerFromVariants();
         while ( notResolved ) {
             line = this.reader.readLine();            

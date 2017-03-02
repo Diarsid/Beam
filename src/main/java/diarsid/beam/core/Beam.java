@@ -5,7 +5,6 @@
 package diarsid.beam.core;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.util.Logs;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
@@ -23,21 +22,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
 
 public class Beam {
     
-    public static final String CONFIG_FILE = "./../config/config.xml";
-    
     private static final Initiator SYSTEM_INITIATOR = new Initiator();
-    
-    /**
-     * Java RMI mechanism requires that remote objects that have been exported 
-     * by this JVM for an external usage by other JVM were saved in static variables.
-     * Otherwise they will be collected by the GC and the RMI interaction through them will 
-     * be impossible. Any attempt to use them after it will cause RemoteException.
-     */
-    private static RemoteCoreAccessEndpoint remoteAccessEndpoint;
-//    private static RmiExecutorInterface rmiExecutorInterface;
-//    private static RmiTaskManagerInterface rmiTaskManagerInterface;
-//    private static RmiLocationsHandlerInterface rmiLocationsHandlerInterface;
-//    private static RmiWebPagesHandlerInterface rmiWebPageHandlerInterface;  
     
     public final static String CORE_CONTAINER = "Beam.core";        
     
@@ -89,15 +74,5 @@ public class Beam {
     public static void exitBeamCoreNow() {
         Logs.log(Beam.class, "stop Beam.core");
         System.exit(0);
-    }
-    
-    public static void saveRmiInterfacesInStaticContext(
-            RemoteManagerModule remoteManagerModule) {
-        remoteAccessEndpoint = remoteManagerModule.getRemoteAccessEndpoint();
-//        rmiRemoteControlInterface = rmiModule.getRmiRemoteControlInterface();
-//        rmiExecutorInterface = rmiModule.getRmiExecutorInterface();
-//        rmiTaskManagerInterface = rmiModule.getRmiTaskManagerInterface();
-//        rmiLocationsHandlerInterface = rmiModule.getRmiLocationsHandlerInterface();
-//        rmiWebPageHandlerInterface = rmiModule.getRmiWebPageHandlerInterface();
     }
 }

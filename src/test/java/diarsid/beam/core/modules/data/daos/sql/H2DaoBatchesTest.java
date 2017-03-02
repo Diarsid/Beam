@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.data.daos.sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -181,6 +182,13 @@ public class H2DaoBatchesTest {
         
         Batch restoredBatch = daoBatches.getBatchByName(initiator, "workspace").get();
         assertEquals(batch, restoredBatch);
+    }
+    
+    @Test
+    public void testGetBatchByName_notFound() {
+        
+        Optional<Batch> restoredBatch = daoBatches.getBatchByName(initiator, "netb");
+        assertFalse(restoredBatch.isPresent());
     }
     
     @Test

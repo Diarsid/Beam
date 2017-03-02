@@ -21,21 +21,21 @@ import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
-import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteAccessEndpointHolder;
+import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteCoreAccessEndpointHolder;
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.Beam.saveRmiInterfacesInStaticContext;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRegistry;
+import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRemoteAccessEndpoint;
 
 
 public class RemoteManagerModuleWorker implements RemoteManagerModule {
     
-    private final RemoteCoreAccessEndpoint remoteAccessEndpoint;
-    
+    private final RemoteCoreAccessEndpoint remoteAccessEndpoint;    
     private final ApplicationComponentsHolderModule appComponentsHolderModule;
     private final IoModule io;
     
@@ -45,12 +45,11 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
             IoModule ioModule) {
         this.appComponentsHolderModule = configModule;
         this.io = ioModule;
-        this.remoteAccessEndpoint = new RemoteAccessEndpointHolder(ioModule, coreControlModule);
+        this.remoteAccessEndpoint = new RemoteCoreAccessEndpointHolder(ioModule, coreControlModule);
         this.exportAndSaveExportedEndpoints();
     }
     
     private void exportAndSaveExportedEndpoints() {
-        saveRmiInterfacesInStaticContext(this);
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
         try {
             int beamCorePort = Integer.parseInt(configuration.getAsString("rmi.core.port"));
@@ -60,6 +59,8 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
                             this.remoteAccessEndpoint, beamCorePort);
 
             registry.bind(CORE_ACCESS_ENDPOINT_NAME, access);
+            holdedRegistry = registry;
+            holdedRemoteAccessEndpoint = access;
             debug("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
             this.io.getInnerIoEngine().reportMessageAndExitLater(getSystemInitiator(), 
