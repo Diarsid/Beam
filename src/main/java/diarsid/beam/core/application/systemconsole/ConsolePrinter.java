@@ -67,7 +67,7 @@ public class ConsolePrinter {
                 this.writer.write(format("       %d : %s", i + 1, variant.getDisplayText()));
                 this.writer.newLine();
             } else {
-                this.writer.write(format("       %d : %s", i + 1, variant.getText()));
+                this.writer.write(format("       %d : %s", i + 1, variant.text()));
                 this.writer.newLine();
             }
         }

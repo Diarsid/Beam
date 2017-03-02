@@ -35,7 +35,7 @@ public class Variant implements Serializable {
         return ! this.displayText.isEmpty();
     }
 
-    public String getText() {
+    public String text() {
         return this.text;
     }
 
@@ -43,7 +43,7 @@ public class Variant implements Serializable {
         return this.displayText;
     }
     
-    public int getIndex() {
+    public int index() {
         return this.variantIndex;
     }
 

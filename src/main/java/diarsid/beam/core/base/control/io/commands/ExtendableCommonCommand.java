@@ -23,12 +23,12 @@ public abstract class ExtendableCommonCommand implements ExtendableCommand {
 
     @Override
     public String stringifyOriginalArgs() {
-        return this.argument.getOriginal();
+        return this.argument.originalArg();
     }
 
     @Override
     public String stringifyExtendedArgs() {
-        return this.argument.getExtended();
+        return this.argument.extendedArg();
     }
     
     public final ExtendableArgument argument() {

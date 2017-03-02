@@ -18,8 +18,8 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
-import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.charsAreDomainAcceptable;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 /**
  *
@@ -122,11 +122,19 @@ public class PathUtils {
     }
     
     public static String extractLocationFromPath(String path) {
-        return path.substring(0, indexOfFirstPathSeparator(path));
+        if ( path.isEmpty() ) {
+            return "";
+        } else {
+            return path.substring(0, indexOfFirstPathSeparator(path));
+        }        
     }
     
     public static String extractTargetFromPath(String path) {
-        return path.substring(indexOfFirstPathSeparator(path) + 1);
+        if ( path.isEmpty() ) {
+            return "";
+        } else {
+            return path.substring(indexOfFirstPathSeparator(path) + 1);
+        }
     }
     
     public static String trimSeparatorsInBothEnds(String target) {

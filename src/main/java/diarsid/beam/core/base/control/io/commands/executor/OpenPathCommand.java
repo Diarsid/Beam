@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
+import static diarsid.beam.core.base.util.Requirements.requireNonEmpty;
 
 
 public class OpenPathCommand implements ExtendableCommand {
@@ -24,16 +25,18 @@ public class OpenPathCommand implements ExtendableCommand {
     private final ExtendableArgument targetArgument;
     
     public OpenPathCommand(String originalPath) {
+        requireNonEmpty(originalPath, "original path cannot be empty.");
         this.locationArgument = new ExtendableArgument(extractLocationFromPath(originalPath));
         this.targetArgument = new ExtendableArgument(extractTargetFromPath(originalPath));
     }
     
     public OpenPathCommand(String originalPath, String extendedPath) {
+        requireNonEmpty(originalPath, "original path cannot be empty.");
         this.locationArgument = new ExtendableArgument(
                 extractLocationFromPath(originalPath), 
-                extractTargetFromPath(originalPath));
+                extractLocationFromPath(extendedPath));
         this.targetArgument = new ExtendableArgument(
-                extractLocationFromPath(extendedPath), 
+                extractTargetFromPath(originalPath), 
                 extractTargetFromPath(extendedPath));
     }
 
@@ -62,12 +65,16 @@ public class OpenPathCommand implements ExtendableCommand {
 
     @Override
     public String stringifyOriginalArgs() {
-        return this.locationArgument.getOriginal() + "/" + this.targetArgument.getOriginal();
+        return this.locationArgument.originalArg() + "/" + this.targetArgument.originalArg();
     }
 
     @Override
     public String stringifyExtendedArgs() {
-        return this.locationArgument.getExtended()+ "/" + this.targetArgument.getExtended();
+        if ( this.locationArgument.hasExtended() && this.targetArgument.hasExtended() ) {
+            return this.locationArgument.extendedArg()+ "/" + this.targetArgument.extendedArg();
+        } else {
+            return "";
+        }        
     }
 
     @Override

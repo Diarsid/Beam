@@ -117,7 +117,7 @@ public class Question implements Serializable {
                     if ( variant.hasDisplayText() ) {
                         return containsIgnoreCase(variant.getDisplayText(), possibleFragment);
                     } else {
-                        return containsIgnoreCase(variant.getText(), possibleFragment);
+                        return containsIgnoreCase(variant.text(), possibleFragment);
                     }
                 })
                 .map(variant -> answerOfVariant(variant))

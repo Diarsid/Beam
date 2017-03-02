@@ -123,8 +123,8 @@ public class InterpreterTest {
         assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
-        assertEquals("books", c1.location().getOriginal());
-        assertEquals("fan/tolkien", c1.target().getOriginal());
+        assertEquals("books", c1.location().originalArg());
+        assertEquals("fan/tolkien", c1.target().originalArg());
     }
     
     @Test
@@ -133,8 +133,8 @@ public class InterpreterTest {
         assertEquals(OPEN_PATH, c.type());
         
         OpenPathCommand c1 = (OpenPathCommand) c;
-        assertEquals("books", c1.location().getOriginal());
-        assertEquals("fan/tolkien", c1.target().getOriginal());
+        assertEquals("books", c1.location().originalArg());
+        assertEquals("fan/tolkien", c1.target().originalArg());
     }
     
     @Test
@@ -143,7 +143,7 @@ public class InterpreterTest {
         assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
-        assertEquals("google", c1.argument().getOriginal());
+        assertEquals("google", c1.argument().originalArg());
     }
     
     @Test
@@ -152,7 +152,7 @@ public class InterpreterTest {
         assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
-        assertEquals("google", c1.argument().getOriginal());
+        assertEquals("google", c1.argument().originalArg());
     }
     
     @Test
@@ -161,7 +161,7 @@ public class InterpreterTest {
         assertEquals(CALL_BATCH, c.type());
         
         CallBatchCommand c1 = (CallBatchCommand) c;
-        assertEquals("env", c1.argument().getOriginal());
+        assertEquals("env", c1.argument().originalArg());
     }
     
     @Test
@@ -170,7 +170,7 @@ public class InterpreterTest {
         assertEquals(RUN_PROGRAM, c.type());
         
         RunProgramCommand c1 = (RunProgramCommand) c;
-        assertEquals("prog", c1.argument().getOriginal());
+        assertEquals("prog", c1.argument().originalArg());
     }
     
     @Test
@@ -179,7 +179,7 @@ public class InterpreterTest {
         assertEquals(SEE_WEBPAGE, c.type());
         
         SeePageCommand c1 = (SeePageCommand) c;
-        assertEquals("google", c1.argument().getOriginal());
+        assertEquals("google", c1.argument().originalArg());
     }   
     
     
@@ -189,7 +189,7 @@ public class InterpreterTest {
         assertEquals(CALL_BATCH, c.type());
         
         CallBatchCommand c1 = (CallBatchCommand) c;
-        assertEquals("environment", c1.argument().getOriginal());
+        assertEquals("environment", c1.argument().originalArg());
     }   
     
     
@@ -199,7 +199,7 @@ public class InterpreterTest {
         assertEquals(RUN_PROGRAM, c.type());
         
         RunProgramCommand c1 = (RunProgramCommand) c;
-        assertEquals("prog", c1.argument().getOriginal());
+        assertEquals("prog", c1.argument().originalArg());
     }
     
     @Test
@@ -208,7 +208,7 @@ public class InterpreterTest {
         assertEquals(RUN_PROGRAM, c.type());
         
         RunProgramCommand c1 = (RunProgramCommand) c;
-        assertEquals("util/prog", c1.argument().getOriginal());
+        assertEquals("util/prog", c1.argument().originalArg());
     }
     
     @Test
@@ -217,7 +217,7 @@ public class InterpreterTest {
         assertEquals(START_PROGRAM, c.type());
         
         StartProgramCommand c1 = (StartProgramCommand) c;
-        assertEquals("Prog", c1.argument().getOriginal());
+        assertEquals("Prog", c1.argument().originalArg());
     }
     
     @Test
@@ -226,7 +226,7 @@ public class InterpreterTest {
         assertEquals(START_PROGRAM, c.type());
         
         StartProgramCommand c1 = (StartProgramCommand) c;
-        assertEquals("util/Prog", c1.argument().getOriginal());
+        assertEquals("util/Prog", c1.argument().originalArg());
     }
     
     @Test
@@ -235,7 +235,7 @@ public class InterpreterTest {
         assertEquals(STOP_PROGRAM, c.type());
         
         StopProgramCommand c1 = (StopProgramCommand) c;
-        assertEquals("prog", c1.argument().getOriginal());
+        assertEquals("prog", c1.argument().originalArg());
     }
     
     @Test
@@ -244,7 +244,7 @@ public class InterpreterTest {
         assertEquals(STOP_PROGRAM, c.type());
         
         StopProgramCommand c1 = (StopProgramCommand) c;
-        assertEquals("util/prog", c1.argument().getOriginal());
+        assertEquals("util/prog", c1.argument().originalArg());
     }
     
     @Test
@@ -321,8 +321,8 @@ public class InterpreterTest {
         OpenPathCommand c1 = (OpenPathCommand) c;
         assertEquals("books/fant/tolkien", c1.stringifyOriginalArgs());
         
-        assertEquals("books", c1.location().getOriginal());
-        assertEquals("fant/tolkien", c1.target().getOriginal());
+        assertEquals("books", c1.location().originalArg());
+        assertEquals("fant/tolkien", c1.target().originalArg());
     }
     
     @Test

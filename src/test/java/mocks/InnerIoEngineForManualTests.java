@@ -81,7 +81,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
                 if ( variant.hasDisplayText() ) {
                     System.out.println(format("fake io >     %d : %s", i + 1, variant.getDisplayText()));
                 } else {
-                    System.out.println(format("fake io >     %d : %s", i + 1, variant.getText()));
+                    System.out.println(format("fake io >     %d : %s", i + 1, variant.text()));
                 }
             }
             System.out.print("fake io > choose ");

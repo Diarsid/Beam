@@ -45,14 +45,14 @@ public class Answer implements Serializable {
     }
     
     public String text() {
-        return this.chosen.getText();
+        return this.chosen.text();
     }
     
     public boolean is(String text) {
-        return this.chosen.getText().equals(text);
+        return this.chosen.text().equals(text);
     }
     
     public int index() {
-        return this.chosen.getIndex();
+        return this.chosen.index();
     }
 }

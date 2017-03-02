@@ -201,12 +201,12 @@ public class H2DaoBatchesTest {
         BatchPauseCommand com2pause = (BatchPauseCommand) restoredBatch.getCommands().get(2).command();
         SeePageCommand com3see = (SeePageCommand) restoredBatch.getCommands().get(3).command();
         
-        assertEquals("mysql_server", com0run.argument().getOriginal());
-        assertEquals("tomcat", com1run.argument().getOriginal());
+        assertEquals("mysql_server", com0run.argument().originalArg());
+        assertEquals("tomcat", com1run.argument().originalArg());
         assertEquals("3 SECONDS", com2pause.stringifyOriginalArgs());
         assertEquals(3, com2pause.getPauseDuration());
         assertEquals(SECONDS, com2pause.getTimePeriod());
-        assertEquals("tomcat_root", com3see.argument().getOriginal());
+        assertEquals("tomcat_root", com3see.argument().originalArg());
     }
 
     /**
