@@ -45,8 +45,8 @@ public class RemoteCoreAccessEndpointHolder implements RemoteCoreAccessEndpoint 
     }
 
     @Override
-    public void exitBeam() throws RemoteException {
-        this.coreControlModule.exitBeam();
+    public void exitBeam(Initiator initiator) throws RemoteException {
+        this.coreControlModule.exitBeam(initiator);
     }
 
     @Override

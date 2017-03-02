@@ -31,7 +31,9 @@ import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOf
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
+import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
 
@@ -65,7 +67,7 @@ public class ConsoleController implements OuterIoEngine {
             throw new StartupFailedException(
                     "Attempt to start console while initiator has not been set.");
         }
-        new Thread(() -> {
+        asyncDoIndependently(() -> {
             StringHolder command = new StringHolder();   
             try {
                 while ( this.isWorking.get() ) {
@@ -84,9 +86,9 @@ public class ConsoleController implements OuterIoEngine {
                     this.isInDialogMode.set(false);
                 }
             } catch (IOException ex) {
-                throw new WorkflowBrokenException(ex);
+                logError(this.getClass(), ex);
             } 
-        }).start();
+        });
     }
     
     @Override

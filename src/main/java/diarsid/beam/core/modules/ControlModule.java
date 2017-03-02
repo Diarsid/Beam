@@ -14,7 +14,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
  */
 public interface ControlModule extends BeamModule {
     
-    void exitBeam();    
+    void exitBeam(Initiator initiator);    
     
     void executeCommand(Initiator initiator, String commandLine);
 }

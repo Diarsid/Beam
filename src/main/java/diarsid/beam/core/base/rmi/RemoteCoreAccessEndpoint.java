@@ -23,7 +23,7 @@ public interface RemoteCoreAccessEndpoint extends Remote {
         
     boolean unregisterIoEngine(Initiator initiator) throws RemoteException;
     
-    void exitBeam() throws RemoteException;    
+    void exitBeam(Initiator initiator) throws RemoteException;    
     
     void executeCommand(Initiator initiator, String commandLine) throws RemoteException;
 }

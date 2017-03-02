@@ -14,7 +14,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import static java.lang.Runtime.getRuntime;
 import static java.util.Optional.empty;
 
-import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
@@ -28,7 +27,7 @@ public class ConcurrencyUtil {
         EXECUTOR = new ScheduledThreadPoolExecutor(10);
         EXECUTOR.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         EXECUTOR.setRemoveOnCancelPolicy(false);
-        getRuntime().addShutdownHook(new Thread(() -> shutdownConcurrentRuntime()));
+        getRuntime().addShutdownHook(new Thread(() -> EXECUTOR.shutdown()));
     }
     
     private ConcurrencyUtil() {
@@ -55,8 +54,7 @@ public class ConcurrencyUtil {
         EXECUTOR.submit(runnable);
     }
     
-    private static void shutdownConcurrentRuntime() {
-        EXECUTOR.shutdown();
-        log(ConcurrencyUtil.class, "shutdown.");
+    public static void asyncDoIndependently(Runnable runnable) {
+        new Thread(runnable).start();
     }
 }
