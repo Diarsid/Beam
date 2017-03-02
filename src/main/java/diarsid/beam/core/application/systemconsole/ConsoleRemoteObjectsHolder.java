@@ -19,6 +19,7 @@ class ConsoleRemoteObjectsHolder {
         
     static Registry holdedRegistry;
     static RemoteOuterIoEngine holdedRemoteConsole;
+    static RemoteOuterIoEngine holdedRemoteConsoleExported;
     static RemoteCoreAccessEndpoint holdedRemoteCoreAccess;
     
     private ConsoleRemoteObjectsHolder() {

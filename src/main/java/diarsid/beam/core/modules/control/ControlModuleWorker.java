@@ -42,7 +42,7 @@ public class ControlModuleWorker implements ControlModule {
 
     @Override
     public void executeCommand(Initiator initiator, String commandLine) {
-        debug("initiator:" + initiator.getId() + " command: " + commandLine );
+        debug("initiator:" + initiator.identity() + " command: " + commandLine );
         if ( this.ioModule.isInitiatorLegal(initiator) ) {
             this.cliProcessor.process(initiator, commandLine);
         }

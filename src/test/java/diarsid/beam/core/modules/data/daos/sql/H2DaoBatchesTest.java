@@ -66,7 +66,7 @@ public class H2DaoBatchesTest {
     @BeforeClass
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
-        initiator = new Initiator();
+        initiator = new Initiator(13);
         testDataBase = new H2TestDataBase("testBase");
         daoBatches = new H2DaoBatches(testDataBase, ioEngine);
         testDataBase.setupRequiredTable(

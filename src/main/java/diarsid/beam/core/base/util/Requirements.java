@@ -26,6 +26,18 @@ public class Requirements {
         }
     }
     
+    public static void requireNotNull(Object obj, String requirement) {
+        if ( obj == null ) {
+            throw new RequirementException(requirement);
+        }
+    }
+    
+    public static void requireNull(Object obj, String requirement) {
+        if ( obj != null ) {
+            throw new RequirementException(requirement);
+        }
+    }
+    
     public static void requireEquals(Object o1, Object o2, String requirement) 
             throws RequirementException {
         if ( ! o1.equals(o2) ) {

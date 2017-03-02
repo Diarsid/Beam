@@ -37,7 +37,7 @@ class CliCommandDispatcher implements CommandDispatcher {
     
     @Override
     public void dispatch(Initiator initiator, Command command) {
-        debug("initiator:" + initiator.getId() + " commandType: " + command.type());
+        debug("initiator:" + initiator.identity() + " commandType: " + command.type());
         try {
             switch ( command.type() ) {
                 case OPEN_LOCATION: {

@@ -24,7 +24,8 @@ class IoModuleWorkerBuilder implements GemModuleBuilder<IoModule> {
     @Override
     public IoModule buildModule() {
         Gui gui = new GuiJavaFX("./../res/images/");
-        OuterIoEnginesHolder ioEnginesHolder = new OuterIoEnginesHolder();
+        OuterIoEnginesManager enginesManager = new OuterIoEnginesManager();
+        OuterIoEnginesHolder ioEnginesHolder = new OuterIoEnginesHolder(enginesManager);
         MainInnerIoEngine mainIo = new MainInnerIoEngine(ioEnginesHolder, gui);
         return new IoModuleWorker(ioEnginesHolder, mainIo);
     }

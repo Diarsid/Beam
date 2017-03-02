@@ -48,7 +48,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
     public static void main(String[] args) throws Exception {
         InnerIoEngine ioEngine = new InnerIoEngineForManualTests(reader);
         KeeperDialogHelper helper = new KeeperDialogHelper(ioEngine);
-        Initiator initiator = new Initiator();
+        Initiator initiator = new Initiator(56);
         DaoTasks dao = mock(DaoTasks.class);
         when(dao.saveTask(any(Initiator.class), anyObject())).thenReturn(true);
         

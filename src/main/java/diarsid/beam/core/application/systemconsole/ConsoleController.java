@@ -183,7 +183,7 @@ public class ConsoleController implements OuterIoEngine {
     @Override
     public void acceptInitiator(Initiator initiator) throws IOException {
         this.initiator = initiator;
-        getPassport().setInitiatorId(initiator.getId());
+        getPassport().setInitiatorId(initiator.identity());
         this.startConsoleRunner();
     }
 

@@ -40,13 +40,13 @@ public class IoModuleWorker implements IoModule {
     }
 
     @Override
-    public void registerOuterIoEngine(OuterIoEngine ioEngine) {
+    public boolean registerOuterIoEngine(OuterIoEngine ioEngine) {
         try {
             debug("register ioEngine: " + ioEngine.getName());
         } catch (IOException ex) {
             logError(this.getClass(), ex);
         }
-        this.ioEnginesHolder.acceptNewIoEngine(ioEngine);
+        return this.ioEnginesHolder.acceptNewIoEngine(ioEngine);
     }
 
     @Override

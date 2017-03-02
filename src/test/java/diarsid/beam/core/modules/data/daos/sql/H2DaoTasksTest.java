@@ -68,7 +68,7 @@ public class H2DaoTasksTest {
 
     @BeforeClass
     public static void setUpClass() {
-        initiator = new Initiator();
+        initiator = new Initiator(23);
         dataBase = new H2TestDataBase("tasks_test");
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoTasks(dataBase, ioEngine);

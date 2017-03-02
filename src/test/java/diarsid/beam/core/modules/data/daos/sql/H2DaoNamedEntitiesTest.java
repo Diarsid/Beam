@@ -59,7 +59,7 @@ public class H2DaoNamedEntitiesTest {
 
     @BeforeClass
     public static void setUpClass() {
-        initiator = new Initiator();
+        initiator = new Initiator(36);
         dataBase = new H2TestDataBase("testBase");
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoNamedEntities(dataBase, ioEngine);

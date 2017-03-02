@@ -21,6 +21,7 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DataBaseVerifier;
@@ -42,8 +43,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
 
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-
 /**
  *
  * @author Diarsid
@@ -63,7 +62,7 @@ public class H2DaoCommandsTest {
 
     @BeforeClass
     public static void setUpClass() {
-        initiator = new Initiator();
+        initiator = new Initiator(41);
         base = new H2TestDataBase("commands-test");
         ioEngine = mock(InnerIoEngine.class);
         

@@ -55,7 +55,7 @@ public class H2DaoLocationsTest {
     @BeforeClass
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
-        initiator = new Initiator();
+        initiator = new Initiator(76);
         testDataBase = new H2TestDataBase("locations_test");
         daoLocations = new H2DaoLocations(testDataBase, ioEngine);
         testDataBase.setupRequiredTable(

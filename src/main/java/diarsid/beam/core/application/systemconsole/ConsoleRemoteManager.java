@@ -79,13 +79,14 @@ public class ConsoleRemoteManager {
             consoleDebug("registry created.");
             
             RemoteOuterIoEngine remoteConsole = new RemoteConsoleAdpater(console);
-            RemoteOuterIoEngine consoleStub =
+            RemoteOuterIoEngine remoteConsoleExported =
                     (RemoteOuterIoEngine) exportObject(remoteConsole, this.consoleRegistryPort);
             
             this.consoleName = this.consoleName + otherConsolesCounter;
             
-            registry.bind(this.consoleName, consoleStub);  
-            ConsoleRemoteObjectsHolder.holdedRemoteConsole = consoleStub;
+            registry.bind(this.consoleName, remoteConsoleExported);  
+            ConsoleRemoteObjectsHolder.holdedRemoteConsole = remoteConsole;
+            ConsoleRemoteObjectsHolder.holdedRemoteConsoleExported = remoteConsoleExported;
             getPassport().setName(this.consoleName);
             remoteAccess.acceptRemoteOuterIoEngine(
                     this.consoleName, 

@@ -18,19 +18,26 @@ import static diarsid.beam.core.base.util.StringUtils.randomString;
 public final class Initiator implements Serializable {
     
     private final String id;
+    private final int engineNumber;
     
-    public Initiator() {
+    public Initiator(int engineNumber) {
         this.id = randomString(7);
+        this.engineNumber = engineNumber;
     }
     
-    public String getId() {
+    public int engineNumber() {
+        return this.engineNumber;
+    }
+    
+    public String identity() {
         return this.id;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 61 * hash + Objects.hashCode(this.id);
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.id);
+        hash = 79 * hash + this.engineNumber;
         return hash;
     }
 
@@ -46,6 +53,9 @@ public final class Initiator implements Serializable {
             return false;
         }
         final Initiator other = ( Initiator ) obj;
+        if ( this.engineNumber != other.engineNumber ) {
+            return false;
+        }
         if ( !Objects.equals(this.id, other.id) ) {
             return false;
         }
