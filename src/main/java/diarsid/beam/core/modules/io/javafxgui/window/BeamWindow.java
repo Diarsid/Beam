@@ -24,6 +24,7 @@ import diarsid.beam.core.modules.io.javafxgui.WindowPosition;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
 
 import static javafx.animation.Animation.Status.RUNNING;
+import static javafx.scene.layout.VBox.setMargin;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -92,14 +93,19 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
     }
     
     final void setContent(Pane contentPane) {
-        Pane main = new Pane();
-        main.setId("main");
+        DropShadow sh = new DropShadow();
+        sh.setHeight(sh.getHeight() * 1.3);
+        sh.setWidth(sh.getWidth() * 1.3);
+        sh.setSpread(sh.getSpread() * 1.3);
+        sh.setColor(Color.DARKSLATEGRAY);
         VBox mainVBox = new VBox();
+        mainVBox.setEffect(sh);
+        mainVBox.setId("main");
         mainVBox.setAlignment(Pos.BOTTOM_RIGHT);
-        mainVBox.setPadding(new Insets(0, 3, 3, 3));
+        mainVBox.setPadding(new Insets(3));
         mainVBox.getChildren().addAll(contentPane, onTopControllerButton);
-        main.getChildren().add(mainVBox);
-        Scene scene = new Scene(main);
+        setMargin(contentPane, new Insets(10, 10, 0, 10));
+        Scene scene = new Scene(mainVBox);
         scene.setFill(Color.TRANSPARENT);
         scene.getStylesheets().add(this.resources.getPathToCssFile());
         this.stage.setScene(scene);        

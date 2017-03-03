@@ -14,10 +14,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
+import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
 import diarsid.beam.core.modules.io.javafxgui.WindowController;
 import diarsid.beam.core.modules.io.javafxgui.WindowResources;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 /**
  *
@@ -74,18 +74,18 @@ class TaskWindow extends BeamWindow implements ReusableTaskWindow {
     }
     
     private void initWindowObject() {
-        prepareStage();
-        setContent(createMainContent());
-        setTitle("Task");
-        setTaskIcon();
-        showThis();
+        super.prepareStage();
+        super.setContent(createMainContent());
+        super.setTitle("Task");
+        super.setTaskIcon();
+        super.showThis();
         this.alreadyInitAndCanBeReused = true;        
     }
     
     private void reuseThisWindowObject() {
         this.taskTextLabel.setText(this.taskText);
         this.taskTimeLabel.setText(this.taskTime);
-        showThis();
+        super.showThis();
     }
     
     private Pane createMainContent() {
