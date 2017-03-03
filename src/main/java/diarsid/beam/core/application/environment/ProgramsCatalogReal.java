@@ -38,7 +38,7 @@ public class ProgramsCatalogReal
 
     @Override
     public File asFile(Program program) {
-        return super.getPath().resolve(program.getFullName()).toFile();
+        return super.getPath().resolve(program.fullName()).toFile();
     }
 
     @Override

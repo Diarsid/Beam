@@ -248,8 +248,10 @@ class BatchesKeeperWorker implements BatchesKeeper {
         } 
         
         Optional<Batch> editedBatch = this.getBatchByNamePattern(initiator, name);
-        if ( ! editedBatch.isPresent() ) {
-            return voidOperationFail("there is no such batch.");
+        if ( editedBatch.isPresent() ) {
+            this.ioEngine.report(initiator, format("'%s' found.", editedBatch.get().name()));
+        } else {
+            return voidOperationFail("no such batch.");
         }
         
         property = this.helper.validatePropertyInteractively(
@@ -378,6 +380,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         
         List<String> batchNames = this.getMatchingBatches(initiator, name);
         if ( hasOne(batchNames) ) {
+            this.ioEngine.report(initiator, format("'%s' found.", getOne(batchNames)));
             if ( this.dao.removeBatch(initiator, getOne(batchNames)) ) {
                 return voidCompleted();
             } else {

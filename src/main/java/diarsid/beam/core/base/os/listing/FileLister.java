@@ -45,7 +45,7 @@ public class FileLister {
     }
     
     public Optional<List<String>> listContentOf(Location location, int depth) {
-        return this.list(Paths.get(location.getPath()), depth);
+        return this.list(Paths.get(location.path()), depth);
     }
     
     public Optional<List<String>> listContentOf(Path root, int depth) {      

@@ -221,7 +221,7 @@ public class H2DaoLocationsTest {
         assertTrue(hasOne(locations));
         Location loc = getOne(locations);
         assertEquals("books", loc.name());        
-        assertEquals("c:/new/path/for/books", loc.getPath());
+        assertEquals("c:/new/path/for/books", loc.path());
     }
 
     /**
@@ -249,7 +249,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         locationsBefore
                 .stream()
-                .forEach(location -> assertTrue(location.getPath().startsWith("D:/Tech/DEV")));
+                .forEach(location -> assertTrue(location.path().startsWith("D:/Tech/DEV")));
         
         boolean replaced = daoLocations.replaceInPaths(initiator, "d:/tech/dev", "C:/Dev");
         assertTrue(testDataBase.ifAllConnectionsReleased());
@@ -259,7 +259,7 @@ public class H2DaoLocationsTest {
         assertTrue(testDataBase.ifAllConnectionsReleased());
         locationsAfter
                 .stream()
-                .forEach(location -> assertTrue(location.getPath().startsWith("C:/Dev")));
+                .forEach(location -> assertTrue(location.path().startsWith("C:/Dev")));
     }
 
     /**

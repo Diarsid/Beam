@@ -8,6 +8,8 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.OkValueOperation;
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -17,9 +19,6 @@ import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.toMessage;
-
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.OkValueOperation;
 
 
 /**
@@ -56,6 +55,6 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     
     void removeLocationAndReport(Initiator initiator, ArgumentsCommand command) {
         VoidOperation flow = this.locationsKeeper.removeLocation(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "created!");  
+        super.reportVoidOperationFlow(initiator, flow, "removed.");  
     }
 }

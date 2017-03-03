@@ -33,7 +33,7 @@ public class Program {
         this.fullName = fullName;
     }
     
-    public String getSimpleName() {
+    public String simpleName() {
         if ( containsPathSeparator(this.fullName) ) {
             return this.fullName.substring(indexOfLastPathSeparator(this.fullName), 
                     this.fullName.length());
@@ -42,7 +42,7 @@ public class Program {
         }        
     }
     
-    public String getSubPath() {
+    public String subPath() {
         if ( containsPathSeparator(this.fullName) ) {
             return this.fullName.substring(0, 
                     indexOfLastPathSeparator(this.fullName));
@@ -51,7 +51,7 @@ public class Program {
         }
     }
 
-    public String getFullName() {
+    public String fullName() {
         return this.fullName;
     }
     

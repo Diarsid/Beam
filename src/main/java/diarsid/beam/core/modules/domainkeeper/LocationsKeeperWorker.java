@@ -24,6 +24,8 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.modules.data.DaoLocations;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -210,6 +212,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         List<Location> locationsToRemove = this.getMatchingLocationsBy(initiator, name);
         if ( hasOne(locationsToRemove) ) {
             String locationName = getOne(locationsToRemove).name();
+            this.ioEngine.report(initiator, format("'%s' found.", locationName));
             if ( this.dao.removeLocation(initiator, locationName) ) {
                 return voidCompleted();
             } else {
@@ -255,14 +258,16 @@ class LocationsKeeperWorker implements LocationsKeeper {
             return voidOperationStopped();
         }
         
-        property = this.helper.validatePropertyInteractively(
-                initiator, property, NAME, FILE_URL);
-        if ( property.isUndefined() ) {
-            return voidOperationStopped();
-        }
-        
         Optional<Location> location = this.findExactlyOneLocationByPattern(initiator, name);
-        if ( location.isPresent() ) {
+        if ( location.isPresent() ) {            
+            this.ioEngine.report(initiator, format("'%s' found.", location.get().name()));
+            
+            property = this.helper.validatePropertyInteractively(
+                    initiator, property, NAME, FILE_URL);
+            if ( property.isUndefined() ) {
+                return voidOperationStopped();
+            }
+        
             switch ( property ) {
                 case NAME : {
                     String newName = this.ioEngine.askInput(initiator, "new name");                    
@@ -284,7 +289,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
                     if ( newPath.isEmpty() ) {
                         return voidOperationStopped();
                     }
-                    newPath = this.helper.validateInteractively(initiator, newPath, "new path", LOCAL_DIRECTORY_PATH_RULE);
+                    newPath = this.helper.validateInteractively(
+                            initiator, newPath, "new path", LOCAL_DIRECTORY_PATH_RULE);
                     if ( newPath.isEmpty() ) {
                         return voidOperationStopped();
                     }

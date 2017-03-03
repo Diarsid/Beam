@@ -107,7 +107,7 @@ public class Location
         });
     }
 
-    public String getPath() {
+    public String path() {
         return this.path;
     }
 

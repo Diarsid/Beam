@@ -31,7 +31,7 @@ class CliAdapterForProgramsKeeper {
     void findProgramAndReport(Initiator initiator, ArgumentsCommand command) {
         Optional<Program> optionalProgram = this.programsKeeper.findProgram(initiator, command);
         if ( optionalProgram.isPresent() ) {
-            this.ioEngine.report(initiator, optionalProgram.get().getFullName());
+            this.ioEngine.report(initiator, optionalProgram.get().fullName());
         } else {
             this.ioEngine.report(initiator, "not found.");
         }

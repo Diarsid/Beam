@@ -152,7 +152,7 @@ class H2DaoLocations
                     .doUpdateVarargParams(
                             "INSERT INTO locations (loc_name, loc_path) " +
                             "VALUES ( ?, ? ) ", 
-                            location.name(), location.getPath());
+                            location.name(), location.path());
             
             return ( updated == 1 && nameIsFree );
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -160,7 +160,7 @@ class H2DaoLocations
             super.ioEngine().reportMessage(initiator, error(
                     "Location saving failed:",
                     "   name: " + location.name(),
-                    "   path: " + location.getPath()));
+                    "   path: " + location.path()));
             return false;
         }
     }
@@ -276,7 +276,7 @@ class H2DaoLocations
                                     .stream()
                                     .map(location -> params(
                                             replaceIgnoreCase(
-                                                    location.getPath(),
+                                                    location.path(),
                                                     replaceable, 
                                                     replacement), 
                                             location.name()))
