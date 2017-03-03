@@ -28,7 +28,7 @@ public class ConsolePrinter {
     }
     
     void printReadyForNewCommandLine() throws IOException {
-        this.writer.write("Beam[1] > ");
+        this.writer.write("Beam > ");
         this.writer.flush();
     }
     
@@ -39,9 +39,9 @@ public class ConsolePrinter {
     }
     
     void printNonDialogReportLine(String report) throws IOException {
-        this.writer.write(format("Beam[3] > %s", report));
+        this.writer.write(format("Beam[ndr] > %s", report));
         this.writer.newLine();
-        this.writer.write("Beam[3] > ");
+        this.writer.write("Beam[ndr] > ");
         this.writer.flush();
     }
     
@@ -79,7 +79,7 @@ public class ConsolePrinter {
             this.writer.write(format("     > %s", s));
         }
         this.writer.newLine();
-        this.writer.write("Beam[4] > ");
+        this.writer.write("Beam[ndmr] > ");
         this.writer.flush();
     }
 

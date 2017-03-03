@@ -49,6 +49,7 @@ public class KeeperDialogHelper {
             if ( result.isOk() ) {
                 return argument;
             } else {
+                this.ioEngine.report(initiator, result.getFailureMessage());
                 return this.loopValidation(initiator, ioRequest, rule);
             }
         } else {

@@ -1,4 +1,0 @@
-:: configuration hashcode [-53930746]
-
-@echo off
-cmd /c start "Beam.core" javaw -cp .;Beam.jar;./../lib/h2-1.3.176.jar;./../lib/gem-injector-1.0.jar;./../lib/json-simple-1.1.1.jar;./../lib/javax.servlet-api-3.1.0.jar;./../lib/jetty-http-9.3.6.v20151106.jar;./../lib/http2-common-9.3.6.v20151106.jar;./../lib/http2-hpack-9.3.6.v20151106.jar;./../lib/http2-server-9.3.6.v20151106.jar;./../lib/jetty-io-9.3.6.v20151106.jar;./../lib/jetty-server-9.3.6.v20151106.jar;./../lib/jetty-util-9.3.6.v20151106.jar;./../lib/jetty-servlet-9.3.6.v20151106.jar;./../lib/jetty-security-9.3.6.v20151106.jar;./../lib/log4j-1.2.17.jar;./../lib/slf4j-api-1.7.21.jar;./../lib/slf4j-log4j12-1.7.21.jar -Djava.rmi.server.hostname=127.0.0.1  -Dlog4j.configuration=file:./../config/log4j.properties -Xms25m -Xmx25m -XX:MaxHeapFreeRatio=10 -XX:MinHeapFreeRatio=10 diarsid.beam.core.Beam

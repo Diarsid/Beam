@@ -73,7 +73,7 @@ public enum ValidationRule {
                 return validationFailsWith("cannot be empty.");
             }
             if ( containsPathSeparator(target) ) {
-                return validationFailsWith(target + " separators are not allowed here.");
+                return validationFailsWith("separators are not allowed here.");
             }
             if ( domainWordIsNotAcceptable(target) ) {
                 return validationFailsWith(format(

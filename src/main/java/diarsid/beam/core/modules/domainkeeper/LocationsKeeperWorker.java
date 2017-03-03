@@ -250,14 +250,14 @@ class LocationsKeeperWorker implements LocationsKeeper {
             property = UNDEFINED_PROPERTY;
         }        
         
-        property = this.helper.validatePropertyInteractively(
-                initiator, property, NAME, FILE_URL);
-        if ( property.isUndefined() ) {
+        name = this.helper.validateEntityNameInteractively(initiator, name);
+        if ( name.isEmpty() ) {
             return voidOperationStopped();
         }
         
-        name = this.helper.validateEntityNameInteractively(initiator, name);
-        if ( name.isEmpty() ) {
+        property = this.helper.validatePropertyInteractively(
+                initiator, property, NAME, FILE_URL);
+        if ( property.isUndefined() ) {
             return voidOperationStopped();
         }
         

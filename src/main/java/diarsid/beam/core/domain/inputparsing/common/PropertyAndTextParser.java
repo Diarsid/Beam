@@ -8,10 +8,9 @@ package diarsid.beam.core.domain.inputparsing.common;
 
 import java.util.List;
 
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
-import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.ENTITY_PROPERTY;
-import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.FILE_PATH;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.propertyOf;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.DOMAIN_WORD;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.ENTITY_PROPERTY;
 
 /**
  *
@@ -31,7 +30,7 @@ public class PropertyAndTextParser {
                 .count();
         
         return new PropertyAndText(
-                argToProperty(interceptor.argOfType(ENTITY_PROPERTY)), 
-                interceptor.argOfType(FILE_PATH));
+                propertyOf(interceptor.argOfType(ENTITY_PROPERTY)), 
+                interceptor.argOfType(DOMAIN_WORD));
     }
 }
