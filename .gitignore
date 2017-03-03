@@ -4,7 +4,7 @@
 /dev_private/*
 /src/main/resources/lib/*
 !/src/main/resources/lib/gem-injector*
-!/src/main/resources/lib/JdbcTransactions*
+!/src/main/resources/lib/jdbc-transactions*
 /*directory_key*
 /beam_home_bin*
 /nbproject/
