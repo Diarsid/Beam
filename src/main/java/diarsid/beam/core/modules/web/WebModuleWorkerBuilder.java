@@ -17,6 +17,7 @@ import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 import diarsid.beam.core.modules.web.engines.JettyResourceServletContainer;
+import diarsid.beam.core.modules.web.service.resources.AllDirectoriesResource;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -49,7 +50,7 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
         ResourceDispatcherServlet dispatcherServlet;
         ResourceServletContainer container;
         
-        resources = new Resources();
+        resources = new Resources(new AllDirectoriesResource());
         exceptionMapper = new ExceptionToJsonMapper();
         
         ioEngine = this.ioModule.getInnerIoEngine();

@@ -14,8 +14,6 @@ import diarsid.beam.core.modules.web.core.container.Resource;
 import diarsid.beam.core.modules.web.core.container.ResourceRequest;
 import diarsid.beam.core.modules.web.core.container.ResourceResponse;
 
-import static java.util.Objects.nonNull;
-
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
 
@@ -39,7 +37,7 @@ public class AllDirectoriesResource extends Resource {
         Optional<String> optPlace = request.getParam("place");
         if ( optPlace.isPresent() ) {
             WebPlace place = parsePlace(optPlace.get());
-            if ( nonNull(place) ) {
+            if ( place.isDefined() ) {
                 response.okWithJson(this.getJsonDirectoriesFrom(place));
             } else {
                 response.badRequestWithJson(errorJson("web place is not specified."));

@@ -13,8 +13,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static diarsid.beam.core.base.util.StringUtils.randomString;
-
 
 public abstract class Resource 
         extends HttpServlet 
@@ -29,11 +27,12 @@ public abstract class Resource
     private final String mappingUrlSchema;
     private final String mappingUrlRegexp;
 
-    public Resource(String mappingUrlSchema) {
-        this.name = randomString(13);
+    protected Resource(String mappingUrlSchema) {        
         this.mappingUrlSchema = mappingUrlSchema;
         this.mappingUrlRegexp = mappingUrlSchema
                 .replaceAll("\\{[a-zA-Z0-9-_\\.>\\s]+\\}", PARAMETER_REGEXP);
+        this.name = "[RESOURCE " + 
+                this.getClass().getCanonicalName() + " " + this.mappingUrlSchema + "]";
     }
     
     @Override
