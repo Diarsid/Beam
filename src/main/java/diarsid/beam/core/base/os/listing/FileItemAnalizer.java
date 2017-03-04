@@ -12,6 +12,7 @@ import java.util.List;
 import static java.nio.file.Files.isDirectory;
 import static java.util.Arrays.asList;
 
+import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
@@ -46,13 +47,13 @@ public class FileItemAnalizer {
     
     boolean isProjectSpecificFile(Path item) {
         return containsIgnoreCaseAnyFragment(
-                item.getFileName().toString(), this.projectSpecificFiles);
+                asName(item), this.projectSpecificFiles);
     }
     
     boolean isRestrictedFolder(Path folder) {
         try {
             return containsWordInIgnoreCase(
-                    this.restrictedSpecificFolder, folder.getFileName().toString());
+                    this.restrictedSpecificFolder, asName(folder));
         } catch (NullPointerException e) {
             return containsIgnoreCaseAnyFragment(
                 folder.toString(), this.programSpecificFileSigns);
@@ -61,13 +62,13 @@ public class FileItemAnalizer {
     
     boolean isProgramSpecificFile(Path item) {
         return containsIgnoreCaseAnyFragment(
-                item.getFileName().toString(), this.programSpecificFileSigns);
+                asName(item), this.programSpecificFileSigns);
     }
     
     boolean isProgramSpecificFolder(Path item) {
         if ( isDirectory(item) ) {
             return containsWordInIgnoreCase(
-                this.programSpecificFolders, item.getFileName().toString());
+                this.programSpecificFolders, asName(item));
         } else {
             return false;
         }        

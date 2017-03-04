@@ -17,6 +17,8 @@ import static java.nio.file.Files.isDirectory;
 import static java.util.Arrays.fill;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.PathUtils.asName;
+
 /**
  *
  * @author Diarsid
@@ -113,7 +115,7 @@ class FileItemsFormatter  {
             //debug("[FILE ITEMS FORMATTER] is root, not included.");
             return;
         }
-        if ( item.getFileName().toString().contains("desktop.ini") ) {
+        if ( asName(item).contains("desktop.ini") ) {
             //debug("[FILE ITEMS FORMATTER] desktop.ini, not included.");
             return;
         }
@@ -122,7 +124,7 @@ class FileItemsFormatter  {
     }
     
     private String getFormattedNameOf(Path item) {
-        String name = item.getFileName().toString();
+        String name = asName(item);
         if ( name.length() > 40 ) {
             name = name.substring(0, 37).concat("...");
         }

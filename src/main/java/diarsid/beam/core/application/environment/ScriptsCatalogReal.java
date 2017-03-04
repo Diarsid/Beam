@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.application.starter.FlagLaunchable.START_ALL;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.PathUtils.asName;
 
 /**
  *
@@ -96,7 +97,7 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
     }
     
     private Script toScript(Path path) {
-        return new ScriptReal(path.getFileName().toString(), this.catalogPath);
+        return new ScriptReal(asName(path), this.catalogPath);
     }
     
     @Override
@@ -109,7 +110,7 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
                         return 
                                 attributes.isRegularFile() && 
                                 this.ifFileHasScriptExtension(path) &&
-                                path.getFileName().toString().equals(nameWithExtension);
+                                asName(path).equals(nameWithExtension);
                     })
                     .findFirst()
                     .map(path -> this.toScript(path));
@@ -120,7 +121,7 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
     }
 
     private boolean ifFileHasScriptExtension(Path path) {
-        return this.scriptSyntax.examineExtension(path.getFileName().toString());
+        return this.scriptSyntax.examineExtension(asName(path));
     }
 
     @Override
@@ -129,7 +130,7 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
             return Files.list(this.catalogPath)
                     .filter(path -> isRegularFile(path))
                     .filter(path -> this.ifFileHasScriptExtension(path))
-                    .filter(path -> script.name().equals(path.getFileName().toString()))
+                    .filter(path -> script.name().equals(asName(path)))
                     .findFirst()
                     .isPresent();
         } catch (IOException ex) {

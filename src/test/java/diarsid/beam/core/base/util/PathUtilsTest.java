@@ -152,7 +152,7 @@ public class PathUtilsTest {
     }
 
     /**
-     * Test of trimSeparatorsInBothEnds method, of class PathUtils.
+     * Test of trimSeparators method, of class PathUtils.
      */
     @Test
     public void testTrimSeparatorsInBothEnds() {
@@ -173,14 +173,14 @@ public class PathUtilsTest {
     }
 
     /**
-     * Test of normalizePathFragmentsFrom method, of class PathUtils.
+     * Test of splitPathFragmentsFrom method, of class PathUtils.
      */
     @Test
     public void testNormalizePathFragmentsFrom() {
     }
 
     /**
-     * Test of relativizeFileName method, of class PathUtils.
+     * Test of asRelativeString method, of class PathUtils.
      */
     @Test
     public void testRelativizeFileName() {

@@ -17,12 +17,7 @@ public interface FileSearcher {
     
     public static FileSearcher getSearcherWithDepthsOf(
             int depthOfSearchByName, int depthOfSearchByPath) {
-        FileSearchByPathPatternReusableFileVisitor visitorByPath = 
-                new FileSearchByPathPatternReusableFileVisitor();
-        FileSearchByNamePatternReusableFileVisitor visitorByName = 
-                new FileSearchByNamePatternReusableFileVisitor();
-        return new FileSearcherService(
-                depthOfSearchByName, depthOfSearchByPath, visitorByName, visitorByPath);
+        return new FileSearcherService(depthOfSearchByName, depthOfSearchByPath);
     } 
     
     FileSearchResult findStrictly(String strictTarget, String location, FileSearchMode mode);

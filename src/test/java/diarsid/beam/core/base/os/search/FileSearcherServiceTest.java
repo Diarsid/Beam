@@ -6,10 +6,6 @@
 
 package diarsid.beam.core.base.os.search;
 
-import diarsid.beam.core.base.os.search.FileSearchByNamePatternReusableFileVisitor;
-import diarsid.beam.core.base.os.search.FileSearcherService;
-import diarsid.beam.core.base.os.search.FileSearchByPathPatternReusableFileVisitor;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -42,13 +38,8 @@ public class FileSearcherServiceTest {
     
     private static final FileSearcherService searcher;
     private static final String root;
-    static {
-        FileSearchByPathPatternReusableFileVisitor visitorByPath = 
-                new FileSearchByPathPatternReusableFileVisitor();
-        FileSearchByNamePatternReusableFileVisitor visitorByName = 
-                new FileSearchByNamePatternReusableFileVisitor();
-        
-        searcher = new FileSearcherService(3, 5, visitorByName, visitorByPath);
+    static {        
+        searcher = new FileSearcherService(3, 5);
         
         root = Paths.get("./temp").normalize().toAbsolutePath().toString();
         System.out.println("[FileIntelligentSearcherTest] ROOT: " + root);
@@ -337,6 +328,7 @@ public class FileSearcherServiceTest {
                 String file = result.success().getFoundFile();
                 assertEquals("folder_1/inner", file);
             } else {
+                result.success().getMultipleFoundFiles().forEach(System.out::println);
                 fail();
             }
         } else {
@@ -352,6 +344,7 @@ public class FileSearcherServiceTest {
                 String file = result.success().getFoundFile();
                 assertEquals("folder_1/inner", file);
             } else {
+                result.success().getMultipleFoundFiles().forEach(System.out::println);
                 fail();
             }
         } else {

@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.base.os.search;
 
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import static java.util.Arrays.asList;
 
 import static diarsid.beam.core.base.os.search.ItemType.FILE;
 import static diarsid.beam.core.base.os.search.ItemType.FOLDER;
+import static diarsid.beam.core.base.os.search.ItemType.typeOf;
 
 /**
  *
@@ -31,5 +33,9 @@ public enum FileSearchMode {
     
     boolean correspondsTo(ItemType type) {
         return this.permittedTypes.contains(type);
+    }
+    
+    boolean correspondsTo(Path path) {
+        return this.permittedTypes.contains(typeOf(path));
     }
 }

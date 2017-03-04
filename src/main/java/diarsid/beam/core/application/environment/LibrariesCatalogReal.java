@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 
@@ -50,7 +51,7 @@ public class LibrariesCatalogReal
         List<String> libFragments = asList(fragments);
         try {
             return Files.list(this.librariesPath)
-                    .filter(path -> containsIgnoreCaseAnyFragment(path.getFileName().toString(), libFragments))
+                    .filter(path -> containsIgnoreCaseAnyFragment(asName(path), libFragments))
                     .map(path -> this.applicationPath.relativize(path).toString())
                     .collect(toList());
         } catch (IOException ex) {

@@ -67,6 +67,15 @@ public class StringIgnoreCaseUtil {
         return true;
     }
     
+    public static boolean containsAllPartsIgnoreCase(String whereToSearch, List<String> patterns) {
+        for (String searchedPart : patterns) {
+            if ( ! lower(whereToSearch).contains(lower(searchedPart)) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     public static boolean containsIgnoreCase(String whereToSearch, String searched) {
         if ( isNull(searched) || isNull(whereToSearch) ) {
             return false;

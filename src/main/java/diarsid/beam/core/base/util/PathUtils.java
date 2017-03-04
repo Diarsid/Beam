@@ -137,7 +137,7 @@ public class PathUtils {
         }
     }
     
-    public static String trimSeparatorsInBothEnds(String target) {
+    public static String trimSeparators(String target) {
         if (target.endsWith("/")) {
             target = target.substring(0, target.length()-1);
         }
@@ -159,18 +159,29 @@ public class PathUtils {
         return target.replaceAll("[/\\\\]+", "/");
     }
     
-    public static String[] normalizePathFragmentsFrom(String target) {
+    public static String[] splitPathFragmentsFrom(String target) {
         target = normalizeArgument(target);
-        target = trimSeparatorsInBothEnds(target);
+        target = trimSeparators(target);
         return target.split("/");
     }    
     
+    public static String[] splitToParts(Path path) {
+        return normalizeSeparators(path.normalize().toString()).split("/");
+    }
     
-    public static String relativizeFileName(Path root, Path file) {
+    public static String asRelativeString(Path root, Path file) {
         return root
                 .relativize(file)
                 .normalize()
                 .toString()
                 .replace("\\", "/");
+    }
+    
+    public static String asName(Path file) {
+        if ( file.getNameCount() > 0 ) {
+            return file.getFileName().toString();
+        } else {
+            return file.toString();
+        }
     }
 }
