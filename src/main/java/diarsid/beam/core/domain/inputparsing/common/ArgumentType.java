@@ -5,10 +5,6 @@
  */
 package diarsid.beam.core.domain.inputparsing.common;
 
-import diarsid.beam.core.domain.entities.WebPlace;
-
-import static java.util.Objects.nonNull;
-
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWordIsAcceptable;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsAcceptable;
 import static diarsid.beam.core.base.util.PathUtils.isAcceptableFilePath;
@@ -31,7 +27,7 @@ public enum ArgumentType {
                     textIsAcceptable(arg) && 
                     ! isAcceptableWebPath(arg) && 
                     ! isAcceptableFilePath(arg) && 
-                    WebPlace.parsePlace(arg).isUndefined() && 
+                    parsePlace(arg).isUndefined() && 
                     argToProperty(arg).isUndefined();
         }
     },
@@ -42,7 +38,7 @@ public enum ArgumentType {
                     domainWordIsAcceptable(arg) && 
                     ! isAcceptableWebPath(arg) && 
                     ! isAcceptableFilePath(arg) && 
-                    WebPlace.parsePlace(arg).isUndefined() && 
+                    parsePlace(arg).isUndefined() && 
                     argToProperty(arg).isUndefined();
         }
     },
@@ -79,7 +75,7 @@ public enum ArgumentType {
     WEB_PLACE {
         @Override
         boolean isAppropriateFor(String arg) {
-            return nonNull(WebPlace.parsePlace(arg));
+            return parsePlace(arg).isDefined();
         }
 
         @Override

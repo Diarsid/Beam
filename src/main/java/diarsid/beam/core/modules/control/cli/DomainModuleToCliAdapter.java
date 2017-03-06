@@ -19,6 +19,8 @@ public class DomainModuleToCliAdapter {
     private final CliAdapterForBatchesKeeper batchesKeeperAdapter;
     private final CliAdapterForProgramsKeeper programsKeeperAdapter;
     private final CliAdapterForTasksKeeper tasksKeeperAdapter;
+    private final CliAdapterForWebDirectoriesKeeper webDirectoriesKeeperAdapter;
+    private final CliAdapterForWebPagesKeeper webPagesKeeperAdapter;
     
     public DomainModuleToCliAdapter(
             DomainKeeperModule domainModule, InnerIoEngine ioEngine) {
@@ -34,6 +36,12 @@ public class DomainModuleToCliAdapter {
         this.tasksKeeperAdapter = 
                 new CliAdapterForTasksKeeper(
                         domainModule.getTasksKeeper(), ioEngine);
+        this.webDirectoriesKeeperAdapter = 
+                new CliAdapterForWebDirectoriesKeeper(
+                        domainModule.getWebDirectoriesKeeper(), ioEngine);
+        this.webPagesKeeperAdapter = 
+                new CliAdapterForWebPagesKeeper(
+                        domainModule.getWebPagesKeeper(), ioEngine);
         
     }
     
@@ -51,5 +59,13 @@ public class DomainModuleToCliAdapter {
     
     CliAdapterForTasksKeeper getTasksAdapter() {
         return this.tasksKeeperAdapter;
+    }
+    
+    CliAdapterForWebDirectoriesKeeper getWebDirectoriesAdapter() {
+        return this.webDirectoriesKeeperAdapter;
+    }
+    
+    CliAdapterForWebPagesKeeper getWebPagesAdapter() {
+        return this.webPagesKeeperAdapter;
     }
 }

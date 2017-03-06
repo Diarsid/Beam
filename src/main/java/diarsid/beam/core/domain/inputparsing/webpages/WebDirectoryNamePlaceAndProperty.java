@@ -9,19 +9,22 @@ package diarsid.beam.core.domain.inputparsing.webpages;
 import java.util.Objects;
 
 import diarsid.beam.core.domain.entities.WebPlace;
+import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 
 /**
  *
  * @author Diarsid
  */
-public class WebDirectoryNameAndPlace {
+public class WebDirectoryNamePlaceAndProperty {
     
     private final String name;
-    private final WebPlace place;  
+    private final WebPlace place;
+    private final EntityProperty property;
 
-    public WebDirectoryNameAndPlace(String name, WebPlace place) {
+    public WebDirectoryNamePlaceAndProperty(String name, WebPlace place, EntityProperty property) {
         this.name = name;
         this.place = place;
+        this.property = property;
     }
 
     public String name() {
@@ -32,11 +35,16 @@ public class WebDirectoryNameAndPlace {
         return this.place;
     }
 
+    public EntityProperty property() {
+        return this.property;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 53 * hash + Objects.hashCode(this.name);
-        hash = 53 * hash + Objects.hashCode(this.place);
+        hash = 29 * hash + Objects.hashCode(this.name);
+        hash = 29 * hash + Objects.hashCode(this.place);
+        hash = 29 * hash + Objects.hashCode(this.property);
         return hash;
     }
 
@@ -51,15 +59,16 @@ public class WebDirectoryNameAndPlace {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final WebDirectoryNameAndPlace other = ( WebDirectoryNameAndPlace ) obj;
+        final WebDirectoryNamePlaceAndProperty other = ( WebDirectoryNamePlaceAndProperty ) obj;
         if ( !Objects.equals(this.name, other.name) ) {
             return false;
         }
         if ( this.place != other.place ) {
             return false;
         }
+        if ( this.property != other.property ) {
+            return false;
+        }
         return true;
     }
-    
-    
 }

@@ -18,6 +18,8 @@ class DataModuleWorker implements DataModule {
     private final DaoCommands daoCommands;
     private final DaoKeyValueStorage daoKeyValueStorage;
     private final DaoTasks daoTasks;
+    private final DaoWebPages daoWebPages;
+    private final DaoWebDirectories daoWebDirectories;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
@@ -27,6 +29,8 @@ class DataModuleWorker implements DataModule {
         this.daoCommands = daosProvider.createDaoCommands();
         this.daoKeyValueStorage = daosProvider.createDaoKeyValueStorage();
         this.daoTasks = daosProvider.createDaoTasks();
+        this.daoWebPages = daosProvider.createDaoWebPages();
+        this.daoWebDirectories = daosProvider.createDaoWebDirectories();
     }
 
     @Override
@@ -62,5 +66,15 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoTasks getDaoTasks() {
         return this.daoTasks;
+    }
+
+    @Override
+    public DaoWebPages getDaoWebPages() {
+        return this.daoWebPages;
+    }
+
+    @Override
+    public DaoWebDirectories getDaoWebDirectories() {
+        return this.daoWebDirectories;
     }
 }

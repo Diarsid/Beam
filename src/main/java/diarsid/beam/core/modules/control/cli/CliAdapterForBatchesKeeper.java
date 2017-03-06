@@ -39,7 +39,7 @@ class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
         Function<OkValueOperation, Message> ifSuccess = (success) -> {
             return toMessage((Batch) success.getOrThrow());
         };
-        super.reportReturnOperationFlow(initiator, flow, ifSuccess, "batch not found.");
+        super.reportValueOperationFlow(initiator, flow, ifSuccess, "batch not found.");
     }
     
     void editBatchAndReport(Initiator initiator, ArgumentsCommand command) {

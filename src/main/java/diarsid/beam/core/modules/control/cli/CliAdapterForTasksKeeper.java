@@ -54,6 +54,6 @@ public class CliAdapterForTasksKeeper extends AbstractCliAdapter {
         Function<OkValueOperation, Message> ifSuccess = (success) -> {
             return tasksToMessage((List<Task>) success.getOrThrow());
         };
-        super.reportReturnOperationFlow(initiator, flow, ifSuccess, "tasks not found.");
+        super.reportValueOperationFlow(initiator, flow, ifSuccess, "tasks not found.");
     }
 }

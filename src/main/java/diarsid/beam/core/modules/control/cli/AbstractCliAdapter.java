@@ -67,7 +67,7 @@ abstract class AbstractCliAdapter {
         }        
     }
     
-    protected final void reportReturnOperationFlow(
+    protected final void reportValueOperationFlow(
             Initiator initiator, 
             ValueOperation flow, 
             Function<OkValueOperation, Message> ifNonEmptyFunction, 

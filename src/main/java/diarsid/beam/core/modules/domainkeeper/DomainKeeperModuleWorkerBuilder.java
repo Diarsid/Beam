@@ -13,6 +13,7 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
 import diarsid.beam.core.domain.inputparsing.time.TimeAndTextParser;
 import diarsid.beam.core.domain.inputparsing.time.TimePatternParsersHolder;
+import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
@@ -54,18 +55,21 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         PropertyAndTextParser propertyAndTextParser;
         TimePatternParsersHolder timeParser;
         AllowedTimePeriodsParser timePeriodsParser;
+        WebObjectsInputParser webObjectsParser;
         
         locationsInputParser = new LocationsInputParser();
         timeAndTextParser = timeAndTextParser();
         timeParser = timePatternParsersHolder();
         propertyAndTextParser = new PropertyAndTextParser();
         timePeriodsParser = allowedTimePeriodsParser();
+        webObjectsParser = new WebObjectsInputParser();
         
         LocationsKeeper locationsKeeper;
         BatchesKeeper batchesKeeper;
         ProgramsKeeper programsKeeper;
         TasksKeeper tasksKeeper;
         WebPagesKeeper pagesKeeper;
+        WebDirectoriesKeeper directoriesKeeper;
         
         locationsKeeper = new LocationsKeeperWorker(
                 this.dataModule.getDaoLocations(), 
@@ -90,15 +94,25 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 timeAndTextParser, 
                 timeParser, 
                 timePeriodsParser);
-//        pagesKeeper = new WebPagesKeeperWorker(
-//                this.dataModule, 
-//                daoDirectories, 
-//                ioEngine, dialogHelper, propetyTextParser, parser);
+        pagesKeeper = new WebPagesKeeperWorker(
+                this.dataModule.getDaoWebPages(), 
+                this.dataModule.getDaoWebDirectories(), 
+                ioEngine, 
+                dialogHelper, 
+                propertyAndTextParser, 
+                webObjectsParser);
+        directoriesKeeper = new WebDirectoriesKeeperWorker(
+                this.dataModule.getDaoWebDirectories(), 
+                ioEngine, 
+                dialogHelper, 
+                webObjectsParser);
         
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
                 batchesKeeper, 
                 programsKeeper, 
-                tasksKeeper);
+                tasksKeeper, 
+                pagesKeeper, 
+                directoriesKeeper);
     }
 }

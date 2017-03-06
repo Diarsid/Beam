@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.domainkeeper;
+package diarsid.beam.core.base.control.io.base.interaction;
 
 /**
  *
  * @author Diarsid
  */
-public interface WebDirsKeeper {
-    
+public interface ConvertableToMessage {
+    Message toMessage();
 }

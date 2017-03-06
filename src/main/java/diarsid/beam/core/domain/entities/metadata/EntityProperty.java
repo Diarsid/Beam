@@ -82,6 +82,7 @@ public enum EntityProperty {
             case "dir" :
             case "webdir" : 
             case "directory" : 
+            case "web_directory" : 
             case "webdirectory" : {
                 return WEB_DIRECTORY;
             }    

@@ -40,7 +40,7 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
         Function<OkValueOperation, Message> ifSuccess = (success) -> {
             return toMessage((Location) success.getOrThrow());
         };
-        super.reportReturnOperationFlow(initiator, flow, ifSuccess, "location not found");
+        super.reportValueOperationFlow(initiator, flow, ifSuccess, "location not found");
     }
     
     void editLocationAndReport(Initiator initiator, ArgumentsCommand command) {

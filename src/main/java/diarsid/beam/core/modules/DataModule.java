@@ -12,6 +12,8 @@ import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DaoTasks;
+import diarsid.beam.core.modules.data.DaoWebDirectories;
+import diarsid.beam.core.modules.data.DaoWebPages;
 
 /**
  *
@@ -30,4 +32,8 @@ public interface DataModule extends StoppableBeamModule  {
     DaoKeyValueStorage getDaoKeyValueStorage();
     
     DaoTasks getDaoTasks();
+    
+    DaoWebPages getDaoWebPages();
+    
+    DaoWebDirectories getDaoWebDirectories();
 }

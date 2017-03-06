@@ -30,14 +30,12 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
@@ -55,6 +53,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.STOP_PROGRA
 import static diarsid.beam.core.base.control.io.commands.CommandType.UNDEFINED;
 import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
 
 /**
  *
@@ -467,8 +467,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page dir devtools bookm");
         Command c2 = interpreter.interprete("+ page dir panel devtools");
         
-        assertEquals(CREATE_PAGE_DIR, c1.type());
-        assertEquals(CREATE_PAGE_DIR, c2.type());
+        assertEquals(CREATE_WEB_DIR, c1.type());
+        assertEquals(CREATE_WEB_DIR, c2.type());
         
         ArgumentsCommand c1casted = (ArgumentsCommand) c1;
         ArgumentsCommand c2casted = (ArgumentsCommand) c2;
@@ -482,8 +482,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ dir devtools bookm");
         Command c2 = interpreter.interprete("+ dir panel devtools");
         
-        assertEquals(CREATE_PAGE_DIR, c1.type());
-        assertEquals(CREATE_PAGE_DIR, c2.type());
+        assertEquals(CREATE_WEB_DIR, c1.type());
+        assertEquals(CREATE_WEB_DIR, c2.type());
         
         ArgumentsCommand c1casted = (ArgumentsCommand) c1;
         ArgumentsCommand c2casted = (ArgumentsCommand) c2;
@@ -498,8 +498,8 @@ public class InterpreterTest {
         Command c1 = interpreter.interprete("+ page dir");
         Command c2 = interpreter.interprete("+ dir");
         
-        assertEquals(CREATE_PAGE_DIR, c1.type());
-        assertEquals(CREATE_PAGE_DIR, c2.type());
+        assertEquals(CREATE_WEB_DIR, c1.type());
+        assertEquals(CREATE_WEB_DIR, c2.type());
         
         ArgumentsCommand c1casted = (ArgumentsCommand) c1;
         ArgumentsCommand c2casted = (ArgumentsCommand) c2;
@@ -528,7 +528,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editDir_1() {
         Command c = interpreter.interprete("edit page dir");
-        assertEquals(EDIT_PAGE_DIR, c.type());
+        assertEquals(EDIT_WEB_DIR, c.type());
         ArgumentsCommand com = (ArgumentsCommand) c;
         assertFalse(com.hasArguments());
     }
@@ -536,7 +536,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_editDir_2() {
         Command c = interpreter.interprete("edit dir");
-        assertEquals(EDIT_PAGE_DIR, c.type());
+        assertEquals(EDIT_WEB_DIR, c.type());
         ArgumentsCommand com = (ArgumentsCommand) c;
         assertFalse(com.hasArguments());
     }
@@ -545,8 +545,8 @@ public class InterpreterTest {
     public void testInterprete_editDir_name_target() {
         Command c = interpreter.interprete("edit page dir common name");
         Command c1 = interpreter.interprete("edit directory common place");
-        assertEquals(EDIT_PAGE_DIR, c.type());
-        assertEquals(EDIT_PAGE_DIR, c1.type());
+        assertEquals(EDIT_WEB_DIR, c.type());
+        assertEquals(EDIT_WEB_DIR, c1.type());
         
         ArgumentsCommand com = (ArgumentsCommand) c;
         ArgumentsCommand com1 = (ArgumentsCommand) c1;

@@ -1,12 +1,18 @@
 package diarsid.beam.core.domain.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
+import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
@@ -26,7 +32,8 @@ public class WebPage
                 NamedEntity, 
                 Orderable, 
                 Serializable, 
-                ConvertableToVariant {    
+                ConvertableToVariant, 
+                ConvertableToMessage {    
     
     // page info
     private final String name;
@@ -113,6 +120,20 @@ public class WebPage
                 this.name, 
                 this.name + " :: " + this.directoryName + " :: " + lower(this.place.name()), 
                 variantIndex);        
+    }
+
+    @Override
+    public Message toMessage() {
+        List<String> message = new ArrayList<>();
+        message.add(format(
+                "%s (%d) %s :: %s",
+                this.name, 
+                this.pageOrder, 
+                this.directoryName, 
+                lower(this.place.name())));
+        message.add("   - " + this.url);
+        message.add("   - " + this.shortcuts);
+        return new TextMessage(message);
     }
     
     public String shortcuts() {

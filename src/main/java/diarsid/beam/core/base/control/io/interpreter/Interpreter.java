@@ -31,17 +31,14 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSO
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
@@ -55,6 +52,9 @@ import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.L
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.lowerThan;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
+import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_WEB_DIR;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
 
 /**
  * Class that interprets CLI input commands and transforms them into
@@ -174,17 +174,16 @@ public class Interpreter {
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").priority(HIGH).pointsTo(new ArgumentsRecognizer(EDIT_PAGE_DIR)),
+                                                                "directory").priority(HIGH).pointsTo(new ArgumentsRecognizer(EDIT_WEB_DIR)),
                                                         new ArgumentsRecognizer(EDIT_PAGE)                                        
                                         ),
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(new ArgumentsRecognizer(EDIT_PAGE_DIR)),
+                                                "directory").pointsTo(new ArgumentsRecognizer(EDIT_WEB_DIR)),
                                         new WordsRecognizer(
                                                 "bat", 
                                                 "batch", 
@@ -203,7 +202,7 @@ public class Interpreter {
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(new ArgumentsRecognizer(CREATE_PAGE_DIR)),
+                                                "directory").pointsTo(new ArgumentsRecognizer(CREATE_WEB_DIR)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
@@ -211,7 +210,7 @@ public class Interpreter {
                                                 "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").pointsTo(new ArgumentsRecognizer(CREATE_PAGE_DIR)), 
+                                                                "directory").pointsTo(new ArgumentsRecognizer(CREATE_WEB_DIR)), 
                                                         new ArgumentsRecognizer(CREATE_PAGE).priority(lowerThan(LOWEST))
                                         ),
                                         new WordsRecognizer(
@@ -224,8 +223,7 @@ public class Interpreter {
                                 "-", 
                                 "del", 
                                 "delete", 
-                                "remove").branchesTo(
-                                        new WordsRecognizer(
+                                "remove").branchesTo(new WordsRecognizer(
                                                 "loc", 
                                                 "location").pointsTo(
                                                         new ArgumentsRecognizer(DELETE_LOCATION)),
@@ -235,18 +233,15 @@ public class Interpreter {
                                         new WordsRecognizer(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(
-                                                        new ArgumentsRecognizer(DELETE_PAGE_DIR)),
+                                                "directory").pointsTo(new ArgumentsRecognizer(DELETE_WEB_DIR)),
                                         new WordsRecognizer(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").branchesTo(new WordsRecognizer(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").pointsTo(
-                                                                        new ArgumentsRecognizer(DELETE_PAGE_DIR)),
+                                                                "directory").pointsTo(new ArgumentsRecognizer(DELETE_WEB_DIR)),
                                                         new ArgumentsRecognizer(DELETE_PAGE)
                                         ),
                                         new WordsRecognizer(

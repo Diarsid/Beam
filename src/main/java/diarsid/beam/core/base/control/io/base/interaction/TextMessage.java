@@ -11,6 +11,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 
 /**
  *
@@ -20,6 +21,17 @@ public class TextMessage implements Message {
     
     private final MessageType type;
     private final List<String> text;
+    
+    public TextMessage(String text1, String... text) {
+        this.type = INFO;
+        this.text = asList(text);
+        this.text.add(0, text1);
+    }
+    
+    public TextMessage(List<String> text) {
+        this.type = INFO;
+        this.text = text;
+    }
     
     public TextMessage(MessageType type, String text1, String... text) {
         this.type = type;

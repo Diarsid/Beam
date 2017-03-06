@@ -75,19 +75,55 @@ class CliCommandDispatcher implements CommandDispatcher {
                     break;
                 case DELETE_MEM:
                     break;
-                case DELETE_PAGE:
+                case DELETE_PAGE : {
+                    this.domainModuleAdapter
+                            .getWebPagesAdapter()
+                            .deleteWebPageAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
+                    break;                    
+                }
+                case CREATE_PAGE : {
+                    this.domainModuleAdapter
+                            .getWebPagesAdapter()
+                            .createWebPageAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
+                    break;                    
+                }
+                case EDIT_PAGE : {
+                    this.domainModuleAdapter
+                            .getWebPagesAdapter()
+                            .editWebPageAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
+                    break;                    
+                }
+                case DELETE_WEB_DIR : {
+                    this.domainModuleAdapter
+                            .getWebDirectoriesAdapter()
+                            .removeWebDirectoryAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
                     break;
-                case CREATE_PAGE:
+                }    
+                case CREATE_WEB_DIR : {
+                    this.domainModuleAdapter
+                            .getWebDirectoriesAdapter()
+                            .createWebDirectoryAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
                     break;
-                case EDIT_PAGE:
+                }    
+                case EDIT_WEB_DIR : {
+                    this.domainModuleAdapter
+                            .getWebDirectoriesAdapter()
+                            .editWebDirectoryAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
                     break;
-                case DELETE_PAGE_DIR:
-                    break;
-                case CREATE_PAGE_DIR:
-                    break;
-                case EDIT_PAGE_DIR:
-                    break;
-                case DELETE_LOCATION: {
+                }    
+                case DELETE_LOCATION : {
                     this.domainModuleAdapter
                             .getLocationsAdapter()
                             .removeLocationAndReport(
@@ -95,13 +131,13 @@ class CliCommandDispatcher implements CommandDispatcher {
                                     (ArgumentsCommand) command);
                     break;
                 }                
-                case CREATE_LOCATION: {
+                case CREATE_LOCATION : {
                     this.domainModuleAdapter
                             .getLocationsAdapter()
                             .createLocationAndReport(initiator, 
                                     (ArgumentsCommand) command);
                     break;
-                } case EDIT_LOCATION: {
+                } case EDIT_LOCATION : {
                     this.domainModuleAdapter
                             .getLocationsAdapter()
                             .editLocationAndReport(initiator, 
@@ -131,32 +167,35 @@ class CliCommandDispatcher implements CommandDispatcher {
                                     (ArgumentsCommand) command);
                     break;
                 }                
-                case DELETE_BATCH:
+                case DELETE_BATCH : {
                     this.domainModuleAdapter
                             .getBatchesAdapter()
                             .removeBatchAndReport(
                                     initiator, 
                                     (ArgumentsCommand) command);
                     break;
-                case CREATE_BATCH:
+                }    
+                case CREATE_BATCH : {
                     this.domainModuleAdapter
                             .getBatchesAdapter()
                             .createBatchAndReport(
                                     initiator, 
                                     (ArgumentsCommand) command);
                     break;
-                case EDIT_BATCH:
+                }    
+                case EDIT_BATCH : {
                     this.domainModuleAdapter
                             .getBatchesAdapter()
                             .editBatchAndReport(
                                     initiator, 
                                     (ArgumentsCommand) command);
                     break;
+                }    
                 case LIST_LOCATION:
                     break;
                 case LIST_PATH:
                     break;
-                case FIND_LOCATION: {
+                case FIND_LOCATION : {
                     this.domainModuleAdapter
                             .getLocationsAdapter()
                             .findLocationAndReport(
@@ -179,19 +218,32 @@ class CliCommandDispatcher implements CommandDispatcher {
                                     (ArgumentsCommand) command);
                     break;
                 }                
-                case FIND_PAGE:
+                case FIND_PAGE : {
+                    this.domainModuleAdapter
+                            .getWebPagesAdapter()
+                            .findWebPageAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
+                    break;                    
+                }
+                case FIND_WEBDIRECTORY : {
+                    this.domainModuleAdapter
+                            .getWebDirectoriesAdapter()
+                            .findWebDirectoryAndReport(
+                                    initiator, 
+                                    (ArgumentsCommand) command);
                     break;
-                case FIND_WEBDIRECTORY:
-                    break;
+                }    
                 case FIND_MEM:
                     break;
-                case FIND_BATCH:
+                case FIND_BATCH : {
                     this.domainModuleAdapter
                             .getBatchesAdapter()
                             .findBatchAndReport(
                                     initiator, 
                                     (ArgumentsCommand) command);
                     break;
+                }    
                 case EXIT : {
                     this.ioModule.unregisterIoEngine(initiator);
                     asyncDoIndependently(() -> exitBeamCoreNow());

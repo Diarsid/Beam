@@ -49,7 +49,6 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
 import static diarsid.beam.core.domain.entities.WebPlace.UNDEFINED_PLACE;
-import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.SHORTCUTS;
@@ -61,7 +60,9 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
 
 
-public class WebPagesKeeperWorker implements WebPagesKeeper {
+public class WebPagesKeeperWorker 
+        extends WebObjectsCommonKeeper 
+        implements WebPagesKeeper {
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
@@ -77,25 +78,13 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
             KeeperDialogHelper helper,
             PropertyAndTextParser propetyTextParser,
             WebObjectsInputParser parser) {
+        super(ioEngine);
         this.daoPages = dao;
         this.daoDirectories = daoDirectories;
         this.ioEngine = ioEngine;
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
         this.webObjectsParser = parser;
-    }
-    
-    private WebPlace discussWebPlace(Initiator initiator) {
-        String placeInput;
-        WebPlace place = UNDEFINED_PLACE;
-        placeDefining: while ( place.isUndefined() ) {     
-            placeInput = this.ioEngine.askInput(initiator, "place");
-            if ( placeInput.isEmpty() ) {
-                break placeDefining;
-            }
-            place = parsePlace(placeInput);
-        }
-        return place;
     }
 
     private String discussShortcuts(Initiator initiator) {
@@ -210,7 +199,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
     }
     
     private Optional<WebDirectory> discussExistingWebDirectory(Initiator initiator) {
-        WebPlace place = this.discussWebPlace(initiator);
+        WebPlace place = super.discussWebPlace(initiator);
         if ( place.isUndefined() ) {
             return Optional.empty();
         }
@@ -282,7 +271,9 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
             return voidOperationFail("DAO failed to get free name index.");
         }
         if ( freeNameIndex.get() > 0 ) {
+            this.ioEngine.report(initiator, format("page '%s' already exists.", name));
             name = format("%s (%d)", name, freeNameIndex.get());
+            this.ioEngine.report(initiator, format("name '%s' will be saved instead.", name));
         }
         
         url = this.helper.validateInteractively(initiator, url, "url", WEB_URL_RULE);
@@ -291,7 +282,7 @@ public class WebPagesKeeperWorker implements WebPagesKeeper {
         }
         
         if ( place.isUndefined() ) {
-            place = this.discussWebPlace(initiator);
+            place = super.discussWebPlace(initiator);
             if ( place.isUndefined() ) {
                 return voidOperationStopped();
             }

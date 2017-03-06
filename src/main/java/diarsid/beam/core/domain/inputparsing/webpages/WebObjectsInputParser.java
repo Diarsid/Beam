@@ -11,9 +11,11 @@ import java.util.List;
 import diarsid.beam.core.domain.inputparsing.common.ArgumentsInterceptor;
 
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.propertyOf;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.DOMAIN_WORD;
+import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.ENTITY_PROPERTY;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.WEB_PATH;
 import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.WEB_PLACE;
-import static diarsid.beam.core.domain.inputparsing.common.ArgumentType.DOMAIN_WORD;
 
 /**
  *
@@ -52,5 +54,20 @@ public class WebObjectsInputParser {
                 interceptor.argOfType(WEB_PATH), 
                 parsePlace(interceptor.argOfType(WEB_PLACE))
         );
+    }
+    
+    public WebDirectoryNamePlaceAndProperty parseNamePlaceAndProperty(List<String> arguments) {
+        ArgumentsInterceptor interceptor = new ArgumentsInterceptor();
+        arguments
+                .stream()
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, ENTITY_PROPERTY).ifContinue())
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, WEB_PLACE).ifContinue())
+                .filter(arg -> interceptor.interceptArgumentOfType(arg, DOMAIN_WORD).ifContinue())
+                .count();
+        
+        return new WebDirectoryNamePlaceAndProperty(
+                interceptor.argOfType(DOMAIN_WORD), 
+                parsePlace(interceptor.argOfType(WEB_PLACE)), 
+                propertyOf(interceptor.argOfType(ENTITY_PROPERTY)));
     }
 }

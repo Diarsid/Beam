@@ -22,4 +22,8 @@ public interface DaosProvider {
     DaoKeyValueStorage createDaoKeyValueStorage();
     
     DaoTasks createDaoTasks();
+    
+    DaoWebDirectories createDaoWebDirectories();
+    
+    DaoWebPages createDaoWebPages();    
 }

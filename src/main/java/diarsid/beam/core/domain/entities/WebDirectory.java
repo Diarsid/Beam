@@ -9,10 +9,14 @@ package diarsid.beam.core.domain.entities;
 import java.io.Serializable;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
+import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBDIRECTORY;
@@ -26,7 +30,8 @@ public class WebDirectory
                 NamedEntity,
                 Orderable, 
                 Serializable, 
-                ConvertableToVariant {
+                ConvertableToVariant,
+                ConvertableToMessage {
     
     private final String name;
     private final WebPlace place;
@@ -75,6 +80,12 @@ public class WebDirectory
                 this.name,
                 this.name + " :: " + lower(this.place.name()), 
                 variantIndex);
+    }
+
+    @Override
+    public Message toMessage() {
+        return new TextMessage(format(
+                "%s (%d) %s", this.name, this.order, lower(this.place.name())));
     }
     
     public boolean isConsistent() {

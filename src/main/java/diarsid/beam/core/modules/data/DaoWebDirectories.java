@@ -28,7 +28,7 @@ public interface DaoWebDirectories {
     List<WebDirectoryPages> getAllDirectoriesPagesInPlace(
             Initiator initiator, WebPlace place);
     
-    WebDirectoryPages getDirectoryPagesByNameInPlace(
+    Optional<WebDirectoryPages> getDirectoryPagesByNameInPlace(
             Initiator initiator, String name, WebPlace place);
     
     Optional<WebDirectory> getDirectoryByNameInPlace(
