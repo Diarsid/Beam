@@ -12,7 +12,6 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
@@ -42,7 +41,7 @@ class H2DaoWebPages
     }
 
     @Override
-    public List<WebPage> allFromDirectory(Initiator initiator, String dirName, WebPlace place) {
+    public List<WebPage> allFromDirectory(Initiator initiator, int directoryId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -72,7 +71,7 @@ class H2DaoWebPages
     }
 
     @Override
-    public boolean movePageFromDirToDir(Initiator initiator, String pageName, String oldDirName, WebPlace oldPlace, String newDirName, WebPlace newPlace) {
+    public boolean movePageFromDirToDir(Initiator initiator, String pageName, int oldDirId, int newDirId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

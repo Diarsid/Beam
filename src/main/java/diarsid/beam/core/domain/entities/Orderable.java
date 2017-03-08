@@ -5,35 +5,13 @@
  */
 package diarsid.beam.core.domain.entities;
 
-import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
-import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
-
 /**
  *
  * @author Diarsid
  */
-public interface Orderable extends Comparable<Orderable> {
-    
-    WebPlace place();
+public interface Orderable {    
     
     int order();
     
-    void setOrder(int newOrder);   
-    
-    @Override
-    default int compareTo(Orderable another) {
-        if ( this.place().equals(BOOKMARKS) && another.place().equals(WEBPANEL) ) {
-            return -1;
-        } else if ( this.place().equals(WEBPANEL) && another.place().equals(BOOKMARKS) ) {
-            return 1;
-        } else {
-            if ( this.order() < another.order() ) {
-                return -1;
-            } else if ( this.order() > another.order() ) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-    }
+    void setOrder(int newOrder);
 }

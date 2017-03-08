@@ -336,9 +336,8 @@ class WebDirectoriesKeeperWorker
         }
         
         if ( needWithPages.isPositive() ) {
-            Optional<WebDirectoryPages> directoryWithPages = this.daoDirectories
-                    .getDirectoryPagesByNameInPlace(
-                            initiator, searched.get().name(), searched.get().place());
+            Optional<WebDirectoryPages> directoryWithPages = 
+                    this.daoDirectories.getDirectoryPagesById(initiator, searched.get().id());
             if ( directoryWithPages.isPresent() ) {
                 return valueFound(directoryWithPages);
             } else {

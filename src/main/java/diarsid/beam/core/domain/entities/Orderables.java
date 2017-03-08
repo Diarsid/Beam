@@ -8,7 +8,6 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.List;
 
-import static java.util.Collections.sort;
 
 /**
  *
@@ -56,7 +55,6 @@ public class Orderables {
             for (int i = itemOldOrder + 1; i <= itemNewOrder; i++) {
                 items.get(i).setOrder(i - 1);
             }
-            sort(items);
         } else {
             /*
              * itemOldOrder > itemNewOrder
@@ -84,7 +82,6 @@ public class Orderables {
             for (int i = itemNewOrder; i < itemOldOrder; i++) {
                 items.get(i).setOrder(i + 1);
             }
-            sort(items);
         }
     }
     

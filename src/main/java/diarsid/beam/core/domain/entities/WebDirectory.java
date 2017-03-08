@@ -7,6 +7,7 @@
 package diarsid.beam.core.domain.entities;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
@@ -20,6 +21,8 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBDIRECTORY;
+import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
+import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 
 /**
  *
@@ -31,22 +34,30 @@ public class WebDirectory
                 Orderable, 
                 Serializable, 
                 ConvertableToVariant,
-                ConvertableToMessage {
+                ConvertableToMessage,
+                Comparable<WebDirectory> {
     
+    private final int id;
     private final String name;
     private final WebPlace place;
     private int order;
     
     WebDirectory(String name, WebPlace place) {
+        this.id = MIN_VALUE;
         this.name = name;
         this.place = place;
         this.order = MIN_VALUE;
     }
 
-    WebDirectory(String name, WebPlace place, int order) {
+    WebDirectory(int id, String name, WebPlace place, int order) {
+        this.id = id;
         this.name = name;
         this.place = place;
         this.order = order;
+    }
+    
+    public int id() {
+        return this.id;
     }
 
     @Override
@@ -63,15 +74,35 @@ public class WebDirectory
     public int order() {
         return this.order;
     }
+    
+    public WebDirectoryPages withPages(List<WebPage> pages) {
+        return new WebDirectoryPages(this.id, this.name, this.place, this.order, pages);
+    }
 
     @Override
     public void setOrder(int order) {
         this.order = order;
     }
 
-    @Override
     public WebPlace place() {
         return this.place;
+    }
+    
+    @Override
+    public int compareTo(WebDirectory another) {
+        if ( this.place().equals(BOOKMARKS) && another.place().equals(WEBPANEL) ) {
+            return -1;
+        } else if ( this.place().equals(WEBPANEL) && another.place().equals(BOOKMARKS) ) {
+            return 1;
+        } else {
+            if ( this.order() < another.order() ) {
+                return -1;
+            } else if ( this.order() > another.order() ) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
     }
 
     @Override
@@ -88,15 +119,25 @@ public class WebDirectory
                 "%s (%d) %s", this.name, this.order, lower(this.place.name())));
     }
     
+    public boolean isNew() {
+        return 
+                this.id == MIN_VALUE && 
+                this.order == MIN_VALUE ;
+    }
+    
     public boolean isConsistent() {
-        return this.order != MIN_VALUE ;
+        return 
+                this.id != MIN_VALUE && 
+                this.order != MIN_VALUE ;
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 59 * hash + Objects.hashCode(this.name);
-        hash = 59 * hash + Objects.hashCode(this.place);
+        hash = 97 * hash + this.id;
+        hash = 97 * hash + Objects.hashCode(this.name);
+        hash = 97 * hash + Objects.hashCode(this.place);
+        hash = 97 * hash + this.order;
         return hash;
     }
 
@@ -112,6 +153,12 @@ public class WebDirectory
             return false;
         }
         final WebDirectory other = ( WebDirectory ) obj;
+        if ( this.id != other.id ) {
+            return false;
+        }
+        if ( this.order != other.order ) {
+            return false;
+        }
         if ( !Objects.equals(this.name, other.name) ) {
             return false;
         }

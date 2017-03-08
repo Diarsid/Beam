@@ -31,6 +31,7 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 import static java.lang.String.format;
+import static java.util.Collections.sort;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -163,43 +164,11 @@ public class WebPagesKeeperWorker
         return pageNewName;
     }
     
-    private String discussExistingDirectoryName(Initiator initiator, WebPlace place) {
-        String directoryName = "";
-        List<WebDirectory> foundDirectories;
-        boolean directoryNotDefined = true;
-        Question question;
-        Answer answer;
-        directoryDefining: while ( directoryNotDefined ) {            
-            directoryName = this.ioEngine.askInput(initiator, "directory name");
-            if ( directoryName.isEmpty() ) {
-                return "";
-            }
-            directoryName = this.helper.validateEntityNameInteractively(initiator, directoryName);
-
-            foundDirectories = this.daoDirectories
-                    .findDirectoriesByPatternInPlace(initiator, directoryName, place);
-
-            if ( foundDirectories.isEmpty() ) {
-                this.ioEngine.report(initiator, "directory not found.");
-            } else if ( hasOne(foundDirectories) ) {
-                directoryName = getOne(foundDirectories).name();
-                directoryNotDefined = false;
-            } else {
-                question = question("choose directory").withAnswerEntities(foundDirectories);
-                answer = this.ioEngine.ask(initiator, question);
-                if ( answer.isGiven() ) {
-                    directoryName = answer.text();
-                } else {
-                    directoryName = "";
-                }
-                directoryNotDefined = false;
-            }
-        }
-        return directoryName;
-    }
-    
-    private Optional<WebDirectory> discussExistingWebDirectory(Initiator initiator) {
-        WebPlace place = super.discussWebPlace(initiator);
+    private Optional<WebDirectory> discussExistingWebDirectory(
+            Initiator initiator, WebPlace place) {
+        if ( place.isUndefined() ) {
+            place = super.discussWebPlace(initiator);
+        }        
         if ( place.isUndefined() ) {
             return Optional.empty();
         }
@@ -215,7 +184,10 @@ public class WebPagesKeeperWorker
                 return Optional.empty();                
             }
             directoryName = this.helper.validateEntityNameInteractively(initiator, directoryName);
-
+            if ( directoryName.isEmpty() ) {
+                return Optional.empty();                
+            }
+            
             foundDirectories = this.daoDirectories
                     .findDirectoriesByPatternInPlace(initiator, directoryName, place);
 
@@ -281,21 +253,14 @@ public class WebPagesKeeperWorker
             return voidOperationStopped();
         }
         
-        if ( place.isUndefined() ) {
-            place = super.discussWebPlace(initiator);
-            if ( place.isUndefined() ) {
-                return voidOperationStopped();
-            }
-        }
-        
         String shortcuts = this.discussShortcuts(initiator);
         
-        String directoryName = this.discussExistingDirectoryName(initiator, place);
-        if ( directoryName.isEmpty() ) {
+        Optional<WebDirectory> optDirectory = this.discussExistingWebDirectory(initiator, place);
+        if ( ! optDirectory.isPresent() ) {
             return voidOperationStopped();
         }        
         
-        WebPage page = newWebPage(name, shortcuts, url, place, directoryName);
+        WebPage page = newWebPage(name, shortcuts, url, optDirectory.get().id());
         if ( daoPages.save(initiator, page) ) {
             return voidCompleted();
         } else {
@@ -394,13 +359,17 @@ public class WebPagesKeeperWorker
     
     private VoidOperation editPageOrder(Initiator initiator, WebPage page) {
         List<WebPage> pagesInDirectory = this.daoPages
-                .allFromDirectory(initiator, page.directoryName(), page.place());
+                .allFromDirectory(initiator, page.directoryId());
+        if ( pagesInDirectory.isEmpty() ) {
+            return voidOperationFail("cannot find all pages from directory.");
+        }
         int pageNewOrder = this.helper.discussIntInRange(
                 initiator, 0, pagesInDirectory.size() - 1, "new order");
         if ( pageNewOrder < 0 ) {
             return voidOperationStopped();
         }
         reorderAccordingToNewOrder(pagesInDirectory, page.order(), pageNewOrder);
+        sort(pagesInDirectory);
         if ( this.daoPages.updatePageOrdersInDir(initiator, pagesInDirectory) ) {
             return voidCompleted();
         } else {
@@ -410,7 +379,8 @@ public class WebPagesKeeperWorker
     
     private VoidOperation editPageWebDirectory(Initiator initiator, WebPage page) {
         this.ioEngine.report(initiator, "choosing new page directory...");
-        Optional<WebDirectory> optDirectory = this.discussExistingWebDirectory(initiator);
+        Optional<WebDirectory> optDirectory = 
+                this.discussExistingWebDirectory(initiator, UNDEFINED_PLACE);
         if ( ! optDirectory.isPresent() ) {
             return voidOperationStopped();
         }
@@ -418,10 +388,8 @@ public class WebPagesKeeperWorker
         boolean pageMoved = this.daoPages.movePageFromDirToDir(
                 initiator, 
                 page.name(), 
-                page.directoryName(), 
-                page.place(), 
-                optDirectory.get().name(), 
-                optDirectory.get().place());
+                page.directoryId(), 
+                optDirectory.get().id());
         
         if ( pageMoved ) {
             return voidCompleted();
@@ -514,12 +482,14 @@ public class WebPagesKeeperWorker
             throw new DomainConsistencyException(dirNameValidity.getFailureMessage());
         }
         
-        if ( ! this.daoDirectories.exists(initiator, directory, place) ) {
+        Optional<Integer> optId = 
+                this.daoDirectories.getDirectoryIdByNameAndPlace(initiator, name, place);
+        if ( ! optId.isPresent() ) {
             throw new DomainConsistencyException(
                     format("%s does not exist in %s", directory, place.name()));
         }
         
-        return this.daoPages.save(initiator, newWebPage(name, "", url, place, directory));
+        return this.daoPages.save(initiator, newWebPage(name, "", url, optId.get()));
     }
 
     @Override

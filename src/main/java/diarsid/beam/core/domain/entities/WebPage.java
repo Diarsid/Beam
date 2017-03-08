@@ -12,9 +12,7 @@ import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
-import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 
 /*
@@ -33,7 +31,8 @@ public class WebPage
                 Orderable, 
                 Serializable, 
                 ConvertableToVariant, 
-                ConvertableToMessage {    
+                ConvertableToMessage,
+                Comparable<WebPage> {    
     
     // page info
     private final String name;
@@ -42,41 +41,31 @@ public class WebPage
     private int pageOrder;
     
     // directory info page belongs to
-    private final WebPlace place;
-    private final String directoryName;    
-    private final int directoryOrder;
-    
+    private final int directoryId;   
         
     WebPage(
             String name, 
             String shortcuts,             
             String url,
             int pageOrder,
-            WebPlace place,
-            String directoryName,
-            int directoryOrder) {        
+            int dirId) {        
         this.name = name;
         this.shortcuts = shortcuts;
         this.url = url;
-        this.place = place;
-        this.directoryName = directoryName;
+        this.directoryId = dirId;
         this.pageOrder = pageOrder;
-        this.directoryOrder = directoryOrder;
     }
     
     WebPage(
             String name, 
             String shortcuts,             
             String url,
-            WebPlace place,
-            String directoryName) {        
+            int dirId) {        
         this.name = name;
         this.shortcuts = shortcuts;
         this.url = url;
-        this.place = place;
-        this.directoryName = directoryName;
+        this.directoryId = dirId;
         this.pageOrder = MIN_VALUE;
-        this.directoryOrder = MIN_VALUE;
     }
 
     @Override
@@ -94,46 +83,42 @@ public class WebPage
         return this.pageOrder;
     }
     
+    public int directoryId() {
+        return this.directoryId;
+    }
+    
     @Override
     public void setOrder(int newOrder) {
         this.pageOrder = newOrder;
     }
-
-    @Override
-    public WebPlace place() {
-        return this.place;
-    }
-    
-    public WebDirectory directory() {
-        return new WebDirectory(this.directoryName, this.place, this.directoryOrder);
-    }
     
     public boolean isConsistent() {
-        return  
-                this.pageOrder != MIN_VALUE && 
-                this.directoryOrder != MIN_VALUE;
+        return this.pageOrder != MIN_VALUE;
     }
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return new Variant(
-                this.name, 
-                this.name + " :: " + this.directoryName + " :: " + lower(this.place.name()), 
-                variantIndex);        
+        return new Variant(this.name, variantIndex);        
     }
 
     @Override
     public Message toMessage() {
         List<String> message = new ArrayList<>();
-        message.add(format(
-                "%s (%d) %s :: %s",
-                this.name, 
-                this.pageOrder, 
-                this.directoryName, 
-                lower(this.place.name())));
-        message.add("   - " + this.url);
-        message.add("   - " + this.shortcuts);
+        message.add(this.name);
+        message.add("  url:   " + this.url);
+        message.add("  alias: " + this.shortcuts);
         return new TextMessage(message);
+    } 
+    
+    @Override
+    public int compareTo(WebPage another) {
+        if ( this.order() < another.order() ) {
+            return -1;
+        } else if ( this.order() > another.order() ) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
     
     public String shortcuts() {
@@ -142,22 +127,6 @@ public class WebPage
 
     public String url() {
         return this.url;
-    }
-
-    public String directoryName() {
-        return this.directoryName;
-    }
-    
-    public int directoryOrder() {
-        return this.directoryOrder;
-    }
-    
-    public void incrementPageOrder() {
-        this.pageOrder++;
-    }
-    
-    public void decrementPageOrder() {
-        this.pageOrder--;
     }
 
     @Override

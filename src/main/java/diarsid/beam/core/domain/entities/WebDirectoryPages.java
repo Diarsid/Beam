@@ -25,8 +25,8 @@ public class WebDirectoryPages extends WebDirectory {
     
     private final List<WebPage> pages;
     
-    WebDirectoryPages(String name, WebPlace place, int order, List<WebPage> pages) {
-        super(name, place, order);        
+    WebDirectoryPages(int id, String name, WebPlace place, int order, List<WebPage> pages) {
+        super(id, name, place, order);        
         this.pages = unmodifiableList(pages);
     }
 

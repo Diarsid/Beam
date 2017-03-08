@@ -10,7 +10,6 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPlace;
 
 /**
  *
@@ -28,7 +27,7 @@ public interface DaoWebPages {
             Initiator initiator, String pattern);
     
     List<WebPage> allFromDirectory(
-            Initiator initiator, String dirName, WebPlace place);
+            Initiator initiator, int directoryId);
     
     boolean save(
             Initiator initiator, WebPage page);
@@ -48,10 +47,8 @@ public interface DaoWebPages {
     boolean movePageFromDirToDir(
             Initiator initiator, 
             String pageName, 
-            String oldDirName, 
-            WebPlace oldPlace, 
-            String newDirName, 
-            WebPlace newPlace);
+            int oldDirId, 
+            int newDirId);
     
     boolean updatePageOrdersInDir(
             Initiator initiator, List<WebPage> pages);

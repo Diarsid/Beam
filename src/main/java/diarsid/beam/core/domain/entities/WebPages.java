@@ -18,28 +18,17 @@ public class WebPages {
     public static WebPage newWebPage(
             String name, 
             String shortcuts,             
-            String url, 
-            WebPlace place,
-            String directoryName) {        
-        return new WebPage(name, shortcuts, url, place, directoryName);
+            String url,
+            int directoryId) {        
+        return new WebPage(name, shortcuts, url, directoryId);
     }
     
     public static WebPage restorePage(
             String name, 
             String shortcuts,             
             String url, 
-            WebPlace place,
-            String directoryName,
             int pageOrder,
-            int directoryOrder,
-            String browser) {        
-        return new WebPage(
-                name, 
-                shortcuts, 
-                url, 
-                pageOrder, 
-                place, 
-                directoryName, 
-                directoryOrder);
+            int directoryId) {        
+        return new WebPage(name, shortcuts, url, pageOrder, directoryId);
     }
 }

@@ -69,12 +69,33 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "hours  VARCHAR     NOT NULL )", 
                 7);
         
+        SqlTable webPages = new H2SqlTable(
+                "web_pages", 
+                "CREATE TABLE web_pages ( " +
+                "name       VARCHAR     NOT NULL PRIMARY KEY, " +
+                "url        VARCHAR     NOT NULL, " +
+                "shortcuts  VARCHAR     NOT NULL, " +
+                "ordering   INTEGER     NOT NULL, " +
+                "dir_id     INTEGER     NOT NULL ) ", 
+                5);
+        
+        SqlTable webDirs = new H2SqlTable(
+                "web_directories", 
+                "CREATE TABLE web_directories ( " +
+                "id         INTEGER     NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "name       VARCHAR     NOT NULL, " +
+                "place      VARCHAR     NOT NULL, " +
+                "ordering   INTEGER     NOT NULL )", 
+                4);
+        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
         this.tables.add(keyValue);
         this.tables.add(commands);
         this.tables.add(tasks);
+        this.tables.add(webPages);
+        this.tables.add(webDirs);
     }
 
     @Override

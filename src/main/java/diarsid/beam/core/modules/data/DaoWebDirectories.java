@@ -28,10 +28,16 @@ public interface DaoWebDirectories {
     List<WebDirectoryPages> getAllDirectoriesPagesInPlace(
             Initiator initiator, WebPlace place);
     
-    Optional<WebDirectoryPages> getDirectoryPagesByNameInPlace(
+    Optional<WebDirectoryPages> getDirectoryPagesById(
+            Initiator initiator, int id);
+    
+    Optional<WebDirectory> getDirectoryByNameAndPlace(
             Initiator initiator, String name, WebPlace place);
     
-    Optional<WebDirectory> getDirectoryByNameInPlace(
+    Optional<WebDirectory> getDirectoryById(
+            Initiator initiator, int id);
+    
+    Optional<Integer> getDirectoryIdByNameAndPlace(
             Initiator initiator, String name, WebPlace place);
     
     List<WebDirectory> findDirectoriesByPatternInPlace(
