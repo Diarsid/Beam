@@ -31,6 +31,9 @@ public interface DaoWebDirectories {
     Optional<WebDirectoryPages> getDirectoryPagesById(
             Initiator initiator, int id);
     
+    Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(
+            Initiator initiator, String name, WebPlace place);
+    
     Optional<WebDirectory> getDirectoryByNameAndPlace(
             Initiator initiator, String name, WebPlace place);
     
@@ -60,6 +63,9 @@ public interface DaoWebDirectories {
         
     boolean save(
             Initiator initiator, WebDirectory directory);
+    
+    boolean save(
+            Initiator initiator, String name, WebPlace place);
 
     boolean remove(
             Initiator initiator, String name, WebPlace place);

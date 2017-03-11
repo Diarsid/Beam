@@ -55,7 +55,8 @@ class H2DaoCommands
             Initiator initiator, String original, CommandType type) {
         try {
             return super.getDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(ExtendableCommand.class,
+                    .doQueryAndConvertFirstRowVarargParams(
+                            ExtendableCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( com_type IS ? ) AND ( LOWER(com_original) IS ? ) ",

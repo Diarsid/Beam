@@ -27,9 +27,11 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
+import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
@@ -41,6 +43,7 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.restorePage;
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.jdbc.transactions.core.Params.params;
 
 
 class H2DaoWebDirectories 
@@ -172,6 +175,7 @@ class H2DaoWebDirectories
                     .entrySet()
                     .stream()
                     .map(entry -> entry.getKey().withPages(entry.getValue()))
+                    .sorted()
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             
@@ -241,6 +245,7 @@ class H2DaoWebDirectories
                     .entrySet()
                     .stream()
                     .map(entry -> entry.getKey().withPages(entry.getValue()))
+                    .sorted()
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             
@@ -264,6 +269,42 @@ class H2DaoWebDirectories
                                 return Optional.of(this.rowToDirectoryConversion.convert(row));
                             }, 
                             id);
+            
+            if ( ! directory.isPresent() ) {
+                return Optional.empty();
+            }
+            
+            List<WebPage> directoryPages = transact
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
+                            "SELECT name, url, shortcuts, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE dir_id IS ? ", 
+                            this.rowTorPageConversion, 
+                            directory.get().id())
+                    .collect(toList());
+            
+            return Optional.of(directory.get().withPages(directoryPages));
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(Initiator initiator, String name, WebPlace place) {
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            Optional<WebDirectory> directory = transact
+                    .doQueryAndConvertFirstRowVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            (row) -> {
+                                return Optional.of(this.rowToDirectoryConversion.convert(row));
+                            }, 
+                            lower(name), place);
             
             if ( ! directory.isPresent() ) {
                 return Optional.empty();
@@ -334,6 +375,7 @@ class H2DaoWebDirectories
                                 " AND ( place IS ? ) ", 
                         this.rowToDirectoryConversion, 
                         lowerWildcardList(patterns), place)
+                .sorted()
                 .collect(toList());
     }
     
@@ -348,6 +390,7 @@ class H2DaoWebDirectories
                         "WHERE ( LOWER(name) LIKE ? ) AND ( place IS ? )", 
                         this.rowToDirectoryConversion, 
                         lowerWildcard(pattern), place)
+                .sorted()
                 .collect(toList());
     }
 
@@ -377,6 +420,7 @@ class H2DaoWebDirectories
                         "WHERE ( LOWER(name) LIKE ? ) ", 
                         this.rowToDirectoryConversion, 
                         lowerWildcard(pattern))
+                .sorted()
                 .collect(toList());
     }
     
@@ -391,6 +435,7 @@ class H2DaoWebDirectories
                         "WHERE " + multipleLowerLIKE("name", patterns.size(), AND), 
                         this.rowToDirectoryConversion, 
                         lowerWildcardList(patterns))
+                .sorted()
                 .collect(toList());   
     }
 
@@ -405,6 +450,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories ", 
                             this.rowToDirectoryConversion)
+                    .sorted()
                     .collect(toList());
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
@@ -426,6 +472,7 @@ class H2DaoWebDirectories
                             "WHERE place IS ? ", 
                             this.rowToDirectoryConversion, 
                             place)
+                    .sorted()
                     .collect(toList());
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
@@ -437,49 +484,352 @@ class H2DaoWebDirectories
     @Override
     public boolean exists(
             Initiator initiator, String directoryName, WebPlace place) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            return super.getDisposableTransaction()
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(directoryName), place);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            
+            return false;
+        }
     }
 
     @Override
     public boolean updateWebDirectoryOrders(
             Initiator initiator, List<WebDirectory> directories) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try (JdbcTransaction transact = super.getTransaction()) {
+            int[] udpated = transact
+                    .doBatchUpdate(
+                            "UPDATE web_directories " +
+                            "SET ordering = ? " +
+                            "WHERE id IS ? ",
+                            directories
+                                    .stream()
+                                    .map(directory -> params(directory.order(), directory.id()))
+                                    .collect(toSet()));
+            
+            int updatedRows = stream(udpated).sum();
+            if ( updatedRows > 0 && updatedRows <= directories.size() ) {
+                return true;
+            } else {
+                transact.rollbackAndProceed();
+                return false;
+            }
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
     }
 
     @Override
     public boolean save(
             Initiator initiator, WebDirectory directory) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            boolean alreadyExists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(directory.name()), directory.place());
+            
+            if ( alreadyExists ) {
+                super.ioEngine().report(initiator, "this directory already exists.");
+                return false;
+            } 
+            
+            int order = transact
+                    .countQueryResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE place IS ? ", 
+                            directory.place());            
+            
+            if ( order < 0 ) {
+                super.ioEngine().report(initiator, "new order is less than 0, cannot proceed.");
+                return false;
+            }
+            
+            directory.setOrder(order);
+            
+            int saved = transact
+                    .doUpdateVarargParams(
+                            "INSERT INTO web_directories ( name, ordering, place ) " +
+                            "VALUES ( ?, ?, ? ) ", 
+                            directory.name(), directory.order(), directory.place());
+
+            if ( saved != 1 ) {
+                transact.rollbackAndProceed();
+                return false;
+            } else {
+                return true;
+            }
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean save(
+            Initiator initiator, String name, WebPlace place) {
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            boolean alreadyExists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(name), place);
+            
+            if ( alreadyExists ) {
+                super.ioEngine().report(initiator, "this directory already exists.");
+                return false;
+            } 
+            
+            int order = transact
+                    .countQueryResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE place IS ? ", 
+                            place);
+            
+            if ( order < 0 ) {
+                super.ioEngine().report(initiator, "new order is less than 0, cannot proceed.");
+                return false;
+            }
+            
+            int saved = transact
+                    .doUpdateVarargParams(
+                            "INSERT INTO web_directories ( name, ordering, place ) " +
+                            "VALUES ( ?, ?, ? ) ", 
+                            name, order, place);
+
+            if ( saved != 1 ) {
+                transact.rollbackAndProceed();
+                return false;
+            } else {
+                return true;
+            }
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
     }
 
     @Override
     public boolean remove(
             Initiator initiator, String name, WebPlace place) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            Optional<WebDirectory> optDirectory = transact
+                    .doQueryAndConvertFirstRowVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, ordering, place " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            (row) -> {
+                                return Optional.of(this.rowToDirectoryConversion.convert(row));
+                            }, 
+                            lower(name), place);
+            
+            if ( ! optDirectory.isPresent() ) {
+                super.ioEngine().report(initiator, "cannot find such directory.");
+                return false;
+            }
+            
+            int deleted = transact
+                    .doUpdateVarargParams(
+                            "DELETE FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(name), place);
+            
+            if ( deleted != 1 ) {
+                transact.rollbackAndProceed();
+                return false;
+            }
+            
+            transact
+                    .doUpdateVarargParams(
+                            "DELETE FROM web_pages " +
+                            "WHERE dir_id IS ? ", 
+                            optDirectory.get().id());
+            
+            transact
+                    .doUpdateVarargParams(
+                            "UPDATE web_directories " +
+                            "SET ordering = (ordering - 1) " +
+                            "WHERE ( ordering > ? ) AND ( place IS ? )", 
+                            optDirectory.get().order(), place);
+            
+            return true;
+            
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
     }
-
+    
     @Override
     public boolean moveDirectoryToPlace(
-            Initiator initiator, String name, WebPlace from, WebPlace to) {
-        throw new UnsupportedOperationException("Not supported yet.");
+            Initiator initiator, String name, WebPlace oldPlace, WebPlace newPlace) {
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            Optional<WebDirectory> movedDir = transact
+                    .doQueryAndConvertFirstRowVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            (row) -> {
+                                return Optional.of(this.rowToDirectoryConversion.convert(row));
+                            },
+                            lower(name), oldPlace);
+            
+            if ( ! movedDir.isPresent() ) {
+                super.ioEngine().report(initiator, "cannot find such directory.");
+                return false;
+            }
+            
+            // test if such directory name already exists in destination place
+            boolean exists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT name " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(name), newPlace);
+            
+            if ( exists ) {
+                // if exists, must find and assign new index to its name.
+                int nameCounter = 1;
+                do {
+                    nameCounter++;
+                    name = format("%s (%d)", name, nameCounter);
+                    exists = transact
+                            .doesQueryHaveResultsVarargParams(
+                                    "SELECT name " +
+                                    "FROM web_directories " +
+                                    "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                                    lower(name), newPlace);
+                } while ( exists ) ;
+                // name has been already reassigned as following.
+                super.ioEngine().report(initiator, "directory will be moved with name " + name);
+            }
+            
+            int newOrder = transact
+                    .countQueryResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE place IS ? ", 
+                            newPlace);            
+                        
+            int moved = transact
+                    .doUpdateVarargParams(
+                            "UPDATE web_directories " +
+                            "SET " +
+                            "   name = ?, " +
+                            "   ordering = ?, " +
+                            "   place = ? " +
+                            "WHERE LOWER(name) IS ? ", 
+                            name, newOrder, newPlace, lower(movedDir.get().name()));
+            
+            if ( moved != 1 ) {
+                transact.rollbackAndProceed();
+                super.ioEngine().report(initiator, "cannot move directory.");
+                return false;
+            }
+            
+            int oldPlaceReordered = transact
+                    .doUpdateVarargParams(
+                            "UPDATE web_directories " +
+                            "SET ordering = (ordering - 1) " +
+                            "WHERE ( ordering > ? ) AND ( place IS ? )", 
+                            movedDir.get().order(), oldPlace);
+            
+            return true;
+            
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
     }
 
     @Override
     public boolean editDirectoryName(
             Initiator initiator, String name, WebPlace place, String newName) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try (JdbcTransaction transact = super.getTransaction()) {
+            
+            boolean alreadyExists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT name " +
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(newName), place);
+            
+            if ( alreadyExists ) {
+                super.ioEngine().report(initiator, "directory with this name already exists.");
+                return false;
+            }
+            
+            int renamed = transact
+                    .doUpdateVarargParams(
+                            "UPDATE web_directories " +
+                            "SET name = ? " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            newName, lower(name), place);
+            
+            transact
+                    .ifTrue( renamed != 1 )
+                    .rollbackAndProceed();
+            
+            return ( renamed == 1 ); 
+            
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
     }
 
     @Override
     public Optional<WebDirectory> getDirectoryById(
             Initiator initiator, int id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            return super.getDisposableTransaction()
+                    .doQueryAndConvertFirstRow(
+                            WebDirectory.class,
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " +
+                            "WHERE id IS ? ",
+                            (row) -> {
+                                return Optional.of(this.rowToDirectoryConversion.convert(row));
+                            });
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return Optional.empty();
+        }
     }
 
     @Override
     public Optional<Integer> getDirectoryIdByNameAndPlace(
             Initiator initiator, String name, WebPlace place) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            return super.getDisposableTransaction()
+                    .doQueryAndConvertFirstRowVarargParams(
+                            Integer.class,
+                            "SELECT id " +
+                                    "FROM web_directories " +
+                                    "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )",
+                            (row) -> {
+                                return Optional.ofNullable((int) row.get("id"));
+                            },
+                            lower(name), place);
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return Optional.empty();
+        }        
     }
     
 }

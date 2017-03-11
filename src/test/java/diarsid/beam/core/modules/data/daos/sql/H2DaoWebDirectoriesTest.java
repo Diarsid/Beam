@@ -32,6 +32,7 @@ import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 import diarsid.jdbc.transactions.JdbcTransaction;
 
 import static java.lang.Integer.MIN_VALUE;
+import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
 import static org.junit.Assert.assertEquals;
@@ -40,6 +41,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
+import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
 import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
@@ -75,6 +78,10 @@ public class H2DaoWebDirectoriesTest {
         List<String> reports = verifier.verify(dataBase, model); 
         reports.stream().forEach(report -> logger.info(report));
         
+        setupData();
+    }
+    
+    public static void setupData() throws Exception {
         JdbcTransaction transact = dataBase.transactionFactory().createTransaction();
         
         transact
@@ -125,6 +132,14 @@ public class H2DaoWebDirectoriesTest {
                 params("Spring Data JPA docs", "", "http://...", 3, dirs.get("Dev.Java.Docs").id())
                 );
         
+        transact.commit();
+    }
+    
+    public static void clearData() throws Exception {
+        JdbcTransaction transact = dataBase.transactionFactory().createTransaction();
+        
+        transact.doUpdate("DELETE FROM web_pages");
+        transact.doUpdate("DELETE FROM web_directories");
         transact.commit();
     }
 
@@ -290,42 +305,254 @@ public class H2DaoWebDirectoriesTest {
      * Test of exists method, of class H2DaoWebDirectories.
      */
     @Test
-    public void testExists() {
+    public void testExists_true() {
+        boolean exists = dao.exists(initiator, "comMon", WEBPANEL);
+        assertTrue(exists);
+    }
+    
+    @Test
+    public void testExists_false() {
+        boolean exists = dao.exists(initiator, "other", WEBPANEL);
+        assertFalse(exists);
     }
 
     /**
      * Test of updateWebDirectoryOrders method, of class H2DaoWebDirectories.
      */
     @Test
-    public void testUpdateWebDirectoryOrders() {
+    public void testUpdateWebDirectoryOrders_increase_order() throws Exception {
+        List<WebDirectory> panelDirs = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        reorderAccordingToNewOrder(panelDirs, 1, 3);
+        boolean reorder = dao.updateWebDirectoryOrders(initiator, panelDirs);
+        assertTrue(reorder);
+        
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        for (int i = 0; i < panelDirsAfter.size(); i++) {
+            assertEquals(i, panelDirsAfter.get(i).order());
+        }
+        assertEquals("Common", panelDirsAfter.get(0).name());
+        assertEquals("Media", panelDirsAfter.get(1).name());
+        assertEquals("Common (2)", panelDirsAfter.get(2).name());
+        assertEquals("Dev.Java.Tools", panelDirsAfter.get(3).name());
+        clearData();
+        setupData();
+    }
+    
+    @Test
+    public void testUpdateWebDirectoryOrders_decrease_order() throws Exception {
+        List<WebDirectory> panelDirs = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        reorderAccordingToNewOrder(panelDirs, 3, 1);
+        boolean reorder = dao.updateWebDirectoryOrders(initiator, panelDirs);
+        assertTrue(reorder);
+        
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        for (int i = 0; i < panelDirsAfter.size(); i++) {
+            assertEquals(i, panelDirsAfter.get(i).order());
+        }
+        assertEquals("Common", panelDirsAfter.get(0).name());
+        assertEquals("Common (2)", panelDirsAfter.get(1).name());
+        assertEquals("Dev.Java.Tools", panelDirsAfter.get(2).name());
+        assertEquals("Media", panelDirsAfter.get(3).name());        
+        
+        clearData();
+        setupData();
     }
 
     /**
      * Test of save method, of class H2DaoWebDirectories.
      */
     @Test
-    public void testSave() {
+    public void testSave_directory_shouldBeOk() throws Exception {
+        List<WebDirectory> panelDirs = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        WebDirectory newDirectory = newDirectory("News", WEBPANEL);
+        assertTrue(newDirectory.isNew());
+        boolean saved = dao.save(initiator, newDirectory);
+        assertTrue(saved);
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        assertEquals(panelDirsAfter.size(), panelDirs.size() + 1);
+        WebDirectory savedDire = panelDirsAfter.get(4);
+        assertTrue(savedDire.isConsistent());
+        assertEquals("News", savedDire.name());
+        assertEquals(4, savedDire.order());
+        clearData();
+        setupData();
+    }
+    
+    @Test
+    public void testSave_directory_cannot_save() throws Exception {
+        List<WebDirectory> panelDirs = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        WebDirectory newDirectory = newDirectory("common", WEBPANEL);
+        assertTrue(newDirectory.isNew());
+        boolean saved = dao.save(initiator, newDirectory);
+        assertFalse(saved);
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        assertEquals(panelDirs, panelDirsAfter);
+        clearData();
+        setupData();
+    }
+    
+    @Test
+    public void testSave_byNameAndPlace_shouldBeOk() throws Exception {
+        List<WebDirectory> panelDirs = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        boolean saved = dao.save(initiator, "News", WEBPANEL);
+        assertTrue(saved);
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        assertEquals(panelDirsAfter.size(), panelDirs.size() + 1);
+        WebDirectory savedDire = panelDirsAfter.get(4);
+        assertTrue(savedDire.isConsistent());
+        assertEquals("News", savedDire.name());
+        assertEquals(4, savedDire.order());
+        clearData();
+        setupData();
+    }
+    
+    @Test
+    public void testSave_byNameAndPlace_cannot_save() throws Exception {
+        List<WebDirectory> panelDirs = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        boolean saved = dao.save(initiator, "common", WEBPANEL);
+        assertFalse(saved);
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        assertEquals(panelDirs, panelDirsAfter);
+        clearData();
+        setupData();
     }
 
     /**
      * Test of remove method, of class H2DaoWebDirectories.
      */
     @Test
-    public void testRemove() {
+    public void testRemove() throws Exception {
+        List<WebDirectory> panelDirsBefore = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        Optional<WebDirectoryPages> removedDirPages = dao.getDirectoryPagesById(initiator, panelDirsBefore.get(0).id());
+        assertTrue(removedDirPages.isPresent());
+        int qtyPagesInRemovedDir = removedDirPages.get().pages().size();
+        int qtyPagesBefore = dataBase.countRowsInTable("web_pages");
+        boolean removed = dao.remove(initiator, "common", WEBPANEL);
+        assertTrue(removed);
+        Optional<WebDirectory> removedDir = dao.getDirectoryByNameAndPlace(initiator, "common", WEBPANEL);
+        assertFalse(removedDir.isPresent());
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        int qtyPagesAfter = dataBase.countRowsInTable("web_pages");
+        assertEquals(panelDirsAfter.size(), panelDirsBefore.size() - 1);
+        assertEquals(qtyPagesAfter, qtyPagesBefore - qtyPagesInRemovedDir);
+        for (int i = 0; i < panelDirsAfter.size(); i++) {
+            assertEquals(i, panelDirsAfter.get(i).order());
+        }
+        assertEquals("Dev.Java.Tools", panelDirsAfter.get(0).name());
+        assertEquals("Media", panelDirsAfter.get(1).name());
+        assertEquals("Common (2)", panelDirsAfter.get(2).name());
+        clearData();
+        setupData();
     }
 
     /**
      * Test of moveDirectoryToPlace method, of class H2DaoWebDirectories.
      */
     @Test
-    public void testMoveDirectoryToPlace() {
+    public void testMoveDirectoryToPlace_usual() throws Exception {
+        
+        int panelDirsQtyBefore = dao.getAllDirectoriesInPlace(initiator, WEBPANEL).size();
+        int bookDirsQtyBefore = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS).size();
+        
+        boolean moved = dao.moveDirectoryToPlace(initiator, "Common", WEBPANEL, BOOKMARKS);
+        assertTrue(moved);
+        
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        List<WebDirectory> bookDirsAfter = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
+        
+        assertEquals(panelDirsAfter.size(), panelDirsQtyBefore - 1);
+        assertEquals(bookDirsAfter.size(), bookDirsQtyBefore + 1);
+        sort(panelDirsAfter);
+        sort(bookDirsAfter);
+        for (int i = 0; i < panelDirsAfter.size(); i++) {
+            assertEquals(i, panelDirsAfter.get(i).order());
+        }
+        assertEquals("Dev.Java.Tools", panelDirsAfter.get(0).name());
+        assertEquals("Media", panelDirsAfter.get(1).name());
+        assertEquals("Common (2)", panelDirsAfter.get(2).name());
+        
+        for (int i = 0; i < bookDirsAfter.size(); i++) {
+            assertEquals(i, bookDirsAfter.get(i).order());
+        }
+        assertEquals("Dev.Java.Docs", bookDirsAfter.get(0).name());
+        assertEquals("Dev.JS.Docs", bookDirsAfter.get(1).name());
+        assertEquals("Dev.Tech", bookDirsAfter.get(2).name());
+        assertEquals("Common", bookDirsAfter.get(3).name());
+        clearData();
+        setupData();
+    }
+    
+    @Test
+    public void testMoveDirectoryToPlace_move_dir_not_existed() {
+        List<WebDirectory> panelDirsBefore = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        List<WebDirectory> bookDirsBefore = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
+        
+        boolean moved = dao.moveDirectoryToPlace(initiator, "News", WEBPANEL, BOOKMARKS);
+        assertFalse(moved);
+        
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        List<WebDirectory> bookDirsAfter = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
+        
+        assertEquals(panelDirsAfter, panelDirsBefore);
+        assertEquals(bookDirsAfter, bookDirsBefore);
+        for (int i = 0; i < panelDirsAfter.size(); i++) {
+            assertEquals(i, panelDirsAfter.get(i).order());
+        }
+        
+        for (int i = 0; i < bookDirsAfter.size(); i++) {
+            assertEquals(i, bookDirsAfter.get(i).order());
+        }
+    }
+    
+    @Test
+    public void testMoveDirectoryToPlace_move_sole_dir_from_place() throws Exception {
+        
+        dataBase.transactionFactory()
+                .createDisposableTransaction()
+                .doUpdate(
+                        "DELETE FROM web_directories " +
+                        "WHERE ( name IS NOT 'Common' ) AND ( place IS 'WEBPANEL' )");
+        
+        List<WebDirectory> panelDirsBefore = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        List<WebDirectory> bookDirsBefore = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
+        
+        assertEquals(1, panelDirsBefore.size());
+        
+        boolean moved = dao.moveDirectoryToPlace(initiator, "Common", WEBPANEL, BOOKMARKS);
+        assertTrue(moved);
+        
+        List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
+        List<WebDirectory> bookDirsAfter = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
+        
+        assertEquals(0, panelDirsAfter.size());
+        assertEquals(bookDirsAfter.size(), bookDirsBefore.size() + 1);
+        
+        for (int i = 0; i < bookDirsAfter.size(); i++) {
+            assertEquals(i, bookDirsAfter.get(i).order());
+        }
+        assertEquals("Common", bookDirsAfter.get(3).name());
+        
+        clearData();
+        setupData();
     }
 
     /**
      * Test of editDirectoryName method, of class H2DaoWebDirectories.
      */
     @Test
-    public void testEditDirectoryName() {
+    public void testEditDirectoryName_ok() throws Exception {
+        boolean renamed = dao.editDirectoryName(initiator, "commOn", WEBPANEL, "Misc");
+        assertTrue(renamed);
+        Optional<WebDirectory> renamedDir = dao.getDirectoryByNameAndPlace(initiator, "misC", WEBPANEL);
+        assertTrue(renamedDir.isPresent());
+        clearData();
+        setupData();
+    }
+    
+    @Test
+    public void testEditDirectoryName_fail() {
+        boolean renamed = dao.editDirectoryName(initiator, "commOn", WEBPANEL, "common (2)");
+        assertFalse(renamed);
     }
 
 }
