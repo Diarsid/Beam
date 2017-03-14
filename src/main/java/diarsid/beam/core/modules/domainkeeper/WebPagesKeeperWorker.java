@@ -385,11 +385,8 @@ public class WebPagesKeeperWorker
             return voidOperationStopped();
         }
         
-        boolean pageMoved = this.daoPages.movePageFromDirToDir(
-                initiator, 
-                page.name(), 
-                page.directoryId(), 
-                optDirectory.get().id());
+        boolean pageMoved = this.daoPages
+                .movePageFromDirToDir(initiator, page, optDirectory.get().id());
         
         if ( pageMoved ) {
             return voidCompleted();

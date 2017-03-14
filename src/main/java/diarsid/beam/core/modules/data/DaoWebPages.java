@@ -45,10 +45,7 @@ public interface DaoWebPages {
             Initiator initiator, String name, String newUrl);    
     
     boolean movePageFromDirToDir(
-            Initiator initiator, 
-            String pageName, 
-            int oldDirId, 
-            int newDirId);
+            Initiator initiator, WebPage page, int newDirId);
     
     boolean updatePageOrdersInDir(
             Initiator initiator, List<WebPage> pages);

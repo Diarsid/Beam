@@ -292,7 +292,8 @@ class H2DaoWebDirectories
     }
 
     @Override
-    public Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(Initiator initiator, String name, WebPlace place) {
+    public Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(
+            Initiator initiator, String name, WebPlace place) {
         try (JdbcTransaction transact = super.getTransaction()) {
             
             Optional<WebDirectory> directory = transact
