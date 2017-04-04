@@ -60,18 +60,18 @@ public class OpenPathCommand implements ExtendableCommand {
 
     @Override
     public String stringify() {
-        return "open " + this.stringifyOriginalArgs();
+        return "open " + this.originalArgument();
     }
 
     @Override
-    public String stringifyOriginalArgs() {
-        return this.locationArgument.originalArg() + "/" + this.targetArgument.originalArg();
+    public String originalArgument() {
+        return this.locationArgument.original() + "/" + this.targetArgument.original();
     }
 
     @Override
-    public String stringifyExtendedArgs() {
+    public String extendedArgument() {
         if ( this.locationArgument.hasExtended() && this.targetArgument.hasExtended() ) {
-            return this.locationArgument.extendedArg()+ "/" + this.targetArgument.extendedArg();
+            return this.locationArgument.extended()+ "/" + this.targetArgument.extended();
         } else {
             return "";
         }        
@@ -104,5 +104,25 @@ public class OpenPathCommand implements ExtendableCommand {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void setNew() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setStored() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean wasNotUsedBefore() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean wasUsedBeforeAndStored() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

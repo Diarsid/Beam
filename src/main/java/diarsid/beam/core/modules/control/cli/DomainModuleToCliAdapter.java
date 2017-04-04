@@ -26,22 +26,22 @@ public class DomainModuleToCliAdapter {
             DomainKeeperModule domainModule, InnerIoEngine ioEngine) {
         this.locationsKeeperAdapter = 
                 new CliAdapterForLocationsKeeper(
-                        domainModule.getLocationsKeeper(), ioEngine);
+                        domainModule.locations(), ioEngine);
         this.batchesKeeperAdapter = 
                 new CliAdapterForBatchesKeeper(
-                        domainModule.getBatchesKeeper(), ioEngine);
+                        domainModule.batches(), ioEngine);
         this.programsKeeperAdapter = 
                 new CliAdapterForProgramsKeeper(
-                        domainModule.getProgramsKeeper(), ioEngine);
+                        domainModule.programs(), ioEngine);
         this.tasksKeeperAdapter = 
                 new CliAdapterForTasksKeeper(
-                        domainModule.getTasksKeeper(), ioEngine);
+                        domainModule.tasks(), ioEngine);
         this.webDirectoriesKeeperAdapter = 
                 new CliAdapterForWebDirectoriesKeeper(
-                        domainModule.getWebDirectoriesKeeper(), ioEngine);
+                        domainModule.webDirectories(), ioEngine);
         this.webPagesKeeperAdapter = 
                 new CliAdapterForWebPagesKeeper(
-                        domainModule.getWebPagesKeeper(), ioEngine);
+                        domainModule.webPages(), ioEngine);
         
     }
     

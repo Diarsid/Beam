@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
  */
 public interface DaoCommands {
     
-    Optional<ExtendableCommand> getByExactOriginalOfType(
+    Optional<ExtendableCommand> getByExactOriginalAndType(
             Initiator initiator, String original, CommandType type);
     
     List<ExtendableCommand> getByExactOriginalOfAnyType(
@@ -27,26 +27,14 @@ public interface DaoCommands {
     List<ExtendableCommand> fullSearchByOriginalPattern(
             Initiator initiator, String pattern);
     
-    List<ExtendableCommand> fullSearchByOriginalPatternParts(
-            Initiator initiator, List<String> patternParts);
-    
-    List<ExtendableCommand> fullSearchByOriginalPatternOfType(
+    List<ExtendableCommand> searchInOriginalByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
-    
-    List<ExtendableCommand> fullSearchByOriginalPatternPartsOfType(
-            Initiator initiator, List<String> patternParts, CommandType type);
     
     List<ExtendableCommand> fullSearchByExtendedPattern(
             Initiator initiator, String pattern);
     
-    List<ExtendableCommand> fullSearchByExtendedPatternParts(
-            Initiator initiator, List<String> patternParts);
-    
-    List<ExtendableCommand> fullSearchByExtendedPatternOfType(
+    List<ExtendableCommand> searchInExtendedByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
-    
-    List<ExtendableCommand> fullSearchByExtendedPatternPartsOfType(
-            Initiator initiator, List<String> patternParts, CommandType type);
     
     boolean save(
             Initiator initiator, ExtendableCommand command);

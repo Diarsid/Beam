@@ -5,13 +5,19 @@
  */
 package diarsid.beam.core.domain.entities;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+
 /**
  *
  * @author Diarsid
  */
-public interface NamedEntity {
+public interface NamedEntity extends ConvertableToVariant {
     
     String name();
     
-    NamedEntityType entityType();
+    NamedEntityType type();
+    
+    public default boolean is(NamedEntityType type) {
+        return this.type().equals(type);
+    }
 }

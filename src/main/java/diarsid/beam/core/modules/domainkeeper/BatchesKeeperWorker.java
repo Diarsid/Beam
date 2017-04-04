@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
@@ -18,7 +19,9 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
@@ -35,6 +38,7 @@ import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
@@ -43,19 +47,24 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildc
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 
 
-class BatchesKeeperWorker implements BatchesKeeper {
+class BatchesKeeperWorker 
+        implements 
+                BatchesKeeper, 
+                NamedEntitiesKeeper {
     
     private final DaoBatches dao;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final Interpreter interpreter;
     private final PropertyAndTextParser propertyAndTextParser;
+    private final Set<CommandType> subjectedCommandTypes;
     
     BatchesKeeperWorker(
             DaoBatches daoBatches, 
@@ -68,31 +77,46 @@ class BatchesKeeperWorker implements BatchesKeeper {
         this.helper = helper;
         this.interpreter = interpreter;
         this.propertyAndTextParser = propertyAndTextParser;
+        this.subjectedCommandTypes = toSet(CALL_BATCH);
     }
 
     @Override
-    public Optional<Batch> getBatchByNamePattern(Initiator initiator, String batchNamePattern) {
+    public boolean isSubjectedTo(InvocationEntityCommand command) {
+        return this.subjectedCommandTypes.contains(command.type());
+    }
+
+    @Override
+    public Optional<Batch> findByNamePattern(
+            Initiator initiator, String batchNamePattern) {
         List<String> foundBatchNames = this.getMatchingBatches(initiator, batchNamePattern);
         if ( hasOne(foundBatchNames) ) {
-            return this.dao.getBatchByName(initiator, getOne(foundBatchNames));        
+            return this.dao.getBatchByExactName(initiator, getOne(foundBatchNames));        
         } else if ( hasMany(foundBatchNames) ) {
             return this.manageWithManyBatchNames(initiator, foundBatchNames);
         } else {
             return Optional.empty();
         }
     }
+    
+    @Override
+    public Optional<Batch> findByExactName(
+            Initiator initiator, String exactName) {
+        return this.dao.getBatchByExactName(initiator, exactName);
+    }
 
-    private Optional<Batch> manageWithManyBatchNames(Initiator initiator, List<String> foundBatchNames) {
+    private Optional<Batch> manageWithManyBatchNames(
+            Initiator initiator, List<String> foundBatchNames) {
         Answer answer = this.ioEngine.ask(
                 initiator, question("choose batch").withAnswerStrings(foundBatchNames));
         if ( answer.isGiven() ) {
-            return this.dao.getBatchByName(initiator, answer.text());
+            return this.dao.getBatchByExactName(initiator, answer.text());
         } else {
             return Optional.empty();
         }
     }
     
-    private List<String> getMatchingBatches(Initiator initiator, String batchNamePattern) {
+    private List<String> getMatchingBatches(
+            Initiator initiator, String batchNamePattern) {
         if ( hasWildcard(batchNamePattern) ) {
             return this.dao.getBatchNamesByNamePatternParts(
                     initiator, splitByWildcard(batchNamePattern));
@@ -103,7 +127,8 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     @Override
-    public ValueOperation<Batch> findBatch(Initiator initiator, ArgumentsCommand command) {
+    public ValueOperation<Batch> findBatch(
+            Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_BATCH) ) {
             return valueOperationFail("wrong command type!");
         }
@@ -120,7 +145,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             return valueOperationStopped();
         }
         
-        return valueFound(this.getBatchByNamePattern(initiator, name));
+        return valueFound(this.findByNamePattern(initiator, name));
     }
 
     @Override
@@ -247,7 +272,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             return voidOperationStopped();
         } 
         
-        Optional<Batch> editedBatch = this.getBatchByNamePattern(initiator, name);
+        Optional<Batch> editedBatch = this.findByNamePattern(initiator, name);
         if ( editedBatch.isPresent() ) {
             this.ioEngine.report(initiator, format("'%s' found.", editedBatch.get().name()));
         } else {
@@ -315,7 +340,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
     
     private VoidOperation editBatchOneCommand(Initiator initiator, Batch batch) {
-        Question question = question("choose command").withAnswerEntities(batch.getCommands());
+        Question question = question("choose command").withAnswerEntities(batch.batchedCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             Optional<ExtendableCommand> newCommand = Optional.empty();

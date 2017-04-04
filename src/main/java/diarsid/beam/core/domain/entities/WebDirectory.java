@@ -20,7 +20,6 @@ import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.domain.entities.NamedEntityType.WEBDIRECTORY;
 import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 
@@ -30,7 +29,6 @@ import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
  */
 public class WebDirectory 
         implements 
-                NamedEntity,
                 Orderable, 
                 Serializable, 
                 ConvertableToVariant,
@@ -60,14 +58,8 @@ public class WebDirectory
         return this.id;
     }
 
-    @Override
     public String name() {
         return this.name;
-    }
-
-    @Override
-    public NamedEntityType entityType() {
-        return WEBDIRECTORY;
     }
 
     @Override

@@ -1,10 +1,15 @@
 package diarsid.beam.core.domain.entities;
 
+import java.awt.Desktop;
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -13,6 +18,8 @@ import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
 
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 
 /*
@@ -74,13 +81,27 @@ public class WebPage
     }
     
     @Override
-    public NamedEntityType entityType() {
+    public NamedEntityType type() {
         return WEBPAGE;
     }
     
     @Override
     public int order() {
         return this.pageOrder;
+    }
+    
+    public void browseAsync(
+            CallbackEvent calbackOnSuccess, 
+            CallbackEvent callbackOnFail) {
+        asyncDo(() -> {
+            try {
+                Desktop.getDesktop().browse(new URI(this.url));
+                calbackOnSuccess.onEvent("...browsing " + this.name);
+            } catch (URISyntaxException|IOException ex) {
+                logError(this.getClass(), ex.getMessage());
+                callbackOnFail.onEvent(ex.getMessage());
+            } 
+        });
     }
     
     public int directoryId() {

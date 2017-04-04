@@ -59,22 +59,90 @@ class FileSearcherService implements FileSearcher {
     @Override
     public FileSearchResult findStrictly(
             String strictTarget, String location, FileSearchMode mode) {
-        debug("[FILE SEARCHER] must find strictly: ");
-        debug("[FILE SEARCHER]    location : " + location);
-        debug("[FILE SEARCHER]    target   : " + strictTarget);
-        return this.findByStrictName(strictTarget, Paths.get(location), mode);
+        return this.findByStrictNameRecursively(strictTarget, Paths.get(location), mode);
     }
 
     @Override
     public FileSearchResult findStrictly(
             String strictTarget, Path location, FileSearchMode mode) {
+        return this.findByStrictNameRecursively(strictTarget, location, mode);
+    }
+    
+    private FileSearchResult findByStrictNameRecursively(
+            String strictTarget, Path dir, FileSearchMode mode) {
+        strictTarget = trimSeparators(strictTarget);
+        if ( pathIsDirectory(dir) ) {
+            if ( this.isAppropriatePath(dir, strictTarget, mode) ) {
+                debug("[FILE SEARCHER] target found directly. No search.");
+                return successWith(foundFile(strictTarget));
+            } else {
+                debug("[FILE SEARCHER] target not found directly. Search begins...");
+                return this.searchStrictly(dir, strictTarget, mode);
+            }            
+        } else {
+            return failWith(invalidLocationFailure());
+        }
+    }
+    
+    private FileSearchResult searchStrictly(Path root, String target, FileSearchMode mode) {
+        List<String> foundItems;
+        try { 
+            
+            debug("[FILE SEARCHER] ...search by strict name...");
+            foundItems = this.collectItemsByStrictName(root, target, mode);
+            
+            if ( foundItems.isEmpty() ) {
+                debug("[FILE SEARCHER] not found.");
+                return failWith(targetNotFoundFailure());
+            } else {
+                debug("[FILE SEARCHER] found : " + foundItems);
+                return successWith(foundFiles(foundItems));
+            }            
+        } catch (AccessDeniedException e ) {
+            logError(this.getClass(), this.accessDeniedMessageFor(target, root), e);
+            return failWith(targetInvalidMessage(this.accessDeniedMessageFor(target, root)));
+        } catch (IOException e ) {
+            logError(this.getClass(), this.ioExceptionMessageFor(target, root), e);
+            return failWith(targetInvalidMessage("Unknown IOException occured."));
+        }
+    }
+    
+    private List<String> collectItemsByStrictName(
+            Path root, String nameToFind, FileSearchMode mode) 
+            throws IOException {
+        return Files
+                    .walk(root, this.nameSearchDepth, FOLLOW_LINKS)
+                    .filter(path -> mode.correspondsTo(path))
+                    .map(path -> root.relativize(path))
+                    .filter(path -> this.filterSystemFiles(path))
+                    .filter(path -> this.filterByStrictName(nameToFind, path))
+                    .map(path -> normalizeSeparators(path.toString()))
+                    .collect(toList());
+    }
+    
+    private boolean filterByStrictName(String nameToFind, Path testedPath) {
+        return asName(testedPath).equalsIgnoreCase(nameToFind);
+    }
+
+    @Override
+    public FileSearchResult findDirectly(
+            String strictTarget, String location, FileSearchMode mode) {
+        debug("[FILE SEARCHER] must find strictly: ");
+        debug("[FILE SEARCHER]    location : " + location);
+        debug("[FILE SEARCHER]    target   : " + strictTarget);
+        return this.findByDirectName(strictTarget, Paths.get(location), mode);
+    }
+
+    @Override
+    public FileSearchResult findDirectly(
+            String strictTarget, Path location, FileSearchMode mode) {
         debug("[FILE SEARCHER] must find strictly: ");
         debug("[FILE SEARCHER]    location : " + location.toString());
         debug("[FILE SEARCHER]    target   : " + strictTarget);
-        return this.findByStrictName(strictTarget, location, mode);
+        return this.findByDirectName(strictTarget, location, mode);
     }
     
-    private FileSearchResult findByStrictName(String target, Path location, FileSearchMode mode) {
+    private FileSearchResult findByDirectName(String target, Path location, FileSearchMode mode) {
         if ( pathIsDirectory(location) ) {
             if ( this.isAppropriatePath(location, target, mode) ) {
                 return successWith(foundFile(target));
@@ -102,7 +170,8 @@ class FileSearcherService implements FileSearcher {
         return this.findByNameOrByPatternMatch(location, target, mode);
     }
 
-    private FileSearchResult findByNameOrByPatternMatch(Path dir, String target, FileSearchMode mode) {        
+    private FileSearchResult findByNameOrByPatternMatch(
+            Path dir, String target, FileSearchMode mode) {        
         target = trimSeparators(target);
         if ( pathIsDirectory(dir) ) {
             if ( this.isAppropriatePath(dir, target, mode) ) {
@@ -131,7 +200,7 @@ class FileSearcherService implements FileSearcher {
                 foundItems = this.collectItemsByPathParts(root, target, mode);
             } else {
                 debug("[FILE SEARCHER] ...search by name...");
-                foundItems = this.collectItemsByName(root, target, mode);
+                foundItems = this.collectItemsByNamePattern(root, target, mode);
             }            
             
             if ( foundItems.isEmpty() ) {
@@ -150,7 +219,7 @@ class FileSearcherService implements FileSearcher {
         }
     }
 
-    private List<String> collectItemsByName(
+    private List<String> collectItemsByNamePattern(
             Path root, String nameToFind, FileSearchMode mode)
             throws IOException {
         

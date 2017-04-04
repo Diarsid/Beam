@@ -9,21 +9,23 @@ package diarsid.beam.core.domain.entities;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.indexOfLastPathSeparator;
-
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
+import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 
 /**
  *
  * @author Diarsid
  */
-public class Program {
+public class Program implements NamedEntity {
     
     private final ProgramsCatalog programsCatalog;
     private final String fullName;
@@ -35,7 +37,8 @@ public class Program {
     
     public String simpleName() {
         if ( containsPathSeparator(this.fullName) ) {
-            return this.fullName.substring(indexOfLastPathSeparator(this.fullName), 
+            return this.fullName.substring(
+                    indexOfLastPathSeparator(this.fullName), 
                     this.fullName.length());
         } else {
             return this.fullName;
@@ -44,34 +47,71 @@ public class Program {
     
     public String subPath() {
         if ( containsPathSeparator(this.fullName) ) {
-            return this.fullName.substring(0, 
-                    indexOfLastPathSeparator(this.fullName));
+            return this.fullName.substring(0, indexOfLastPathSeparator(this.fullName));
         } else {
             return "";
         }
     }
 
-    public String fullName() {
+    @Override
+    public String name() {
         return this.fullName;
     }
     
-    public void runAsync(
-            CallbackEmpty successCallback, 
-            CallbackEmpty programNotFoundCallback, 
-            CallbackEmpty exceptionCallback) {
+    public void runAsync(CallbackEvent successCallback, CallbackEvent failCallback) {
         asyncDo(() -> {
             File program = this.programsCatalog.asFile(this);
             if ( program.exists() && program.isFile() ) {
                 try {
                     Desktop.getDesktop().open(program);  
-                    successCallback.call();
+                    successCallback.onEvent("...running " + this.simpleName());
                 } catch (IOException | IllegalArgumentException e) {
-                    exceptionCallback.call();
+                    failCallback.onEvent("..." + e.getMessage());
                     logError(this.getClass(), e);
                 }
             } else {
-                programNotFoundCallback.call();
+                failCallback.onEvent("...program " + this.fullName + " not found in programs.");
             }            
         });
     }
+
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.fullName, variantIndex);
+    }
+
+    @Override
+    public NamedEntityType type() {
+        return PROGRAM;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + Objects.hashCode(this.programsCatalog);
+        hash = 71 * hash + Objects.hashCode(this.fullName);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final Program other = ( Program ) obj;
+        if ( !Objects.equals(this.fullName, other.fullName) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.programsCatalog, other.programsCatalog) ) {
+            return false;
+        }
+        return true;
+    }
+    
 }

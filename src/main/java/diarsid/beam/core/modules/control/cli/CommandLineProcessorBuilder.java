@@ -10,6 +10,7 @@ import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
+import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 
 /**
@@ -24,13 +25,14 @@ public class CommandLineProcessorBuilder {
     public CommandLineProcessor build(
             IoModule ioModule, 
             ApplicationComponentsHolderModule appComponentsHolderModule, 
+            ExecutorModule executorModule,
             DomainKeeperModule domainModule) {
         Interpreter interpreter = appComponentsHolderModule.getInterpreter();
         DomainModuleToCliAdapter domainToCliAdapter = 
                 new DomainModuleToCliAdapter(domainModule, ioModule.getInnerIoEngine());
         CliCommandDispatcher commandDispatcher = 
                 new CliCommandDispatcher(
-                        ioModule, domainToCliAdapter);
+                        ioModule, executorModule, domainToCliAdapter);
         CommandLineProcessor cli = new CommandLineProcessor(interpreter, commandDispatcher);
         return cli;
     }

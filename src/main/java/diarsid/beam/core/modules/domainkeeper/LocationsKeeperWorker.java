@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
@@ -16,6 +17,8 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
@@ -37,10 +40,13 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCA
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
@@ -50,13 +56,17 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_
 
 
 
-class LocationsKeeperWorker implements LocationsKeeper {
+class LocationsKeeperWorker 
+        implements 
+                LocationsKeeper, 
+                NamedEntitiesKeeper {
     
     private final DaoLocations dao;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final LocationsInputParser locationInpurParser;
     private final PropertyAndTextParser propertyTextParser;
+    private final Set<CommandType> subjectedCommandTypes;
     
     LocationsKeeperWorker(
             DaoLocations dao, 
@@ -69,10 +79,16 @@ class LocationsKeeperWorker implements LocationsKeeper {
         this.helper = consistencyChecker;
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
+        this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_PATH);
+    }
+
+    @Override
+    public boolean isSubjectedTo(InvocationEntityCommand command) {
+        return this.subjectedCommandTypes.contains(command.type());
     }
     
     @Override
-    public Optional<Location> getLocationByExactName(
+    public Optional<Location> findByExactName(
             Initiator initiator, String exactName) {
         return this.dao.getLocationByExactName(initiator, exactName);
     }
@@ -84,7 +100,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
     
     @Override
-    public Optional<Location> getLocationByNamePattern(
+    public Optional<Location> findByNamePattern(
             Initiator initiator, String locationNamePattern) {
         return this.findExactlyOneLocationByPattern(initiator, locationNamePattern);
     }
@@ -122,6 +138,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
 
     private Optional<Location> manageWithManyLocations(
             Initiator initiator, List<Location> locations) {
+        // TODO 
+        // employ more sofisticated choice algorithm
         Answer answer = this.ioEngine.ask(
                 initiator, question("choose").withAnswerEntities(locations));
         if ( answer.isGiven() ) {
@@ -140,6 +158,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
             return this.dao.getLocationsByNamePattern(
                     initiator, locationNamePattern);
         }
+        // TODO
+        // employ advanced search algorithm
     }
 
     @Override

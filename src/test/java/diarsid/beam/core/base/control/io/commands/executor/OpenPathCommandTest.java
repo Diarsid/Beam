@@ -33,8 +33,8 @@ public class OpenPathCommandTest {
     @Test
     public void test_originalArgs() {
         OpenPathCommand c = new OpenPathCommand("proj/netb");
-        assertEquals("proj", c.location().originalArg());
-        assertEquals("netb", c.target().originalArg());
+        assertEquals("proj", c.location().original());
+        assertEquals("netb", c.target().original());
     }
 
     /**
@@ -52,8 +52,8 @@ public class OpenPathCommandTest {
     @Test
     public void testConstructor_1() {
         OpenPathCommand c = new OpenPathCommand("proj/netb", "");
-        assertEquals("proj", c.location().originalArg());
-        assertEquals("netb", c.target().originalArg());
+        assertEquals("proj", c.location().original());
+        assertEquals("netb", c.target().original());
         assertFalse(c.location().hasExtended());
         assertFalse(c.target().hasExtended());
     }
@@ -61,10 +61,10 @@ public class OpenPathCommandTest {
     @Test
     public void testConstructor_2() {
         OpenPathCommand c = new OpenPathCommand("proj/netb", "projects/netbeans");
-        assertEquals("proj", c.location().originalArg());
-        assertEquals("netb", c.target().originalArg());
-        assertEquals("projects", c.location().extendedArg());
-        assertEquals("netbeans", c.target().extendedArg());        
+        assertEquals("proj", c.location().original());
+        assertEquals("netb", c.target().original());
+        assertEquals("projects", c.location().extended());
+        assertEquals("netbeans", c.target().extended());        
     }
 
     /**
@@ -91,23 +91,23 @@ public class OpenPathCommandTest {
     }
 
     /**
-     * Test of stringifyOriginalArgs method, of class OpenPathCommand.
+     * Test of originalArgument method, of class OpenPathCommand.
      */
     @Test
     public void testStringifyOriginalArgs() {
         OpenPathCommand c = new OpenPathCommand("proj/netb", "projects/netbeans");
-        assertEquals("proj/netb", c.stringifyOriginalArgs());
+        assertEquals("proj/netb", c.originalArgument());
     }
 
     /**
-     * Test of stringifyExtendedArgs method, of class OpenPathCommand.
+     * Test of extendedArgument method, of class OpenPathCommand.
      */
     @Test
     public void testStringifyExtendedArgs() {
         OpenPathCommand c = new OpenPathCommand("proj/netb");
-        assertEquals("", c.stringifyExtendedArgs());
+        assertEquals("", c.extendedArgument());
         
         OpenPathCommand c1 = new OpenPathCommand("proj/netb", "projects/netbeans");
-        assertEquals("projects/netbeans", c1.stringifyExtendedArgs());
+        assertEquals("projects/netbeans", c1.extendedArgument());
     }
 }

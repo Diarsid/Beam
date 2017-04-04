@@ -6,9 +6,9 @@
 
 package diarsid.beam.core.base.control.io.interpreter.recognizers;
 
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.PrioritizedRecognizer;
 

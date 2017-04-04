@@ -20,6 +20,10 @@ public interface FileSearcher {
         return new FileSearcherService(depthOfSearchByName, depthOfSearchByPath);
     } 
     
+    FileSearchResult findDirectly(String directTarget, String location, FileSearchMode mode);
+    
+    FileSearchResult findDirectly(String directTarget, Path location, FileSearchMode mode);
+    
     FileSearchResult findStrictly(String strictTarget, String location, FileSearchMode mode);
     
     FileSearchResult findStrictly(String strictTarget, Path location, FileSearchMode mode);

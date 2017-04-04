@@ -69,10 +69,10 @@ class H2DaoBatches
         this.batchedCommandToParams = (batchedCommand) -> {
             return params(
                 batchedCommand.batch().name(),
-                batchedCommand.command().type().name(),
+                batchedCommand.unwrap().type().name(),
                 batchedCommand.orderInBatch(),
-                batchedCommand.command().stringifyOriginalArgs(),
-                batchedCommand.command().stringifyExtendedArgs()
+                batchedCommand.unwrap().originalArgument(),
+                batchedCommand.unwrap().extendedArgument()
             );
         };
         this.entryToBatch = (entry) -> {
@@ -141,15 +141,15 @@ class H2DaoBatches
     }
     
     @Override
-    public Optional<Batch> getBatchByName(Initiator initiator, String name) {
+    public Optional<Batch> getBatchByExactName(Initiator initiator, String name) {
         try (JdbcTransaction transact = super.getTransaction()) {
             
             boolean batchExists = transact
                     .doesQueryHaveResultsVarargParams(
                             "SELECT bat_name " +
                             "FROM batches " + 
-                            "WHERE bat_name IS ? ",
-                            name);
+                            "WHERE LOWER(bat_name) IS ? ",
+                            lower(name));
             
             List<ExtendableCommand> commands = transact
                     .ifTrue( batchExists )
@@ -158,10 +158,10 @@ class H2DaoBatches
                             "       bat_command_original, " +
                             "       bat_command_extended " +
                             "FROM batch_commands " +
-                            "WHERE bat_name IS ? " +
+                            "WHERE LOWER(bat_name) IS ? " +
                             "ORDER BY bat_command_order" ,
                             this.rowToCommandConversion,
-                            name)
+                            lower(name))
                     .collect(toList());
             
             if ( nonEmpty(commands) ) {
@@ -197,7 +197,7 @@ class H2DaoBatches
             
             int commandSavedCount = stream(transact
                     .ifTrue( nameIsFree )
-                    .ifTrue( nonEmpty(batch.getCommands()) )
+                    .ifTrue( nonEmpty(batch.batchedCommands()) )
                     .doBatchUpdate(
                             "INSERT INTO batch_commands (" +
                             "       bat_name, " +
@@ -206,7 +206,7 @@ class H2DaoBatches
                             "       bat_command_original, " +
                             "       bat_command_extended ) " +
                             "VALUES ( ?, ?, ?, ?, ? ) ",
-                            batch.getCommands()
+                            batch.batchedCommands()
                                     .stream()
                                     .map(this.batchedCommandToParams)
                                     .collect(toSet()))
@@ -215,7 +215,7 @@ class H2DaoBatches
             return ( 
                     nameIsFree && 
                     nameSavedCount == 1 && 
-                    commandSavedCount == batch.getCommands().size() );
+                    commandSavedCount == batch.batchedCommands().size() );
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoBatches.class, ex);
@@ -319,8 +319,8 @@ class H2DaoBatches
                                             batchName,
                                             command.type().name(),
                                             newCommands.indexOf(command),
-                                            command.stringifyOriginalArgs(),
-                                            command.stringifyExtendedArgs()))
+                                            command.originalArgument(),
+                                            command.extendedArgument()))
                                     .collect(toSet()))
             ).sum();
             
@@ -350,8 +350,8 @@ class H2DaoBatches
                             "       bat_command_extended = ? " +
                             "WHERE ( bat_name IS ? ) AND ( bat_command_order IS ? ) ",
                             newCommand.type().name(),
-                            newCommand.stringifyOriginalArgs(),
-                            newCommand.stringifyExtendedArgs(),
+                            newCommand.originalArgument(),
+                            newCommand.extendedArgument(),
                             batchName,
                             commandOrder);
             

@@ -18,6 +18,7 @@ import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 
 /**
@@ -62,28 +63,28 @@ public class BatchPauseCommand implements ExtendableCommand {
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return new Variant(this.stringifyPause(), variantIndex);
+        return new Variant("pause " + this.stringifyPause(), variantIndex);
     }
     
     private String stringifyPause() {
-        return format("%d %s", this.pauseDuration, this.getTimePeriod.name());
+        return format("%d %s", this.pauseDuration, lower(this.getTimePeriod.name()));
     }
 
     @Override
-    public String stringifyOriginalArgs() {
+    public String originalArgument() {
         return this.stringifyPause();
     }
 
     @Override
-    public String stringifyExtendedArgs() {
+    public String extendedArgument() {
         return this.stringifyPause();
     }
 
-    public int getPauseDuration() {
+    public int duration() {
         return this.pauseDuration;
     }
 
-    public TimePeriod getTimePeriod() {
+    public TimePeriod timePeriod() {
         return this.getTimePeriod;
     }     
     
@@ -123,5 +124,45 @@ public class BatchPauseCommand implements ExtendableCommand {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void setNew() {
+        // do nothing. batch command is never regarded as 'new' as it is system command.
+    }
+
+    @Override
+    public void setStored() {
+        // do nothing. batch command is never regarded as 'new' as it is system command.
+    }
+
+    @Override
+    public boolean wasNotUsedBefore() {
+        return false;
+    }
+
+    @Override
+    public boolean wasUsedBeforeAndStored() {
+        return true;
+    }
+
+    @Override
+    public void setTargetFound() {
+        // stub, do nothing.
+    }
+
+    @Override
+    public void setTargetNotFound() {
+        // stub, do nothing.
+    }
+
+    @Override
+    public boolean isTargetFound() {
+        return true;
+    }
+
+    @Override
+    public boolean isTargetNotFound() {
+        return false;
     }
 }

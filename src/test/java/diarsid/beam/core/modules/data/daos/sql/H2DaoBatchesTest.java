@@ -170,7 +170,7 @@ public class H2DaoBatchesTest {
     }
 
     /**
-     * Test of getBatchByName method, of class H2DaoBatches.
+     * Test of getBatchByExactName method, of class H2DaoBatches.
      */
     @Test
     public void testGetBatchByName() {
@@ -180,33 +180,33 @@ public class H2DaoBatchesTest {
         commands.add(new SeePageCommand("google", "google"));
         Batch batch = new Batch("workspace", commands);
         
-        Batch restoredBatch = daoBatches.getBatchByName(initiator, "workspace").get();
+        Batch restoredBatch = daoBatches.getBatchByExactName(initiator, "workspace").get();
         assertEquals(batch, restoredBatch);
     }
     
     @Test
     public void testGetBatchByName_notFound() {
         
-        Optional<Batch> restoredBatch = daoBatches.getBatchByName(initiator, "netb");
+        Optional<Batch> restoredBatch = daoBatches.getBatchByExactName(initiator, "netb");
         assertFalse(restoredBatch.isPresent());
     }
     
     @Test
     public void testGetBatchByName_precise() {
         
-        Batch restoredBatch = daoBatches.getBatchByName(initiator, "tomcat").get();
+        Batch restoredBatch = daoBatches.getBatchByExactName(initiator, "tomcat").get();
         
-        RunProgramCommand com0run = (RunProgramCommand) restoredBatch.getCommands().get(0).command();
-        RunProgramCommand com1run = (RunProgramCommand) restoredBatch.getCommands().get(1).command();
-        BatchPauseCommand com2pause = (BatchPauseCommand) restoredBatch.getCommands().get(2).command();
-        SeePageCommand com3see = (SeePageCommand) restoredBatch.getCommands().get(3).command();
+        RunProgramCommand com0run = (RunProgramCommand) restoredBatch.batchedCommands().get(0).unwrap();
+        RunProgramCommand com1run = (RunProgramCommand) restoredBatch.batchedCommands().get(1).unwrap();
+        BatchPauseCommand com2pause = (BatchPauseCommand) restoredBatch.batchedCommands().get(2).unwrap();
+        SeePageCommand com3see = (SeePageCommand) restoredBatch.batchedCommands().get(3).unwrap();
         
-        assertEquals("mysql_server", com0run.argument().originalArg());
-        assertEquals("tomcat", com1run.argument().originalArg());
-        assertEquals("3 SECONDS", com2pause.stringifyOriginalArgs());
-        assertEquals(3, com2pause.getPauseDuration());
-        assertEquals(SECONDS, com2pause.getTimePeriod());
-        assertEquals("tomcat_root", com3see.argument().originalArg());
+        assertEquals("mysql_server", com0run.argument().original());
+        assertEquals("tomcat", com1run.argument().original());
+        assertEquals("3 SECONDS", com2pause.originalArgument());
+        assertEquals(3, com2pause.duration());
+        assertEquals(SECONDS, com2pause.timePeriod());
+        assertEquals("tomcat_root", com3see.argument().original());
     }
 
     /**
@@ -257,16 +257,16 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testEditBatchName() {
-        Batch previous = daoBatches.getBatchByName(initiator, "workspace").get();
+        Batch previous = daoBatches.getBatchByExactName(initiator, "workspace").get();
         
         boolean renamed = daoBatches.editBatchName(initiator, "workspace", "Environment");
         assertTrue(renamed);
         
-        Batch after = daoBatches.getBatchByName(initiator, "Environment").get();
+        Batch after = daoBatches.getBatchByExactName(initiator, "Environment").get();
         
         assertEquals(previous.getCommandsQty(), after.getCommandsQty());
         for (int i = 0; i < previous.getCommandsQty(); i++) {
-            assertEquals(previous.getCommands().get(i).command(), after.getCommands().get(i).command());
+            assertEquals(previous.batchedCommands().get(i).unwrap(), after.batchedCommands().get(i).unwrap());
         }
     }
 
@@ -282,10 +282,10 @@ public class H2DaoBatchesTest {
         boolean edited = daoBatches.editBatchCommands(initiator, "workspace", newCommands);
         assertTrue(edited);
         
-        Batch after = daoBatches.getBatchByName(initiator, "workspace").get();
+        Batch after = daoBatches.getBatchByExactName(initiator, "workspace").get();
         assertEquals(newCommands.size(), after.getCommandsQty());
         for (int i = 0; i < after.getCommandsQty(); i++) {
-            assertEquals(newCommands.get(i), after.getCommands().get(i).command());
+            assertEquals(newCommands.get(i), after.batchedCommands().get(i).unwrap());
         }
         
     }
@@ -295,20 +295,20 @@ public class H2DaoBatchesTest {
      */
     @Test
     public void testEditBatchOneCommand() {
-        Batch previous = daoBatches.getBatchByName(initiator, "workspace").get();
+        Batch previous = daoBatches.getBatchByExactName(initiator, "workspace").get();
         
         ExtendableCommand newCommand = new OpenLocationCommand("yyy", "yyy");
         int newCommandOrder = 1;
         boolean edited = daoBatches.editBatchOneCommand(initiator, "workspace", newCommandOrder, newCommand);
         assertTrue(edited);
         
-        Batch after = daoBatches.getBatchByName(initiator, "workspace").get();
+        Batch after = daoBatches.getBatchByExactName(initiator, "workspace").get();
         assertEquals(previous.getCommandsQty(), after.getCommandsQty());
         for (int i = 0; i < previous.getCommandsQty(); i++) {
             if ( i == newCommandOrder ) {
-                assertEquals(newCommand, after.getCommands().get(i).command());
+                assertEquals(newCommand, after.batchedCommands().get(i).unwrap());
             } else {
-                assertEquals(previous.getCommands().get(i).command(), after.getCommands().get(i).command());
+                assertEquals(previous.batchedCommands().get(i).unwrap(), after.batchedCommands().get(i).unwrap());
             }            
         }
     }
@@ -330,11 +330,11 @@ public class H2DaoBatchesTest {
         
         List<ExtendableCommand> allCommands = new ArrayList<>();
         batchs.stream()
-                .map(batch -> batch.getCommands())
+                .map(batch -> batch.batchedCommands())
                 .forEach(commands -> { 
                     allCommands.addAll(commands
                             .stream()
-                            .map(batchedCommand -> batchedCommand.command())
+                            .map(batchedCommand -> batchedCommand.unwrap())
                             .collect(toList())
                     );
                 });

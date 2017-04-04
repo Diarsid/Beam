@@ -14,9 +14,25 @@ import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
  */
 public interface ExtendableCommand extends Command, ConvertableToVariant {
     
-    String stringifyOriginalArgs();
+    String originalArgument();
     
-    String stringifyExtendedArgs();
+    String extendedArgument();
     
     String stringify();
+    
+    void setNew();
+    
+    void setStored();
+    
+    boolean wasNotUsedBefore();
+    
+    boolean wasUsedBeforeAndStored();
+    
+    void setTargetFound();
+    
+    void setTargetNotFound();
+    
+    boolean isTargetFound();
+    
+    boolean isTargetNotFound();
 }

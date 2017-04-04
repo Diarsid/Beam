@@ -55,7 +55,7 @@ public class CollectionsUtils {
                         "Passed collection is implied to contain exactly one element."));
     }
 
-    public static <T> Set<T> toSet(T[] array) {
+    public static <T> Set<T> toSet(T... array) {
         return new HashSet<>(asList(array));
     }
 

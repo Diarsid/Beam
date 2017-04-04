@@ -6,7 +6,12 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
+import java.util.Set;
+
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
 import diarsid.beam.core.modules.DomainKeeperModule;
+
+import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 /**
  *
@@ -20,6 +25,9 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     private final TasksKeeper tasksKeeper;
     private final WebPagesKeeper webPagesKeeper;
     private final WebDirectoriesKeeper webDirectoriesKeeper;
+    private final CommandsMemoryKeeper commandsMemoryKeeper;
+    private final NamedEntitiesKeeper defaultNamedEntitiesKeeper;
+    private final Set<NamedEntitiesKeeper> allDedicatedNamedEntitiesKeepers;
 
     public DomainKeeperModuleWorker(
             LocationsKeeper locationsKeeper, 
@@ -27,22 +35,31 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
             ProgramsKeeper programsKeeper,
             TasksKeeper tasksKeeper,
             WebPagesKeeper webPagesKeeper,
-            WebDirectoriesKeeper webDirectoriesKeeper) {
+            WebDirectoriesKeeper webDirectoriesKeeper,
+            CommandsMemoryKeeper commandsMemoryKeeper,
+            NamedEntitiesKeeper namedEntitiesKeeper) {
         this.locationsKeeper = locationsKeeper;
         this.batchesKeeper = batchesKeeper;
         this.programsKeeper = programsKeeper;
         this.tasksKeeper = tasksKeeper;
         this.webPagesKeeper = webPagesKeeper;
         this.webDirectoriesKeeper = webDirectoriesKeeper;
+        this.commandsMemoryKeeper = commandsMemoryKeeper;
+        this.defaultNamedEntitiesKeeper = namedEntitiesKeeper;
+        this.allDedicatedNamedEntitiesKeepers = toSet(
+                locationsKeeper, 
+                batchesKeeper, 
+                programsKeeper, 
+                webPagesKeeper);
     }
 
     @Override
-    public LocationsKeeper getLocationsKeeper() {
+    public LocationsKeeper locations() {
         return this.locationsKeeper;
     }
 
     @Override
-    public BatchesKeeper getBatchesKeeper() {
+    public BatchesKeeper batches() {
         return this.batchesKeeper;
     }
 
@@ -52,22 +69,36 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     }
 
     @Override
-    public ProgramsKeeper getProgramsKeeper() {
+    public ProgramsKeeper programs() {
         return this.programsKeeper;
     }
 
     @Override
-    public TasksKeeper getTasksKeeper() {
+    public TasksKeeper tasks() {
         return this.tasksKeeper;
     }
     
     @Override
-    public WebPagesKeeper getWebPagesKeeper() {
+    public WebPagesKeeper webPages() {
         return this.webPagesKeeper;
     }
 
     @Override
-    public WebDirectoriesKeeper getWebDirectoriesKeeper() {
+    public WebDirectoriesKeeper webDirectories() {
         return this.webDirectoriesKeeper;
+    }
+
+    @Override
+    public CommandsMemoryKeeper commandsMemory() {
+        return this.commandsMemoryKeeper;
+    }
+
+    @Override
+    public NamedEntitiesKeeper entitiesOperatedBy(InvocationEntityCommand command) {
+        return this.allDedicatedNamedEntitiesKeepers
+                .stream()
+                .filter(keeper -> keeper.isSubjectedTo(command))
+                .findFirst()
+                .orElse(this.defaultNamedEntitiesKeeper);
     }
 }

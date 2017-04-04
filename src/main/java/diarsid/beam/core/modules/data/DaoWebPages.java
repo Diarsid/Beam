@@ -20,7 +20,7 @@ public interface DaoWebPages {
     Optional<Integer> freeNameNextIndex(
             Initiator initiator, String name);
     
-    Optional<WebPage> getByName(
+    Optional<WebPage> getByExactName(
             Initiator initiator, String name);
     
     List<WebPage> findByPattern(

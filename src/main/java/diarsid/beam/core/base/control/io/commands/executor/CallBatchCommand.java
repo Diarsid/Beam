@@ -8,12 +8,14 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
+import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 
 
-public class CallBatchCommand extends ExtendableCommonCommand {
+public class CallBatchCommand extends InvocationEntityCommand {
         
     public CallBatchCommand(String batchName) {
         super(batchName);
@@ -35,6 +37,11 @@ public class CallBatchCommand extends ExtendableCommonCommand {
 
     @Override
     public String stringify() {
-        return "call " + super.stringifyOriginalArgs();
+        return "call " + super.originalArgument();
+    }
+
+    @Override
+    public NamedEntityType subjectedEntityType() {
+        return BATCH;
     }
 }

@@ -12,17 +12,17 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
-
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
+import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 
 /**
  *
@@ -53,7 +53,7 @@ public class Location
     }
 
     @Override
-    public NamedEntityType entityType() {
+    public NamedEntityType type() {
         return LOCATION;
     }
     
@@ -87,21 +87,20 @@ public class Location
     }
     
     public void openAsync(
-            CallbackEmpty successCallback,
-            CallbackEmpty exceptionCallback, 
-            CallbackEmpty locationNotFoundCallback) {
+            CallbackEvent successCallback,
+            CallbackEvent failCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             if ( location.exists() && location.isDirectory() ) {
                 try {
                     Desktop.getDesktop().open(location);   
-                    successCallback.call();
+                    successCallback.onEvent("...opening " + this.name);
                 } catch (IOException | IllegalArgumentException e) {
-                    exceptionCallback.call();
+                    failCallback.onEvent("cannot open location due to: " + e.getMessage());
                     logError(this.getClass(), e);
                 }
             } else {
-                locationNotFoundCallback.call();
+                failCallback.onEvent("location real place not found.");
                 debug(format("%s path '%s' does not exist.", this.name, this.path));
             }            
         });

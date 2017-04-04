@@ -8,22 +8,24 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.base.control.flow.ValueOperation;
 
 /**
  *
  * @author Diarsid
  */
-public interface LocationsKeeper {
+public interface LocationsKeeper extends NamedEntitiesKeeper {
     
-    Optional<Location> getLocationByExactName(
+    @Override
+    Optional<Location> findByExactName(
             Initiator initiator, String exactName);
     
-    Optional<Location> getLocationByNamePattern(
+    @Override
+    Optional<Location> findByNamePattern(
             Initiator initiator, String locationNamePattern);
     
     List<Location> getLocationsByNamePattern(

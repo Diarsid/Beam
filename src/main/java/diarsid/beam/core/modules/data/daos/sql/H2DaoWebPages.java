@@ -100,7 +100,7 @@ class H2DaoWebPages
     }
 
     @Override
-    public Optional<WebPage> getByName(
+    public Optional<WebPage> getByExactName(
             Initiator initiator, String name) {
         try {
             return super.getDisposableTransaction()

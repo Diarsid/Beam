@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules.data;
 
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.domain.entities.NamedEntity;
@@ -15,6 +16,9 @@ import diarsid.beam.core.domain.entities.NamedEntity;
  * @author Diarsid
  */
 public interface DaoNamedEntities {
+    
+    Optional<NamedEntity> getByExactName(
+            Initiator initiator, String exactName);
     
     List<NamedEntity> getEntitiesByNamePattern(
             Initiator initiator, String namePattern);

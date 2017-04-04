@@ -13,11 +13,36 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public enum NamedEntityType {
     
-    LOCATION,
-    WEBPAGE,
-    WEBDIRECTORY,
-    PROGRAM,
-    BATCH;
+    LOCATION {
+        @Override 
+        public String displayName() {
+            return "Location";
+        }
+    },
+    WEBPAGE {
+        @Override 
+        public String displayName() {
+            return "WebPage";
+        }
+    },
+    PROGRAM {
+        @Override 
+        public String displayName() {
+            return "Program";
+        }
+    },
+    BATCH {
+        @Override 
+        public String displayName() {
+            return "Batch";
+        }
+    },
+    UNDEFINED_ENTITY {
+        @Override
+        public String displayName() {
+            return "undefined";
+        }
+    };
     
     public static NamedEntityType fromString(String type) {
         switch ( lower(type) ) {
@@ -30,9 +55,18 @@ public enum NamedEntityType {
             case "batch" : {
                 return BATCH;
             }
+            case "program" : {
+                return PROGRAM;
+            }
             default : {
-                return null;
+                return UNDEFINED_ENTITY;
             }
         }
+    }
+    
+    public abstract String displayName();
+    
+    public boolean isDefined() {
+        return ! this.equals(UNDEFINED_ENTITY);
     }
 }

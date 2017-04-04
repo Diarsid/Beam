@@ -16,15 +16,17 @@ import diarsid.beam.core.domain.entities.Program;
  *
  * @author Diarsid
  */
-public interface ProgramsKeeper {
+public interface ProgramsKeeper extends NamedEntitiesKeeper {
     
     Optional<Program> findProgram(
             Initiator initiator, ArgumentsCommand command);
     
-    Optional<Program> getOneProgramByStrictName(
+    @Override
+    Optional<Program> findByExactName(
             Initiator initiator, String strictName);
     
-    Optional<Program> getOneProgramByPattern(
+    @Override
+    Optional<Program> findByNamePattern(
             Initiator initiator, String pattern);
     
     List<Program> getProgramsByPattern(

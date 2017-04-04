@@ -17,6 +17,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
 
@@ -35,6 +37,8 @@ import static diarsid.beam.core.base.os.search.FileSearchMode.FILES_ONLY;
  */
 //@Ignore
 public class FileSearcherServiceTest {
+    
+    private static final Logger logger = LoggerFactory.getLogger(FileSearcherServiceTest.class);
     
     private static final FileSearcherService searcher;
     private static final String root;
@@ -353,14 +357,29 @@ public class FileSearcherServiceTest {
     }
     
     @Test
-    public void testFindStrictly_success() {
-        FileSearchResult result = searcher.findStrictly("filE_Z.txt", root, FILES_ONLY);
-        assertTrue(result.isOk());        
+    public void testFindDirectly_success() {
+        FileSearchResult result = searcher.findDirectly("filE_Z.txt", root, FILES_ONLY);
+        assertTrue(result.isOk());
     }
     
     @Test
-    public void testFindStrictly_fail() {
-        FileSearchResult result = searcher.findStrictly("filE_.txt", root, FILES_ONLY);
+    public void testFindDirectly_fail() {
+        FileSearchResult result = searcher.findDirectly("filE_.txt", root, FILES_ONLY);
         assertFalse(result.isOk());        
+    }
+    
+    @Test
+    public void testFindDirectly_deep_fail() {
+        FileSearchResult result = searcher.findDirectly("aAAaa.txt", root, FILES_ONLY);
+        assertFalse(result.isOk());
+        
+    }
+    
+    @Test
+    public void testFindStrictly_deep_success() {
+        FileSearchResult result = searcher.findStrictly("aaaaA.TXT", root, FILES_ONLY);
+        assertTrue(result.isOk());
+        String file = result.success().getFoundFile();
+        assertEquals("folder_1/inner/aAAaa.txt", file);
     }
 }

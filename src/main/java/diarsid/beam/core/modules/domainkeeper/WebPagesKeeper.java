@@ -20,7 +20,7 @@ import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
  *
  * @author Diarsid
  */
-public interface WebPagesKeeper {
+public interface WebPagesKeeper extends NamedEntitiesKeeper {
     
     VoidOperation createWebPage(
             Initiator initiator, ArgumentsCommand command);
@@ -37,7 +37,12 @@ public interface WebPagesKeeper {
     List<WebPage> findWebPagesByPattern(
             Initiator initiator, String pattern);
     
-    Optional<WebPage> getWebPageByName(
+    @Override
+    Optional<WebPage> findByExactName(
+            Initiator initiator, String name);
+    
+    @Override
+    Optional<WebPage> findByNamePattern(
             Initiator initiator, String name);
     
     boolean createWebPage(

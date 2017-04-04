@@ -57,13 +57,13 @@ public class ExtendableArguments {
     
     public static String stringifyOriginalsOf(ExtendableArgument... args) {
         return stream(args)
-                .map(arg -> arg.originalArg())
+                .map(arg -> arg.original())
                 .collect(joining(ARGUMENT_STRINGIFY_SEPARATOR));
     }
     
     public static String stringifyExtendedsOf(ExtendableArgument... args) {
         return stream(args)
-                .map(arg -> arg.extendedArg())
+                .map(arg -> arg.extended())
                 .collect(joining(ARGUMENT_STRINGIFY_SEPARATOR));
     }
     

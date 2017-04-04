@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
@@ -16,6 +17,8 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
@@ -44,8 +47,11 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
@@ -62,8 +68,11 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_UR
 
 
 public class WebPagesKeeperWorker 
-        extends WebObjectsCommonKeeper 
-        implements WebPagesKeeper {
+        extends 
+                WebObjectsCommonKeeper 
+        implements 
+                WebPagesKeeper, 
+                NamedEntitiesKeeper {
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
@@ -71,6 +80,7 @@ public class WebPagesKeeperWorker
     private final KeeperDialogHelper helper;
     private final PropertyAndTextParser propetyTextParser;
     private final WebObjectsInputParser webObjectsParser;
+    private final Set<CommandType> subjectedCommandTypes;
     
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
@@ -86,6 +96,43 @@ public class WebPagesKeeperWorker
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
         this.webObjectsParser = parser;
+        this.subjectedCommandTypes = toSet(SEE_WEBPAGE);
+    }
+
+    @Override
+    public boolean isSubjectedTo(InvocationEntityCommand command) {
+        return this.subjectedCommandTypes.contains(command.type());
+    }
+
+    @Override
+    public Optional<WebPage> findByExactName(
+            Initiator initiator, String name) {
+        return this.daoPages.getByExactName(initiator, name);
+    }
+    
+    @Override
+    public Optional<WebPage> findByNamePattern(
+            Initiator initiator, String namePattern) {
+        List<WebPage> foundPages = this.daoPages.findByPattern(initiator, namePattern);
+        if ( hasOne(foundPages) ) {
+            return Optional.of(getOne(foundPages));
+        } else if ( hasMany(foundPages) ) {
+            return this.manageWithManyPages(initiator, foundPages);
+        } else {
+            return Optional.empty();
+        }
+    }
+    
+    private Optional<WebPage> manageWithManyPages(Initiator initiator, List<WebPage> pages) {
+        // TODO
+        // employ more sofisticated algorithm
+        Question question = question("choose").withAnswerEntities(pages);
+        Answer answer = this.ioEngine.ask(initiator, question);
+        if ( answer.isGiven() ) {
+            return Optional.of(pages.get(answer.index()));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private String discussShortcuts(Initiator initiator) {
@@ -447,12 +494,6 @@ public class WebPagesKeeperWorker
     public List<WebPage> findWebPagesByPattern(
             Initiator initiator, String pattern) {
         return this.daoPages.findByPattern(initiator, pattern);
-    }
-
-    @Override
-    public Optional<WebPage> getWebPageByName(
-            Initiator initiator, String name) {
-        return this.daoPages.getByName(initiator, name);
     }
 
     @Override

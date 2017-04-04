@@ -26,7 +26,7 @@ public interface DaoBatches {
     List<String> getBatchNamesByNamePatternParts(
             Initiator initiator, List<String> batchNameParts);
     
-    Optional<Batch> getBatchByName(Initiator initiator, String name);
+    Optional<Batch> getBatchByExactName(Initiator initiator, String name);
     
     boolean saveBatch(
             Initiator initiator, Batch batch);

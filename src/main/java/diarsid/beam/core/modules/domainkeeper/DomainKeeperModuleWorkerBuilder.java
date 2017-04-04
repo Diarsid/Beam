@@ -70,6 +70,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         TasksKeeper tasksKeeper;
         WebPagesKeeper pagesKeeper;
         WebDirectoriesKeeper directoriesKeeper;
+        CommandsMemoryKeeper commandsMemoryKeeper;
+        NamedEntitiesKeeper defaultKeeper;
         
         locationsKeeper = new LocationsKeeperWorker(
                 this.dataModule.getDaoLocations(), 
@@ -106,6 +108,12 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 ioEngine, 
                 dialogHelper, 
                 webObjectsParser);
+        commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
+                this.dataModule.getDaoCommands(), 
+                ioEngine);
+        defaultKeeper = new DefaultNamedEntitiesKeeper(
+                ioEngine, 
+                this.dataModule.getDaoNamedEntities());
         
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
@@ -113,6 +121,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 programsKeeper, 
                 tasksKeeper, 
                 pagesKeeper, 
-                directoriesKeeper);
+                directoriesKeeper, 
+                commandsMemoryKeeper, 
+                defaultKeeper);
     }
 }

@@ -31,7 +31,7 @@ public class ExtendableArgument {
         this.extendedArgument = extendedArgument;
     }
 
-    public String extendedArg() {
+    public String extended() {
         return this.extendedArgument;
     }
 
@@ -39,7 +39,7 @@ public class ExtendableArgument {
         this.extendedArgument = extendedArgument;
     }
 
-    public String originalArg() {
+    public String original() {
         return this.originalArgument;
     }
     

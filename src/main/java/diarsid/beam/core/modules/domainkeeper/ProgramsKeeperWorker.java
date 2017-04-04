@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -15,22 +16,30 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
 import diarsid.beam.core.domain.entities.Program;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
-import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
+import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 
-class ProgramsKeeperWorker implements ProgramsKeeper {
+class ProgramsKeeperWorker 
+        implements 
+                ProgramsKeeper, 
+                NamedEntitiesKeeper {
     
     private final InnerIoEngine ioEngine;
     private final ProgramsCatalog programsCatalog;
     private final KeeperDialogHelper helper;
+    private final Set<CommandType> operatingCommandTypes;
     
     ProgramsKeeperWorker(
             InnerIoEngine ioEngine, 
@@ -39,10 +48,16 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         this.ioEngine = ioEngine;
         this.programsCatalog = programsCatalog;
         this.helper = keeperDialogHelper;
+        this.operatingCommandTypes = toSet(RUN_PROGRAM);
     }
 
     @Override
-    public Optional<Program> getOneProgramByStrictName(Initiator initiator, String strictName) {
+    public boolean isSubjectedTo(InvocationEntityCommand command) {
+        return this.operatingCommandTypes.contains(command.type());
+    }
+
+    @Override
+    public Optional<Program> findByExactName(Initiator initiator, String strictName) {
         FileSearchResult result = this.programsCatalog.findProgramByStrictName(strictName);
         if ( result.isOk() && result.success().hasSingleFoundFile() ) {
             return this.optionalProgram(result.success().getFoundFile());
@@ -69,18 +84,18 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             return Optional.empty();
         }
         
-        return this.getOneProgramByPattern(initiator, name);        
+        return this.findByNamePattern(initiator, name);        
     }
 
     @Override
-    public Optional<Program> getOneProgramByPattern(Initiator initiator, String pattern) {
+    public Optional<Program> findByNamePattern(Initiator initiator, String pattern) {
         FileSearchResult result = this.programsCatalog.findProgramByPattern(pattern);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 return this.optionalProgram(result.success().getFoundFile());
             } else {
-                Question question = question("choose program").withAnswerStrings(
-                        result.success().getMultipleFoundFiles());
+                Question question = question("choose program")
+                        .withAnswerStrings(result.success().getMultipleFoundFiles());
                 Answer answer = this.ioEngine.ask(initiator, question);
                 if ( answer.isGiven() ) {
                     return this.optionalProgram(answer.text());
@@ -102,12 +117,16 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         FileSearchResult result = this.programsCatalog.findProgramByPattern(pattern);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                return arrayListOf(new Program(
-                        this.programsCatalog, result.success().getFoundFile()));
+                return asList(
+                        new Program(
+                                this.programsCatalog, 
+                                result.success().getFoundFile()));
             } else {
-                return result.success().getMultipleFoundFiles()
+                return result
+                        .success()
+                        .getMultipleFoundFiles()
                         .stream()
-                        .map(programFileName -> new Program(programsCatalog, programFileName))
+                        .map(programFileName -> new Program(this.programsCatalog, programFileName))
                         .collect(toList());
             }
         } else {

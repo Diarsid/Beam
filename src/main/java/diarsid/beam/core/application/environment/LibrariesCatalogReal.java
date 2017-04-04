@@ -29,7 +29,7 @@ public class LibrariesCatalogReal
     private final Path applicationPath;
     private final Path librariesPath;
     
-    public LibrariesCatalogReal(String applicationPath, String catalogPath) {
+    LibrariesCatalogReal(String applicationPath, String catalogPath) {
         this.librariesPath = Paths.get(catalogPath).toAbsolutePath().normalize();
         this.applicationPath = Paths.get(applicationPath).toAbsolutePath().normalize();
     }

@@ -9,9 +9,15 @@ package diarsid.beam.core.modules.control.cli;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.EmptyCommand;
+import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
+import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
+import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.exitBeamCoreNow;
@@ -26,12 +32,15 @@ import static diarsid.beam.core.base.util.Logs.logError;
 class CliCommandDispatcher implements CommandDispatcher {
     
     private final IoModule ioModule;
+    private final ExecutorModule executorModule;
     private final DomainModuleToCliAdapter domainModuleAdapter;
     
     CliCommandDispatcher(
             IoModule ioModule,
+            ExecutorModule executorModule,
             DomainModuleToCliAdapter domainModuleAdapter) {
         this.ioModule = ioModule;
+        this.executorModule = executorModule;
         this.domainModuleAdapter = domainModuleAdapter;
     }
     
@@ -41,40 +50,59 @@ class CliCommandDispatcher implements CommandDispatcher {
         try {
             switch ( command.type() ) {
                 case OPEN_LOCATION: {
-                    OpenLocationCommand c = (OpenLocationCommand) command;
-
+                    this.executorModule.openLocation(
+                            initiator, (OpenLocationCommand) command);
                     break;
                 }    
                 case OPEN_PATH: {
-                    OpenPathCommand c = (OpenPathCommand) command;
-
+                    this.executorModule.openPath(
+                            initiator, (OpenPathCommand) command);
                     break;
                 }    
-                case RUN_PROGRAM:
-
-                case START_PROGRAM:
+                case RUN_PROGRAM : {
+                    this.executorModule.runProgram(
+                            initiator, (RunProgramCommand) command);
                     break;
-                case STOP_PROGRAM:
-                    break;
-                case BATCH_PAUSE:
+                }
+                case BATCH_PAUSE : {
+                    this.ioModule
+                            .getInnerIoEngine()
+                            .report(initiator, "is available only in batch.");
                     break; 
-                case CALL_BATCH:
-
+                }    
+                case CALL_BATCH : {
+                    this.executorModule.callBatch(
+                            initiator, (CallBatchCommand) command);
                     break;
-                case SEE_WEBPAGE:
-
+                }    
+                case SEE_WEBPAGE : {
+                    this.executorModule.browsePage(
+                            initiator, (SeePageCommand) command);
                     break;
-                case EXECUTOR_DEFAULT:
-
+                }    
+                case EXECUTOR_DEFAULT : {
+                    this.executorModule.executeDefault(
+                            initiator, (ExecutorDefaultCommand) command);
                     break;
-                case OPEN_NOTES:
+                }    
+                case OPEN_NOTES : {
+                    this.executorModule.openNotes(
+                            initiator, (EmptyCommand) command);
                     break;
-                case OPEN_TARGET_IN_NOTE:
+                }    
+                case OPEN_TARGET_IN_NOTE : {
+                    this.executorModule.openTargetInNotes(
+                            initiator, (ArgumentsCommand) command);
                     break;
-                case OPEN_PATH_IN_NOTE:
+                }    
+                case OPEN_PATH_IN_NOTE : {
+                    this.executorModule.openPathInNotes(
+                            initiator, (ArgumentsCommand) command);
                     break;
-                case DELETE_MEM:
+                }    
+                case DELETE_MEM : {
                     break;
+                }    
                 case DELETE_PAGE : {
                     this.domainModuleAdapter
                             .getWebPagesAdapter()
@@ -191,10 +219,16 @@ class CliCommandDispatcher implements CommandDispatcher {
                                     (ArgumentsCommand) command);
                     break;
                 }    
-                case LIST_LOCATION:
+                case LIST_LOCATION : {
+                    this.executorModule.listLocation(
+                            initiator, (ArgumentsCommand) command);
                     break;
-                case LIST_PATH:
+                }    
+                case LIST_PATH : {
+                    this.executorModule.listPath(
+                            initiator, (ArgumentsCommand) command);
                     break;
+                }    
                 case FIND_LOCATION : {
                     this.domainModuleAdapter
                             .getLocationsAdapter()
@@ -234,8 +268,9 @@ class CliCommandDispatcher implements CommandDispatcher {
                                     (ArgumentsCommand) command);
                     break;
                 }    
-                case FIND_MEM:
+                case FIND_MEM : {
                     break;
+                }    
                 case FIND_BATCH : {
                     this.domainModuleAdapter
                             .getBatchesAdapter()
@@ -262,7 +297,9 @@ class CliCommandDispatcher implements CommandDispatcher {
             }
         } catch (ClassCastException cce) {
             logError(this.getClass(), cce);
-            this.ioModule.getInnerIoEngine().report(initiator, "command type casting failed.");
+            this.ioModule
+                    .getInnerIoEngine()
+                    .report(initiator, "command type casting failed.");
         }
     }
 }

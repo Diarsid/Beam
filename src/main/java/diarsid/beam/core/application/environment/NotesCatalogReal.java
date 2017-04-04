@@ -13,7 +13,7 @@ public class NotesCatalogReal
         extends SearcheableCatalog 
         implements NotesCatalog {
 
-    public NotesCatalogReal(String catalogPath, FileSearcher fileSearcher) {
+    NotesCatalogReal(String catalogPath, FileSearcher fileSearcher) {
         super(catalogPath, fileSearcher);
     }
 }

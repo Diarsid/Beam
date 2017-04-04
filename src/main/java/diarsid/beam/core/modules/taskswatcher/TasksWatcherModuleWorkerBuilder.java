@@ -45,7 +45,7 @@ class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherMo
         Initiator watcherPrivateInitiator = getSystemInitiator();
         
         tasksIo = this.ioModule.getTimeScheduledIo();
-        tasksKeeper = this.domainKeeperModule.getTasksKeeper();
+        tasksKeeper = this.domainKeeperModule.tasks();
         scheduler = new ScheduledThreadPoolExecutor(2);
         scheduler.setMaximumPoolSize(2);        
         tasksExecutionScheduler = new TasksExecutionScheduler(

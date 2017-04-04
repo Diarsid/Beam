@@ -11,6 +11,7 @@ import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.toUnmodifiableList;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
  *
@@ -21,43 +22,43 @@ public enum TimePeriod {
     SECONDS {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(SECONDS_PATTERNS, timeString);
+            return containsWordInIgnoreCase(SECONDS_PATTERNS, lower(timeString));
         }
     },
     MINUTES {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(MINUTES_PATTERNS, timeString);
+            return containsWordInIgnoreCase(MINUTES_PATTERNS, lower(timeString));
         }
     },
     HOURS {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(HOURS_PATTERNS, timeString);
+            return containsWordInIgnoreCase(HOURS_PATTERNS, lower(timeString));
         }
     },
     DAYS {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(DAYS_PATTERNS, timeString);
+            return containsWordInIgnoreCase(DAYS_PATTERNS, lower(timeString));
         }
     },
     WEEKS {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(WEEKS_PATTERNS, timeString);
+            return containsWordInIgnoreCase(WEEKS_PATTERNS, lower(timeString));
         }
     },
     MONTHS {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(MONTHES_PATTERNS, timeString);
+            return containsWordInIgnoreCase(MONTHES_PATTERNS, lower(timeString));
         }
     },
     YEARS {
         @Override
         public boolean isAppropriateFormat(String timeString) {
-            return containsWordInIgnoreCase(YEARS_PATTERNS, timeString);
+            return containsWordInIgnoreCase(YEARS_PATTERNS, lower(timeString));
         }
     },
     UNDEFINED {

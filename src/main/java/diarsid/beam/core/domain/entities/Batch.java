@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 
 import static java.util.stream.Collectors.toList;
@@ -42,22 +43,27 @@ public class Batch implements NamedEntity {
     }
 
     @Override
-    public NamedEntityType entityType() {
+    public NamedEntityType type() {
         return BATCH;
+    }
+
+    @Override
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.name, variantIndex);
     }
     
     public int getCommandsQty() {
         return this.commands.size();
     }
 
-    public List<BatchedCommand> getCommands() {
+    public List<BatchedCommand> batchedCommands() {
         return this.commands;
     }
     
     public List<String> stringifyCommands() {
         return this.commands
                         .stream()
-                        .map(batchedCommand -> batchedCommand.command().stringify())
+                        .map(batchedCommand -> batchedCommand.unwrap().stringify())
                         .collect(toList());
     }
 

@@ -8,12 +8,14 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommonCommand;
+import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
+import static diarsid.beam.core.domain.entities.NamedEntityType.UNDEFINED_ENTITY;
 
 
-public class ExecutorDefaultCommand extends ExtendableCommonCommand {
+public class ExecutorDefaultCommand extends InvocationEntityCommand {
 
     public ExecutorDefaultCommand(String argument) {
         super(argument);
@@ -35,6 +37,11 @@ public class ExecutorDefaultCommand extends ExtendableCommonCommand {
 
     @Override
     public String stringify() {
-        return super.stringifyOriginalArgs();
+        return super.originalArgument();
+    }
+
+    @Override
+    public NamedEntityType subjectedEntityType() {
+        return UNDEFINED_ENTITY;
     }
 }

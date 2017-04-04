@@ -41,7 +41,7 @@ public class BatchedCommand implements ConvertableToVariant {
         return this.enclosingBatch;
     }
 
-    public ExtendableCommand command() {
+    public ExtendableCommand unwrap() {
         return this.command;
     }
 
@@ -68,7 +68,7 @@ public class BatchedCommand implements ConvertableToVariant {
         if ( !Objects.equals(this.enclosingBatch.name(), other.enclosingBatch.name()) ) {
             return false;
         }
-        if ( !Objects.equals(this.enclosingBatch.getCommands().size(), other.enclosingBatch.getCommands().size()) ) {
+        if ( !Objects.equals(this.enclosingBatch.batchedCommands().size(), other.enclosingBatch.batchedCommands().size()) ) {
             return false;
         }
         if ( !Objects.equals(this.command, other.command) ) {
