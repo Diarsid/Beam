@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.Set;
 
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.modules.DomainKeeperModule;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
@@ -26,6 +26,8 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     private final WebPagesKeeper webPagesKeeper;
     private final WebDirectoriesKeeper webDirectoriesKeeper;
     private final CommandsMemoryKeeper commandsMemoryKeeper;
+    private final NotesKeeper notesKeeper;
+    
     private final NamedEntitiesKeeper defaultNamedEntitiesKeeper;
     private final Set<NamedEntitiesKeeper> allDedicatedNamedEntitiesKeepers;
 
@@ -36,6 +38,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
             TasksKeeper tasksKeeper,
             WebPagesKeeper webPagesKeeper,
             WebDirectoriesKeeper webDirectoriesKeeper,
+            NotesKeeper notesKeeper,
             CommandsMemoryKeeper commandsMemoryKeeper,
             NamedEntitiesKeeper namedEntitiesKeeper) {
         this.locationsKeeper = locationsKeeper;
@@ -45,6 +48,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
         this.webPagesKeeper = webPagesKeeper;
         this.webDirectoriesKeeper = webDirectoriesKeeper;
         this.commandsMemoryKeeper = commandsMemoryKeeper;
+        this.notesKeeper = notesKeeper;
         this.defaultNamedEntitiesKeeper = namedEntitiesKeeper;
         this.allDedicatedNamedEntitiesKeepers = toSet(
                 locationsKeeper, 
@@ -87,6 +91,11 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     public WebDirectoriesKeeper webDirectories() {
         return this.webDirectoriesKeeper;
     }
+    
+    @Override
+    public NotesKeeper notes() {
+        return this.notesKeeper;
+    }
 
     @Override
     public CommandsMemoryKeeper commandsMemory() {
@@ -94,7 +103,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     }
 
     @Override
-    public NamedEntitiesKeeper entitiesOperatedBy(InvocationEntityCommand command) {
+    public NamedEntitiesKeeper entitiesOperatedBy(EntityInvocationCommand command) {
         return this.allDedicatedNamedEntitiesKeepers
                 .stream()
                 .filter(keeper -> keeper.isSubjectedTo(command))

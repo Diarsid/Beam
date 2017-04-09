@@ -9,8 +9,8 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 
 /**
  *
@@ -21,11 +21,14 @@ public interface CommandsMemoryKeeper {
     Optional<ExtendableCommand> findStoredCommandByExactOriginalOfAnyType(
             Initiator initiator, String original); 
     
-    void tryToExtendCommand(
-            Initiator initiator, InvocationEntityCommand command);
+    Optional<ExtendableCommand> findStoredCommandByPatternOfAnyType(
+            Initiator initiator, String pattern);
     
     void tryToExtendCommand(
-            Initiator initiator, OpenPathCommand command);
+            Initiator initiator, EntityInvocationCommand command);
+    
+    void tryToExtendCommand(
+            Initiator initiator, OpenLocationTargetCommand command);
     
     void save(
             Initiator initiator, ExtendableCommand command);

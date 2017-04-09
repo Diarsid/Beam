@@ -8,14 +8,14 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 
 
-public class CallBatchCommand extends InvocationEntityCommand {
+public class CallBatchCommand extends EntityInvocationCommand {
         
     public CallBatchCommand(String batchName) {
         super(batchName);

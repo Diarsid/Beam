@@ -21,7 +21,7 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
@@ -81,7 +81,7 @@ class BatchesKeeperWorker
     }
 
     @Override
-    public boolean isSubjectedTo(InvocationEntityCommand command) {
+    public boolean isSubjectedTo(EntityInvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
     }
 
@@ -232,7 +232,7 @@ class BatchesKeeperWorker
         switch ( batchCommand.type() ) {
             case BATCH_PAUSE : 
             case SEE_WEBPAGE : 
-            case OPEN_PATH : 
+            case OPEN_LOCATION_TARGET : 
             case OPEN_LOCATION :
             case RUN_PROGRAM : {
                 ExtendableCommand argumented = (ExtendableCommand) batchCommand;

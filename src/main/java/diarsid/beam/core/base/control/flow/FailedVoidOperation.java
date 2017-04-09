@@ -11,5 +11,5 @@ package diarsid.beam.core.base.control.flow;
  * @author Diarsid
  */
 public interface FailedVoidOperation extends VoidOperation {    
-    String getReason();
+    String reason();
 }

@@ -46,7 +46,7 @@ public class OuterIoEnginesHolder {
                         return false;
                     }
                     Initiator initiator = new Initiator(slotNumber);
-                    ioEngine.acceptInitiator(initiator);
+                    ioEngine.accept(initiator);
                     this.initiators.add(initiator);
                     log(this.getClass(), format("%s set with initiator: %s, into slot %d", 
                             ioEngine.getName(), 

@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
@@ -41,7 +41,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCA
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
@@ -53,6 +52,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 
 
 
@@ -79,11 +79,11 @@ class LocationsKeeperWorker
         this.helper = consistencyChecker;
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
-        this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_PATH);
+        this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_LOCATION_TARGET);
     }
 
     @Override
-    public boolean isSubjectedTo(InvocationEntityCommand command) {
+    public boolean isSubjectedTo(EntityInvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
     }
     

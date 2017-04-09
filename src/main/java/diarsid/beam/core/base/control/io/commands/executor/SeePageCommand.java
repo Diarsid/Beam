@@ -8,14 +8,14 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 
 
-public class SeePageCommand extends InvocationEntityCommand {
+public class SeePageCommand extends EntityInvocationCommand {
     
     public SeePageCommand(String pageName) {
         super(pageName);

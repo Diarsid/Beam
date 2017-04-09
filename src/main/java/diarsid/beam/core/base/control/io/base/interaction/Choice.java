@@ -20,7 +20,7 @@ public enum Choice implements Serializable {
     POSTIVE,
     NEGATIVE,
     REJECT,
-    CHOICE_NOT_MADE;
+    NOT_MADE;
     
     public static Choice choiceOfPattern(String input) {
         if ( isYes(input) ) {
@@ -30,7 +30,7 @@ public enum Choice implements Serializable {
         } else if ( isRejection(input) ) {
             return REJECT;
         } else {
-            return CHOICE_NOT_MADE;
+            return NOT_MADE;
         }
     }
     
@@ -51,6 +51,6 @@ public enum Choice implements Serializable {
     }
     
     public boolean isNotMade() {
-        return this.equals(CHOICE_NOT_MADE);
+        return this.equals(NOT_MADE);
     }
 }

@@ -20,17 +20,17 @@ public interface ExtendableCommand extends Command, ConvertableToVariant {
     
     String stringify();
     
-    void setNew();
+    ExtendableCommand setNew();
     
-    void setStored();
+    ExtendableCommand setStored();
     
     boolean wasNotUsedBefore();
     
     boolean wasUsedBeforeAndStored();
     
-    void setTargetFound();
+    ExtendableCommand setTargetFound();
     
-    void setTargetNotFound();
+    ExtendableCommand setTargetNotFound();
     
     boolean isTargetFound();
     

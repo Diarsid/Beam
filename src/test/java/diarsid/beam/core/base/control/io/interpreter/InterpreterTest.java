@@ -14,7 +14,7 @@ import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.StartProgramCommand;
@@ -43,7 +43,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
@@ -55,6 +54,7 @@ import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 
 /**
  *
@@ -120,9 +120,9 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_openPathInLocation() {
         Command c = interpreter.interprete("/books/fan/tolkien");
-        assertEquals(OPEN_PATH, c.type());
+        assertEquals(OPEN_LOCATION_TARGET, c.type());
         
-        OpenPathCommand c1 = (OpenPathCommand) c;
+        OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
         assertEquals("books", c1.location().original());
         assertEquals("fan/tolkien", c1.target().original());
     }
@@ -130,9 +130,9 @@ public class InterpreterTest {
     @Test
     public void testInterprete_controlPrefix_l_openPathInLocation() {
         Command c = interpreter.interprete("l/books/fan/tolkien");
-        assertEquals(OPEN_PATH, c.type());
+        assertEquals(OPEN_LOCATION_TARGET, c.type());
         
-        OpenPathCommand c1 = (OpenPathCommand) c;
+        OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
         assertEquals("books", c1.location().original());
         assertEquals("fan/tolkien", c1.target().original());
     }
@@ -259,9 +259,9 @@ public class InterpreterTest {
     @Test
     public void testInterprete_openPath() {
         Command c = interpreter.interprete("open books/tolkien");
-        assertEquals(OPEN_PATH, c.type());
+        assertEquals(OPEN_LOCATION_TARGET, c.type());
         
-        OpenPathCommand c1 = (OpenPathCommand) c;
+        OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
         assertEquals("books/tolkien", c1.originalArgument());
     }
     
@@ -316,9 +316,9 @@ public class InterpreterTest {
     @Test
     public void testInterprete_default_as_openPath() {
         Command c = interpreter.interprete("books/fant/tolkien");
-        assertEquals(OPEN_PATH, c.type());
+        assertEquals(OPEN_LOCATION_TARGET, c.type());
         
-        OpenPathCommand c1 = (OpenPathCommand) c;
+        OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
         assertEquals("books/fant/tolkien", c1.originalArgument());
         
         assertEquals("books", c1.location().original());

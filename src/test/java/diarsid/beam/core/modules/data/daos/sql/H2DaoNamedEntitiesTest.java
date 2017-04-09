@@ -35,11 +35,11 @@ import static org.mockito.Mockito.*;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 
 /**
  *
@@ -99,8 +99,7 @@ public class H2DaoNamedEntitiesTest {
                             params("open_space"));
             
             int[] modified = transact
-                    .doBatchUpdateVarargParams(
-                            "INSERT INTO batch_commands (" +
+                    .doBatchUpdateVarargParams("INSERT INTO batch_commands (" +
                             "       bat_name, " +
                             "       bat_command_type, " +
                             "       bat_command_order, " +
@@ -114,9 +113,9 @@ public class H2DaoNamedEntitiesTest {
                             params("tomcat", RUN_PROGRAM.name(),    1, "tomcat", "tomcat"),
                             params("tomcat", BATCH_PAUSE.name(),    2, "3 SECONDS", "3 SECONDS"),
                             params("tomcat", SEE_WEBPAGE.name(),    3, "tomcat_root", "tomcat_root"),
-                            params("open_space", OPEN_PATH.name(),        0, "books/common", "books/common"),
+                            params("open_space", OPEN_LOCATION_TARGET.name(),        0, "books/common", "books/common"),
                             params("open_space", OPEN_LOCATION.name(),    1, "projects", "projects"),
-                            params("open_space", OPEN_PATH.name(),        2, "content/tech", "content/tech"),
+                            params("open_space", OPEN_LOCATION_TARGET.name(),        2, "content/tech", "content/tech"),
                             params("open_space", OPEN_LOCATION.name(),    3, "dev", "dev"));
             
             if ( modified.length != 11 ) {

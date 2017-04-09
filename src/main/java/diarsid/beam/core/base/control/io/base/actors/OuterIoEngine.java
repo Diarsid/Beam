@@ -5,12 +5,13 @@
  */
 package diarsid.beam.core.base.control.io.base.actors;
 
+import java.io.IOException;
+
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
-
-import java.io.IOException;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 /**
  *
@@ -22,15 +23,17 @@ public interface OuterIoEngine {
     
     String askForInput(String inputRequest) throws IOException;
     
-    Choice resolveYesOrNo(String yesOrNoQuestion) throws IOException;
+    Choice resolve(String yesOrNoQuestion) throws IOException;
     
-    Answer resolveQuestion(Question question) throws IOException;
+    Answer resolve(Question question) throws IOException;
+    
+    Answer resolve(String question, WeightedVariants variants) throws IOException;
     
     void report(String string) throws IOException;
     
-    void reportMessage(Message message) throws IOException;
+    void report(Message message) throws IOException;
     
     void close() throws IOException;
     
-    void acceptInitiator(Initiator initiator) throws IOException;
+    void accept(Initiator initiator) throws IOException;
 }

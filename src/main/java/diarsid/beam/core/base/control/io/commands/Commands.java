@@ -10,7 +10,7 @@ import diarsid.beam.core.base.control.io.commands.exceptions.UndefinedOperationT
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 
@@ -43,8 +43,8 @@ public class Commands {
             case OPEN_LOCATION : {
                 return new OpenLocationCommand(originalArgs, extendedArgs);
             }
-            case OPEN_PATH : {
-                return new OpenPathCommand(originalArgs, extendedArgs);
+            case OPEN_LOCATION_TARGET : {
+                return new OpenLocationTargetCommand(originalArgs, extendedArgs);
             }
             case RUN_PROGRAM : {
                 return new RunProgramCommand(originalArgs, extendedArgs);

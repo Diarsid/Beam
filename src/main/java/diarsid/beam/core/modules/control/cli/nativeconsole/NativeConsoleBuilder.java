@@ -19,7 +19,7 @@ public class NativeConsoleBuilder {
     }
     
     public OuterIoEngine build(CommandLineProcessor commandLineProcessor) {
-        InputBlockingBuffer buffer = new InputBlockingBuffer();
+        InputManager buffer = new InputManager();
         NativeConsole nativeConsole = new NativeConsole(commandLineProcessor, buffer);
         return nativeConsole;
     }

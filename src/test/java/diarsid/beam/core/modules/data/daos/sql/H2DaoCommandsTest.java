@@ -37,10 +37,10 @@ import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 
 /**
  *
@@ -77,26 +77,25 @@ public class H2DaoCommandsTest {
     public void setupCase() throws Exception {
         base.transactionFactory()
                 .createDisposableTransaction()
-                .doBatchUpdateVarargParams(
-                        "INSERT INTO commands ( com_type, com_original, com_extended ) " +
+                .doBatchUpdateVarargParams("INSERT INTO commands ( com_type, com_original, com_extended ) " +
                         "VALUES ( ?, ?, ? ) ", 
                         params(RUN_PROGRAM.name(), "netb", "dev/NetBeans_8.2"),
                         params(OPEN_LOCATION.name(), "netb", "NetBeans_projects"),
                         params(OPEN_LOCATION.name(), "netbea-proj", "NetBeans_projects"),
                         params(OPEN_LOCATION.name(), "netb-proj", "NetBeans_projects"),
-                        params(OPEN_PATH.name(), "proj/netb", "Projects/NetBeans"),
-                        params(OPEN_PATH.name(), "proje/netbea", "Projects/NetBeans"),
-                        params(OPEN_PATH.name(), "projects/netb", "Projects/NetBeans"),
-                        params(OPEN_PATH.name(), "proj/beans", "Projects/NetBeans"),
+                        params(OPEN_LOCATION_TARGET.name(), "proj/netb", "Projects/NetBeans"),
+                        params(OPEN_LOCATION_TARGET.name(), "proje/netbea", "Projects/NetBeans"),
+                        params(OPEN_LOCATION_TARGET.name(), "projects/netb", "Projects/NetBeans"),
+                        params(OPEN_LOCATION_TARGET.name(), "proj/beans", "Projects/NetBeans"),
                         params(OPEN_LOCATION.name(), "boo", "Books"),
-                        params(OPEN_PATH.name(), "boo/tolk", "Books/Common/Tolkien"),
+                        params(OPEN_LOCATION_TARGET.name(), "boo/tolk", "Books/Common/Tolkien"),
                         params(RUN_PROGRAM.name(), "tomc", "dev/Tomcat_8.5.5"),
                         params(CALL_BATCH.name(), "space", "Workspace"),
                         params(CALL_BATCH.name(), "sql", "mysql_server"),
                         params(RUN_PROGRAM.name(), "sql", "MySQL_5.7"),
                         params(SEE_WEBPAGE.name(), "fb", "Facebook"),
                         params(OPEN_LOCATION.name(), "java", "Java"),
-                        params(OPEN_PATH.name(), "space", "Space"),
+                        params(OPEN_LOCATION_TARGET.name(), "space", "Space"),
                         params(SEE_WEBPAGE.name(), "java", "Java SE 8 API"),
                         params(SEE_WEBPAGE.name(), "java-api", "Java SE 8 API"),
                         params(SEE_WEBPAGE.name(), "j-api", "Java SE 8 API"),

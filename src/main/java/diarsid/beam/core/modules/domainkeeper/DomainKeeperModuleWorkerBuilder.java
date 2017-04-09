@@ -70,6 +70,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         TasksKeeper tasksKeeper;
         WebPagesKeeper pagesKeeper;
         WebDirectoriesKeeper directoriesKeeper;
+        NotesKeeper notesKeeper;
         CommandsMemoryKeeper commandsMemoryKeeper;
         NamedEntitiesKeeper defaultKeeper;
         
@@ -108,13 +109,16 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 ioEngine, 
                 dialogHelper, 
                 webObjectsParser);
+        
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
                 this.dataModule.getDaoCommands(), 
                 ioEngine);
         defaultKeeper = new DefaultNamedEntitiesKeeper(
                 ioEngine, 
                 this.dataModule.getDaoNamedEntities());
-        
+        notesKeeper = new NotesKeeperWorker(
+                ioEngine,
+                this.appComponentsHolderModule.getNotesCatalog());
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
                 batchesKeeper, 
@@ -122,6 +126,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 tasksKeeper, 
                 pagesKeeper, 
                 directoriesKeeper, 
+                notesKeeper,
                 commandsMemoryKeeper, 
                 defaultKeeper);
     }

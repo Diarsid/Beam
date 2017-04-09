@@ -8,14 +8,14 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 
 
-public class RunProgramCommand extends InvocationEntityCommand {
+public class RunProgramCommand extends EntityInvocationCommand {
         
     public RunProgramCommand(String program) {
         super(program);

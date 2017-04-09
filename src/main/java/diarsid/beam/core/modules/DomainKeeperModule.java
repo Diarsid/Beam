@@ -6,11 +6,12 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 import diarsid.beam.core.modules.domainkeeper.NamedEntitiesKeeper;
+import diarsid.beam.core.modules.domainkeeper.NotesKeeper;
 import diarsid.beam.core.modules.domainkeeper.ProgramsKeeper;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
@@ -22,7 +23,7 @@ import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
  */
 public interface DomainKeeperModule extends StoppableBeamModule  {
     
-    NamedEntitiesKeeper entitiesOperatedBy(InvocationEntityCommand command);
+    NamedEntitiesKeeper entitiesOperatedBy(EntityInvocationCommand command);
     
     LocationsKeeper locations();
     
@@ -35,6 +36,8 @@ public interface DomainKeeperModule extends StoppableBeamModule  {
     WebPagesKeeper webPages();
     
     WebDirectoriesKeeper webDirectories();
+    
+    NotesKeeper notes();
     
     CommandsMemoryKeeper commandsMemory();
 }

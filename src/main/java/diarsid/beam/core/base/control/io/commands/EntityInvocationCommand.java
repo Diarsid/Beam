@@ -11,22 +11,22 @@ import java.util.Objects;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
 
-public abstract class InvocationEntityCommand implements ExtendableCommand {
+public abstract class EntityInvocationCommand implements ExtendableCommand {
     
     private final ExtendableArgument argument;
     private boolean isNew;
     private boolean isSuccessfull;
     
-    public InvocationEntityCommand(String argument) {
+    public EntityInvocationCommand(String argument) {
         this.argument = new ExtendableArgument(argument);
         this.isNew = true;
         this.isSuccessfull = false;
     }
     
-    public InvocationEntityCommand(String argument, String extendedArgument) {
+    public EntityInvocationCommand(String argument, String extendedArgument) {
         this.argument = new ExtendableArgument(argument, extendedArgument);
-        this.isNew = false;
-        this.isSuccessfull = false;
+        this.isNew = true;
+        this.isSuccessfull = true;
     }
     
     public abstract NamedEntityType subjectedEntityType();
@@ -63,7 +63,7 @@ public abstract class InvocationEntityCommand implements ExtendableCommand {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final InvocationEntityCommand other = ( InvocationEntityCommand ) obj;
+        final EntityInvocationCommand other = ( EntityInvocationCommand ) obj;
         if ( !Objects.equals(this.argument, other.argument) ) {
             return false;
         }
@@ -81,23 +81,27 @@ public abstract class InvocationEntityCommand implements ExtendableCommand {
     }
 
     @Override
-    public void setNew() {
+    public ExtendableCommand setNew() {
         this.isNew = true;
+        return this;
     }
 
     @Override
-    public void setStored() {
+    public ExtendableCommand setStored() {
         this.isNew = false;
+        return this;
     }
 
     @Override
-    public void setTargetFound() {
+    public ExtendableCommand setTargetFound() {
         this.isSuccessfull = true;
+        return this;
     }
     
     @Override
-    public void setTargetNotFound() {
+    public ExtendableCommand setTargetNotFound() {
         this.isSuccessfull = false;
+        return this;
     }
     
     @Override

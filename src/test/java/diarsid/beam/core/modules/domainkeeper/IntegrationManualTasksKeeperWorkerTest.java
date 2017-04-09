@@ -70,7 +70,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
             command = new ArgumentsCommand(CREATE_TASK, asList(input.split(" ")));
             flow = tasksKeeper.createTask(initiator, command);
             if ( flow.result().equals(FAIL)) {
-                System.out.println(asFail(flow).getReason());
+                System.out.println(asFail(flow).reason());
             } else {
                 System.out.println(flow.result().name());
             }            

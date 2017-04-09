@@ -11,5 +11,5 @@ package diarsid.beam.core.modules.control.cli.nativeconsole;
  */
 public interface InputReciever {
     
-    void submit(String commandLine);
+    void waitAndSubmit(String commandLine) throws InterruptedException ;
 }

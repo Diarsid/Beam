@@ -11,17 +11,17 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
-import diarsid.beam.core.base.control.io.commands.EmptyCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.os.listing.FileLister;
@@ -37,6 +37,11 @@ import diarsid.beam.core.modules.ExecutorModule;
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 
+import static diarsid.beam.core.base.control.flow.OperationResult.OK;
+import static diarsid.beam.core.base.control.flow.Operations.asFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.textToMessage;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
@@ -79,21 +84,30 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void saveCommandIfNecessary(
-            Initiator initiator, InvocationEntityCommand command) {
+            Initiator initiator, EntityInvocationCommand command) {
         if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
             this.domain.commandsMemory().save(initiator, command);
         }
     }
+    
+    private void saveCommandIfNecessary(
+            Initiator initiator, Optional<EntityInvocationCommand> command) {
+        if ( command.isPresent() && 
+                command.get().wasNotUsedBefore() && 
+                command.get().isTargetFound() ) {
+            this.domain.commandsMemory().save(initiator, command.get());
+        }
+    }
 
     private void deleteCommandIfNecessary(
-            Initiator initiator, InvocationEntityCommand command) {
+            Initiator initiator, EntityInvocationCommand command) {
         if ( command.wasUsedBeforeAndStored() && command.isTargetNotFound() ) {
             this.domain.commandsMemory().remove(initiator, command);
         }
     }
     
     private Optional<? extends NamedEntity> findNamedEntity(
-            Initiator initiator, InvocationEntityCommand command) {
+            Initiator initiator, EntityInvocationCommand command) {
         this.domain.commandsMemory().tryToExtendCommand(initiator, command);
         if ( command.argument().hasExtended() ) {
             Optional<? extends NamedEntity> entity = this.domain
@@ -111,7 +125,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private Optional<? extends NamedEntity> findNamedEntityByNamePattern(
-            Initiator initiator, InvocationEntityCommand command) {
+            Initiator initiator, EntityInvocationCommand command) {
         command.setNew();
         Optional<? extends NamedEntity> entity = this.domain
                 .entitiesOperatedBy(command)
@@ -143,8 +157,8 @@ class ExecutorModuleWorker implements ExecutorModule {
                 this.openLocation(initiator, (OpenLocationCommand) command);
                 break dispatching;
             }
-            case OPEN_PATH : {
-                this.openPath(initiator, (OpenPathCommand) command);
+            case OPEN_LOCATION_TARGET : {
+                this.openLocationTarget(initiator, (OpenLocationTargetCommand) command);
                 break dispatching;
             }
             case SEE_WEBPAGE : {
@@ -225,7 +239,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void reportEntityNotFound(
-            Initiator initiator, InvocationEntityCommand command) {
+            Initiator initiator, EntityInvocationCommand command) {
         this.ioEngine.report(
                 initiator,
                 format("cannot find %s by name '%s'", 
@@ -234,10 +248,8 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     @Override
-    public void openPath(Initiator initiator, OpenPathCommand command) {
-        //this.domain.commandsMemory().tryToExtendCommand(initiator, command);
-        // TODO
-        // rethink OpenPathCommand entity.
+    public void openLocationTarget(Initiator initiator, OpenLocationTargetCommand command) {
+        
     }
 
     @Override
@@ -252,7 +264,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private void doWhenNotFound(Initiator initiator, InvocationEntityCommand command) {
+    private void doWhenNotFound(Initiator initiator, EntityInvocationCommand command) {
         this.reportEntityNotFound(initiator, command);
         this.deleteCommandIfNecessary(initiator, command);
     }
@@ -281,17 +293,33 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private CallbackEvent doOnFail(Initiator initiator, InvocationEntityCommand command) {
+    private CallbackEvent doOnFail(Initiator initiator, EntityInvocationCommand command) {
         return (fail) -> {
             this.ioEngine.report(initiator, fail);
             this.deleteCommandIfNecessary(initiator, command);
         };
     }
+    
+    private CallbackEvent doOnFail(Initiator initiator) {
+        return (fail) -> {
+            this.ioEngine.report(initiator, fail);
+        };
+    }
 
-    private CallbackEvent doOnSuccess(Initiator initiator, InvocationEntityCommand command) {
+    private CallbackEvent doOnSuccess(Initiator initiator, EntityInvocationCommand command) {
         return (sucess) -> {
             this.ioEngine.report(initiator, sucess);
             this.saveCommandIfNecessary(initiator, command);
+        };
+    }
+    
+    private CallbackEvent doOnSuccess(
+            Initiator initiator, Optional<EntityInvocationCommand> command) {
+        return (sucess) -> {
+            this.ioEngine.report(initiator, sucess);
+            if ( command.isPresent() ) {
+                this.saveCommandIfNecessary(initiator, command.get());                
+            }
         };
     }
 
@@ -303,64 +331,89 @@ class ExecutorModuleWorker implements ExecutorModule {
         if ( savedCommand.isPresent() && savedCommand.get().type().isNot(EXECUTOR_DEFAULT) ) {
             this.dispatchCommandInternally(initiator, savedCommand.get());
         } else {
-            this.tryToFindAndInvokeAnyNamedEntity(initiator, command);
+            VoidOperation operation = this.findAndInvokeAnyNamedEntity(initiator, command);
+            switch ( operation.result() ) {
+                case OK : {
+                    // entity was found and invoked normally.
+                    return;
+                }    
+                case STOP : {
+                    // entity was not found, need to proceed.
+                    Optional<ExtendableCommand> mergedCommand = 
+                            this.findSimilarCommandByPatternAndMergeWithOriginal(initiator, command);
+                    if ( mergedCommand.isPresent() ) {
+                        this.dispatchCommandInternally(initiator, mergedCommand.get());
+                    }
+                    return;
+                }    
+                case FAIL : {
+                    // entity was found, but could not be processed due to some reason
+                    this.ioEngine.report(initiator, asFail(operation).reason());
+                    this.deleteCommandIfNecessary(initiator, command);
+                    return;
+                }    
+                default : {
+                    this.ioEngine.report(initiator, "...unknown operation result.");
+                }    
+            }
         }        
     }
 
-    public void tryToFindAndInvokeAnyNamedEntity(Initiator initiator, ExecutorDefaultCommand command) {
+    private VoidOperation findAndInvokeAnyNamedEntity(
+            Initiator initiator, ExecutorDefaultCommand command) {
         Optional<? extends NamedEntity> entity = this.findNamedEntity(initiator, command);
         if ( entity.isPresent() && entity.get().type().isDefined() ) {
             invocation: switch ( entity.get().type() ) {
                 case LOCATION : {
                     asLocation(entity).openAsync(
-                            this.doOnSuccess(initiator, command), 
-                            this.doOnFail(initiator, command));
-                    break invocation;
+                            this.doOnSuccess(initiator, command.mergeWithEntity(entity)), 
+                            this.doOnFail(initiator));
+                    return voidCompleted();
                 }
                 case WEBPAGE : {
                     asWebPage(entity).browseAsync(
-                            this.doOnSuccess(initiator, command), 
-                            this.doOnFail(initiator, command));
-                    break invocation;
+                            this.doOnSuccess(initiator, command.mergeWithEntity(entity)), 
+                            this.doOnFail(initiator));
+                    return voidCompleted();
                 }
                 case PROGRAM : {
                     asProgram(entity).runAsync(
-                            this.doOnSuccess(initiator, command), 
-                            this.doOnFail(initiator, command));
-                    break invocation;
+                            this.doOnSuccess(initiator, command.mergeWithEntity(entity)), 
+                            this.doOnFail(initiator));
+                    return voidCompleted();
                 }
                 case BATCH : {
                     this.ioEngine.report(initiator, "...executing " + entity.get().name());
                     this.executeBatchInternally(initiator, asBatch(entity));
-                    this.saveCommandIfNecessary(initiator, command);
-                    break invocation;
+                    this.saveCommandIfNecessary(initiator, command.mergeWithEntity(entity));
+                    return voidCompleted();
                 }
-                case UNDEFINED_ENTITY :
+                case UNDEFINED_ENTITY : {
+                    return voidOperationFail(
+                            format("...type of '%s' is not defined.", entity.get().name()));
+                }
                 default : {
-                    // do nothing, just return
+                    return voidOperationFail(
+                            format("...cannot do anything with %s '%s'", 
+                                    entity.get().type().displayName(), 
+                                    entity.get().name()));
                 }
             }
         } else {
-            this.ioEngine.report(
-                    initiator, 
-                    format("...cannot find anything named '%s'", command.argument().get()));
-            this.deleteCommandIfNecessary(initiator, command);
+            return voidOperationStopped();
         }
     }
-
-    @Override
-    public void openNotes(Initiator initiator, EmptyCommand command) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void openTargetInNotes(Initiator initiator, ArgumentsCommand command) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void openPathInNotes(Initiator initiator, ArgumentsCommand command) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    
+    private Optional<ExtendableCommand> findSimilarCommandByPatternAndMergeWithOriginal(
+            Initiator initiator, ExecutorDefaultCommand command) {
+        Optional<ExtendableCommand> storedCommand = this.domain
+                .commandsMemory()
+                .findStoredCommandByPatternOfAnyType(initiator, command.originalArgument());
+        if ( storedCommand.isPresent() && storedCommand.get().type().isNot(EXECUTOR_DEFAULT) ) {
+            return command.mergeWithCommand(storedCommand);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -428,6 +481,5 @@ class ExecutorModuleWorker implements ExecutorModule {
                     initiator, 
                     format("unknown case, '%s' is not path", path));
         }
-    }
-    
+    }    
 }

@@ -8,6 +8,7 @@ package diarsid.beam.core.application.systemconsole;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -19,6 +20,8 @@ import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.util.StringHolder;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariant;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -26,6 +29,7 @@ import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
+import static diarsid.beam.core.base.control.io.base.interaction.Answer.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
@@ -41,13 +45,13 @@ import static diarsid.beam.core.base.util.StringUtils.normalize;
  *
  * @author Diarsid
  */
-public class ConsoleController implements OuterIoEngine {
+public class ConsoleController implements OuterIoEngine {  // + Runnable
     
-    private static RemoteCoreAccessEndpoint remoteAccess;
+    private static RemoteCoreAccessEndpoint remoteAccess;  // need to be more abstract, save remote-in-static in another place
         
-    private final ConsolePrinter printer;
-    private final ConsoleReader reader;     
-    private final AtomicBoolean isInDialogMode;
+    private final ConsolePrinter printer;         //  
+    private final ConsoleReader reader;           //  move to AbstractConsoleEnginge 
+    private final AtomicBoolean isInDialogMode;   // 
     private final AtomicBoolean isWorking;
     private Initiator initiator;        
     
@@ -62,18 +66,20 @@ public class ConsoleController implements OuterIoEngine {
         remoteAccess = access;
     }
     
+    // @Override
+    // ..... run() {
     private void startConsoleRunner() {
         if ( isNull(this.initiator) ) {
             throw new StartupFailedException(
                     "Attempt to start console while initiator has not been set.");
         }
-        asyncDoIndependently(() -> {
+        asyncDoIndependently(() -> {   // move to upper abstraction layer due to this is Runnable.
             StringHolder command = new StringHolder();   
             try {
                 while ( this.isWorking.get() ) {
                     this.printer.printReadyForNewCommandLine();
                     command.set(this.reader.readLine()); 
-                    this.isInDialogMode.set(true);
+                    this.isInDialogMode.set(true);   // -> .interactionBegins();
                     if ( command.isNotEmpty() ) {
                         awaitDo(() -> {
                             try {
@@ -83,7 +89,7 @@ public class ConsoleController implements OuterIoEngine {
                             }
                         });                        
                     }                    
-                    this.isInDialogMode.set(false);
+                    this.isInDialogMode.set(false);  // -> .interactionEnds();
                 }
             } catch (IOException ex) {
                 logError(this.getClass(), ex);
@@ -92,13 +98,13 @@ public class ConsoleController implements OuterIoEngine {
     }
     
     @Override
-    public Choice resolveYesOrNo(String yesOrNoQuestion) throws IOException {
+    public Choice resolve(String yesOrNoQuestion) throws IOException {
         this.printer.printYesNoQuestion(yesOrNoQuestion);
         return choiceOfPattern(this.reader.readLine());
     }
 
     @Override
-    public Answer resolveQuestion(Question question) throws IOException {
+    public Answer resolve(Question question) throws IOException {
         this.printer.printQuestionAndVariants(question);
         return this.askForAnswer(question);
     }
@@ -134,6 +140,40 @@ public class ConsoleController implements OuterIoEngine {
         }
         return answer;
     }
+
+    @Override
+    public Answer resolve(String question, WeightedVariants variants) throws IOException {
+        String line;
+        Answer answer = noAnswerFromVariants();
+        Choice choice;
+        variantsChoosing: while ( variants.hasNext() ) {            
+            if ( variants.isCurrentMuchBetterThanNext() ) {
+                this.printer.printYesNoQuestion(variants.current().text());
+                choice = choiceOfPattern(this.reader.readLine());
+                switch ( choice ) {
+                    case POSTIVE : {
+                        return answerOfVariant(variants.current());
+                    }
+                    case NEGATIVE : {
+                        variants.toNext();
+                        continue variantsChoosing;
+                    }
+                    case REJECT : 
+                    case NOT_MADE : {
+                        return noAnswerFromVariants();
+                    }    
+                    default : {
+                        variants.toNext();
+                        continue variantsChoosing;
+                    }
+                }
+            } else {
+                List<WeightedVariant> similarVariants = variants.allNextSimilar();
+                this.printer.printInDialogWeightedVariants(similarVariants);
+                line = this.reader.readLine();
+            }
+        }
+    }
     
     @Override
     public String askForInput(String inputRequest) throws IOException {        
@@ -157,7 +197,7 @@ public class ConsoleController implements OuterIoEngine {
 
     @Override
     public void report(String report) throws IOException {        
-        if ( this.isInDialogMode.get() ) {
+        if ( this.isInDialogMode.get() ) {   // move inDialog logic to AbstractConsoleEngine
             this.printer.printInDialogReportLine(report);
         } else {
             this.printer.printNonDialogReportLine(report);
@@ -165,7 +205,7 @@ public class ConsoleController implements OuterIoEngine {
     }
 
     @Override
-    public void reportMessage(Message message) throws IOException {
+    public void report(Message message) throws IOException {
         if ( this.isInDialogMode.get() ) {
             this.printer.printInDialogMultilineReport(message);
         } else {
@@ -177,18 +217,18 @@ public class ConsoleController implements OuterIoEngine {
     public void close() throws IOException {
         this.isWorking.set(false);
         this.printer.printInDialogReportLine("closing...");
-        exitSystemConsole();
+        exitSystemConsole();  // move to AbstractConsoleEngine
     }
 
     @Override
-    public void acceptInitiator(Initiator initiator) throws IOException {
+    public void accept(Initiator initiator) throws IOException {
         this.initiator = initiator;
-        getPassport().setInitiatorId(initiator.identity());
-        this.startConsoleRunner();
+        getPassport().setInitiatorId(initiator.identity());   // move to another abstraction layer
+        this.startConsoleRunner();  // invert console controller startup flow to higher abstraction layer
     }
 
     @Override
     public String getName() {
-        return getPassport().getName();
+        return getPassport().getName();   // move to another abstraction layer
     }
 }

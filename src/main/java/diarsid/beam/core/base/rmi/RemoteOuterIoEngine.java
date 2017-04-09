@@ -8,12 +8,13 @@ package diarsid.beam.core.base.rmi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 /**
  *
@@ -28,19 +29,22 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     String askForInput(String inputRequest) throws RemoteException;
     
     @Override
-    Choice resolveYesOrNo(String yesOrNoQuestion) throws RemoteException;
+    Choice resolve(String yesOrNoQuestion) throws RemoteException;
     
     @Override
-    Answer resolveQuestion(Question question) throws RemoteException;
+    Answer resolve(Question question) throws RemoteException;
+    
+    @Override
+    Answer resolve(String question, WeightedVariants variants) throws RemoteException;
     
     @Override
     void report(String string) throws RemoteException;
     
     @Override
-    void reportMessage(Message message) throws RemoteException;
+    void report(Message message) throws RemoteException;
     
     @Override
-    void acceptInitiator(Initiator initiator) throws RemoteException;
+    void accept(Initiator initiator) throws RemoteException;
     
     @Override
     String getName() throws RemoteException;

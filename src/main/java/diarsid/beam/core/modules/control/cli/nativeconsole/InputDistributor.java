@@ -11,5 +11,7 @@ package diarsid.beam.core.modules.control.cli.nativeconsole;
  */
 public interface InputDistributor {
     
-    void consoleIsWaitingForAnswer();
+    void interactionBegins();
+    
+    void interactionEnds();
 }

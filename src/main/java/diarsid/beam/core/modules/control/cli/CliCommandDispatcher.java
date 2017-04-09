@@ -13,7 +13,7 @@ import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
@@ -50,18 +50,18 @@ class CliCommandDispatcher implements CommandDispatcher {
         try {
             switch ( command.type() ) {
                 case OPEN_LOCATION: {
-                    this.executorModule.openLocation(
-                            initiator, (OpenLocationCommand) command);
+                    this.executorModule
+                            .openLocation(initiator, (OpenLocationCommand) command);
                     break;
                 }    
-                case OPEN_PATH: {
-                    this.executorModule.openPath(
-                            initiator, (OpenPathCommand) command);
+                case OPEN_LOCATION_TARGET: {
+                    this.executorModule
+                            .openLocationTarget(initiator, (OpenLocationTargetCommand) command);
                     break;
                 }    
                 case RUN_PROGRAM : {
-                    this.executorModule.runProgram(
-                            initiator, (RunProgramCommand) command);
+                    this.executorModule
+                            .runProgram(initiator, (RunProgramCommand) command);
                     break;
                 }
                 case BATCH_PAUSE : {
@@ -71,33 +71,36 @@ class CliCommandDispatcher implements CommandDispatcher {
                     break; 
                 }    
                 case CALL_BATCH : {
-                    this.executorModule.callBatch(
-                            initiator, (CallBatchCommand) command);
+                    this.executorModule
+                            .callBatch(initiator, (CallBatchCommand) command);
                     break;
                 }    
                 case SEE_WEBPAGE : {
-                    this.executorModule.browsePage(
-                            initiator, (SeePageCommand) command);
+                    this.executorModule
+                            .browsePage(initiator, (SeePageCommand) command);
                     break;
                 }    
                 case EXECUTOR_DEFAULT : {
-                    this.executorModule.executeDefault(
-                            initiator, (ExecutorDefaultCommand) command);
+                    this.executorModule
+                            .executeDefault(initiator, (ExecutorDefaultCommand) command);
                     break;
                 }    
                 case OPEN_NOTES : {
-                    this.executorModule.openNotes(
-                            initiator, (EmptyCommand) command);
+                    this.domainModuleAdapter
+                            .notesAdaper()
+                            .openNotesAndReport(initiator, (EmptyCommand) command);
                     break;
                 }    
                 case OPEN_TARGET_IN_NOTE : {
-                    this.executorModule.openTargetInNotes(
-                            initiator, (ArgumentsCommand) command);
+                    this.domainModuleAdapter
+                            .notesAdaper()
+                            .openTargetInNotesAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case OPEN_PATH_IN_NOTE : {
-                    this.executorModule.openPathInNotes(
-                            initiator, (ArgumentsCommand) command);
+                    this.domainModuleAdapter
+                            .notesAdaper()
+                            .openPathInNotesAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case DELETE_MEM : {
@@ -105,167 +108,128 @@ class CliCommandDispatcher implements CommandDispatcher {
                 }    
                 case DELETE_PAGE : {
                     this.domainModuleAdapter
-                            .getWebPagesAdapter()
-                            .deleteWebPageAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webPagesAdapter()
+                            .deleteWebPageAndReport(initiator, (ArgumentsCommand) command);
                     break;                    
                 }
                 case CREATE_PAGE : {
                     this.domainModuleAdapter
-                            .getWebPagesAdapter()
-                            .createWebPageAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webPagesAdapter()
+                            .createWebPageAndReport(initiator, (ArgumentsCommand) command);
                     break;                    
                 }
                 case EDIT_PAGE : {
                     this.domainModuleAdapter
-                            .getWebPagesAdapter()
-                            .editWebPageAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webPagesAdapter()
+                            .editWebPageAndReport(initiator, (ArgumentsCommand) command);
                     break;                    
                 }
                 case DELETE_WEB_DIR : {
                     this.domainModuleAdapter
-                            .getWebDirectoriesAdapter()
-                            .removeWebDirectoryAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webDirectoriesAdapter()
+                            .removeWebDirectoryAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case CREATE_WEB_DIR : {
                     this.domainModuleAdapter
-                            .getWebDirectoriesAdapter()
-                            .createWebDirectoryAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webDirectoriesAdapter()
+                            .createWebDirectoryAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case EDIT_WEB_DIR : {
                     this.domainModuleAdapter
-                            .getWebDirectoriesAdapter()
-                            .editWebDirectoryAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webDirectoriesAdapter()
+                            .editWebDirectoryAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case DELETE_LOCATION : {
                     this.domainModuleAdapter
-                            .getLocationsAdapter()
-                            .removeLocationAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .locationsAdapter()
+                            .removeLocationAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
                 case CREATE_LOCATION : {
                     this.domainModuleAdapter
-                            .getLocationsAdapter()
-                            .createLocationAndReport(initiator, 
-                                    (ArgumentsCommand) command);
+                            .locationsAdapter()
+                            .createLocationAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 } case EDIT_LOCATION : {
                     this.domainModuleAdapter
-                            .getLocationsAdapter()
-                            .editLocationAndReport(initiator, 
-                                    (ArgumentsCommand) command);
+                            .locationsAdapter()
+                            .editLocationAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
                 case DELETE_TASK : {
                     this.domainModuleAdapter
-                            .getTasksAdapter()
-                            .removeTaskAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .tasksAdapter()
+                            .removeTaskAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
                 case CREATE_TASK : {
                     this.domainModuleAdapter
-                            .getTasksAdapter()
-                            .createTaskAndReport(initiator, 
-                                    (ArgumentsCommand) command);
+                            .tasksAdapter()
+                            .createTaskAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
                 case EDIT_TASK : {
                     this.domainModuleAdapter
-                            .getTasksAdapter()
-                            .editTaskAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .tasksAdapter()
+                            .editTaskAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
                 case DELETE_BATCH : {
                     this.domainModuleAdapter
-                            .getBatchesAdapter()
-                            .removeBatchAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .batchesAdapter()
+                            .removeBatchAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case CREATE_BATCH : {
                     this.domainModuleAdapter
-                            .getBatchesAdapter()
-                            .createBatchAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .batchesAdapter()
+                            .createBatchAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case EDIT_BATCH : {
                     this.domainModuleAdapter
-                            .getBatchesAdapter()
-                            .editBatchAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .batchesAdapter()
+                            .editBatchAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case LIST_LOCATION : {
-                    this.executorModule.listLocation(
-                            initiator, (ArgumentsCommand) command);
+                    this.executorModule.listLocation(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case LIST_PATH : {
-                    this.executorModule.listPath(
-                            initiator, (ArgumentsCommand) command);
+                    this.executorModule.listPath(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case FIND_LOCATION : {
                     this.domainModuleAdapter
-                            .getLocationsAdapter()
-                            .findLocationAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .locationsAdapter()
+                            .findLocationAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }
                 case FIND_PROGRAM : {
                     this.domainModuleAdapter
-                            .getProgramsAdapter()
-                            .findProgramAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .programsAdapter()
+                            .findProgramAndReport(initiator, (ArgumentsCommand) command);
                 }
                 case FIND_TASK : {
                     this.domainModuleAdapter
-                            .getTasksAdapter()
-                            .findTasksAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .tasksAdapter()
+                            .findTasksAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
                 case FIND_PAGE : {
                     this.domainModuleAdapter
-                            .getWebPagesAdapter()
-                            .findWebPageAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webPagesAdapter()
+                            .findWebPageAndReport(initiator, (ArgumentsCommand) command);
                     break;                    
                 }
                 case FIND_WEBDIRECTORY : {
                     this.domainModuleAdapter
-                            .getWebDirectoriesAdapter()
-                            .findWebDirectoryAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .webDirectoriesAdapter()
+                            .findWebDirectoryAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case FIND_MEM : {
@@ -273,10 +237,8 @@ class CliCommandDispatcher implements CommandDispatcher {
                 }    
                 case FIND_BATCH : {
                     this.domainModuleAdapter
-                            .getBatchesAdapter()
-                            .findBatchAndReport(
-                                    initiator, 
-                                    (ArgumentsCommand) command);
+                            .batchesAdapter()
+                            .findBatchAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case EXIT : {

@@ -12,8 +12,8 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.modules.data.DaoCommands;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -35,7 +35,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
 
     @Override
-    public void tryToExtendCommand(Initiator initiator, InvocationEntityCommand command) {
+    public void tryToExtendCommand(Initiator initiator, EntityInvocationCommand command) {
         Optional<ExtendableCommand> exactMatch = this.extendingByExactMatch(initiator, command);
         if ( exactMatch.isPresent() ) {
             command.setStored();
@@ -47,14 +47,14 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }   
 
     public Optional<ExtendableCommand> extendingByExactMatch(
-            Initiator initiator, InvocationEntityCommand command) {
+            Initiator initiator, EntityInvocationCommand command) {
         Optional<ExtendableCommand> exactMatch = 
                 this.daoCommands.getByExactOriginalAndType(
                         initiator, command.argument().original(), command.type());
         return exactMatch;
     }    
     
-    private void extendingByPattern(Initiator initiator, InvocationEntityCommand command) {
+    private void extendingByPattern(Initiator initiator, EntityInvocationCommand command) {
         List<ExtendableCommand> foundInOriginal = 
                 this.daoCommands.searchInOriginalByPatternAndType(
                         initiator, command.argument().original(), command.type());
@@ -73,7 +73,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     private void chooseOneCommandAndUseAsExtension(
             Initiator initiator, 
             List<ExtendableCommand> foundCommands, 
-            InvocationEntityCommand command) {
+            EntityInvocationCommand command) {
         if ( hasOne(foundCommands) ) {
             command.argument().setExtended(getOne(foundCommands).extendedArgument());
         } else {
@@ -96,7 +96,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
 
     @Override
-    public void tryToExtendCommand(Initiator initiator, OpenPathCommand command) {
+    public void tryToExtendCommand(Initiator initiator, OpenLocationTargetCommand command) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -118,13 +118,19 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     
     private Optional<ExtendableCommand> chooseOneCommand(
             Initiator initiator, 
-            InvocationEntityCommand command, 
+            EntityInvocationCommand command, 
             List<ExtendableCommand> commands) {
         
     }
 
     private Optional<ExtendableCommand> chooseOneCommand(
             Initiator initiator, String original, List<ExtendableCommand> commands) {
+        
+    }
+    
+    @Override
+    public Optional<ExtendableCommand> findStoredCommandByPatternOfAnyType(
+            Initiator initiator, String pattern) {
         
     }
 }

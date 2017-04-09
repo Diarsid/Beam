@@ -50,7 +50,7 @@ abstract class AbstractCliAdapter {
                 break;
             }         
             case FAIL : {
-                this.ioEngine.report(initiator, asFail(flow).getReason());
+                this.ioEngine.report(initiator, asFail(flow).reason());
                 break;
             }         
             case STOP : {
@@ -79,7 +79,7 @@ abstract class AbstractCliAdapter {
                 break;
             }         
             case FAIL : {
-                this.ioEngine.report(initiator, asFail(flow).getReason());
+                this.ioEngine.report(initiator, asFail(flow).reason());
                 break;
             }         
             case STOP : {

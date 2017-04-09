@@ -102,7 +102,7 @@ public class Operations {
     public static FailedVoidOperation voidOperationFail(String failMessage) {
         return new FailedVoidOperation() {
             @Override
-            public String getReason() {
+            public String reason() {
                 return failMessage;
             }
 
@@ -116,7 +116,7 @@ public class Operations {
     public static FailedValueOperation valueOperationFail(String failMessage) {
         return new FailedValueOperation() {
             @Override
-            public String getReason() {
+            public String reason() {
                 return failMessage;
             }
 

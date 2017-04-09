@@ -11,7 +11,7 @@ import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenPathCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.ArgumentsRecognizer;
@@ -81,15 +81,11 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return new InputCorrectnessRecognizer().branchesTo(
-                new OneArgRecognizer().priority(HIGH).branchesTo(
-                        new PrefixRecognizer(
+        return new InputCorrectnessRecognizer().branchesTo(new OneArgRecognizer().priority(HIGH).branchesTo(new PrefixRecognizer(
                                 "/", 
-                                "l/").branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
+                                "l/").branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new OpenLocationCommand(input.currentArg())),
-                                        new RelativePathRecognizer().pointsTo(
-                                                input -> new OpenPathCommand(input.currentArg()))
+                                        new RelativePathRecognizer().pointsTo(input -> new OpenLocationTargetCommand(input.currentArg()))
                         ),
                         new PrefixRecognizer(
                                 "w/", 
@@ -122,11 +118,9 @@ public class Interpreter {
                                         input -> new EmptyCommand(OPEN_NOTES)),
                         new DomainWordRecognizer().priority(LOWEST).pointsTo(
                                 input -> new ExecutorDefaultCommand(input.currentArg())), 
-                        new RelativePathRecognizer().priority(LOWER).pointsTo(
-                                input -> new OpenPathCommand(input.currentArg()))
+                        new RelativePathRecognizer().priority(LOWER).pointsTo(input -> new OpenLocationTargetCommand(input.currentArg()))
                 ),
-                new MultipleArgsRecognizer().branchesTo(
-                        new WordsRecognizer(
+                new MultipleArgsRecognizer().branchesTo(new WordsRecognizer(
                                 "see", 
                                 "www").priority(HIGH).pointsTo(
                                         new DomainWordRecognizer().pointsTo(
@@ -135,11 +129,9 @@ public class Interpreter {
                         new WordsRecognizer(
                                 "o", 
                                 "op", 
-                                "open").priority(HIGH).branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
+                                "open").priority(HIGH).branchesTo(new DomainWordRecognizer().pointsTo(
                                                 input -> new OpenLocationCommand(input.currentArg())),
-                                        new RelativePathRecognizer().pointsTo(
-                                                input -> new OpenPathCommand(input.currentArg()))
+                                        new RelativePathRecognizer().pointsTo(input -> new OpenLocationTargetCommand(input.currentArg()))
                         ),
                         new WordsRecognizer(
                                 "call", 

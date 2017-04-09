@@ -36,7 +36,7 @@ public class Question implements Serializable {
     
     private Question(String question, List<Variant> variants) {
         this.question = question;
-        this.variants = new ArrayList<>();
+        this.variants = variants;
     }
     
     public static Question question(String question) {
@@ -61,12 +61,12 @@ public class Question implements Serializable {
     public Question withAnswerStrings(List<String> variants) {
         AtomicInteger indexer = new AtomicInteger(0);
         this.variants.addAll(variants
-                        .stream()
-                        .map(variantString -> 
-                                new Variant(
-                                        variantString, 
-                                        indexer.getAndIncrement()))
-                        .collect(toList())
+                .stream()
+                .map(variantString -> 
+                        new Variant(
+                                variantString, 
+                                indexer.getAndIncrement()))
+                .collect(toList())
         );
         return this;
     }
@@ -74,11 +74,11 @@ public class Question implements Serializable {
     public Question withAnswerStrings(String... variants) {
         AtomicInteger indexer = new AtomicInteger(0);
         this.variants.addAll(stream(variants)
-                        .map(variantString -> 
-                                new Variant(
-                                        variantString, 
-                                        indexer.getAndIncrement()))
-                        .collect(toList()));
+                .map(variantString -> 
+                        new Variant(
+                                variantString, 
+                                indexer.getAndIncrement()))
+                .collect(toList()));
         return this;
     }
     
@@ -90,9 +90,9 @@ public class Question implements Serializable {
     public Question withAnswerEntities(List<? extends ConvertableToVariant> variants) {
         AtomicInteger indexer = new AtomicInteger(0);
         this.variants.addAll(variants
-                        .stream()
-                        .map(convertable -> convertable.toVariant(indexer.getAndIncrement()))
-                        .collect(toList())
+                .stream()
+                .map(convertable -> convertable.toVariant(indexer.getAndIncrement()))
+                .collect(toList())
         );
         return this;
     }

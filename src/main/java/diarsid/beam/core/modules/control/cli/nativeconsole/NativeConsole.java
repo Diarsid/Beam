@@ -7,19 +7,22 @@
 package diarsid.beam.core.modules.control.cli.nativeconsole;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 
 /**
  *
@@ -32,20 +35,26 @@ public class NativeConsole
     
     private final CommandLineProcessor cliProcessor;
     private Initiator initiator;
-    private final InputBlockingBuffer buffer;
+    private final InputManager inputManager;
     
-    public NativeConsole(CommandLineProcessor commandLineProcessor, InputBlockingBuffer buffer) {
+    public NativeConsole(CommandLineProcessor commandLineProcessor, InputManager buffer) {
         this.cliProcessor = commandLineProcessor;
-        this.buffer = buffer;
+        this.inputManager = buffer;
     }
     
     @Override
     public void run() {
         String commandLine;
         while ( true ) {
-            commandLine = this.buffer.waitForCommand();
-            if ( nonNull(this.initiator) ) {
-                this.cliProcessor.process(this.initiator, commandLine);
+            try {
+                commandLine = this.inputManager.waitForCommand();
+                this.inputManager.interactionBegins();
+                if ( nonNull(this.initiator) ) {
+                    this.cliProcessor.process(this.initiator, commandLine);
+                }
+                this.inputManager.interactionEnds();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NativeConsole.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -56,36 +65,46 @@ public class NativeConsole
     }
 
     @Override
-    public Choice resolveYesOrNo(String yesOrNoQuestion) {
-        this.buffer.consoleIsWaitingForAnswer();
+    public Choice resolve(String yesOrNoQuestion) {
         // ...
-        return CHOICE_NOT_MADE;
+        return NOT_MADE;
     }
 
     @Override
-    public Answer resolveQuestion(Question question) {
-        this.buffer.consoleIsWaitingForAnswer();
+    public Answer resolve(Question question) {
+        // show question
+        try {
+            String answer = inputManager.waitForResponse();
+        } catch (InterruptedException e) {
+            return noAnswerFromVariants();
+        }
+        // ...
+        return noAnswerFromVariants();
+    }
+
+    @Override
+    public Answer resolve(String question, WeightedVariants variants) throws IOException {
         // ...
         return noAnswerFromVariants();
     }
 
     @Override
     public void report(String string) {
-        // do nothing
+        // ...
     }
 
     @Override
-    public void reportMessage(Message message) {
-        // do nothing
+    public void report(Message message) {
+        // ...
     }
 
     @Override
     public void close() {
-        // do nothing
+        // ...
     }
 
     @Override
-    public void acceptInitiator(Initiator initiator) {
+    public void accept(Initiator initiator) {
         this.initiator = initiator;
     }
 

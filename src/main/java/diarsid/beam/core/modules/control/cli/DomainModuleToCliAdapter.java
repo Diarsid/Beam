@@ -21,6 +21,7 @@ public class DomainModuleToCliAdapter {
     private final CliAdapterForTasksKeeper tasksKeeperAdapter;
     private final CliAdapterForWebDirectoriesKeeper webDirectoriesKeeperAdapter;
     private final CliAdapterForWebPagesKeeper webPagesKeeperAdapter;
+    private final CliAdapterForNotesKeeper notesKeeperAdapter;
     
     public DomainModuleToCliAdapter(
             DomainKeeperModule domainModule, InnerIoEngine ioEngine) {
@@ -42,30 +43,36 @@ public class DomainModuleToCliAdapter {
         this.webPagesKeeperAdapter = 
                 new CliAdapterForWebPagesKeeper(
                         domainModule.webPages(), ioEngine);
-        
+        this.notesKeeperAdapter = 
+                new CliAdapterForNotesKeeper(
+                        domainModule.notes(), ioEngine);
     }
     
-    CliAdapterForLocationsKeeper getLocationsAdapter() {
+    CliAdapterForLocationsKeeper locationsAdapter() {
         return this.locationsKeeperAdapter;
     }
     
-    CliAdapterForBatchesKeeper getBatchesAdapter() {
+    CliAdapterForBatchesKeeper batchesAdapter() {
         return this.batchesKeeperAdapter;
     }
     
-    CliAdapterForProgramsKeeper getProgramsAdapter() {
+    CliAdapterForProgramsKeeper programsAdapter() {
         return this.programsKeeperAdapter;
     }
     
-    CliAdapterForTasksKeeper getTasksAdapter() {
+    CliAdapterForTasksKeeper tasksAdapter() {
         return this.tasksKeeperAdapter;
     }
     
-    CliAdapterForWebDirectoriesKeeper getWebDirectoriesAdapter() {
+    CliAdapterForWebDirectoriesKeeper webDirectoriesAdapter() {
         return this.webDirectoriesKeeperAdapter;
     }
     
-    CliAdapterForWebPagesKeeper getWebPagesAdapter() {
+    CliAdapterForWebPagesKeeper webPagesAdapter() {
         return this.webPagesKeeperAdapter;
+    }
+    
+    CliAdapterForNotesKeeper notesAdaper() {
+        return this.notesKeeperAdapter;
     }
 }

@@ -10,7 +10,9 @@ package diarsid.beam.core.modules.control.cli.nativeconsole;
  *
  * @author Diarsid
  */
-interface InputEmitter {
+interface InputSource {
     
-    String waitForCommand();
+    String waitForCommand() throws InterruptedException;
+    
+    String waitForResponse() throws InterruptedException;
 }

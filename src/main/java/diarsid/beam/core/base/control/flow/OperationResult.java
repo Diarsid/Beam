@@ -12,5 +12,13 @@ package diarsid.beam.core.base.control.flow;
 public enum OperationResult {
     OK,
     FAIL,
-    STOP
+    STOP;
+    
+    public boolean is(OperationResult result) {
+        return this.equals(result);
+    }
+    
+    public boolean isNot(OperationResult result) {
+        return ! this.equals(result);
+    }
 }

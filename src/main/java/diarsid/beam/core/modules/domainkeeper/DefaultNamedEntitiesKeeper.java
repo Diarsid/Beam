@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.InvocationEntityCommand;
+import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
@@ -45,7 +45,7 @@ class DefaultNamedEntitiesKeeper implements NamedEntitiesKeeper {
     }
 
     @Override
-    public boolean isSubjectedTo(InvocationEntityCommand command) {
+    public boolean isSubjectedTo(EntityInvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
     }
 

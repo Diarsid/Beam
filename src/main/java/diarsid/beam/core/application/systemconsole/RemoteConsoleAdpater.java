@@ -9,17 +9,18 @@ package diarsid.beam.core.application.systemconsole;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
+import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 
 /**
  *
@@ -55,20 +56,31 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
     
     @Override
-    public Choice resolveYesOrNo(String yesOrNoQuestion) throws RemoteException {
+    public Choice resolve(String yesOrNoQuestion) throws RemoteException {
         try {
-            return this.console.resolveYesOrNo(yesOrNoQuestion);
+            return this.console.resolve(yesOrNoQuestion);
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();
-            return CHOICE_NOT_MADE;
+            return NOT_MADE;
         }
     }
 
     @Override
-    public Answer resolveQuestion(Question question) throws RemoteException {
+    public Answer resolve(Question question) throws RemoteException {
         try {
-            return this.console.resolveQuestion(question);
+            return this.console.resolve(question);
+        } catch (IOException e) {
+            logError(this.getClass(), e);
+            exitSystemConsole();
+            return noAnswerFromVariants();
+        }
+    }
+
+    @Override
+    public Answer resolve(String question, WeightedVariants variants) throws RemoteException {
+        try {
+            return this.console.resolve(question, variants);
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();
@@ -87,9 +99,9 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public void reportMessage(Message message) throws RemoteException {
+    public void report(Message message) throws RemoteException {
         try {
-            this.console.reportMessage(message);
+            this.console.report(message);
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();
@@ -97,9 +109,9 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public void acceptInitiator(Initiator initiator) throws RemoteException {
+    public void accept(Initiator initiator) throws RemoteException {
         try {
-            this.console.acceptInitiator(initiator);
+            this.console.accept(initiator);
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();

@@ -11,7 +11,6 @@ import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
@@ -19,10 +18,11 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
-import static diarsid.beam.core.base.control.io.base.interaction.Choice.CHOICE_NOT_MADE;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
@@ -56,15 +56,15 @@ public class MainInnerIoEngine
                 try {
                     return this.ioEnginesHolder
                             .getEngine(initiator)
-                            .resolveYesOrNo(yesOrNoQuestion);
+                            .resolve(yesOrNoQuestion);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
-                    return CHOICE_NOT_MADE;
+                    return NOT_MADE;
                 }
-            }).orElse(CHOICE_NOT_MADE);            
+            }).orElse(NOT_MADE);            
         } else {
-            return CHOICE_NOT_MADE;
+            return NOT_MADE;
         }
     }
 
@@ -75,7 +75,7 @@ public class MainInnerIoEngine
                 try {
                     return this.ioEnginesHolder
                             .getEngine(initiator)
-                            .resolveQuestion(question);
+                            .resolve(question);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
@@ -85,6 +85,25 @@ public class MainInnerIoEngine
         } else {
             return noAnswerFromVariants();
         }        
+    }
+
+    @Override
+    public Answer ask(Initiator initiator, String question, WeightedVariants variants) {
+        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+            return awaitGet(() -> {
+                try {
+                    return this.ioEnginesHolder
+                            .getEngine(initiator)
+                            .resolve(question, variants);
+                } catch (IOException ex) {
+                    logError(this.getClass(), ex);
+                    this.ioEnginesHolder.deleteEngine(initiator);
+                    return noAnswerFromVariants();
+                }
+            }).orElse(noAnswerFromVariants());      
+        } else {
+            return noAnswerFromVariants();
+        }  
     }
     
     @Override
@@ -144,10 +163,11 @@ public class MainInnerIoEngine
     @Override
     public void reportMessage(Initiator initiator, Message message) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
-            OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
             awaitDo(() -> {
                 try {
-                    ioEngine.reportMessage(message);
+                    this.ioEnginesHolder
+                            .getEngine(initiator)
+                            .report(message);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
@@ -165,7 +185,7 @@ public class MainInnerIoEngine
                 .forEach(ioEngine -> {
                     asyncDo(() -> {
                         try {
-                            ioEngine.reportMessage(message);
+                            ioEngine.report(message);
                         } catch (IOException ex) {
                             logError(this.getClass(), ex);
                         }

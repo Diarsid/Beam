@@ -9,6 +9,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 /**
  *
@@ -21,6 +22,8 @@ public interface InnerIoEngine {
     Choice ask(Initiator initiator, String yesOrNoQuestion);
     
     Answer ask(Initiator initiator, Question question);
+    
+    Answer ask(Initiator initiator, String question, WeightedVariants variants);
     
     void report(Initiator initiator, String string);
     

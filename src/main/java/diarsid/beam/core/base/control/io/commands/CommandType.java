@@ -6,12 +6,13 @@
 package diarsid.beam.core.base.control.io.commands;
 
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.CORE_OPERATION;
-import static diarsid.beam.core.base.control.io.commands.CommandOperationType.CREATE_ENTITY;
-import static diarsid.beam.core.base.control.io.commands.CommandOperationType.EDIT_ENTITY;
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.EXECUTOR_OPERATION;
-import static diarsid.beam.core.base.control.io.commands.CommandOperationType.FIND_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_CREATE_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_EDIT_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_FIND_ENTITY;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_OTHER_OPERATION;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_REMOVE_ENTITY;
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.OTHER;
-import static diarsid.beam.core.base.control.io.commands.CommandOperationType.REMOVE_ENTITY;
 
 /**
  *
@@ -20,48 +21,48 @@ import static diarsid.beam.core.base.control.io.commands.CommandOperationType.RE
 public enum CommandType {    
     
     OPEN_LOCATION (EXECUTOR_OPERATION),
-    OPEN_PATH (EXECUTOR_OPERATION),    
+    OPEN_LOCATION_TARGET (EXECUTOR_OPERATION),    
     RUN_PROGRAM (EXECUTOR_OPERATION),
     CALL_BATCH (EXECUTOR_OPERATION),
     BATCH_PAUSE (EXECUTOR_OPERATION),
     SEE_WEBPAGE (EXECUTOR_OPERATION),
     EXECUTOR_DEFAULT (EXECUTOR_OPERATION),
-    
-    OPEN_NOTES (EXECUTOR_OPERATION),
-    OPEN_TARGET_IN_NOTE (EXECUTOR_OPERATION),
-    OPEN_PATH_IN_NOTE (EXECUTOR_OPERATION),
     LIST_LOCATION (EXECUTOR_OPERATION),
     LIST_PATH (EXECUTOR_OPERATION),
     
-    DELETE_MEM (REMOVE_ENTITY),   
+    OPEN_NOTES (KEEPER_OTHER_OPERATION),
+    OPEN_TARGET_IN_NOTE (KEEPER_OTHER_OPERATION),
+    OPEN_PATH_IN_NOTE (KEEPER_OTHER_OPERATION),
+    
+    DELETE_MEM (KEEPER_REMOVE_ENTITY),   
        
-    DELETE_PAGE (REMOVE_ENTITY), 
-    CREATE_PAGE (CREATE_ENTITY),
-    EDIT_PAGE (EDIT_ENTITY),
+    DELETE_PAGE (KEEPER_REMOVE_ENTITY), 
+    CREATE_PAGE (KEEPER_CREATE_ENTITY),
+    EDIT_PAGE (KEEPER_EDIT_ENTITY),
     
-    DELETE_WEB_DIR (REMOVE_ENTITY), 
-    CREATE_WEB_DIR (CREATE_ENTITY),
-    EDIT_WEB_DIR (EDIT_ENTITY),
+    DELETE_WEB_DIR (KEEPER_REMOVE_ENTITY), 
+    CREATE_WEB_DIR (KEEPER_CREATE_ENTITY),
+    EDIT_WEB_DIR (KEEPER_EDIT_ENTITY),
     
-    DELETE_LOCATION (REMOVE_ENTITY),
-    CREATE_LOCATION (CREATE_ENTITY),
-    EDIT_LOCATION (EDIT_ENTITY),
+    DELETE_LOCATION (KEEPER_REMOVE_ENTITY),
+    CREATE_LOCATION (KEEPER_CREATE_ENTITY),
+    EDIT_LOCATION (KEEPER_EDIT_ENTITY),
     
-    DELETE_TASK (REMOVE_ENTITY), 
-    CREATE_TASK (CREATE_ENTITY),
-    EDIT_TASK (EDIT_ENTITY),
+    DELETE_TASK (KEEPER_REMOVE_ENTITY), 
+    CREATE_TASK (KEEPER_CREATE_ENTITY),
+    EDIT_TASK (KEEPER_EDIT_ENTITY),
     
-    DELETE_BATCH (REMOVE_ENTITY), 
-    CREATE_BATCH (CREATE_ENTITY),
-    EDIT_BATCH (EDIT_ENTITY),
+    DELETE_BATCH (KEEPER_REMOVE_ENTITY), 
+    CREATE_BATCH (KEEPER_CREATE_ENTITY),
+    EDIT_BATCH (KEEPER_EDIT_ENTITY),
     
-    FIND_LOCATION (FIND_ENTITY),
-    FIND_PROGRAM (FIND_ENTITY),
-    FIND_TASK (FIND_ENTITY),
-    FIND_PAGE (FIND_ENTITY),
-    FIND_WEBDIRECTORY (FIND_ENTITY),  
-    FIND_MEM (FIND_ENTITY),
-    FIND_BATCH (FIND_ENTITY),
+    FIND_LOCATION (KEEPER_FIND_ENTITY),
+    FIND_PROGRAM (KEEPER_FIND_ENTITY),
+    FIND_TASK (KEEPER_FIND_ENTITY),
+    FIND_PAGE (KEEPER_FIND_ENTITY),
+    FIND_WEBDIRECTORY (KEEPER_FIND_ENTITY),  
+    FIND_MEM (KEEPER_FIND_ENTITY),
+    FIND_BATCH (KEEPER_FIND_ENTITY),
     
     EXIT (CORE_OPERATION),
     CLOSE_CONSOLE (CORE_OPERATION),

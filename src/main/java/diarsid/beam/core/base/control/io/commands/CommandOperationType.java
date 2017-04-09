@@ -13,10 +13,11 @@ import diarsid.beam.core.base.control.io.commands.exceptions.WrongCommandOperati
  */
 public enum CommandOperationType {
     
-    REMOVE_ENTITY,
-    EDIT_ENTITY,
-    CREATE_ENTITY,
-    FIND_ENTITY,
+    KEEPER_REMOVE_ENTITY,
+    KEEPER_EDIT_ENTITY,
+    KEEPER_CREATE_ENTITY,
+    KEEPER_FIND_ENTITY,
+    KEEPER_OTHER_OPERATION,
     EXECUTOR_OPERATION,
     CORE_OPERATION,
     OTHER;
