@@ -16,21 +16,23 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
 import diarsid.beam.core.base.os.listing.FileLister;
 import diarsid.beam.core.base.os.search.FileSearcher;
+import diarsid.beam.core.base.os.search.result.FileSearchResult;
 import diarsid.beam.core.base.util.StringUtils;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 
@@ -43,8 +45,13 @@ import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.textToMessage;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
-import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
+import static diarsid.beam.core.base.os.search.FileSearchMode.ALL;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
@@ -60,6 +67,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyze;
 
 /**
  *
@@ -84,32 +92,35 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void saveCommandIfNecessary(
-            Initiator initiator, EntityInvocationCommand command) {
+            Initiator initiator, InvocationCommand command) {
         if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
             this.domain.commandsMemory().save(initiator, command);
         }
     }
     
     private void saveCommandIfNecessary(
-            Initiator initiator, Optional<EntityInvocationCommand> command) {
-        if ( command.isPresent() && 
-                command.get().wasNotUsedBefore() && 
-                command.get().isTargetFound() ) {
-            this.domain.commandsMemory().save(initiator, command.get());
-        }
+            Initiator initiator, Optional<InvocationCommand> optCommand) {
+        if ( optCommand.isPresent() ) {
+            InvocationCommand command = optCommand.get();
+            if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
+                this.domain.commandsMemory().save(initiator, command);
+            }            
+        }        
     }
 
     private void deleteCommandIfNecessary(
-            Initiator initiator, EntityInvocationCommand command) {
+            Initiator initiator, InvocationCommand command) {
         if ( command.wasUsedBeforeAndStored() && command.isTargetNotFound() ) {
             this.domain.commandsMemory().remove(initiator, command);
         }
     }
     
     private Optional<? extends NamedEntity> findNamedEntity(
-            Initiator initiator, EntityInvocationCommand command) {
-        this.domain.commandsMemory().tryToExtendCommand(initiator, command);
-        if ( command.argument().hasExtended() ) {
+            Initiator initiator, InvocationCommand command) {
+        if ( command.argument().isNotExtended() ) {
+            this.domain.commandsMemory().tryToExtendCommand(initiator, command); 
+        }
+        if ( command.argument().isExtended() ) {
             Optional<? extends NamedEntity> entity = this.domain
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
@@ -125,7 +136,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private Optional<? extends NamedEntity> findNamedEntityByNamePattern(
-            Initiator initiator, EntityInvocationCommand command) {
+            Initiator initiator, InvocationCommand command) {
         command.setNew();
         Optional<? extends NamedEntity> entity = this.domain
                 .entitiesOperatedBy(command)
@@ -147,12 +158,8 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .forEach(command -> this.dispatchCommandInternally(initiator, command));         
     }
     
-    private void dispatchCommandInternally(Initiator initiator, ExtendableCommand command) {
+    private void dispatchCommandInternally(Initiator initiator, ExecutorCommand command) {
         dispatching: switch ( command.type() ) {
-            case EXECUTOR_DEFAULT : {
-                this.executeDefault(initiator, (ExecutorDefaultCommand) command);
-                break dispatching;
-            }
             case OPEN_LOCATION : {
                 this.openLocation(initiator, (OpenLocationCommand) command);
                 break dispatching;
@@ -239,7 +246,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void reportEntityNotFound(
-            Initiator initiator, EntityInvocationCommand command) {
+            Initiator initiator, InvocationCommand command) {
         this.ioEngine.report(
                 initiator,
                 format("cannot find %s by name '%s'", 
@@ -249,7 +256,70 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void openLocationTarget(Initiator initiator, OpenLocationTargetCommand command) {
-        
+        this.domain.commandsMemory().tryToExtendCommand(initiator, command);
+        Optional<Location> found;
+        Location location;
+        String target;
+        if ( command.argument().isExtended() ) {
+            found = this.domain
+                    .locations()
+                    .findByExactName(initiator, command.extendedLocation());
+            if ( found.isPresent() ) {
+                this.doWhenLocationFoundFromExtended(initiator, command, found.get());
+            } else {
+                found = this.domain
+                        .locations()
+                        .findByNamePattern(initiator, command.originalLocation());
+                if ( found.isPresent() ) {
+                    
+                } else {
+                    this.doWhenNotFound(initiator, command);
+                }
+            }
+        } else {
+            found = this.domain
+                    .locations()
+                    .findByNamePattern(initiator, command.originalLocation());
+            if ( found.isPresent() ) {
+                location = found.get();
+                target = command.originalArgument();
+            } else {
+                this.doWhenNotFound(initiator, command);
+            }
+        }
+    }
+
+    private void doWhenLocationFoundFromExtended(
+            Initiator initiator, OpenLocationTargetCommand command, Location location) {
+        String target;
+        target = command.extendedTarget();
+        if ( location.has(target) ) {
+            command.setTargetFound();
+            location.openAsync(
+                    target,
+                    this.doOnSuccess(initiator, command),
+                    this.doOnFail(initiator, command));
+        } else {
+            this.domain.commandsMemory().remove(initiator, command);
+            command.setNew();
+            FileSearchResult result = this.fileSearcher.find(command.originalPath(), location.path(), ALL);
+            if ( result.isOk() ) {
+                if ( result.success().hasSingleFoundFile() ) {
+                    target = result.success().getFoundFile();
+                    command.argument().setExtended(location.name() + "/" + target);
+                    command.setTargetFound();
+                    location.openAsync(
+                            target,
+                            this.doOnSuccess(initiator, command),
+                            this.doOnFail(initiator));
+                } else {
+                    List<String> foundTargets = result.success().getMultipleFoundFiles();
+                    WeightedVariants variants = analyze(command.originalPath(), foundTargets);
+                }
+            } else {
+                this.ioEngine.report(initiator, "");
+            }
+        }
     }
 
     @Override
@@ -264,7 +334,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private void doWhenNotFound(Initiator initiator, EntityInvocationCommand command) {
+    private void doWhenNotFound(Initiator initiator, InvocationCommand command) {
         this.reportEntityNotFound(initiator, command);
         this.deleteCommandIfNecessary(initiator, command);
     }
@@ -293,7 +363,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private CallbackEvent doOnFail(Initiator initiator, EntityInvocationCommand command) {
+    private CallbackEvent doOnFail(Initiator initiator, InvocationCommand command) {
         return (fail) -> {
             this.ioEngine.report(initiator, fail);
             this.deleteCommandIfNecessary(initiator, command);
@@ -306,7 +376,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         };
     }
 
-    private CallbackEvent doOnSuccess(Initiator initiator, EntityInvocationCommand command) {
+    private CallbackEvent doOnSuccess(Initiator initiator, InvocationCommand command) {
         return (sucess) -> {
             this.ioEngine.report(initiator, sucess);
             this.saveCommandIfNecessary(initiator, command);
@@ -314,7 +384,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     private CallbackEvent doOnSuccess(
-            Initiator initiator, Optional<EntityInvocationCommand> command) {
+            Initiator initiator, Optional<InvocationCommand> command) {
         return (sucess) -> {
             this.ioEngine.report(initiator, sucess);
             if ( command.isPresent() ) {
@@ -325,10 +395,10 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void executeDefault(Initiator initiator, ExecutorDefaultCommand command) {
-        Optional<ExtendableCommand> savedCommand = this.domain
+        Optional<InvocationCommand> savedCommand = this.domain
                 .commandsMemory()
-                .findStoredCommandByExactOriginalOfAnyType(initiator, command.originalArgument());
-        if ( savedCommand.isPresent() && savedCommand.get().type().isNot(EXECUTOR_DEFAULT) ) {
+                .findStoredCommandByExactOriginalOfAnyType(initiator, command.argument());
+        if ( savedCommand.isPresent() ) {
             this.dispatchCommandInternally(initiator, savedCommand.get());
         } else {
             VoidOperation operation = this.findAndInvokeAnyNamedEntity(initiator, command);
@@ -339,17 +409,19 @@ class ExecutorModuleWorker implements ExecutorModule {
                 }    
                 case STOP : {
                     // entity was not found, need to proceed.
-                    Optional<ExtendableCommand> mergedCommand = 
-                            this.findSimilarCommandByPatternAndMergeWithOriginal(initiator, command);
-                    if ( mergedCommand.isPresent() ) {
-                        this.dispatchCommandInternally(initiator, mergedCommand.get());
-                    }
+                    Optional<InvocationCommand> storedCommand = this.domain
+                            .commandsMemory()
+                            .findStoredCommandByPatternOfAnyType(initiator, command.argument());
+                    command
+                            .mergeWithCommand(storedCommand)
+                            .ifPresent(mergedCommand -> {
+                                this.dispatchCommandInternally(initiator, mergedCommand);
+                            });
                     return;
                 }    
                 case FAIL : {
                     // entity was found, but could not be processed due to some reason
                     this.ioEngine.report(initiator, asFail(operation).reason());
-                    this.deleteCommandIfNecessary(initiator, command);
                     return;
                 }    
                 default : {
@@ -358,10 +430,22 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }        
     }
-
+    
+    private Optional<? extends NamedEntity> findNamedEntityByArgument(
+            Initiator initiator, String argument) {
+        Optional<? extends NamedEntity> entity = 
+                this.domain.allEntities().findByExactName(initiator, argument);
+        if ( entity.isPresent() ) {
+            return entity;
+        } else {
+            return this.domain.allEntities().findByNamePattern(initiator, argument);
+        }
+    }
+ 
     private VoidOperation findAndInvokeAnyNamedEntity(
             Initiator initiator, ExecutorDefaultCommand command) {
-        Optional<? extends NamedEntity> entity = this.findNamedEntity(initiator, command);
+        Optional<? extends NamedEntity> entity = 
+                this.findNamedEntityByArgument(initiator, command.argument());
         if ( entity.isPresent() && entity.get().type().isDefined() ) {
             invocation: switch ( entity.get().type() ) {
                 case LOCATION : {
@@ -401,18 +485,6 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         } else {
             return voidOperationStopped();
-        }
-    }
-    
-    private Optional<ExtendableCommand> findSimilarCommandByPatternAndMergeWithOriginal(
-            Initiator initiator, ExecutorDefaultCommand command) {
-        Optional<ExtendableCommand> storedCommand = this.domain
-                .commandsMemory()
-                .findStoredCommandByPatternOfAnyType(initiator, command.originalArgument());
-        if ( storedCommand.isPresent() && storedCommand.get().type().isNot(EXECUTOR_DEFAULT) ) {
-            return command.mergeWithCommand(storedCommand);
-        } else {
-            return Optional.empty();
         }
     }
 

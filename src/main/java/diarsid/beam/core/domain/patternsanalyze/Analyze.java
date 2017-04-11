@@ -18,7 +18,10 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.removeWildcards;
+import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 
 /**
  *
@@ -27,6 +30,19 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 public class Analyze {
     
     private Analyze() {        
+    }
+    
+    public static WeightedVariants analyze(String pattern, List<String> variants) {
+        if ( hasWildcard(pattern) ) {
+            WeightedVariants result = analyzeByPatternParts(splitByWildcard(pattern), variants);
+            if ( result.hasAcceptableDiversity() ) {
+                return result;
+            } else {
+                return analyzeCharByChar(removeWildcards(pattern), variants);
+            }
+        } else {
+            return analyzeCharByChar(pattern, variants);
+        }
     }
     
     public static void main(String[] args) {
@@ -54,6 +70,11 @@ public class Analyze {
                 similar.stream().forEach(candidate -> System.out.println("  - " + candidate.text() + " : " + candidate.weight()));
             }
         }
+    }
+    
+    private static WeightedVariants analyzeByPatternParts(
+            List<String> pattern, List<String> variants) {
+        
     }
     
     private static WeightedVariants analyzeCharByChar(String pattern, List<String> variantStrings) {

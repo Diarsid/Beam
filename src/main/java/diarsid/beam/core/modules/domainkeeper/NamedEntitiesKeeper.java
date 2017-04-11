@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 
 /**
@@ -21,6 +21,6 @@ public interface NamedEntitiesKeeper {
     
     Optional<? extends NamedEntity> findByNamePattern(Initiator initiator, String pattern);
     
-    boolean isSubjectedTo(EntityInvocationCommand command);
+    boolean isSubjectedTo(InvocationCommand command);
     
 }

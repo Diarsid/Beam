@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
@@ -83,7 +83,7 @@ class LocationsKeeperWorker
     }
 
     @Override
-    public boolean isSubjectedTo(EntityInvocationCommand command) {
+    public boolean isSubjectedTo(InvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
     }
     

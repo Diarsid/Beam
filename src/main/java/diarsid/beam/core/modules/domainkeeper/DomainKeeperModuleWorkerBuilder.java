@@ -113,7 +113,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
                 this.dataModule.getDaoCommands(), 
                 ioEngine);
-        defaultKeeper = new DefaultNamedEntitiesKeeper(
+        defaultKeeper = new AllNamedEntitiesKeeper(
                 ioEngine, 
                 this.dataModule.getDaoNamedEntities());
         notesKeeper = new NotesKeeperWorker(

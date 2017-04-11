@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 import static java.util.stream.Collectors.toList;
 
@@ -27,7 +27,7 @@ public class Batch implements NamedEntity {
     private final String name;
     private final List<BatchedCommand> commands;
     
-    public Batch(String name, List<ExtendableCommand> commands) {
+    public Batch(String name, List<ExecutorCommand> commands) {
         this.name = name;
         AtomicInteger counter = new AtomicInteger(0);
         this.commands = commands

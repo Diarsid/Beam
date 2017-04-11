@@ -10,9 +10,9 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 
 /**
@@ -59,10 +60,8 @@ public class Location
     
     public void openAsync(
             String target, 
-            CallbackEmpty successCallback,
-            CallbackEmpty exceptionCallback, 
-            CallbackEmpty locationNotFoundCallback,
-            CallbackEmpty targetNotFoundCallback) {
+            CallbackEvent successCallback,
+            CallbackEvent failCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             File finalTarget = new File(this.path + "/" + target);
@@ -70,20 +69,24 @@ public class Location
                 if ( finalTarget.exists() ) {
                     try {
                         Desktop.getDesktop().open(location);   
-                        successCallback.call();
+                        successCallback.onEvent(format("...opening %s/%s", this.name, target));
                     } catch (IOException | IllegalArgumentException e) {
-                        exceptionCallback.call();
+                        failCallback.onEvent("cannot open target due to: " + e.getMessage());
                         logError(this.getClass(), e);
                     }
                 } else {
-                    targetNotFoundCallback.call();
+                    failCallback.onEvent("target not found.");
                     debug(format("Target '%s' not found in %s.", target, this.name));
                 }                
             } else {
-                locationNotFoundCallback.call();
+                failCallback.onEvent("location real place not found.");
                 debug(format("%s path '%s' does not exist.", this.name, this.path));
             }            
         });
+    }
+    
+    public boolean has(String target) {
+        return Files.exists(combinePathFrom(this.path, target));
     }
     
     public void openAsync(

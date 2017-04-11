@@ -85,6 +85,10 @@ public class StringUtils {
                 .map(string -> string.trim())
                 .collect(toList());
     }
+    
+    public static String removeWildcards(String target) {
+        return target.replaceAll("-+", "");
+    }
 
     public static String[] splitBySpaces(String target) {
         return target.split("\\s+");

@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * @author Diarsid
  */
-public class Variant implements Serializable {
+public class Variant implements Serializable, Comparable<Variant> {
     
     private final String text;
     private final String displayText;
@@ -45,6 +45,17 @@ public class Variant implements Serializable {
     
     public int index() {
         return this.variantIndex;
+    }
+
+    @Override
+    public int compareTo(Variant other) {
+        if ( this.variantIndex > other.variantIndex ) {
+            return 1;
+        } else if ( this.variantIndex < other.variantIndex ) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     @Override

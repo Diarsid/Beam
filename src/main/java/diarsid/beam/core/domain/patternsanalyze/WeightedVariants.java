@@ -49,6 +49,10 @@ public class WeightedVariants {
         }
     }
     
+    public boolean hasAcceptableDiversity() {
+        
+    }
+    
     public void toNext() {
         this.currentCandidateIndex++;
     }

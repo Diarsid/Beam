@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
@@ -32,20 +32,20 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
  *
  * @author Diarsid
  */
-class DefaultNamedEntitiesKeeper implements NamedEntitiesKeeper {
+class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoNamedEntities dao;
     private final Set<CommandType> subjectedCommandTypes;
 
-    DefaultNamedEntitiesKeeper(InnerIoEngine ioEngine, DaoNamedEntities dao) {
+    AllNamedEntitiesKeeper(InnerIoEngine ioEngine, DaoNamedEntities dao) {
         this.ioEngine = ioEngine;
         this.dao = dao;
         this.subjectedCommandTypes = toSet(EXECUTOR_DEFAULT);
     }
 
     @Override
-    public boolean isSubjectedTo(EntityInvocationCommand command) {
+    public boolean isSubjectedTo(InvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
     }
 

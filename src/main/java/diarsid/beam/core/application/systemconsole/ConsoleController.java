@@ -171,6 +171,11 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                 List<WeightedVariant> similarVariants = variants.allNextSimilar();
                 this.printer.printInDialogWeightedVariants(similarVariants);
                 line = this.reader.readLine();
+                if ( isNumeric(line) ) {
+                    
+                } else {
+                    
+                }
             }
         }
     }

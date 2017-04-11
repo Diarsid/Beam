@@ -8,25 +8,27 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_NOT_FOUND;
 import static diarsid.beam.core.domain.entities.NamedEntityType.UNDEFINED_ENTITY;
 
 
-public class ExecutorDefaultCommand extends EntityInvocationCommand {
+public class ExecutorDefaultCommand implements Command {
+    
+    private final String argument;
 
     public ExecutorDefaultCommand(String argument) {
-        super(argument);
+        this.argument = argument;
     }
     
-    public ExecutorDefaultCommand(String argument, String extended) {
-        super(argument, extended);
+    public String argument() {
+        return this.argument;
     }
 
     @Override
@@ -34,22 +36,7 @@ public class ExecutorDefaultCommand extends EntityInvocationCommand {
         return EXECUTOR_DEFAULT;
     }
     
-    @Override
-    public Variant toVariant(int variantIndex) {
-        return new Variant(this.stringify(), variantIndex);
-    }
-
-    @Override
-    public String stringify() {
-        return super.originalArgument();
-    }
-
-    @Override
-    public NamedEntityType subjectedEntityType() {
-        return UNDEFINED_ENTITY;
-    }
-    
-    public Optional<EntityInvocationCommand> mergeWithEntity(
+    public Optional<InvocationCommand> mergeWithEntity(
             Optional<? extends NamedEntity> entity) {
         if ( ! entity.isPresent() ) {
             return Optional.empty();
@@ -57,19 +44,19 @@ public class ExecutorDefaultCommand extends EntityInvocationCommand {
         switch ( entity.get().type() ) {
             case LOCATION : {
                 return Optional.of(new OpenLocationCommand(
-                        this.originalArgument(), entity.get().name()));
+                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
             }    
             case WEBPAGE : {
                 return Optional.of(new SeePageCommand(
-                        this.originalArgument(), entity.get().name()));
+                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
             }    
             case PROGRAM : {
                 return Optional.of(new RunProgramCommand(
-                        this.originalArgument(), entity.get().name()));
+                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
             }    
             case BATCH : {
                 return Optional.of(new CallBatchCommand(
-                        this.originalArgument(), entity.get().name()));
+                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
             }    
             case UNDEFINED_ENTITY:
             default : {
@@ -78,52 +65,34 @@ public class ExecutorDefaultCommand extends EntityInvocationCommand {
         }
     }
         
-    public Optional<ExtendableCommand> mergeWithCommand(Optional<ExtendableCommand> anotherCommand) {
-        if ( anotherCommand.isPresent() ) {
-            ExtendableCommand mergedCommand;
-            commandMerging: switch ( anotherCommand.get().type() ) {
-                case OPEN_LOCATION : {
-                    mergedCommand = new OpenLocationCommand(
-                            super.originalArgument(), 
-                            anotherCommand.get().extendedArgument());
-                    mergedCommand.setNew();
-                    break commandMerging;
-                }
-                case OPEN_LOCATION_TARGET : {
-                    mergedCommand = new OpenLocationTargetCommand(
-                            super.originalArgument(), 
-                            anotherCommand.get().extendedArgument());
-                    mergedCommand.setNew();
-                    break commandMerging;
-                }
-                case RUN_PROGRAM : {
-                    mergedCommand = new RunProgramCommand(
-                            super.originalArgument(), 
-                            anotherCommand.get().extendedArgument());
-                    mergedCommand.setNew();
-                    break commandMerging;
-                }
-                case SEE_WEBPAGE : {
-                    mergedCommand = new SeePageCommand(
-                            super.originalArgument(), 
-                            anotherCommand.get().extendedArgument());
-                    mergedCommand.setNew();
-                    break commandMerging;
-                }
-                case CALL_BATCH : {
-                    mergedCommand = new CallBatchCommand(
-                            super.originalArgument(), 
-                            anotherCommand.get().extendedArgument());
-                    mergedCommand.setNew();
-                    break commandMerging;
-                }
-                default : {
-                    mergedCommand = null;
-                }
-            }  
-            return Optional.ofNullable(mergedCommand);
-        } else {
+    public Optional<InvocationCommand> mergeWithCommand(Optional<InvocationCommand> anotherCommand) {
+        if ( ! anotherCommand.isPresent() ) {
             return Optional.empty();
-        }
+        }         
+        commandMerging: switch ( anotherCommand.get().type() ) {
+            case OPEN_LOCATION : {
+                return Optional.of(new OpenLocationCommand(
+                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+            }
+            case OPEN_LOCATION_TARGET : {
+                return Optional.of(new OpenLocationTargetCommand(
+                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+            }
+            case RUN_PROGRAM : {
+                return Optional.of(new RunProgramCommand(
+                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+            }
+            case SEE_WEBPAGE : {
+                return Optional.of(new SeePageCommand(
+                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+            }
+            case CALL_BATCH : {
+                return Optional.of(new CallBatchCommand(
+                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+            }
+            default : {
+                return Optional.empty();
+            }
+        }  
     }
 }

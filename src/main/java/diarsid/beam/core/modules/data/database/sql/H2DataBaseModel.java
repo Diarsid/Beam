@@ -37,9 +37,8 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "bat_command_order      INTEGER         NOT NULL, " +
                 "bat_command_type       VARCHAR(50)     NOT NULL, " +
                 "bat_command_original   VARCHAR         NOT NULL, " +
-                "bat_command_extended   VARCHAR         NOT NULL,  " +
                 "       PRIMARY KEY (bat_name, bat_command_order) )", 
-                5);
+                4);
         
         SqlTable keyValue = new H2SqlTable(
                 "key_value", 

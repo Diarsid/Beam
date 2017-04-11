@@ -14,7 +14,7 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
@@ -26,7 +26,6 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.commands.Commands.restoreArgumentedCommandFrom;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -34,18 +33,19 @@ import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocationCommandFrom;
 
 
 class H2DaoCommands 
         extends BeamCommonDao
         implements DaoCommands {
     
-    private final PerRowConversion<ExtendableCommand> rowToCommandConversion;
+    private final PerRowConversion<InvocationCommand> rowToCommandConversion;
     
     H2DaoCommands(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
         this.rowToCommandConversion = (row) -> {
-            return restoreArgumentedCommandFrom(
+            return restoreInvocationCommandFrom(
                     (String) row.get("com_type"), 
                     (String) row.get("com_original"),
                     (String) row.get("com_extended"));
@@ -53,17 +53,16 @@ class H2DaoCommands
     }
 
     @Override
-    public Optional<ExtendableCommand> getByExactOriginalAndType(
+    public Optional<InvocationCommand> getByExactOriginalAndType(
             Initiator initiator, String original, CommandType type) {
         try {
             return super.getDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(
-                            ExtendableCommand.class,
+                    .doQueryAndConvertFirstRowVarargParams(InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( com_type IS ? ) AND ( LOWER(com_original) IS ? ) ",
                             (firstRow) -> {
-                                return Optional.of(restoreArgumentedCommandFrom(
+                                return Optional.of(restoreInvocationCommandFrom(
                                         (String) firstRow.get("com_type"), 
                                         (String) firstRow.get("com_original"), 
                                         (String) firstRow.get("com_extended")));
@@ -76,12 +75,12 @@ class H2DaoCommands
     }
 
     @Override
-    public List<ExtendableCommand> getByExactOriginalOfAnyType(
+    public List<InvocationCommand> getByExactOriginalOfAnyType(
             Initiator initiator, String original) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_original) IS ? ",
@@ -95,7 +94,7 @@ class H2DaoCommands
     }
 
     @Override
-    public List<ExtendableCommand> fullSearchByOriginalPattern(
+    public List<InvocationCommand> fullSearchByOriginalPattern(
             Initiator initiator, String pattern) {
         if ( hasWildcard(pattern) ) {
             return this.findByPartsOriginalPattern(initiator, splitByWildcard(pattern));
@@ -104,11 +103,11 @@ class H2DaoCommands
         }
     }
 
-    private List<ExtendableCommand> findBySingleOriginalPattern(String pattern) {
+    private List<InvocationCommand> findBySingleOriginalPattern(String pattern) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_original) LIKE ? ",
@@ -121,12 +120,12 @@ class H2DaoCommands
         }
     }
 
-    private List<ExtendableCommand> findByPartsOriginalPattern(
+    private List<InvocationCommand> findByPartsOriginalPattern(
             Initiator initiator, List<String> patternParts) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStream(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerLIKE("com_original", patternParts.size(), AND),
@@ -140,7 +139,7 @@ class H2DaoCommands
     }
 
     @Override
-    public List<ExtendableCommand> searchInOriginalByPatternAndType(
+    public List<InvocationCommand> searchInOriginalByPatternAndType(
             Initiator initiator, String pattern, CommandType type) {
         if ( hasWildcard(pattern) ) {
             return this.findByPartsOriginalPatternOfType(initiator, splitByWildcard(pattern), type);
@@ -149,11 +148,11 @@ class H2DaoCommands
         }
     }
 
-    private List<ExtendableCommand> findBySingleOriginalPatternOfType(String pattern, CommandType type) {
+    private List<InvocationCommand> findBySingleOriginalPatternOfType(String pattern, CommandType type) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_original) LIKE ? ) AND ( com_type IS ? ) ",
@@ -166,14 +165,14 @@ class H2DaoCommands
         }
     }
 
-    private List<ExtendableCommand> findByPartsOriginalPatternOfType(
+    private List<InvocationCommand> findByPartsOriginalPatternOfType(
             Initiator initiator, List<String> patternParts, CommandType type) {
         try {
             List<String> params = lowerWildcardList(patternParts);
             params.add(type.name());
             return super.getDisposableTransaction()
                     .doQueryAndStream(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( " + 
@@ -189,7 +188,7 @@ class H2DaoCommands
     }
 
     @Override
-    public List<ExtendableCommand> fullSearchByExtendedPattern(
+    public List<InvocationCommand> fullSearchByExtendedPattern(
             Initiator initiator, String pattern) {
         if ( hasWildcard(pattern) ) {
             return this.findByPartsExtendedPattern(initiator, splitByWildcard(pattern));
@@ -198,11 +197,11 @@ class H2DaoCommands
         }        
     }
 
-    public List<ExtendableCommand> findBySingleExtendedPattern(String pattern) {
+    public List<InvocationCommand> findBySingleExtendedPattern(String pattern) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                                     "FROM commands " +
                                     "WHERE LOWER(com_extended) LIKE ? ",
@@ -215,12 +214,12 @@ class H2DaoCommands
         }
     }
 
-    private List<ExtendableCommand> findByPartsExtendedPattern(
+    private List<InvocationCommand> findByPartsExtendedPattern(
             Initiator initiator, List<String> patternParts) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStream(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerLIKE("com_extended", patternParts.size(), AND),
@@ -234,7 +233,7 @@ class H2DaoCommands
     }
 
     @Override
-    public List<ExtendableCommand> searchInExtendedByPatternAndType(
+    public List<InvocationCommand> searchInExtendedByPatternAndType(
             Initiator initiator, String pattern, CommandType type) {
         if ( hasWildcard(pattern) ) {
             return this.findByPartsExtendedPatternOfType(initiator, splitByWildcard(pattern), type);
@@ -243,12 +242,12 @@ class H2DaoCommands
         }        
     }
 
-    private List<ExtendableCommand> findBySingleExtendedPatternOfType(
+    private List<InvocationCommand> findBySingleExtendedPatternOfType(
             String pattern, CommandType type) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                                     "FROM commands " +
                                     "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? ) ",
@@ -261,14 +260,14 @@ class H2DaoCommands
         }
     }
 
-    private List<ExtendableCommand> findByPartsExtendedPatternOfType(
+    private List<InvocationCommand> findByPartsExtendedPatternOfType(
             Initiator initiator, List<String> patternParts, CommandType type) {
         try {
             List<String> params = lowerWildcardList(patternParts);
             params.add(type.name());
             return super.getDisposableTransaction()
                     .doQueryAndStream(
-                            ExtendableCommand.class,
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( " + 
@@ -285,7 +284,7 @@ class H2DaoCommands
 
     @Override
     public boolean save(
-            Initiator initiator, ExtendableCommand command) {
+            Initiator initiator, InvocationCommand command) {
         try (JdbcTransaction transact = super.getTransaction()) {
             
             boolean commandExists = transact
@@ -324,7 +323,7 @@ class H2DaoCommands
 
     @Override
     public boolean delete(
-            Initiator initiator, ExtendableCommand command) {
+            Initiator initiator, InvocationCommand command) {
         try {
             return 1 == super.getDisposableTransaction()
                     .doUpdateVarargParams(

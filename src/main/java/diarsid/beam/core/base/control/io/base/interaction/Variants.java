@@ -17,8 +17,16 @@ public class Variants {
     
     private final List<Variant> variants;
 
-    Variants() {
+    protected Variants() {
         this.variants = new ArrayList<>();
+    }
+
+    protected Variants(List<Variant> variants) {
+        this.variants = variants;
+    }
+    
+    public boolean isWeighted() {
+        return false;
     }
     
 }

@@ -6,7 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
@@ -23,7 +23,9 @@ import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
  */
 public interface DomainKeeperModule extends StoppableBeamModule  {
     
-    NamedEntitiesKeeper entitiesOperatedBy(EntityInvocationCommand command);
+    NamedEntitiesKeeper entitiesOperatedBy(InvocationCommand command);
+    
+    NamedEntitiesKeeper allEntities();
     
     LocationsKeeper locations();
     

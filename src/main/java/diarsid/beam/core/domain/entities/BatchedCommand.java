@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 /**
  *
@@ -19,10 +19,10 @@ import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
 public class BatchedCommand implements ConvertableToVariant {
     
     private final Batch enclosingBatch;
-    private final ExtendableCommand command;
+    private final ExecutorCommand command;
     private final int orderInBatch;
     
-    public BatchedCommand(Batch batch, int orderInBatch, ExtendableCommand command) {
+    public BatchedCommand(Batch batch, int orderInBatch, ExecutorCommand command) {
         this.enclosingBatch = batch;
         this.command = command;
         this.orderInBatch = orderInBatch;
@@ -30,7 +30,7 @@ public class BatchedCommand implements ConvertableToVariant {
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return this.command.toVariant(variantIndex);
+        return new Variant(this.command.stringify(), variantIndex);
     }
     
     public int orderInBatch() {
@@ -41,7 +41,7 @@ public class BatchedCommand implements ConvertableToVariant {
         return this.enclosingBatch;
     }
 
-    public ExtendableCommand unwrap() {
+    public ExecutorCommand unwrap() {
         return this.command;
     }
 

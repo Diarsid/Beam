@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.base.control.io.commands;
+package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.base.control.io.commands;
+package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.Objects;
 
@@ -43,16 +43,16 @@ public class ExtendableArgument {
         return this.originalArgument;
     }
     
-    public boolean hasExtended() {
+    public boolean isExtended() {
         return ! this.extendedArgument.isEmpty();
     }
     
-    public boolean doesNotHaveExtended() {
+    public boolean isNotExtended() {
         return this.extendedArgument.isEmpty();
     }
     
     public String get() {
-        if ( this.hasExtended() ) {
+        if ( this.isExtended() ) {
             return this.extendedArgument;
         } else {
             return this.originalArgument;

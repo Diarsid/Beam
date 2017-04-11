@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.Set;
 
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.modules.DomainKeeperModule;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
@@ -103,11 +103,16 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     }
 
     @Override
-    public NamedEntitiesKeeper entitiesOperatedBy(EntityInvocationCommand command) {
+    public NamedEntitiesKeeper entitiesOperatedBy(InvocationCommand command) {
         return this.allDedicatedNamedEntitiesKeepers
                 .stream()
                 .filter(keeper -> keeper.isSubjectedTo(command))
                 .findFirst()
                 .orElse(this.defaultNamedEntitiesKeeper);
+    }
+
+    @Override
+    public NamedEntitiesKeeper allEntities() {
+        return this.defaultNamedEntitiesKeeper;
     }
 }

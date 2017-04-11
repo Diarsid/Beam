@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -25,7 +25,7 @@ import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
  *
  * @author Diarsid
  */
-public class BatchPauseCommand implements ExtendableCommand {
+public class BatchPauseCommand implements ExecutorCommand {
     
     private static final BatchPauseCommand NO_PAUSE;
     static {
@@ -41,7 +41,8 @@ public class BatchPauseCommand implements ExtendableCommand {
     }
     
     public static BatchPauseCommand parsePauseCommandFrom(String stringifiedPauseCommand) {
-        String[] pauseData = stringifiedPauseCommand.trim().split(" ");
+        stringifiedPauseCommand = stringifiedPauseCommand.replace("pause ", "").trim();
+        String[] pauseData = stringifiedPauseCommand.split(" ");
         if ( pauseData.length != 2 ) {
             return NO_PAUSE;
         } 
@@ -58,16 +59,16 @@ public class BatchPauseCommand implements ExtendableCommand {
 
     @Override
     public String stringify() {
-        return this.stringifyPause();
-    }
-
-    @Override
-    public Variant toVariant(int variantIndex) {
-        return new Variant("pause " + this.stringifyPause(), variantIndex);
+        return format("pause %s", this.stringifyPause());
     }
     
     private String stringifyPause() {
-        return format("%d %s", this.pauseDuration, lower(this.getTimePeriod.name()));
+        return this.pauseDuration + " " + lower(this.getTimePeriod.name());
+    }
+
+    @Override
+    public boolean isInvocation() {
+        return false;
     }
 
     @Override
@@ -76,8 +77,8 @@ public class BatchPauseCommand implements ExtendableCommand {
     }
 
     @Override
-    public String extendedArgument() {
-        return this.stringifyPause();
+    public Variant toVariant(int variantIndex) {
+        return new Variant(this.stringify(), variantIndex);
     }
 
     public int duration() {
@@ -124,45 +125,5 @@ public class BatchPauseCommand implements ExtendableCommand {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void setNew() {
-        // do nothing. batch command is never regarded as 'new' as it is system command.
-    }
-
-    @Override
-    public void setStored() {
-        // do nothing. batch command is never regarded as 'new' as it is system command.
-    }
-
-    @Override
-    public boolean wasNotUsedBefore() {
-        return false;
-    }
-
-    @Override
-    public boolean wasUsedBeforeAndStored() {
-        return true;
-    }
-
-    @Override
-    public void setTargetFound() {
-        // stub, do nothing.
-    }
-
-    @Override
-    public void setTargetNotFound() {
-        // stub, do nothing.
-    }
-
-    @Override
-    public boolean isTargetFound() {
-        return true;
-    }
-
-    @Override
-    public boolean isTargetNotFound() {
-        return false;
     }
 }

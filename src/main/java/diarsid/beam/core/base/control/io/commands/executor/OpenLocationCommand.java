@@ -8,21 +8,24 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 
 
-public class OpenLocationCommand extends EntityInvocationCommand {
+public class OpenLocationCommand extends InvocationCommand {
         
     public OpenLocationCommand(String originalLocation) {
         super(originalLocation);
     }
     
-    public OpenLocationCommand(String originalLocation, String extendedLocation) {
-        super(originalLocation, extendedLocation);
+    public OpenLocationCommand(
+            String originalLocation, 
+            String extendedLocation, 
+            InvocationCommandLifePhase lifePhase, 
+            InvocationCommandTargetState targetState) {
+        super(originalLocation, extendedLocation, lifePhase, targetState);
     }
     
     @Override

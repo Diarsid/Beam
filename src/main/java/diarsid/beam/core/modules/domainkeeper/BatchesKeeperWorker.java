@@ -20,8 +20,8 @@ import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
@@ -81,7 +81,7 @@ class BatchesKeeperWorker
     }
 
     @Override
-    public boolean isSubjectedTo(EntityInvocationCommand command) {
+    public boolean isSubjectedTo(InvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
     }
 
@@ -192,7 +192,7 @@ class BatchesKeeperWorker
             return voidOperationStopped();
         }
         
-        List<ExtendableCommand> batchCommands = this.inputNewCommands(initiator);        
+        List<ExecutorCommand> batchCommands = this.inputNewCommands(initiator);        
         if ( batchCommands.isEmpty() ) {
             return voidOperationStopped();
         }
@@ -205,11 +205,11 @@ class BatchesKeeperWorker
         }
     }
 
-    private List<ExtendableCommand> inputNewCommands(Initiator initiator) {
-        List<ExtendableCommand> batchCommands = new ArrayList<>();
+    private List<ExecutorCommand> inputNewCommands(Initiator initiator) {
+        List<ExecutorCommand> batchCommands = new ArrayList<>();
         String input;
         Command interpretedCommand;
-        Optional<ExtendableCommand> possibleCommand;
+        Optional<ExecutorCommand> possibleCommand;
         boolean work = true;
         while ( work ) {
             input = this.ioEngine.askInput(
@@ -227,7 +227,7 @@ class BatchesKeeperWorker
         return batchCommands;
     }
     
-    private Optional<ExtendableCommand> checkInterpreted(
+    private Optional<ExecutorCommand> checkInterpreted(
             Initiator initiator, Command batchCommand) {        
         switch ( batchCommand.type() ) {
             case BATCH_PAUSE : 
@@ -235,9 +235,9 @@ class BatchesKeeperWorker
             case OPEN_LOCATION_TARGET : 
             case OPEN_LOCATION :
             case RUN_PROGRAM : {
-                ExtendableCommand argumented = (ExtendableCommand) batchCommand;
+                ExecutorCommand command = (ExecutorCommand) batchCommand;
                 this.ioEngine.report(initiator, "...accepted.");
-                return Optional.of(argumented);
+                return Optional.of(command);
             }
             case CALL_BATCH : {
                 this.ioEngine.report(initiator, "call batch inside batch inside batch? No way.");
@@ -343,7 +343,7 @@ class BatchesKeeperWorker
         Question question = question("choose command").withAnswerEntities(batch.batchedCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
-            Optional<ExtendableCommand> newCommand = Optional.empty();
+            Optional<ExecutorCommand> newCommand = Optional.empty();
             Command interpertedCommand;
             String newCommandString;
             boolean newCommandIsNotValid = true;
@@ -373,7 +373,7 @@ class BatchesKeeperWorker
     }
     
     private VoidOperation editBatchAllCommands(Initiator initiator, Batch batch) {
-        List<ExtendableCommand> newCommands = this.inputNewCommands(initiator);
+        List<ExecutorCommand> newCommands = this.inputNewCommands(initiator);
         if ( newCommands.isEmpty() ) {
             return voidOperationStopped();
         }

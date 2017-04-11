@@ -8,9 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
-import diarsid.beam.core.base.control.io.commands.EntityInvocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 
 /**
  *
@@ -18,21 +16,18 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
  */
 public interface CommandsMemoryKeeper {
     
-    Optional<ExtendableCommand> findStoredCommandByExactOriginalOfAnyType(
+    Optional<InvocationCommand> findStoredCommandByExactOriginalOfAnyType(
             Initiator initiator, String original); 
     
-    Optional<ExtendableCommand> findStoredCommandByPatternOfAnyType(
+    Optional<InvocationCommand> findStoredCommandByPatternOfAnyType(
             Initiator initiator, String pattern);
     
     void tryToExtendCommand(
-            Initiator initiator, EntityInvocationCommand command);
-    
-    void tryToExtendCommand(
-            Initiator initiator, OpenLocationTargetCommand command);
+            Initiator initiator, InvocationCommand command);
     
     void save(
-            Initiator initiator, ExtendableCommand command);
+            Initiator initiator, InvocationCommand command);
     
     void remove(
-            Initiator initiator, ExtendableCommand command);
+            Initiator initiator, InvocationCommand command);
 }

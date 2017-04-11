@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchedCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
@@ -32,7 +32,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.io.commands.Commands.restoreArgumentedCommandFrom;
+import static diarsid.beam.core.base.control.io.commands.Commands.restoreExecutorCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -50,9 +50,9 @@ class H2DaoBatches
         implements DaoBatches {
     
     private final PerRowConversion<String> rowToBatchNameConversion;
-    private final PerRowConversion<ExtendableCommand> rowToCommandConversion;
+    private final PerRowConversion<ExecutorCommand> rowToCommandConversion;
     private final Function<BatchedCommand, Params> batchedCommandToParams;
-    private final Function<Map.Entry<String, List<ExtendableCommand>>, Batch> entryToBatch;
+    private final Function<Map.Entry<String, List<ExecutorCommand>>, Batch> entryToBatch;
     
     H2DaoBatches(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
@@ -60,10 +60,9 @@ class H2DaoBatches
             return (String) row.get("bat_name");
         };
         this.rowToCommandConversion = (row) -> {
-            return restoreArgumentedCommandFrom(
+            return restoreExecutorCommandFrom(
                     (String) row.get("bat_command_type"), 
-                    (String) row.get("bat_command_original"), 
-                    (String) row.get("bat_command_extended")
+                    (String) row.get("bat_command_original")
             );
         };
         this.batchedCommandToParams = (batchedCommand) -> {
@@ -71,8 +70,7 @@ class H2DaoBatches
                 batchedCommand.batch().name(),
                 batchedCommand.unwrap().type().name(),
                 batchedCommand.orderInBatch(),
-                batchedCommand.unwrap().originalArgument(),
-                batchedCommand.unwrap().extendedArgument()
+                batchedCommand.unwrap().originalArgument()
             );
         };
         this.entryToBatch = (entry) -> {
@@ -151,12 +149,12 @@ class H2DaoBatches
                             "WHERE LOWER(bat_name) IS ? ",
                             lower(name));
             
-            List<ExtendableCommand> commands = transact
+            List<ExecutorCommand> commands = transact
                     .ifTrue( batchExists )
-                    .doQueryAndStreamVarargParams(ExtendableCommand.class,
+                    .doQueryAndStreamVarargParams(
+                            ExecutorCommand.class,
                             "SELECT bat_command_type, " +
-                            "       bat_command_original, " +
-                            "       bat_command_extended " +
+                            "       bat_command_original " +
                             "FROM batch_commands " +
                             "WHERE LOWER(bat_name) IS ? " +
                             "ORDER BY bat_command_order" ,
@@ -203,9 +201,8 @@ class H2DaoBatches
                             "       bat_name, " +
                             "       bat_command_type, " +
                             "       bat_command_order, " +
-                            "       bat_command_original, " +
-                            "       bat_command_extended ) " +
-                            "VALUES ( ?, ?, ?, ?, ? ) ",
+                            "       bat_command_original ) " +
+                            "VALUES ( ?, ?, ?, ? ) ",
                             batch.batchedCommands()
                                     .stream()
                                     .map(this.batchedCommandToParams)
@@ -289,7 +286,7 @@ class H2DaoBatches
 
     @Override
     public boolean editBatchCommands(
-            Initiator initiator, String batchName, List<ExtendableCommand> newCommands) {
+            Initiator initiator, String batchName, List<ExecutorCommand> newCommands) {
         try (JdbcTransaction transact = super.getTransaction()) {
             
             if ( newCommands.isEmpty() ) {
@@ -310,17 +307,15 @@ class H2DaoBatches
                             "       bat_name, " +
                             "       bat_command_type, " +
                             "       bat_command_order, " +
-                            "       bat_command_original, " +
-                            "       bat_command_extended) " +
-                            "VALUES ( ?, ?, ?, ?, ? )",
+                            "       bat_command_original ) " +
+                            "VALUES ( ?, ?, ?, ? )",
                             newCommands
                                     .stream()
                                     .map(command -> params(
                                             batchName,
                                             command.type().name(),
                                             newCommands.indexOf(command),
-                                            command.originalArgument(),
-                                            command.extendedArgument()))
+                                            command.originalArgument()))
                                     .collect(toSet()))
             ).sum();
             
@@ -340,18 +335,17 @@ class H2DaoBatches
 
     @Override
     public boolean editBatchOneCommand(
-            Initiator initiator, String batchName, int commandOrder, ExtendableCommand newCommand) {
+            Initiator initiator, String batchName, int commandOrder, ExecutorCommand newCommand) {
         try (JdbcTransaction transact = super.getTransaction()) {
             int modified = transact
                     .doUpdateVarargParams(
                             "UPDATE batch_commands " +
-                            "SET    bat_command_type = ?, " +
-                            "       bat_command_original = ?, " +
-                            "       bat_command_extended = ? " +
+                            "SET " +
+                            "   bat_command_type = ?, " +
+                            "   bat_command_original = ? " +
                             "WHERE ( bat_name IS ? ) AND ( bat_command_order IS ? ) ",
                             newCommand.type().name(),
                             newCommand.originalArgument(),
-                            newCommand.extendedArgument(),
                             batchName,
                             commandOrder);
             
@@ -370,14 +364,13 @@ class H2DaoBatches
     @Override
     public List<Batch> getAllBatches(Initiator initiator) {
         try {
-            Map<String, List<ExtendableCommand>> collectedBatches = new HashMap<>();
+            Map<String, List<ExecutorCommand>> collectedBatches = new HashMap<>();
             
             super.getDisposableTransaction()
                     .doQuery(
                             "SELECT bat_name, " + 
                             "       bat_command_type, " +
-                            "       bat_command_original, " +
-                            "       bat_command_extended " +
+                            "       bat_command_original " +
                             "FROM batch_commands " +
                             "ORDER BY bat_name, bat_command_order",
                             (row) -> { 

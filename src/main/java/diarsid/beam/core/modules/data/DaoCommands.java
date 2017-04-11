@@ -10,7 +10,7 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.CommandType;
-import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 
 /**
  *
@@ -18,29 +18,29 @@ import diarsid.beam.core.base.control.io.commands.ExtendableCommand;
  */
 public interface DaoCommands {
     
-    Optional<ExtendableCommand> getByExactOriginalAndType(
+    Optional<InvocationCommand> getByExactOriginalAndType(
             Initiator initiator, String original, CommandType type);
     
-    List<ExtendableCommand> getByExactOriginalOfAnyType(
+    List<InvocationCommand> getByExactOriginalOfAnyType(
             Initiator initiator, String original);
     
-    List<ExtendableCommand> fullSearchByOriginalPattern(
+    List<InvocationCommand> fullSearchByOriginalPattern(
             Initiator initiator, String pattern);
     
-    List<ExtendableCommand> searchInOriginalByPatternAndType(
+    List<InvocationCommand> searchInOriginalByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
     
-    List<ExtendableCommand> fullSearchByExtendedPattern(
+    List<InvocationCommand> fullSearchByExtendedPattern(
             Initiator initiator, String pattern);
     
-    List<ExtendableCommand> searchInExtendedByPatternAndType(
+    List<InvocationCommand> searchInExtendedByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
     
     boolean save(
-            Initiator initiator, ExtendableCommand command);
+            Initiator initiator, InvocationCommand command);
     
     boolean delete(
-            Initiator initiator, ExtendableCommand command);
+            Initiator initiator, InvocationCommand command);
     
     boolean deleteByExactOriginalOfAllTypes(
             Initiator initiator, String original);
