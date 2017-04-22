@@ -14,7 +14,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 /**
  *
@@ -62,7 +62,7 @@ public class InnerIoEngineAutomatedTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer ask(Initiator initiator, Question question) {
+    public Answer ask(Initiator initiator, VariantsQuestion question) {
         return this.answersQueue.remove();
     }
 

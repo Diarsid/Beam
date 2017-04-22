@@ -13,14 +13,14 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
-import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
@@ -67,7 +67,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public Answer resolve(Question question) throws RemoteException {
+    public Answer resolve(VariantsQuestion question) throws RemoteException {
         try {
             return this.console.resolve(question);
         } catch (IOException e) {
@@ -78,9 +78,9 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public Answer resolve(String question, WeightedVariants variants) throws RemoteException {
+    public Answer resolve(WeightedVariantsQuestion variants) throws RemoteException {
         try {
-            return this.console.resolve(question, variants);
+            return this.console.resolve(variants);
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();

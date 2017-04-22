@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
@@ -37,7 +37,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopp
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
@@ -324,7 +324,7 @@ class BatchesKeeperWorker
     }
     
     private VoidOperation editBatchCommands(Initiator initiator, Batch batch) {
-        Question question = question("edit all commands or just one?")
+        VariantsQuestion question = question("edit all commands or just one?")
                 .withAnswerString("one")
                 .withAnswerString("all");
         Answer answer = this.ioEngine.ask(initiator, question);
@@ -340,7 +340,7 @@ class BatchesKeeperWorker
     }
     
     private VoidOperation editBatchOneCommand(Initiator initiator, Batch batch) {
-        Question question = question("choose command").withAnswerEntities(batch.batchedCommands());
+        VariantsQuestion question = question("choose command").withAnswerEntities(batch.batchedCommands());
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             Optional<ExecutorCommand> newCommand = Optional.empty();
@@ -412,7 +412,7 @@ class BatchesKeeperWorker
                 return voidOperationFail("DAO failed to remove batch");
             }
         } else if ( hasMany(batchNames) ) {
-            Question question = question("choose batch").withAnswerStrings(batchNames);
+            VariantsQuestion question = question("choose batch").withAnswerStrings(batchNames);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 if ( this.dao.removeBatch(initiator, batchNames.get(answer.index())) ) {

@@ -8,8 +8,8 @@ package diarsid.beam.core.base.control.io.base.actors;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 /**
  *
@@ -21,9 +21,9 @@ public interface InnerIoEngine {
     
     Choice ask(Initiator initiator, String yesOrNoQuestion);
     
-    Answer ask(Initiator initiator, Question question);
+    Answer ask(Initiator initiator, VariantsQuestion question);
     
-    Answer ask(Initiator initiator, String question, WeightedVariants variants);
+    Answer ask(Initiator initiator, WeightedVariantsQuestion variants);
     
     void report(Initiator initiator, String string);
     

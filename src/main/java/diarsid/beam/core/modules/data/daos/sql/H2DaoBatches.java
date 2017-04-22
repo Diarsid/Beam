@@ -32,7 +32,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.io.commands.Commands.restoreExecutorCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -42,6 +41,7 @@ import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.nonNullNonEmpty;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
@@ -50,7 +50,6 @@ class H2DaoBatches
         implements DaoBatches {
     
     private final PerRowConversion<String> rowToBatchNameConversion;
-    private final PerRowConversion<ExecutorCommand> rowToCommandConversion;
     private final Function<BatchedCommand, Params> batchedCommandToParams;
     private final Function<Map.Entry<String, List<ExecutorCommand>>, Batch> entryToBatch;
     
@@ -58,12 +57,6 @@ class H2DaoBatches
         super(dataBase, ioEngine);
         this.rowToBatchNameConversion = (row) -> {
             return (String) row.get("bat_name");
-        };
-        this.rowToCommandConversion = (row) -> {
-            return restoreExecutorCommandFrom(
-                    (String) row.get("bat_command_type"), 
-                    (String) row.get("bat_command_original")
-            );
         };
         this.batchedCommandToParams = (batchedCommand) -> {
             return params(
@@ -158,7 +151,7 @@ class H2DaoBatches
                             "FROM batch_commands " +
                             "WHERE LOWER(bat_name) IS ? " +
                             "ORDER BY bat_command_order" ,
-                            this.rowToCommandConversion,
+                            ROW_TO_COMMAND,
                             lower(name))
                     .collect(toList());
             
@@ -377,7 +370,7 @@ class H2DaoBatches
                                 mergeInMapWithArrayLists(
                                         collectedBatches, 
                                         (String) row.get("bat_name"), 
-                                        this.rowToCommandConversion.convert(row));
+                                        ROW_TO_COMMAND.convert(row));
                             });
             
             return collectedBatches

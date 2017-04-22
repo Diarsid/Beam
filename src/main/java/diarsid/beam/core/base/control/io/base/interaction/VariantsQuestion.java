@@ -24,41 +24,41 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
  *
  * @author Diarsid
  */
-public class Question implements Serializable {
+public class VariantsQuestion implements Serializable {
     
     private final String question;
     private final List<Variant> variants;
     
-    private Question(String question) {
+    private VariantsQuestion(String question) {
         this.question = question;
         this.variants = new ArrayList<>();
     }
     
-    private Question(String question, List<Variant> variants) {
+    private VariantsQuestion(String question, List<Variant> variants) {
         this.question = question;
         this.variants = variants;
     }
     
-    public static Question question(String question) {
-        return new Question(question);
+    public static VariantsQuestion question(String question) {
+        return new VariantsQuestion(question);
     }
     
-    public Question withAnswerVariant(Variant variant) {
+    public VariantsQuestion withAnswerVariant(Variant variant) {
         this.variants.add(variant);
         return this;
     }
     
-    public Question withAnswerString(String variant) {
+    public VariantsQuestion withAnswerString(String variant) {
         this.variants.add(new Variant(variant, this.variants.size()));
         return this;
     }
     
-    public Question withAnswerEntity(ConvertableToVariant convertable) {
+    public VariantsQuestion withAnswerEntity(ConvertableToVariant convertable) {
         this.variants.add(convertable.toVariant(this.variants.size()));
         return this;
     }
     
-    public Question withAnswerStrings(List<String> variants) {
+    public VariantsQuestion withAnswerStrings(List<String> variants) {
         AtomicInteger indexer = new AtomicInteger(0);
         this.variants.addAll(variants
                 .stream()
@@ -71,7 +71,7 @@ public class Question implements Serializable {
         return this;
     }
     
-    public Question withAnswerStrings(String... variants) {
+    public VariantsQuestion withAnswerStrings(String... variants) {
         AtomicInteger indexer = new AtomicInteger(0);
         this.variants.addAll(stream(variants)
                 .map(variantString -> 
@@ -82,12 +82,12 @@ public class Question implements Serializable {
         return this;
     }
     
-    public Question withAnswerVariants(List<Variant> variants) {
+    public VariantsQuestion withAnswerVariants(List<Variant> variants) {
         this.variants.addAll(variants);
         return this;
     }
     
-    public Question withAnswerEntities(List<? extends ConvertableToVariant> variants) {
+    public VariantsQuestion withAnswerEntities(List<? extends ConvertableToVariant> variants) {
         AtomicInteger indexer = new AtomicInteger(0);
         this.variants.addAll(variants
                 .stream()
@@ -115,7 +115,7 @@ public class Question implements Serializable {
                 .stream()
                 .filter(variant -> { 
                     if ( variant.hasDisplayText() ) {
-                        return containsIgnoreCase(variant.getDisplayText(), possibleFragment);
+                        return containsIgnoreCase(variant.displayText(), possibleFragment);
                     } else {
                         return containsIgnoreCase(variant.text(), possibleFragment);
                     }

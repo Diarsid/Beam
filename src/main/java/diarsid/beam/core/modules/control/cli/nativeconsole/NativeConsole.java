@@ -15,9 +15,9 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 import static java.util.Objects.nonNull;
 
@@ -34,8 +34,8 @@ public class NativeConsole
                 Runnable {
     
     private final CommandLineProcessor cliProcessor;
-    private Initiator initiator;
     private final InputManager inputManager;
+    private Initiator initiator;
     
     public NativeConsole(CommandLineProcessor commandLineProcessor, InputManager buffer) {
         this.cliProcessor = commandLineProcessor;
@@ -71,7 +71,7 @@ public class NativeConsole
     }
 
     @Override
-    public Answer resolve(Question question) {
+    public Answer resolve(VariantsQuestion question) {
         // show question
         try {
             String answer = inputManager.waitForResponse();
@@ -83,7 +83,7 @@ public class NativeConsole
     }
 
     @Override
-    public Answer resolve(String question, WeightedVariants variants) throws IOException {
+    public Answer resolve(WeightedVariantsQuestion variants) throws IOException {
         // ...
         return noAnswerFromVariants();
     }

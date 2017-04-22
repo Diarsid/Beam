@@ -130,11 +130,11 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of fullSearchByOriginalPattern method, of class H2DaoCommands.
+     * Test of searchInOriginalByPattern method, of class H2DaoCommands.
      */
     @Test
     public void testFullSearchByOriginalPattern() {
-        List<ExtendableCommand> commands = dao.fullSearchByOriginalPattern(initiator, "netb");
+        List<ExtendableCommand> commands = dao.searchInOriginalByPattern(initiator, "netb");
         assertEquals(7, commands.size());
     }
 
@@ -143,7 +143,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByOriginalPatternParts() {
-        List<ExtendableCommand> commands = dao.fullSearchByOriginalPattern(initiator, "net-pro");
+        List<ExtendableCommand> commands = dao.searchInOriginalByPattern(initiator, "net-pro");
         assertEquals(5, commands.size());
     }
 
@@ -168,14 +168,14 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of fullSearchByExtendedPattern method, of class H2DaoCommands.
+     * Test of searchInExtendedByPattern method, of class H2DaoCommands.
      */
     @Test
     public void testFullSearchByExtendedPattern() {
-        List<ExtendableCommand> commands = dao.fullSearchByExtendedPattern(initiator, "tomca");
+        List<ExtendableCommand> commands = dao.searchInExtendedByPattern(initiator, "tomca");
         assertEquals(1, commands.size());
         
-        List<ExtendableCommand> commands1 = dao.fullSearchByExtendedPattern(initiator, "mysq");
+        List<ExtendableCommand> commands1 = dao.searchInExtendedByPattern(initiator, "mysq");
         assertEquals(2, commands1.size());
     }
 
@@ -184,7 +184,7 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testFullSearchByExtendedPatternParts() {
-        List<ExtendableCommand> commands = dao.fullSearchByExtendedPattern(initiator, "se-api");
+        List<ExtendableCommand> commands = dao.searchInExtendedByPattern(initiator, "se-api");
         assertEquals(3, commands.size());
     }
 

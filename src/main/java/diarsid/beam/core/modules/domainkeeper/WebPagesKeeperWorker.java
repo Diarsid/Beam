@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -42,7 +42,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopp
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
@@ -126,7 +126,7 @@ public class WebPagesKeeperWorker
     private Optional<WebPage> manageWithManyPages(Initiator initiator, List<WebPage> pages) {
         // TODO
         // employ more sofisticated algorithm
-        Question question = question("choose").withAnswerEntities(pages);
+        VariantsQuestion question = question("choose").withAnswerEntities(pages);
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             return Optional.of(pages.get(answer.index()));
@@ -158,7 +158,7 @@ public class WebPagesKeeperWorker
         Optional<WebPage> optPage = Optional.empty();
         List<WebPage> foundPages;
         boolean pageNotDefined = true;
-        Question question;
+        VariantsQuestion question;
         directoryDefining: while ( pageNotDefined ) {  
             if ( pagePattern.isEmpty() ) {
                 pagePattern = this.ioEngine.askInput(initiator, "page name");
@@ -224,7 +224,7 @@ public class WebPagesKeeperWorker
         Optional<WebDirectory> optDirectory = Optional.empty();
         List<WebDirectory> foundDirectories;
         boolean directoryNotDefined = true;
-        Question question;        
+        VariantsQuestion question;        
         directoryDefining: while ( directoryNotDefined ) {            
             directoryName = this.ioEngine.askInput(initiator, "directory name");
             if ( directoryName.isEmpty() ) {

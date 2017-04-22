@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -35,7 +35,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
@@ -241,7 +241,7 @@ class LocationsKeeperWorker
         } else if ( locationsToRemove.isEmpty() ) {
             return voidOperationFail("no such location.");
         } else {
-            Question question = question("choose").withAnswerEntities(locationsToRemove);
+            VariantsQuestion question = question("choose").withAnswerEntities(locationsToRemove);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 String locationName = locationsToRemove.get(answer.index()).name();

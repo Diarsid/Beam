@@ -27,6 +27,7 @@ public class ExtendableArgument {
     
     public ExtendableArgument(String originalArgument, String extendedArgument) {
         requireNonEmpty(originalArgument, "command original argument cannot be empty.");
+        requireNonEmpty(extendedArgument, "command extended argument cannot be empty.");
         this.originalArgument = originalArgument;
         this.extendedArgument = extendedArgument;
     }

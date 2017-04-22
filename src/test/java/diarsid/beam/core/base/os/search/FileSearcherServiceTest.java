@@ -107,7 +107,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("file_1", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.contains("folder_1/file_1.txt"));
             } else {
                 fail();
@@ -122,7 +122,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("fi-1", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.contains("folder_1/file_1.txt"));
             } else {
                 fail();
@@ -137,7 +137,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("inn", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.equals("folder_1/inner"));
             } else {
                 fail();
@@ -152,7 +152,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("in-r", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.equals("folder_1/inner"));
             } else {
                 fail();
@@ -170,7 +170,7 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> files = result.success().getMultipleFoundFiles();
+                List<String> files = result.success().allFoundFiles();
                 assertTrue(files.contains("folder_1/file_1.txt"));
                 assertTrue(files.contains("folder_1/file_2.txt"));
                 assertTrue(files.contains("file_z.txt"));
@@ -188,7 +188,7 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> files = result.success().getMultipleFoundFiles();
+                List<String> files = result.success().allFoundFiles();
                 assertTrue(files.contains("folder_1/AAaaDir"));
                 assertTrue(files.contains("folder_1/inner/aAAaa.txt"));
                 assertTrue(files.contains("folder_1/inner/aaabbbzzz.txt"));
@@ -226,7 +226,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("inn/yy", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.equals("folder_1/inner/nested/yyyAAA.txt"));
                 System.out.println("passed");
             } else {
@@ -242,7 +242,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("inn/y-a", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.equals("folder_1/inner/nested/yyyAAA.txt"));
                 System.out.println("passed");
             } else {
@@ -258,7 +258,7 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("inn/es/y-a", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertTrue(file.equals("folder_1/inner/nested/yyyAAA.txt"));
             } else {
                 fail();
@@ -297,7 +297,7 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> files = result.success().getMultipleFoundFiles();
+                List<String> files = result.success().allFoundFiles();
                 assertTrue(files.contains("folder_1/inner/nested/XXxx.txt"));
                 assertTrue(files.contains("folder_1/inner/nested/xXXXx.txt"));
                 assertTrue(files.size() == 2);
@@ -314,7 +314,7 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> files = result.success().getMultipleFoundFiles();
+                List<String> files = result.success().allFoundFiles();
                 assertTrue(files.contains("folder_1/inner/nested/XXxx.txt"));
                 assertTrue(files.contains("folder_1/inner/nested/xXXXx.txt"));
                 assertTrue(files.size() == 2);
@@ -329,10 +329,10 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("iNNer/", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertEquals("folder_1/inner", file);
             } else {
-                result.success().getMultipleFoundFiles().forEach(System.out::println);
+                result.success().allFoundFiles().forEach(System.out::println);
                 fail();
             }
         } else {
@@ -345,10 +345,10 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("/iNNer", root, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().getFoundFile();
+                String file = result.success().foundFile();
                 assertEquals("folder_1/inner", file);
             } else {
-                result.success().getMultipleFoundFiles().forEach(System.out::println);
+                result.success().allFoundFiles().forEach(System.out::println);
                 fail();
             }
         } else {
@@ -379,7 +379,7 @@ public class FileSearcherServiceTest {
     public void testFindStrictly_deep_success() {
         FileSearchResult result = searcher.findStrictly("aaaaA.TXT", root, FILES_ONLY);
         assertTrue(result.isOk());
-        String file = result.success().getFoundFile();
+        String file = result.success().foundFile();
         assertEquals("folder_1/inner/aAAaa.txt", file);
     }
 }

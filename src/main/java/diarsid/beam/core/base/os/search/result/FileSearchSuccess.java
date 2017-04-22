@@ -15,7 +15,7 @@ public interface FileSearchSuccess {
     
     boolean hasSingleFoundFile();
     
-    String getFoundFile();
+    String foundFile();
     
-    List<String> getMultipleFoundFiles();
+    List<String> allFoundFiles();
 }

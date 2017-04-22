@@ -15,10 +15,10 @@ import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
@@ -69,7 +69,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public Answer ask(Initiator initiator, Question question) {
+    public Answer ask(Initiator initiator, VariantsQuestion question) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             return awaitGet(() -> {
                 try {
@@ -88,13 +88,13 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public Answer ask(Initiator initiator, String question, WeightedVariants variants) {
+    public Answer ask(Initiator initiator, WeightedVariantsQuestion variants) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             return awaitGet(() -> {
                 try {
                     return this.ioEnginesHolder
                             .getEngine(initiator)
-                            .resolve(question, variants);
+                            .resolve(variants);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);

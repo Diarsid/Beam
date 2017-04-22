@@ -11,8 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariant;
 
 import static java.lang.String.format;
@@ -59,36 +58,23 @@ public class ConsolePrinter {
         this.writer.flush();
     }
 
-    void printQuestionAndVariants(Question question) throws IOException {
-        Variant variant;
+    void printQuestionAndVariants(VariantsQuestion question) throws IOException {
         this.writer.write(format("     > %s", question.getQuestion()));
         this.writer.newLine();
         for (int i = 0; i < question.getVariants().size(); i++) {
-            variant = question.getVariants().get(i);
-            if ( variant.hasDisplayText() ) {
-                this.writer.write(format("       %d : %s", i + 1, variant.getDisplayText()));
-                this.writer.newLine();
-            } else {
-                this.writer.write(format("       %d : %s", i + 1, variant.text()));
-                this.writer.newLine();
-            }
+            this.writer.write(
+                    format("       %d : %s", i + 1, question.getVariants().get(i).bestText()));
+            this.writer.newLine();
         }
         this.printInDialogInviteLine("choose");
     }
     
     void printInDialogWeightedVariants(List<WeightedVariant> variants) throws IOException {
-        Variant variant;
         this.writer.write("     > is one of ?");
         this.writer.newLine();
         for (int i = 0; i < variants.size(); i++) {
-            variant = variants.get(i);
-            if ( variant.hasDisplayText() ) {
-                this.writer.write(format("       %d : %s", i + 1, variant.getDisplayText()));
-                this.writer.newLine();
-            } else {
-                this.writer.write(format("       %d : %s", i + 1, variant.text()));
-                this.writer.newLine();
-            }
+            this.writer.write(format("       %d : %s", i + 1, variants.get(i).bestText()));
+            this.writer.newLine();
         }
         this.printInDialogInviteLine("choose");
     }

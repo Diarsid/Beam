@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.domain.patternsanalyze;
 
+import java.io.Serializable;
+
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 /**
@@ -14,12 +16,12 @@ import diarsid.beam.core.base.control.io.base.interaction.Variant;
  */
 public class WeightedVariant 
         extends Variant 
-        implements Comparable<WeightedVariant> {
+        implements Comparable<Variant>, Serializable {
     
     private double weight;
 
-    WeightedVariant(String text, double weight, int initialVariantIndex) {
-        super(text, initialVariantIndex);
+    WeightedVariant(Variant parent, double weight) {
+        super(parent);
         this.weight = weight;
     }
 
@@ -28,14 +30,15 @@ public class WeightedVariant
     }
     
     void adjustWeight(double delta) {
-        this.weight = this.weight + delta;
+        this.weight = this.weight - delta;
     }
     
     @Override
     public int hashCode() {
         int hash = 3;
-        hash =
-                83 * hash + ( int ) (Double.doubleToLongBits(this.weight) ^ (Double.doubleToLongBits(this.weight) >>> 32));
+        hash = 83 * hash + 
+                (int) (Double.doubleToLongBits(this.weight) ^ 
+                (Double.doubleToLongBits(this.weight) >>> 32));
         return hash;
     }
 
@@ -58,14 +61,17 @@ public class WeightedVariant
     }
 
     @Override
-    public int compareTo(WeightedVariant other) {
-        if ( this.weight > other.weight) {
-            return 1;
-        } else if ( this.weight < other.weight ) {
-            return -1;
+    public int compareTo(Variant other) {
+        if ( other instanceof WeightedVariant ) {
+            if ( this.weight > ((WeightedVariant) other).weight) {
+                return 1;
+            } else if ( this.weight < ((WeightedVariant) other).weight ) {
+                return -1;
+            } else {
+                return 0;
+            }
         } else {
-            return 0;
-        }
-    }
-    
+            return this.compareTo(other);
+        }        
+    }    
 }

@@ -26,6 +26,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocationCommandFrom;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -33,7 +34,6 @@ import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
-import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocationCommandFrom;
 
 
 class H2DaoCommands 
@@ -94,7 +94,7 @@ class H2DaoCommands
     }
 
     @Override
-    public List<InvocationCommand> fullSearchByOriginalPattern(
+    public List<InvocationCommand> searchInOriginalByPattern(
             Initiator initiator, String pattern) {
         if ( hasWildcard(pattern) ) {
             return this.findByPartsOriginalPattern(initiator, splitByWildcard(pattern));
@@ -188,7 +188,7 @@ class H2DaoCommands
     }
 
     @Override
-    public List<InvocationCommand> fullSearchByExtendedPattern(
+    public List<InvocationCommand> searchInExtendedByPattern(
             Initiator initiator, String pattern) {
         if ( hasWildcard(pattern) ) {
             return this.findByPartsExtendedPattern(initiator, splitByWildcard(pattern));
@@ -197,7 +197,7 @@ class H2DaoCommands
         }        
     }
 
-    public List<InvocationCommand> findBySingleExtendedPattern(String pattern) {
+    private List<InvocationCommand> findBySingleExtendedPattern(String pattern) {
         try {
             return super.getDisposableTransaction()
                     .doQueryAndStreamVarargParams(

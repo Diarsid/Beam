@@ -63,7 +63,8 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
             ioEngine.reportMessage(getSystemInitiator(), textToMessage(reports));
         }
         
-        DaosProvider daosProvider = new H2DaosProvider(dataBase, this.ioModule);
+        DaosProvider daosProvider = new H2DaosProvider(
+                dataBase, this.ioModule, this.applicationComponentsHolderModule);
         return new DataModuleWorker(dataBase, daosProvider);
     }
     

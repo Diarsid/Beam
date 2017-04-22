@@ -24,13 +24,13 @@ public interface DaoCommands {
     List<InvocationCommand> getByExactOriginalOfAnyType(
             Initiator initiator, String original);
     
-    List<InvocationCommand> fullSearchByOriginalPattern(
+    List<InvocationCommand> searchInOriginalByPattern(
             Initiator initiator, String pattern);
     
     List<InvocationCommand> searchInOriginalByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
     
-    List<InvocationCommand> fullSearchByExtendedPattern(
+    List<InvocationCommand> searchInExtendedByPattern(
             Initiator initiator, String pattern);
     
     List<InvocationCommand> searchInExtendedByPatternAndType(

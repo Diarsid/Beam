@@ -7,7 +7,11 @@
 package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -31,33 +35,40 @@ public class Variant implements Serializable, Comparable<Variant> {
         this.variantIndex = variantIndex;
     }
     
+    protected Variant(Variant other) {
+        this.text = other.text;
+        this.displayText = other.displayText;
+        this.variantIndex = other.variantIndex;
+    }
+    
+    public static List<Variant> toVariants(List<String> variantStrings) {
+        AtomicInteger counter = new AtomicInteger(0);
+        return variantStrings
+                .stream()
+                .map(string -> new Variant(string, counter.getAndIncrement()))
+                .collect(toList());
+    }
+    
     public boolean hasDisplayText() {
         return ! this.displayText.isEmpty();
     }
 
+    public String bestText() {
+        return this.hasDisplayText() ? this.displayText : this.text;
+    }
+    
     public String text() {
         return this.text;
     }
 
-    public String getDisplayText() {
+    public String displayText() {
         return this.displayText;
     }
     
     public int index() {
         return this.variantIndex;
     }
-
-    @Override
-    public int compareTo(Variant other) {
-        if ( this.variantIndex > other.variantIndex ) {
-            return 1;
-        } else if ( this.variantIndex < other.variantIndex ) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
-
+    
     @Override
     public int hashCode() {
         int hash = 7;
@@ -85,5 +96,16 @@ public class Variant implements Serializable, Comparable<Variant> {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public int compareTo(Variant other) {
+        if ( this.variantIndex >  other.variantIndex ) {
+            return 1;
+        } else if ( this.variantIndex < other.variantIndex ) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }

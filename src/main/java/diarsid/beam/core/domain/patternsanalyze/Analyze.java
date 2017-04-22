@@ -11,17 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import diarsid.beam.core.base.control.io.base.interaction.Variant;
+
 import static java.lang.Double.MAX_VALUE;
-import static java.lang.Math.abs;
+import static java.lang.Double.MIN_VALUE;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.sort;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
+import static diarsid.beam.core.base.control.io.base.interaction.Variant.toVariants;
+import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.removeWildcards;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 
 /**
  *
@@ -32,34 +34,56 @@ public class Analyze {
     private Analyze() {        
     }
     
-    public static WeightedVariants analyze(String pattern, List<String> variants) {
-        if ( hasWildcard(pattern) ) {
-            WeightedVariants result = analyzeByPatternParts(splitByWildcard(pattern), variants);
-            if ( result.hasAcceptableDiversity() ) {
-                return result;
-            } else {
-                return analyzeCharByChar(removeWildcards(pattern), variants);
-            }
-        } else {
-            return analyzeCharByChar(pattern, variants);
-        }
-    }
+//    public static WeightedVariantsQuestion analyze(String pattern, List<String> variants) {
+//        if ( hasWildcard(pattern) ) {
+//            System.out.println("analyze by patterns!");
+//            WeightedVariantsQuestion result = analyzeByPatternParts(splitByWildcard(pattern), variants);
+//            if ( result.hasAcceptableDiversity() ) {
+//                return result;
+//            } else {
+//                System.out.println("diversity is LOW -> analyze by chars!");
+//                return analyzeCharByChar(removeWildcards(pattern), variants);
+//            }
+//        } else {
+//            System.out.println("analyze by chars!");
+//            return analyzeCharByChar(pattern, variants);
+//        }
+//    }
     
     public static void main(String[] args) {
-        String pattern = "nebeprjo";
+        //String pattern = "nebeprjo";
+//        String analyzed = "beam_project";
+//        analyzeByPatternParts(splitByWildcard("nebe-prjo"), asList("beam_project", "netbeans_project"));
         
+        
+        doAll();
+    }
+    
+    public static WeightedVariantsQuestion analyzeStrings(String pattern, List<String> variants) {
+        return analyzeVariants(pattern, toVariants(variants));
+    }
+
+    public static void doAll() {
         List<String> variantsStrings = asList(
+//                "fb",
+//                "fixed beam",
+//                "facebook",
+//                "epicfantasy crossbooking"
                 "beam_project_home",
                 "beam_project",
+                "beam_home",
+                "awesome java libs",
+                "git>beam",
                 "beam_project/src",
                 "beam netpro",
                 "abe_netpro",
                 "babel_pro",
                 "netbeans_projects", 
                 "beam_server_project"
-                );
+        );
+        String pattern = "beprjo";
         
-        WeightedVariants variants = analyzeCharByChar(pattern, variantsStrings);
+        WeightedVariantsQuestion variants = analyzeStrings(pattern, variantsStrings);
         while ( variants.hasNext() ) {            
             if ( variants.isCurrentMuchBetterThanNext() ) {
                 System.out.println(variants.current().text() + " is much better than next: " + variants.current().weight());
@@ -72,15 +96,136 @@ public class Analyze {
         }
     }
     
-    private static WeightedVariants analyzeByPatternParts(
-            List<String> pattern, List<String> variants) {
-        
+//    private static WeightedVariantsQuestion analyzeByPatternParts(
+//            List<String> patternParts, List<String> variants) {
+//        List<WeightedVariant> results = new ArrayList<>();
+//        patternParts = lower(patternParts);
+//        double minWeight = MAX_VALUE;
+//        double maxWeight = MIN_VALUE;
+//        
+//        int patternPartIndex;
+//        double variantWeight;
+//        int wordsInVariantQty;
+//        String analyzedVariant;
+//        String originalVariant;
+//        
+//        for (int variantIndex = 0; variantIndex < variants.size(); variantIndex++) {
+//            originalVariant = variants.get(variantIndex);
+//            System.out.println("analyze -> " + originalVariant);
+//            analyzedVariant = lower(originalVariant);
+//            wordsInVariantQty = countWords(analyzedVariant);
+//            variantWeight = 7.0 + ( ( wordsInVariantQty - 1.0 ) * 4.0 ) + (analyzedVariant.length() / wordsInVariantQty);
+//            
+//            for (String patternPart : patternParts) {
+//                System.out.println("pattern part : " + patternPart);
+//                patternPartIndex = analyzedVariant.indexOf(patternPart);
+//                if ( patternPartIndex == 0 ) {
+//                    variantWeight = variantWeight - 5.0;
+//                } else if ( patternPartIndex < 0 ) {
+//                    System.out.println(patternPart + " not found!");
+//                    if ( patternAdvancedSearch(patternPart, analyzedVariant) ) {
+//                        System.out.println(patternPart + " found using advanced!");
+//                        variantWeight = variantWeight + 2.0;
+//                    } else {
+//                        variantWeight = ( variantWeight * 1.8 ) + 6.0;
+//                    }
+//                } else if ( ! isWordsSeparator(analyzedVariant.charAt(patternPartIndex - 1)) ) {
+//                    variantWeight = variantWeight + patternPartIndex * 1.0;                           
+//                }
+//            }
+//            results.add(new WeightedVariant(originalVariant, variantWeight, variantIndex));
+//            if ( variantWeight > maxWeight ) {
+//                maxWeight = variantWeight;
+//            }
+//            if ( variantWeight < minWeight ) {
+//                minWeight = variantWeight;
+//            }
+//            System.out.println(originalVariant + " weight: " + variantWeight);
+//        }
+//        double delta = minWeight;
+//        results.forEach(adbjustedVariant -> adbjustedVariant.adjustWeight(delta));
+//        System.out.println(format("analyze by patterns diversity: min=%s max=%s", minWeight, maxWeight));
+//        return new WeightedVariantsQuestion(results, isDiversitySufficient(minWeight, maxWeight));
+//    }
+    
+    private static boolean patternAdvancedSearch(String pattern, String analyzed) {
+        int patternLength = pattern.length();
+        List<Integer> positions = new ArrayList<>();
+        char currentChar;
+        int currentCharPosition;
+        int maxClusterLength = Integer.MIN_VALUE;
+        for (int currentCharIndex = 0; currentCharIndex < patternLength; currentCharIndex++) {
+            currentChar = pattern.charAt(currentCharIndex);
+            currentCharPosition = analyzed.indexOf(currentChar);
+            positions.add(currentCharPosition);
+            while ( currentCharPosition > 0 ) {
+                currentCharPosition = analyzed.indexOf(currentChar, currentCharPosition + 1);
+                if ( currentCharPosition > 0 ) {
+                    positions.add(currentCharPosition);
+                }
+            }
+        }
+        sort(positions);
+        int previousPosition = Integer.MIN_VALUE;
+        int foundClusterLength = 0;
+        for (Integer position : positions) {
+            System.out.print(position + " ");
+            if ( position == previousPosition + 1 ) {
+                if ( foundClusterLength == 0 ) {
+                    foundClusterLength = 2;
+                } else {
+                    foundClusterLength++;
+                }                
+            } else {
+                if ( foundClusterLength > maxClusterLength ) {
+                    maxClusterLength = foundClusterLength;
+                    foundClusterLength = 0;
+                }
+            }
+            previousPosition = position;
+        }
+        if ( foundClusterLength > maxClusterLength ) {
+            maxClusterLength = foundClusterLength;
+        }
+        System.out.println("cluster length: " + maxClusterLength);
+        return maxClusterLength >= patternLength;
     }
     
-    private static WeightedVariants analyzeCharByChar(String pattern, List<String> variantStrings) {
+    private static int countWords(String variant) {
+        char[] chars = variant.toCharArray();
+        char current;
+        int wordsCount = 1;
+        boolean previousCharIsNotSeparator = true;
+        for (int currentIndex = 0; currentIndex < chars.length; currentIndex++) {
+            current = chars[currentIndex];
+            if ( isWordsSeparator(current) ) {
+                if ( currentIndex > 0 ) {
+                    if ( previousCharIsNotSeparator ) {
+                        wordsCount++;
+                        previousCharIsNotSeparator = false;
+                    }
+                } else {
+                    previousCharIsNotSeparator = false;
+                }
+            } else {
+                previousCharIsNotSeparator = true;
+            }
+        }
+        if ( isWordsSeparator(lastCharOf(variant)) ) {
+            wordsCount--;
+        }
+        return wordsCount;
+    }
+
+    private static char lastCharOf(String variant) {
+        return variant.charAt(variant.length() - 1);
+    }
+    
+    public static WeightedVariantsQuestion analyzeVariants(String pattern, List<Variant> variants) {
         pattern = lower(pattern);
+        sort(variants);
         Map<Character, Integer> reusableVisitedChars = new HashMap<>();
-        List<WeightedVariant> variants = new ArrayList<>();
+        List<WeightedVariant> weightedVariants = new ArrayList<>();
         String variantText;
         
         int[] positions;
@@ -105,9 +250,10 @@ public class Analyze {
         boolean firstCharsMatchInVariantAndPattern;
         
         double minWeight = MAX_VALUE;
+        double maxWeight = MIN_VALUE;
         
-        for (int variantIndex = 0; variantIndex < variantStrings.size(); variantIndex++) {
-            variantText = lower(variantStrings.get(variantIndex));
+        for (Variant variant : variants) {
+            variantText = lower(variant.text());
             // positions counting begins...
             patternChars = pattern.toCharArray();
             positions = new int[patternChars.length];
@@ -180,7 +326,7 @@ public class Analyze {
                             currentClusterLength = 1;
                             clustersWeight = clustersWeight + currentPosition;                        
                             if ( currentPosition > 0 ) {
-                                if ( isSubwordBeginning(variantText.charAt(currentPosition - 1)) ) {
+                                if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
                                     variantWeight = variantWeight - 4;
                                 }
                             }
@@ -195,7 +341,7 @@ public class Analyze {
                         }
                     }
                 } else {
-                    if ( isSubwordBeginning(variantText.charAt(currentPosition - 1)) ) {
+                    if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
                         variantWeight = variantWeight - 3;
                     }
                     if ( clusterContinuation ) {
@@ -231,16 +377,24 @@ public class Analyze {
             if ( variantWeight < minWeight ) {
                 minWeight = variantWeight;
             }
+            if ( variantWeight > maxWeight ) {
+                maxWeight = variantWeight;
+            }
             // weight calculation ends
-            variants.add(new WeightedVariant(variantStrings.get(variantIndex), variantWeight, variantIndex));
+            weightedVariants.add(new WeightedVariant(variant, variantWeight));
         }
         
-        if ( minWeight < 0 ) {
-            double delta = abs(minWeight);
-            variants.forEach(adbjustedCandidate -> adbjustedCandidate.adjustWeight(delta));
-        }
-        variants.stream().sorted().forEach(candidate -> System.out.println(format("%s : %s", candidate.weight(), candidate.text())));
-        return new WeightedVariants(variants);
+        //double delta = abs(minWeight);
+        double delta = minWeight;
+        weightedVariants.forEach(adjustedVariant -> adjustedVariant.adjustWeight(delta));
+        weightedVariants.stream().sorted().forEach(candidate -> System.out.println(format("%s : %s", candidate.weight(), candidate.text())));
+        sort(weightedVariants);
+        shrink(weightedVariants, 11);
+        return new WeightedVariantsQuestion(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
+    }
+
+    private static boolean isDiversitySufficient(double minWeight, double maxWeight) {
+        return ((maxWeight - minWeight) > (minWeight * 0.25));
     }
     
     private static double clusterWeightRatioDependingOn(
@@ -301,8 +455,10 @@ public class Analyze {
         return steps;
     }
     
-    public static boolean isSubwordBeginning(char c) {
+    private static boolean isWordsSeparator(char c) {
         return 
+                c == '.' ||
+                c == ',' ||
                 c == ' ' || 
                 c == '_' || 
                 c == '-' || 

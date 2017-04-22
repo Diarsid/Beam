@@ -13,29 +13,32 @@ import java.util.Optional;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
+import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.domain.entities.NamedEntityType;
+import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.domain.entities.NamedEntityType.fromString;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_COMMAND;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_LOCATION;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_NAMED_ENTITY;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_PAGE;
 
 
 class H2DaoNamedEntities 
@@ -43,7 +46,6 @@ class H2DaoNamedEntities
         implements DaoNamedEntities {
     
     private final ProgramsCatalog programsCatalog;
-    private final PerRowConversion<NamedEntity> rowToNamedEntityConversion;
     
     H2DaoNamedEntities(
             DataBase dataBase, 
@@ -51,30 +53,6 @@ class H2DaoNamedEntities
             ProgramsCatalog programsCatalog) {
         super(dataBase, ioEngine);
         this.programsCatalog = programsCatalog;
-        this.rowToNamedEntityConversion = (row) -> {
-            return new NamedEntity() {
-                
-                private final String name = (String) row.get("entity_name");
-                private final NamedEntityType type = fromString((String) row.get("entity_type"));
-                
-                @Override
-                public String name() {
-                    return this.name;
-                }
-
-                @Override
-                public NamedEntityType type() {
-                    return this.type;
-                }
-
-                @Override
-                public Variant toVariant(int variantIndex) {
-                    return new Variant(
-                            format("%s (%s)", this.name, this.type.displayName()), 
-                            variantIndex);
-                }
-            };
-        };
     }
 
     @Override
@@ -86,29 +64,60 @@ class H2DaoNamedEntities
     private Optional<? extends NamedEntity> findRealEntityInTransaction(
             NamedEntity mockedEntity, JdbcTransaction transact)
             throws TransactionHandledSQLException, TransactionHandledException {
+        String name = mockedEntity.name();
         switch ( mockedEntity.type() ) {
             case LOCATION : {
-                return transact.doQueryAndConvertFirstRowVarargParams(
-                        Location.class, 
+                return transact.doQueryAndConvertFirstRowVarargParams(Location.class, 
                         "SELECT loc_name, loc_path " +
                         "FROM locations " +
                         "WHERE ( LOWER(loc_name) IS ? ) ",
                         (row) -> {
-                            return Optional.of(
-                                    new Location(
-                                            (String) row.get("loc_name"), 
-                                            (String) row.get("loc_path")));
+                            return Optional.of(ROW_TO_LOCATION.convert(row));
                         }, 
-                        lower(mockedEntity.name()));
+                        lower(name));
             }        
             case WEBPAGE : {
-                throw new UnsupportedOperationException();
+                return transact.doQueryAndConvertFirstRowVarargParams(
+                        WebPage.class,
+                        "SELECT name, shortcuts, url, ordering, dir_id " +
+                        "FROM web_pages " +
+                        "WHERE ( LOWER(name) IS ? ) ",
+                        (row) -> {
+                            return Optional.of(ROW_TO_PAGE.convert(row));
+                        },
+                        lower(name));
             }        
             case PROGRAM : {
+                // return this.programsCatalog.
                 throw new UnsupportedOperationException();
             }        
             case BATCH : {
-                throw new UnsupportedOperationException();
+                
+                boolean batchExists = transact
+                        .doesQueryHaveResultsVarargParams(
+                                "SELECT bat_name " +
+                                "FROM batches " + 
+                                "WHERE LOWER(bat_name) IS ? ",
+                                lower(name));
+
+                List<ExecutorCommand> commands = transact
+                        .ifTrue( batchExists )
+                        .doQueryAndStreamVarargParams(
+                                ExecutorCommand.class,
+                                "SELECT bat_command_type, " +
+                                "       bat_command_original " +
+                                "FROM batch_commands " +
+                                "WHERE LOWER(bat_name) IS ? " +
+                                "ORDER BY bat_command_order" ,
+                                ROW_TO_COMMAND,
+                                lower(name))
+                        .collect(toList());
+
+                if ( nonEmpty(commands) ) {
+                    return Optional.of(new Batch(name, commands));
+                } else {
+                    return Optional.empty();
+                }
             }        
             default : {
                 return Optional.empty();
@@ -137,7 +146,7 @@ class H2DaoNamedEntities
                             "SELECT page_name, 'webpage' " +
                             "FROM webpages " +
                             "WHERE LOWER(page_name) LIKE ? ",
-                            this.rowToNamedEntityConversion,
+                            ROW_TO_NAMED_ENTITY,
                             lowerName, 
                             lowerName, 
                             lowerName)
@@ -179,7 +188,7 @@ class H2DaoNamedEntities
                             "SELECT page_name, 'webpage' " +
                             "FROM webpages " +
                             "WHERE " + multipleLowerLIKE("page_name", namePatternParts.size(), AND),
-                            this.rowToNamedEntityConversion,
+                            ROW_TO_NAMED_ENTITY,
                             lowerNames, 
                             lowerNames, 
                             lowerNames)

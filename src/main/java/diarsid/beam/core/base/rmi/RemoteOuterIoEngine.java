@@ -13,8 +13,8 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 /**
  *
@@ -32,10 +32,10 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     Choice resolve(String yesOrNoQuestion) throws RemoteException;
     
     @Override
-    Answer resolve(Question question) throws RemoteException;
+    Answer resolve(VariantsQuestion question) throws RemoteException;
     
     @Override
-    Answer resolve(String question, WeightedVariants variants) throws RemoteException;
+    Answer resolve(WeightedVariantsQuestion variants) throws RemoteException;
     
     @Override
     void report(String string) throws RemoteException;

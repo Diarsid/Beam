@@ -14,7 +14,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.parseInt;
@@ -72,14 +72,14 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer ask(Initiator initiator, Question question) {
+    public Answer ask(Initiator initiator, VariantsQuestion question) {
         try {
             Variant variant;
             System.out.println(format("fake io > %s", question.getQuestion()));
             for (int i = 0; i < question.getVariants().size(); i++) {
                 variant = question.getVariants().get(i);
                 if ( variant.hasDisplayText() ) {
-                    System.out.println(format("fake io >     %d : %s", i + 1, variant.getDisplayText()));
+                    System.out.println(format("fake io >     %d : %s", i + 1, variant.displayText()));
                 } else {
                     System.out.println(format("fake io >     %d : %s", i + 1, variant.text()));
                 }

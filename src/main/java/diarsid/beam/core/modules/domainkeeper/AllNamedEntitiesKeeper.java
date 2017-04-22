@@ -13,13 +13,13 @@ import java.util.Set;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -74,7 +74,7 @@ class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
     
     private Optional<NamedEntity> manageWithMultipleEntities(
             Initiator initiator, List<NamedEntity> entities) {
-        Question question = question("choose").withAnswerEntities(entities);
+        VariantsQuestion question = question("choose").withAnswerEntities(entities);
         Answer answer = this.ioEngine.ask(initiator, question);
         if ( answer.isGiven() ) {
             // TODO

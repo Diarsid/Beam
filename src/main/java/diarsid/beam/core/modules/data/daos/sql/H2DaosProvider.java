@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.data.daos.sql;
 
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
@@ -26,10 +27,13 @@ public class H2DaosProvider implements DaosProvider {
     
     private final IoModule ioModule;
     private final DataBase dataBase;
+    private final ApplicationComponentsHolderModule components;
     
-    public H2DaosProvider(DataBase dataBase, IoModule ioModule) {
+    public H2DaosProvider(
+            DataBase dataBase, IoModule ioModule, ApplicationComponentsHolderModule components) {
         this.dataBase = dataBase;
         this.ioModule = ioModule;
+        this.components = components;
     }
 
     @Override
@@ -44,7 +48,10 @@ public class H2DaosProvider implements DaosProvider {
 
     @Override
     public DaoNamedEntities createDaoNamedEntities() {
-        return new H2DaoNamedEntities(this.dataBase, this.ioModule.getInnerIoEngine());
+        return new H2DaoNamedEntities(
+                this.dataBase, 
+                this.ioModule.getInnerIoEngine(), 
+                this.components.getProgramsCatalog());
     }
 
     @Override

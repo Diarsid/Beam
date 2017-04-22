@@ -16,12 +16,12 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.util.StringHolder;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariant;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -104,12 +104,12 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
     }
 
     @Override
-    public Answer resolve(Question question) throws IOException {
+    public Answer resolve(VariantsQuestion question) throws IOException {
         this.printer.printQuestionAndVariants(question);
         return this.askForAnswer(question);
     }
 
-    private Answer askForAnswer(Question question) 
+    private Answer askForAnswer(VariantsQuestion question) 
             throws IOException, NumberFormatException {
         boolean notResolved = true;
         String line;
@@ -142,13 +142,17 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
     }
 
     @Override
-    public Answer resolve(String question, WeightedVariants variants) throws IOException {
+    public Answer resolve(WeightedVariantsQuestion variants) throws IOException {
         String line;
         Answer answer = noAnswerFromVariants();
         Choice choice;
-        variantsChoosing: while ( variants.hasNext() ) {            
+        int chosenVariantIndex;
+        List<WeightedVariant> similarVariants;
+        
+        variantsChoosing: while ( variants.hasNext() ) {         
+            answer = noAnswerFromVariants();   
             if ( variants.isCurrentMuchBetterThanNext() ) {
-                this.printer.printYesNoQuestion(variants.current().text());
+                this.printer.printYesNoQuestion(variants.current().bestText());
                 choice = choiceOfPattern(this.reader.readLine());
                 switch ( choice ) {
                     case POSTIVE : {
@@ -168,16 +172,34 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                     }
                 }
             } else {
-                List<WeightedVariant> similarVariants = variants.allNextSimilar();
+                similarVariants = variants.allNextSimilar();
                 this.printer.printInDialogWeightedVariants(similarVariants);
-                line = this.reader.readLine();
-                if ( isNumeric(line) ) {
-                    
-                } else {
-                    
-                }
+                similarVariantsChoosing: while ( true ) {
+                    line = this.reader.readLine();
+                    if ( isNumeric(line) ) {
+                        chosenVariantIndex = parseInt(line);
+                        if ( variants.isChoiceInSimilarVariantsNaturalRange(chosenVariantIndex) ) {
+                            return variants.answerWith(chosenVariantIndex);
+                        } else {
+                            this.printer.printInDialogReportLine("not in variants range.");
+                            this.printer.printInDialogInviteLine("choose");
+                            continue similarVariantsChoosing;
+                        }
+                    } else {
+                        answer = variants.ifPartOfAnySimilarVariant(line);
+                        if ( answer.isGiven() ) {
+                            return answer;
+                        } else if ( isRejection(line) ) {
+                            continue variantsChoosing;
+                        } else {
+                            this.printer.printInDialogInviteLine("choose");
+                            continue similarVariantsChoosing;
+                        }
+                    }
+                }                
             }
         }
+        return answer;
     }
     
     @Override

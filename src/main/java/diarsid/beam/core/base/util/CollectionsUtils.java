@@ -99,4 +99,12 @@ public class CollectionsUtils {
             return Optional.empty();
         }
     }
+    
+    public static void shrink(List list, int size) {
+        if ( list.size() > size ) {
+            for (int i = size; i < list.size(); i++) {
+                list.remove(i);
+            }
+        } 
+    } 
 }

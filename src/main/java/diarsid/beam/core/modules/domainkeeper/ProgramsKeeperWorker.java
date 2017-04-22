@@ -14,7 +14,7 @@ import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -25,7 +25,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
@@ -60,7 +60,7 @@ class ProgramsKeeperWorker
     public Optional<Program> findByExactName(Initiator initiator, String strictName) {
         FileSearchResult result = this.programsCatalog.findProgramByStrictName(strictName);
         if ( result.isOk() && result.success().hasSingleFoundFile() ) {
-            return this.optionalProgram(result.success().getFoundFile());
+            return this.optionalProgram(result.success().foundFile());
         } else {
             return Optional.empty();
         }
@@ -92,10 +92,10 @@ class ProgramsKeeperWorker
         FileSearchResult result = this.programsCatalog.findProgramByPattern(pattern);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                return this.optionalProgram(result.success().getFoundFile());
+                return this.optionalProgram(result.success().foundFile());
             } else {
-                Question question = question("choose program")
-                        .withAnswerStrings(result.success().getMultipleFoundFiles());
+                VariantsQuestion question = question("choose program")
+                        .withAnswerStrings(result.success().allFoundFiles());
                 Answer answer = this.ioEngine.ask(initiator, question);
                 if ( answer.isGiven() ) {
                     return this.optionalProgram(answer.text());
@@ -120,11 +120,11 @@ class ProgramsKeeperWorker
                 return asList(
                         new Program(
                                 this.programsCatalog, 
-                                result.success().getFoundFile()));
+                                result.success().foundFile()));
             } else {
                 return result
                         .success()
-                        .getMultipleFoundFiles()
+                        .allFoundFiles()
                         .stream()
                         .map(programFileName -> new Program(this.programsCatalog, programFileName))
                         .collect(toList());

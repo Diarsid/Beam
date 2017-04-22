@@ -14,6 +14,7 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
@@ -32,7 +33,6 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 
@@ -67,7 +67,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyze;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeStrings;
 
 /**
  *
@@ -238,8 +238,8 @@ class ExecutorModuleWorker implements ExecutorModule {
         Optional<? extends NamedEntity> entity = this.findNamedEntity(initiator, command);
         if ( entity.isPresent() && entity.get().is(LOCATION) ) {
             asLocation(entity).openAsync(
-                    this.doOnSuccess(initiator, command), 
-                    this.doOnFail(initiator, command));
+                    this.thenDoOnSuccess(initiator, command), 
+                    this.thenDoOnFail(initiator, command));
         } else {
             this.doWhenNotFound(initiator, command);
         }
@@ -271,18 +271,24 @@ class ExecutorModuleWorker implements ExecutorModule {
                         .locations()
                         .findByNamePattern(initiator, command.originalLocation());
                 if ( found.isPresent() ) {
-                    
+                    this.doWhenLocationFoundFromExtended(initiator, command, found.get());
                 } else {
                     this.doWhenNotFound(initiator, command);
                 }
             }
         } else {
+            command.setNew();
             found = this.domain
                     .locations()
                     .findByNamePattern(initiator, command.originalLocation());
             if ( found.isPresent() ) {
                 location = found.get();
-                target = command.originalArgument();
+                target = command.originalTarget();
+                if ( location.has(target) ) {
+                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                } else {
+                    this.doWhenLocationTargetNotFoundDirectly(initiator, location, command);
+                }
             } else {
                 this.doWhenNotFound(initiator, command);
             }
@@ -297,29 +303,49 @@ class ExecutorModuleWorker implements ExecutorModule {
             command.setTargetFound();
             location.openAsync(
                     target,
-                    this.doOnSuccess(initiator, command),
-                    this.doOnFail(initiator, command));
+                    this.thenDoOnSuccess(initiator, command),
+                    this.thenDoOnFail(initiator, command));
         } else {
             this.domain.commandsMemory().remove(initiator, command);
-            command.setNew();
-            FileSearchResult result = this.fileSearcher.find(command.originalPath(), location.path(), ALL);
-            if ( result.isOk() ) {
-                if ( result.success().hasSingleFoundFile() ) {
-                    target = result.success().getFoundFile();
-                    command.argument().setExtended(location.name() + "/" + target);
-                    command.setTargetFound();
-                    location.openAsync(
-                            target,
-                            this.doOnSuccess(initiator, command),
-                            this.doOnFail(initiator));
-                } else {
-                    List<String> foundTargets = result.success().getMultipleFoundFiles();
-                    WeightedVariants variants = analyze(command.originalPath(), foundTargets);
-                }
-            } else {
-                this.ioEngine.report(initiator, "");
-            }
+            this.doWhenLocationTargetNotFoundDirectly(initiator, location, command);
         }
+    }
+
+    private void doWhenLocationTargetNotFoundDirectly(
+            Initiator initiator, Location location, OpenLocationTargetCommand command) {
+        String target;
+        command.setNew();
+        target = command.originalTarget();
+        FileSearchResult result = this.fileSearcher.find(target, location.path(), ALL);
+        if ( result.isOk() ) {
+            if ( result.success().hasSingleFoundFile() ) {
+                target = result.success().foundFile();
+                this.openTargetAndExtendCommand(initiator, location, target, command);
+            } else {
+                Answer answer = this.ioEngine.ask(
+                        initiator, analyzeStrings(target, result.success().allFoundFiles()));
+                if ( answer.isGiven() ) {
+                    target = answer.text();
+                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                }
+            }
+        } else {
+            this.ioEngine.report(
+                    initiator, format("'%s' not found in %s", target, location.name()));
+        }
+    }
+
+    public void openTargetAndExtendCommand(
+            Initiator initiator, 
+            Location location, 
+            String target, 
+            OpenLocationTargetCommand command) {
+        command.argument().setExtended(location.name() + "/" + target);
+        command.setTargetFound();
+        location.openAsync(
+                target,
+                this.thenDoOnSuccess(initiator, command),
+                this.thenDoOnFail(initiator));
     }
 
     @Override
@@ -327,8 +353,8 @@ class ExecutorModuleWorker implements ExecutorModule {
         Optional<? extends NamedEntity> entity = this.findNamedEntity(initiator, command);
         if ( entity.isPresent() && entity.get().is(PROGRAM) ) {
             asProgram(entity).runAsync(
-                    this.doOnSuccess(initiator, command), 
-                    this.doOnFail(initiator, command));
+                    this.thenDoOnSuccess(initiator, command), 
+                    this.thenDoOnFail(initiator, command));
         } else {
             this.doWhenNotFound(initiator, command);
         }
@@ -356,34 +382,34 @@ class ExecutorModuleWorker implements ExecutorModule {
         Optional<? extends NamedEntity> entity = this.findNamedEntity(initiator, command);
         if ( entity.isPresent() && entity.get().is(WEBPAGE) ) {
             asWebPage(entity).browseAsync(
-                    this.doOnSuccess(initiator, command), 
-                    this.doOnFail(initiator, command));
+                    this.thenDoOnSuccess(initiator, command), 
+                    this.thenDoOnFail(initiator, command));
         } else {
             this.doWhenNotFound(initiator, command);
         }
     }
 
-    private CallbackEvent doOnFail(Initiator initiator, InvocationCommand command) {
+    private CallbackEvent thenDoOnFail(Initiator initiator, InvocationCommand command) {
         return (fail) -> {
             this.ioEngine.report(initiator, fail);
             this.deleteCommandIfNecessary(initiator, command);
         };
     }
     
-    private CallbackEvent doOnFail(Initiator initiator) {
+    private CallbackEvent thenDoOnFail(Initiator initiator) {
         return (fail) -> {
             this.ioEngine.report(initiator, fail);
         };
     }
 
-    private CallbackEvent doOnSuccess(Initiator initiator, InvocationCommand command) {
+    private CallbackEvent thenDoOnSuccess(Initiator initiator, InvocationCommand command) {
         return (sucess) -> {
             this.ioEngine.report(initiator, sucess);
             this.saveCommandIfNecessary(initiator, command);
         };
     }
     
-    private CallbackEvent doOnSuccess(
+    private CallbackEvent thenDoOnSuccess(
             Initiator initiator, Optional<InvocationCommand> command) {
         return (sucess) -> {
             this.ioEngine.report(initiator, sucess);
@@ -450,20 +476,20 @@ class ExecutorModuleWorker implements ExecutorModule {
             invocation: switch ( entity.get().type() ) {
                 case LOCATION : {
                     asLocation(entity).openAsync(
-                            this.doOnSuccess(initiator, command.mergeWithEntity(entity)), 
-                            this.doOnFail(initiator));
+                            this.thenDoOnSuccess(initiator, command.mergeWithEntity(entity)), 
+                            this.thenDoOnFail(initiator));
                     return voidCompleted();
                 }
                 case WEBPAGE : {
                     asWebPage(entity).browseAsync(
-                            this.doOnSuccess(initiator, command.mergeWithEntity(entity)), 
-                            this.doOnFail(initiator));
+                            this.thenDoOnSuccess(initiator, command.mergeWithEntity(entity)), 
+                            this.thenDoOnFail(initiator));
                     return voidCompleted();
                 }
                 case PROGRAM : {
                     asProgram(entity).runAsync(
-                            this.doOnSuccess(initiator, command.mergeWithEntity(entity)), 
-                            this.doOnFail(initiator));
+                            this.thenDoOnSuccess(initiator, command.mergeWithEntity(entity)), 
+                            this.thenDoOnFail(initiator));
                     return voidCompleted();
                 }
                 case BATCH : {

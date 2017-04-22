@@ -7,14 +7,19 @@
 package diarsid.beam.core.base.util;
 
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.generate;
 
+import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -81,11 +86,246 @@ public class SqlUtil {
                 .collect(joining(", ", " ( ", " ) "));
     }
     
+    public static String multipleLowerGroupedLikesOr(String column, int length) {
+        String condition = "( LOWER(" + column + ") LIKE ? )";
+        switch (length) {
+            case 1 : {
+                return condition;
+            }
+            case 2 : {
+                return 
+                        condition + " OR " + 
+                        condition;
+            }
+            case 3 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + 
+                        ") OR " + 
+                        condition;
+            }
+            case 4 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 5 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 6 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 7 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 8 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 9 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 10 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " ) OR ( " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            default : {                
+                return 
+                        "( " + 
+                        multipleLowerLikeAnd(column, length - (length / 2)) + 
+                        " ) OR ( " + 
+                        multipleLowerLikeAnd(column, (length / 2)) + 
+                        " )";
+            }
+        }    
+    }
+    
     public static String multipleLowerLIKE(
             String column, int partsSize, SqlOperator sqlOperator) {
         return generate(() -> "( LOWER(column) LIKE ? )")
                 .limit(partsSize)
                 .map(condition -> condition.replace("column", column))
                 .collect(joining(sqlOperator.getSql(), " ", " "));
+    }
+    
+    public static String multipleLowerLikeAnd(String column, int length) {
+        String condition = "( LOWER(" + column + ") LIKE ? )";
+        switch (length) {
+            case 1 : {
+                return condition;
+            }
+            case 2 : {
+                return 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 3 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 4 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 5 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 6 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 7 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 8 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 9 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            case 10 : {
+                return 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition + " AND " + 
+                        condition;
+            }
+            default : {
+                return multipleLowerLIKE(column, length, AND);
+            }
+        }
+    }
+    
+    public static void main(String[] args) {
+        patternToCharCriterias("nebeansprojs").forEach(System.out::println);
+    }
+    
+    public static Collection<String> patternToCharCriterias(String pattern) {
+        char[] chars = lower(pattern).toCharArray();
+        Map<Character, String> criterias = new HashMap<>();
+        String criteria;        
+        char character;
+        for (int i = 0; i < chars.length; i++) {
+            character = chars[i];
+            criteria = criterias.get(character);
+            if ( isNull(criteria) ) {
+                criterias.put(character, "%" + character + "%");
+            } else {
+                criterias.put(character, criteria + character + "%");
+            }            
+        }
+        return criterias.values();
     }
 }

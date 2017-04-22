@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
@@ -34,7 +34,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopp
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
@@ -149,7 +149,7 @@ class WebDirectoriesKeeperWorker
             this.ioEngine.report(initiator, format("'%s' found.", toRemove.name()));
             return Optional.of(toRemove);
         } else if ( hasMany(foundDirs) ) {
-            Question question = question("choose").withAnswerEntities(foundDirs);
+            VariantsQuestion question = question("choose").withAnswerEntities(foundDirs);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 return Optional.of(foundDirs.get(answer.index()));

@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Question;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Task;
@@ -41,7 +41,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopp
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Question.question;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
@@ -190,7 +190,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         if ( taskTime.isTimeRelative() ) {
             repeat = NO_REPEAT;
         } else {
-            Question question = question("choose repeat").withAnswerStrings(repeatNames());
+            VariantsQuestion question = question("choose repeat").withAnswerStrings(repeatNames());
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 repeat = repeatByItsName(answer.text());
@@ -302,7 +302,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         } else if ( hasOne(matchingTasks) ) {
             taskToRemove = getOne(matchingTasks);
         } else {
-            Question question = question("choose task").withAnswerEntities(matchingTasks);
+            VariantsQuestion question = question("choose task").withAnswerEntities(matchingTasks);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 taskToRemove = matchingTasks.get(answer.index());
@@ -343,7 +343,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         } else if ( hasOne(matchingTasks) ) {
             taskToEdit = getOne(matchingTasks);
         } else {
-            Question question = question("choose task").withAnswerEntities(matchingTasks);
+            VariantsQuestion question = question("choose task").withAnswerEntities(matchingTasks);
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 taskToEdit = matchingTasks.get(answer.index());
@@ -352,7 +352,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             }
         }
         
-        Question whatToEdit = question("edit").withAnswerStrings("time", "text");
+        VariantsQuestion whatToEdit = question("edit").withAnswerStrings("time", "text");
         Answer answer = this.ioEngine.ask(initiator, whatToEdit);
         String target;
         if ( answer.isGiven() ) {

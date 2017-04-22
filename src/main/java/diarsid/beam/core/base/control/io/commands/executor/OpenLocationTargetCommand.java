@@ -6,7 +6,6 @@
 
 package diarsid.beam.core.base.control.io.commands.executor;
 
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
@@ -34,15 +33,10 @@ public class OpenLocationTargetCommand extends InvocationCommand {
     public CommandType type() {
         return OPEN_LOCATION_TARGET;
     }
-    
-    @Override
-    public Variant toVariant(int variantIndex) {
-        return new Variant(this.stringify(), variantIndex);
-    }
 
     @Override
     public String stringify() {
-        return "open " + this.originalArgument();
+        return "open " + super.bestArgument();
     }
     
     public String originalLocation() {
@@ -53,7 +47,7 @@ public class OpenLocationTargetCommand extends InvocationCommand {
         return extractLocationFromPath(super.extendedArgument());
     }
     
-    public String originalPath() {
+    public String originalTarget() {
         return extractTargetFromPath(super.originalArgument());
     }
     

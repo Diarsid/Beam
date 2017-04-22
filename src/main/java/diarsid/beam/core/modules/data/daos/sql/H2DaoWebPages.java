@@ -16,7 +16,6 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -33,7 +32,7 @@ import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
-import static diarsid.beam.core.domain.entities.WebPages.restorePage;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_PAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
@@ -42,18 +41,8 @@ class H2DaoWebPages
         extends BeamCommonDao 
         implements DaoWebPages {
     
-    private final PerRowConversion<WebPage> rowToPageConversion;
-
     H2DaoWebPages(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
-        this.rowToPageConversion = (row) -> {
-            return restorePage(
-                    (String) row.get("name"),
-                    (String) row.get("shortcuts"),
-                    (String) row.get("url"),
-                    (int) row.get("ordering"),
-                    (int) row.get("dir_id"));
-        };
     }
 
     @Override
@@ -110,7 +99,7 @@ class H2DaoWebPages
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
                             (row) -> {
-                                return Optional.of(this.rowToPageConversion.convert(row));
+                                return Optional.of(ROW_TO_PAGE.convert(row));
                             },
                             lower(name));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -145,7 +134,7 @@ class H2DaoWebPages
                                 multipleLowerLIKE("name", patterns.size(), AND) + 
                                 " OR " + 
                                 multipleLowerLIKE("shorcuts", patterns.size(), AND), 
-                        this.rowToPageConversion, 
+                        ROW_TO_PAGE, 
                         lowerWildcardList(patterns))
                 .sorted()
                 .collect(toList());
@@ -159,7 +148,7 @@ class H2DaoWebPages
                         "SELECT name, shortcuts, url, ordering, dir_id " +
                         "FROM web_pages " +
                         "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
-                        this.rowToPageConversion, 
+                        ROW_TO_PAGE, 
                         lowerWildcard(pattern), lowerWildcard(pattern))
                 .sorted()
                 .collect(toList());
@@ -173,9 +162,9 @@ class H2DaoWebPages
                     .doQueryAndStreamVarargParams(
                             WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
-                                    "FROM web_pages " +
-                                    "WHERE dir_id IS ? ",
-                            this.rowToPageConversion,
+                            "FROM web_pages " +
+                            "WHERE dir_id IS ? ",
+                            ROW_TO_PAGE,
                             directoryId)
                     .sorted()
                     .collect(toList());

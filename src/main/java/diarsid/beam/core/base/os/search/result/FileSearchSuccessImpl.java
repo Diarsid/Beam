@@ -47,13 +47,13 @@ public class FileSearchSuccessImpl implements FileSearchSuccess {
     }
 
     @Override
-    public String getFoundFile() {
+    public String foundFile() {
         this.proceedOnlyIfSingleValue();
         return this.multipleValues.get(0);
     }
 
     @Override
-    public List<String> getMultipleFoundFiles() {
+    public List<String> allFoundFiles() {
         this.proceedOnlyIfMultipleValues();
         return this.multipleValues;
     }

@@ -41,24 +41,25 @@ public class ExecutorDefaultCommand implements Command {
         if ( ! entity.isPresent() ) {
             return Optional.empty();
         }
+        String entityName = entity.get().name();
         switch ( entity.get().type() ) {
             case LOCATION : {
                 return Optional.of(new OpenLocationCommand(
-                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
+                        this.argument, entityName, NEW, TARGET_FOUND));
             }    
             case WEBPAGE : {
                 return Optional.of(new SeePageCommand(
-                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
+                        this.argument, entityName, NEW, TARGET_FOUND));
             }    
             case PROGRAM : {
                 return Optional.of(new RunProgramCommand(
-                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
+                        this.argument, entityName, NEW, TARGET_FOUND));
             }    
             case BATCH : {
                 return Optional.of(new CallBatchCommand(
-                        this.argument, entity.get().name(), NEW, TARGET_FOUND));
+                        this.argument, entityName, NEW, TARGET_FOUND));
             }    
-            case UNDEFINED_ENTITY:
+            case UNDEFINED_ENTITY :
             default : {
                 return Optional.empty();
             }
@@ -68,27 +69,28 @@ public class ExecutorDefaultCommand implements Command {
     public Optional<InvocationCommand> mergeWithCommand(Optional<InvocationCommand> anotherCommand) {
         if ( ! anotherCommand.isPresent() ) {
             return Optional.empty();
-        }         
+        }
+        String extendedArgument = anotherCommand.get().extendedArgument();
         commandMerging: switch ( anotherCommand.get().type() ) {
             case OPEN_LOCATION : {
                 return Optional.of(new OpenLocationCommand(
-                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+                        this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
             case OPEN_LOCATION_TARGET : {
                 return Optional.of(new OpenLocationTargetCommand(
-                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+                        this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
             case RUN_PROGRAM : {
                 return Optional.of(new RunProgramCommand(
-                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+                        this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
             case SEE_WEBPAGE : {
                 return Optional.of(new SeePageCommand(
-                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+                        this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
             case CALL_BATCH : {
                 return Optional.of(new CallBatchCommand(
-                        this.argument, anotherCommand.get().extendedArgument(), NEW, TARGET_NOT_FOUND));
+                        this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
             default : {
                 return Optional.empty();
