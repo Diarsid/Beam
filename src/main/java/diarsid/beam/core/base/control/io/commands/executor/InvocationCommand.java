@@ -6,14 +6,10 @@
 
 package diarsid.beam.core.base.control.io.commands.executor;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.domain.entities.NamedEntityType;
-
-import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.STORED;
@@ -44,14 +40,6 @@ public abstract class InvocationCommand implements ExecutorCommand {
     }
     
     public abstract NamedEntityType subjectedEntityType();
-    
-    public static List<Variant> toVariants(List<InvocationCommand> commands) {
-        AtomicInteger counter = new AtomicInteger(0);
-        return commands
-                .stream()
-                .map(command -> command.toVariant(counter.getAndIncrement()))
-                .collect(toList());
-    }
     
     @Override
     public boolean isInvocation() {

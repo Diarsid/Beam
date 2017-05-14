@@ -15,6 +15,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 /**
  *
@@ -84,5 +85,10 @@ public class InnerIoEngineAutomatedTests implements InnerIoEngine {
     @Override
     public void reportMessageAndExitLater(Initiator initiator, Message message) {
         //
+    }
+
+    @Override
+    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

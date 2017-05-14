@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.data.database.sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 public class H2DataBaseModel implements SqlDataBaseModel {
@@ -98,7 +99,15 @@ public class H2DataBaseModel implements SqlDataBaseModel {
     }
 
     @Override
-    public List<SqlTable> getTables() {
+    public List<SqlTable> tables() {
         return this.tables;
+    }
+
+    @Override
+    public Optional<SqlTable> getByName(String name) {
+        return this.tables
+                .stream()
+                .filter(table -> table.name().equalsIgnoreCase(name))
+                .findFirst();
     }
 }

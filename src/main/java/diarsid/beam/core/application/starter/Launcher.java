@@ -12,7 +12,7 @@ import java.rmi.registry.Registry;
 import java.util.Optional;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.environment.LibrariesCatalog;
 import diarsid.beam.core.application.environment.Script;
 import diarsid.beam.core.application.environment.ScriptsCatalog;
@@ -26,9 +26,9 @@ import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
-import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
-import static diarsid.beam.core.application.environment.ApplicationCatalogs.getLibrariesCatalog;
-import static diarsid.beam.core.application.environment.ApplicationCatalogs.getScriptsCatalog;
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
+import static diarsid.beam.core.application.environment.BeamEnvironment.librariesCatalog;
+import static diarsid.beam.core.application.environment.BeamEnvironment.scriptsCatalog;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.util.Logs.disableConsoleDebugging;
 import static diarsid.beam.core.base.util.Logs.disableFileDebugging;
@@ -56,9 +56,9 @@ class Launcher {
     
     static Launcher getLauncher() {
         return new Launcher(
-                getConfiguration(), 
-                getScriptsCatalog(), 
-                getLibrariesCatalog());
+                configuration(), 
+                scriptsCatalog(), 
+                librariesCatalog());
     }
     
     void launch(Procedure procedure) {
@@ -157,8 +157,8 @@ class Launcher {
     }
     
     private void awaitCore() {
-        int coreRegistryPort = parseInt(this.config.getAsString("rmi.core.port"));
-        String coreRegistryHost = this.config.getAsString("rmi.core.host");
+        int coreRegistryPort = parseInt(this.config.asString("rmi.core.port"));
+        String coreRegistryHost = this.config.asString("rmi.core.host");
         int awaitCounter = 0;
         int sleep = 100;
         boolean coreIsNotReady = true;

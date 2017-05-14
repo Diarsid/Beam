@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultComman
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -75,9 +75,9 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .callBatch(initiator, (CallBatchCommand) command);
                     break;
                 }    
-                case SEE_WEBPAGE : {
+                case BROWSE_WEBPAGE : {
                     this.executorModule
-                            .browsePage(initiator, (SeePageCommand) command);
+                            .browsePage(initiator, (BrowsePageCommand) command);
                     break;
                 }    
                 case EXECUTOR_DEFAULT : {
@@ -91,19 +91,20 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .openNotesAndReport(initiator, (EmptyCommand) command);
                     break;
                 }    
-                case OPEN_TARGET_IN_NOTE : {
+                case OPEN_TARGET_IN_NOTES : {
                     this.domainModuleAdapter
                             .notesAdaper()
                             .openTargetInNotesAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
-                case OPEN_PATH_IN_NOTE : {
+                case OPEN_PATH_IN_NOTES : {
                     this.domainModuleAdapter
                             .notesAdaper()
                             .openPathInNotesAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case DELETE_MEM : {
+                    // TODO
                     break;
                 }    
                 case DELETE_PAGE : {
@@ -233,6 +234,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                     break;
                 }    
                 case FIND_MEM : {
+                    // TODO
                     break;
                 }    
                 case FIND_BATCH : {

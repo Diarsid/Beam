@@ -6,13 +6,14 @@
 
 package diarsid.beam.core.modules.applicationcomponentsholder;
 
-import diarsid.beam.core.application.environment.ApplicationCatalogs;
+import diarsid.beam.core.application.environment.BeamEnvironment;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.application.configuration.ApplicationConfiguration;
-import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 
 /**
  * Module intended to convey configuration parameters 
@@ -31,10 +32,10 @@ class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHo
     private final NotesCatalog notesCatalog;
     
     ApplicationComponentsHolderModuleWorker() {    
-        this.configuration = ApplicationConfiguration.getConfiguration();
+        this.configuration = configuration();
         this.interpreter = new Interpreter();
-        this.programsCatalog = ApplicationCatalogs.getProgramsCatalog();
-        this.notesCatalog = ApplicationCatalogs.getNotesCatalog();
+        this.programsCatalog = BeamEnvironment.programsCatalog();
+        this.notesCatalog = BeamEnvironment.notesCatalog();
     }
     
     @Override

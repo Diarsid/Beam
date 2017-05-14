@@ -6,15 +6,19 @@
 
 package diarsid.beam.core.base.os.search.result;
 
+import java.util.List;
 
-public class FileSearchFailureImpl implements FileSearchFailure {
+import static java.util.Collections.emptyList;
+
+
+class FileSearchFailureImpl implements FileSearchFailure, FileSearchResult {
     
-    private static final int LOCATION_NOT_FOUND;
-    private static final int TARGET_NOT_FOUND;
-    private static final int TARGET_NOT_ACCESSIBLE;
+    static final int LOCATION_NOT_FOUND;
+    static final int TARGET_NOT_FOUND;
+    static final int TARGET_NOT_ACCESSIBLE;
     
-    private static final FileSearchFailure FAIL_BY_LOCATION;
-    private static final FileSearchFailure FAIL_BY_TARGET_NOT_FOUND;
+    static final FileSearchFailureImpl FAIL_BY_LOCATION;
+    static final FileSearchFailureImpl FAIL_BY_TARGET_NOT_FOUND;
     
     static {
         LOCATION_NOT_FOUND = 1;
@@ -33,25 +37,30 @@ public class FileSearchFailureImpl implements FileSearchFailure {
         this.message = null;
     }
     
-    private FileSearchFailureImpl(int failCause, String message) {
+    FileSearchFailureImpl(int failCause, String message) {
         this.failCause = failCause;
         this.message = message;
     }
-    
-    public static FileSearchFailure invalidLocationFailure() {
-        return FAIL_BY_LOCATION;
+
+    @Override
+    public boolean isOk() {
+        return false;
     }
-    
-    public static FileSearchFailure targetNotFoundFailure() {
-        return FAIL_BY_TARGET_NOT_FOUND;
+
+    @Override
+    public FileSearchSuccess success() {
+        throw new ResultOperationNotAllowedException(
+                "Action not allowed - this result value is fail.");
     }
-    
-    public static FileSearchFailure targetInvalidMessage(String failMessage) {
-        if ( failMessage == null || failMessage.isEmpty() ) {
-            throw new ResultOperationNotAllowedException(
-                    "Failure message cannot be nor empty neither null.");
-        }
-        return new FileSearchFailureImpl(TARGET_NOT_ACCESSIBLE, failMessage);
+
+    @Override
+    public FileSearchFailure failure() {
+        return this;
+    }
+
+    @Override
+    public List<String> foundFilesOrNothing() {
+        return emptyList();
     }
 
     @Override

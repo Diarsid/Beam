@@ -38,6 +38,11 @@ public class OpenLocationTargetCommand extends InvocationCommand {
     public String stringify() {
         return "open " + super.bestArgument();
     }
+
+    @Override
+    public String stringifyOriginal() {
+        return "open " + super.originalArgument();
+    }
     
     public String originalLocation() {
         return extractLocationFromPath(super.originalArgument());

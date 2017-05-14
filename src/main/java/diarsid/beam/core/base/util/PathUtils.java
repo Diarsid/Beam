@@ -159,6 +159,10 @@ public class PathUtils {
         return target.replaceAll("[/\\\\]+", "/");
     }
     
+    public static String cleanSeparators(String target) {
+        return target.replaceAll("[/\\\\]+", "");
+    }
+    
     public static String[] splitPathFragmentsFrom(String target) {
         target = normalizeArgument(target);
         target = trimSeparators(target);

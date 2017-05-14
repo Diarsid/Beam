@@ -8,14 +8,14 @@ package diarsid.beam.core.application.systemconsole;
 
 import java.io.IOException;
 
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.System.exit;
 import static java.lang.Thread.sleep;
 
-import static diarsid.beam.core.application.configuration.ApplicationConfiguration.getConfiguration;
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.application.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.application.systemconsole.SystemIO.provideWriter;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
@@ -38,9 +38,9 @@ public class SystemConsole {
     
     public static void main(String[] args) throws IOException {
         try {
-            Configuration configuration = getConfiguration();
+            Configuration configuration = configuration();
             PASSPORT.setName(SYS_CONSOLE_NAME);
-            PASSPORT.setPort(parseInt(configuration.getAsString("rmi.sysconsole.port")));
+            PASSPORT.setPort(parseInt(configuration.asString("rmi.sysconsole.port")));
             ConsolePrinter printer = new ConsolePrinter(provideWriter());
             ConsoleReader reader = new ConsoleReader(provideReader());
             ConsoleController console = new ConsoleController(printer, reader);

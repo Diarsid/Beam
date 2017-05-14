@@ -21,8 +21,9 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Variant.toVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -60,7 +61,7 @@ public class Analyze {
     }
     
     public static WeightedVariantsQuestion analyzeStrings(String pattern, List<String> variants) {
-        return analyzeVariants(pattern, toVariants(variants));
+        return analyzeAndWeightVariants(pattern, stringsToVariants(variants));
     }
 
     public static void doAll() {
@@ -221,10 +222,14 @@ public class Analyze {
         return variant.charAt(variant.length() - 1);
     }
     
-    public static WeightedVariantsQuestion analyzeVariants(String pattern, List<Variant> variants) {
+    public static WeightedVariantsQuestion analyzeAndWeightVariants(
+            String pattern, List<Variant> variants) {
         pattern = lower(pattern);
         sort(variants);
         Map<Character, Integer> reusableVisitedChars = new HashMap<>();
+        Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
+        WeightedVariant newVariant;
+        WeightedVariant prevVariant;
         List<WeightedVariant> weightedVariants = new ArrayList<>();
         String variantText;
         
@@ -381,15 +386,31 @@ public class Analyze {
                 maxWeight = variantWeight;
             }
             // weight calculation ends
-            weightedVariants.add(new WeightedVariant(variant, variantWeight));
+            newVariant = new WeightedVariant(variant, variantWeight);
+            if ( newVariant.hasDisplayText() ) {
+                debug("[ANALYZE] " + newVariant.text() + ":" + newVariant.displayText());
+                if ( variantsByDisplay.containsKey(variant.displayText()) ) {
+                    prevVariant = variantsByDisplay.get(newVariant.displayText());
+                    if ( newVariant.betterThan(prevVariant) ) {
+                        debug("[ANALYZE] [DUPLICATE] " + newVariant.text() + " is better than: " + prevVariant.text());
+                        variantsByDisplay.put(newVariant.displayText(), newVariant);
+                        weightedVariants.add(newVariant);
+                    } 
+                } else {
+                    variantsByDisplay.put(newVariant.displayText(), newVariant);
+                    weightedVariants.add(newVariant);
+                }
+            } else {
+                weightedVariants.add(newVariant);
+            }           
         }
         
-        //double delta = abs(minWeight);
         double delta = minWeight;
         weightedVariants.forEach(adjustedVariant -> adjustedVariant.adjustWeight(delta));
-        weightedVariants.stream().sorted().forEach(candidate -> System.out.println(format("%s : %s", candidate.weight(), candidate.text())));
+//        weightedVariants.stream().sorted().forEach(candidate -> System.out.println(format("%s : %s", candidate.weight(), candidate.text())));
         sort(weightedVariants);
         shrink(weightedVariants, 11);
+        debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());
         return new WeightedVariantsQuestion(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
     }
 

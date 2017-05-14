@@ -19,7 +19,7 @@ import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.toMessage;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.OkValueOperation;
+import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 
 /**
  *
@@ -36,7 +36,7 @@ class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
     
     void findBatchAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueOperation<Batch> flow = this.batchesKeeper.findBatch(initiator, command);
-        Function<OkValueOperation, Message> ifSuccess = (success) -> {
+        Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
             return toMessage((Batch) success.getOrThrow());
         };
         super.reportValueOperationFlow(initiator, flow, ifSuccess, "batch not found.");

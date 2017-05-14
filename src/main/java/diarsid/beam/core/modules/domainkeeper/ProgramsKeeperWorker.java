@@ -14,21 +14,20 @@ import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.base.os.search.result.FileSearchResult;
 import diarsid.beam.core.domain.entities.Program;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
-
-import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
 
 
 class ProgramsKeeperWorker 
@@ -57,13 +56,8 @@ class ProgramsKeeperWorker
     }
 
     @Override
-    public Optional<Program> findByExactName(Initiator initiator, String strictName) {
-        FileSearchResult result = this.programsCatalog.findProgramByStrictName(strictName);
-        if ( result.isOk() && result.success().hasSingleFoundFile() ) {
-            return this.optionalProgram(result.success().foundFile());
-        } else {
-            return Optional.empty();
-        }
+    public Optional<Program> findByExactName(Initiator initiator, String name) {
+        return this.programsCatalog.findProgramByDirectName(name);
     }
 
     @Override
@@ -74,7 +68,7 @@ class ProgramsKeeperWorker
         
         String name;
         if ( command.hasArguments()) {
-            name = command.getFirstArg();
+            name = command.joinedArguments();
         } else {
             name = "";
         }
@@ -89,48 +83,43 @@ class ProgramsKeeperWorker
 
     @Override
     public Optional<Program> findByNamePattern(Initiator initiator, String pattern) {
-        FileSearchResult result = this.programsCatalog.findProgramByPattern(pattern);
-        if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                return this.optionalProgram(result.success().foundFile());
+        List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
+        if ( nonEmpty(foundPrograms) ) {
+            return this.chooseOneFromMany(initiator, pattern, foundPrograms);
+        } else {
+            foundPrograms = this.programsCatalog.findProgramsByPatternSimilarity(pattern);
+            if ( nonEmpty(foundPrograms) ) {
+                return this.chooseOneFromMany(initiator, pattern, foundPrograms);
             } else {
-                VariantsQuestion question = question("choose program")
-                        .withAnswerStrings(result.success().allFoundFiles());
-                Answer answer = this.ioEngine.ask(initiator, question);
-                if ( answer.isGiven() ) {
-                    return this.optionalProgram(answer.text());
-                } else {
-                    return Optional.empty();
-                }
+                return Optional.empty();
+            }
+        }
+    }
+    
+    private Optional<Program> chooseOneFromMany(
+            Initiator initiator, String pattern, List<Program> programs) {
+        if ( hasOne(programs) ) {
+            return Optional.of(getOne(programs));
+        } else if ( hasMany(programs) ) {
+            Answer answer = this.ioEngine.chooseInWeightedVariants(
+                    initiator, analyzeAndWeightVariants(pattern, entitiesToVariants(programs)));
+            if ( answer.isGiven() ) {
+                return Optional.of(programs.get(answer.index()));
+            } else {
+                return Optional.empty();
             }
         } else {
             return Optional.empty();
         }
     }
 
-    private Optional<Program> optionalProgram(String programName) {
-        return Optional.of(new Program(this.programsCatalog, programName));
-    }
-
     @Override
     public List<Program> getProgramsByPattern(Initiator initiator, String pattern) {
-        FileSearchResult result = this.programsCatalog.findProgramByPattern(pattern);
-        if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                return asList(
-                        new Program(
-                                this.programsCatalog, 
-                                result.success().foundFile()));
-            } else {
-                return result
-                        .success()
-                        .allFoundFiles()
-                        .stream()
-                        .map(programFileName -> new Program(this.programsCatalog, programFileName))
-                        .collect(toList());
-            }
+        List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
+        if ( nonEmpty(foundPrograms) ) {
+            return foundPrograms;
         } else {
-            return emptyList();
+            return this.programsCatalog.findProgramsByPatternSimilarity(pattern);
         }
     }
 }

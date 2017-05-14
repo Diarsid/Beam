@@ -21,11 +21,11 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedC
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
-public class PrefixRecognizer extends NodeRecognizer {
+public class PrefixesRecognizer extends NodeRecognizer {
     
     private final Set<String> controlPrefixes;
     
-    public PrefixRecognizer(String... controlPrefixes) {
+    PrefixesRecognizer(String... controlPrefixes) {
         this.controlPrefixes = unmodifiableSet(stream(controlPrefixes)
                 .map(prefix -> lower(prefix).trim())
                 .collect(toSet()));

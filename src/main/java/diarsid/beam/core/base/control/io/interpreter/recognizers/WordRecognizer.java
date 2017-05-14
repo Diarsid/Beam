@@ -18,7 +18,7 @@ public class WordRecognizer extends NodeRecognizer {
     
     private final String controlWord;
     
-    public WordRecognizer(String controlWord) {
+    WordRecognizer(String controlWord) {
         this.controlWord = lower(controlWord).trim();
     }
 

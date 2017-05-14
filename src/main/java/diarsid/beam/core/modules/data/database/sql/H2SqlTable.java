@@ -22,17 +22,17 @@ public class H2SqlTable implements SqlTable {
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return this.name;
     }
 
     @Override
-    public String getSqlCreationScript() {
+    public String sqlCreationScript() {
         return this.sql;
     }
 
     @Override
-    public int getColumnsQty() {
+    public int columnsQty() {
         return this.columnsQty;
     }
 

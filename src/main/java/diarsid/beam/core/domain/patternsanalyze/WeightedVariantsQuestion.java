@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 
 
@@ -39,6 +40,10 @@ public class WeightedVariantsQuestion implements Serializable {
         this.currentVariantIndex = 0;
         this.isDiversityAcceptable = isDiversityAcceptable;
         this.currentSimilarVariants = null;
+    }
+    
+    public int size() {
+        return this.variants.size();
     }
     
     public WeightedVariant current() {
@@ -137,16 +142,16 @@ public class WeightedVariantsQuestion implements Serializable {
         //return ( this.current().weight() * 1.0 ) < ( this.next().weight() * 0.6 );
     }
     
-    boolean hasOne() {
+    public boolean hasOne() {
         return ( this.variants.size() == 1 );
+    }
+    
+    public Answer singleAnswer() {
+        return answerOfVariant(getOne(this.variants));
     }
     
     boolean hasMany() {
         return ( this.variants.size() > 1 );
-    }
-    
-    WeightedVariant getOne() {
-        return CollectionsUtils.getOne(this.variants);
     }
     
     public List<WeightedVariant> allNextSimilar() {
@@ -159,6 +164,5 @@ public class WeightedVariantsQuestion implements Serializable {
         }
         this.currentSimilarVariants = similarVariants;
         return similarVariants;
-    }
-    
+    }    
 }

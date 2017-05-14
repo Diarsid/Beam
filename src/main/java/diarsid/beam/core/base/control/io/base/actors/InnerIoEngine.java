@@ -23,7 +23,7 @@ public interface InnerIoEngine {
     
     Answer ask(Initiator initiator, VariantsQuestion question);
     
-    Answer ask(Initiator initiator, WeightedVariantsQuestion variants);
+    Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants);
     
     void report(Initiator initiator, String string);
     

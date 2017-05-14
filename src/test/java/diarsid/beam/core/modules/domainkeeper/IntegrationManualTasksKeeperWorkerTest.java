@@ -28,7 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
-import static diarsid.beam.core.base.control.flow.Operations.asFail;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timeAndTextParser;
@@ -69,8 +68,8 @@ public class IntegrationManualTasksKeeperWorkerTest {
             }
             command = new ArgumentsCommand(CREATE_TASK, asList(input.split(" ")));
             flow = tasksKeeper.createTask(initiator, command);
-            if ( flow.result().equals(FAIL)) {
-                System.out.println(asFail(flow).reason());
+            if ( flow.result().equals(FAIL) ) {
+                System.out.println(flow.message());
             } else {
                 System.out.println(flow.result().name());
             }            

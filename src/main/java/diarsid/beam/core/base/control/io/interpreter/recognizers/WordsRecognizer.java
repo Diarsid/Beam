@@ -25,7 +25,7 @@ public class WordsRecognizer extends NodeRecognizer {
     
     private final Set<String> contorlWords;
     
-    public WordsRecognizer(String... controlWords) {
+    WordsRecognizer(String... controlWords) {
         this.contorlWords = unmodifiableSet(stream(controlWords)
                 .map(word -> lower(word).trim())
                 .collect(toSet()));

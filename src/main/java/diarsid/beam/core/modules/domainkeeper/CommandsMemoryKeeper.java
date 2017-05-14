@@ -25,6 +25,9 @@ public interface CommandsMemoryKeeper {
     void tryToExtendCommand(
             Initiator initiator, InvocationCommand command);
     
+    void tryToExtendCommandByPattern(
+            Initiator initiator, InvocationCommand command);
+    
     void save(
             Initiator initiator, InvocationCommand command);
     

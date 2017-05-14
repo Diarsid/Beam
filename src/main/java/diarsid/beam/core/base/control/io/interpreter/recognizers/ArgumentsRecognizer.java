@@ -17,7 +17,7 @@ public class ArgumentsRecognizer extends PrioritizedRecognizer {
     
     private final CommandType commandType;
     
-    public ArgumentsRecognizer(CommandType commandType) {
+    ArgumentsRecognizer(CommandType commandType) {
         this.commandType = commandType;
     }
 

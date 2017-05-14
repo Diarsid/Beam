@@ -9,8 +9,8 @@ package diarsid.beam.core.base.control.flow;
 import java.util.Optional;
 
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
-import static diarsid.beam.core.base.control.flow.OperationResult.OK;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
+import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 
 /**
  *
@@ -23,8 +23,38 @@ public class Operations {
     private static final ValueOperation STOPPED_RETURN_OPERATION;
     
     static {
-        OK_VOID_OPERATION = () -> OK;
-        STOPPED_VOID_OPERATION = () -> STOP;
+        OK_VOID_OPERATION = new VoidOperation() {
+            @Override
+            public boolean hasMessage() {
+                return false;
+            }
+
+            @Override
+            public String message() {
+                throw new IllegalStateException("this VoidOperation doesn't have message."); 
+            }
+
+            @Override
+            public OperationResult result() {
+                return COMPLETE;
+            }
+        };
+        STOPPED_VOID_OPERATION = new VoidOperation() {
+            @Override
+            public boolean hasMessage() {
+                return false;
+            }
+
+            @Override
+            public String message() {
+                throw new IllegalStateException("this VoidOperation doesn't have message."); 
+            }
+
+            @Override
+            public OperationResult result() {
+                return STOP;
+            }
+        };
         STOPPED_RETURN_OPERATION = () -> STOP;
     }
     
@@ -35,16 +65,35 @@ public class Operations {
         return OK_VOID_OPERATION;
     }
     
-    public static <T extends Object> ValueOperation<T> valueFound(Optional<T> optT) {
+    public static VoidOperation voidCompleted(String message) {
+        return new VoidOperation() {
+            @Override
+            public boolean hasMessage() {
+                return true;
+            }
+
+            @Override
+            public String message() {
+                return message;
+            }
+
+            @Override
+            public OperationResult result() {
+                return COMPLETE;
+            }
+        };
+    }
+    
+    public static <T extends Object> ValueOperation<T> valueCompletedWith(Optional<T> optT) {
         if ( optT.isPresent() ) {
-            return Operations.valueFound(optT.get());
+            return Operations.valueCompletedWith(optT.get());
         } else {
-            return successEmpty();
+            return valueCompletedEmpty();
         }
     }
     
-    public static <T extends Object> ValueOperation<T> valueFound(T t) {
-        return new OkValueOperation<T>() {
+    public static <T extends Object> ValueOperation<T> valueCompletedWith(T t) {
+        return new ValueOperationComplete<T>() {
             @Override
             public boolean hasReturn() {
                 return true;
@@ -62,13 +111,13 @@ public class Operations {
 
             @Override
             public OperationResult result() {
-                return OK;
+                return COMPLETE;
             }
         };
     }
     
-    public static <T extends Object> ValueOperation<T> successEmpty() {
-        return new OkValueOperation<T>() {
+    public static <T extends Object> ValueOperation<T> valueCompletedEmpty() {
+        return new ValueOperationComplete<T>() {
             @Override
             public boolean hasReturn() {
                 return false;
@@ -86,7 +135,7 @@ public class Operations {
 
             @Override
             public OperationResult result() {
-                return OK;
+                return COMPLETE;
             }
         };
     }
@@ -99,8 +148,27 @@ public class Operations {
         return STOPPED_RETURN_OPERATION;
     }
     
-    public static FailedVoidOperation voidOperationFail(String failMessage) {
-        return new FailedVoidOperation() {
+    public static VoidOperation voidOperationFail(String failMessage) {
+        return new VoidOperation() {
+            @Override
+            public boolean hasMessage() {
+                return true;
+            }
+            
+            @Override
+            public String message() {
+                return failMessage;
+            }
+
+            @Override
+            public OperationResult result() {
+                return FAIL;
+            }
+        };
+    }
+    
+    public static ValueOperationFail valueOperationFail(String failMessage) {
+        return new ValueOperationFail() {
             @Override
             public String reason() {
                 return failMessage;
@@ -113,29 +181,11 @@ public class Operations {
         };
     }
     
-    public static FailedValueOperation valueOperationFail(String failMessage) {
-        return new FailedValueOperation() {
-            @Override
-            public String reason() {
-                return failMessage;
-            }
-
-            @Override
-            public OperationResult result() {
-                return FAIL;
-            }
-        };
+    public static ValueOperationFail asFail(ValueOperation operationFlow) {
+        return (ValueOperationFail) operationFlow;
     }
     
-    public static FailedVoidOperation asFail(VoidOperation operationFlow) {
-        return (FailedVoidOperation) operationFlow;
-    }
-    
-    public static FailedValueOperation asFail(ValueOperation operationFlow) {
-        return (FailedValueOperation) operationFlow;
-    }
-    
-    public static OkValueOperation asOk(ValueOperation operationFlow) {
-        return (OkValueOperation) operationFlow;
+    public static ValueOperationComplete asComplete(ValueOperation operationFlow) {
+        return (ValueOperationComplete) operationFlow;
     }
 }

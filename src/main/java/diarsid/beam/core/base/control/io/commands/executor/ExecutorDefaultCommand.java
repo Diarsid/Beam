@@ -48,7 +48,7 @@ public class ExecutorDefaultCommand implements Command {
                         this.argument, entityName, NEW, TARGET_FOUND));
             }    
             case WEBPAGE : {
-                return Optional.of(new SeePageCommand(
+                return Optional.of(new BrowsePageCommand(
                         this.argument, entityName, NEW, TARGET_FOUND));
             }    
             case PROGRAM : {
@@ -84,8 +84,8 @@ public class ExecutorDefaultCommand implements Command {
                 return Optional.of(new RunProgramCommand(
                         this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
-            case SEE_WEBPAGE : {
-                return Optional.of(new SeePageCommand(
+            case BROWSE_WEBPAGE : {
+                return Optional.of(new BrowsePageCommand(
                         this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));
             }
             case CALL_BATCH : {

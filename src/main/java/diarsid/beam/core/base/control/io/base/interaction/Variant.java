@@ -7,11 +7,7 @@
 package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -39,14 +35,6 @@ public class Variant implements Serializable, Comparable<Variant> {
         this.text = other.text;
         this.displayText = other.displayText;
         this.variantIndex = other.variantIndex;
-    }
-    
-    public static List<Variant> toVariants(List<String> variantStrings) {
-        AtomicInteger counter = new AtomicInteger(0);
-        return variantStrings
-                .stream()
-                .map(string -> new Variant(string, counter.getAndIncrement()))
-                .collect(toList());
     }
     
     public boolean hasDisplayText() {

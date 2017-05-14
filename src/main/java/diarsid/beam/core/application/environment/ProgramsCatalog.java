@@ -6,9 +6,10 @@
 package diarsid.beam.core.application.environment;
 
 import java.io.File;
+import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.domain.entities.Program;
-import diarsid.beam.core.base.os.search.result.FileSearchResult;
 
 /**
  *
@@ -16,9 +17,13 @@ import diarsid.beam.core.base.os.search.result.FileSearchResult;
  */
 public interface ProgramsCatalog extends Catalog {
     
-    FileSearchResult findProgramByPattern(String nameOrPattern);
+    Optional<Program> findProgramByDirectName(String name);
     
-    FileSearchResult findProgramByStrictName(String strictName);
+    List<Program> findProgramsByPatternSimilarity(String pattern);
+    
+    List<Program> findProgramsByWholePattern(String pattern);
+    
+    List<Program> findProgramsByStrictName(String strictName);
     
     File asFile(Program program);
 }

@@ -13,20 +13,18 @@ import java.util.Set;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
-import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
 
 /**
  *
@@ -35,12 +33,12 @@ import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
     
     private final InnerIoEngine ioEngine;
-    private final DaoNamedEntities dao;
+    private final DaoNamedEntities namedEntitiesDao;
     private final Set<CommandType> subjectedCommandTypes;
 
     AllNamedEntitiesKeeper(InnerIoEngine ioEngine, DaoNamedEntities dao) {
         this.ioEngine = ioEngine;
-        this.dao = dao;
+        this.namedEntitiesDao = dao;
         this.subjectedCommandTypes = toSet(EXECUTOR_DEFAULT);
     }
 
@@ -50,39 +48,32 @@ class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
     }
 
     @Override
-    public Optional<NamedEntity> findByExactName(Initiator initiator, String name) {
-        return this.dao.getByExactName(initiator, name);
+    public Optional<? extends NamedEntity> findByExactName(Initiator initiator, String name) {
+        return this.namedEntitiesDao.getByExactName(initiator, name);
     }
 
     @Override
-    public Optional<NamedEntity> findByNamePattern(Initiator initiator, String pattern) {
-        List<NamedEntity> entities;
-        if ( hasWildcard(pattern) ) {
-            entities = this.dao.getEntitiesByNamePatternParts(initiator, splitByWildcard(pattern));
-        } else {
-            entities = this.dao.getEntitiesByNamePattern(initiator, pattern);
-        }
+    public Optional<? extends NamedEntity> findByNamePattern(Initiator initiator, String pattern) {
+        List<NamedEntity> entities = 
+                this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);
         
         if ( hasOne(entities) ) {
             return Optional.of(getOne(entities));
         } else if ( hasMany(entities) ) {
-            return this.manageWithMultipleEntities(initiator, entities);
+            return this.manageWithMultipleEntities(initiator, pattern, entities);
         } else {
             return Optional.empty();
         }
     }
     
-    private Optional<NamedEntity> manageWithMultipleEntities(
-            Initiator initiator, List<NamedEntity> entities) {
-        VariantsQuestion question = question("choose").withAnswerEntities(entities);
-        Answer answer = this.ioEngine.ask(initiator, question);
+    private Optional<? extends NamedEntity> manageWithMultipleEntities(
+            Initiator initiator, String pattern, List<NamedEntity> entities) {
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, analyzeAndWeightVariants(pattern, entitiesToVariants(entities)));
         if ( answer.isGiven() ) {
-            // TODO
-            // employ more sofisticated algorithm
             return Optional.of(entities.get(answer.index()));
         } else {
             return Optional.empty();
         }
-    }
-    
+    }   
 }

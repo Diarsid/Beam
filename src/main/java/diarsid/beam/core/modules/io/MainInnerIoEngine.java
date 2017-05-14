@@ -88,7 +88,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public Answer ask(Initiator initiator, WeightedVariantsQuestion variants) {
+    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             return awaitGet(() -> {
                 try {

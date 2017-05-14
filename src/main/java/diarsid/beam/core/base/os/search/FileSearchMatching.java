@@ -3,12 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.control.flow;
+package diarsid.beam.core.base.os.search;
 
 /**
  *
  * @author Diarsid
  */
-public interface FailedValueOperation extends ValueOperation {
-    String reason();
+public enum FileSearchMatching {
+    DIRECT_MATCH,
+    STRICT_MATCH,
+    PATTERN_MATCH,
+    SIMILAR_MATCH    
 }

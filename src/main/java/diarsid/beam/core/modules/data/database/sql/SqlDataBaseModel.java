@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules.data.database.sql;
 
 import java.util.List;
+import java.util.Optional;
 
 import diarsid.beam.core.modules.data.DataBaseModel;
 
@@ -15,5 +16,7 @@ import diarsid.beam.core.modules.data.DataBaseModel;
  */
 public interface SqlDataBaseModel extends DataBaseModel {
     
-    List<SqlTable> getTables();
+    List<SqlTable> tables();
+    
+    Optional<SqlTable> getByName(String name);
 }

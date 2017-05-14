@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
@@ -49,7 +50,7 @@ public class Batch implements NamedEntity {
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return new Variant(this.name, variantIndex);
+        return new Variant(this.name, format("%s (%s)", this.name, "Batch"), variantIndex);
     }
     
     public int getCommandsQty() {

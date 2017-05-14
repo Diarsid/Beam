@@ -12,7 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
@@ -42,13 +42,13 @@ public class ConsoleRemoteManager {
     private final String coreAccessEndpointName;
     
     public ConsoleRemoteManager(Configuration config) {               
-        this.consoleRegistryPort = parseInt(config.getAsString("rmi.sysconsole.port"));
-        this.consoleRegistryHost = config.getAsString("rmi.sysconsole.host");
+        this.consoleRegistryPort = parseInt(config.asString("rmi.sysconsole.port"));
+        this.consoleRegistryHost = config.asString("rmi.sysconsole.host");
         this.consoleName = SYS_CONSOLE_NAME;
         
         this.coreAccessEndpointName = CORE_ACCESS_ENDPOINT_NAME;
-        this.coreRegistryPort = parseInt(config.getAsString("rmi.core.port"));
-        this.coreRegistryHost = config.getAsString("rmi.core.host");        
+        this.coreRegistryPort = parseInt(config.asString("rmi.core.port"));
+        this.coreRegistryHost = config.asString("rmi.core.host");        
     }
     
     void export(ConsoleController console) {

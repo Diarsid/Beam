@@ -9,17 +9,17 @@ package diarsid.beam.core.base.control.io.commands.executor;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
-import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 
 
-public class SeePageCommand extends InvocationCommand {
+public class BrowsePageCommand extends InvocationCommand {
     
-    public SeePageCommand(String pageName) {
+    public BrowsePageCommand(String pageName) {
         super(pageName);
     }
     
-    public SeePageCommand(
+    public BrowsePageCommand(
             String pageName, 
             String extendedPageName, 
             InvocationCommandLifePhase lifePhase, 
@@ -29,12 +29,17 @@ public class SeePageCommand extends InvocationCommand {
 
     @Override
     public CommandType type() {
-        return SEE_WEBPAGE;
+        return BROWSE_WEBPAGE;
     }
 
     @Override
     public String stringify() {
-        return "see " + super.bestArgument();
+        return "browse " + super.bestArgument();
+    }
+
+    @Override
+    public String stringifyOriginal() {
+        return "browse " + super.originalArgument();
     }
 
     @Override

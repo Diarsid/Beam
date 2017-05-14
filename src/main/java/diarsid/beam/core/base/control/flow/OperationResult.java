@@ -10,7 +10,7 @@ package diarsid.beam.core.base.control.flow;
  * @author Diarsid
  */
 public enum OperationResult {
-    OK,
+    COMPLETE,
     FAIL,
     STOP;
     

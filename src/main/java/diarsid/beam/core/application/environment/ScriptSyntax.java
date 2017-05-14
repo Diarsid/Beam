@@ -96,7 +96,7 @@ public enum ScriptSyntax {
     
     abstract boolean examineExtension(String name);
     
-    static ScriptSyntax getScriptSyntax() {
+    static ScriptSyntax scriptSyntax() {
         String systemName = System.getProperty("os.name");
         if ( containsIgnoreCase(systemName, "win") ) {
             return WIN;

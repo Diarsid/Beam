@@ -25,14 +25,14 @@ public abstract class BeamCommonDao {
         this.ioEngine = ioEngine;
     }    
     
-    protected JdbcTransaction getDisposableTransaction() 
+    protected JdbcTransaction openDisposableTransaction() 
             throws TransactionHandledSQLException {
         return this.dataBase
                 .transactionFactory()
                 .createDisposableTransaction();
     }
     
-    protected JdbcTransaction getTransaction() 
+    protected JdbcTransaction openTransaction() 
             throws TransactionHandledSQLException {
         return this.dataBase
                 .transactionFactory()

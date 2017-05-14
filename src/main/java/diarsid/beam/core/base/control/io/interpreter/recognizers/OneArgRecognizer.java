@@ -15,7 +15,7 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedC
 
 public class OneArgRecognizer extends NodeRecognizer {
     
-    public OneArgRecognizer() {
+    OneArgRecognizer() {
     }
 
     @Override

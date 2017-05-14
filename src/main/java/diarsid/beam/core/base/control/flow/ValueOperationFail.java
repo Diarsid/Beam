@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.patternsanalyze;
+package diarsid.beam.core.base.control.flow;
 
 /**
  *
  * @author Diarsid
  */
-public enum PatternAnalyzationType {
-    BY_SUBPATTERN,
-    BY_CHARACTERS
+public interface ValueOperationFail extends ValueOperation {
+    String reason();
 }

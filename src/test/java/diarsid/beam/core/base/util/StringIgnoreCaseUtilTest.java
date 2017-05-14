@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.base.util;
 
-import diarsid.beam.core.base.util.StringIgnoreCaseUtil;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +18,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsAnySnippetsInAnyWordsIgnoreCase;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.isSimilarIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 
 /**
@@ -45,16 +44,16 @@ public class StringIgnoreCaseUtilTest {
         assertEquals("where To Replace ANOTHER of StrIng", result);
     }
     
-    @Test
-    public void testContainsAllPartsIgnoreCase_String_String_contains() {        
-        String searched = "aA-cD-Bb";
-        String whereToSearch = "aaaAAAbbbBBBcccCCCdddDDD";
-        
-        boolean expResult = true;
-        boolean result = StringIgnoreCaseUtil.containsAllPartsIgnoreCase(whereToSearch, searched);
-        
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testContainsAllPartsIgnoreCase_String_String_contains() {        
+//        String searched = "aA-cD-Bb";
+//        String whereToSearch = "aaaAAAbbbBBBcccCCCdddDDD";
+//        
+//        boolean expResult = true;
+//        boolean result = StringIgnoreCaseUtil.containsAllPartsIgnoreCase(whereToSearch, searched);
+//        
+//        assertEquals(expResult, result);
+//    }
     
     @Test
     public void testContainsIgnoreCase_String_String_contains() {        
@@ -460,5 +459,10 @@ public class StringIgnoreCaseUtilTest {
         
         boolean found = containsAnySnippetsInAnyWordsIgnoreCase(whereToSearch, anyOf);
         assertTrue(found);
+    }
+    
+    @Test
+    public void test_isSimilarIgnoreCase() {
+        assertFalse(isSimilarIgnoreCase("AAaaDir", "foldile"));
     }
 }

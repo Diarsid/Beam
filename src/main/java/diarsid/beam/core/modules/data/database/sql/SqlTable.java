@@ -11,9 +11,9 @@ package diarsid.beam.core.modules.data.database.sql;
  */
 public interface SqlTable {
     
-    String getName();
+    String name();
     
-    String getSqlCreationScript();
+    String sqlCreationScript();
     
-    int getColumnsQty();
+    int columnsQty();
 }

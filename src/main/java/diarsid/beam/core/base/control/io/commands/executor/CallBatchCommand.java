@@ -38,6 +38,11 @@ public class CallBatchCommand extends InvocationCommand {
     }
 
     @Override
+    public String stringifyOriginal() {
+        return "call " + super.originalArgument();
+    }
+
+    @Override
     public NamedEntityType subjectedEntityType() {
         return BATCH;
     }

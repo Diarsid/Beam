@@ -7,12 +7,13 @@
 package diarsid.beam.core.base.util;
 
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
@@ -308,11 +309,31 @@ public class SqlUtil {
         }
     }
     
-    public static void main(String[] args) {
-        patternToCharCriterias("nebeansprojs").forEach(System.out::println);
+    public static List<String> shift(List<String> criterias) {
+        int length = criterias.size();
+        if ( length == 0 ) {
+            return criterias;
+        }
+        
+        int shifting = ( length / 2 ) + ( length % 2 );
+        shifting = ( shifting / 2 ) + ( shifting % 2 );
+        String shifted;
+        int reverseShifting;
+        for (int i = 0; i < shifting; i++) {
+            reverseShifting = length - 1 - i;
+            shifted = criterias.get(i);
+            criterias.set(i, criterias.get(reverseShifting));
+            criterias.set(reverseShifting, shifted);
+        }
+        return criterias;
     }
     
-    public static Collection<String> patternToCharCriterias(String pattern) {
+    public static void main(String[] args) {
+        List<String> list = asList("1", "2");
+        System.out.println(shift(list).stream().collect(joining(", ")));
+    }
+    
+    public static List<String> patternToCharCriterias(String pattern) {
         char[] chars = lower(pattern).toCharArray();
         Map<Character, String> criterias = new HashMap<>();
         String criteria;        
@@ -326,6 +347,6 @@ public class SqlUtil {
                 criterias.put(character, criteria + character + "%");
             }            
         }
-        return criterias.values();
+        return new ArrayList(criterias.values());
     }
 }

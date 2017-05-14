@@ -17,5 +17,5 @@ public interface FileSearchSuccess {
     
     String foundFile();
     
-    List<String> allFoundFiles();
+    List<String> foundFiles();
 }

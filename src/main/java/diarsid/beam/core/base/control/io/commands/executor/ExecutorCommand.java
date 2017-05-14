@@ -16,6 +16,8 @@ public interface ExecutorCommand extends Command, ConvertableToVariant {
     
     boolean isInvocation();
     
+    public String stringifyOriginal(); 
+    
     public String stringify();
     
     String originalArgument();    

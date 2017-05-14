@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
@@ -79,12 +78,12 @@ public class StringUtils {
                 .trim();
     }
 
-    public static List<String> splitByWildcard(String target) {        
-        return stream(target.split("-+"))
-                .filter(string -> !string.matches("\\s+"))
-                .map(string -> string.trim())
-                .collect(toList());
-    }
+//    public static List<String> splitByWildcard(String target) {        
+//        return stream(target.split("-+"))
+//                .filter(string -> !string.matches("\\s+"))
+//                .map(string -> string.trim())
+//                .collect(toList());
+//    }
     
     public static String removeWildcards(String target) {
         return target.replaceAll("-+", "");
@@ -95,8 +94,8 @@ public class StringUtils {
     }
 
     public static int countSpaces(String target) {
-        // TODO
         // bad code, should use more efficient function here
+        // possible dead code
         return target.split("\\s+").length - 1;
     }
 

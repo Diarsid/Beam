@@ -25,13 +25,13 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
+import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
+import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_PAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -48,7 +48,7 @@ class H2DaoWebPages
     @Override
     public Optional<Integer> freeNameNextIndex(
             Initiator initiator, String name) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             // test if original name is free
             boolean exists = transact
@@ -92,7 +92,7 @@ class H2DaoWebPages
     public Optional<WebPage> getByExactName(
             Initiator initiator, String name) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
                             WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
@@ -111,54 +111,91 @@ class H2DaoWebPages
     @Override
     public List<WebPage> findByPattern(
             Initiator initiator, String pattern) {
-        try {
-            if ( hasWildcard(pattern) ) {
-                return this.getPagesByPatternParts(splitByWildcard(pattern));
-            } else {
-                return this.getPagesBySinglePattern(pattern);
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            String lowerWildcardPattern = lowerWildcard(pattern);
+            List<WebPage> pages = transact
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
+                            ROW_TO_PAGE, 
+                            lowerWildcardPattern, lowerWildcardPattern)
+                    .sorted()
+                    .collect(toList());
+            
+            if ( nonEmpty(pages) ) {
+                return pages;
             }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            pages = transact
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE " +
+                                    multipleLowerLikeAnd("name", criterias.size()) + 
+                                    " OR " + 
+                                    multipleLowerLikeAnd("shortcuts", criterias.size()), 
+                            ROW_TO_PAGE, 
+                            criterias, criterias)
+                    .collect(toList());
+            
+            if ( nonEmpty(pages) ) {
+                return pages;
+            }
+            
+            String multipleGroupedLikeOrNameCondition = 
+                    multipleLowerGroupedLikesOr("name", criterias.size());
+            String multipleGroupedLikeOrShortcutsCondition = 
+                    multipleLowerGroupedLikesOr("shortcuts", criterias.size());
+            
+            pages = transact
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE " + 
+                                    multipleGroupedLikeOrNameCondition + 
+                                    " OR " + 
+                                    multipleGroupedLikeOrShortcutsCondition, 
+                            ROW_TO_PAGE, 
+                            criterias, criterias)
+                    .collect(toList());
+            
+            shift(criterias);
+            
+            List<WebPage> shiftedPages = transact
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE " + 
+                                    multipleGroupedLikeOrNameCondition + 
+                                    " OR " + 
+                                    multipleGroupedLikeOrShortcutsCondition, 
+                            ROW_TO_PAGE, 
+                            criterias, criterias)
+                    .collect(toList());
+            
+            shiftedPages.retainAll(pages);
+            pages.retainAll(shiftedPages);
+            
+            return pages;            
+            
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
             
             return emptyList();
         }
-    }
-    
-    private List<WebPage> getPagesByPatternParts(List<String> patterns) 
-            throws TransactionHandledException, TransactionHandledSQLException {
-        return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        WebPage.class, 
-                        "SELECT name, shortcuts, url, ordering, dir_id " +
-                        "FROM web_pages " +
-                        "WHERE " + 
-                                multipleLowerLIKE("name", patterns.size(), AND) + 
-                                " OR " + 
-                                multipleLowerLIKE("shorcuts", patterns.size(), AND), 
-                        ROW_TO_PAGE, 
-                        lowerWildcardList(patterns))
-                .sorted()
-                .collect(toList());
-    }
-    
-    private List<WebPage> getPagesBySinglePattern(String pattern)
-            throws TransactionHandledException, TransactionHandledSQLException {
-        return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        WebPage.class, 
-                        "SELECT name, shortcuts, url, ordering, dir_id " +
-                        "FROM web_pages " +
-                        "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
-                        ROW_TO_PAGE, 
-                        lowerWildcard(pattern), lowerWildcard(pattern))
-                .sorted()
-                .collect(toList());
     }
 
     @Override
     public List<WebPage> allFromDirectory(
             Initiator initiator, int directoryId) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
@@ -177,7 +214,7 @@ class H2DaoWebPages
     @Override
     public boolean save(
             Initiator initiator, WebPage page) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -217,7 +254,7 @@ class H2DaoWebPages
     @Override
     public boolean remove(
             Initiator initiator, String name) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int removed = transact
                     .doUpdateVarargParams(
@@ -239,7 +276,7 @@ class H2DaoWebPages
     @Override
     public boolean editName(
             Initiator initiator, String oldName, String newName) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
              boolean exists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -275,7 +312,7 @@ class H2DaoWebPages
     @Override
     public boolean editShortcuts(
             Initiator initiator, String name, String newShortcuts) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int edited = transact
                     .doUpdateVarargParams(
@@ -299,7 +336,7 @@ class H2DaoWebPages
     @Override
     public boolean editUrl(
             Initiator initiator, String name, String newUrl) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int edited = transact
                     .doUpdateVarargParams(
@@ -323,7 +360,7 @@ class H2DaoWebPages
     @Override
     public boolean movePageFromDirToDir(
             Initiator initiator, WebPage page, int newDirId) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -379,7 +416,7 @@ class H2DaoWebPages
     @Override
     public boolean updatePageOrdersInDir(
             Initiator initiator, List<WebPage> pagesToReorder) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int[] reordered = transact
                     .doBatchUpdate(

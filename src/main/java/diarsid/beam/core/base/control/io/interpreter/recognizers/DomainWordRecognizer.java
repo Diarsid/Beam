@@ -16,7 +16,7 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWo
 
 public class DomainWordRecognizer extends NodeRecognizer {
     
-    public DomainWordRecognizer() {
+    DomainWordRecognizer() {
     }
     
     private boolean argIsSimpleAcceptableWord(Input input) {

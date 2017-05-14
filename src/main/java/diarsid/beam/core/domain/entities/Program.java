@@ -12,8 +12,11 @@ import java.io.IOException;
 import java.util.Objects;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
+
+import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -58,13 +61,13 @@ public class Program implements NamedEntity {
         return this.fullName;
     }
     
-    public void runAsync(CallbackEvent successCallback, CallbackEvent failCallback) {
+    public void runAsync(CallbackEmpty successCallback, CallbackEvent failCallback) {
         asyncDo(() -> {
             File program = this.programsCatalog.asFile(this);
             if ( program.exists() && program.isFile() ) {
                 try {
                     Desktop.getDesktop().open(program);  
-                    successCallback.onEvent("...running " + this.simpleName());
+                    successCallback.call();
                 } catch (IOException | IllegalArgumentException e) {
                     failCallback.onEvent("..." + e.getMessage());
                     logError(this.getClass(), e);
@@ -77,7 +80,8 @@ public class Program implements NamedEntity {
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return new Variant(this.fullName, variantIndex);
+        return new Variant(
+                this.fullName, format("%s (%s)", this.fullName, "Program"), variantIndex);
     }
 
     @Override

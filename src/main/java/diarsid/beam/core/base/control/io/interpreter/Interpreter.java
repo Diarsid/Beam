@@ -7,27 +7,17 @@
 package diarsid.beam.core.base.control.io.interpreter;
 
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.ArgumentsRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.DomainWordRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.InputCorrectnessRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.MultipleArgsRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.OneArgRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.PauseRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.PrefixRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.RelativePathRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.WordRecognizer;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.WordsRecognizer;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_NOTE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
@@ -45,22 +35,33 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGH;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOW;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.lowerThan;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.argumentsFor;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.controlWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.controlWords;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.correctInput;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.domainWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.multipleArgs;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.only;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.pause;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.prefixes;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.relativePath;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.singleArg;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
 
 /**
  * Class that interprets CLI input commands and transforms them into
  * an object of Command subclass.
  * 
- * Uses predefined tree structure (decision tree) of Recognizer objects 
- * that assess each part of given command line and decide whether to 
- * abort parsing in their branch or to dispatch input deeper to their 
+ * Uses a predefined tree structure (decision tree) of Recognizer objects 
+ * that assess each part of a given command line and decide whether to 
+ * abort parsing in their branch or to dispatch an input deeper to their 
  * children. 
  * 
  * The last element in such branch usually makes a final
@@ -81,235 +82,185 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return new InputCorrectnessRecognizer().branchesTo(new OneArgRecognizer().priority(HIGH).branchesTo(new PrefixRecognizer(
+        return correctInput().withAny(singleArg().priority(HIGH).withAny(prefixes(
                                 "/", 
-                                "l/").branchesTo(new DomainWordRecognizer().pointsTo(
-                                                input -> new OpenLocationCommand(input.currentArg())),
-                                        new RelativePathRecognizer().pointsTo(input -> new OpenLocationTargetCommand(input.currentArg()))
-                        ),
-                        new PrefixRecognizer(
+                                "l/").withAny(
+                                        domainWord().with(input -> new OpenLocationCommand(input.currentArg())),
+                                        relativePath().with(input -> new OpenLocationTargetCommand(input.currentArg()))),
+                        prefixes(
                                 "w/", 
-                                "i/").pointsTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new SeePageCommand(input.currentArg()))),
-                        new PrefixRecognizer(
+                                "i/").with(domainWord().with(input -> new BrowsePageCommand(input.currentArg()))),
+                        prefixes(
                                 "r/", 
-                                "p/").branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg())),
-                                        new RelativePathRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg()))),
-                        new PrefixRecognizer(
+                                "p/").withAny(
+                                        domainWord().with(input -> new RunProgramCommand(input.currentArg())),
+                                        relativePath().with(input -> new RunProgramCommand(input.currentArg()))),
+                        prefixes(
                                 "b/", 
                                 "e/", 
-                                "c/").pointsTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new CallBatchCommand(input.currentArg()))),
-                        new WordRecognizer(
-                                "exit").pointsTo(
-                                        input -> new EmptyCommand(EXIT)),
-                        new WordRecognizer(
-                                "close").pointsTo(
-                                        input -> new EmptyCommand(CLOSE_CONSOLE)),
-                        new WordsRecognizer(
+                                "c/").with(domainWord().with(input -> new CallBatchCommand(input.currentArg()))),
+                        controlWord("exit").with(only(EXIT)),
+                        controlWord("close").with(only(CLOSE_CONSOLE)),
+                        controlWords(
                                 "n", 
                                 "note", 
-                                "notes").pointsTo(
-                                        input -> new EmptyCommand(OPEN_NOTES)),
-                        new DomainWordRecognizer().priority(LOWEST).pointsTo(
-                                input -> new ExecutorDefaultCommand(input.currentArg())), 
-                        new RelativePathRecognizer().priority(LOWER).pointsTo(input -> new OpenLocationTargetCommand(input.currentArg()))
-                ),
-                new MultipleArgsRecognizer().branchesTo(new WordsRecognizer(
+                                "notes").withAny(
+                                        controlWords(
+                                                "+", 
+                                                "new", 
+                                                "add", 
+                                                "create").with(argumentsFor(CREATE_NOTE)),
+                                        only(OPEN_NOTES)),
+                        domainWord().priority(LOWEST).with(input -> new ExecutorDefaultCommand(input.currentArg())), 
+                        relativePath().priority(LOWER).with(input -> new OpenLocationTargetCommand(input.currentArg()))),
+                multipleArgs().withAny(controlWords(
                                 "see", 
-                                "www").priority(HIGH).pointsTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new SeePageCommand(input.currentArg()))
-                        ), 
-                        new WordsRecognizer(
+                                "www").priority(HIGH).with(domainWord().with(input -> new BrowsePageCommand(input.currentArg()))), 
+                        controlWords(
                                 "o", 
                                 "op", 
-                                "open").priority(HIGH).branchesTo(new DomainWordRecognizer().pointsTo(
-                                                input -> new OpenLocationCommand(input.currentArg())),
-                                        new RelativePathRecognizer().pointsTo(input -> new OpenLocationTargetCommand(input.currentArg()))
-                        ),
-                        new WordsRecognizer(
+                                "open").priority(HIGH).withAny(
+                                        domainWord().with(input -> new OpenLocationCommand(input.currentArg())),
+                                        relativePath().with(input -> new OpenLocationTargetCommand(input.currentArg()))),
+                        controlWords(
                                 "call", 
                                 "exe", 
-                                "exec").priority(HIGH).pointsTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new CallBatchCommand(input.currentArg()))
-                        ), 
-                        new WordsRecognizer(
+                                "exec").priority(HIGH).with(domainWord().with(input -> new CallBatchCommand(input.currentArg()))), 
+                        controlWords(
                                 "r", 
-                                "run").priority(HIGH).branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg())),
-                                        new RelativePathRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg()))),
-                        new WordRecognizer(
-                                "start").priority(HIGH).branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg() + "-start")),
-                                        new RelativePathRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg() + "-start"))),
-                        new WordRecognizer(
-                                "stop").priority(HIGH).branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg() + "-stop")),
-                                        new RelativePathRecognizer().pointsTo(
-                                                input -> new RunProgramCommand(input.currentArg() + "-stop"))),
-                        new WordRecognizer(
-                                "pause").priority(HIGH).pointsTo(
-                                        new PauseRecognizer()),
-                        new WordsRecognizer(
+                                "run").priority(HIGH).withAny(
+                                        domainWord().with(input -> new RunProgramCommand(input.currentArg())),
+                                        relativePath().with(input -> new RunProgramCommand(input.currentArg()))),
+                        controlWord("start").priority(HIGH).withAny(
+                                        domainWord().with(input -> new RunProgramCommand(input.currentArg() + "start")),
+                                        relativePath().with(input -> new RunProgramCommand(input.currentArg() + "start"))),
+                        controlWord("stop").priority(HIGH).withAny(
+                                        domainWord().with(input -> new RunProgramCommand(input.currentArg() + "stop")),
+                                        relativePath().with(input -> new RunProgramCommand(input.currentArg() + "stop"))),
+                        controlWord("pause").priority(HIGH).with(pause()),
+                        controlWords(
                                 "edit", 
                                 "change", 
-                                "alter").branchesTo(
-                                        new WordsRecognizer(
+                                "alter").withAny(
+                                        controlWords(
                                                 "loc", 
-                                                "location").pointsTo(
-                                                        new ArgumentsRecognizer(EDIT_LOCATION)),
-                                        new WordRecognizer(
-                                                "task").pointsTo(
-                                                        new ArgumentsRecognizer(EDIT_TASK)),
-                                        new WordsRecognizer(
+                                                "location").with(argumentsFor(EDIT_LOCATION)),
+                                        controlWords(
+                                                "task").with(argumentsFor(EDIT_TASK)),
+                                        controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").withAny(
+                                                        controlWords(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").priority(HIGH).pointsTo(
-                                                                        new ArgumentsRecognizer(EDIT_WEB_DIR)),
-                                                        new ArgumentsRecognizer(EDIT_PAGE)                                        
-                                        ),
-                                        new WordsRecognizer(
+                                                                "directory").priority(HIGH).with(argumentsFor(EDIT_WEB_DIR)),
+                                                        argumentsFor(EDIT_PAGE)),
+                                        controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(
-                                                        new ArgumentsRecognizer(EDIT_WEB_DIR)),
-                                        new WordsRecognizer(
+                                                "directory").with(argumentsFor(EDIT_WEB_DIR)),
+                                        controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(
-                                                        new ArgumentsRecognizer(EDIT_BATCH))
-                        ),
-                        new WordsRecognizer(
+                                                "exe").with(argumentsFor(EDIT_BATCH))),
+                        controlWords(
                                 "+", 
                                 "add", 
                                 "new", 
-                                "create").branchesTo(new WordsRecognizer(
+                                "create").withAny(
+                                        controlWords(
                                                 "loc", 
-                                                "location").pointsTo(
-                                                        new ArgumentsRecognizer(CREATE_LOCATION)),
-                                        new WordRecognizer(
-                                                "task").pointsTo(
-                                                        new ArgumentsRecognizer(CREATE_TASK)),
-                                        new WordsRecognizer(
+                                                "location").with(argumentsFor(CREATE_LOCATION)),
+                                        controlWord(
+                                                "task").with(argumentsFor(CREATE_TASK)),
+                                        controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(
-                                                        new ArgumentsRecognizer(CREATE_WEB_DIR)),
-                                        new WordsRecognizer(
+                                                "directory").with(argumentsFor(CREATE_WEB_DIR)),
+                                        controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").withAny(
+                                                        controlWords(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").pointsTo(
-                                                                        new ArgumentsRecognizer(CREATE_WEB_DIR)), 
-                                                        new ArgumentsRecognizer(CREATE_PAGE).priority(lowerThan(LOWEST))
-                                        ),
-                                        new WordsRecognizer(
+                                                                "directory").with(argumentsFor(CREATE_WEB_DIR)), 
+                                                        argumentsFor(CREATE_PAGE).priority(lowerThan(LOWEST))),
+                                        controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(
-                                                        new ArgumentsRecognizer(CREATE_BATCH))
-                        ),
-                        new WordsRecognizer(
+                                                "exe").with(argumentsFor(CREATE_BATCH)),
+                                        controlWords(
+                                                "n", 
+                                                "note", 
+                                                "not", 
+                                                "nt").with(argumentsFor(CREATE_NOTE))),
+                        controlWords(
                                 "-", 
                                 "del", 
                                 "delete", 
-                                "remove").branchesTo(
-                                        new WordsRecognizer(
+                                "remove").withAny(
+                                        controlWords(
                                                 "loc", 
-                                                "location").pointsTo(
-                                                        new ArgumentsRecognizer(DELETE_LOCATION)),
-                                        new WordRecognizer(
-                                                "task").pointsTo(
-                                                        new ArgumentsRecognizer(DELETE_TASK)),
-                                        new WordsRecognizer(
+                                                "location").with(argumentsFor(DELETE_LOCATION)),
+                                        controlWord("task").with(argumentsFor(DELETE_TASK)),
+                                        controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").pointsTo(
-                                                        new ArgumentsRecognizer(DELETE_WEB_DIR)),
-                                        new WordsRecognizer(
+                                                "directory").with(argumentsFor(DELETE_WEB_DIR)),
+                                        controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").branchesTo(
-                                                        new WordsRecognizer(
+                                                "web").withAny(
+                                                        controlWords(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").pointsTo(
-                                                                        new ArgumentsRecognizer(DELETE_WEB_DIR)),
-                                                        new ArgumentsRecognizer(DELETE_PAGE)
+                                                                "directory").with(argumentsFor(DELETE_WEB_DIR)),
+                                                        argumentsFor(DELETE_PAGE)
                                         ),
-                                        new WordsRecognizer(
+                                        controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").pointsTo(
-                                                        new ArgumentsRecognizer(DELETE_BATCH))
-                        ),
-                        new WordsRecognizer(
+                                                "exe").with(argumentsFor(DELETE_BATCH))),
+                        controlWords(
                                 "?", 
                                 "get", 
-                                "find").branchesTo(
-                                new WordRecognizer(
-                                        "task"), 
-                                new WordsRecognizer(
-                                        "reminder", 
-                                        "rem", 
-                                        "remind"),
-                                new WordRecognizer(
-                                        "event"),
-                                new WordsRecognizer(
-                                        "loc", 
-                                        "location"),
-                                new WordsRecognizer(
-                                        "page", 
-                                        "webpage", 
-                                        "webp", 
-                                        "web"),
-                                new WordsRecognizer(
-                                        "dir", 
-                                        "direct", 
-                                        "directory"),
-                                new WordsRecognizer(
-                                        "bat", 
-                                        "batch", 
-                                        "exe")
-                        ),
-                        new WordRecognizer(
-                                "list").branchesTo(
-                                        new DomainWordRecognizer().pointsTo(
-                                                new ArgumentsRecognizer(LIST_LOCATION)), 
-                                        new RelativePathRecognizer().pointsTo(
-                                                new ArgumentsRecognizer(LIST_PATH))
-                        ),
-                        new WordsRecognizer(
+                                "find").withAny(
+                                        controlWord("task"), 
+                                        controlWords(
+                                                "reminder", 
+                                                "rem", 
+                                                "remind"),
+                                        controlWord("event"),
+                                        controlWords(
+                                                "loc", 
+                                                "location"),
+                                        controlWords(
+                                                "page", 
+                                                "webpage", 
+                                                "webp", 
+                                                "web"),
+                                        controlWords(
+                                                "dir", 
+                                                "direct", 
+                                                "directory"),
+                                        controlWords(
+                                                "bat", 
+                                                "batch", 
+                                                "exe")),
+                        controlWord("list").withAny(
+                                domainWord().with(argumentsFor(LIST_LOCATION)), 
+                                relativePath().with(argumentsFor(LIST_PATH))),
+                        controlWords(
                                 "n", 
                                 "note", 
-                                "notes").priority(LOW).branchesTo(
-                                        new RelativePathRecognizer().pointsTo(
-                                                new ArgumentsRecognizer(OPEN_PATH_IN_NOTE)), 
-                                        new DomainWordRecognizer().pointsTo(
-                                                new ArgumentsRecognizer(OPEN_TARGET_IN_NOTE))
-                        )
+                                "notes").priority(LOW).withAny(
+                                        relativePath().with(argumentsFor(OPEN_PATH_IN_NOTES)), 
+                                        domainWord().with(argumentsFor(OPEN_TARGET_IN_NOTES)))
                 )
         );
     }

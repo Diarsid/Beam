@@ -1,0 +1,39 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package diarsid.beam.core.modules.executor;
+
+import diarsid.beam.core.modules.DomainKeeperModule;
+import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.IoModule;
+
+import com.drs.gem.injector.module.GemModuleBuilder;
+
+import static diarsid.beam.core.base.os.listing.FileLister.getLister;
+import static diarsid.beam.core.base.os.search.FileSearcher.searcherWithDepthsOf;
+
+/**
+ *
+ * @author Diarsid
+ */
+class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
+    
+    private final IoModule ioModule;
+    private final DomainKeeperModule domainKeeperModule;
+
+    public ExecutorModuleWorkerBuilder(IoModule ioModule, DomainKeeperModule domainKeeperModule) {
+        this.ioModule = ioModule;
+        this.domainKeeperModule = domainKeeperModule;
+    }
+
+    @Override
+    public ExecutorModule buildModule() {
+        return new ExecutorModuleWorker(
+                this.ioModule.getInnerIoEngine(), 
+                this.domainKeeperModule, 
+                searcherWithDepthsOf(5, 5), 
+                getLister());
+    }
+}

@@ -23,17 +23,19 @@ import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
+import static java.lang.String.join;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocationCommandFrom;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
+import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
+import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 
 
 class H2DaoCommands 
@@ -56,16 +58,14 @@ class H2DaoCommands
     public Optional<InvocationCommand> getByExactOriginalAndType(
             Initiator initiator, String original, CommandType type) {
         try {
-            return super.getDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(InvocationCommand.class,
+            return super.openDisposableTransaction()
+                    .doQueryAndConvertFirstRowVarargParams(
+                            InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( com_type IS ? ) AND ( LOWER(com_original) IS ? ) ",
                             (firstRow) -> {
-                                return Optional.of(restoreInvocationCommandFrom(
-                                        (String) firstRow.get("com_type"), 
-                                        (String) firstRow.get("com_original"), 
-                                        (String) firstRow.get("com_extended")));
+                                return Optional.of(this.rowToCommandConversion.convert(firstRow));
                             },
                             type.name(), lower(original));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -78,7 +78,7 @@ class H2DaoCommands
     public List<InvocationCommand> getByExactOriginalOfAnyType(
             Initiator initiator, String original) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
@@ -95,17 +95,12 @@ class H2DaoCommands
 
     @Override
     public List<InvocationCommand> searchInOriginalByPattern(
-            Initiator initiator, String pattern) {
-        if ( hasWildcard(pattern) ) {
-            return this.findByPartsOriginalPattern(initiator, splitByWildcard(pattern));
-        } else {
-            return this.findBySingleOriginalPattern(pattern);            
-        }
-    }
-
-    private List<InvocationCommand> findBySingleOriginalPattern(String pattern) {
-        try {
-            return super.getDisposableTransaction()
+            Initiator initiator, String pattern) {        
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<InvocationCommand> found;
+            
+            found = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
@@ -114,24 +109,64 @@ class H2DaoCommands
                             this.rowToCommandConversion,
                             lowerWildcard(pattern))
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            return emptyList();
-        }
-    }
-
-    private List<InvocationCommand> findByPartsOriginalPattern(
-            Initiator initiator, List<String> patternParts) {
-        try {
-            return super.getDisposableTransaction()
-                    .doQueryAndStream(
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN FULL] not found : " + pattern);
+            }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            debug("[PATTERN] criterias: " + join(" ", criterias));
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE " + multipleLowerLIKE("com_original", patternParts.size(), AND),
+                            "WHERE " + multipleLowerLikeAnd("com_original", criterias.size()),
                             this.rowToCommandConversion,
-                            lowerWildcardList(patternParts))
+                            criterias)
                     .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+            }
+            
+            String andOrCondition = multipleLowerGroupedLikesOr("com_original", criterias.size());
+            List<InvocationCommand> shuffleFound;
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition,
+                            this.rowToCommandConversion,
+                            criterias)
+                    .collect(toList());
+            
+            shift(criterias);
+            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            shuffleFound = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition,
+                            this.rowToCommandConversion,
+                            criterias)
+                    .collect(toList());
+            
+            debug("[PATTERN] found by criterias : " + found.size());
+            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            shuffleFound.retainAll(found);
+            found.retainAll(shuffleFound);
+            
+            return found;
+            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
@@ -141,46 +176,78 @@ class H2DaoCommands
     @Override
     public List<InvocationCommand> searchInOriginalByPatternAndType(
             Initiator initiator, String pattern, CommandType type) {
-        if ( hasWildcard(pattern) ) {
-            return this.findByPartsOriginalPatternOfType(initiator, splitByWildcard(pattern), type);
-        } else {
-            return this.findBySingleOriginalPatternOfType(pattern, type);
-        }
-    }
-
-    private List<InvocationCommand> findBySingleOriginalPatternOfType(String pattern, CommandType type) {
-        try {
-            return super.getDisposableTransaction()
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<InvocationCommand> found;
+            
+            found = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE ( LOWER(com_original) LIKE ? ) AND ( com_type IS ? ) ",
+                            "WHERE ( LOWER(com_original) LIKE ? ) AND ( com_type IS ? )",
                             this.rowToCommandConversion,
-                            lowerWildcard(pattern), type.name())
+                            lowerWildcard(pattern), type)
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            return emptyList();
-        }
-    }
-
-    private List<InvocationCommand> findByPartsOriginalPatternOfType(
-            Initiator initiator, List<String> patternParts, CommandType type) {
-        try {
-            List<String> params = lowerWildcardList(patternParts);
-            params.add(type.name());
-            return super.getDisposableTransaction()
-                    .doQueryAndStream(
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN FULL] not found : " + pattern);
+            }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            debug("[PATTERN] criterias: " + join(" ", criterias));
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE ( " + 
-                                    multipleLowerLIKE("com_original", patternParts.size(), AND) + 
-                                    " ) AND ( com_type IS ? ) ",
+                            "WHERE " + 
+                                    multipleLowerLikeAnd("com_original", criterias.size()) + 
+                                    " AND ( com_type IS ? ) ",
                             this.rowToCommandConversion,
-                            params)
+                            criterias, type)
                     .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+            }
+            
+            String andOrCondition = multipleLowerGroupedLikesOr("com_original", criterias.size());
+            List<InvocationCommand> shuffleFound;
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition + " AND ( com_type IS ? )",
+                            this.rowToCommandConversion,
+                            criterias, type)
+                    .collect(toList());
+            
+            shift(criterias);
+            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            shuffleFound = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition + " AND ( com_type IS ? )",
+                            this.rowToCommandConversion,
+                            criterias, type)
+                    .collect(toList());
+            
+            debug("[PATTERN] found by criterias : " + found.size());
+            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            shuffleFound.retainAll(found);
+            found.retainAll(shuffleFound);
+            
+            return found;
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
@@ -190,42 +257,77 @@ class H2DaoCommands
     @Override
     public List<InvocationCommand> searchInExtendedByPattern(
             Initiator initiator, String pattern) {
-        if ( hasWildcard(pattern) ) {
-            return this.findByPartsExtendedPattern(initiator, splitByWildcard(pattern));
-        } else {
-            return this.findBySingleExtendedPattern(pattern);
-        }        
-    }
-
-    private List<InvocationCommand> findBySingleExtendedPattern(String pattern) {
-        try {
-            return super.getDisposableTransaction()
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<InvocationCommand> found;
+            
+            found = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
-                                    "FROM commands " +
-                                    "WHERE LOWER(com_extended) LIKE ? ",
+                            "FROM commands " +
+                            "WHERE LOWER(com_extended) LIKE ? ",
                             this.rowToCommandConversion,
                             lowerWildcard(pattern))
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            return emptyList();
-        }
-    }
-
-    private List<InvocationCommand> findByPartsExtendedPattern(
-            Initiator initiator, List<String> patternParts) {
-        try {
-            return super.getDisposableTransaction()
-                    .doQueryAndStream(
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN FULL] not found : " + pattern);
+            }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            debug("[PATTERN] criterias: " + join(" ", criterias));
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE " + multipleLowerLIKE("com_extended", patternParts.size(), AND),
+                            "WHERE " + multipleLowerLikeAnd("com_extended", criterias.size()),
                             this.rowToCommandConversion,
-                            lowerWildcardList(patternParts))
+                            criterias)
                     .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+            }
+            
+            String andOrCondition = multipleLowerGroupedLikesOr("com_extended", criterias.size());
+            List<InvocationCommand> shuffleFound;
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition,
+                            this.rowToCommandConversion,
+                            criterias)
+                    .collect(toList());
+            
+            shift(criterias);
+            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            shuffleFound = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition,
+                            this.rowToCommandConversion,
+                            criterias)
+                    .collect(toList());
+            
+            debug("[PATTERN] found by criterias : " + found.size());
+            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            shuffleFound.retainAll(found);
+            found.retainAll(shuffleFound);
+            
+            return found;
+            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
@@ -235,57 +337,88 @@ class H2DaoCommands
     @Override
     public List<InvocationCommand> searchInExtendedByPatternAndType(
             Initiator initiator, String pattern, CommandType type) {
-        if ( hasWildcard(pattern) ) {
-            return this.findByPartsExtendedPatternOfType(initiator, splitByWildcard(pattern), type);
-        } else {
-            return this.findBySingleExtendedPatternOfType(pattern, type);
-        }        
-    }
-
-    private List<InvocationCommand> findBySingleExtendedPatternOfType(
-            String pattern, CommandType type) {
-        try {
-            return super.getDisposableTransaction()
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<InvocationCommand> found;
+            
+            found = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
-                                    "FROM commands " +
-                                    "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? ) ",
+                            "FROM commands " +
+                            "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? )",
                             this.rowToCommandConversion,
-                            lowerWildcard(pattern), type.name())
+                            lowerWildcard(pattern), type)
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            return emptyList();
-        }
-    }
-
-    private List<InvocationCommand> findByPartsExtendedPatternOfType(
-            Initiator initiator, List<String> patternParts, CommandType type) {
-        try {
-            List<String> params = lowerWildcardList(patternParts);
-            params.add(type.name());
-            return super.getDisposableTransaction()
-                    .doQueryAndStream(
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN FULL] not found : " + pattern);
+            }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            debug("[PATTERN] criterias: " + join(" ", criterias));
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
-                            "WHERE ( " + 
-                                    multipleLowerLIKE("com_extended", patternParts.size(), AND) + 
-                                    " ) AND ( com_type IS ? ) ",
+                            "WHERE " + 
+                                    multipleLowerLikeAnd("com_extended", criterias.size()) + 
+                                    " AND ( com_type IS ? ) ",
                             this.rowToCommandConversion,
-                            params)
+                            criterias, type)
                     .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+            }
+            
+            String andOrCondition = multipleLowerGroupedLikesOr("com_extended", criterias.size());
+            List<InvocationCommand> shuffleFound;
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition + " AND ( com_type IS ? )",
+                            this.rowToCommandConversion,
+                            criterias, type)
+                    .collect(toList());
+            
+            shift(criterias);
+            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            shuffleFound = transact
+                    .doQueryAndStreamVarargParams(
+                            InvocationCommand.class,
+                            "SELECT com_type, com_original, com_extended " +
+                            "FROM commands " +
+                            "WHERE " + andOrCondition + " AND ( com_type IS ? )",
+                            this.rowToCommandConversion,
+                            criterias, type)
+                    .collect(toList());
+            
+            debug("[PATTERN] found by criterias : " + found.size());
+            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            shuffleFound.retainAll(found);
+            found.retainAll(shuffleFound);
+            
+            return found;
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return emptyList();
-        }
+        }   
     }
 
     @Override
     public boolean save(
             Initiator initiator, InvocationCommand command) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean commandExists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -325,7 +458,7 @@ class H2DaoCommands
     public boolean delete(
             Initiator initiator, InvocationCommand command) {
         try {
-            return 1 == super.getDisposableTransaction()
+            return 1 == super.openDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
@@ -340,7 +473,7 @@ class H2DaoCommands
     public boolean deleteByExactOriginalOfAllTypes(
             Initiator initiator, String original) {
         try {
-            return 0 < super.getDisposableTransaction()
+            return 0 < super.openDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE LOWER(com_original) IS ? ",
@@ -355,7 +488,7 @@ class H2DaoCommands
     public boolean deleteByExactOriginalOfType(
             Initiator initiator, String original, CommandType type) {
         try {
-            return 1 == super.getDisposableTransaction()
+            return 1 == super.openDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",

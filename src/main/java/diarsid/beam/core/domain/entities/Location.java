@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
@@ -50,7 +51,7 @@ public class Location
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return new Variant(this.name, variantIndex);
+        return new Variant(this.name, format("%s (%s)", this.name, "Location"), variantIndex);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class Location
     
     public void openAsync(
             String target, 
-            CallbackEvent successCallback,
+            CallbackEmpty successCallback,
             CallbackEvent failCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
@@ -68,8 +69,8 @@ public class Location
             if ( location.exists() && location.isDirectory() ) {
                 if ( finalTarget.exists() ) {
                     try {
-                        Desktop.getDesktop().open(location);   
-                        successCallback.onEvent(format("...opening %s/%s", this.name, target));
+                        Desktop.getDesktop().open(finalTarget);   
+                        successCallback.call();
                     } catch (IOException | IllegalArgumentException e) {
                         failCallback.onEvent("cannot open target due to: " + e.getMessage());
                         logError(this.getClass(), e);
@@ -90,14 +91,14 @@ public class Location
     }
     
     public void openAsync(
-            CallbackEvent successCallback,
+            CallbackEmpty successCallback,
             CallbackEvent failCallback) {
         asyncDo(() -> {
             File location = new File(this.path);
             if ( location.exists() && location.isDirectory() ) {
                 try {
                     Desktop.getDesktop().open(location);   
-                    successCallback.onEvent("...opening " + this.name);
+                    successCallback.call();
                 } catch (IOException | IllegalArgumentException e) {
                     failCallback.onEvent("cannot open location due to: " + e.getMessage());
                     logError(this.getClass(), e);

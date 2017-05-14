@@ -44,9 +44,9 @@ public class Logs {
         if ( useConsoleDebugging ) {
             consoleDebugger.debug(log);
         }
-        if ( useFileDebugging ) {
-            fileDebugger.debug(log); 
-        }
+//        if ( useFileDebugging ) {
+//            fileDebugger.debug(log); 
+//        }
     }
     
     public static void log(Class clazz, String log) {

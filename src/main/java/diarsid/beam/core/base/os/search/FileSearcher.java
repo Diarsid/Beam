@@ -15,20 +15,15 @@ import diarsid.beam.core.base.os.search.result.FileSearchResult;
  */
 public interface FileSearcher {
     
-    public static FileSearcher getSearcherWithDepthsOf(
+    public static FileSearcher searcherWithDepthsOf(
             int depthOfSearchByName, int depthOfSearchByPath) {
-        return new FileSearcherService(depthOfSearchByName, depthOfSearchByPath);
+        FilesCollector filesCollector = new FilesCollector(depthOfSearchByName, depthOfSearchByPath);
+        return new FileSearcherService(filesCollector);
     } 
     
-    FileSearchResult findDirectly(String directTarget, String location, FileSearchMode mode);
+    FileSearchResult find(
+            String target, String location, FileSearchMatching matching, FileSearchMode mode);
     
-    FileSearchResult findDirectly(String directTarget, Path location, FileSearchMode mode);
-    
-    FileSearchResult findStrictly(String strictTarget, String location, FileSearchMode mode);
-    
-    FileSearchResult findStrictly(String strictTarget, Path location, FileSearchMode mode);
-
-    FileSearchResult find(String target, String location, FileSearchMode mode);
-
-    FileSearchResult find(String target, Path location, FileSearchMode mode);    
+    FileSearchResult find(
+            String target, Path location, FileSearchMatching matching, FileSearchMode mode);
 }

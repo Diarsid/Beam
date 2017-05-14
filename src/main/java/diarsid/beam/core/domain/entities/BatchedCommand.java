@@ -22,7 +22,7 @@ public class BatchedCommand implements ConvertableToVariant {
     private final ExecutorCommand command;
     private final int orderInBatch;
     
-    public BatchedCommand(Batch batch, int orderInBatch, ExecutorCommand command) {
+    BatchedCommand(Batch batch, int orderInBatch, ExecutorCommand command) {
         this.enclosingBatch = batch;
         this.command = command;
         this.orderInBatch = orderInBatch;

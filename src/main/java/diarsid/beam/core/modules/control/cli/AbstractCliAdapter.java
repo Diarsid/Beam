@@ -9,18 +9,18 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.OkValueOperation;
 import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 
+import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
-import static diarsid.beam.core.base.control.flow.OperationResult.OK;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
+import static diarsid.beam.core.base.control.flow.Operations.asComplete;
 import static diarsid.beam.core.base.control.flow.Operations.asFail;
-import static diarsid.beam.core.base.control.flow.Operations.asOk;
 
 /**
  *
@@ -38,19 +38,42 @@ abstract class AbstractCliAdapter {
         this.ioEngine.report(initiator, message);
     }
     
-    protected final  void report(Initiator initiator, Message message) {
+    protected final void report(Initiator initiator, Message message) {
         this.ioEngine.reportMessage(initiator, message);
+    }
+    
+    protected final void reportVoidOperationFlow(
+            Initiator initiator, VoidOperation flow) {
+        switch ( flow.result() ) {
+            case COMPLETE : {
+                if ( flow.hasMessage() ) {
+                    this.ioEngine.report(initiator, flow.message());
+                }
+                break;
+            }         
+            case FAIL : {
+                this.ioEngine.report(initiator, flow.message());
+                break;
+            }         
+            case STOP : {
+                // do not report anything as STOP is the result of user choice.
+                break;
+            }         
+            default : {
+                this.ioEngine.report(initiator, "unkown operation result.");
+            }
+        }        
     }
 
     protected final void reportVoidOperationFlow(
             Initiator initiator, VoidOperation flow, String onSuccess) {
         switch ( flow.result() ) {
-            case OK : {
+            case COMPLETE : {
                 this.ioEngine.report(initiator, onSuccess);
                 break;
             }         
             case FAIL : {
-                this.ioEngine.report(initiator, asFail(flow).reason());
+                this.ioEngine.report(initiator, flow.message());
                 break;
             }         
             case STOP : {
@@ -66,13 +89,13 @@ abstract class AbstractCliAdapter {
     protected final void reportValueOperationFlow(
             Initiator initiator, 
             ValueOperation flow, 
-            Function<OkValueOperation, Message> ifNonEmptyFunction, 
+            Function<ValueOperationComplete, Message> ifNonEmptyFunction, 
             String ifEmptyMessage) {
         switch ( flow.result() ) {
-            case OK : {
-                OkValueOperation success = asOk(flow);
-                if ( success.hasReturn() ) {
-                    this.ioEngine.reportMessage(initiator, ifNonEmptyFunction.apply(success));
+            case COMPLETE : {
+                ValueOperationComplete completed = asComplete(flow);
+                if ( completed.hasReturn() ) {
+                    this.ioEngine.reportMessage(initiator, ifNonEmptyFunction.apply(completed));
                 } else {
                     this.ioEngine.report(initiator, ifEmptyMessage);
                 }                

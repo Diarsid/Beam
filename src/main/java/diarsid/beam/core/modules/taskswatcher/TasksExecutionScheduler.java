@@ -89,8 +89,7 @@ class TasksExecutionScheduler {
         }
     }
 
-    private void showExpiredTasks(long lag, List<Task> expiredTasks) {
-        
+    private void showExpiredTasks(long lag, List<Task> expiredTasks) {        
         List<TaskMessage> tasksToShow = this.filterAccordingToLagAndConvertToMessages(
                     expiredTasks, lag, LAG_AFTER_INITIAL_START);
         asyncDo(() -> {

@@ -63,7 +63,7 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
     }
     
     private boolean tableNotFoundInExisting(SqlTable table) {
-        return ! containsWordInIgnoreCase(this.existingTableNames, table.getName());
+        return ! containsWordInIgnoreCase(this.existingTableNames, table.name());
     }
 
     @Override
@@ -80,13 +80,13 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
             this.dataBase
                     .transactionFactory()
                     .createDisposableTransaction()
-                    .doUpdate(table.getSqlCreationScript()); 
+                    .doUpdate(table.sqlCreationScript()); 
             
-            return format("SQL table '%s' has been created.", table.getName());
+            return format("SQL table '%s' has been created.", table.name());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DataBaseInitializer.class, ex);
             this.ioEngine.reportAndExitLater(
-                    getSystemInitiator(), format("Cannot create '%s' SQL table.", table.getName()));
+                    getSystemInitiator(), format("Cannot create '%s' SQL table.", table.name()));
             throw new ModuleInitializationException();
         } 
     }

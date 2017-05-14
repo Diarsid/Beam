@@ -14,8 +14,9 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -142,5 +143,10 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
             System.out.println("fake io > " + s);
         }
         System.out.println("[exit]");
+    }
+
+    @Override
+    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

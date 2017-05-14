@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.control.cli;
 
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -16,25 +17,27 @@ import diarsid.beam.core.modules.domainkeeper.NotesKeeper;
  *
  * @author Diarsid
  */
-class CliAdapterForNotesKeeper {
+class CliAdapterForNotesKeeper extends AbstractCliAdapter{
     
     private final NotesKeeper notesKeeper;
-    private final InnerIoEngine ioEngine;
 
     public CliAdapterForNotesKeeper(NotesKeeper notesKeeper, InnerIoEngine ioEngine) {
+        super(ioEngine);
         this.notesKeeper = notesKeeper;
-        this.ioEngine = ioEngine;
     }    
     
-    void openNotesAndReport(Initiator initiator, EmptyCommand emptyCommand) {
-        // TODO
+    void openNotesAndReport(Initiator initiator, EmptyCommand command) {
+        VoidOperation flow = this.notesKeeper.openNotes(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow);
     }
     
     void openTargetInNotesAndReport(Initiator initiator, ArgumentsCommand command) {
-        // TODO
+        VoidOperation flow = this.notesKeeper.openTargetInNotes(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow);
     }
     
     void openPathInNotesAndReport(Initiator initiator, ArgumentsCommand command) {
-        // TODO
+        VoidOperation flow = this.notesKeeper.openPathInNotes(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow);
     }
 }

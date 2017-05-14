@@ -25,7 +25,7 @@ public enum ValidationRule {
     
     TEXT_RULE {
         @Override
-        public ValidationResult apply(String target) {
+        public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -41,7 +41,7 @@ public enum ValidationRule {
     
     WEB_URL_RULE {
         @Override
-        public ValidationResult apply(String target) {
+        public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -55,7 +55,7 @@ public enum ValidationRule {
     
     LOCAL_DIRECTORY_PATH_RULE {
         @Override
-        public ValidationResult apply(String target) {
+        public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -68,7 +68,7 @@ public enum ValidationRule {
     
     ENTITY_NAME_RULE {
         @Override
-        public ValidationResult apply(String target) {
+        public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -84,10 +84,10 @@ public enum ValidationRule {
         }
     };
     
-    public abstract ValidationResult apply(String target);
+    public abstract ValidationResult applyTo(String target);
     
     public static ValidationResult applyValidatationRule(String target, ValidationRule rule) {
-        return rule.apply(target);
+        return rule.applyTo(target);
     }
     
 }

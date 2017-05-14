@@ -24,6 +24,10 @@ public class WeightedVariant
         super(parent);
         this.weight = weight;
     }
+    
+    public boolean betterThan(WeightedVariant other) {
+        return this.weight < other.weight;
+    }
 
     public double weight() {
         return this.weight;

@@ -26,7 +26,6 @@ import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.lang.String.join;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -35,12 +34,12 @@ import static java.util.stream.Collectors.toSet;
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
+import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
+import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.nonNullNonEmpty;
 import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -74,7 +73,7 @@ class H2DaoBatches
     @Override
     public boolean isNameFree(Initiator initiator, String exactName) {
         try {
-            return ! super.getDisposableTransaction()
+            return ! super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
                             "SELECT bat_name " +
                             "FROM batches " +
@@ -89,51 +88,80 @@ class H2DaoBatches
 
     @Override
     public List<String> getBatchNamesByNamePattern(
-            Initiator initiator, String batchName) {
-        try {
-            return super.getDisposableTransaction()
-                    .ifTrue( nonNullNonEmpty(batchName) )
+            Initiator initiator, String pattern) {
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<String> found;
+            
+            found = transact
                     .doQueryAndStreamVarargParams(
                             String.class,
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE LOWER(bat_name) LIKE ? ",
                             this.rowToBatchNameConversion,
-                            lowerWildcard(batchName))
+                            lowerWildcard(pattern))
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
-            super.ioEngine().report(
-                    initiator, "batch names search by name pattern '" + batchName + "' failed.");
-            return emptyList();
-        }
-    }
-
-    @Override
-    public List<String> getBatchNamesByNamePatternParts(Initiator initiator, List<String> batchNameParts) {
-        try {
-            return super.getDisposableTransaction()
-                    .ifTrue( nonEmpty(batchNameParts) )
-                    .doQueryAndStream(String.class,
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            String.class,
                             "SELECT bat_name " +
                             "FROM batches " +
-                            "WHERE " + multipleLowerLIKE("bat_name", batchNameParts.size(), AND),
+                            "WHERE " + multipleLowerLikeAnd("bat_name", criterias.size()),
                             this.rowToBatchNameConversion,
-                            lowerWildcardList(batchNameParts))
+                            criterias)
                     .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            }
+            
+            String andOrCondition = multipleLowerGroupedLikesOr("bat_name", criterias.size());
+            List<String> shuffleFound;
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            String.class,
+                            "SELECT bat_name " +
+                            "FROM batches " +
+                            "WHERE " + andOrCondition,
+                            this.rowToBatchNameConversion,
+                            criterias)
+                    .collect(toList());
+            
+            shift(criterias);
+            shuffleFound = transact
+                    .doQueryAndStreamVarargParams(
+                            String.class,
+                            "SELECT bat_name " +
+                            "FROM batches " +
+                            "WHERE " + andOrCondition,
+                            this.rowToBatchNameConversion,
+                            criterias)
+                    .collect(toList());
+            
+            shuffleFound.retainAll(found);
+            found.retainAll(shuffleFound);
+            
+            return found;
+            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoBatches.class, ex);
             super.ioEngine().report(
-                    initiator, 
-                    "batch names search by name patterns '" + 
-                            join("-", batchNameParts) + "' failed.");
+                    initiator, "batch names search by name pattern '" + pattern + "' failed.");
             return emptyList();
         }
     }
     
     @Override
     public Optional<Batch> getBatchByExactName(Initiator initiator, String name) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean batchExists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -170,7 +198,7 @@ class H2DaoBatches
 
     @Override
     public boolean saveBatch(Initiator initiator, Batch batch) {        
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameIsFree = ! transact
                     .doesQueryHaveResultsVarargParams(
@@ -216,7 +244,7 @@ class H2DaoBatches
 
     @Override
     public boolean removeBatch(Initiator initiator, String batchName) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameRemoved = transact
                     .doUpdateVarargParams(
@@ -246,7 +274,7 @@ class H2DaoBatches
 
     @Override
     public boolean editBatchName(Initiator initiator, String batchName, String newName) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int updatedNameQty = transact
                     .doUpdateVarargParams(
@@ -280,7 +308,7 @@ class H2DaoBatches
     @Override
     public boolean editBatchCommands(
             Initiator initiator, String batchName, List<ExecutorCommand> newCommands) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             if ( newCommands.isEmpty() ) {
                 return false;
@@ -329,7 +357,7 @@ class H2DaoBatches
     @Override
     public boolean editBatchOneCommand(
             Initiator initiator, String batchName, int commandOrder, ExecutorCommand newCommand) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             int modified = transact
                     .doUpdateVarargParams(
                             "UPDATE batch_commands " +
@@ -359,7 +387,7 @@ class H2DaoBatches
         try {
             Map<String, List<ExecutorCommand>> collectedBatches = new HashMap<>();
             
-            super.getDisposableTransaction()
+            super.openDisposableTransaction()
                     .doQuery(
                             "SELECT bat_name, " + 
                             "       bat_command_type, " +

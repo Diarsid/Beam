@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.List;
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.OkValueOperation;
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -20,6 +19,8 @@ import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToMessage;
+
+import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 
 /**
  *
@@ -51,7 +52,7 @@ public class CliAdapterForTasksKeeper extends AbstractCliAdapter {
     
     void findTasksAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueOperation<List<Task>> flow = this.tasksKeeper.findTasks(initiator, command);
-        Function<OkValueOperation, Message> ifSuccess = (success) -> {
+        Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
             return tasksToMessage((List<Task>) success.getOrThrow());
         };
         super.reportValueOperationFlow(initiator, flow, ifSuccess, "tasks not found.");

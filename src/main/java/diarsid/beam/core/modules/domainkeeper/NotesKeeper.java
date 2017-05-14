@@ -22,4 +22,5 @@ public interface NotesKeeper {
     
     VoidOperation openPathInNotes(Initiator initiator, ArgumentsCommand command);
     
+    VoidOperation createNote(Initiator initiator, ArgumentsCommand command);
 }

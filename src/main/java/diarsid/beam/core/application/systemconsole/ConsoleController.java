@@ -143,6 +143,10 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
 
     @Override
     public Answer resolve(WeightedVariantsQuestion variants) throws IOException {
+        if ( variants.hasOne() ) {
+            return variants.singleAnswer();
+        }
+        
         String line;
         Answer answer = noAnswerFromVariants();
         Choice choice;

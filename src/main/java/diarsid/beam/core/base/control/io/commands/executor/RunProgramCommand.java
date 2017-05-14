@@ -38,6 +38,11 @@ public class RunProgramCommand extends InvocationCommand {
     }
 
     @Override
+    public String stringifyOriginal() {
+        return "run " + super.originalArgument();
+    }
+
+    @Override
     public NamedEntityType subjectedEntityType() {
         return PROGRAM;
     }

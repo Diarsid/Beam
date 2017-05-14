@@ -33,14 +33,12 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.multipleValues;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.domain.entities.TaskRepeat.valueOf;
 import static diarsid.beam.core.domain.entities.Tasks.restoreTask;
 import static diarsid.beam.core.domain.entities.Tasks.stringifyTaskText;
@@ -83,7 +81,7 @@ class H2DaoTasks
     public Optional<LocalDateTime> getTimeOfFirstActiveTask(
             Initiator initiator) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRow(
                             LocalDateTime.class, 
                             "SELECT MIN(time) AS time " +
@@ -108,7 +106,7 @@ class H2DaoTasks
     public List<Task> getActiveTasksOfTypeBetweenDates(
             Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeat... types) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(Task.class,
                             "SELECT * " +
                             "FROM tasks " +
@@ -130,7 +128,7 @@ class H2DaoTasks
     public List<Task> getActiveTasksBeforeTime(
             Initiator initiator, LocalDateTime tillNow) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             Task.class,
                             "SELECT * " +
@@ -149,7 +147,7 @@ class H2DaoTasks
     @Override
     public boolean updateTasks(
             Initiator initiator, List<Task> tasks) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int[] updated = transact
                     .doBatchUpdate(
@@ -186,7 +184,7 @@ class H2DaoTasks
     @Override
     public boolean saveTask(
             Initiator initiator, Task task) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int updated = transact
                     .doUpdateVarargParams(
@@ -212,7 +210,7 @@ class H2DaoTasks
     @Override
     public boolean deleteTaskById(
             Initiator initiator, int id) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int removed = transact
                     .doUpdateVarargParams(
@@ -233,7 +231,7 @@ class H2DaoTasks
     @Override
     public boolean editTaskText(
             Initiator initiator, int taskId, List<String> newText) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int updated = transact
                     .doUpdateVarargParams(
@@ -255,7 +253,7 @@ class H2DaoTasks
     @Override
     public boolean editTaskTime(
             Initiator initiator, int taskId, LocalDateTime newTime) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int updated = transact
                     .doUpdateVarargParams(
@@ -277,7 +275,7 @@ class H2DaoTasks
     @Override
     public boolean editTaskTime(
             Initiator initiator, int taskId, LocalDateTime newTime, AllowedTimePeriod timePeriod) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             String days = timePeriod.stringifyDays();
             String hours = timePeriod.stringifyHours();
             int updated = transact
@@ -303,29 +301,35 @@ class H2DaoTasks
     @Override
     public List<Task> findTasksByTextPattern(
             Initiator initiator, String textPattern) {
-        try {
-        if ( hasWildcard(textPattern) ) {
-            List<String> textParts = splitByWildcard(textPattern);
-            return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        Task.class, 
-                        "SELECT * " +
-                        "FROM tasks " +
-                        "WHERE " + multipleLowerLIKE("text", textParts.size(), AND), 
-                        this.rowToTaskConversion, 
-                        lowerWildcardList(textParts))
-                    .collect(toList());
-        } else {
-            return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        Task.class, 
-                        "SELECT * " +
-                        "FROM tasks " +
-                        "WHERE ( LOWER(text) LIKE ? )", 
-                        this.rowToTaskConversion, 
-                        lowerWildcard(textPattern))
-                    .collect(toList());
-        }
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<Task> tasks = transact
+                    .doQueryAndStreamVarargParams(
+                            Task.class, 
+                            "SELECT * " +
+                            "FROM tasks " +
+                            "WHERE ( LOWER(text) LIKE ? )", 
+                            this.rowToTaskConversion, 
+                            lowerWildcard(textPattern))
+                        .collect(toList());
+            
+            if ( nonEmpty(tasks) ) {
+                return tasks;
+            }
+            
+            List<String> criterias = patternToCharCriterias(textPattern);
+            tasks = transact
+                    .doQueryAndStreamVarargParams(
+                            Task.class, 
+                            "SELECT * " +
+                            "FROM tasks " +
+                            "WHERE " + multipleLowerLikeAnd("text", criterias.size()), 
+                            this.rowToTaskConversion, 
+                            criterias)
+                        .collect(toList());
+            
+            return tasks;
+            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             

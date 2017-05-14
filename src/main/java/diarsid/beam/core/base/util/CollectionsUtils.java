@@ -8,6 +8,7 @@ package diarsid.beam.core.base.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.nonNull;
@@ -53,6 +55,15 @@ public class CollectionsUtils {
                 .findFirst()
                 .orElseThrow(() -> new NullPointerException(
                         "Passed collection is implied to contain exactly one element."));
+    }
+    
+    public static <T> T sortAndGetFirstFrom(List<T> list, Comparator<T> comparatorT) {
+        if ( nonEmpty(list) ) {
+            sort(list, comparatorT);
+            return list.get(0);
+        } else {
+            throw new IllegalArgumentException("cannot get first sorted from empty List.");
+        }        
     }
 
     public static <T> Set<T> toSet(T... array) {

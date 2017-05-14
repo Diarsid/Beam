@@ -9,7 +9,7 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public interface OkValueOperation<T extends Object> extends ValueOperation<T> {
+public interface ValueOperationComplete<T extends Object> extends ValueOperation<T> {
     
     boolean hasReturn();
     

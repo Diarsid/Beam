@@ -39,6 +39,10 @@ public class ExtendableArgument {
     public void setExtended(String extendedArgument) {
         this.extendedArgument = extendedArgument;
     }
+    
+    public void unextend() {
+        this.extendedArgument = "";
+    }
 
     public String original() {
         return this.originalArgument;

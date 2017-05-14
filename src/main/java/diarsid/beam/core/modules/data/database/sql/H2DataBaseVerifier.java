@@ -31,7 +31,7 @@ public class H2DataBaseVerifier implements DataBaseVerifier {
     public List<String> verify(DataBase dataBase, DataBaseModel dataBaseModel) {
         H2DataBaseModel h2SqlModel = (H2DataBaseModel) dataBaseModel;
         return h2SqlModel
-                .getTables()
+                .tables()
                 .stream()
                 .map(table -> this.initializer.initializeTableIfNecessaryAndProvideReport(table))
                 .filter(report -> nonEmpty(report))

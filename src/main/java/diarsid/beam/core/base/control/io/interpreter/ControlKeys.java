@@ -42,9 +42,9 @@ public class ControlKeys {
     private ControlKeys() {
     }
     
-    public static boolean hasWildcard(String word) {
-        return word.contains(WILDCARD);
-    }
+//    public static boolean hasWildcard(String word) {
+//        return word.contains(WILDCARD);
+//    }
     
     public static String findUnacceptableInDomainWord(String word) {
         return findAnyInIgnoreCase(word, UNACCEPTABLE_DOMAIN_CHARS);

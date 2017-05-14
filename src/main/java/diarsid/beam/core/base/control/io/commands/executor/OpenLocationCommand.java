@@ -38,6 +38,11 @@ public class OpenLocationCommand extends InvocationCommand {
     }
 
     @Override
+    public String stringifyOriginal() {
+        return "open " + super.originalArgument();
+    }
+
+    @Override
     public NamedEntityType subjectedEntityType() {
         return LOCATION;
     }

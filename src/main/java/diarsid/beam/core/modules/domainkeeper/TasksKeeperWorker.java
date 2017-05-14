@@ -17,8 +17,8 @@ import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
+import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
@@ -34,8 +34,6 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
@@ -60,6 +58,9 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -95,7 +96,8 @@ public class TasksKeeperWorker implements TasksKeeper {
     @Override
     public Optional<Long> getInactivePeriodMinutes(
             Initiator initiator) {
-        return this.dao.getTimeOfFirstActiveTask(initiator)
+        return this.dao
+                .getTimeOfFirstActiveTask(initiator)
                 .map(time -> Duration.between(time, now()).toMinutes());
     }
 
@@ -440,10 +442,9 @@ public class TasksKeeperWorker implements TasksKeeper {
         
         List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
         if ( matchingTasks.isEmpty() ) {
-            return successEmpty();
+            return valueCompletedEmpty();
         } else {
-            return valueFound(matchingTasks);
+            return valueCompletedWith(matchingTasks);
         }
-    }  
-    
+    }      
 }

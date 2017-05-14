@@ -31,7 +31,7 @@ import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
@@ -43,12 +43,10 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATC
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
@@ -117,13 +115,7 @@ class BatchesKeeperWorker
     
     private List<String> getMatchingBatches(
             Initiator initiator, String batchNamePattern) {
-        if ( hasWildcard(batchNamePattern) ) {
-            return this.dao.getBatchNamesByNamePatternParts(
-                    initiator, splitByWildcard(batchNamePattern));
-        } else {
-            return this.dao.getBatchNamesByNamePattern(
-                    initiator, batchNamePattern);
-        }
+        return this.dao.getBatchNamesByNamePattern(initiator, batchNamePattern);
     }
 
     @Override
@@ -145,7 +137,7 @@ class BatchesKeeperWorker
             return valueOperationStopped();
         }
         
-        return valueFound(this.findByNamePattern(initiator, name));
+        return valueCompletedWith(this.findByNamePattern(initiator, name));
     }
 
     @Override
@@ -231,7 +223,7 @@ class BatchesKeeperWorker
             Initiator initiator, Command batchCommand) {        
         switch ( batchCommand.type() ) {
             case BATCH_PAUSE : 
-            case SEE_WEBPAGE : 
+            case BROWSE_WEBPAGE : 
             case OPEN_LOCATION_TARGET : 
             case OPEN_LOCATION :
             case RUN_PROGRAM : {

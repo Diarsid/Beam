@@ -18,7 +18,10 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedC
  * @author Diarsid
  */
 public class InputCorrectnessRecognizer extends NodeRecognizer {
-        
+
+    InputCorrectnessRecognizer() {
+    }
+              
     @Override
     public Command assess(Input input) {
         if ( input.hasMoreArgsThan(0) ) {

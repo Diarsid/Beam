@@ -13,7 +13,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
@@ -52,7 +52,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
     private void exportAndSaveExportedEndpoints() {
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
         try {
-            int beamCorePort = Integer.parseInt(configuration.getAsString("rmi.core.port"));
+            int beamCorePort = Integer.parseInt(configuration.asString("rmi.core.port"));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
             RemoteCoreAccessEndpoint access = 
                     (RemoteCoreAccessEndpoint) UnicastRemoteObject.exportObject(
@@ -75,7 +75,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
     @Override
     public void stopModule() {
         Configuration configuration = this.appComponentsHolderModule.getConfiguration();
-        int beamCorePort = Integer.parseInt(configuration.getAsString("rmi.core.port"));
+        int beamCorePort = Integer.parseInt(configuration.asString("rmi.core.port"));
         try {            
             Registry registry = getRegistry(beamCorePort);
             registry.unbind(CORE_ACCESS_ENDPOINT_NAME);

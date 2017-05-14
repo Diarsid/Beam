@@ -9,9 +9,6 @@ package diarsid.beam.core.application.environment;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import diarsid.beam.core.application.environment.LibrariesCatalog;
-import diarsid.beam.core.application.environment.LibrariesCatalogReal;
-
 /**
  *
  * @author Diarsid
@@ -19,8 +16,8 @@ import diarsid.beam.core.application.environment.LibrariesCatalogReal;
 public class LibrariesCatalogRealTest {
     
     private final static LibrariesCatalog libraries = new LibrariesCatalogReal(
-            "E:\\1__Projects\\NetBeans\\Beam\\target\\classes\\bin",
-            "E:\\1__Projects\\NetBeans\\Beam\\target\\classes\\lib");
+            System.getProperty("basedir") + "/target/classes/bin",
+            System.getProperty("basedir") + "/target/classes/lib");
 
     public LibrariesCatalogRealTest() {
     }

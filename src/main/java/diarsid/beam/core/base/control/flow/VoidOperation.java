@@ -11,4 +11,7 @@ package diarsid.beam.core.base.control.flow;
  */
 public interface VoidOperation extends Operation {
     
+    boolean hasMessage();
+    
+    String message();
 }

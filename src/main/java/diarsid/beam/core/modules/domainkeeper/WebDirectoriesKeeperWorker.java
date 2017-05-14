@@ -28,7 +28,6 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
@@ -50,6 +49,8 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLACE;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 
 
 class WebDirectoriesKeeperWorker 
@@ -339,12 +340,12 @@ class WebDirectoriesKeeperWorker
             Optional<WebDirectoryPages> directoryWithPages = 
                     this.daoDirectories.getDirectoryPagesById(initiator, searched.get().id());
             if ( directoryWithPages.isPresent() ) {
-                return valueFound(directoryWithPages);
+                return valueCompletedWith(directoryWithPages);
             } else {
                 return valueOperationFail("cannot get directory with pages.");
             }            
         } else {
-            return valueFound(searched.get());
+            return valueCompletedWith(searched.get());
         }
     }    
 }

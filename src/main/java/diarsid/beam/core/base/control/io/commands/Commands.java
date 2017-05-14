@@ -13,7 +13,7 @@ import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.valueOf;
@@ -48,8 +48,8 @@ public class Commands {
                 return new RunProgramCommand(
                         originalArgs, extendedArgs, STORED, TARGET_NOT_FOUND);
             }
-            case SEE_WEBPAGE : {
-                return new SeePageCommand(
+            case BROWSE_WEBPAGE : {
+                return new BrowsePageCommand(
                         originalArgs, extendedArgs, STORED, TARGET_NOT_FOUND);
             }
             case CALL_BATCH : {
@@ -75,8 +75,8 @@ public class Commands {
             case RUN_PROGRAM : {
                 return new RunProgramCommand(originalArgument);
             }
-            case SEE_WEBPAGE : {
-                return new SeePageCommand(originalArgument);
+            case BROWSE_WEBPAGE : {
+                return new BrowsePageCommand(originalArgument);
             }
             case CALL_BATCH : {
                 return new CallBatchCommand(originalArgument);

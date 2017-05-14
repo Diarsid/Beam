@@ -30,24 +30,26 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -62,9 +64,9 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.SHORTCUT
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRECTORY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.fail;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
 
 
 public class WebPagesKeeperWorker 
@@ -96,7 +98,7 @@ public class WebPagesKeeperWorker
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
         this.webObjectsParser = parser;
-        this.subjectedCommandTypes = toSet(SEE_WEBPAGE);
+        this.subjectedCommandTypes = toSet(BROWSE_WEBPAGE);
     }
 
     @Override
@@ -117,17 +119,17 @@ public class WebPagesKeeperWorker
         if ( hasOne(foundPages) ) {
             return Optional.of(getOne(foundPages));
         } else if ( hasMany(foundPages) ) {
-            return this.manageWithManyPages(initiator, foundPages);
+            return this.manageWithManyPages(initiator, namePattern, foundPages);
         } else {
             return Optional.empty();
         }
     }
     
-    private Optional<WebPage> manageWithManyPages(Initiator initiator, List<WebPage> pages) {
-        // TODO
-        // employ more sofisticated algorithm
-        VariantsQuestion question = question("choose").withAnswerEntities(pages);
-        Answer answer = this.ioEngine.ask(initiator, question);
+    private Optional<WebPage> manageWithManyPages(
+            Initiator initiator, String pattern, List<WebPage> pages) {
+        // VariantsQuestion question = question("choose").withAnswerEntities(pages);
+        WeightedVariantsQuestion question = analyzeAndWeightVariants(pattern, entitiesToVariants(pages));
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
             return Optional.of(pages.get(answer.index()));
         } else {
@@ -138,13 +140,13 @@ public class WebPagesKeeperWorker
     private String discussShortcuts(Initiator initiator) {
         String shortcuts = this.ioEngine.askInput(initiator, "shortcuts, if any");
         if ( nonEmpty(shortcuts) ) {
-            ValidationResult shortcutsValidity = fail();
+            ValidationResult shortcutsValidity = ENTITY_NAME_RULE.applyTo(shortcuts);
             validation: while ( shortcutsValidity.isFail() ) {
                 shortcuts = this.ioEngine.askInput(initiator, "shortcuts");
                 if ( shortcuts.isEmpty() ) {
                     break validation;
                 } else {
-                    shortcutsValidity = ENTITY_NAME_RULE.apply(shortcuts);
+                    shortcutsValidity = ENTITY_NAME_RULE.applyTo(shortcuts);
                     if ( shortcutsValidity.isFail() ) {
                         this.ioEngine.report(initiator, shortcutsValidity.getFailureMessage());
                     }
@@ -484,7 +486,7 @@ public class WebPagesKeeperWorker
         
         Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( optPage.isPresent() ) {
-            return valueFound(optPage.get());
+            return valueCompletedWith(optPage.get());
         } else {
             return valueOperationStopped();
         }
@@ -510,12 +512,12 @@ public class WebPagesKeeperWorker
             name = format("%s (%d)", name, freeNameIndex.get());
         }
         
-        ValidationResult urlValidity = WEB_URL_RULE.apply(url);
+        ValidationResult urlValidity = WEB_URL_RULE.applyTo(url);
         if ( urlValidity.isFail() ) {
             throw new DomainConsistencyException(urlValidity.getFailureMessage());
         }
         
-        ValidationResult dirNameValidity = ENTITY_NAME_RULE.apply(directory);
+        ValidationResult dirNameValidity = ENTITY_NAME_RULE.applyTo(directory);
         if ( dirNameValidity.isFail() ) {
             throw new DomainConsistencyException(dirNameValidity.getFailureMessage());
         }
@@ -544,7 +546,7 @@ public class WebPagesKeeperWorker
             newName = format("%s (%d)", newName, freeNameIndex.get());
         }
         
-        ValidationResult newNameValidity = ENTITY_NAME_RULE.apply(newName);
+        ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(newName);
         if ( newNameValidity.isFail() ) {
             throw new DomainConsistencyException(newNameValidity.getFailureMessage());
         }

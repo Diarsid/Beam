@@ -25,34 +25,35 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 import diarsid.beam.core.modules.data.DaoLocations;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.flow.Operations.successEmpty;
-import static diarsid.beam.core.base.control.flow.Operations.valueFound;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
 
 
 
@@ -96,7 +97,7 @@ class LocationsKeeperWorker
     @Override
     public List<Location> getLocationsByNamePattern(
             Initiator initiator, String namePattern) {
-        return this.getMatchingLocationsBy(initiator, namePattern);
+        return this.dao.getLocationsByNamePattern(initiator, namePattern);
     }
     
     @Override
@@ -118,48 +119,36 @@ class LocationsKeeperWorker
         
         namePattern = this.helper.validateInteractively(initiator, namePattern, "name", ENTITY_NAME_RULE);
         if ( namePattern.isEmpty() ) {
-            return successEmpty();
+            return valueCompletedEmpty();
         } else {
-            return valueFound(this.findExactlyOneLocationByPattern(initiator, namePattern));
+            return valueCompletedWith(this.findExactlyOneLocationByPattern(initiator, namePattern));
         }
     }
 
     private Optional<Location> findExactlyOneLocationByPattern(
-            Initiator initiator, String locationNamePattern) {
-        List<Location> locations = this.getMatchingLocationsBy(initiator, locationNamePattern);
+            Initiator initiator, String namePattern) {
+        List<Location> locations = this.dao.getLocationsByNamePattern(initiator, namePattern);
         if ( hasOne(locations) ) {
             return Optional.of(getOne(locations));
         } else if ( hasMany(locations) ) {
-            return this.manageWithManyLocations(initiator, locations);
+            return this.manageWithManyLocations(initiator, namePattern, locations);
         } else {
             return Optional.empty();
         }
     }
 
     private Optional<Location> manageWithManyLocations(
-            Initiator initiator, List<Location> locations) {
-        // TODO 
-        // employ more sofisticated choice algorithm
-        Answer answer = this.ioEngine.ask(
-                initiator, question("choose").withAnswerEntities(locations));
+            Initiator initiator, String pattern, List<Location> locations) {
+//        Answer answer = this.ioEngine.ask(
+//                initiator, question("choose").withAnswerEntities(locations));
+        WeightedVariantsQuestion question = 
+                analyzeAndWeightVariants(pattern, entitiesToVariants(locations));
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
             return Optional.of(locations.get(answer.index()));
         } else {
             return Optional.empty();
         }
-    }
-
-    private List<Location> getMatchingLocationsBy(
-            Initiator initiator, String locationNamePattern) {
-        if ( hasWildcard(locationNamePattern) ) {
-            return this.dao.getLocationsByNamePatternParts(
-                    initiator, splitByWildcard(locationNamePattern));
-        } else {
-            return this.dao.getLocationsByNamePattern(
-                    initiator, locationNamePattern);
-        }
-        // TODO
-        // employ advanced search algorithm
     }
 
     @Override
@@ -229,7 +218,7 @@ class LocationsKeeperWorker
             return voidOperationStopped();
         }
         
-        List<Location> locationsToRemove = this.getMatchingLocationsBy(initiator, name);
+        List<Location> locationsToRemove = this.dao.getLocationsByNamePattern(initiator, name);
         if ( hasOne(locationsToRemove) ) {
             String locationName = getOne(locationsToRemove).name();
             this.ioEngine.report(initiator, format("'%s' found.", locationName));

@@ -256,14 +256,14 @@ public class H2DaoTasksTest {
      */
     @Test
     public void testEditTaskText() {
-        List<Task> tasks = dao.findTasksByTextPattern(initiator, "work-remember");
+        List<Task> tasks = dao.findTasksByTextPattern(initiator, "workremember");
         assertEquals(1, tasks.size());
         
         List<String> newText = asList("new text", "instead of the old one");
         
         dao.editTaskText(initiator, tasks.get(0).id(), newText);
         
-        List<Task> tasksAfter = dao.findTasksByTextPattern(initiator, "inst-ol");
+        List<Task> tasksAfter = dao.findTasksByTextPattern(initiator, "instol");
         assertEquals(1, tasksAfter.size());
     }
 
@@ -272,13 +272,13 @@ public class H2DaoTasksTest {
      */
     @Test
     public void testEditTaskTime_3args() {
-        List<Task> tasks = dao.findTasksByTextPattern(initiator, "john-birth");
+        List<Task> tasks = dao.findTasksByTextPattern(initiator, "johnbirth");
         assertEquals(1, tasks.size());
         LocalDateTime newTime = now().plusWeeks(2).plusDays(2).withMinute(0).withSecond(0).withNano(0);
         
         dao.editTaskTime(initiator, tasks.get(0).id(), newTime);
         
-        List<Task> tasksAfter = dao.findTasksByTextPattern(initiator, "john-birth");
+        List<Task> tasksAfter = dao.findTasksByTextPattern(initiator, "johnbirth");
         assertEquals(1, tasksAfter.size());
         assertEquals(newTime, tasksAfter.get(0).time());
     }
@@ -288,7 +288,7 @@ public class H2DaoTasksTest {
      */
     @Test
     public void testEditTaskTime_4args() {
-        List<Task> tasks = dao.findTasksByTextPattern(initiator, "every-work");
+        List<Task> tasks = dao.findTasksByTextPattern(initiator, "everywork");
         assertEquals(1, tasks.size());
         LocalDateTime newTime = now().plusWeeks(2).plusDays(2).withMinute(0).withSecond(0).withNano(0);
         AllowedTimePeriodsParser parser = allowedTimePeriodsParser();
@@ -297,7 +297,7 @@ public class H2DaoTasksTest {
         
         dao.editTaskTime(initiator, tasks.get(0).id(), newTime, timePeriod);
         
-        List<Task> tasksAfter = dao.findTasksByTextPattern(initiator, "every-work");
+        List<Task> tasksAfter = dao.findTasksByTextPattern(initiator, "everywork");
         assertEquals(tasks.get(0).id(), tasksAfter.get(0).id());
         assertEquals(1, tasksAfter.size());
         assertEquals(newTime, tasksAfter.get(0).time());
@@ -313,11 +313,11 @@ public class H2DaoTasksTest {
         List<Task> tasks1 = dao.findTasksByTextPattern(initiator, "to invoke ri");
         assertEquals(1, tasks1.size());
         
-        List<Task> tasks2 = dao.findTasksByTextPattern(initiator, "work-remember");
+        List<Task> tasks2 = dao.findTasksByTextPattern(initiator, "workremember");
         assertEquals(1, tasks2.size());
         assertEquals("1 2 3 4 5", tasks2.get(0).days());
         
-        List<Task> tasks3 = dao.findTasksByTextPattern(initiator, "so-thing");
+        List<Task> tasks3 = dao.findTasksByTextPattern(initiator, "somthing");
         assertEquals(2, tasks3.size());
     }
 

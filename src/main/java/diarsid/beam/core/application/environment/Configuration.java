@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.application.configuration;
+package diarsid.beam.core.application.environment;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class Configuration {
                 this.options.get(option) instanceof List;
     }
     
-    public String getAsString(String option) {
+    public String asString(String option) {
         if ( this.has(option) ) {
             Object config = this.options.get(option);
             if ( config instanceof String ) {

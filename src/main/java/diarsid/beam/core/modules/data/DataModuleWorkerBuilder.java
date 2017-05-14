@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
@@ -49,9 +49,9 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         this.loadDriver();
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
         Configuration config = this.applicationComponentsHolderModule.getConfiguration();
-        String dataBaseUrl = "jdbc:h2:" + config.getAsString("data.store") + "/BeamData";
-        String user = config.getAsString("data.user");
-        String pass = config.getAsString("data.pass");
+        String dataBaseUrl = "jdbc:h2:" + config.asString("data.store") + "/BeamData";
+        String user = config.asString("data.user");
+        String pass = config.asString("data.pass");
         DataBase dataBase = new H2DataBase(dataBaseUrl, user, pass);
         
         DataBaseModel model = new H2DataBaseModel();

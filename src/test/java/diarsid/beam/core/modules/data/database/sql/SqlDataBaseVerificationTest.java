@@ -47,7 +47,7 @@ public class SqlDataBaseVerificationTest {
         DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
         List<String> reports = verifier.verify(dataBase, model);   
         reports.stream().forEach(report -> logger.info(report));
-        assertEquals(reports.size(), model.getTables().size());
+        assertEquals(reports.size(), model.tables().size());
     }
     
     @AfterClass

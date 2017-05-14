@@ -16,7 +16,6 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -29,13 +28,16 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
+import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
+import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_LOCATION;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
@@ -43,21 +45,14 @@ class H2DaoLocations
         extends BeamCommonDao 
         implements DaoLocations {
     
-    private final PerRowConversion<Location> rowToLocationConversion;
-    
     H2DaoLocations(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
-        this.rowToLocationConversion = (row) -> {
-            return new Location(
-                    (String) row.get("loc_name"),
-                    (String) row.get("loc_path"));
-        };
     }
 
     @Override
     public boolean isNameFree(Initiator initiator, String exactName) {
         try {
-            return ! super.getDisposableTransaction()
+            return ! super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
                             "SELECT loc_name " +
                             "FROM locations " +
@@ -73,13 +68,13 @@ class H2DaoLocations
     @Override
     public Optional<Location> getLocationByExactName(Initiator initiator, String exactName) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             Location.class,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE ( LOWER(loc_name) IS ? ) ",
-                            this.rowToLocationConversion,
+                            ROW_TO_LOCATION,
                             lower(exactName))
                     .findFirst();
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -92,45 +87,82 @@ class H2DaoLocations
 
     @Override
     public List<Location> getLocationsByNamePattern(
-            Initiator initiator, String locationName) {
-        try {
-            return super.getDisposableTransaction()
+            Initiator initiator, String pattern) {        
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<Location> found;
+            
+            found = transact
                     .doQueryAndStreamVarargParams(
                             Location.class, 
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ?  ", 
-                            this.rowToLocationConversion,
-                            lowerWildcard(locationName))
+                            ROW_TO_LOCATION,
+                            lowerWildcard(pattern))
                     .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN FULL] not found : " + pattern);
+            }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            debug("[PATTERN] criterias: " + join(" ", criterias));
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            Location.class, 
+                            "SELECT loc_name, loc_path " +
+                            "FROM locations " +
+                            "WHERE " + multipleLowerLikeAnd("loc_name", criterias.size()), 
+                            ROW_TO_LOCATION,
+                            criterias)
+                    .collect(toList());
+            
+            if ( nonEmpty(found) ) {
+                return found;
+            } else {
+                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+            }
+            
+            String andOrCondition = multipleLowerGroupedLikesOr("loc_name", criterias.size());
+            List<Location> shiftedFound;
+            
+            found = transact
+                    .doQueryAndStreamVarargParams(
+                            Location.class, 
+                            "SELECT loc_name, loc_path " +
+                            "FROM locations " +
+                            "WHERE " + andOrCondition, 
+                            ROW_TO_LOCATION,
+                            criterias)
+                    .collect(toList());
+            
+            shift(criterias);
+            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            shiftedFound = transact
+                    .doQueryAndStreamVarargParams(
+                            Location.class, 
+                            "SELECT loc_name, loc_path " +
+                            "FROM locations " +
+                            "WHERE " + andOrCondition, 
+                            ROW_TO_LOCATION,
+                            criterias)
+                    .collect(toList());
+            
+            debug("[PATTERN] found by criterias : " + found.size());
+            debug("[PATTERN] found by shuffled criterias : " + shiftedFound.size());
+            shiftedFound.retainAll(found);
+            found.retainAll(shiftedFound);
+            
+            return found;
+            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().report(
-                    initiator, format("location search by name '%s' failed.", locationName));
-            return emptyList();
-        }
-    }
-
-    @Override
-    public List<Location> getLocationsByNamePatternParts(
-            Initiator initiator, List<String> nameParts) {
-        
-        try {
-            return super.getDisposableTransaction()
-                    .ifTrue( nonEmpty(nameParts) )
-                    .doQueryAndStream(Location.class,                            
-                            "SELECT loc_name, loc_path " +
-                            "FROM locations " +
-                            "WHERE " + multipleLowerLIKE("loc_name", nameParts.size(), AND), 
-                            this.rowToLocationConversion,
-                            lowerWildcardList(nameParts))                    
-                    .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(this.getClass(), ex);
-            super.ioEngine().reportMessage(initiator, error(
-                    "location search by name parts: ", 
-                    "   " + join(" + ", nameParts),
-                    "failed."));
+                    initiator, format("location search by name '%s' failed.", pattern));
             return emptyList();
         }
     }
@@ -138,7 +170,7 @@ class H2DaoLocations
     @Override
     public boolean saveNewLocation(
             Initiator initiator, Location location) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameIsFree = ! transact
                     .doesQueryHaveResultsVarargParams(
@@ -169,7 +201,7 @@ class H2DaoLocations
     public boolean removeLocation(
             Initiator initiator, String locationName) {
         try {
-            int removed = super.getDisposableTransaction()
+            int removed = super.openDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM locations " +
                             "WHERE LOWER(loc_name) IS ? ", 
@@ -186,7 +218,7 @@ class H2DaoLocations
     @Override
     public boolean editLocationPath(
             Initiator initiator, String locationName, String newPath) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             int modified = transact
                     .doUpdateVarargParams(
@@ -216,7 +248,7 @@ class H2DaoLocations
     @Override
     public boolean editLocationName(
             Initiator initiator, String locationName, String newName) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameIsFree = ! transact
                     .doesQueryHaveResultsVarargParams(
@@ -254,7 +286,7 @@ class H2DaoLocations
     @Override
     public boolean replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             List<Location> locationsToModify = transact
                     .doQueryAndStreamVarargParams(
@@ -262,7 +294,7 @@ class H2DaoLocations
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_path) LIKE ? ", 
-                            this.rowToLocationConversion, 
+                            ROW_TO_LOCATION, 
                             lowerWildcard(replaceable))
                     .collect(toList());            
 
@@ -301,12 +333,12 @@ class H2DaoLocations
     public List<Location> getAllLocations(
             Initiator initiator) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStream(
                             Location.class,
                             "SELECT loc_name, loc_path " +
                             "FROM locations", 
-                            this.rowToLocationConversion)
+                            ROW_TO_LOCATION)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);

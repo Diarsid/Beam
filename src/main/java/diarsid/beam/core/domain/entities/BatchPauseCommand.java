@@ -77,6 +77,11 @@ public class BatchPauseCommand implements ExecutorCommand {
     }
 
     @Override
+    public String stringifyOriginal() {
+        return this.stringify();
+    }
+
+    @Override
     public Variant toVariant(int variantIndex) {
         return new Variant(this.stringify(), variantIndex);
     }

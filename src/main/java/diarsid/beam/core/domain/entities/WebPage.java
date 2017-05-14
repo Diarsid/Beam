@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
@@ -17,6 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
+import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -91,12 +93,12 @@ public class WebPage
     }
     
     public void browseAsync(
-            CallbackEvent calbackOnSuccess, 
+            CallbackEmpty calbackOnSuccess, 
             CallbackEvent callbackOnFail) {
         asyncDo(() -> {
             try {
                 Desktop.getDesktop().browse(new URI(this.url));
-                calbackOnSuccess.onEvent("...browsing " + this.name);
+                calbackOnSuccess.call();
             } catch (URISyntaxException|IOException ex) {
                 logError(this.getClass(), ex.getMessage());
                 callbackOnFail.onEvent(ex.getMessage());
@@ -119,7 +121,7 @@ public class WebPage
 
     @Override
     public Variant toVariant(int variantIndex) {
-        return new Variant(this.name, variantIndex);        
+        return new Variant(this.name, format("%s (%s)", this.name, "WebPage"), variantIndex);        
     }
 
     @Override

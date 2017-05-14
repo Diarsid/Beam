@@ -15,6 +15,10 @@ import diarsid.beam.core.base.os.search.result.FileSearchResult;
 import static java.lang.String.format;
 import static java.nio.file.Files.isDirectory;
 
+import static diarsid.beam.core.base.os.search.FileSearchMatching.DIRECT_MATCH;
+import static diarsid.beam.core.base.os.search.FileSearchMatching.PATTERN_MATCH;
+import static diarsid.beam.core.base.os.search.FileSearchMatching.SIMILAR_MATCH;
+import static diarsid.beam.core.base.os.search.FileSearchMatching.STRICT_MATCH;
 import static diarsid.beam.core.base.os.search.FileSearchMode.FILES_ONLY;
 
 /**
@@ -35,12 +39,20 @@ abstract class SearcheableCatalog {
         this.fileSearcher = fileSearcher;
     }
     
+    protected FileSearchResult findFileInCatalogByDirectName(String name) {
+        return this.fileSearcher.find(name, this.catalogPath, DIRECT_MATCH, FILES_ONLY);
+    }
+    
     protected FileSearchResult findFileInCatalogByPattern(String pattern) {
-        return this.fileSearcher.find(pattern, this.catalogPath, FILES_ONLY);
+        return this.fileSearcher.find(pattern, this.catalogPath, PATTERN_MATCH, FILES_ONLY);
     }
     
     protected FileSearchResult findFileInCatalogByStrictName(String strictName) {
-        return this.fileSearcher.findStrictly(strictName, this.catalogPath, FILES_ONLY);
+        return this.fileSearcher.find(strictName, this.catalogPath, STRICT_MATCH, FILES_ONLY);
+    }
+    
+    protected FileSearchResult findFileInCatalogByPatternSimilarity(String pattern) {
+        return this.fileSearcher.find(pattern, this.catalogPath, SIMILAR_MATCH, FILES_ONLY);
     }
     
     protected Path getPath() {

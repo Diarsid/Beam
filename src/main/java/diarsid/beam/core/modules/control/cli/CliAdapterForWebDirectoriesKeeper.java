@@ -8,7 +8,6 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.OkValueOperation;
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -17,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
+import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 
 /**
  *
@@ -35,7 +35,7 @@ class CliAdapterForWebDirectoriesKeeper extends AbstractCliAdapter {
     void findWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueOperation<? extends WebDirectory> flow = 
                 this.directoriesKeeper.findWebDirectory(initiator, command);
-        Function<OkValueOperation, Message> onSuccess = (success) -> {
+        Function<ValueOperationComplete, Message> onSuccess = (success) -> {
             return ((WebDirectory) success.getOrThrow()).toMessage();
         };
         super.reportValueOperationFlow(initiator, flow, onSuccess, "web directory not found.");

@@ -23,9 +23,6 @@ public interface DaoLocations {
     List<Location> getLocationsByNamePattern(
             Initiator initiator, String locationName);
     
-    List<Location> getLocationsByNamePatternParts(
-            Initiator initiator, List<String> locationNameParts);
-    
     boolean saveNewLocation(
             Initiator initiator, Location location);
     

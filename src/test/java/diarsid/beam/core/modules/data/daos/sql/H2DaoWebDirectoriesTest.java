@@ -246,13 +246,13 @@ public class H2DaoWebDirectoriesTest {
     
     @Test
     public void testFindDirectoriesByPatternInAnyPlace_wildcard_found() {
-        List<WebDirectory> found = dao.findDirectoriesByPatternInAnyPlace(initiator, "dev-jav");
+        List<WebDirectory> found = dao.findDirectoriesByPatternInAnyPlace(initiator, "devjav");
         assertEquals(2, found.size());
     }
     
     @Test
     public void testFindDirectoriesByPatternInAnyPlace_wildcard_notFound() {
-        List<WebDirectory> found = dao.findDirectoriesByPatternInAnyPlace(initiator, "my-dir");
+        List<WebDirectory> found = dao.findDirectoriesByPatternInAnyPlace(initiator, "mydir");
         assertEquals(0, found.size());
     }
 
@@ -261,13 +261,13 @@ public class H2DaoWebDirectoriesTest {
      */
     @Test
     public void testFindDirectoriesByPatternInPlace_wildcard_found() {
-        List<WebDirectory> found = dao.findDirectoriesByPatternInPlace(initiator, "j-dev", BOOKMARKS);
+        List<WebDirectory> found = dao.findDirectoriesByPatternInPlace(initiator, "jdev", BOOKMARKS);
         assertEquals(2, found.size());
     }
     
     @Test
     public void testFindDirectoriesByPatternInPlace_wildcard_notFound() {
-        List<WebDirectory> found = dao.findDirectoriesByPatternInPlace(initiator, "dev-js-reac", BOOKMARKS);
+        List<WebDirectory> found = dao.findDirectoriesByPatternInPlace(initiator, "devjsreac", BOOKMARKS);
         assertTrue(found.isEmpty());
     }
     
@@ -279,8 +279,8 @@ public class H2DaoWebDirectoriesTest {
     
     @Test
     public void testFindDirectoriesByPatternInPlace_notFound() {
-        List<WebDirectory> found = dao.findDirectoriesByPatternInPlace(initiator, "react", BOOKMARKS);
-        assertTrue(found.isEmpty());
+        List<WebDirectory> found = dao.findDirectoriesByPatternInPlace(initiator, "reactjs", BOOKMARKS);
+        assertEquals(0, found.size());
     }
 
     /**

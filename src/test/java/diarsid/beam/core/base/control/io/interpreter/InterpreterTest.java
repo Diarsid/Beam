@@ -16,9 +16,7 @@ import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultComman
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
-import diarsid.beam.core.base.control.io.commands.executor.StartProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.StopProgramCommand;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 
 import static org.junit.Assert.assertEquals;
@@ -31,30 +29,28 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSO
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
-import static diarsid.beam.core.base.control.io.commands.CommandType.SEE_WEBPAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.START_PROGRAM;
-import static diarsid.beam.core.base.control.io.commands.CommandType.STOP_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.UNDEFINED;
 import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
-import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
-import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
-import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 
 /**
  *
@@ -123,8 +119,8 @@ public class InterpreterTest {
         assertEquals(OPEN_LOCATION_TARGET, c.type());
         
         OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
-        assertEquals("books", c1.location().original());
-        assertEquals("fan/tolkien", c1.target().original());
+        assertEquals("books", c1.originalLocation());
+        assertEquals("fan/tolkien", c1.originalTarget());
     }
     
     @Test
@@ -133,25 +129,25 @@ public class InterpreterTest {
         assertEquals(OPEN_LOCATION_TARGET, c.type());
         
         OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
-        assertEquals("books", c1.location().original());
-        assertEquals("fan/tolkien", c1.target().original());
+        assertEquals("books", c1.originalLocation());
+        assertEquals("fan/tolkien", c1.originalTarget());
     }
     
     @Test
     public void testInterprete_controlPrefix_w_seePage() {
         Command c = interpreter.interprete("w/google");
-        assertEquals(SEE_WEBPAGE, c.type());
+        assertEquals(BROWSE_WEBPAGE, c.type());
         
-        SeePageCommand c1 = (SeePageCommand) c;
+        BrowsePageCommand c1 = (BrowsePageCommand) c;
         assertEquals("google", c1.argument().original());
     }
     
     @Test
     public void testInterprete_controlPrefix_i_seePage() {
         Command c = interpreter.interprete("i/google");
-        assertEquals(SEE_WEBPAGE, c.type());
+        assertEquals(BROWSE_WEBPAGE, c.type());
         
-        SeePageCommand c1 = (SeePageCommand) c;
+        BrowsePageCommand c1 = (BrowsePageCommand) c;
         assertEquals("google", c1.argument().original());
     }
     
@@ -176,9 +172,9 @@ public class InterpreterTest {
     @Test
     public void testInterprete_seePage() {
         Command c = interpreter.interprete("see google");
-        assertEquals(SEE_WEBPAGE, c.type());
+        assertEquals(BROWSE_WEBPAGE, c.type());
         
-        SeePageCommand c1 = (SeePageCommand) c;
+        BrowsePageCommand c1 = (BrowsePageCommand) c;
         assertEquals("google", c1.argument().original());
     }   
     
@@ -214,37 +210,37 @@ public class InterpreterTest {
     @Test
     public void testInterprete_startProgram() {
         Command c = interpreter.interprete("START Prog");
-        assertEquals(START_PROGRAM, c.type());
+        assertEquals(RUN_PROGRAM, c.type());
         
-        StartProgramCommand c1 = (StartProgramCommand) c;
-        assertEquals("Prog", c1.argument().original());
+        RunProgramCommand c1 = (RunProgramCommand) c;
+        assertEquals("Progstart", c1.argument().original());
     }
     
     @Test
     public void testInterprete_startSubpathProgram() {
         Command c = interpreter.interprete("START util/Prog");
-        assertEquals(START_PROGRAM, c.type());
+        assertEquals(RUN_PROGRAM, c.type());
         
-        StartProgramCommand c1 = (StartProgramCommand) c;
-        assertEquals("util/Prog", c1.argument().original());
+        RunProgramCommand c1 = (RunProgramCommand) c;
+        assertEquals("util/Progstart", c1.argument().original());
     }
     
     @Test
     public void testInterprete_stopProgram() {
         Command c = interpreter.interprete("stop prog");
-        assertEquals(STOP_PROGRAM, c.type());
+        assertEquals(RUN_PROGRAM, c.type());
         
-        StopProgramCommand c1 = (StopProgramCommand) c;
-        assertEquals("prog", c1.argument().original());
+        RunProgramCommand c1 = (RunProgramCommand) c;
+        assertEquals("progstop", c1.argument().original());
     }
     
     @Test
     public void testInterprete_stopSubpathProgram() {
         Command c = interpreter.interprete("stop util/prog");
-        assertEquals(STOP_PROGRAM, c.type());
+        assertEquals(RUN_PROGRAM, c.type());
         
-        StopProgramCommand c1 = (StopProgramCommand) c;
-        assertEquals("util/prog", c1.argument().original());
+        RunProgramCommand c1 = (RunProgramCommand) c;
+        assertEquals("util/progstop", c1.argument().original());
     }
     
     @Test
@@ -289,7 +285,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_notes_as_openLocation() {
         Command c = interpreter.interprete("note todo");
-        assertEquals(OPEN_TARGET_IN_NOTE, c.type());
+        assertEquals(OPEN_TARGET_IN_NOTES, c.type());
         
         ArgumentsCommand c1 = (ArgumentsCommand) c;
         assertEquals("todo", c1.joinedArguments());
@@ -298,7 +294,7 @@ public class InterpreterTest {
     @Test
     public void testInterprete_notes_as_openPath() {
         Command c = interpreter.interprete("n project/todo");
-        assertEquals(OPEN_PATH_IN_NOTE, c.type());
+        assertEquals(OPEN_PATH_IN_NOTES, c.type());
         
         ArgumentsCommand c1 = (ArgumentsCommand) c;
         assertEquals("project/todo", c1.joinedArguments());
@@ -310,7 +306,7 @@ public class InterpreterTest {
         assertEquals(EXECUTOR_DEFAULT, c.type());
         
         ExecutorDefaultCommand c1 = (ExecutorDefaultCommand) c;
-        assertEquals("books", c1.originalArgument());
+        assertEquals("books", c1.argument());
     }
     
     @Test
@@ -321,8 +317,8 @@ public class InterpreterTest {
         OpenLocationTargetCommand c1 = (OpenLocationTargetCommand) c;
         assertEquals("books/fant/tolkien", c1.originalArgument());
         
-        assertEquals("books", c1.location().original());
-        assertEquals("fant/tolkien", c1.target().original());
+        assertEquals("books", c1.originalLocation());
+        assertEquals("fant/tolkien", c1.originalTarget());
     }
     
     @Test

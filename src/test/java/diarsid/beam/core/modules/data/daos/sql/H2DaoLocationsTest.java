@@ -35,7 +35,6 @@ import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**
@@ -132,27 +131,50 @@ public class H2DaoLocationsTest {
         assertTrue(locations.size() == 3);
         assertTrue(testDataBase.ifAllConnectionsReleased());
     }
+    
+    @Test
+    public void testGetLocationsByNamePattern_typo() {
+        List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "prjs");
+        assertTrue(locations.size() == 3);
+        assertTrue(testDataBase.ifAllConnectionsReleased());
+    }
+    
+    @Test
+    public void testGetLocationsByNamePattern_typo_2() {
+        List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "jvaprj");
+        assertTrue(locations.size() == 1);
+        assertTrue(getOne(locations).name().equals("java_projects"));
+        assertTrue(testDataBase.ifAllConnectionsReleased());
+    }
+    
+    @Test
+    public void testGetLocationsByNamePattern_typo_3_excessive_char() {
+        List<Location> locations = daoLocations.getLocationsByNamePattern(initiator, "jvzaprjo");
+        assertTrue(locations.size() == 1);
+        assertTrue(getOne(locations).name().equals("java_projects"));
+        assertTrue(testDataBase.ifAllConnectionsReleased());
+    }
 
     /**
      * Test of getLocationsByNameParts method, of class H2DaoLocations.
      */
-    @Test
-    public void testGetLocationsByNameParts() {
-        List<Location> j_proj_locations = daoLocations
-                .getLocationsByNamePatternParts(initiator, splitByWildcard("j-proj"));
-        assertTrue(j_proj_locations.size() == 3);
-        assertTrue(testDataBase.ifAllConnectionsReleased());
-        
-        List<Location> js_proj_locations = daoLocations
-                .getLocationsByNamePatternParts(initiator, splitByWildcard("js-proj"));
-        assertTrue(js_proj_locations.size() == 1);
-        assertTrue(testDataBase.ifAllConnectionsReleased());
-        
-        List<Location> j_pr_oj_cts_locations = daoLocations
-                .getLocationsByNamePatternParts(initiator, splitByWildcard("pr-j-cts-oj"));
-        assertTrue(j_pr_oj_cts_locations.size() == 3);
-        assertTrue(testDataBase.ifAllConnectionsReleased());
-    }
+//    @Test
+//    public void testGetLocationsByNameParts() {
+//        List<Location> j_proj_locations = daoLocations
+//                .getLocationsByNamePatternParts(initiator, splitByWildcard("j-proj"));
+//        assertTrue(j_proj_locations.size() == 3);
+//        assertTrue(testDataBase.ifAllConnectionsReleased());
+//        
+//        List<Location> js_proj_locations = daoLocations
+//                .getLocationsByNamePatternParts(initiator, splitByWildcard("js-proj"));
+//        assertTrue(js_proj_locations.size() == 1);
+//        assertTrue(testDataBase.ifAllConnectionsReleased());
+//        
+//        List<Location> j_pr_oj_cts_locations = daoLocations
+//                .getLocationsByNamePatternParts(initiator, splitByWildcard("pr-j-cts-oj"));
+//        assertTrue(j_pr_oj_cts_locations.size() == 3);
+//        assertTrue(testDataBase.ifAllConnectionsReleased());
+//    }
 
     /**
      * Test of saveNewLocation method, of class H2DaoLocations.

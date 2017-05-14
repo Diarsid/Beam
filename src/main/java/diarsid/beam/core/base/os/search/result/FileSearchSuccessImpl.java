@@ -9,36 +9,39 @@ package diarsid.beam.core.base.os.search.result;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Objects.isNull;
 
-
-public class FileSearchSuccessImpl implements FileSearchSuccess {
+class FileSearchSuccessImpl implements FileSearchSuccess, FileSearchResult {
     
     private final List<String> multipleValues;
     
-    private FileSearchSuccessImpl(List<String> multipleValues) {
+    FileSearchSuccessImpl(List<String> multipleValues) {
         this.multipleValues = multipleValues;
     }
     
-    private FileSearchSuccessImpl(String value) {
+    FileSearchSuccessImpl(String value) {
         this.multipleValues = new ArrayList<>();
         this.multipleValues.add(value);
     }
-    
-    public static FileSearchSuccess foundFile(String value) {
-        if ( isNull(value) || value.isEmpty() ) {
-            throw new ResultOperationNotAllowedException(
-                    "Action not allowed - value is null or empty.");
-        }
-        return new FileSearchSuccessImpl(value);
+
+    @Override
+    public boolean isOk() {
+        return true;
     }
-    
-    public static FileSearchSuccess foundFiles(List<String> values) {
-        if ( values == null || values.isEmpty() ) {
-            throw new ResultOperationNotAllowedException(
-                    "Action not allowed - values List is null or empty.");
-        }
-        return new FileSearchSuccessImpl(values);
+
+    @Override
+    public FileSearchSuccess success() {
+        return this;
+    }
+
+    @Override
+    public FileSearchFailure failure() {
+        throw new ResultOperationNotAllowedException(
+                "Action not allowed - this result value is success.");
+    }
+
+    @Override
+    public List<String> foundFilesOrNothing() {
+        return this.multipleValues;
     }
 
     @Override
@@ -53,8 +56,7 @@ public class FileSearchSuccessImpl implements FileSearchSuccess {
     }
 
     @Override
-    public List<String> allFoundFiles() {
-        this.proceedOnlyIfMultipleValues();
+    public List<String> foundFiles() {
         return this.multipleValues;
     }
     
@@ -62,13 +64,6 @@ public class FileSearchSuccessImpl implements FileSearchSuccess {
         if ( this.multipleValues.size() != 1 ) {
             throw new ResultOperationNotAllowedException(
                     "Action not allowed - has multiple values, not single value.");
-        }
-    }
-    
-    private void proceedOnlyIfMultipleValues() {
-        if ( this.multipleValues.size() < 2 ) {
-            throw new ResultOperationNotAllowedException(
-                    "Action not allowed - multiple values not found.");
         }
     }
 }

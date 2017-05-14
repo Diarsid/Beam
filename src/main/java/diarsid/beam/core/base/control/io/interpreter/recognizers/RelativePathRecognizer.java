@@ -17,7 +17,7 @@ import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 
 public class RelativePathRecognizer extends NodeRecognizer {
     
-    public RelativePathRecognizer() {
+    RelativePathRecognizer() {
     }
 
     @Override

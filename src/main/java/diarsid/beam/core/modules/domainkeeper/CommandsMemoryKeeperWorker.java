@@ -16,11 +16,12 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 import diarsid.beam.core.modules.data.DaoCommands;
 
-import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommand.toVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeVariants;
+import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
 
 /**
  *
@@ -43,13 +44,14 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( exactMatch.isPresent() ) {
             command.setStored();
             command.argument().setExtended(exactMatch.get().extendedArgument());
+            // TODO check for better match and repair if found.
         } else {
             command.setNew();
-            this.extendingByPattern(initiator, command);
         }
     }  
     
-    private void extendingByPattern(Initiator initiator, InvocationCommand command) {
+    @Override
+    public void tryToExtendCommandByPattern(Initiator initiator, InvocationCommand command) {
         List<InvocationCommand> foundCommands;
         foundCommands = this.daoCommands.searchInOriginalByPatternAndType(
                 initiator, command.originalArgument(), command.type());
@@ -81,12 +83,20 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
 
     @Override
     public void save(Initiator initiator, InvocationCommand command) {
-        this.daoCommands.save(initiator, command);
+        debug("[COMMANDS MEMORY] saving: " + command.stringifyOriginal() + ":" + command.stringify());
+        boolean created = this.daoCommands.save(initiator, command);
+        if ( created ) {
+            debug("[COMMANDS MEMORY] saved.");
+        }
     }
 
     @Override
     public void remove(Initiator initiator, InvocationCommand command) {
-        this.daoCommands.delete(initiator, command);
+        debug("[COMMANDS MEMORY] removing: " + command.stringifyOriginal() + ":" + command.stringify());
+        boolean removed = this.daoCommands.delete(initiator, command);
+        if ( removed ) {
+            debug("[COMMANDS MEMORY] removed.");
+        }
     }
 
     @Override
@@ -104,6 +114,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     public Optional<InvocationCommand> obtainOneUsing(
             Initiator initiator, String original, List<InvocationCommand> foundCommands) {
         if ( hasOne(foundCommands) ) {
+            debug("[COMMANDS MEMORY] [obtain one] " + getOne(foundCommands).stringify() );
             return Optional.of(getOne(foundCommands));
         } else {
             return this.chooseOneCommand(initiator, original, foundCommands);
@@ -114,11 +125,15 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
-        WeightedVariantsQuestion question = analyzeVariants(pattern, toVariants(commands));
-        Answer answer = this.ioEngine.ask(initiator, question);
+        WeightedVariantsQuestion question = 
+                analyzeAndWeightVariants(pattern, commandsToVariants(commands));
+        debug("[COMMANDS MEMORY] [choose one] variants qty: " + question.size() );
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
+            debug("[COMMANDS MEMORY] [choose one] " + commands.get(answer.index()).stringify() );
             return Optional.of(commands.get(answer.index()));
         } else {
+            debug("[COMMANDS MEMORY] [choose one] answer not given");
             return Optional.empty();
         }
     }
@@ -126,13 +141,16 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     @Override
     public Optional<InvocationCommand> findStoredCommandByPatternOfAnyType(
             Initiator initiator, String pattern) {
+        debug("[COMMANDS MEMORY] [find by pattern] " + pattern);
         List<InvocationCommand> foundCommands;
         foundCommands = this.daoCommands.searchInOriginalByPattern(initiator, pattern);
         if ( nonEmpty(foundCommands) ) {
+            debug("[COMMANDS MEMORY] [find by pattern] found in original");
             return this.obtainOneUsing(initiator, pattern, foundCommands);
         } else {
             foundCommands = this.daoCommands.searchInExtendedByPattern(initiator, pattern);
-            if ( nonEmpty(foundCommands) ) {                
+            if ( nonEmpty(foundCommands) ) {     
+                debug("[COMMANDS MEMORY] [find by pattern] found in extended");
                 return this.obtainOneUsing(initiator, pattern, foundCommands);
             } else {
                 return Optional.empty();

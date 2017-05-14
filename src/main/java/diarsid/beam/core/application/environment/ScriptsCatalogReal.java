@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.core.application.configuration.Configuration;
 import diarsid.beam.core.application.starter.Starter;
 import diarsid.beam.core.application.systemconsole.SystemConsole;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;

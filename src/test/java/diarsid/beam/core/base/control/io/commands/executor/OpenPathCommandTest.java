@@ -14,6 +14,9 @@ import diarsid.beam.core.base.exceptions.RequirementException;
 
 import static org.junit.Assert.*;
 
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.STORED;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+
 /**
  *
  * @author Diarsid
@@ -33,8 +36,8 @@ public class OpenPathCommandTest {
     @Test
     public void test_originalArgs() {
         OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb");
-        assertEquals("proj", c.location().original());
-        assertEquals("netb", c.target().original());
+        assertEquals("proj", c.originalLocation());
+        assertEquals("netb", c.originalTarget());
     }
 
     /**
@@ -45,26 +48,24 @@ public class OpenPathCommandTest {
         OpenLocationTargetCommand c = new OpenLocationTargetCommand("");
         fail();
     }
-
     /**
      * Test of type method, of class OpenLocationTargetCommand.
      */
     @Test
     public void testConstructor_1() {
-        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "");
-        assertEquals("proj", c.location().original());
-        assertEquals("netb", c.target().original());
-        assertFalse(c.location().hasExtended());
-        assertFalse(c.target().hasExtended());
+        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb");
+        assertEquals("proj", c.originalLocation());
+        assertEquals("netb", c.originalTarget());
+        assertFalse(c.argument().isExtended());
     }
     
     @Test
     public void testConstructor_2() {
-        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans");
-        assertEquals("proj", c.location().original());
-        assertEquals("netb", c.target().original());
-        assertEquals("projects", c.location().extended());
-        assertEquals("netbeans", c.target().extended());        
+        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans", STORED, TARGET_FOUND);
+        assertEquals("proj", c.originalLocation());
+        assertEquals("netb", c.originalTarget());
+        assertEquals("projects", c.extendedLocation());
+        assertEquals("netbeans", c.extendedTarget());        
     }
 
     /**
@@ -72,10 +73,11 @@ public class OpenPathCommandTest {
      */
     @Test
     public void testToVariant() {
-        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans");
+        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans", STORED, TARGET_FOUND);
         Variant v = c.toVariant(1);
         assertEquals(1, v.index());
-        assertEquals("open proj/netb", v.text());
+        assertEquals("open projects/netbeans", v.displayText());
+        assertEquals("projects/netbeans", v.text());
     }
 
     /**
@@ -86,8 +88,8 @@ public class OpenPathCommandTest {
         OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb");
         assertEquals("open proj/netb", c.stringify());
         
-        OpenLocationTargetCommand c1 = new OpenLocationTargetCommand("proj/netb", "projects/netbeans");
-        assertEquals("open proj/netb", c1.stringify());
+        OpenLocationTargetCommand c1 = new OpenLocationTargetCommand("proj/netb", "projects/netbeans", STORED, TARGET_FOUND);
+        assertEquals("open projects/netbeans", c1.stringify());
     }
 
     /**
@@ -95,7 +97,7 @@ public class OpenPathCommandTest {
      */
     @Test
     public void testStringifyOriginalArgs() {
-        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans");
+        OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans", STORED, TARGET_FOUND);
         assertEquals("proj/netb", c.originalArgument());
     }
 
@@ -107,7 +109,7 @@ public class OpenPathCommandTest {
         OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb");
         assertEquals("", c.extendedArgument());
         
-        OpenLocationTargetCommand c1 = new OpenLocationTargetCommand("proj/netb", "projects/netbeans");
+        OpenLocationTargetCommand c1 = new OpenLocationTargetCommand("proj/netb", "projects/netbeans", STORED, TARGET_FOUND);
         assertEquals("projects/netbeans", c1.extendedArgument());
     }
 }

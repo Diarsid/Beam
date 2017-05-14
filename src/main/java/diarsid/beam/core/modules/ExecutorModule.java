@@ -13,7 +13,7 @@ import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultComman
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.SeePageCommand;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 
 /**
  *
@@ -29,7 +29,7 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     void callBatch(Initiator initiator, CallBatchCommand command);
     
-    void browsePage(Initiator initiator, SeePageCommand command);
+    void browsePage(Initiator initiator, BrowsePageCommand command);
     
     void executeDefault(Initiator initiator, ExecutorDefaultCommand command);
     

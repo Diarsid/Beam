@@ -15,7 +15,7 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedC
 
 public class MultipleArgsRecognizer extends NodeRecognizer {
     
-    public MultipleArgsRecognizer() {
+    MultipleArgsRecognizer() {
     }
 
     @Override

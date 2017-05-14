@@ -45,7 +45,7 @@ public class KeeperDialogHelper {
             ValidationRule rule, 
             String argument) {
         if ( nonEmpty(argument) ) {
-            ValidationResult result = rule.apply(argument);
+            ValidationResult result = rule.applyTo(argument);
             if ( result.isOk() ) {
                 return argument;
             } else {
@@ -66,7 +66,7 @@ public class KeeperDialogHelper {
             if ( value.isEmpty() ) {
                 return "";
             } else {
-                validity = rule.apply(value);
+                validity = rule.applyTo(value);
                 if ( validity.isOk() ) {
                     return value;
                 } else {

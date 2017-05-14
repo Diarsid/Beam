@@ -33,13 +33,13 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.hasWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardList;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
+import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
+import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.splitByWildcard;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.restorePage;
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
@@ -75,7 +75,7 @@ class H2DaoWebDirectories
     @Override
     public Optional<Integer> freeNameNextIndex(
             Initiator initiator, String name, WebPlace place) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             // test if original name is free
             boolean exists = transact
@@ -121,7 +121,7 @@ class H2DaoWebDirectories
         try {
 
             Map<WebDirectory, List<WebPage>> data = new HashMap<>();
-            super.getDisposableTransaction()
+            super.openDisposableTransaction()
                     .doQuery(
                             "SELECT " +
                             "   page.name       AS p_name, " +
@@ -189,7 +189,7 @@ class H2DaoWebDirectories
         try {
 
             Map<WebDirectory, List<WebPage>> data = new HashMap<>();
-            super.getDisposableTransaction()
+            super.openDisposableTransaction()
                     .doQueryVarargParams(
                             "SELECT " +
                             "   page.name       AS p_name, " +
@@ -257,7 +257,7 @@ class H2DaoWebDirectories
     public Optional<WebDirectoryPages> getDirectoryPagesById(
             Initiator initiator, int id) {
         
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> directory = transact
                     .doQueryAndConvertFirstRowVarargParams(
@@ -294,7 +294,7 @@ class H2DaoWebDirectories
     @Override
     public Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(
             Initiator initiator, String name, WebPlace place) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> directory = transact
                     .doQueryAndConvertFirstRowVarargParams(
@@ -332,7 +332,7 @@ class H2DaoWebDirectories
     public Optional<WebDirectory> getDirectoryByNameAndPlace(
             Initiator initiator, String name, WebPlace place) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
                             WebDirectory.class, 
                             "SELECT id, name, place, ordering " +
@@ -351,93 +351,152 @@ class H2DaoWebDirectories
     @Override
     public List<WebDirectory> findDirectoriesByPatternInPlace(
             Initiator initiator, String pattern, WebPlace place) {
-        try {
-            if ( hasWildcard(pattern) ) {
-                return this.getDirectoriesByPatternPartsInPlace(splitByWildcard(pattern), place);
-            } else {
-                return this.getDirectoriesByPatternInPlace(pattern, place);
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<WebDirectory> dirs;
+            
+            dirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE ( place IS ? ) AND ( LOWER(name) LIKE ? ) ", 
+                            this.rowToDirectoryConversion, 
+                            place, lowerWildcard(pattern))
+                    .sorted()
+                    .collect(toList());
+            
+            if ( nonEmpty(dirs) ) {
+                return dirs;
             }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            dirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE ( place IS ? ) AND " + 
+                                    multipleLowerLikeAnd("name", criterias.size()), 
+                            this.rowToDirectoryConversion, 
+                            place, criterias)
+                    .sorted()
+                    .collect(toList());
+            
+            if ( nonEmpty(dirs) ) {
+                return dirs;
+            }
+            
+            String multipleGroupedLikeOrNameCondition = 
+                    multipleLowerGroupedLikesOr("name", criterias.size());
+            dirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE ( place IS ? ) AND " + multipleGroupedLikeOrNameCondition, 
+                            this.rowToDirectoryConversion, 
+                            place, criterias)
+                    .sorted()
+                    .collect(toList());
+            
+            shift(criterias);
+                        
+            List<WebDirectory> shiftedDirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE ( place IS ? ) AND " + multipleGroupedLikeOrNameCondition, 
+                            this.rowToDirectoryConversion, 
+                            place, criterias)
+                    .sorted()
+                    .collect(toList());
+            
+            shiftedDirs.retainAll(dirs);
+            dirs.retainAll(shiftedDirs);
+            
+            return dirs;            
+            
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             
             return emptyList();
         }
-    }
-    
-    private List<WebDirectory> getDirectoriesByPatternPartsInPlace(
-            List<String> patterns, WebPlace place) 
-            throws TransactionHandledSQLException, TransactionHandledException {
-        return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        WebDirectory.class, 
-                        "SELECT id, name, place, ordering " +
-                        "FROM web_directories " +
-                        "WHERE " + 
-                                multipleLowerLIKE("name", patterns.size(), AND) + 
-                                " AND ( place IS ? ) ", 
-                        this.rowToDirectoryConversion, 
-                        lowerWildcardList(patterns), place)
-                .sorted()
-                .collect(toList());
-    }
-    
-    private List<WebDirectory> getDirectoriesByPatternInPlace(
-            String pattern, WebPlace place) 
-            throws TransactionHandledSQLException, TransactionHandledException {
-        return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        WebDirectory.class, 
-                        "SELECT id, name, place, ordering " +
-                        "FROM web_directories " + 
-                        "WHERE ( LOWER(name) LIKE ? ) AND ( place IS ? )", 
-                        this.rowToDirectoryConversion, 
-                        lowerWildcard(pattern), place)
-                .sorted()
-                .collect(toList());
     }
 
     @Override
     public List<WebDirectory> findDirectoriesByPatternInAnyPlace(
             Initiator initiator, String pattern) {
-        try {
-            if ( hasWildcard(pattern) ) {
-                return this.getDitrectoriesByPatternPartsInAnyPlace(splitByWildcard(pattern));
-            } else {
-                return this.getDirectoriesByPatternInAnyPlace(pattern);
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<WebDirectory> dirs;
+            
+            dirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE ( LOWER(name) LIKE ? ) ", 
+                            this.rowToDirectoryConversion, 
+                            lowerWildcard(pattern))
+                    .sorted()
+                    .collect(toList());
+            
+            if ( nonEmpty(dirs) ) {
+                return dirs;
             }
+            
+            List<String> criterias = patternToCharCriterias(pattern);
+            dirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE " + multipleLowerLikeAnd("name", criterias.size()), 
+                            this.rowToDirectoryConversion, 
+                            criterias)
+                    .sorted()
+                    .collect(toList());
+            
+            if ( nonEmpty(dirs) ) {
+                return dirs;
+            }
+            
+            String multipleGroupedLikeOrNameCondition = 
+                    multipleLowerGroupedLikesOr("name", criterias.size());
+            dirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE " + multipleGroupedLikeOrNameCondition, 
+                            this.rowToDirectoryConversion, 
+                            criterias)
+                    .sorted()
+                    .collect(toList());
+            
+            shift(criterias);
+                        
+            List<WebDirectory> shiftedDirs = transact
+                    .doQueryAndStreamVarargParams(
+                            WebDirectory.class, 
+                            "SELECT id, name, place, ordering " +
+                            "FROM web_directories " + 
+                            "WHERE " + multipleGroupedLikeOrNameCondition, 
+                            this.rowToDirectoryConversion, 
+                            criterias)
+                    .sorted()
+                    .collect(toList());
+            
+            shiftedDirs.retainAll(dirs);
+            dirs.retainAll(shiftedDirs);
+            
+            return dirs;            
+            
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             
             return emptyList();
         }
-    }
-    
-    private List<WebDirectory> getDirectoriesByPatternInAnyPlace(
-            String pattern) 
-            throws TransactionHandledSQLException, TransactionHandledException {
-        return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        WebDirectory.class, 
-                        "SELECT id, name, place, ordering " +
-                        "FROM web_directories " + 
-                        "WHERE ( LOWER(name) LIKE ? ) ", 
-                        this.rowToDirectoryConversion, 
-                        lowerWildcard(pattern))
-                .sorted()
-                .collect(toList());
-    }
-    
-    private List<WebDirectory> getDitrectoriesByPatternPartsInAnyPlace
-        (List<String> patterns) 
-            throws TransactionHandledSQLException, TransactionHandledException {
-        return super.getDisposableTransaction()
-                .doQueryAndStreamVarargParams(
-                        WebDirectory.class, 
-                        "SELECT id, name, place, ordering " +
-                        "FROM web_directories " +
-                        "WHERE " + multipleLowerLIKE("name", patterns.size(), AND), 
-                        this.rowToDirectoryConversion, 
-                        lowerWildcardList(patterns))
-                .sorted()
-                .collect(toList());   
     }
 
     @Override
@@ -445,7 +504,7 @@ class H2DaoWebDirectories
             Initiator initiator) {
         try {
                         
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStream(
                             WebDirectory.class, 
                             "SELECT id, name, place, ordering " +
@@ -465,7 +524,7 @@ class H2DaoWebDirectories
             Initiator initiator, WebPlace place) {
         try {
                         
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
                             WebDirectory.class, 
                             "SELECT id, name, place, ordering " +
@@ -486,7 +545,7 @@ class H2DaoWebDirectories
     public boolean exists(
             Initiator initiator, String directoryName, WebPlace place) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
                             "SELECT * " +
                             "FROM web_directories " +
@@ -501,7 +560,7 @@ class H2DaoWebDirectories
     @Override
     public boolean updateWebDirectoryOrders(
             Initiator initiator, List<WebDirectory> directories) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             int[] udpated = transact
                     .doBatchUpdate(
                             "UPDATE web_directories " +
@@ -528,7 +587,7 @@ class H2DaoWebDirectories
     @Override
     public boolean save(
             Initiator initiator, WebDirectory directory) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean alreadyExists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -577,7 +636,7 @@ class H2DaoWebDirectories
     @Override
     public boolean save(
             Initiator initiator, String name, WebPlace place) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean alreadyExists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -624,7 +683,7 @@ class H2DaoWebDirectories
     @Override
     public boolean remove(
             Initiator initiator, String name, WebPlace place) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> optDirectory = transact
                     .doQueryAndConvertFirstRowVarargParams(
@@ -677,7 +736,7 @@ class H2DaoWebDirectories
     @Override
     public boolean moveDirectoryToPlace(
             Initiator initiator, String name, WebPlace oldPlace, WebPlace newPlace) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> movedDir = transact
                     .doQueryAndConvertFirstRowVarargParams(
@@ -761,7 +820,7 @@ class H2DaoWebDirectories
     @Override
     public boolean editDirectoryName(
             Initiator initiator, String name, WebPlace place, String newName) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean alreadyExists = transact
                     .doesQueryHaveResultsVarargParams(
@@ -798,7 +857,7 @@ class H2DaoWebDirectories
     public Optional<WebDirectory> getDirectoryById(
             Initiator initiator, int id) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRow(
                             WebDirectory.class,
                             "SELECT id, name, place, ordering " +
@@ -817,7 +876,7 @@ class H2DaoWebDirectories
     public Optional<Integer> getDirectoryIdByNameAndPlace(
             Initiator initiator, String name, WebPlace place) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
                             Integer.class,
                             "SELECT id " +

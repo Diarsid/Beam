@@ -118,7 +118,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.dataModule.getDaoNamedEntities());
         notesKeeper = new NotesKeeperWorker(
                 ioEngine,
-                this.appComponentsHolderModule.getNotesCatalog());
+                this.appComponentsHolderModule.getNotesCatalog(), 
+                dialogHelper);
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
                 batchesKeeper, 

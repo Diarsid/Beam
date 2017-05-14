@@ -20,7 +20,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import diarsid.beam.core.application.configuration.Configuration;
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
@@ -50,7 +50,7 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
         
         this.jettyContext = new ServletContextHandler(
                 ServletContextHandler.NO_SESSIONS);   
-        this.jettyContext.setContextPath(config.getAsString("web.local.path"));
+        this.jettyContext.setContextPath(config.asString("web.local.path"));
         
         this.jettyServer.setHandler(this.jettyContext);
         this.configureServerAddresses(config);
@@ -60,12 +60,12 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     
     private void configureServerAddresses(Configuration config) {
         try {
-            String localHost = config.getAsString("web.local.host");
-            int localPort = Integer.parseInt(config.getAsString("web.local.port"));
+            String localHost = config.asString("web.local.host");
+            int localPort = Integer.parseInt(config.asString("web.local.port"));
             this.addInetAddress(localHost, localPort, this.localConnectorName);
             if ( config.hasString("web.internet.host") && config.hasString("web.internet.port") ) {
-                String internetHost = config.getAsString("web.internet.host");
-                int internetPort = Integer.parseInt(config.getAsString("web.internet.port"));
+                String internetHost = config.asString("web.internet.host");
+                int internetPort = Integer.parseInt(config.asString("web.internet.port"));
                 this.addInetAddress(internetHost, internetPort, this.internetConnectorName);
             }
         } catch (NumberFormatException e) {

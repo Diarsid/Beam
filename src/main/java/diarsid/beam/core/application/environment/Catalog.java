@@ -12,5 +12,6 @@ import java.nio.file.Path;
  * @author Diarsid
  */
 public interface Catalog {
+    
     Path path();
 }

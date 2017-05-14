@@ -46,7 +46,7 @@ class H2DaoKeyValueStorage
     @Override
     public Optional<String> get(String key) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
                             String.class,
                             "SELECT key, value " +
@@ -64,7 +64,7 @@ class H2DaoKeyValueStorage
 
     @Override
     public boolean save(String key, String value) {
-        try (JdbcTransaction transact = super.getTransaction()) {
+        try (JdbcTransaction transact = super.openTransaction()) {
             boolean exists = transact
                     .doesQueryHaveResultsVarargParams(
                             "SELECT key " +
@@ -102,7 +102,7 @@ class H2DaoKeyValueStorage
     @Override
     public boolean delete(String key) {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doUpdateVarargParams(
                             "DELETE FROM key_value " +
                             "WHERE LOWER(key) IS ? ", 
@@ -118,7 +118,7 @@ class H2DaoKeyValueStorage
     public Map<String, String> getAll() {
         Map<String, String> all = new HashMap<>();
         try {
-            super.getDisposableTransaction()
+            super.openDisposableTransaction()
                     .doQuery(
                             "SELECT key, value " +
                             "FROM key_value",
@@ -151,7 +151,7 @@ class H2DaoKeyValueStorage
     @Override
     public Set<Attribute> getAllAttributes() {
         try {
-            return super.getDisposableTransaction()
+            return super.openDisposableTransaction()
                     .doQueryAndStream(
                             Attribute.class,
                             "SELECT key, value " +

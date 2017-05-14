@@ -10,5 +10,6 @@ package diarsid.beam.core.base.control.flow;
  * @author Diarsid
  */
 public interface Operation {
+    
     OperationResult result();    
 }
