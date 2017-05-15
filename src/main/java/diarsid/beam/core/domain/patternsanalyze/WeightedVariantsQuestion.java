@@ -157,7 +157,7 @@ public class WeightedVariantsQuestion implements Serializable {
     public List<WeightedVariant> allNextSimilar() {
         List<WeightedVariant> similarVariants = new ArrayList();
         boolean currentIsSimilarToNext = this.isCurrentSimilarToNext();
-        while ( currentIsSimilarToNext ) {
+        while ( currentIsSimilarToNext || this.currentVariantIndex == this.variants.size() - 1 ) {
             currentIsSimilarToNext = this.isCurrentSimilarToNext();
             similarVariants.add(this.current());
             this.toNext();

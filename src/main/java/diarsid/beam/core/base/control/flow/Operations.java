@@ -8,9 +8,9 @@ package diarsid.beam.core.base.control.flow;
 
 import java.util.Optional;
 
+import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
-import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 
 /**
  *
@@ -55,7 +55,22 @@ public class Operations {
                 return STOP;
             }
         };
-        STOPPED_RETURN_OPERATION = () -> STOP;
+        STOPPED_RETURN_OPERATION = new ValueOperation() {
+            @Override
+            public ValueOperationComplete asComplete() {
+                throw new IllegalStateException("This is Stop operation");
+            }
+
+            @Override
+            public ValueOperationFail asFail() {
+                throw new IllegalStateException("This is Stop operation");
+            }
+
+            @Override
+            public OperationResult result() {
+                return STOP;
+            }
+        };
     }
     
     private Operations() {
@@ -95,7 +110,7 @@ public class Operations {
     public static <T extends Object> ValueOperation<T> valueCompletedWith(T t) {
         return new ValueOperationComplete<T>() {
             @Override
-            public boolean hasReturn() {
+            public boolean hasValue() {
                 return true;
             }
 
@@ -113,13 +128,23 @@ public class Operations {
             public OperationResult result() {
                 return COMPLETE;
             }
+
+            @Override
+            public ValueOperationComplete<T> asComplete() {
+                return this;
+            }
+
+            @Override
+            public ValueOperationFail asFail() {                
+                throw new IllegalStateException("This is Complete operation.");
+            }
         };
     }
     
     public static <T extends Object> ValueOperation<T> valueCompletedEmpty() {
         return new ValueOperationComplete<T>() {
             @Override
-            public boolean hasReturn() {
+            public boolean hasValue() {
                 return false;
             }
 
@@ -136,6 +161,16 @@ public class Operations {
             @Override
             public OperationResult result() {
                 return COMPLETE;
+            }
+
+            @Override
+            public ValueOperationComplete<T> asComplete() {
+                return this;
+            }
+
+            @Override
+            public ValueOperationFail asFail() {                
+                throw new IllegalStateException("This is Complete operation.");
             }
         };
     }
@@ -178,14 +213,16 @@ public class Operations {
             public OperationResult result() {
                 return FAIL;
             }
+
+            @Override
+            public ValueOperationComplete asComplete() {                
+                throw new IllegalStateException("This is Fail operation.");
+            }
+
+            @Override
+            public ValueOperationFail asFail() {
+                return this;
+            }
         };
-    }
-    
-    public static ValueOperationFail asFail(ValueOperation operationFlow) {
-        return (ValueOperationFail) operationFlow;
-    }
-    
-    public static ValueOperationComplete asComplete(ValueOperation operationFlow) {
-        return (ValueOperationComplete) operationFlow;
     }
 }

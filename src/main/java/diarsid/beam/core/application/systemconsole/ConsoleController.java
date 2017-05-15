@@ -32,6 +32,7 @@ import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassp
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
+import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isNo;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
@@ -147,6 +148,7 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
             return variants.singleAnswer();
         }
         
+        // TODO fix last element problem
         String line;
         Answer answer = noAnswerFromVariants();
         Choice choice;
@@ -193,8 +195,10 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                         answer = variants.ifPartOfAnySimilarVariant(line);
                         if ( answer.isGiven() ) {
                             return answer;
-                        } else if ( isRejection(line) ) {
+                        } else if ( isNo(line) ) {
                             continue variantsChoosing;
+                        } else if ( isRejection(line) ) {
+                            return noAnswerFromVariants();
                         } else {
                             this.printer.printInDialogInviteLine("choose");
                             continue similarVariantsChoosing;

@@ -12,7 +12,12 @@ import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.domain.entities.NamedEntity;
 
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_NOT_FOUND;
@@ -36,13 +41,9 @@ public class ExecutorDefaultCommand implements Command {
         return EXECUTOR_DEFAULT;
     }
     
-    public Optional<InvocationCommand> mergeWithEntity(
-            Optional<? extends NamedEntity> entity) {
-        if ( ! entity.isPresent() ) {
-            return Optional.empty();
-        }
-        String entityName = entity.get().name();
-        switch ( entity.get().type() ) {
+    public Optional<InvocationCommand> mergeWith(NamedEntity entity) {
+        String entityName = entity.name();
+        switch ( entity.type() ) {
             case LOCATION : {
                 return Optional.of(new OpenLocationCommand(
                         this.argument, entityName, NEW, TARGET_FOUND));
@@ -66,12 +67,9 @@ public class ExecutorDefaultCommand implements Command {
         }
     }
         
-    public Optional<InvocationCommand> mergeWithCommand(Optional<InvocationCommand> anotherCommand) {
-        if ( ! anotherCommand.isPresent() ) {
-            return Optional.empty();
-        }
-        String extendedArgument = anotherCommand.get().extendedArgument();
-        commandMerging: switch ( anotherCommand.get().type() ) {
+    public Optional<InvocationCommand> mergeWith(InvocationCommand anotherCommand) {
+        String extendedArgument = anotherCommand.extendedArgument();
+        commandMerging: switch ( anotherCommand.type() ) {
             case OPEN_LOCATION : {
                 return Optional.of(new OpenLocationCommand(
                         this.argument, extendedArgument, NEW, TARGET_NOT_FOUND));

@@ -10,12 +10,12 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -85,6 +85,12 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .executeDefault(initiator, (ExecutorDefaultCommand) command);
                     break;
                 }    
+                case CREATE_NOTE : {
+                    this.domainModuleAdapter
+                            .notesAdaper()
+                            .createNoteAndReport(initiator, (ArgumentsCommand) command);
+                    break;
+                }
                 case OPEN_NOTES : {
                     this.domainModuleAdapter
                             .notesAdaper()

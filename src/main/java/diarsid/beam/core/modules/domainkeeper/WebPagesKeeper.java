@@ -6,7 +6,6 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
@@ -38,11 +37,11 @@ public interface WebPagesKeeper extends NamedEntitiesKeeper {
             Initiator initiator, String pattern);
     
     @Override
-    Optional<WebPage> findByExactName(
+    ValueOperation<WebPage> findByExactName(
             Initiator initiator, String name);
     
     @Override
-    Optional<WebPage> findByNamePattern(
+    ValueOperation<WebPage> findByNamePattern(
             Initiator initiator, String name);
     
     boolean createWebPage(

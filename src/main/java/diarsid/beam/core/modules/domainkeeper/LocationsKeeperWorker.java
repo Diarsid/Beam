@@ -7,7 +7,6 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
@@ -33,6 +32,7 @@ import static java.lang.String.format;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
@@ -89,9 +89,9 @@ class LocationsKeeperWorker
     }
     
     @Override
-    public Optional<Location> findByExactName(
+    public ValueOperation<Location> findByExactName(
             Initiator initiator, String exactName) {
-        return this.dao.getLocationByExactName(initiator, exactName);
+        return valueCompletedWith(this.dao.getLocationByExactName(initiator, exactName));
     }
     
     @Override
@@ -101,7 +101,7 @@ class LocationsKeeperWorker
     }
     
     @Override
-    public Optional<Location> findByNamePattern(
+    public ValueOperation<Location> findByNamePattern(
             Initiator initiator, String locationNamePattern) {
         return this.findExactlyOneLocationByPattern(initiator, locationNamePattern);
     }
@@ -121,23 +121,23 @@ class LocationsKeeperWorker
         if ( namePattern.isEmpty() ) {
             return valueCompletedEmpty();
         } else {
-            return valueCompletedWith(this.findExactlyOneLocationByPattern(initiator, namePattern));
+            return this.findExactlyOneLocationByPattern(initiator, namePattern);
         }
     }
 
-    private Optional<Location> findExactlyOneLocationByPattern(
+    private ValueOperation<Location> findExactlyOneLocationByPattern(
             Initiator initiator, String namePattern) {
         List<Location> locations = this.dao.getLocationsByNamePattern(initiator, namePattern);
         if ( hasOne(locations) ) {
-            return Optional.of(getOne(locations));
+            return valueCompletedWith(getOne(locations));
         } else if ( hasMany(locations) ) {
             return this.manageWithManyLocations(initiator, namePattern, locations);
         } else {
-            return Optional.empty();
+            return valueCompletedEmpty();
         }
     }
 
-    private Optional<Location> manageWithManyLocations(
+    private ValueOperation<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
 //        Answer answer = this.ioEngine.ask(
 //                initiator, question("choose").withAnswerEntities(locations));
@@ -145,9 +145,9 @@ class LocationsKeeperWorker
                 analyzeAndWeightVariants(pattern, entitiesToVariants(locations));
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
-            return Optional.of(locations.get(answer.index()));
+            return valueCompletedWith(locations.get(answer.index()));
         } else {
-            return Optional.empty();
+            return valueOperationStopped();
         }
     }
 
@@ -267,54 +267,72 @@ class LocationsKeeperWorker
             return voidOperationStopped();
         }
         
-        Optional<Location> location = this.findExactlyOneLocationByPattern(initiator, name);
-        if ( location.isPresent() ) {            
-            this.ioEngine.report(initiator, format("'%s' found.", location.get().name()));
-            
-            property = this.helper.validatePropertyInteractively(
-                    initiator, property, NAME, FILE_URL);
-            if ( property.isUndefined() ) {
+        Location location;
+        ValueOperation<Location> locationFlow = 
+                this.findExactlyOneLocationByPattern(initiator, name);
+        switch ( locationFlow.result() ) {
+            case COMPLETE : {
+                if ( locationFlow.asComplete().hasValue() ) {
+                    location = locationFlow.asComplete().getOrThrow();
+                } else {
+                    return voidOperationFail("no such location.");
+                }
+                break; 
+            }
+            case FAIL : {
+                return voidOperationFail(locationFlow.asFail().reason());
+            }
+            case STOP : {
                 return voidOperationStopped();
             }
+            default : {
+                return voidOperationFail("unknown ValueOperation result.");
+            }
+        }
         
-            switch ( property ) {
-                case NAME : {
-                    String newName = this.ioEngine.askInput(initiator, "new name");                    
-                    if ( newName.isEmpty() ) {
-                        return voidOperationStopped();
-                    }
-                    newName = this.helper.validateEntityNameInteractively(initiator, newName);
-                    if ( newName.isEmpty() ) {
-                        return voidOperationStopped();
-                    }
-                    if ( this.dao.editLocationName(initiator, location.get().name(), newName) ) {
-                        return voidCompleted();
-                    } else {
-                        return voidOperationFail("DAO failed to edit name.");
-                    }
+        this.ioEngine.report(initiator, format("'%s' found.", location.name()));
+
+        property = this.helper.validatePropertyInteractively(
+                initiator, property, NAME, FILE_URL);
+        if ( property.isUndefined() ) {
+            return voidOperationStopped();
+        }
+
+        switch ( property ) {
+            case NAME : {
+                String newName = this.ioEngine.askInput(initiator, "new name");                    
+                if ( newName.isEmpty() ) {
+                    return voidOperationStopped();
                 }
-                case FILE_URL : {
-                    String newPath = this.ioEngine.askInput(initiator, "new path");
-                    if ( newPath.isEmpty() ) {
-                        return voidOperationStopped();
-                    }
-                    newPath = this.helper.validateInteractively(
-                            initiator, newPath, "new path", LOCAL_DIRECTORY_PATH_RULE);
-                    if ( newPath.isEmpty() ) {
-                        return voidOperationStopped();
-                    }
-                    if ( this.dao.editLocationPath(initiator, location.get().name(), newPath) ) {
-                        return voidCompleted();
-                    } else {
-                        return voidOperationFail("DAO failed to edit path.");
-                    }
+                newName = this.helper.validateEntityNameInteractively(initiator, newName);
+                if ( newName.isEmpty() ) {
+                    return voidOperationStopped();
                 }
-                default : {
-                    return voidOperationFail("unexpected property.");
+                if ( this.dao.editLocationName(initiator, location.name(), newName) ) {
+                    return voidCompleted();
+                } else {
+                    return voidOperationFail("DAO failed to edit name.");
                 }
             }
-        } else {
-            return voidOperationFail("no such location.");
+            case FILE_URL : {
+                String newPath = this.ioEngine.askInput(initiator, "new path");
+                if ( newPath.isEmpty() ) {
+                    return voidOperationStopped();
+                }
+                newPath = this.helper.validateInteractively(
+                        initiator, newPath, "new path", LOCAL_DIRECTORY_PATH_RULE);
+                if ( newPath.isEmpty() ) {
+                    return voidOperationStopped();
+                }
+                if ( this.dao.editLocationPath(initiator, location.name(), newPath) ) {
+                    return voidCompleted();
+                } else {
+                    return voidOperationFail("DAO failed to edit path.");
+                }
+            }
+            default : {
+                return voidOperationFail("unexpected property.");
+            }
         }          
     }
 

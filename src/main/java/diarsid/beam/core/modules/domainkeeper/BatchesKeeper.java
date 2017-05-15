@@ -6,7 +6,6 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
@@ -21,11 +20,11 @@ import diarsid.beam.core.domain.entities.Batch;
 public interface BatchesKeeper extends NamedEntitiesKeeper {
     
     @Override
-    Optional<Batch> findByNamePattern(
+    ValueOperation<Batch> findByNamePattern(
             Initiator initiator, String batchNamePattern); 
     
     @Override
-    Optional<Batch> findByExactName(
+    ValueOperation<Batch> findByExactName(
             Initiator initiator, String batchNamePattern); 
     
     List<Batch> getAllBatches(

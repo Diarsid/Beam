@@ -430,7 +430,7 @@ class H2DaoCommands
             if ( commandExists ) {
                 return transact
                         .doUpdateVarargParams(
-                                "UDPATE commands " +
+                                "UPDATE commands " +
                                 "SET com_extended = ? " +
                                 "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
                                 command.extendedArgument(), 
@@ -453,16 +453,34 @@ class H2DaoCommands
             return false;
         }
     }
+    
+    @Override
+    public boolean deleteByOriginal(
+            Initiator initiator, String original) {
+        
+    }
 
     @Override
     public boolean delete(
             Initiator initiator, InvocationCommand command) {
-        try {
-            return 1 == super.openDisposableTransaction()
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            int result = transact
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
                             lower(command.originalArgument()), command.type().name());
+            
+            if ( command.argument().isExtended() ) {
+                result = result + transact
+                        .doUpdateVarargParams(
+                                "DELETE FROM commands " +
+                                "WHERE ( LOWER(com_extended) IS ? ) AND ( com_type IS ? ) ",
+                                lower(command.extendedArgument()), command.type().name());
+            }
+            
+            return ( result > 0 );
+            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;

@@ -20,6 +20,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.Logs.debug;
+
 
 public class ProgramsCatalogReal 
         extends SearcheableCatalog
@@ -63,22 +65,35 @@ public class ProgramsCatalogReal
 
     @Override
     public Optional<Program> findProgramByDirectName(String name) {
-        return this.toProgram(super.findFileInCatalogByDirectName(name));
+        debug("[PROR CATALOG] [by direct] " + name);
+        Optional<Program> program = this.toProgram(super.findFileInCatalogByDirectName(name));
+        debug("[PROR CATALOG] [by direct] found : " + program.isPresent());
+        return program;
     }
 
     @Override
     public List<Program> findProgramsByStrictName(String strictName) {
-        return this.toPrograms(super.findFileInCatalogByStrictName(strictName));
+        debug("[PROR CATALOG] [by strict] " + strictName);
+        List<Program> programs = this.toPrograms(super.findFileInCatalogByStrictName(strictName));
+        debug("[PROR CATALOG] [by strict] " + programs);
+        return programs;
     }
 
     @Override
     public List<Program> findProgramsByWholePattern(String pattern) {
-        return this.toPrograms(super.findFileInCatalogByPattern(pattern));
+        debug("[PROR CATALOG] [by whole pattern] " + pattern);
+        // TODO
+        List<Program> programs = this.toPrograms(super.findFileInCatalogByPattern(pattern));
+        debug("[PROR CATALOG] [by whole pattern] " + programs);
+        return programs;
     }
 
     @Override
     public List<Program> findProgramsByPatternSimilarity(String pattern) {
-        return this.toPrograms(super.findFileInCatalogByPatternSimilarity(pattern));
+        debug("[PROR CATALOG] [by similarity] " + pattern);
+        List<Program> programs = this.toPrograms(super.findFileInCatalogByPatternSimilarity(pattern));
+        debug("[PROR CATALOG] [by similarity] " + programs);
+        return programs;
     }
 
     @Override

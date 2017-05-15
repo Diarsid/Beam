@@ -31,6 +31,7 @@ import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
@@ -84,32 +85,32 @@ class BatchesKeeperWorker
     }
 
     @Override
-    public Optional<Batch> findByNamePattern(
+    public ValueOperation<Batch> findByNamePattern(
             Initiator initiator, String batchNamePattern) {
         List<String> foundBatchNames = this.getMatchingBatches(initiator, batchNamePattern);
         if ( hasOne(foundBatchNames) ) {
-            return this.dao.getBatchByExactName(initiator, getOne(foundBatchNames));        
+            return this.findByExactName(initiator, getOne(foundBatchNames));        
         } else if ( hasMany(foundBatchNames) ) {
             return this.manageWithManyBatchNames(initiator, foundBatchNames);
         } else {
-            return Optional.empty();
+            return valueCompletedEmpty();
         }
     }
     
     @Override
-    public Optional<Batch> findByExactName(
+    public ValueOperation<Batch> findByExactName(
             Initiator initiator, String exactName) {
-        return this.dao.getBatchByExactName(initiator, exactName);
+        return valueCompletedWith(this.dao.getBatchByExactName(initiator, exactName));
     }
 
-    private Optional<Batch> manageWithManyBatchNames(
+    private ValueOperation<Batch> manageWithManyBatchNames(
             Initiator initiator, List<String> foundBatchNames) {
         Answer answer = this.ioEngine.ask(
                 initiator, question("choose batch").withAnswerStrings(foundBatchNames));
         if ( answer.isGiven() ) {
-            return this.dao.getBatchByExactName(initiator, answer.text());
+            return this.findByExactName(initiator, answer.text());
         } else {
-            return Optional.empty();
+            return valueOperationStopped();
         }
     }
     
@@ -137,7 +138,7 @@ class BatchesKeeperWorker
             return valueOperationStopped();
         }
         
-        return valueCompletedWith(this.findByNamePattern(initiator, name));
+        return this.findByNamePattern(initiator, name);
     }
 
     @Override
@@ -264,11 +265,27 @@ class BatchesKeeperWorker
             return voidOperationStopped();
         } 
         
-        Optional<Batch> editedBatch = this.findByNamePattern(initiator, name);
-        if ( editedBatch.isPresent() ) {
-            this.ioEngine.report(initiator, format("'%s' found.", editedBatch.get().name()));
-        } else {
-            return voidOperationFail("no such batch.");
+        Batch editedBatch;
+        ValueOperation<Batch> batchFlow = this.findByNamePattern(initiator, name);
+        switch ( batchFlow.result() ) {
+            case COMPLETE : {
+                if ( batchFlow.asComplete().hasValue() ) {
+                    editedBatch = batchFlow.asComplete().getOrThrow();
+                    this.ioEngine.report(initiator, format("'%s' found.", editedBatch.name()));
+                } else {                    
+                    return voidOperationFail("no such batch.");
+                }
+                break; 
+            }
+            case FAIL : {
+                return voidOperationFail(batchFlow.asFail().reason());
+            }
+            case STOP : {
+                return voidOperationStopped();
+            }
+            default : {
+                return voidOperationFail("unknown ValueOperation result.");
+            }
         }
         
         property = this.helper.validatePropertyInteractively(
@@ -279,10 +296,10 @@ class BatchesKeeperWorker
         
         switch ( property ) {
             case NAME : {
-                return this.editBatchName(initiator, editedBatch.get());
+                return this.editBatchName(initiator, editedBatch);
             } 
             case COMMANDS : {
-                return this.editBatchCommands(initiator, editedBatch.get());
+                return this.editBatchCommands(initiator, editedBatch);
             } 
             default : {
                 return voidOperationFail("unexpected property.");

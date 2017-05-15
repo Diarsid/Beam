@@ -82,8 +82,8 @@ public class ConsolePrinter {
     void printNonDialogMultilineReport(Message message) throws IOException {
         for (String s : message.toText()) {
             this.writer.write(format("     > %s", s));
+            this.writer.newLine();
         }
-        this.writer.newLine();
         this.writer.write("Beam[ndmr] > ");
         this.writer.flush();
     }
@@ -91,8 +91,8 @@ public class ConsolePrinter {
     void printInDialogMultilineReport(Message message) throws IOException {
         for (String s : message.toText()) {
             this.writer.write(format("     > %s", s));
+            this.writer.newLine();
         }
-        this.writer.newLine();
         this.writer.flush();
     }
 

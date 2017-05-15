@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.control.flow;
 
+import static java.util.Arrays.stream;
+
 /**
  *
  * @author Diarsid
@@ -16,6 +18,13 @@ public enum OperationResult {
     
     public boolean is(OperationResult result) {
         return this.equals(result);
+    }
+    
+    public boolean isAny(OperationResult... results) {
+        return stream(results)
+                .filter(result -> this.equals(result))
+                .findFirst()
+                .isPresent();
     }
     
     public boolean isNot(OperationResult result) {

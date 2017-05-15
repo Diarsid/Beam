@@ -11,7 +11,7 @@ package diarsid.beam.core.base.control.flow;
  */
 public interface ValueOperationComplete<T extends Object> extends ValueOperation<T> {
     
-    boolean hasReturn();
+    boolean hasValue();
     
     T getOrThrow();
     

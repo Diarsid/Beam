@@ -21,6 +21,7 @@ import static diarsid.beam.core.base.os.search.result.FileSearchResult.failWithT
 import static diarsid.beam.core.base.os.search.result.FileSearchResult.failWithTargetNotFoundFailure;
 import static diarsid.beam.core.base.os.search.result.FileSearchResult.successWithFile;
 import static diarsid.beam.core.base.os.search.result.FileSearchResult.successWithFiles;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
@@ -145,10 +146,13 @@ class FileSearcherService implements FileSearcher {
     
     private FileSearchResult searchByWholeNamePattern(Path dir, String target, FileSearchMode mode) 
             throws AccessDeniedException, IOException {
+        debug("[FILE SEARCHER] [whole pattern] find: " + dir.toString() + ", target:" + target);
         List<String> foundItems = this.filesCollector.collectByWholeNamePattern(dir, target, mode);
         if ( foundItems.isEmpty() ) {
+            debug("[FILE SEARCHER] [whole pattern] not found.");
             return failWithTargetNotFoundFailure();
         } else {
+            debug("[FILE SEARCHER] [whole pattern] found: " + foundItems);
             return successWithFiles(foundItems);
         }
     }

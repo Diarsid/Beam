@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.domain.entities;
 
-import java.util.Optional;
-
 /**
  *
  * @author Diarsid
@@ -17,19 +15,19 @@ public class Entities {
     private Entities() {        
     }
 
-    public static Program asProgram(Optional<? extends NamedEntity> entity) {
-        return (Program) entity.get();
+    public static Program asProgram(NamedEntity entity) {
+        return (Program) entity;
     }
 
-    public static WebPage asWebPage(Optional<? extends NamedEntity> entity) {
-        return (WebPage) entity.get();
+    public static WebPage asWebPage(NamedEntity entity) {
+        return (WebPage) entity;
     }
 
-    public static Location asLocation(Optional<? extends NamedEntity> entity) {
-        return (Location) entity.get();
+    public static Location asLocation(NamedEntity entity) {
+        return (Location) entity;
     }
 
-    public static Batch asBatch(Optional<? extends NamedEntity> entity) {
-        return (Batch) entity.get();
+    public static Batch asBatch(NamedEntity entity) {
+        return (Batch) entity;
     }
 }

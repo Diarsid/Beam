@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.domain.entities.Task;
 
 import static java.lang.String.format;
@@ -61,6 +62,10 @@ public class Messages {
     
     public static Message toMessage(Location location) {
         return new TextMessage(INFO, location.toString());
+    }
+    
+    public static Message toMessage(Program program) {
+        return new TextMessage(INFO, program.toString());
     }
     
     public static Message toMessage(Batch batch) {

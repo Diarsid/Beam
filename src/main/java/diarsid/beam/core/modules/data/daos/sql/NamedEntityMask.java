@@ -83,4 +83,9 @@ class NamedEntityMask implements NamedEntity {
         }
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return format("Mask(%s : $s)", this.type, this.name);
+    }
 }

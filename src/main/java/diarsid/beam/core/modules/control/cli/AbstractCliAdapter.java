@@ -19,8 +19,6 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
-import static diarsid.beam.core.base.control.flow.Operations.asComplete;
-import static diarsid.beam.core.base.control.flow.Operations.asFail;
 
 /**
  *
@@ -93,16 +91,16 @@ abstract class AbstractCliAdapter {
             String ifEmptyMessage) {
         switch ( flow.result() ) {
             case COMPLETE : {
-                ValueOperationComplete completed = asComplete(flow);
-                if ( completed.hasReturn() ) {
-                    this.ioEngine.reportMessage(initiator, ifNonEmptyFunction.apply(completed));
+                if ( flow.asComplete().hasValue() ) {
+                    this.ioEngine.reportMessage(
+                            initiator, ifNonEmptyFunction.apply(flow.asComplete()));
                 } else {
                     this.ioEngine.report(initiator, ifEmptyMessage);
                 }                
                 break;
             }         
             case FAIL : {
-                this.ioEngine.report(initiator, asFail(flow).reason());
+                this.ioEngine.report(initiator, flow.asFail().reason());
                 break;
             }         
             case STOP : {

@@ -37,6 +37,7 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
@@ -107,33 +108,33 @@ public class WebPagesKeeperWorker
     }
 
     @Override
-    public Optional<WebPage> findByExactName(
+    public ValueOperation<WebPage> findByExactName(
             Initiator initiator, String name) {
-        return this.daoPages.getByExactName(initiator, name);
+        return valueCompletedWith(this.daoPages.getByExactName(initiator, name));
     }
     
     @Override
-    public Optional<WebPage> findByNamePattern(
+    public ValueOperation<WebPage> findByNamePattern(
             Initiator initiator, String namePattern) {
         List<WebPage> foundPages = this.daoPages.findByPattern(initiator, namePattern);
         if ( hasOne(foundPages) ) {
-            return Optional.of(getOne(foundPages));
+            return valueCompletedWith(getOne(foundPages));
         } else if ( hasMany(foundPages) ) {
             return this.manageWithManyPages(initiator, namePattern, foundPages);
         } else {
-            return Optional.empty();
+            return valueCompletedEmpty();
         }
     }
     
-    private Optional<WebPage> manageWithManyPages(
+    private ValueOperation<WebPage> manageWithManyPages(
             Initiator initiator, String pattern, List<WebPage> pages) {
         // VariantsQuestion question = question("choose").withAnswerEntities(pages);
         WeightedVariantsQuestion question = analyzeAndWeightVariants(pattern, entitiesToVariants(pages));
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
-            return Optional.of(pages.get(answer.index()));
+            return valueCompletedWith(pages.get(answer.index()));
         } else {
-            return Optional.empty();
+            return valueOperationStopped();
         }
     }
 

@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -16,6 +17,9 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 import diarsid.beam.core.modules.data.DaoCommands;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -73,10 +77,27 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( hasOne(foundCommands) ) {
             command.argument().setExtended(getOne(foundCommands).extendedArgument());
         } else {
-            Optional<InvocationCommand> chosenCommand = 
+            ValueOperation<InvocationCommand> commandFlow = 
                     this.chooseOneCommand(initiator, command.originalArgument(), foundCommands);
-            if ( chosenCommand.isPresent() ) {
-                command.argument().setExtended(chosenCommand.get().extendedArgument());
+            switch ( commandFlow.result() ) {
+                case COMPLETE : {
+                    if ( commandFlow.asComplete().hasValue() ) {
+                        command.argument().setExtended(
+                                commandFlow.asComplete().getOrThrow().extendedArgument());
+                    } 
+                    break; 
+                }
+                case FAIL : {
+                    this.ioEngine.report(initiator, commandFlow.asFail().reason());
+                    break; 
+                }
+                case STOP : {
+                    break; 
+                }
+                default : {
+                    this.ioEngine.report(initiator, "unkown ValueOperation result.");
+                    break; 
+                }
             }
         }        
     }
@@ -100,28 +121,28 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
 
     @Override
-    public Optional<InvocationCommand> findStoredCommandByExactOriginalOfAnyType(
+    public ValueOperation<InvocationCommand> findStoredCommandByExactOriginalOfAnyType(
             Initiator initiator, String original) {
         List<InvocationCommand> foundCommands = 
                 this.daoCommands.getByExactOriginalOfAnyType(initiator, original);
         if ( nonEmpty(foundCommands) ) {
             return this.obtainOneUsing(initiator, original, foundCommands);
         } else {
-            return Optional.empty();
+            return valueCompletedEmpty();
         }
     }
 
-    public Optional<InvocationCommand> obtainOneUsing(
+    public ValueOperation<InvocationCommand> obtainOneUsing(
             Initiator initiator, String original, List<InvocationCommand> foundCommands) {
         if ( hasOne(foundCommands) ) {
             debug("[COMMANDS MEMORY] [obtain one] " + getOne(foundCommands).stringify() );
-            return Optional.of(getOne(foundCommands));
+            return valueCompletedWith(getOne(foundCommands));
         } else {
             return this.chooseOneCommand(initiator, original, foundCommands);
         }
     }
     
-    private Optional<InvocationCommand> chooseOneCommand(
+    private ValueOperation<InvocationCommand> chooseOneCommand(
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
@@ -131,19 +152,19 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
             debug("[COMMANDS MEMORY] [choose one] " + commands.get(answer.index()).stringify() );
-            return Optional.of(commands.get(answer.index()));
+            return valueCompletedWith(commands.get(answer.index()));
         } else {
             debug("[COMMANDS MEMORY] [choose one] answer not given");
-            return Optional.empty();
+            return valueOperationStopped();
         }
     }
     
     @Override
-    public Optional<InvocationCommand> findStoredCommandByPatternOfAnyType(
+    public ValueOperation<InvocationCommand> findStoredCommandByPatternOfAnyType(
             Initiator initiator, String pattern) {
         debug("[COMMANDS MEMORY] [find by pattern] " + pattern);
-        List<InvocationCommand> foundCommands;
-        foundCommands = this.daoCommands.searchInOriginalByPattern(initiator, pattern);
+        List<InvocationCommand> foundCommands = 
+                this.daoCommands.searchInOriginalByPattern(initiator, pattern);
         if ( nonEmpty(foundCommands) ) {
             debug("[COMMANDS MEMORY] [find by pattern] found in original");
             return this.obtainOneUsing(initiator, pattern, foundCommands);
@@ -153,7 +174,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 debug("[COMMANDS MEMORY] [find by pattern] found in extended");
                 return this.obtainOneUsing(initiator, pattern, foundCommands);
             } else {
-                return Optional.empty();
+                return valueCompletedEmpty();
             }
         }
     }

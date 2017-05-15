@@ -32,6 +32,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.sortAndGetFirstFrom;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
@@ -96,6 +97,7 @@ class H2DaoNamedEntities
                         lower(name));
             }        
             case PROGRAM : {
+                debug("[ALL ENTITIES DAO] [find real program] " + name);
                 return this.programsCatalog.findProgramByDirectName(lower(name));
             }        
             case BATCH : {
@@ -135,6 +137,7 @@ class H2DaoNamedEntities
     private List<NamedEntity> collectRealEntitiesUsing(
             List<NamedEntity> maskedEntities, JdbcTransaction transact) 
             throws TransactionHandledSQLException, TransactionHandledException {
+        debug("[ALL ENTITIES DAO] [collect real] " + maskedEntities);
         List<NamedEntity> realEntities = new ArrayList<>();
         for (NamedEntity maskedEntity : maskedEntities) {
             this.findRealEntityUsing(maskedEntity, transact)
@@ -218,7 +221,7 @@ class H2DaoNamedEntities
                             lowerNamePattern)
                     .collect(toList());
             
-            entityMasks.addAll(this.programsCatalog.findProgramsByWholePattern(lowerNamePattern));
+            entityMasks.addAll(this.programsCatalog.findProgramsByWholePattern(namePattern));
             
             if ( nonEmpty(entityMasks) ) {
                 return this.collectRealEntitiesUsing(entityMasks, transact);
@@ -246,7 +249,7 @@ class H2DaoNamedEntities
                     .collect(toList()); 
                         
             List<Program> programsByPattern = 
-                    this.programsCatalog.findProgramsByPatternSimilarity(lowerNamePattern);
+                    this.programsCatalog.findProgramsByPatternSimilarity(namePattern);
             entityMasks.addAll(programsByPattern);
             
             if ( nonEmpty(entityMasks) ) {

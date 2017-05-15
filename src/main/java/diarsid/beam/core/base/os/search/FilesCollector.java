@@ -100,6 +100,7 @@ class FilesCollector {
             throws IOException {        
         return this.prepareCollectingPathStream(root, mode)
                 .filter(path -> this.filterByNamePatternSimilarity(nameToFind, asName(path)))
+                // TODO
                 .map(path -> normalizeSeparators(path.toString()))
                 .collect(toList());
     }
@@ -118,7 +119,9 @@ class FilesCollector {
             throws IOException {        
         return this.prepareCollectingPathStream(root, mode)
                 .filter(path -> containsIgnoreCase(asName(path), nameToFind))
+                .peek(path -> System.out.println("after contains(): " + path.getFileName().toString()))
                 .map(path -> normalizeSeparators(path.toString()))
+                .peek(path -> System.out.println("collecting: " + path))
                 .collect(toList());
     }
     

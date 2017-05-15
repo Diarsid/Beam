@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
@@ -72,29 +73,36 @@ public class Analyze {
 //                "epicfantasy crossbooking"
                 "beam_project_home",
                 "beam_project",
-                "beam_home",
-                "awesome java libs",
-                "git>beam",
-                "beam_project/src",
-                "beam netpro",
-                "abe_netpro",
-                "babel_pro",
-                "netbeans_projects", 
+//                "beam_home",
+//                "awesome java libs",
+//                "git>beam",
+//                "beam_project/src",
+//                "beam netpro",
+//                "abe_netpro",
+//                "babel_pro",
+//                "netbeans_projects", 
                 "beam_server_project"
         );
         String pattern = "beprjo";
         
+        System.out.println("variants: " + variantsStrings.size());
         WeightedVariantsQuestion variants = analyzeStrings(pattern, variantsStrings);
+        AtomicInteger printed = new AtomicInteger(0);
         while ( variants.hasNext() ) {            
             if ( variants.isCurrentMuchBetterThanNext() ) {
                 System.out.println(variants.current().text() + " is much better than next: " + variants.current().weight());
+                printed.incrementAndGet();
                 variants.toNext();
             } else {
                 List<WeightedVariant> similar = variants.allNextSimilar();
-                System.out.println("next candidates are similar: ");
-                similar.stream().forEach(candidate -> System.out.println("  - " + candidate.text() + " : " + candidate.weight()));
+                System.out.println("next candidates are similar: ");                
+                similar.stream().forEach(candidate -> {
+                        System.out.println("  - " + candidate.text() + " : " + candidate.weight());
+                        printed.incrementAndGet();
+                });
             }
         }
+        System.out.println("printed: " + printed.get());
     }
     
 //    private static WeightedVariantsQuestion analyzeByPatternParts(
@@ -222,6 +230,7 @@ public class Analyze {
         return variant.charAt(variant.length() - 1);
     }
     
+    // TODO improve pattern estimate. 
     public static WeightedVariantsQuestion analyzeAndWeightVariants(
             String pattern, List<Variant> variants) {
         pattern = lower(pattern);

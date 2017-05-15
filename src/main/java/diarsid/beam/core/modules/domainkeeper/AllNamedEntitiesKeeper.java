@@ -7,9 +7,9 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -18,12 +18,16 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
 
 /**
@@ -48,32 +52,37 @@ class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
     }
 
     @Override
-    public Optional<? extends NamedEntity> findByExactName(Initiator initiator, String name) {
-        return this.namedEntitiesDao.getByExactName(initiator, name);
+    public ValueOperation<? extends NamedEntity> findByExactName(
+            Initiator initiator, String name) {
+        debug("[ALL ENTITIES KEEPER] [by exact name] " + name);
+        return valueCompletedWith(this.namedEntitiesDao.getByExactName(initiator, name));
     }
 
     @Override
-    public Optional<? extends NamedEntity> findByNamePattern(Initiator initiator, String pattern) {
+    public ValueOperation<? extends NamedEntity> findByNamePattern(
+            Initiator initiator, String pattern) {
+        debug("[ALL ENTITIES KEEPER] [by name pattern] " + pattern);
         List<NamedEntity> entities = 
-                this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);
-        
+                this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);        
         if ( hasOne(entities) ) {
-            return Optional.of(getOne(entities));
+            debug("[ALL ENTITIES KEEPER] [by name pattern] one : " + getOne(entities).name());
+            return valueCompletedWith(getOne(entities));
         } else if ( hasMany(entities) ) {
+            debug("[ALL ENTITIES KEEPER] [by name pattern] many : " + entities.size());
             return this.manageWithMultipleEntities(initiator, pattern, entities);
         } else {
-            return Optional.empty();
+            return valueCompletedEmpty();
         }
     }
     
-    private Optional<? extends NamedEntity> manageWithMultipleEntities(
+    private ValueOperation<? extends NamedEntity> manageWithMultipleEntities(
             Initiator initiator, String pattern, List<NamedEntity> entities) {
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, analyzeAndWeightVariants(pattern, entitiesToVariants(entities)));
         if ( answer.isGiven() ) {
-            return Optional.of(entities.get(answer.index()));
+            return valueCompletedWith(entities.get(answer.index()));
         } else {
-            return Optional.empty();
+            return valueOperationStopped();
         }
     }   
 }

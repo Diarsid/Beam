@@ -7,10 +7,10 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -19,6 +19,10 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Program;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
@@ -56,14 +60,14 @@ class ProgramsKeeperWorker
     }
 
     @Override
-    public Optional<Program> findByExactName(Initiator initiator, String name) {
-        return this.programsCatalog.findProgramByDirectName(name);
+    public ValueOperation<Program> findByExactName(Initiator initiator, String name) {
+        return valueCompletedWith(this.programsCatalog.findProgramByDirectName(name));
     }
 
     @Override
-    public Optional<Program> findProgram(Initiator initiator, ArgumentsCommand command) {
+    public ValueOperation<Program> findProgram(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_PROGRAM) ) {
-            return Optional.empty();
+            return valueOperationFail("wrong command type!");
         }
         
         String name;
@@ -75,14 +79,14 @@ class ProgramsKeeperWorker
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return Optional.empty();
+            return valueOperationStopped();
         }
         
         return this.findByNamePattern(initiator, name);        
     }
 
     @Override
-    public Optional<Program> findByNamePattern(Initiator initiator, String pattern) {
+    public ValueOperation<Program> findByNamePattern(Initiator initiator, String pattern) {
         List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
         if ( nonEmpty(foundPrograms) ) {
             return this.chooseOneFromMany(initiator, pattern, foundPrograms);
@@ -91,25 +95,25 @@ class ProgramsKeeperWorker
             if ( nonEmpty(foundPrograms) ) {
                 return this.chooseOneFromMany(initiator, pattern, foundPrograms);
             } else {
-                return Optional.empty();
+                return valueCompletedEmpty();
             }
         }
     }
     
-    private Optional<Program> chooseOneFromMany(
+    private ValueOperation<Program> chooseOneFromMany(
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
-            return Optional.of(getOne(programs));
+            return valueCompletedWith(getOne(programs));
         } else if ( hasMany(programs) ) {
             Answer answer = this.ioEngine.chooseInWeightedVariants(
                     initiator, analyzeAndWeightVariants(pattern, entitiesToVariants(programs)));
             if ( answer.isGiven() ) {
-                return Optional.of(programs.get(answer.index()));
+                return valueCompletedWith(programs.get(answer.index()));
             } else {
-                return Optional.empty();
+                return valueOperationStopped();
             }
         } else {
-            return Optional.empty();
+            return valueCompletedEmpty();
         }
     }
 

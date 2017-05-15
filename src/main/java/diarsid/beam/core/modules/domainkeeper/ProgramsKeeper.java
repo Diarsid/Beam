@@ -6,8 +6,8 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Program;
@@ -18,15 +18,15 @@ import diarsid.beam.core.domain.entities.Program;
  */
 public interface ProgramsKeeper extends NamedEntitiesKeeper {
     
-    Optional<Program> findProgram(
+    ValueOperation<Program> findProgram(
             Initiator initiator, ArgumentsCommand command);
     
     @Override
-    Optional<Program> findByExactName(
+    ValueOperation<Program> findByExactName(
             Initiator initiator, String strictName);
     
     @Override
-    Optional<Program> findByNamePattern(
+    ValueOperation<Program> findByNamePattern(
             Initiator initiator, String pattern);
     
     List<Program> getProgramsByPattern(

@@ -24,7 +24,12 @@ class CliAdapterForNotesKeeper extends AbstractCliAdapter{
     public CliAdapterForNotesKeeper(NotesKeeper notesKeeper, InnerIoEngine ioEngine) {
         super(ioEngine);
         this.notesKeeper = notesKeeper;
-    }    
+    }
+
+    void createNoteAndReport(Initiator initiator, ArgumentsCommand command) {
+        VoidOperation flow = this.notesKeeper.createNote(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow, "created!");
+    }
     
     void openNotesAndReport(Initiator initiator, EmptyCommand command) {
         VoidOperation flow = this.notesKeeper.openNotes(initiator, command);

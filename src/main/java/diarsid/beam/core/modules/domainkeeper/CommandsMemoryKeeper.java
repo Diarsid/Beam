@@ -5,8 +5,7 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
-import java.util.Optional;
-
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 
@@ -16,10 +15,10 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
  */
 public interface CommandsMemoryKeeper {
     
-    Optional<InvocationCommand> findStoredCommandByExactOriginalOfAnyType(
+    ValueOperation<InvocationCommand> findStoredCommandByExactOriginalOfAnyType(
             Initiator initiator, String original); 
     
-    Optional<InvocationCommand> findStoredCommandByPatternOfAnyType(
+    ValueOperation<InvocationCommand> findStoredCommandByPatternOfAnyType(
             Initiator initiator, String pattern);
     
     void tryToExtendCommand(

@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.charsAreDomainAcceptable;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 /**
@@ -124,16 +125,21 @@ public class PathUtils {
     public static String extractLocationFromPath(String path) {
         if ( path.isEmpty() ) {
             return "";
-        } else {
+        } else if ( containsPathSeparator(path) ) {
+            debug("[PATHS] extract location from : '" + path + "'");
             return path.substring(0, indexOfFirstPathSeparator(path));
-        }        
+        } else {
+            return path;
+        }       
     }
     
     public static String extractTargetFromPath(String path) {
         if ( path.isEmpty() ) {
             return "";
-        } else {
+        } else if ( containsPathSeparator(path) ) {
             return path.substring(indexOfFirstPathSeparator(path) + 1);
+        } else {
+            return path;
         }
     }
     

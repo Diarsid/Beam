@@ -118,4 +118,9 @@ public class Program implements NamedEntity {
         return true;
     }
     
+    @Override
+    public String toString() {
+        return this.simpleName() + "(" + this.fullName + ")";
+    }
+    
 }

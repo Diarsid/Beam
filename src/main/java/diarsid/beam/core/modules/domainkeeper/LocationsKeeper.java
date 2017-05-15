@@ -6,7 +6,6 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
-import java.util.Optional;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
@@ -21,11 +20,11 @@ import diarsid.beam.core.domain.entities.Location;
 public interface LocationsKeeper extends NamedEntitiesKeeper {
     
     @Override
-    Optional<Location> findByExactName(
+    ValueOperation<Location> findByExactName(
             Initiator initiator, String exactName);
     
     @Override
-    Optional<Location> findByNamePattern(
+    ValueOperation<Location> findByNamePattern(
             Initiator initiator, String locationNamePattern);
     
     List<Location> getLocationsByNamePattern(
