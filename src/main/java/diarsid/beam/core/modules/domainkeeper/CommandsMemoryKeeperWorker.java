@@ -13,19 +13,22 @@ import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommands;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 /**
  *
@@ -44,15 +47,46 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     @Override
     public void tryToExtendCommand(Initiator initiator, InvocationCommand command) {
         Optional<InvocationCommand> exactMatch = this.daoCommands.getByExactOriginalAndType(
-                initiator, command.originalArgument(), command.type());
+                initiator, command.originalArgument(), command.type());        
+        debug("[COMMANDS MEMORY] [find by eaxct match] " + command.originalArgument());
         if ( exactMatch.isPresent() ) {
-            command.setStored();
-            command.argument().setExtended(exactMatch.get().extendedArgument());
-            // TODO check for better match and repair if found.
+            debug("[COMMANDS MEMORY] [find by eaxct match] found " + command.extendedArgument());
+            List<InvocationCommand> matchingCommands = 
+                    this.daoCommands.searchInExtendedByPatternAndType(
+                            initiator, command.originalArgument(), command.type());
+            if ( nonEmpty(matchingCommands) ) {
+                this.replaceExtendedIfNecessary(initiator, command, exactMatch, matchingCommands);
+            }            
         } else {
             command.setNew();
         }
     }  
+
+    private void replaceExtendedIfNecessary(
+            Initiator initiator, 
+            InvocationCommand command, 
+            Optional<InvocationCommand> exactMatch, 
+            List<InvocationCommand> matchingCommands) {
+        matchingCommands.add(exactMatch.get());
+        WeightedVariants variants = weightVariants(
+                command.originalArgument(), commandsToVariants(matchingCommands));
+        variants.removeWorseThan(exactMatch.get().extendedArgument());
+        if ( variants.hasOne() ) {
+            command.setStored();
+            command.argument().setExtended(exactMatch.get().extendedArgument());
+        } else {
+            Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+            if ( answer.isGiven() ) {
+                command.setStored();
+                command.argument().setExtended(answer.text());
+                asyncDo(() -> {
+                    this.daoCommands.save(initiator, command);
+                });
+            } else {
+                command.setNew();
+            }
+        }
+    }
     
     @Override
     public void tryToExtendCommandByPattern(Initiator initiator, InvocationCommand command) {
@@ -146,8 +180,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
-        WeightedVariantsQuestion question = 
-                analyzeAndWeightVariants(pattern, commandsToVariants(commands));
+        WeightedVariants question = 
+                weightVariants(pattern, commandsToVariants(commands));
         debug("[COMMANDS MEMORY] [choose one] variants qty: " + question.size() );
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
@@ -177,5 +211,17 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 return valueCompletedEmpty();
             }
         }
+    }
+
+    @Override
+    public void removeByExactExtendedAndType(
+            Initiator initiator, String extended, CommandType type) {
+        this.daoCommands.deleteByExactExtendedOfType(initiator, extended, type);
+    }
+
+    @Override
+    public void removeByExactExtendedLocationPrefixInPath(
+            Initiator initiator, String extended) {
+        this.daoCommands.deleteByPrefixInExtended(initiator, extended, OPEN_LOCATION_TARGET);
     }
 }

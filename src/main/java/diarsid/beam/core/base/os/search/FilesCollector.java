@@ -21,6 +21,7 @@ import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.isSimilarIgnoreCase;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
  *
@@ -37,7 +38,7 @@ class FilesCollector {
     }
     
     private boolean filterByStrictName(String nameToFind, Path testedPath) {
-        return asName(testedPath).equalsIgnoreCase(nameToFind);
+        return lower(asName(testedPath)).startsWith(lower(nameToFind));
     }
     
     private boolean filterSystemFiles(Path path) {
@@ -45,6 +46,7 @@ class FilesCollector {
     }
     
     private boolean filterByNamePatternSimilarity(String nameToFind, String nameFromPath) {
+        nameFromPath = cleanSeparators(nameFromPath);
         if ( containsIgnoreCase(nameFromPath, nameToFind) ) {
             return true;
         } else {
@@ -100,7 +102,6 @@ class FilesCollector {
             throws IOException {        
         return this.prepareCollectingPathStream(root, mode)
                 .filter(path -> this.filterByNamePatternSimilarity(nameToFind, asName(path)))
-                // TODO
                 .map(path -> normalizeSeparators(path.toString()))
                 .collect(toList());
     }
@@ -109,7 +110,7 @@ class FilesCollector {
             Path root, String nameToFind, FileSearchMode mode)
             throws IOException {        
         return this.prepareCollectingPathStream(root, mode)
-                .map(path -> cleanSeparators(path.toString()))
+                .map(path -> path.toString())
                 .filter(fileName -> this.filterByNamePatternSimilarity(nameToFind, fileName))
                 .collect(toList());
     }

@@ -45,7 +45,12 @@ public interface DaoCommands {
     boolean deleteByExactOriginalOfAllTypes(
             Initiator initiator, String original);
     
+    boolean deleteByExactExtendedOfType(
+            Initiator initiator, String extended, CommandType type);
+    
     boolean deleteByExactOriginalOfType(
             Initiator initiator, String original, CommandType type);
     
+    boolean deleteByPrefixInExtended(
+            Initiator initiator, String prefixInExtended, CommandType type);
 }

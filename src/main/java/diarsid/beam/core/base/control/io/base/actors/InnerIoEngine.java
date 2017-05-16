@@ -9,7 +9,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 /**
  *
@@ -23,7 +23,7 @@ public interface InnerIoEngine {
     
     Answer ask(Initiator initiator, VariantsQuestion question);
     
-    Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants);
+    Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants);
     
     void report(Initiator initiator, String string);
     

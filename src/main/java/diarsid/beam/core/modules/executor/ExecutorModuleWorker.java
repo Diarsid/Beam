@@ -36,7 +36,7 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 
@@ -237,6 +237,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     private void dispatchCommandInternally(Initiator initiator, ExecutorCommand command) {
+        debug("[EXECUTOR] [dispatch] " + command.stringifyOriginal() + ":" + command.stringify());
         dispatching: switch ( command.type() ) {
             case OPEN_LOCATION : {
                 this.openLocation(initiator, (OpenLocationCommand) command);
@@ -272,14 +273,20 @@ class ExecutorModuleWorker implements ExecutorModule {
         try {
             suspending: switch ( pause.timePeriod() ) {
                 case SECONDS : {
+                    this.ioEngine.report(
+                            initiator, format("...pause %s seconds", pause.duration()));
                     sleep( 1000 * pause.duration() );
                     break suspending;                
                 }
                 case MINUTES : {
+                    this.ioEngine.report(
+                            initiator, format("...pause %s minutes", pause.duration()));
                     sleep( 1000 * 60 * pause.duration() );
                     break suspending;                
                 }
                 case HOURS : {
+                    this.ioEngine.report(
+                            initiator, format("...pause %s hours", pause.duration()));
                     sleep( 1000 * 60 * 60 * pause.duration() );
                     break suspending;                
                 }
@@ -971,7 +978,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void resolveMultipleFoldersAndDoListing(
             Initiator initiator, Location location, String subpathPattern, List<String> folders) {
-        WeightedVariantsQuestion variants = analyzeStrings(subpathPattern, folders);
+        WeightedVariants variants = analyzeStrings(subpathPattern, folders);
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             this.doListing(initiator, location.path(), answer.text());

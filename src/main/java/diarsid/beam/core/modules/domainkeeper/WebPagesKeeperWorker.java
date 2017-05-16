@@ -30,7 +30,6 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
@@ -55,6 +54,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
@@ -67,7 +67,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 
 public class WebPagesKeeperWorker 
@@ -79,6 +79,7 @@ public class WebPagesKeeperWorker
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
+    private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final PropertyAndTextParser propetyTextParser;
@@ -88,12 +89,14 @@ public class WebPagesKeeperWorker
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
             DaoWebDirectories daoDirectories,
+            CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper helper,
             PropertyAndTextParser propetyTextParser,
             WebObjectsInputParser parser) {
         super(ioEngine);
         this.daoPages = dao;
+        this.commandsMemory = commandsMemory;
         this.daoDirectories = daoDirectories;
         this.ioEngine = ioEngine;
         this.helper = helper;
@@ -105,6 +108,12 @@ public class WebPagesKeeperWorker
     @Override
     public boolean isSubjectedTo(InvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
+    }
+
+    private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(initiator, extended, BROWSE_WEBPAGE);
+        });
     }
 
     @Override
@@ -128,9 +137,8 @@ public class WebPagesKeeperWorker
     
     private ValueOperation<WebPage> manageWithManyPages(
             Initiator initiator, String pattern, List<WebPage> pages) {
-        // VariantsQuestion question = question("choose").withAnswerEntities(pages);
-        WeightedVariantsQuestion question = analyzeAndWeightVariants(pattern, entitiesToVariants(pages));
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, weightVariants(pattern, entitiesToVariants(pages)));
         if ( answer.isGiven() ) {
             return valueCompletedWith(pages.get(answer.index()));
         } else {
@@ -376,6 +384,7 @@ public class WebPagesKeeperWorker
             return voidOperationStopped();
         }
         if ( this.daoPages.editName(initiator, pageName, newName) ) {
+            this.asyncCleanCommandsMemory(initiator, pageName);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to rename page.");
@@ -462,9 +471,12 @@ public class WebPagesKeeperWorker
         Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( ! optPage.isPresent() ) {
             return voidOperationStopped();
+        } else {
+            this.ioEngine.report(initiator, format("'%s' found.", optPage.get().name()));
         }
         
         if ( this.daoPages.remove(initiator, optPage.get().name()) ) {
+            this.asyncCleanCommandsMemory(initiator, optPage.get().name());
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to remove page.");
@@ -552,6 +564,11 @@ public class WebPagesKeeperWorker
             throw new DomainConsistencyException(newNameValidity.getFailureMessage());
         }
         
-        return this.daoPages.editName(initiator, name, newName);        
+        if ( this.daoPages.editName(initiator, name, newName) ) {
+            this.asyncCleanCommandsMemory(initiator, name);
+            return true;
+        } else {
+            return false;
+        }     
     }
 }

@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -31,8 +31,9 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_I
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 /**
  *
@@ -44,6 +45,9 @@ class NotesKeeperWorker implements NotesKeeper {
     private final NotesCatalog notesCatalog;
     private final KeeperDialogHelper helper;
     
+    // TODO 
+    // 1 - fix creation by path (separator not allowed)
+    // 2 - add extension adding .txt to any created file
     NotesKeeperWorker(
             InnerIoEngine ioEngine, NotesCatalog notesCatalog, KeeperDialogHelper helper) {
         this.ioEngine = ioEngine;
@@ -134,8 +138,8 @@ class NotesKeeperWorker implements NotesKeeper {
 
     private VoidOperation processMultipleNotes(
             Initiator initiator, String noteTarget, List<String> foundNoteTargets) {
-        WeightedVariantsQuestion variants =
-                analyzeAndWeightVariants(noteTarget, stringsToVariants(foundNoteTargets));
+        WeightedVariants variants =
+                weightVariants(noteTarget, stringsToVariants(foundNoteTargets));
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             try {
@@ -160,7 +164,12 @@ class NotesKeeperWorker implements NotesKeeper {
             noteName = now().toString();
         } else {
             noteName = normalize(noteName);
-            noteName = helper.validateEntityNameInteractively(initiator, noteName);
+            if ( containsPathSeparator(noteName) ) {
+                // TODO
+                noteName = helper.validateEntityNameInteractively(initiator, noteName);
+            } else {
+                noteName = helper.validateEntityNameInteractively(initiator, noteName);
+            }            
         }
         
         if ( noteName.isEmpty() ) {

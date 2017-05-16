@@ -29,7 +29,7 @@ public class NotesCatalogReal
 
     @Override
     public void createAndOpenNoteWithName(String noteName) throws IOException {
-        Path newNote = super.getPath().resolve(noteName);
+        Path newNote = super.getPath().resolve(noteName + ".txt");
         if ( exists(newNote) ) {
             getDesktop().open(newNote.toFile());
         } else {

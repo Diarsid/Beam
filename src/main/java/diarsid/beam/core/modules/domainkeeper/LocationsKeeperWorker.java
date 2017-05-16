@@ -24,7 +24,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoLocations;
 
 import static java.lang.String.format;
@@ -48,12 +48,13 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 
 
@@ -63,6 +64,7 @@ class LocationsKeeperWorker
                 NamedEntitiesKeeper {
     
     private final DaoLocations dao;
+    private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final LocationsInputParser locationInpurParser;
@@ -71,16 +73,25 @@ class LocationsKeeperWorker
     
     LocationsKeeperWorker(
             DaoLocations dao, 
+            CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper consistencyChecker,
             LocationsInputParser parser,
             PropertyAndTextParser propertyTextParser) {
         this.dao = dao;
+        this.commandsMemory = commandsMemoryKeeper;
         this.ioEngine = ioEngine;
         this.helper = consistencyChecker;
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
         this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_LOCATION_TARGET);
+    }
+    
+    private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(initiator, extended, OPEN_LOCATION);
+            this.commandsMemory.removeByExactExtendedLocationPrefixInPath(initiator, extended);
+        });
     }
 
     @Override
@@ -141,8 +152,8 @@ class LocationsKeeperWorker
             Initiator initiator, String pattern, List<Location> locations) {
 //        Answer answer = this.ioEngine.ask(
 //                initiator, question("choose").withAnswerEntities(locations));
-        WeightedVariantsQuestion question = 
-                analyzeAndWeightVariants(pattern, entitiesToVariants(locations));
+        WeightedVariants question = 
+                weightVariants(pattern, entitiesToVariants(locations));
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
             return valueCompletedWith(locations.get(answer.index()));
@@ -223,6 +234,7 @@ class LocationsKeeperWorker
             String locationName = getOne(locationsToRemove).name();
             this.ioEngine.report(initiator, format("'%s' found.", locationName));
             if ( this.dao.removeLocation(initiator, locationName) ) {
+                this.asyncCleanCommandsMemory(initiator, locationName);
                 return voidCompleted();
             } else {
                 return voidOperationFail("DAO failed to remove location.");
@@ -235,6 +247,7 @@ class LocationsKeeperWorker
             if ( answer.isGiven() ) {
                 String locationName = locationsToRemove.get(answer.index()).name();
                 if ( this.dao.removeLocation(initiator, locationName) ) {
+                    this.asyncCleanCommandsMemory(initiator, locationName);
                     return voidCompleted();
                 } else {
                     return voidOperationFail("DAO failed to remove location.");
@@ -309,6 +322,7 @@ class LocationsKeeperWorker
                     return voidOperationStopped();
                 }
                 if ( this.dao.editLocationName(initiator, location.name(), newName) ) {
+                    this.asyncCleanCommandsMemory(initiator, location.name());
                     return voidCompleted();
                 } else {
                     return voidOperationFail("DAO failed to edit name.");

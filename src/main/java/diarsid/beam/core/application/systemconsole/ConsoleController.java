@@ -21,7 +21,7 @@ import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.util.StringHolder;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariant;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -143,21 +143,20 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
     }
 
     @Override
-    public Answer resolve(WeightedVariantsQuestion variants) throws IOException {
+    public Answer resolve(WeightedVariants variants) throws IOException {
         if ( variants.hasOne() ) {
             return variants.singleAnswer();
         }
         
-        // TODO fix last element problem
         String line;
         Answer answer = noAnswerFromVariants();
         Choice choice;
         int chosenVariantIndex;
         List<WeightedVariant> similarVariants;
         
-        variantsChoosing: while ( variants.hasNext() ) {         
+        variantsChoosing: while ( variants.next() ) {         
             answer = noAnswerFromVariants();   
-            if ( variants.isCurrentMuchBetterThanNext() ) {
+            if ( variants.currentIsMuchBetterThanNext() ) {
                 this.printer.printYesNoQuestion(variants.current().bestText());
                 choice = choiceOfPattern(this.reader.readLine());
                 switch ( choice ) {
@@ -165,7 +164,6 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                         return answerOfVariant(variants.current());
                     }
                     case NEGATIVE : {
-                        variants.toNext();
                         continue variantsChoosing;
                     }
                     case REJECT : 
@@ -173,12 +171,11 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                         return noAnswerFromVariants();
                     }    
                     default : {
-                        variants.toNext();
                         continue variantsChoosing;
                     }
                 }
             } else {
-                similarVariants = variants.allNextSimilar();
+                similarVariants = variants.nextSimilarVariants();
                 this.printer.printInDialogWeightedVariants(similarVariants);
                 similarVariantsChoosing: while ( true ) {
                     line = this.reader.readLine();

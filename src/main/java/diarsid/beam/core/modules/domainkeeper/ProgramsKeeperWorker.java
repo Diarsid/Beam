@@ -31,7 +31,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 
 class ProgramsKeeperWorker 
@@ -105,8 +105,7 @@ class ProgramsKeeperWorker
         if ( hasOne(programs) ) {
             return valueCompletedWith(getOne(programs));
         } else if ( hasMany(programs) ) {
-            Answer answer = this.ioEngine.chooseInWeightedVariants(
-                    initiator, analyzeAndWeightVariants(pattern, entitiesToVariants(programs)));
+            Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, weightVariants(pattern, entitiesToVariants(programs)));
             if ( answer.isGiven() ) {
                 return valueCompletedWith(programs.get(answer.index()));
             } else {

@@ -11,7 +11,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 /**
  *
@@ -27,7 +27,7 @@ public interface OuterIoEngine {
     
     Answer resolve(VariantsQuestion question) throws IOException;
     
-    Answer resolve(WeightedVariantsQuestion variants) throws IOException;
+    Answer resolve(WeightedVariants variants) throws IOException;
     
     void report(String string) throws IOException;
     

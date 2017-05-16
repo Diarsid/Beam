@@ -7,6 +7,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 
 /**
@@ -32,4 +33,10 @@ public interface CommandsMemoryKeeper {
     
     void remove(
             Initiator initiator, InvocationCommand command);
+    
+    void removeByExactExtendedAndType(
+            Initiator initiator, String extended, CommandType type);
+    
+    void removeByExactExtendedLocationPrefixInPath(
+            Initiator initiator, String extended);
 }

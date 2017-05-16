@@ -61,8 +61,8 @@ public class Analyze {
         doAll();
     }
     
-    public static WeightedVariantsQuestion analyzeStrings(String pattern, List<String> variants) {
-        return analyzeAndWeightVariants(pattern, stringsToVariants(variants));
+    public static WeightedVariants analyzeStrings(String pattern, List<String> variants) {
+        return weightVariants(pattern, stringsToVariants(variants));
     }
 
     public static void doAll() {
@@ -73,28 +73,27 @@ public class Analyze {
 //                "epicfantasy crossbooking"
                 "beam_project_home",
                 "beam_project",
-//                "beam_home",
-//                "awesome java libs",
-//                "git>beam",
-//                "beam_project/src",
-//                "beam netpro",
-//                "abe_netpro",
-//                "babel_pro",
-//                "netbeans_projects", 
+                "beam_home",
+                "awesome java libs",
+                "git>beam",
+                "beam_project/src",
+                "beam netpro",
+                "abe_netpro",
+                "babel_pro",
+                "netbeans_projects", 
                 "beam_server_project"
         );
         String pattern = "beprjo";
         
         System.out.println("variants: " + variantsStrings.size());
-        WeightedVariantsQuestion variants = analyzeStrings(pattern, variantsStrings);
+        WeightedVariants variants = analyzeStrings(pattern, variantsStrings);
         AtomicInteger printed = new AtomicInteger(0);
-        while ( variants.hasNext() ) {            
-            if ( variants.isCurrentMuchBetterThanNext() ) {
+        while ( variants.next() ) {            
+            if ( variants.currentIsMuchBetterThanNext() ) {
                 System.out.println(variants.current().text() + " is much better than next: " + variants.current().weight());
                 printed.incrementAndGet();
-                variants.toNext();
             } else {
-                List<WeightedVariant> similar = variants.allNextSimilar();
+                List<WeightedVariant> similar = variants.nextSimilarVariants();
                 System.out.println("next candidates are similar: ");                
                 similar.stream().forEach(candidate -> {
                         System.out.println("  - " + candidate.text() + " : " + candidate.weight());
@@ -231,7 +230,7 @@ public class Analyze {
     }
     
     // TODO improve pattern estimate. 
-    public static WeightedVariantsQuestion analyzeAndWeightVariants(
+    public static WeightedVariants weightVariants(
             String pattern, List<Variant> variants) {
         pattern = lower(pattern);
         sort(variants);
@@ -420,7 +419,7 @@ public class Analyze {
         sort(weightedVariants);
         shrink(weightedVariants, 11);
         debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());
-        return new WeightedVariantsQuestion(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
+        return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
     }
 
     private static boolean isDiversitySufficient(double minWeight, double maxWeight) {

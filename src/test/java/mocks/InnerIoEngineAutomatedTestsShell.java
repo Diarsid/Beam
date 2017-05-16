@@ -12,7 +12,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 /**
  *
@@ -65,7 +65,7 @@ public class InnerIoEngineAutomatedTestsShell implements InnerIoEngine {
     }
 
     @Override
-    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants) {
+    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

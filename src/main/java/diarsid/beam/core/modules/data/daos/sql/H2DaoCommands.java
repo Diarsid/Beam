@@ -31,6 +31,7 @@ import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocat
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardAfter;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
@@ -113,11 +114,11 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN FULL] not found : " + pattern);
+                debug("[DAO COMMANDS] not found : " + pattern);
             }
             
             List<String> criterias = patternToCharCriterias(pattern);
-            debug("[PATTERN] criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] criterias: " + join(" ", criterias));
             
             found = transact
                     .doQueryAndStreamVarargParams(
@@ -132,7 +133,7 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+                debug("[DAO COMMANDS CRITERIAS AND] not found : " + pattern);
             }
             
             String andOrCondition = multipleLowerGroupedLikesOr("com_original", criterias.size());
@@ -149,7 +150,7 @@ class H2DaoCommands
                     .collect(toList());
             
             shift(criterias);
-            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] shuffled criterias: " + join(" ", criterias));
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
@@ -160,8 +161,8 @@ class H2DaoCommands
                             criterias)
                     .collect(toList());
             
-            debug("[PATTERN] found by criterias : " + found.size());
-            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            debug("[DAO COMMANDS] found by criterias : " + found.size());
+            debug("[DAO COMMANDS] found by shuffled criterias : " + shuffleFound.size());
             shuffleFound.retainAll(found);
             found.retainAll(shuffleFound);
             
@@ -193,11 +194,11 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN FULL] not found : " + pattern);
+                debug("[DAO COMMANDS FULL] not found : " + pattern);
             }
             
             List<String> criterias = patternToCharCriterias(pattern);
-            debug("[PATTERN] criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] criterias: " + join(" ", criterias));
             
             found = transact
                     .doQueryAndStreamVarargParams(
@@ -214,7 +215,7 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+                debug("[DAO COMMANDS CRITERIAS AND] not found : " + pattern);
             }
             
             String andOrCondition = multipleLowerGroupedLikesOr("com_original", criterias.size());
@@ -231,7 +232,7 @@ class H2DaoCommands
                     .collect(toList());
             
             shift(criterias);
-            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] shuffled criterias: " + join(" ", criterias));
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
@@ -242,8 +243,8 @@ class H2DaoCommands
                             criterias, type)
                     .collect(toList());
             
-            debug("[PATTERN] found by criterias : " + found.size());
-            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            debug("[DAO COMMANDS] found by criterias : " + found.size());
+            debug("[DAO COMMANDS] found by shuffled criterias : " + shuffleFound.size());
             shuffleFound.retainAll(found);
             found.retainAll(shuffleFound);
             
@@ -274,11 +275,11 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN FULL] not found : " + pattern);
+                debug("[DAO COMMANDS FULL] not found : " + pattern);
             }
             
             List<String> criterias = patternToCharCriterias(pattern);
-            debug("[PATTERN] criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] criterias: " + join(" ", criterias));
             
             found = transact
                     .doQueryAndStreamVarargParams(
@@ -293,7 +294,7 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+                debug("[DAO COMMANDS CRITERIAS AND] not found : " + pattern);
             }
             
             String andOrCondition = multipleLowerGroupedLikesOr("com_extended", criterias.size());
@@ -310,7 +311,7 @@ class H2DaoCommands
                     .collect(toList());
             
             shift(criterias);
-            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] shuffled criterias: " + join(" ", criterias));
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
@@ -321,8 +322,8 @@ class H2DaoCommands
                             criterias)
                     .collect(toList());
             
-            debug("[PATTERN] found by criterias : " + found.size());
-            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            debug("[DAO COMMANDS] found by criterias : " + found.size());
+            debug("[DAO COMMANDS] found by shuffled criterias : " + shuffleFound.size());
             shuffleFound.retainAll(found);
             found.retainAll(shuffleFound);
             
@@ -354,11 +355,11 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN FULL] not found : " + pattern);
+                debug("[DAO COMMANDS FULL] not found : " + pattern);
             }
             
             List<String> criterias = patternToCharCriterias(pattern);
-            debug("[PATTERN] criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] criterias: " + join(" ", criterias));
             
             found = transact
                     .doQueryAndStreamVarargParams(
@@ -375,7 +376,7 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
+                debug("[DAO COMMANDS CRITERIAS AND] not found : " + pattern);
             }
             
             String andOrCondition = multipleLowerGroupedLikesOr("com_extended", criterias.size());
@@ -392,7 +393,7 @@ class H2DaoCommands
                     .collect(toList());
             
             shift(criterias);
-            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
+            debug("[DAO COMMANDS] shuffled criterias: " + join(" ", criterias));
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
                             InvocationCommand.class,
@@ -403,11 +404,12 @@ class H2DaoCommands
                             criterias, type)
                     .collect(toList());
             
-            debug("[PATTERN] found by criterias : " + found.size());
-            debug("[PATTERN] found by shuffled criterias : " + shuffleFound.size());
+            debug("[DAO COMMANDS] found by criterias : " + found.size());
+            debug("[DAO COMMANDS] found by shuffled criterias : " + shuffleFound.size());
             shuffleFound.retainAll(found);
             found.retainAll(shuffleFound);
             
+            debug("[]");
             return found;
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
@@ -455,12 +457,6 @@ class H2DaoCommands
     }
     
     @Override
-    public boolean deleteByOriginal(
-            Initiator initiator, String original) {
-        
-    }
-
-    @Override
     public boolean delete(
             Initiator initiator, InvocationCommand command) {
         try (JdbcTransaction transact = super.openTransaction()) {
@@ -469,14 +465,14 @@ class H2DaoCommands
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
-                            lower(command.originalArgument()), command.type().name());
+                            lower(command.originalArgument()), command.type());
             
             if ( command.argument().isExtended() ) {
                 result = result + transact
                         .doUpdateVarargParams(
                                 "DELETE FROM commands " +
                                 "WHERE ( LOWER(com_extended) IS ? ) AND ( com_type IS ? ) ",
-                                lower(command.extendedArgument()), command.type().name());
+                                lower(command.extendedArgument()), command.type());
             }
             
             return ( result > 0 );
@@ -510,7 +506,37 @@ class H2DaoCommands
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
-                            lower(original), type.name());
+                            lower(original), type);
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteByExactExtendedOfType(
+            Initiator initiator, String extended, CommandType type) {
+        try {
+            return 1 < super.openDisposableTransaction()
+                    .doUpdateVarargParams(
+                            "DELETE FROM commands " +
+                            "WHERE ( LOWER(com_extended) IS ? ) AND ( com_type IS ? ) ",
+                            lower(extended), type);
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteByPrefixInExtended(
+            Initiator initiator, String prefixInExtended, CommandType type) {
+        try {
+            return 1 < super.openDisposableTransaction()
+                    .doUpdateVarargParams(
+                            "DELETE FROM commands " +
+                            "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? ) ",
+                            lowerWildcardAfter(prefixInExtended), type);
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;

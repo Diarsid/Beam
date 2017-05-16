@@ -48,6 +48,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
@@ -59,6 +60,7 @@ class BatchesKeeperWorker
                 NamedEntitiesKeeper {
     
     private final DaoBatches dao;
+    private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final Interpreter interpreter;
@@ -67,11 +69,13 @@ class BatchesKeeperWorker
     
     BatchesKeeperWorker(
             DaoBatches daoBatches, 
+            CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine,
             KeeperDialogHelper helper,
             Interpreter interpreter,
             PropertyAndTextParser propertyAndTextParser) {
         this.dao = daoBatches;
+        this.commandsMemory = commandsMemoryKeeper;
         this.ioEngine = ioEngine;
         this.helper = helper;
         this.interpreter = interpreter;
@@ -326,10 +330,17 @@ class BatchesKeeperWorker
             }
         }
         if ( this.dao.editBatchName(initiator, batch.name(), newName) ) {
+            this.asyncCleanCommandsMemory(initiator, batch.name());
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to rename batch.");
         }
+    }
+
+    private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(initiator, extended, CALL_BATCH);
+        });
     }
     
     private VoidOperation editBatchCommands(Initiator initiator, Batch batch) {
@@ -416,6 +427,7 @@ class BatchesKeeperWorker
         if ( hasOne(batchNames) ) {
             this.ioEngine.report(initiator, format("'%s' found.", getOne(batchNames)));
             if ( this.dao.removeBatch(initiator, getOne(batchNames)) ) {
+                this.asyncCleanCommandsMemory(initiator, getOne(batchNames));
                 return voidCompleted();
             } else {
                 return voidOperationFail("DAO failed to remove batch");
@@ -425,6 +437,7 @@ class BatchesKeeperWorker
             Answer answer = this.ioEngine.ask(initiator, question);
             if ( answer.isGiven() ) {
                 if ( this.dao.removeBatch(initiator, batchNames.get(answer.index())) ) {
+                    this.asyncCleanCommandsMemory(initiator, batchNames.get(answer.index()));
                     return voidCompleted();
                 } else {
                     return voidOperationFail("DAO failed to remove batch.");

@@ -91,45 +91,48 @@ public class SqlUtil {
         String condition = "( LOWER(" + column + ") LIKE ? )";
         switch (length) {
             case 1 : {
-                return condition;
+                return "( " + condition + " )";
             }
             case 2 : {
                 return 
+                        "( " + 
                         condition + " OR " + 
-                        condition;
+                        condition + 
+                        " )";
             }
             case 3 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + 
                         ") OR " + 
-                        condition;
+                        condition + 
+                        " )";
             }
             case 4 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + 
                         " ) OR ( " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             case 5 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
                         " ) OR ( " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             case 6 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
@@ -137,11 +140,11 @@ public class SqlUtil {
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             case 7 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + " AND " + 
@@ -150,11 +153,11 @@ public class SqlUtil {
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             case 8 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + " AND " + 
@@ -164,11 +167,11 @@ public class SqlUtil {
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             case 9 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + " AND " + 
@@ -179,11 +182,11 @@ public class SqlUtil {
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             case 10 : {
                 return 
-                        "( " + 
+                        "( ( " + 
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + " AND " + 
@@ -195,15 +198,15 @@ public class SqlUtil {
                         condition + " AND " + 
                         condition + " AND " + 
                         condition + 
-                        " )";
+                        " ) )";
             }
             default : {                
                 return 
-                        "( " + 
+                        "( ( " + 
                         multipleLowerLikeAnd(column, length - (length / 2)) + 
                         " ) OR ( " + 
                         multipleLowerLikeAnd(column, (length / 2)) + 
-                        " )";
+                        " ) )";
             }
         }    
     }

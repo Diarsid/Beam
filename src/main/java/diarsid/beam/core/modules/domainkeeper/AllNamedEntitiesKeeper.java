@@ -28,7 +28,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeAndWeightVariants;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 /**
  *
@@ -77,8 +77,7 @@ class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
     
     private ValueOperation<? extends NamedEntity> manageWithMultipleEntities(
             Initiator initiator, String pattern, List<NamedEntity> entities) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
-                initiator, analyzeAndWeightVariants(pattern, entitiesToVariants(entities)));
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, weightVariants(pattern, entitiesToVariants(entities)));
         if ( answer.isGiven() ) {
             return valueCompletedWith(entities.get(answer.index()));
         } else {

@@ -19,6 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.upper;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 
 /**
@@ -49,7 +50,7 @@ public class BatchPauseCommand implements ExecutorCommand {
         try {
             return new BatchPauseCommand(
                     parseInt(pauseData[0]), 
-                    TimePeriod.valueOf(pauseData[1]));
+                    TimePeriod.valueOf(upper(pauseData[1])));
         } catch (Exception e) {
             getLogger(BatchPauseCommand.class).error(
                     format("String '%s' is not proper pause format.", stringifiedPauseCommand));

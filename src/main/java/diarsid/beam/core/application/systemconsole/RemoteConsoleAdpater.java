@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
@@ -78,7 +78,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public Answer resolve(WeightedVariantsQuestion variants) throws RemoteException {
+    public Answer resolve(WeightedVariants variants) throws RemoteException {
         try {
             return this.console.resolve(variants);
         } catch (IOException e) {

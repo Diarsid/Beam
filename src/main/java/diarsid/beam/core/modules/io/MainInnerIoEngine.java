@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
@@ -88,7 +88,7 @@ public class MainInnerIoEngine
     }
 
     @Override
-    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariantsQuestion variants) {
+    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants) {
         if ( this.ioEnginesHolder.hasEngine(initiator) ) {
             return awaitGet(() -> {
                 try {

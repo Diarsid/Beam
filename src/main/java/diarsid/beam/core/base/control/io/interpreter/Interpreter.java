@@ -7,12 +7,12 @@
 package diarsid.beam.core.base.control.io.interpreter;
 
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
@@ -38,6 +38,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGH;
+import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGHER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOW;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
@@ -197,7 +198,7 @@ public class Interpreter {
                                                 "n", 
                                                 "note", 
                                                 "not", 
-                                                "nt").with(argumentsFor(CREATE_NOTE))),
+                                                "nt").withAny(argumentsFor(CREATE_NOTE))),
                         controlWords(
                                 "-", 
                                 "del", 
@@ -259,7 +260,7 @@ public class Interpreter {
                                 "n", 
                                 "note", 
                                 "notes").priority(LOW).withAny(
-                                        relativePath().with(argumentsFor(OPEN_PATH_IN_NOTES)), 
+                                        relativePath().priority(HIGHER).with(argumentsFor(OPEN_PATH_IN_NOTES)), 
                                         domainWord().with(argumentsFor(OPEN_TARGET_IN_NOTES)))
                 )
         );

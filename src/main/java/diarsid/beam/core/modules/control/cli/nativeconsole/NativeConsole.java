@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariantsQuestion;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.util.Objects.nonNull;
 
@@ -83,7 +83,7 @@ public class NativeConsole
     }
 
     @Override
-    public Answer resolve(WeightedVariantsQuestion variants) throws IOException {
+    public Answer resolve(WeightedVariants variants) throws IOException {
         // ...
         return noAnswerFromVariants();
     }
