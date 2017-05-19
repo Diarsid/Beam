@@ -354,9 +354,11 @@ public class Analyze {
                         }
                     }
                 } else {
-                    if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
-                        variantWeight = variantWeight - 3;
-                    }
+                    if ( currentPosition > 0 ) {
+                        if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
+                            variantWeight = variantWeight - 3;
+                        }
+                    }                    
                     if ( clusterContinuation ) {
                         clustered++;
                         clustersWeight++;
@@ -377,7 +379,10 @@ public class Analyze {
                     - ( clustersQty * 5.4 ) 
                     + ( missed * 14.0 )
                     + (( variantText.length() - clustered ) * 0.8 ) 
-                    + ( sortingSteps * 5.7 ) );
+                    + ( sortingSteps * 5.7 ) );            
+            if ( (clustered < 2 ) && ( sortingSteps > 0 ) ) {
+                variantWeight = variantWeight * 1.8;
+            }
             String positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
             System.out.println(variantText + ", positions: " + positionsS);
     //        System.out.println(String.format("   %-15s %s", "clusters", clustersQty));
@@ -395,9 +400,6 @@ public class Analyze {
             }
             // weight calculation ends
             newVariant = new WeightedVariant(variant, variantWeight);
-            if ( clustered < 2 ) {
-                
-            }
             if ( newVariant.hasDisplayText() ) {
                 debug("[ANALYZE] " + newVariant.text() + ":" + newVariant.displayText());
                 if ( variantsByDisplay.containsKey(variant.displayText()) ) {
