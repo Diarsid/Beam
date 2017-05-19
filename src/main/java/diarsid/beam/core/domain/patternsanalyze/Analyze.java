@@ -230,8 +230,8 @@ public class Analyze {
     }
     
     // TODO improve pattern estimate. 
-    public static WeightedVariants weightVariants(
-            String pattern, List<Variant> variants) {
+    // TODO throw variant away 
+    public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
         pattern = lower(pattern);
         sort(variants);
         Map<Character, Integer> reusableVisitedChars = new HashMap<>();
@@ -395,6 +395,9 @@ public class Analyze {
             }
             // weight calculation ends
             newVariant = new WeightedVariant(variant, variantWeight);
+            if ( clustered < 2 ) {
+                
+            }
             if ( newVariant.hasDisplayText() ) {
                 debug("[ANALYZE] " + newVariant.text() + ":" + newVariant.displayText());
                 if ( variantsByDisplay.containsKey(variant.displayText()) ) {

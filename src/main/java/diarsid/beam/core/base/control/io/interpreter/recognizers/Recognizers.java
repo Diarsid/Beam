@@ -59,4 +59,12 @@ public class Recognizers {
     public static ArgumentsRecognizer argumentsFor(CommandType commandType) {
         return new ArgumentsRecognizer(commandType);
     }
+    
+    public static ExecutorRecognizer executable(CommandType commandType) {
+        return new ExecutorRecognizer(commandType);
+    }
+    
+    public static ExecutorRecognizer executableWith(CommandType commandType, String additional) {
+        return new ExecutorRecognizer(commandType, additional);
+    }
 }

@@ -98,7 +98,7 @@ class H2DaoNamedEntities
             }        
             case PROGRAM : {
                 debug("[ALL ENTITIES DAO] [find real program] " + name);
-                return this.programsCatalog.findProgramByDirectName(lower(name));
+                return this.programsCatalog.findProgramByDirectName(name);
             }        
             case BATCH : {
                 
@@ -173,7 +173,7 @@ class H2DaoNamedEntities
                             lowerExactName)
                     .collect(toList());
             
-            maskedEntities.addAll(this.programsCatalog.findProgramsByStrictName(lowerExactName));
+            maskedEntities.addAll(this.programsCatalog.findProgramsByStrictName(exactName));
             
             if ( nonEmpty(maskedEntities) ) {
                 NamedEntity entityMask = 

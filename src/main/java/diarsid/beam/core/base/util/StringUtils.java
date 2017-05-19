@@ -60,6 +60,7 @@ public class StringUtils {
         return target.replaceAll("\\s+", " ");
     }
     
+    // TODO 1__Projects ??? __ -> _
     public static String normalize(String target) {
         return target
                 // replaces multiple spaces with single space

@@ -10,6 +10,7 @@ import java.util.List;
 
 import static java.lang.String.join;
 
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.countNonSpecialChars;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.indexOfIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
@@ -26,6 +27,11 @@ public class Input {
     public Input(String input) {
         this.splited = splitBySpacesToList(input);
         this.processedParamIndex = 0;
+    }
+    
+    public boolean currentArgIsMeaningfull() {
+        return this.hasNotRecognizedArgs() &&
+                ( countNonSpecialChars(this.safeArgGetByIndex(this.processedParamIndex)) > 1 );
     }
     
     public Input toNextArg() {

@@ -427,28 +427,57 @@ class H2DaoCommands
                             "SELECT * " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                            lower(command.originalArgument()), command.type().name());
-                        
+                            lower(command.originalArgument()), command.type());
+            
+            int modified = 0;
             if ( commandExists ) {
-                return transact
+                modified = modified + transact
                         .doUpdateVarargParams(
                                 "UPDATE commands " +
                                 "SET com_extended = ? " +
                                 "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
                                 command.extendedArgument(), 
                                 lower(command.originalArgument()), 
-                                command.type().name())
-                        == 1;
+                                command.type());
             } else {
-                return transact
+                modified = modified + transact
                         .doUpdateVarargParams(
                                 "INSERT INTO commands ( com_type, com_original, com_extended )" +
                                 "VALUES ( ?, ?, ? ) " , 
-                                command.type().name(),
+                                command.type(),
                                 command.originalArgument(),
-                                command.extendedArgument())
-                        == 1;
+                                command.extendedArgument());
             }
+            
+            if ( command.argument().isExtended() ) {
+                boolean extendedExistsInOriginal = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT * " +
+                            "FROM commands " +
+                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
+                            lower(command.extendedArgument()), command.type());
+                
+                if ( extendedExistsInOriginal ) {
+                    modified = modified + transact
+                            .doUpdateVarargParams(
+                                    "UPDATE commands " +
+                                    "SET com_extended = ? " +
+                                    "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
+                                    command.extendedArgument(), 
+                                    lower(command.extendedArgument()), 
+                                    command.type());
+                } else {
+                    modified = modified + transact
+                            .doUpdateVarargParams(
+                                    "INSERT INTO commands ( com_type, com_original, com_extended )" +
+                                    "VALUES ( ?, ?, ? ) " , 
+                                    command.type(),
+                                    command.extendedArgument(),
+                                    command.extendedArgument());
+                }
+            }
+            
+            return ( modified > 0 );
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

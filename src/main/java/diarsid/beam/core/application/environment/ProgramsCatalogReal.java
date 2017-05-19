@@ -82,7 +82,6 @@ public class ProgramsCatalogReal
     @Override
     public List<Program> findProgramsByWholePattern(String pattern) {
         debug("[PROR CATALOG] [by whole pattern] " + pattern);
-        // TODO
         List<Program> programs = this.toPrograms(super.findFileInCatalogByPattern(pattern));
         debug("[PROR CATALOG] [by whole pattern] " + programs);
         return programs;

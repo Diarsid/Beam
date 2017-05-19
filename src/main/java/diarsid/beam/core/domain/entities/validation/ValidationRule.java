@@ -11,6 +11,7 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWo
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInDomainWord;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsAcceptable;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.isAcceptableWebPath;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
@@ -61,6 +62,21 @@ public enum ValidationRule {
             }
             if ( ! pathIsDirectory(target) ) {
                 return validationFailsWith("this path is not a directory.");
+            }
+            return validationOk();
+        }
+    },
+    
+    SIMPLE_PATH_RULE {
+        @Override 
+        public ValidationResult applyTo(String target) {
+            if ( target.isEmpty() ) {
+                return validationFailsWith("cannot be empty.");
+            } 
+            if ( textIsNotAcceptable(target) ) {
+                return validationFailsWith(format(
+                        "symbol '%s' is not allowed in entity name.", 
+                        findUnacceptableInDomainWord(target)));
             }
             return validationOk();
         }

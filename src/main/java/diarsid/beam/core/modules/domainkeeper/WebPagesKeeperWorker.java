@@ -18,7 +18,9 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
@@ -36,6 +38,7 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 
+import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -50,6 +53,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -57,8 +62,10 @@ import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
+import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
 import static diarsid.beam.core.domain.entities.WebPlace.UNDEFINED_PLACE;
+import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.SHORTCUTS;
@@ -85,6 +92,7 @@ public class WebPagesKeeperWorker
     private final PropertyAndTextParser propetyTextParser;
     private final WebObjectsInputParser webObjectsParser;
     private final Set<CommandType> subjectedCommandTypes;
+    private final WebDirectory defaultDirectory;
     
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
@@ -103,6 +111,22 @@ public class WebPagesKeeperWorker
         this.propetyTextParser = propetyTextParser;
         this.webObjectsParser = parser;
         this.subjectedCommandTypes = toSet(BROWSE_WEBPAGE);
+        this.defaultDirectory = this.getOrCreateDefaultDirectory();                 
+    }
+    
+    private WebDirectory getOrCreateDefaultDirectory() {
+        Optional<WebDirectory> defaultDir = this.daoDirectories.getDirectoryByNameAndPlace(
+                getSystemInitiator(), "Common", WEBPANEL);
+        if ( defaultDir.isPresent() ) {
+            return defaultDir.get();
+        } else {
+            WebDirectory directory = newDirectory("Common", WEBPANEL);
+            if ( this.daoDirectories.save(getSystemInitiator(), directory) ) {
+                return directory;
+            } else {
+                throw new WorkflowBrokenException("Cannot create default WebDirectory 'Common'.");
+            }   
+        }    
     }
 
     @Override
@@ -113,6 +137,13 @@ public class WebPagesKeeperWorker
     private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
         asyncDo(() -> {
             this.commandsMemory.removeByExactExtendedAndType(initiator, extended, BROWSE_WEBPAGE);
+        });
+    }
+    
+    private void asyncAddCommand(Initiator initiator, String pageName) {
+        asyncDo(() -> {
+            this.commandsMemory.save(
+                    initiator, new BrowsePageCommand(pageName, pageName, NEW, TARGET_FOUND));
         });
     }
 
@@ -315,11 +346,18 @@ public class WebPagesKeeperWorker
         
         Optional<WebDirectory> optDirectory = this.discussExistingWebDirectory(initiator, place);
         if ( ! optDirectory.isPresent() ) {
-            return voidOperationStopped();
-        }        
+            this.ioEngine.report(
+                    initiator, 
+                    format("default directory '%s' will be used.", this.defaultDirectory.name()));
+            optDirectory = Optional.of(this.defaultDirectory);
+        } else {
+            this.ioEngine.report(
+                    initiator, format("directory found: '%s'", optDirectory.get().name()));
+        }       
         
         WebPage page = newWebPage(name, shortcuts, url, optDirectory.get().id());
         if ( daoPages.save(initiator, page) ) {
+            this.asyncAddCommand(initiator, page.name());
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save new page.");
@@ -540,9 +578,14 @@ public class WebPagesKeeperWorker
         if ( ! optId.isPresent() ) {
             throw new DomainConsistencyException(
                     format("%s does not exist in %s", directory, place.name()));
-        }
+        } 
         
-        return this.daoPages.save(initiator, newWebPage(name, "", url, optId.get()));
+        if ( this.daoPages.save(initiator, newWebPage(name, "", url, optId.get())) ) {
+            this.asyncAddCommand(initiator, name);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

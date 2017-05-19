@@ -20,6 +20,7 @@ import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
@@ -33,6 +34,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.SIMPLE_PATH_RULE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 /**
@@ -45,9 +47,7 @@ class NotesKeeperWorker implements NotesKeeper {
     private final NotesCatalog notesCatalog;
     private final KeeperDialogHelper helper;
     
-    // TODO 
-    // 1 - fix creation by path (separator not allowed)
-    // 2 - add extension adding .txt to any created file
+    // TODO ??? find closest path te/rea -> is tech/react/ ?
     NotesKeeperWorker(
             InnerIoEngine ioEngine, NotesCatalog notesCatalog, KeeperDialogHelper helper) {
         this.ioEngine = ioEngine;
@@ -56,12 +56,12 @@ class NotesKeeperWorker implements NotesKeeper {
     }    
 
     private void reportAndOpen(Initiator initiator, String noteTarget) throws IOException {
-        this.ioEngine.report(initiator, format("opening %s...", noteTarget));
+        this.ioEngine.report(initiator, format("...opening %s", noteTarget));
         this.notesCatalog.open(noteTarget);
     }
 
     private void reportCreateAndOpen(Initiator initiator, String noteName) throws IOException {
-        this.ioEngine.report(initiator, format("opening %s...", noteName));
+        this.ioEngine.report(initiator, format("...opening %s", noteName));
         this.notesCatalog.createAndOpenNoteWithName(noteName);
     }
 
@@ -72,7 +72,7 @@ class NotesKeeperWorker implements NotesKeeper {
         }
         
         try {
-            this.ioEngine.report(initiator, "openinig Notes...");
+            this.ioEngine.report(initiator, "...openinig Notes");
             this.notesCatalog.open();
         } catch (IOException ex) {
             return voidOperationFail(ex.getMessage());
@@ -161,12 +161,12 @@ class NotesKeeperWorker implements NotesKeeper {
         
         String noteName = command.joinedArguments();
         if ( noteName.isEmpty() ) {
-            noteName = now().toString();
+            noteName = now().format(ISO_LOCAL_DATE_TIME).replace(':', '-');
         } else {
             noteName = normalize(noteName);
             if ( containsPathSeparator(noteName) ) {
-                // TODO
-                noteName = helper.validateEntityNameInteractively(initiator, noteName);
+                noteName = helper.validateInteractively(
+                        initiator, noteName, "note path", SIMPLE_PATH_RULE);
             } else {
                 noteName = helper.validateEntityNameInteractively(initiator, noteName);
             }            

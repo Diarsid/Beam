@@ -6,17 +6,20 @@
 
 package diarsid.beam.core.base.control.io.commands;
 
-import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
-import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.exceptions.UndefinedOperationTypeException;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
+import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.valueOf;
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.STORED;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_NOT_FOUND;
 import static diarsid.beam.core.domain.entities.BatchPauseCommand.parsePauseCommandFrom;
@@ -58,6 +61,62 @@ public class Commands {
             }
             default : {
                 throw new UndefinedOperationTypeException();
+            }
+        }
+    }
+    
+    public static InvocationCommand createInvocationCommandFrom(
+            CommandType commandType, String originalArgs, String extendedArgs) {
+        switch ( commandType ) {
+            case OPEN_LOCATION : {
+                return new OpenLocationCommand(
+                        originalArgs, extendedArgs, NEW, TARGET_NOT_FOUND);
+            }
+            case OPEN_LOCATION_TARGET : {
+                return new OpenLocationTargetCommand(
+                        originalArgs, extendedArgs, NEW, TARGET_NOT_FOUND);
+            }
+            case RUN_PROGRAM : {
+                return new RunProgramCommand(
+                        originalArgs, extendedArgs, NEW, TARGET_NOT_FOUND);
+            }
+            case BROWSE_WEBPAGE : {
+                return new BrowsePageCommand(
+                        originalArgs, extendedArgs, NEW, TARGET_NOT_FOUND);
+            }
+            case CALL_BATCH : {
+                return new CallBatchCommand(
+                        originalArgs, extendedArgs, NEW, TARGET_NOT_FOUND);
+            }
+            default : {
+                throw new UndefinedOperationTypeException();
+            }
+        }
+    }
+    
+    public static Command createExecutorOrUndefinedCommandFrom(
+            CommandType commandType, String originalArgs) {
+        switch ( commandType ) {
+            case EXECUTOR_DEFAULT : {
+                return new ExecutorDefaultCommand(originalArgs);
+            }
+            case OPEN_LOCATION : {
+                return new OpenLocationCommand(originalArgs);
+            }
+            case OPEN_LOCATION_TARGET : {
+                return new OpenLocationTargetCommand(originalArgs);
+            }
+            case RUN_PROGRAM : {
+                return new RunProgramCommand(originalArgs);
+            }
+            case BROWSE_WEBPAGE : {
+                return new BrowsePageCommand(originalArgs);
+            }
+            case CALL_BATCH : {
+                return new CallBatchCommand(originalArgs);
+            }
+            default : {
+                return undefinedCommand();
             }
         }
     }

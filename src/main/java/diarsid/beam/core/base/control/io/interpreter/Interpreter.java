@@ -7,13 +7,9 @@
 package diarsid.beam.core.base.control.io.interpreter;
 
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
-import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
-import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
-import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
-import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
@@ -31,12 +27,16 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
+import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
+import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGH;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGHER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOW;
@@ -48,6 +48,8 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recogniz
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.controlWords;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.correctInput;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.domainWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.executable;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.executableWith;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.multipleArgs;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.only;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.pause;
@@ -83,23 +85,25 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return correctInput().withAny(singleArg().priority(HIGH).withAny(prefixes(
+        return correctInput().withAny(
+                singleArg().priority(HIGH).withAny(
+                        prefixes(
                                 "/", 
                                 "l/").withAny(
-                                        domainWord().with(input -> new OpenLocationCommand(input.currentArg())),
-                                        relativePath().with(input -> new OpenLocationTargetCommand(input.currentArg()))),
+                                        domainWord().with(executable(OPEN_LOCATION)),
+                                        relativePath().with(executable(OPEN_LOCATION_TARGET))),
                         prefixes(
                                 "w/", 
-                                "i/").with(domainWord().with(input -> new BrowsePageCommand(input.currentArg()))),
+                                "i/").with(domainWord().with(executable(BROWSE_WEBPAGE))),
                         prefixes(
                                 "r/", 
                                 "p/").withAny(
-                                        domainWord().with(input -> new RunProgramCommand(input.currentArg())),
-                                        relativePath().with(input -> new RunProgramCommand(input.currentArg()))),
+                                        domainWord().with(executable(RUN_PROGRAM)),
+                                        relativePath().with(executable(RUN_PROGRAM))),
                         prefixes(
                                 "b/", 
                                 "e/", 
-                                "c/").with(domainWord().with(input -> new CallBatchCommand(input.currentArg()))),
+                                "c/").with(domainWord().with(executable(CALL_BATCH))),
                         controlWord("exit").with(only(EXIT)),
                         controlWord("close").with(only(CLOSE_CONSOLE)),
                         controlWords(
@@ -112,32 +116,33 @@ public class Interpreter {
                                                 "add", 
                                                 "create").with(argumentsFor(CREATE_NOTE)),
                                         only(OPEN_NOTES)),
-                        domainWord().priority(LOWEST).with(input -> new ExecutorDefaultCommand(input.currentArg())), 
-                        relativePath().priority(LOWER).with(input -> new OpenLocationTargetCommand(input.currentArg()))),
+                        domainWord().priority(LOWEST).with(executable(EXECUTOR_DEFAULT)), 
+                        relativePath().priority(LOWER).with(executable(OPEN_LOCATION_TARGET))),
                 multipleArgs().withAny(controlWords(
                                 "see", 
-                                "www").priority(HIGH).with(domainWord().with(input -> new BrowsePageCommand(input.currentArg()))), 
+                                "www",
+                                "browse").priority(HIGH).with(domainWord().with(executable(BROWSE_WEBPAGE))), 
                         controlWords(
                                 "o", 
                                 "op", 
                                 "open").priority(HIGH).withAny(
-                                        domainWord().with(input -> new OpenLocationCommand(input.currentArg())),
-                                        relativePath().with(input -> new OpenLocationTargetCommand(input.currentArg()))),
+                                        domainWord().with(executable(OPEN_LOCATION)),
+                                        relativePath().with(executable(OPEN_LOCATION_TARGET))),
                         controlWords(
                                 "call", 
                                 "exe", 
-                                "exec").priority(HIGH).with(domainWord().with(input -> new CallBatchCommand(input.currentArg()))), 
+                                "exec").priority(HIGH).with(domainWord().with(executable(CALL_BATCH))), 
                         controlWords(
                                 "r", 
                                 "run").priority(HIGH).withAny(
-                                        domainWord().with(input -> new RunProgramCommand(input.currentArg())),
-                                        relativePath().with(input -> new RunProgramCommand(input.currentArg()))),
+                                        domainWord().with(executable(RUN_PROGRAM)),
+                                        relativePath().with(executable(RUN_PROGRAM))),
                         controlWord("start").priority(HIGH).withAny(
-                                        domainWord().with(input -> new RunProgramCommand(input.currentArg() + "start")),
-                                        relativePath().with(input -> new RunProgramCommand(input.currentArg() + "start"))),
+                                        domainWord().with(executableWith(RUN_PROGRAM, "start")),
+                                        relativePath().with(executableWith(RUN_PROGRAM, "start"))),
                         controlWord("stop").priority(HIGH).withAny(
-                                        domainWord().with(input -> new RunProgramCommand(input.currentArg() + "stop")),
-                                        relativePath().with(input -> new RunProgramCommand(input.currentArg() + "stop"))),
+                                        domainWord().with(executableWith(RUN_PROGRAM, "stop")),
+                                        relativePath().with(executableWith(RUN_PROGRAM, "stop"))),
                         controlWord("pause").priority(HIGH).with(pause()),
                         controlWords(
                                 "edit", 

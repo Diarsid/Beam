@@ -23,7 +23,9 @@ import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
@@ -55,7 +57,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     this.daoCommands.searchInExtendedByPatternAndType(
                             initiator, command.originalArgument(), command.type());
             if ( nonEmpty(matchingCommands) ) {
-                this.replaceExtendedIfNecessary(initiator, command, exactMatch, matchingCommands);
+                this.replaceExtendedIfNecessary(
+                        initiator, command, exactMatch.get(), matchingCommands);
             }            
         } else {
             command.setNew();
@@ -65,15 +68,15 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     private void replaceExtendedIfNecessary(
             Initiator initiator, 
             InvocationCommand command, 
-            Optional<InvocationCommand> exactMatch, 
+            InvocationCommand exactMatch, 
             List<InvocationCommand> matchingCommands) {
-        matchingCommands.add(exactMatch.get());
+        matchingCommands.add(exactMatch);
         WeightedVariants variants = weightVariants(
                 command.originalArgument(), commandsToVariants(matchingCommands));
-        variants.removeWorseThan(exactMatch.get().extendedArgument());
+        variants.removeWorseThan(exactMatch.extendedArgument());
         if ( variants.hasOne() ) {
             command.setStored();
-            command.argument().setExtended(exactMatch.get().extendedArgument());
+            command.argument().setExtended(exactMatch.extendedArgument());
         } else {
             Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
             if ( answer.isGiven() ) {
@@ -159,7 +162,43 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, String original) {
         List<InvocationCommand> foundCommands = 
                 this.daoCommands.getByExactOriginalOfAnyType(initiator, original);
-        if ( nonEmpty(foundCommands) ) {
+        if ( hasOne(foundCommands) ) {
+            List<InvocationCommand> matchingCommands = 
+                    this.daoCommands.searchInExtendedByPattern(initiator, original);
+            InvocationCommand exactMatch = getOne(foundCommands);
+            matchingCommands.add(exactMatch);
+            WeightedVariants variants = 
+                    weightVariants(original, commandsToVariants(matchingCommands));
+            variants.removeWorseThan(exactMatch.extendedArgument());
+            if ( variants.hasOne() ) {
+                InvocationCommand newCommand = createInvocationCommandFrom(
+                        matchingCommands.get(variants.best().index()).type(), 
+                        original, 
+                        variants.best().text());
+                asyncDo(() -> {
+                    this.daoCommands.save(initiator, newCommand);
+                    this.daoCommands.deleteByExactOriginalOfType(
+                            initiator, exactMatch.originalArgument(), exactMatch.type());
+                });
+                return valueCompletedWith(newCommand);
+            } else {
+                Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+                if ( answer.isGiven() ) {
+                    InvocationCommand newCommand = createInvocationCommandFrom(
+                            matchingCommands.get(answer.index()).type(),
+                            original, 
+                            answer.text());
+                    asyncDo(() -> {
+                        this.daoCommands.save(initiator, newCommand);
+                        this.daoCommands.deleteByExactOriginalOfType(
+                                initiator, exactMatch.originalArgument(), exactMatch.type());
+                    });
+                    return valueCompletedWith(newCommand);
+                } else {
+                    return valueOperationStopped();
+                }
+            }
+        } else if ( hasMany(foundCommands) ) {
             return this.obtainOneUsing(initiator, original, foundCommands);
         } else {
             return valueCompletedEmpty();

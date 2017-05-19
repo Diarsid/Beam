@@ -7,8 +7,8 @@
 package diarsid.beam.core.application.environment;
 
 import static diarsid.beam.core.application.environment.ConfigurationReading.CONFIGURATION;
-import static diarsid.beam.core.base.os.search.FileSearcher.searcherWithDepthsOf;
 import static diarsid.beam.core.application.environment.ScriptSyntax.scriptSyntax;
+import static diarsid.beam.core.base.os.search.FileSearcher.searcherWithDepthsOf;
 
 /**
  *
@@ -37,8 +37,7 @@ public class BeamEnvironment {
 
     public static NotesCatalog notesCatalog() {
         return new NotesCatalogReal(
-                configuration().asString("catalogs.notes"), 
-                searcherWithDepthsOf(3, 3));
+                configuration().asString("catalogs.notes"), searcherWithDepthsOf(5, 5));
     }
     
     public static Configuration configuration() {

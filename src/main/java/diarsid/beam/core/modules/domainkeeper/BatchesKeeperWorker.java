@@ -20,6 +20,7 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
@@ -44,6 +45,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATC
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -86,6 +89,19 @@ class BatchesKeeperWorker
     @Override
     public boolean isSubjectedTo(InvocationCommand command) {
         return this.subjectedCommandTypes.contains(command.type());
+    }
+
+    private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(initiator, extended, CALL_BATCH);
+        });
+    }
+    
+    private void asyncAddCommand(Initiator initiator, String batchName) {
+        asyncDo(() -> {
+            this.commandsMemory.save(
+                    initiator, new CallBatchCommand(batchName, batchName, NEW, TARGET_FOUND));
+        });
     }
 
     @Override
@@ -196,6 +212,7 @@ class BatchesKeeperWorker
         
         Batch newBatch = new Batch(name, batchCommands);
         if ( this.dao.saveBatch(initiator, newBatch) ) {
+            this.asyncAddCommand(initiator, newBatch.name());
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save new batch.");
@@ -335,12 +352,6 @@ class BatchesKeeperWorker
         } else {
             return voidOperationFail("DAO failed to rename batch.");
         }
-    }
-
-    private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
-        asyncDo(() -> {
-            this.commandsMemory.removeByExactExtendedAndType(initiator, extended, CALL_BATCH);
-        });
     }
     
     private VoidOperation editBatchCommands(Initiator initiator, Batch batch) {

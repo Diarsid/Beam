@@ -38,6 +38,10 @@ public class ControlKeys {
             "}", "*", ";", "\"", "~", 
             "<"
     ));
+    public static final List<Character> SPECIAL_CHARS = unmodifiableList(asList(
+            '.', ',', '-', '_', '[', 
+            ']', '(', ')', ' '
+    ));
     
     private ControlKeys() {
     }
@@ -82,5 +86,19 @@ public class ControlKeys {
     
     public static boolean charsAreDomainAcceptable(String target) {
         return ! containsIgnoreCaseAnyFragment(target, UNACCEPTABLE_DOMAIN_CHARS);
+    }
+    
+    public static boolean containsOnlySpecialChars(String target) {
+        return SPECIAL_CHARS.containsAll(asList(target.toCharArray()));
+    }
+    
+    public static int countNonSpecialChars(String target) {
+        int count = 0;
+        for (Character character : target.toCharArray()) {
+            if ( ! SPECIAL_CHARS.contains(character) ) {
+                count++;
+            }
+        }
+        return count;
     }
 }

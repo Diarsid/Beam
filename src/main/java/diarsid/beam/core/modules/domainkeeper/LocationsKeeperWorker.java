@@ -18,6 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
@@ -44,6 +45,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -93,6 +96,13 @@ class LocationsKeeperWorker
             this.commandsMemory.removeByExactExtendedLocationPrefixInPath(initiator, extended);
         });
     }
+    
+    private void asyncAddCommand(Initiator initiator, String locationName) {
+        asyncDo(() -> {
+            this.commandsMemory.save(
+                    initiator, new OpenLocationCommand(locationName, locationName, NEW, TARGET_FOUND));
+        });
+    }
 
     @Override
     public boolean isSubjectedTo(InvocationCommand command) {
@@ -128,7 +138,8 @@ class LocationsKeeperWorker
             namePattern = command.getFirstArg();
         } 
         
-        namePattern = this.helper.validateInteractively(initiator, namePattern, "name", ENTITY_NAME_RULE);
+        namePattern = this.helper.validateInteractively(
+                initiator, namePattern, "name", ENTITY_NAME_RULE);
         if ( namePattern.isEmpty() ) {
             return valueCompletedEmpty();
         } else {
@@ -150,8 +161,6 @@ class LocationsKeeperWorker
 
     private ValueOperation<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
-//        Answer answer = this.ioEngine.ask(
-//                initiator, question("choose").withAnswerEntities(locations));
         WeightedVariants question = 
                 weightVariants(pattern, entitiesToVariants(locations));
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
@@ -205,6 +214,7 @@ class LocationsKeeperWorker
         }
 
         if ( this.dao.saveNewLocation(initiator, new Location(name, path)) ) {
+            this.asyncAddCommand(initiator, name);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save Location.");

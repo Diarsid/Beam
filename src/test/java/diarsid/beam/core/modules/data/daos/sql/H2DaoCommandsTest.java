@@ -35,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
@@ -43,7 +44,6 @@ import static diarsid.beam.core.base.control.io.commands.executor.InvocationComm
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.jdbc.transactions.core.Params.params;
-import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 
 /**
  *
@@ -273,7 +273,7 @@ public class H2DaoCommandsTest {
         int after = base.countRowsInTable("commands");
         
         assertTrue(saved);
-        assertEquals(before + 1, after);
+        assertEquals(before + 2, after); // commands save its both versions original:extended and extended:extended
     }
 
     /**
@@ -288,14 +288,14 @@ public class H2DaoCommandsTest {
         int after = base.countRowsInTable("commands");
         
         assertTrue(saved);
-        assertEquals(before + 1, after);
+        assertEquals(before + 2, after); // commands save its both versions original:extended and extended:extended
         
         int beforeRemoving = base.countRowsInTable("commands");
         boolean removed = dao.delete(initiator, command);
         int afterRemoving = base.countRowsInTable("commands");
         
         assertTrue(removed);
-        assertEquals(beforeRemoving - 1, afterRemoving);
+        assertEquals(beforeRemoving - 2, afterRemoving); // commands save its both versions original:extended and extended:extended
     }
 
     /**

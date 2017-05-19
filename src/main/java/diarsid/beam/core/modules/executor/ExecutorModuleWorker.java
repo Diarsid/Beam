@@ -60,6 +60,7 @@ import static diarsid.beam.core.base.os.search.FileSearchMatching.SIMILAR_MATCH;
 import static diarsid.beam.core.base.os.search.FileSearchMode.ALL;
 import static diarsid.beam.core.base.os.search.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
@@ -99,20 +100,24 @@ class ExecutorModuleWorker implements ExecutorModule {
         this.fileLister = fileLister;
     }
 
-    private void saveCommandIfNecessary(
+    private void asyncSaveCommandIfNecessary(
             Initiator initiator, InvocationCommand command) {
         if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
-            this.domain.commandsMemory().save(initiator, command);
+            asyncDo(() -> {
+                this.domain.commandsMemory().save(initiator, command);
+            });
         }
     }
     
-    private void saveCommandIfNecessary(
+    private void asyncSaveCommandIfNecessary(
             Initiator initiator, Optional<InvocationCommand> optCommand) {
         if ( optCommand.isPresent() ) {
-            InvocationCommand command = optCommand.get();
-            if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
-                this.domain.commandsMemory().save(initiator, command);
-            }            
+            asyncDo(() -> {
+                InvocationCommand command = optCommand.get();
+                if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
+                    this.domain.commandsMemory().save(initiator, command);
+                } 
+            });                       
         }        
     }
 
@@ -410,7 +415,8 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private void openTargetUsingOriginalArgument(OpenLocationTargetCommand command, Initiator initiator) {
+    private void openTargetUsingOriginalArgument(
+            OpenLocationTargetCommand command, Initiator initiator) {
         ValueOperation<Location> valueFlow;
         Location location;
         String target;
@@ -599,7 +605,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     if ( entity.is(BATCH) ) {
                         this.ioEngine.report(initiator, "...executing " + asBatch(entity).name());
                         this.executeBatchInternally(initiator, asBatch(entity));
-                        this.saveCommandIfNecessary(initiator, command);
+                        this.asyncSaveCommandIfNecessary(initiator, command);
                     } else {
                         this.doWhenNotFound(initiator, command);
                     }                    
@@ -671,7 +677,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private CallbackEmpty thenDoOnSuccess(Initiator initiator, InvocationCommand command) {
         return () -> {
-            this.saveCommandIfNecessary(initiator, command);
+            this.asyncSaveCommandIfNecessary(initiator, command);
         };
     }
     
@@ -679,7 +685,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             Initiator initiator, Optional<InvocationCommand> command) {
         return () -> {
             if ( command.isPresent() ) {
-                this.saveCommandIfNecessary(initiator, command.get());                
+                this.asyncSaveCommandIfNecessary(initiator, command.get());                
             }
         };
     }
@@ -850,7 +856,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 case BATCH : {
                     this.ioEngine.report(initiator, "...executing " + entity.name());
                     this.executeBatchInternally(initiator, asBatch(entity));
-                    this.saveCommandIfNecessary(initiator, command.mergeWith(entity));
+                    this.asyncSaveCommandIfNecessary(initiator, command.mergeWith(entity));
                     return voidCompleted();
                 }
                 case UNDEFINED_ENTITY : {

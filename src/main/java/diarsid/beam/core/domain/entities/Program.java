@@ -41,7 +41,7 @@ public class Program implements NamedEntity {
     public String simpleName() {
         if ( containsPathSeparator(this.fullName) ) {
             return this.fullName.substring(
-                    indexOfLastPathSeparator(this.fullName), 
+                    indexOfLastPathSeparator(this.fullName) + 1, 
                     this.fullName.length());
         } else {
             return this.fullName;

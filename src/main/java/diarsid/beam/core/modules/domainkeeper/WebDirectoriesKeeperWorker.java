@@ -28,6 +28,7 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
@@ -49,8 +50,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLACE;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 
 
 class WebDirectoriesKeeperWorker 
@@ -141,7 +140,9 @@ class WebDirectoriesKeeperWorker
                 foundDirs = this.daoDirectories
                         .findDirectoriesByPatternInAnyPlace(initiator, name);            
             }
-            this.ioEngine.report(initiator, "not found.");
+            if ( foundDirs.isEmpty() ) {
+                this.ioEngine.report(initiator, "not found.");
+            }
         } while ( foundDirs.isEmpty() );
         
         if ( hasOne(foundDirs) ) {

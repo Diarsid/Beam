@@ -23,13 +23,13 @@ public abstract class InvocationCommand implements ExecutorCommand {
     private InvocationCommandLifePhase lifePhase;
     private InvocationCommandTargetState targetState;
     
-    public InvocationCommand(String argument) {
+    InvocationCommand(String argument) {
         this.argument = new ExtendableArgument(argument);
         this.lifePhase = NEW;
         this.targetState = TARGET_NOT_FOUND;
     }
     
-    public InvocationCommand(
+    InvocationCommand(
             String argument, 
             String extendedArgument, 
             InvocationCommandLifePhase lifePhase, 
