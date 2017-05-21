@@ -167,7 +167,13 @@ class LocationsKeeperWorker
         if ( answer.isGiven() ) {
             return valueCompletedWith(locations.get(answer.index()));
         } else {
-            return valueOperationStopped();
+            if ( answer.isRejection() ) {
+                return valueOperationStopped();
+            } else if ( answer.variantsAreNotSatisfactory() ) {
+                return valueCompletedEmpty();
+            } else {
+                return valueCompletedEmpty();
+            }
         }
     }
 

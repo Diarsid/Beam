@@ -3,56 +3,28 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.io.Serializable;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 /**
  *
  * @author Diarsid
  */
-public class Answer implements Serializable {
+public interface Answer extends Serializable {
+
+    int index();
+
+    boolean is(String text);
+
+    boolean isGiven();
+
+    boolean isNotGiven();
+
+    String text();
     
-    private static final Answer EMPTY_CHOICE;
-    static {
-        EMPTY_CHOICE = new Answer(null);
-    }
+    boolean variantsAreNotSatisfactory();
     
-    private final Variant chosen;
-        
-    private Answer(Variant chosen) {
-        this.chosen = chosen;
-    }
+    boolean isRejection();
     
-    public static Answer noAnswerFromVariants() {
-        return EMPTY_CHOICE;
-    }
-    
-    public static Answer answerOfVariant(Variant variant) {
-        return new Answer(variant);
-    }
-    
-    public boolean isGiven() {
-        return nonNull(this.chosen);
-    }
-    
-    public boolean isNotGiven() {
-        return isNull(this.chosen);
-    }
-    
-    public String text() {
-        return this.chosen.text();
-    }
-    
-    public boolean is(String text) {
-        return this.chosen.text().equals(text);
-    }
-    
-    public int index() {
-        return this.chosen.index();
-    }
 }

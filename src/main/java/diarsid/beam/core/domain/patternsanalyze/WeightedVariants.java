@@ -18,10 +18,10 @@ import static java.util.Collections.sort;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.answerOfVariant;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 
 
 /**
@@ -77,7 +77,7 @@ public class WeightedVariants implements Serializable {
         if ( this.isChoiceInSimilarVariantsNaturalRange(choiceNumber) ) {
             return answerOfVariant(this.currentSimilarVariants.get(choiceNumber - 1));
         } else {
-            return noAnswerFromVariants();
+            return variantsDontContainSatisfiableAnswer();
         }
     }
     
@@ -96,7 +96,7 @@ public class WeightedVariants implements Serializable {
         if ( CollectionsUtils.hasOne(matches) ) {
             return CollectionsUtils.getOne(matches);
         } else {
-            return noAnswerFromVariants();
+            return variantsDontContainSatisfiableAnswer();
         }
     }
     

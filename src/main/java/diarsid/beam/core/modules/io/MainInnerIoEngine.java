@@ -21,7 +21,6 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.Beam.getSystemInitiator;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
@@ -29,6 +28,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 
 /**
  *
@@ -79,11 +79,11 @@ public class MainInnerIoEngine
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
-                    return noAnswerFromVariants();
+                    return rejectedAnswer();
                 }
-            }).orElse(noAnswerFromVariants());            
+            }).orElse(rejectedAnswer());            
         } else {
-            return noAnswerFromVariants();
+            return rejectedAnswer();
         }        
     }
 
@@ -98,11 +98,11 @@ public class MainInnerIoEngine
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
                     this.ioEnginesHolder.deleteEngine(initiator);
-                    return noAnswerFromVariants();
+                    return rejectedAnswer();
                 }
-            }).orElse(noAnswerFromVariants());      
+            }).orElse(rejectedAnswer());      
         } else {
-            return noAnswerFromVariants();
+            return rejectedAnswer();
         }  
     }
     

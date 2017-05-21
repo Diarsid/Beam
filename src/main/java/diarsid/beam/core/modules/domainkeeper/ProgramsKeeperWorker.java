@@ -105,11 +105,18 @@ class ProgramsKeeperWorker
         if ( hasOne(programs) ) {
             return valueCompletedWith(getOne(programs));
         } else if ( hasMany(programs) ) {
-            Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, weightVariants(pattern, entitiesToVariants(programs)));
+            Answer answer = this.ioEngine.chooseInWeightedVariants(
+                    initiator, weightVariants(pattern, entitiesToVariants(programs)));
             if ( answer.isGiven() ) {
                 return valueCompletedWith(programs.get(answer.index()));
             } else {
-                return valueOperationStopped();
+                if ( answer.isRejection() ) {
+                    return valueOperationStopped();
+                } else if ( answer.variantsAreNotSatisfactory() ) {
+                    return valueCompletedEmpty();
+                } else {
+                    return valueCompletedEmpty();
+                }
             }
         } else {
             return valueCompletedEmpty();

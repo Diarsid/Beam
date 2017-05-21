@@ -81,7 +81,13 @@ class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
         if ( answer.isGiven() ) {
             return valueCompletedWith(entities.get(answer.index()));
         } else {
-            return valueOperationStopped();
+            if ( answer.isRejection() ) {                
+                return valueOperationStopped();
+            } else if ( answer.variantsAreNotSatisfactory() ) {
+                return valueCompletedEmpty();
+            } else {
+                return valueCompletedEmpty();
+            }
         }
     }   
 }

@@ -29,8 +29,7 @@ import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.answerOfVariant;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isNo;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
@@ -41,6 +40,8 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 
 /**
  *
@@ -115,7 +116,7 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
         boolean notResolved = true;
         String line;
         int chosenVariantIndex;
-        Answer answer = noAnswerFromVariants();
+        Answer answer = variantsDontContainSatisfiableAnswer();
         while ( notResolved ) {
             line = this.reader.readLine();            
             if ( isNumeric(line) ) {
@@ -133,7 +134,7 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                     notResolved = false;
                 } else if ( isRejection(line) ) {
                     notResolved = false;
-                    answer = noAnswerFromVariants();
+                    answer = rejectedAnswer();
                 } else {
                     this.printer.printInDialogInviteLine("choose");
                 }
@@ -149,13 +150,13 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
         }
         
         String line;
-        Answer answer = noAnswerFromVariants();
+        Answer answer = variantsDontContainSatisfiableAnswer();
         Choice choice;
         int chosenVariantIndex;
         List<WeightedVariant> similarVariants;
         
         variantsChoosing: while ( variants.next() ) {         
-            answer = noAnswerFromVariants();   
+            answer = variantsDontContainSatisfiableAnswer();   
             if ( variants.currentIsMuchBetterThanNext() ) {
                 this.printer.printYesNoQuestion(variants.current().bestText());
                 choice = choiceOfPattern(this.reader.readLine());
@@ -166,9 +167,11 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                     case NEGATIVE : {
                         continue variantsChoosing;
                     }
-                    case REJECT : 
+                    case REJECT : {
+                        return rejectedAnswer();
+                    }
                     case NOT_MADE : {
-                        return noAnswerFromVariants();
+                        return variantsDontContainSatisfiableAnswer();
                     }    
                     default : {
                         continue variantsChoosing;
@@ -195,7 +198,7 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                         } else if ( isNo(line) ) {
                             continue variantsChoosing;
                         } else if ( isRejection(line) ) {
-                            return noAnswerFromVariants();
+                            return rejectedAnswer();
                         } else {
                             this.printer.printInDialogInviteLine("choose");
                             continue similarVariantsChoosing;

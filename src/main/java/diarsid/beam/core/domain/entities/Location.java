@@ -115,11 +115,6 @@ public class Location
     }
 
     @Override
-    public String toString() {
-        return this.name + " :: " + this.path;
-    }
-
-    @Override
     public int hashCode() {
         int hash = 7;
         hash = 37 * hash + Objects.hashCode(this.name);
@@ -143,5 +138,10 @@ public class Location
             return false;
         }
         return true;
+    }
+    
+    @Override
+    public String toString() {
+        return format("%s (%s)", this.name, this.type().displayName());
     }
 }

@@ -14,11 +14,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.answerOfVariant;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 
 /**
  *
@@ -125,7 +125,7 @@ public class VariantsQuestion implements Serializable {
         if ( hasOne(matches) ) {
             return getOne(matches);
         } else {
-            return noAnswerFromVariants();
+            return variantsDontContainSatisfiableAnswer();
         }
     }
     
@@ -133,7 +133,7 @@ public class VariantsQuestion implements Serializable {
         if ( this.isChoiceInVariantsNaturalRange(choiceNumber) ) {
             return answerOfVariant(this.variants.get(choiceNumber - 1));
         } else {
-            return noAnswerFromVariants();
+            return variantsDontContainSatisfiableAnswer();
         }
     }
 }

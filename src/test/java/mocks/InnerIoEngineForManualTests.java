@@ -21,7 +21,8 @@ import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.REJECT;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
@@ -89,7 +90,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
             boolean notResolved = true;
             String line = "";
             int chosenVariantIndex = -1;
-            Answer answer = noAnswerFromVariants();
+            Answer answer = variantsDontContainSatisfiableAnswer();
             while ( notResolved ) {
                 line = reader.readLine();                
                 if ( isNumeric(line) ) {
@@ -107,7 +108,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
                         notResolved = false;
                     } else if ( isRejection(line) ) {
                         notResolved = false;
-                        answer = noAnswerFromVariants();
+                        answer = rejectedAnswer();
                     } else {
                         System.out.print("choose ");
                     }
@@ -115,7 +116,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
             }
             return answer;
         } catch (Exception e) {
-            return noAnswerFromVariants();
+            return rejectedAnswer();
         } 
     }
 

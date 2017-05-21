@@ -194,7 +194,7 @@ class H2DaoCommands
             if ( nonEmpty(found) ) {
                 return found;
             } else {
-                debug("[DAO COMMANDS FULL] not found : " + pattern);
+                debug("[DAO COMMANDS] not found : " + pattern);
             }
             
             List<String> criterias = patternToCharCriterias(pattern);
@@ -419,7 +419,8 @@ class H2DaoCommands
 
     @Override
     public boolean save(
-            Initiator initiator, InvocationCommand command) {
+            Initiator initiator, InvocationCommand command) {        
+            debug("[DAO COMMANDS] saving: " + command.originalArgument() + ":" + command.stringify());
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean commandExists = transact
@@ -477,6 +478,10 @@ class H2DaoCommands
                 }
             }
             
+            if ( modified > 0 ) {
+                debug("[DAO COMMANDS] saved.");
+            }
+            
             return ( modified > 0 );
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -488,6 +493,7 @@ class H2DaoCommands
     @Override
     public boolean delete(
             Initiator initiator, InvocationCommand command) {
+        debug("[DAO COMMANDS] delete all: " + command.originalArgument() + ":" + command.extendedArgument());
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int result = transact
@@ -515,6 +521,7 @@ class H2DaoCommands
     @Override
     public boolean deleteByExactOriginalOfAllTypes(
             Initiator initiator, String original) {
+        debug("[DAO COMMANDS] delete by original: " + original);
         try {
             return 0 < super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -530,6 +537,7 @@ class H2DaoCommands
     @Override
     public boolean deleteByExactOriginalOfType(
             Initiator initiator, String original, CommandType type) {
+        debug("[DAO COMMANDS] delete by original and type: " + original + ", " + type.name());
         try {
             return 1 == super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -545,6 +553,7 @@ class H2DaoCommands
     @Override
     public boolean deleteByExactExtendedOfType(
             Initiator initiator, String extended, CommandType type) {
+        debug("[DAO COMMANDS] delete by extended and type: " + extended + ", " + type.name());
         try {
             return 1 < super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -560,6 +569,7 @@ class H2DaoCommands
     @Override
     public boolean deleteByPrefixInExtended(
             Initiator initiator, String prefixInExtended, CommandType type) {
+        debug("[DAO COMMANDS] delete by extended-prefix and type: " + prefixInExtended + ", " + type.name());
         try {
             return 1 < super.openDisposableTransaction()
                     .doUpdateVarargParams(

@@ -18,9 +18,9 @@ import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 
 /**
  *
@@ -73,7 +73,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();
-            return noAnswerFromVariants();
+            return rejectedAnswer();
         }
     }
 
@@ -84,7 +84,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         } catch (IOException e) {
             logError(this.getClass(), e);
             exitSystemConsole();
-            return noAnswerFromVariants();
+            return rejectedAnswer();
         }
     }
 

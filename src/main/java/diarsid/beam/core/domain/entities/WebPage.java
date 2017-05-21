@@ -185,4 +185,9 @@ public class WebPage
         return true;
     }
     
+    @Override
+    public String toString() {
+        return format("%s (%s)", this.name, this.type().displayName());
+    }
+    
 }

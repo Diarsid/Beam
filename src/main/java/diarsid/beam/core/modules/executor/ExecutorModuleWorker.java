@@ -44,6 +44,7 @@ import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 
 import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
@@ -83,6 +84,23 @@ import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeStrings;
  * @author Diarsid
  */
 class ExecutorModuleWorker implements ExecutorModule {
+    
+    static enum InvocationType {
+        EXTERNAL {
+            @Override
+            boolean isExternal() {
+                return true;
+            }
+        },
+        INTERNAL {
+            @Override
+            boolean isExternal() {
+                return false;
+            }
+        };
+        
+        abstract boolean isExternal();
+    }
     
     private final DomainKeeperModule domain;
     private final InnerIoEngine ioEngine;
@@ -250,7 +268,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
             case OPEN_LOCATION_TARGET : {
                 this.openLocationTarget(initiator, (OpenLocationTargetCommand) command);
-                break dispatching;
+                break;
             }
             case BROWSE_WEBPAGE : {
                 this.browsePage(initiator, (BrowsePageCommand) command);
@@ -407,7 +425,9 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void openLocationTarget(Initiator initiator, OpenLocationTargetCommand command) {
-        this.domain.commandsMemory().tryToExtendCommand(initiator, command);
+        if ( command.argument().isNotExtended() ) {
+            this.domain.commandsMemory().tryToExtendCommand(initiator, command);
+        }    
         if ( command.argument().isExtended() ) {
             this.openTargetUsingExtendedArgument(command, initiator);
         } else {
@@ -525,7 +545,8 @@ class ExecutorModuleWorker implements ExecutorModule {
                     target = answer.text();
                     this.openTargetAndExtendCommand(initiator, location, target, command);
                 } else {
-                    // do nothing.
+                    this.ioEngine.report(
+                            initiator, format("'%s' not found in %s", target, location.name()));
                 }
             }
         } else {
@@ -692,16 +713,59 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void executeDefault(Initiator initiator, ExecutorDefaultCommand command) {
-        debug("[EXECUTOR] [executeDefault] " + command.argument());
+        debug("[EXECUTOR] [executeDefault] : " + command.argument());
+        // ???
+        debug("[EXECUTOR] [executeDefault] find entity by exact name: " + command.argument());
+        ValueOperation<? extends NamedEntity> entityFlow = this.domain
+                .allEntities()
+                .findByExactName(initiator, command.argument());
+        switch ( entityFlow.result() ) {
+            case COMPLETE : {
+                if ( entityFlow.asComplete().hasValue() ) {
+                    debug("[EXECUTOR] [executeDefault] entity found: " + entityFlow.asComplete().getOrThrow().toString());
+                    VoidOperation invokeFLow = this.invokeFoundEntity(
+                            initiator, entityFlow.asComplete().getOrThrow(), command);
+                    switch ( invokeFLow.result() ) {
+                        case COMPLETE : {
+                            return;
+                        }
+                        case FAIL : {
+                            this.ioEngine.report(initiator, invokeFLow.message());
+                            break; 
+                        }
+                        case STOP : {
+                            return;
+                        }
+                        default : {
+                            // do nothing, just proceed.
+                        }
+                    }
+                }
+                break; 
+            }
+            case FAIL : {
+                this.ioEngine.report(initiator, entityFlow.asFail().reason());
+                break; 
+            }
+            case STOP : {
+                return;
+            }
+            default : {
+                // do nothing, proceed.
+            }            
+        }
+        // ???
+        
         ValueOperation<InvocationCommand> flow = this.domain
                 .commandsMemory()
-                .findStoredCommandByExactOriginalOfAnyType(initiator, command.argument());
+                .findStoredCommandOfAnyType(initiator, command.argument());
         switch ( flow.result() ) {
             case COMPLETE : {
                 if ( flow.asComplete().hasValue() ) {
-                    debug("[EXECUTOR] [executeDefault] [execute saved] " + flow.asComplete().getOrThrow().stringify());
+                    debug("[EXECUTOR] [executeDefault] execute saved command: " + flow.asComplete().getOrThrow().originalArgument() + ":" + flow.asComplete().getOrThrow().extendedArgument());
                     this.dispatchCommandInternally(initiator, flow.asComplete().getOrThrow());
                 } else {
+                    debug("[EXECUTOR] [executeDefault] stored command not found by: " + command.argument());
                     this.proceedDefaultExecution(initiator, command);
                 }
                 break; 
@@ -721,54 +785,53 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
 
     private void proceedDefaultExecution(Initiator initiator, ExecutorDefaultCommand command) {
+        debug("[EXECUTOR] [executeDefault] [proceed] find any named entity" );
         VoidOperation operation = this.findAndInvokeAnyNamedEntity(initiator, command);
         switch ( operation.result() ) {
             case COMPLETE : {
-                debug("[EXECUTOR] [executeDefault] completed." );
-                // entity was found and invoked normally.
                 return;
             }
             case STOP : {
-                // operation has been stopped by user, just retun.
                 return;
             }
             case FAIL : {
                 debug("[EXECUTOR] [executeDefault] entity not found by: " + command.argument());
-                // entity was not found, need to proceed.
-                ValueOperation<InvocationCommand> commandFlow = this.domain
-                        .commandsMemory()
-                        .findStoredCommandByPatternOfAnyType(initiator, command.argument());
-                switch ( commandFlow.result() ) {
-                    case COMPLETE : {
-                        if ( commandFlow.asComplete().hasValue() ) {                            
-                            Optional<InvocationCommand> invocation = 
-                                    command.mergeWith(commandFlow.asComplete().getOrThrow());
-                            if ( invocation.isPresent() ) {
-                                debug("[EXECUTOR] [executeDefault] [merging command] " + invocation.get().stringifyOriginal() + ":" + invocation.get().stringify());
-                                this.dispatchCommandInternally(initiator, invocation.get());
-                            } else {
-                                this.ioEngine.report(
-                                        initiator, format(
-                                                "cannot merge %s command.", 
-                                                invocation.get().type().name()));
-                            }
-                        } else {
-                            this.ioEngine.report(initiator, "not found.");
-                        }
-                        return;
-                    }
-                    case FAIL : {
-                        this.ioEngine.report(initiator, commandFlow.asFail().reason());
-                        return;
-                    }
-                    case STOP : {
-                        return; 
-                    }
-                    default : {
-                        this.ioEngine.report(initiator, "unknown ValueOperation result.");
-                        return; 
-                    }
-                }    
+                return;
+//                // entity was not found, need to proceed.
+//                ValueOperation<InvocationCommand> commandFlow = this.domain
+//                        .commandsMemory()
+//                        .findStoredCommandByPatternOfAnyType(initiator, command.argument());
+//                switch ( commandFlow.result() ) {
+//                    case COMPLETE : {
+//                        if ( commandFlow.asComplete().hasValue() ) {                            
+//                            Optional<InvocationCommand> invocation = 
+//                                    command.mergeWith(commandFlow.asComplete().getOrThrow());
+//                            if ( invocation.isPresent() ) {
+//                                debug("[EXECUTOR] [executeDefault] [merging command] " + invocation.get().stringifyOriginal() + ":" + invocation.get().stringify());
+//                                this.dispatchCommandInternally(initiator, invocation.get());
+//                            } else {
+//                                this.ioEngine.report(
+//                                        initiator, format(
+//                                                "cannot merge %s command.", 
+//                                                invocation.get().type().name()));
+//                            }
+//                        } else {
+//                            this.ioEngine.report(initiator, "not found.");
+//                        }
+//                        return;
+//                    }
+//                    case FAIL : {
+//                        this.ioEngine.report(initiator, commandFlow.asFail().reason());
+//                        return;
+//                    }
+//                    case STOP : {
+//                        return; 
+//                    }
+//                    default : {
+//                        this.ioEngine.report(initiator, "unknown ValueOperation result.");
+//                        return; 
+//                    }
+//                }    
             }
             default : {
                 this.ioEngine.report(initiator, "unknown ValueOperation result.");    
@@ -804,7 +867,7 @@ class ExecutorModuleWorker implements ExecutorModule {
  
     private VoidOperation findAndInvokeAnyNamedEntity(
             Initiator initiator, ExecutorDefaultCommand command) {
-        debug("[EXECUTOR] [executeDefault] [find any entity by] : " + command.argument());
+        debug("[EXECUTOR] [executeDefault] [find and invoke any entity by] : " + command.argument());
         ValueOperation<? extends NamedEntity> valueFlow = 
                 this.findNamedEntityByArgument(initiator, command.argument());
         switch ( valueFlow.result() ) {

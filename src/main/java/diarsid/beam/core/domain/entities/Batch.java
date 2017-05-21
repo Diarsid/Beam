@@ -96,4 +96,9 @@ public class Batch implements NamedEntity {
         }
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return format("%s (%s)", this.name, this.type().displayName());
+    }
 }

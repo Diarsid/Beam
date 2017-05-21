@@ -6,11 +6,13 @@
 
 package diarsid.beam.core.base.control.io.commands.executor;
 
+import java.util.Objects;
+
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
-import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
+import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 
 
 public class BrowsePageCommand extends InvocationCommand {
@@ -45,5 +47,26 @@ public class BrowsePageCommand extends InvocationCommand {
     @Override
     public NamedEntityType subjectedEntityType() {
         return WEBPAGE;
+    } 
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( this.getClass() != obj.getClass() ) {
+            return false;
+        }
+        return super.equals(obj); 
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 13;
+        hash = 71 * hash + Objects.hashCode(this.subjectedEntityType());
+        return super.hashCode() * hash; 
     }
 }

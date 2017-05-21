@@ -120,7 +120,7 @@ public class Program implements NamedEntity {
     
     @Override
     public String toString() {
-        return this.simpleName() + "(" + this.fullName + ")";
+        return format("%s (%s)", this.fullName, this.type().displayName());
     }
     
 }

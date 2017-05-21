@@ -36,41 +36,20 @@ public class Analyze {
     private Analyze() {        
     }
     
-//    public static WeightedVariantsQuestion analyze(String pattern, List<String> variants) {
-//        if ( hasWildcard(pattern) ) {
-//            System.out.println("analyze by patterns!");
-//            WeightedVariantsQuestion result = analyzeByPatternParts(splitByWildcard(pattern), variants);
-//            if ( result.hasAcceptableDiversity() ) {
-//                return result;
-//            } else {
-//                System.out.println("diversity is LOW -> analyze by chars!");
-//                return analyzeCharByChar(removeWildcards(pattern), variants);
-//            }
-//        } else {
-//            System.out.println("analyze by chars!");
-//            return analyzeCharByChar(pattern, variants);
-//        }
-//    }
-    
-    public static void main(String[] args) {
-        //String pattern = "nebeprjo";
-//        String analyzed = "beam_project";
-//        analyzeByPatternParts(splitByWildcard("nebe-prjo"), asList("beam_project", "netbeans_project"));
-        
-        
-        doAll();
-    }
-    
     public static WeightedVariants analyzeStrings(String pattern, List<String> variants) {
         return weightVariants(pattern, stringsToVariants(variants));
     }
-
-    public static void doAll() {
-        List<String> variantsStrings = asList(
-//                "fb",
-//                "fixed beam",
-//                "facebook",
-//                "epicfantasy crossbooking"
+    
+    private static List<String> facebookCase() {
+        return asList(                
+                "fb",
+                "fixed beam",
+                "facebook",
+                "epicfantasy crossbooking");
+    }
+    
+    private static List<String> beamProjectCase() {
+        return asList(
                 "beam_project_home",
                 "beam_project",
                 "beam_home",
@@ -81,9 +60,17 @@ public class Analyze {
                 "abe_netpro",
                 "babel_pro",
                 "netbeans_projects", 
-                "beam_server_project"
-        );
-        String pattern = "beprjo";
+                "beam_server_project");
+    }
+    
+    private static List<String> readListCase() {
+        return asList("Books/list_to_read.txt", "Tech/CS/Algorithms");
+    }
+
+    public static void doAll() {
+        List<String> variantsStrings = beamProjectCase();
+        
+        String pattern = "beaprjo";
         
         System.out.println("variants: " + variantsStrings.size());
         WeightedVariants variants = analyzeStrings(pattern, variantsStrings);
@@ -103,58 +90,6 @@ public class Analyze {
         }
         System.out.println("printed: " + printed.get());
     }
-    
-//    private static WeightedVariantsQuestion analyzeByPatternParts(
-//            List<String> patternParts, List<String> variants) {
-//        List<WeightedVariant> results = new ArrayList<>();
-//        patternParts = lower(patternParts);
-//        double minWeight = MAX_VALUE;
-//        double maxWeight = MIN_VALUE;
-//        
-//        int patternPartIndex;
-//        double variantWeight;
-//        int wordsInVariantQty;
-//        String analyzedVariant;
-//        String originalVariant;
-//        
-//        for (int variantIndex = 0; variantIndex < variants.size(); variantIndex++) {
-//            originalVariant = variants.get(variantIndex);
-//            System.out.println("analyze -> " + originalVariant);
-//            analyzedVariant = lower(originalVariant);
-//            wordsInVariantQty = countWords(analyzedVariant);
-//            variantWeight = 7.0 + ( ( wordsInVariantQty - 1.0 ) * 4.0 ) + (analyzedVariant.length() / wordsInVariantQty);
-//            
-//            for (String patternPart : patternParts) {
-//                System.out.println("pattern part : " + patternPart);
-//                patternPartIndex = analyzedVariant.indexOf(patternPart);
-//                if ( patternPartIndex == 0 ) {
-//                    variantWeight = variantWeight - 5.0;
-//                } else if ( patternPartIndex < 0 ) {
-//                    System.out.println(patternPart + " not found!");
-//                    if ( patternAdvancedSearch(patternPart, analyzedVariant) ) {
-//                        System.out.println(patternPart + " found using advanced!");
-//                        variantWeight = variantWeight + 2.0;
-//                    } else {
-//                        variantWeight = ( variantWeight * 1.8 ) + 6.0;
-//                    }
-//                } else if ( ! isWordsSeparator(analyzedVariant.charAt(patternPartIndex - 1)) ) {
-//                    variantWeight = variantWeight + patternPartIndex * 1.0;                           
-//                }
-//            }
-//            results.add(new WeightedVariant(originalVariant, variantWeight, variantIndex));
-//            if ( variantWeight > maxWeight ) {
-//                maxWeight = variantWeight;
-//            }
-//            if ( variantWeight < minWeight ) {
-//                minWeight = variantWeight;
-//            }
-//            System.out.println(originalVariant + " weight: " + variantWeight);
-//        }
-//        double delta = minWeight;
-//        results.forEach(adbjustedVariant -> adbjustedVariant.adjustWeight(delta));
-//        System.out.println(format("analyze by patterns diversity: min=%s max=%s", minWeight, maxWeight));
-//        return new WeightedVariantsQuestion(results, isDiversitySufficient(minWeight, maxWeight));
-//    }
     
     private static boolean patternAdvancedSearch(String pattern, String analyzed) {
         int patternLength = pattern.length();
@@ -245,7 +180,6 @@ public class Analyze {
         double variantWeight;
         char[] patternChars;
         int currentCharPosition;
-        int previousCharPosition;
         int possibleBetterCurrentCharPosition;
         char currentChar;
         
@@ -322,7 +256,6 @@ public class Analyze {
                     continue;
                 }
                 if ( currentPosition == 0 ) {
-                    //variantWeight = variantWeight - 8;
                     containsFirstChar = true;
                 }
                 if ( i < positions.length - 1 ) { 
@@ -330,14 +263,14 @@ public class Analyze {
                     if ( currentPosition == nextPosition - 1 ) {                    
                         if ( clusterContinuation ) {                        
                             clustered++;
-                            clustersWeight++;
+                            //clustersWeight++;
                             currentClusterLength++;
                         } else {                        
                             clustered++;
                             clustersQty++;
                             clusterContinuation = true;
                             currentClusterLength = 1;
-                            clustersWeight = clustersWeight + currentPosition;                        
+                            clustersWeight = clustersWeight + ( currentPosition / 2 );                        
                             if ( currentPosition > 0 ) {
                                 if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
                                     variantWeight = variantWeight - 4;
@@ -347,7 +280,7 @@ public class Analyze {
                     } else {
                         if ( clusterContinuation ) {
                             clustered++;
-                            clustersWeight++;
+                            //clustersWeight++;
                             clusterContinuation = false;
                         } else {
                             nonClustered++;
@@ -361,7 +294,7 @@ public class Analyze {
                     }                    
                     if ( clusterContinuation ) {
                         clustered++;
-                        clustersWeight++;
+                        //clustersWeight++;
                     } else {
                         nonClustered++;
                     }
@@ -371,27 +304,28 @@ public class Analyze {
             firstCharsMatchInVariantAndPattern = ( pattern.charAt(0) == variantText.charAt(0) );
             variantWeight = variantWeight + (
                     ( nonClustered * 5.3 ) 
-                    - ( clustered * 2.6 ) 
+                    - ( clustered * 4.6 ) 
                     - ( firstCharMatchRatio(containsFirstChar) )
+                    - ( clustersImportanceDependingOn(clustersQty, clustered, nonClustered) )
                     + ( clustersWeight * clusterWeightRatioDependingOn(
                             containsFirstChar, 
                             firstCharsMatchInVariantAndPattern) ) 
                     - ( clustersQty * 5.4 ) 
-                    + ( missed * 14.0 )
+                    + ( missedRatio(missed) )
                     + (( variantText.length() - clustered ) * 0.8 ) 
                     + ( sortingSteps * 5.7 ) );            
-            if ( (clustered < 2 ) && ( sortingSteps > 0 ) ) {
+            if ( ( clustered < 2 ) && ( sortingSteps > 0 ) ) {
                 variantWeight = variantWeight * 1.8;
             }
             String positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
             System.out.println(variantText + ", positions: " + positionsS);
-    //        System.out.println(String.format("   %-15s %s", "clusters", clustersQty));
-    //        System.out.println(String.format("   %-15s %s", "clustered", clustered));
-    //        System.out.println(String.format("   %-15s %s", "clusters weight", clustersWeight));
-    //        System.out.println(String.format("   %-15s %s", "non clustered", nonClustered));
-    //        System.out.println(String.format("   %-15s %s", "missed", missed));
-    //        System.out.println(String.format("   %-15s %s", "sort steps", sortingSteps));
-    //        System.out.println(String.format("   %-15s %s", "total weight", totalWeight));
+            System.out.println(String.format("   %-15s %s", "clusters", clustersQty));
+            System.out.println(String.format("   %-15s %s", "clustered", clustered));
+            System.out.println(String.format("   %-15s %s", "clusters weight", clustersWeight));
+            System.out.println(String.format("   %-15s %s", "non clustered", nonClustered));
+            System.out.println(String.format("   %-15s %s", "missed", missed));
+            System.out.println(String.format("   %-15s %s", "sort steps", sortingSteps));
+            System.out.println(String.format("   %-15s %s", "total weight", variantWeight));
             if ( variantWeight < minWeight ) {
                 minWeight = variantWeight;
             }
@@ -402,15 +336,15 @@ public class Analyze {
             newVariant = new WeightedVariant(variant, variantWeight);
             if ( newVariant.hasDisplayText() ) {
                 debug("[ANALYZE] " + newVariant.text() + ":" + newVariant.displayText());
-                if ( variantsByDisplay.containsKey(variant.displayText()) ) {
-                    prevVariant = variantsByDisplay.get(newVariant.displayText());
+                if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {
+                    prevVariant = variantsByDisplay.get(lower(newVariant.displayText()));
                     if ( newVariant.betterThan(prevVariant) ) {
                         debug("[ANALYZE] [DUPLICATE] " + newVariant.text() + " is better than: " + prevVariant.text());
-                        variantsByDisplay.put(newVariant.displayText(), newVariant);
+                        variantsByDisplay.put(lower(newVariant.displayText()), newVariant);
                         weightedVariants.add(newVariant);
                     } 
                 } else {
-                    variantsByDisplay.put(newVariant.displayText(), newVariant);
+                    variantsByDisplay.put(lower(newVariant.displayText()), newVariant);
                     weightedVariants.add(newVariant);
                 }
             } else {
@@ -420,15 +354,43 @@ public class Analyze {
         
         double delta = minWeight;
         weightedVariants.forEach(adjustedVariant -> adjustedVariant.adjustWeight(delta));
-//        weightedVariants.stream().sorted().forEach(candidate -> System.out.println(format("%s : %s", candidate.weight(), candidate.text())));
         sort(weightedVariants);
         shrink(weightedVariants, 11);
-        debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());
+        debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());        
+        weightedVariants
+                .stream()
+                .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
+    }
+
+    private static double missedRatio(int missed) {
+        return ( ( missed * 1.0) - 0.8 ) * 14.0;
     }
 
     private static boolean isDiversitySufficient(double minWeight, double maxWeight) {
         return ((maxWeight - minWeight) > (minWeight * 0.25));
+    }
+    
+    public static void main(String[] args) {        
+        doAll();
+    }
+    
+    private static int CLUSTER_QTY_TRESHOLD = 4;
+    private static double clustersImportanceDependingOn(
+            int clustersQty, int clustered, int nonClustered) {
+        if ( clustersQty == 0 ) {
+            return CLUSTER_QTY_TRESHOLD * nonClustered * -1.0 ;
+        }
+        if ( nonClustered == 0 ) {
+            return clustered * clustered * 1.0;
+        }
+        if ( clustersQty > CLUSTER_QTY_TRESHOLD ) {
+            return ( clustersQty - CLUSTER_QTY_TRESHOLD ) * -8.34;
+        }
+        
+        return ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
+                ( 1.0 + ( ( clustered * 1.0 ) / ( nonClustered * 1.0 ) ) ) * 
+                ( ( ( clustered * 1.0 ) / ( clustersQty * 1.0 ) ) * 0.8 - 0.79 ) + ( ( clustered - 2 ) * 1.0 ) ;
     }
     
     private static double clusterWeightRatioDependingOn(
@@ -437,7 +399,7 @@ public class Analyze {
         if ( containsFirstChar ) {
             if ( firstCharsMatchInVariantAndPattern ) {
                 System.out.println("first chars matches!");
-                return 1.1;
+                return 0.9;
             } else {
                 return 1.5;                
             }

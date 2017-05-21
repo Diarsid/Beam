@@ -173,7 +173,13 @@ public class WebPagesKeeperWorker
         if ( answer.isGiven() ) {
             return valueCompletedWith(pages.get(answer.index()));
         } else {
-            return valueOperationStopped();
+            if ( answer.isRejection() ) {
+                return valueOperationStopped();
+            } else if ( answer.variantsAreNotSatisfactory() ) {
+                return valueCompletedEmpty();
+            } else {
+                return valueCompletedEmpty();
+            }
         }
     }
 

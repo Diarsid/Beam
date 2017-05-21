@@ -86,15 +86,16 @@ class H2DaoNamedEntities
                         lower(name));
             }        
             case WEBPAGE : {
+                String lowerName = lower(name);
                 return transact.doQueryAndConvertFirstRowVarargParams(
                         WebPage.class,
                         "SELECT name, shortcuts, url, ordering, dir_id " +
                         "FROM web_pages " +
-                        "WHERE ( LOWER(name) IS ? ) ",
+                        "WHERE ( LOWER(name) IS ? ) OR ( LOWER(shortcuts) IS ? ) ",
                         (row) -> {
                             return Optional.of(ROW_TO_PAGE.convert(row));
                         },
-                        lower(name));
+                        lowerName, lowerName);
             }        
             case PROGRAM : {
                 debug("[ALL ENTITIES DAO] [find real program] " + name);
@@ -164,12 +165,13 @@ class H2DaoNamedEntities
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE LOWER(name) IS ? ",
+                            "WHERE ( LOWER(name) IS ? ) OR ( LOWER(shortcuts) IS ? ) ",
                             (row) -> {
                                 return new NamedEntityMask(row);
                             },
                             lowerExactName, 
                             lowerExactName, 
+                            lowerExactName,
                             lowerExactName)
                     .collect(toList());
             
@@ -214,10 +216,11 @@ class H2DaoNamedEntities
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE LOWER(name) LIKE ? ",
+                            "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(name) LIKE ? )",
                             this.rowToNamedEntity,
                             lowerNamePattern, 
                             lowerNamePattern, 
+                            lowerNamePattern,
                             lowerNamePattern)
                     .collect(toList());
             

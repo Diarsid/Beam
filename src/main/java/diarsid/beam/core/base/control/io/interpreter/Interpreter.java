@@ -184,7 +184,9 @@ public class Interpreter {
                                         controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").with(argumentsFor(CREATE_WEB_DIR)),
+                                                "directory",
+                                                "webdir",
+                                                "webdirectory").with(argumentsFor(CREATE_WEB_DIR)),
                                         controlWords(
                                                 "page", 
                                                 "webpage", 

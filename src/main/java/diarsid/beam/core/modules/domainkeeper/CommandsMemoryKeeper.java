@@ -16,11 +16,11 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
  */
 public interface CommandsMemoryKeeper {
     
-    ValueOperation<InvocationCommand> findStoredCommandByExactOriginalOfAnyType(
+    ValueOperation<InvocationCommand> findStoredCommandOfAnyType(
             Initiator initiator, String original); 
     
-    ValueOperation<InvocationCommand> findStoredCommandByPatternOfAnyType(
-            Initiator initiator, String pattern);
+//    ValueOperation<InvocationCommand> findStoredCommandByPatternOfAnyType(
+//            Initiator initiator, String pattern);
     
     void tryToExtendCommand(
             Initiator initiator, InvocationCommand command);

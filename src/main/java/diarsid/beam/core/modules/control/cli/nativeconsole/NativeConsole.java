@@ -21,8 +21,8 @@ import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Answer.noAnswerFromVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 
 /**
  *
@@ -76,16 +76,16 @@ public class NativeConsole
         try {
             String answer = inputManager.waitForResponse();
         } catch (InterruptedException e) {
-            return noAnswerFromVariants();
+            return rejectedAnswer();
         }
         // ...
-        return noAnswerFromVariants();
+        return rejectedAnswer();
     }
 
     @Override
     public Answer resolve(WeightedVariants variants) throws IOException {
         // ...
-        return noAnswerFromVariants();
+        return rejectedAnswer();
     }
 
     @Override

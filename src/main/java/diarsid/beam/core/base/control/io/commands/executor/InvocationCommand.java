@@ -42,7 +42,7 @@ public abstract class InvocationCommand implements ExecutorCommand {
     public abstract NamedEntityType subjectedEntityType();
     
     @Override
-    public boolean isInvocation() {
+    public final boolean isInvocation() {
         return true;
     }    
     

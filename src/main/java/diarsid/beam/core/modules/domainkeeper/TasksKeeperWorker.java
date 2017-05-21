@@ -34,6 +34,8 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
@@ -58,9 +60,6 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 
 
 public class TasksKeeperWorker implements TasksKeeper {

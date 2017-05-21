@@ -130,7 +130,13 @@ class BatchesKeeperWorker
         if ( answer.isGiven() ) {
             return this.findByExactName(initiator, answer.text());
         } else {
-            return valueOperationStopped();
+            if ( answer.isRejection() ) {
+                return valueOperationStopped();
+            } else if ( answer.variantsAreNotSatisfactory() ) {
+                return valueCompletedEmpty();
+            } else {
+                return valueCompletedEmpty();
+            }
         }
     }
     
