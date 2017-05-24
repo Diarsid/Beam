@@ -141,7 +141,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private void deleteCommandIfNecessary(
             Initiator initiator, InvocationCommand command) {
-        if ( command.wasUsedBeforeAndStored() && command.isTargetNotFound() ) {
+        if ( command.wasUsedBeforeAndStored() ) {
             this.domain.commandsMemory().remove(initiator, command);
         }
     }
@@ -512,6 +512,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private void doWhenLocationFoundFromExtended(
             Initiator initiator, OpenLocationTargetCommand command, Location location) {
+        debug("[location found from extended] " + location.name());
         String target;
         target = command.extendedTarget();
         if ( location.has(target) ) {
@@ -566,7 +567,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         location.openAsync(
                 target,
                 this.thenDoOnSuccess(initiator, command),
-                this.thenDoOnFail(initiator));
+                this.thenDoOnFail(initiator, command));
     }
 
     @Override

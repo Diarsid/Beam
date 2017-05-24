@@ -27,7 +27,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Choice.REJECT;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
-import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
 /**
  *
@@ -48,7 +48,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
             boolean answerIsNotGiven = true;
             while ( answerIsNotGiven ) {                
                 System.out.print("fake io > " + inputQuestion + " : ");
-                input = normalize(this.reader.readLine());
+                input = normalizeSpaces(this.reader.readLine());
                 if ( isRejection(input) ) {
                     input = "";
                     answerIsNotGiven = false;

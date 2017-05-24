@@ -40,6 +40,7 @@ public class ConsolePrinter {
     }
     
     void printNonDialogReportLine(String report) throws IOException {
+        this.writer.newLine();
         this.writer.write(format("Beam[ndr] > %s", report));
         this.writer.newLine();
         this.writer.write("Beam[ndr] > ");

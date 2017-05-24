@@ -56,7 +56,7 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recogniz
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.prefixes;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.relativePath;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.singleArg;
-import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
 /**
  * Class that interprets CLI input commands and transforms them into
@@ -274,6 +274,6 @@ public class Interpreter {
     }
     
     public Command interprete(String inputString) {
-        return this.decisionTree.assess(new Input(normalize(inputString)));
+        return this.decisionTree.assess(new Input(normalizeSpaces(inputString)));
     }
 }

@@ -242,7 +242,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             } else if ( hasMany(foundCommands) ) {
                 debug("[COMMANDS MEMORY] found many by original in extended: " + original + " -> " + foundCommands);
                 WeightedVariants variants = 
-                    weightVariants(original, commandsToVariants(foundCommands));
+                        weightVariants(original, commandsToVariants(foundCommands));
                 Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
                 if ( answer.isGiven() ) {                    
                     InvocationCommand newCommand = createInvocationCommandFrom(

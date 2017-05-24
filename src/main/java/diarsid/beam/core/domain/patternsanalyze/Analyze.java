@@ -33,11 +33,20 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class Analyze {
     
+    
+    // TODO sorting steps should tolerate good clusters.
     private Analyze() {        
     }
     
     public static WeightedVariants analyzeStrings(String pattern, List<String> variants) {
         return weightVariants(pattern, stringsToVariants(variants));
+    }
+    
+    private static List<String> javapathCase() {
+        return asList(
+                "Engines/java/path", 
+                "Books/Tech/Java/JavaFX", 
+                "Books/Tech/Java");
     }
     
     private static List<String> facebookCase() {
@@ -68,9 +77,20 @@ public class Analyze {
     }
 
     public static void doAll() {
-        List<String> variantsStrings = beamProjectCase();
+//        weightAnalyzeCases();
+
+        analyzeImportance();
+    }
+
+    private static void analyzeImportance() {
+        System.out.println(clustersImportanceDependingOn(1, 4, 3));
+        System.out.println(clustersImportanceDependingOn(1, 2, 5));
+    }
+
+    private static void weightAnalyzeCases() {
+        List<String> variantsStrings = javapathCase();
         
-        String pattern = "beaprjo";
+        String pattern = "pathjab";
         
         System.out.println("variants: " + variantsStrings.size());
         WeightedVariants variants = analyzeStrings(pattern, variantsStrings);
@@ -83,8 +103,8 @@ public class Analyze {
                 List<WeightedVariant> similar = variants.nextSimilarVariants();
                 System.out.println("next candidates are similar: ");                
                 similar.stream().forEach(candidate -> {
-                        System.out.println("  - " + candidate.text() + " : " + candidate.weight());
-                        printed.incrementAndGet();
+                    System.out.println("  - " + candidate.text() + " : " + candidate.weight());
+                    printed.incrementAndGet();
                 });
             }
         }
@@ -388,7 +408,7 @@ public class Analyze {
             return ( clustersQty - CLUSTER_QTY_TRESHOLD ) * -8.34;
         }
         
-        return ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
+        return 1.32 * ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
                 ( 1.0 + ( ( clustered * 1.0 ) / ( nonClustered * 1.0 ) ) ) * 
                 ( ( ( clustered * 1.0 ) / ( clustersQty * 1.0 ) ) * 0.8 - 0.79 ) + ( ( clustered - 2 ) * 1.0 ) ;
     }

@@ -57,34 +57,8 @@ public class StringUtils {
     }
     
     public static String normalizeSpaces(String target) {
-        return target.replaceAll("\\s+", " ");
+        return target.replaceAll("\\s+", " ").trim();
     }
-    
-    // TODO 1__Projects ??? __ -> _
-    public static String normalize(String target) {
-        return target
-                // replaces multiple spaces with single space
-                .replaceAll("\\s+", " ")
-                // eliminates wildcards before pattern: -xxx -> xxx
-                .replaceAll(" -+", " ")
-                // replaces multiple wildcard with single: xxx---yyy -> xxx-yyy
-                .replaceAll("-+", "-")
-                // eliminates trailing wildcards: xxx-yyy- -> xxx-yyy
-                .replaceAll("-+ ", " ")
-                .replaceAll("_+", "_")
-                .replaceAll(" _+", " ")
-                .replaceAll("_+ ", "_")
-                .replaceAll("-$", "")
-                .replaceAll("_$", "")
-                .trim();
-    }
-
-//    public static List<String> splitByWildcard(String target) {        
-//        return stream(target.split("-+"))
-//                .filter(string -> !string.matches("\\s+"))
-//                .map(string -> string.trim())
-//                .collect(toList());
-//    }
     
     public static String removeWildcards(String target) {
         return target.replaceAll("-+", "");

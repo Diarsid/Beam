@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
@@ -332,8 +331,9 @@ public class SqlUtil {
     }
     
     public static void main(String[] args) {
-        List<String> list = asList("1", "2");
-        System.out.println(shift(list).stream().collect(joining(", ")));
+//        List<String> list = asList("1", "_", "2", "_");
+//        System.out.println(shift(list).stream().collect(joining(", ")));
+        System.out.println(patternToCharCriterias("b__k"));
     }
     
     public static List<String> patternToCharCriterias(String pattern) {
@@ -344,12 +344,26 @@ public class SqlUtil {
         for (int i = 0; i < chars.length; i++) {
             character = chars[i];
             criteria = criterias.get(character);
-            if ( isNull(criteria) ) {
-                criterias.put(character, "%" + character + "%");
+            if ( isSqlWildcard(character) ) {
+                // add escape character before any underscore in order 
+                // to treat them as usual chars and not as wildcard.
+                if ( isNull(criteria) ) {
+                    criterias.put(character, "%\\" + character + "%");
+                } else {
+                    criterias.put(character, criteria + "\\" + character + "%");
+                }
             } else {
-                criterias.put(character, criteria + character + "%");
-            }            
+                if ( isNull(criteria) ) {
+                    criterias.put(character, "%" + character + "%");
+                } else {
+                    criterias.put(character, criteria + character + "%");
+                } 
+            }        
         }
         return new ArrayList(criterias.values());
+    }
+    
+    private static boolean isSqlWildcard(char character) {
+        return character == '_';
     }
 }

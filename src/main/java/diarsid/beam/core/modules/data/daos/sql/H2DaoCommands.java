@@ -479,7 +479,7 @@ class H2DaoCommands
             }
             
             if ( modified > 0 ) {
-                debug("[DAO COMMANDS] saved.");
+                debug("[DAO COMMANDS] saved: " + modified);
             }
             
             return ( modified > 0 );
@@ -496,21 +496,25 @@ class H2DaoCommands
         debug("[DAO COMMANDS] delete all: " + command.originalArgument() + ":" + command.extendedArgument());
         try (JdbcTransaction transact = super.openTransaction()) {
             
-            int result = transact
+            int modified = transact
                     .doUpdateVarargParams(
                             "DELETE FROM commands " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ",
                             lower(command.originalArgument()), command.type());
             
             if ( command.argument().isExtended() ) {
-                result = result + transact
+                modified = modified + transact
                         .doUpdateVarargParams(
                                 "DELETE FROM commands " +
                                 "WHERE ( LOWER(com_extended) IS ? ) AND ( com_type IS ? ) ",
                                 lower(command.extendedArgument()), command.type());
             }
             
-            return ( result > 0 );
+            if ( modified > 0 ) {
+                debug("[DAO COMMANDS] deleted: " + modified);
+            }
+            
+            return ( modified > 0 );
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

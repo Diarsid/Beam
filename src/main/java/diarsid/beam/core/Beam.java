@@ -6,8 +6,12 @@ package diarsid.beam.core;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.util.Logs;
+import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
+import diarsid.beam.core.modules.TasksWatcherModule;
+import diarsid.beam.core.modules.WebModule;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
@@ -50,23 +54,16 @@ public class Beam {
     }
     
     private static void setJVMShutdownHook() {
-        Runnable shutdownCallback = new Runnable() {
-            @Override
-            public void run() {
-                Container container = GemInjector.getContainer(CORE_CONTAINER);                
-                container.getModule(IoModule.class).stopModule();
-                container.getModule(RemoteManagerModule.class).stopModule();
-//                container.getModule(TaskManagerModule.class).stopModule();
-//                container.getModule(ExecutorModule.class).stopModule();
-//                container.getModule(DataModule.class).stopModule();
-//                container.getModule(WebModule.class).stopModule();
-//                container.getModule(RmiModule.class).stopModule();
-//                container.getModule(IoInnerModule.class).stopModule();        
-//                container.getModule(OldIoModule.class).stopModule();
-                log(Beam.class, "JVM shutdown: Beam.core modules stopped");
-            }
-        };
-        Runtime.getRuntime().addShutdownHook(new Thread(shutdownCallback));        
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Container container = GemInjector.getContainer(CORE_CONTAINER);
+            container.getModule(IoModule.class).stopModule();
+            container.getModule(RemoteManagerModule.class).stopModule();
+            container.getModule(TasksWatcherModule.class).stopModule();
+            container.getModule(ExecutorModule.class).stopModule();
+            container.getModule(DataModule.class).stopModule();
+            container.getModule(WebModule.class).stopModule();
+            log(Beam.class, "JVM shutdown: Beam.core modules stopped");
+        }));        
     }
     
     public static Initiator getSystemInitiator() {

@@ -33,7 +33,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
-import static diarsid.beam.core.base.util.StringUtils.normalize;
+import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.SIMPLE_PATH_RULE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
@@ -163,7 +163,7 @@ class NotesKeeperWorker implements NotesKeeper {
         if ( noteName.isEmpty() ) {
             noteName = now().format(ISO_LOCAL_DATE_TIME).replace(':', '-');
         } else {
-            noteName = normalize(noteName);
+            noteName = normalizeSpaces(noteName);
             if ( containsPathSeparator(noteName) ) {
                 noteName = helper.validateInteractively(
                         initiator, noteName, "note path", SIMPLE_PATH_RULE);

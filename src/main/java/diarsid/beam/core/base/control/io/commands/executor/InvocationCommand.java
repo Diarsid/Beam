@@ -11,6 +11,8 @@ import java.util.Objects;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.STORED;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
@@ -127,5 +129,13 @@ public abstract class InvocationCommand implements ExecutorCommand {
     
     public boolean isTargetNotFound() {
         return this.targetState.equals(TARGET_NOT_FOUND);
-    }   
+    }          
+
+    @Override
+    public String toString() {
+        return format("%s[%s:%s]", 
+                this.getClass().getSimpleName(),
+                this.argument().original(), 
+                this.argument().extended());
+    }
 }

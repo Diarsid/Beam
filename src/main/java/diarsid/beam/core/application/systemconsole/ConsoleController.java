@@ -30,6 +30,8 @@ import static java.util.Objects.isNull;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isNo;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
@@ -39,9 +41,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
-import static diarsid.beam.core.base.util.StringUtils.normalize;
-import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
-import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
+import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
 /**
  *
@@ -129,14 +129,19 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                     this.printer.printInDialogInviteLine("choose");
                 }
             } else {
-                answer = question.ifPartOfAnyVariant(line);
-                if ( answer.isGiven() ) {
-                    notResolved = false;
-                } else if ( isRejection(line) ) {
+                if ( isRejection(line) ) {
                     notResolved = false;
                     answer = rejectedAnswer();
+                } else if ( isNo(line) ) {
+                    notResolved = false;
+                    answer = variantsDontContainSatisfiableAnswer();
                 } else {
-                    this.printer.printInDialogInviteLine("choose");
+                    answer = question.ifPartOfAnyVariant(line);
+                    if ( answer.isGiven() ) {
+                        notResolved = false;
+                    } else {
+                        this.printer.printInDialogInviteLine("choose");
+                    }                    
                 }
             }
         }
@@ -192,16 +197,18 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
                             continue similarVariantsChoosing;
                         }
                     } else {
-                        answer = variants.ifPartOfAnySimilarVariant(line);
-                        if ( answer.isGiven() ) {
-                            return answer;
-                        } else if ( isNo(line) ) {
+                        if ( isNo(line) ) {
                             continue variantsChoosing;
                         } else if ( isRejection(line) ) {
                             return rejectedAnswer();
                         } else {
-                            this.printer.printInDialogInviteLine("choose");
-                            continue similarVariantsChoosing;
+                            answer = variants.ifPartOfAnySimilarVariant(line);
+                            if ( answer.isGiven() ) {
+                                return answer;
+                            } else {
+                                this.printer.printInDialogInviteLine("choose");
+                                continue similarVariantsChoosing;
+                            }                            
                         }
                     }
                 }                
@@ -216,7 +223,7 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
         boolean answerIsNotGiven = true;
         while ( answerIsNotGiven ) {
             this.printer.printInDialogInviteLine(inputRequest);
-            input = normalize(this.reader.readLine());
+            input = normalizeSpaces(this.reader.readLine());
             if ( isRejection(input) ) {
                 input = "";
                 answerIsNotGiven = false;
