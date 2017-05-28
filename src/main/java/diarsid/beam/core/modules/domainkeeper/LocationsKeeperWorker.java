@@ -127,6 +127,7 @@ class LocationsKeeperWorker
         return this.findExactlyOneLocationByPattern(initiator, locationNamePattern);
     }
     
+    // TODO more flexible 'find' algorithm
     @Override
     public ValueOperation<Location> findLocation(
             Initiator initiator, ArgumentsCommand command) {

@@ -142,6 +142,7 @@ class WebDirectoriesKeeperWorker
             }
             if ( foundDirs.isEmpty() ) {
                 this.ioEngine.report(initiator, "not found.");
+                name = "";
             }
         } while ( foundDirs.isEmpty() );
         
@@ -328,14 +329,14 @@ class WebDirectoriesKeeperWorker
         } else {
             name = "";
             place = UNDEFINED_PLACE;
-        }
-        
-        Choice needWithPages = this.ioEngine.ask(initiator, "with pages");        
+        }     
         
         Optional<WebDirectory> searched = this.discussExistingDirectoryBy(initiator, name, place);
         if ( ! searched.isPresent() ) {
             return valueOperationStopped();
         }
+        
+        Choice needWithPages = this.ioEngine.ask(initiator, "with pages");   
         
         if ( needWithPages.isPositive() ) {
             Optional<WebDirectoryPages> directoryWithPages = 

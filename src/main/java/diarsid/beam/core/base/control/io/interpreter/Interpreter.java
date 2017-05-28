@@ -29,6 +29,11 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIRECTORY;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
@@ -85,190 +90,191 @@ public class Interpreter {
     
     private Recognizer prepareRecognizersTree() {
         
-        return correctInput().withAny(
-                singleArg().priority(HIGH).withAny(
+        return correctInput().andAny(
+                singleArg().priority(HIGH).andAny(
                         prefixes(
                                 "/", 
-                                "l/").withAny(
-                                        domainWord().with(executable(OPEN_LOCATION)),
-                                        relativePath().with(executable(OPEN_LOCATION_TARGET))),
+                                "l/").andAny(
+                                        domainWord().and(executable(OPEN_LOCATION)),
+                                        relativePath().and(executable(OPEN_LOCATION_TARGET))),
                         prefixes(
                                 "w/", 
-                                "i/").with(domainWord().with(executable(BROWSE_WEBPAGE))),
+                                "i/").and(domainWord().and(executable(BROWSE_WEBPAGE))),
                         prefixes(
                                 "r/", 
-                                "p/").withAny(
-                                        domainWord().with(executable(RUN_PROGRAM)),
-                                        relativePath().with(executable(RUN_PROGRAM))),
+                                "p/").andAny(
+                                        domainWord().and(executable(RUN_PROGRAM)),
+                                        relativePath().and(executable(RUN_PROGRAM))),
                         prefixes(
                                 "b/", 
                                 "e/", 
-                                "c/").with(domainWord().with(executable(CALL_BATCH))),
-                        controlWord("exit").with(only(EXIT)),
-                        controlWord("close").with(only(CLOSE_CONSOLE)),
+                                "c/").and(domainWord().and(executable(CALL_BATCH))),
+                        controlWord("exit").and(only(EXIT)),
+                        controlWord("close").and(only(CLOSE_CONSOLE)),
                         controlWords(
                                 "n", 
                                 "note", 
-                                "notes").withAny(
+                                "notes").andAny(
                                         controlWords(
                                                 "+", 
                                                 "new", 
                                                 "add", 
-                                                "create").with(argumentsFor(CREATE_NOTE)),
+                                                "create").and(argumentsFor(CREATE_NOTE)),
                                         only(OPEN_NOTES)),
-                        domainWord().priority(LOWEST).with(executable(EXECUTOR_DEFAULT)), 
-                        relativePath().priority(LOWER).with(executable(OPEN_LOCATION_TARGET))),
-                multipleArgs().withAny(controlWords(
+                        domainWord().priority(LOWEST).and(executable(EXECUTOR_DEFAULT)), 
+                        relativePath().priority(LOWER).and(executable(OPEN_LOCATION_TARGET))),
+                multipleArgs().andAny(
+                        controlWords(
                                 "see", 
                                 "www",
-                                "browse").priority(HIGH).with(domainWord().with(executable(BROWSE_WEBPAGE))), 
+                                "browse").priority(HIGH).and(domainWord().and(executable(BROWSE_WEBPAGE))), 
                         controlWords(
                                 "o", 
                                 "op", 
-                                "open").priority(HIGH).withAny(
-                                        domainWord().with(executable(OPEN_LOCATION)),
-                                        relativePath().with(executable(OPEN_LOCATION_TARGET))),
+                                "open").priority(HIGH).andAny(
+                                        domainWord().and(executable(OPEN_LOCATION)),
+                                        relativePath().and(executable(OPEN_LOCATION_TARGET))),
                         controlWords(
                                 "call", 
                                 "exe", 
-                                "exec").priority(HIGH).with(domainWord().with(executable(CALL_BATCH))), 
+                                "exec").priority(HIGH).and(domainWord().and(executable(CALL_BATCH))), 
                         controlWords(
                                 "r", 
-                                "run").priority(HIGH).withAny(
-                                        domainWord().with(executable(RUN_PROGRAM)),
-                                        relativePath().with(executable(RUN_PROGRAM))),
-                        controlWord("start").priority(HIGH).withAny(
-                                        domainWord().with(executableWith(RUN_PROGRAM, "start")),
-                                        relativePath().with(executableWith(RUN_PROGRAM, "start"))),
-                        controlWord("stop").priority(HIGH).withAny(
-                                        domainWord().with(executableWith(RUN_PROGRAM, "stop")),
-                                        relativePath().with(executableWith(RUN_PROGRAM, "stop"))),
-                        controlWord("pause").priority(HIGH).with(pause()),
+                                "run").priority(HIGH).andAny(
+                                        domainWord().and(executable(RUN_PROGRAM)),
+                                        relativePath().and(executable(RUN_PROGRAM))),
+                        controlWord("start").priority(HIGH).andAny(
+                                        domainWord().and(executableWith(RUN_PROGRAM, "start")),
+                                        relativePath().and(executableWith(RUN_PROGRAM, "start"))),
+                        controlWord("stop").priority(HIGH).andAny(
+                                        domainWord().and(executableWith(RUN_PROGRAM, "stop")),
+                                        relativePath().and(executableWith(RUN_PROGRAM, "stop"))),
+                        controlWord("pause").priority(HIGH).and(pause()),
                         controlWords(
                                 "edit", 
                                 "change", 
-                                "alter").withAny(
+                                "alter").andAny(
                                         controlWords(
                                                 "loc", 
-                                                "location").with(argumentsFor(EDIT_LOCATION)),
+                                                "location").and(argumentsFor(EDIT_LOCATION)),
                                         controlWords(
-                                                "task").with(argumentsFor(EDIT_TASK)),
+                                                "task").and(argumentsFor(EDIT_TASK)),
                                         controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").withAny(
+                                                "web").andAny(
                                                         controlWords(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").priority(HIGH).with(argumentsFor(EDIT_WEB_DIR)),
+                                                                "directory").priority(HIGH).and(argumentsFor(EDIT_WEB_DIR)),
                                                         argumentsFor(EDIT_PAGE)),
                                         controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").with(argumentsFor(EDIT_WEB_DIR)),
+                                                "directory").and(argumentsFor(EDIT_WEB_DIR)),
                                         controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").with(argumentsFor(EDIT_BATCH))),
+                                                "exe").and(argumentsFor(EDIT_BATCH))),
                         controlWords(
                                 "+", 
                                 "add", 
                                 "new", 
-                                "create").withAny(
+                                "create").andAny(
                                         controlWords(
                                                 "loc", 
-                                                "location").with(argumentsFor(CREATE_LOCATION)),
+                                                "location").and(argumentsFor(CREATE_LOCATION)),
                                         controlWord(
-                                                "task").with(argumentsFor(CREATE_TASK)),
+                                                "task").and(argumentsFor(CREATE_TASK)),
                                         controlWords(
                                                 "dir", 
                                                 "direct", 
                                                 "directory",
                                                 "webdir",
-                                                "webdirectory").with(argumentsFor(CREATE_WEB_DIR)),
+                                                "webdirectory").and(argumentsFor(CREATE_WEB_DIR)),
                                         controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").withAny(
+                                                "web").andAny(
                                                         controlWords(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").with(argumentsFor(CREATE_WEB_DIR)), 
+                                                                "directory").and(argumentsFor(CREATE_WEB_DIR)), 
                                                         argumentsFor(CREATE_PAGE).priority(lowerThan(LOWEST))),
                                         controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").with(argumentsFor(CREATE_BATCH)),
+                                                "exe").and(argumentsFor(CREATE_BATCH)),
                                         controlWords(
                                                 "n", 
                                                 "note", 
                                                 "not", 
-                                                "nt").withAny(argumentsFor(CREATE_NOTE))),
+                                                "nt").andAny(argumentsFor(CREATE_NOTE))),
                         controlWords(
                                 "-", 
                                 "del", 
                                 "delete", 
-                                "remove").withAny(
+                                "remove").andAny(
                                         controlWords(
                                                 "loc", 
-                                                "location").with(argumentsFor(DELETE_LOCATION)),
-                                        controlWord("task").with(argumentsFor(DELETE_TASK)),
+                                                "location").and(argumentsFor(DELETE_LOCATION)),
+                                        controlWord("task").and(argumentsFor(DELETE_TASK)),
                                         controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory").with(argumentsFor(DELETE_WEB_DIR)),
+                                                "directory").and(argumentsFor(DELETE_WEB_DIR)),
                                         controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web").withAny(
+                                                "web").andAny(
                                                         controlWords(
                                                                 "dir", 
                                                                 "direct", 
-                                                                "directory").with(argumentsFor(DELETE_WEB_DIR)),
+                                                                "directory").and(argumentsFor(DELETE_WEB_DIR)),
                                                         argumentsFor(DELETE_PAGE)
                                         ),
                                         controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").with(argumentsFor(DELETE_BATCH))),
+                                                "exe").and(argumentsFor(DELETE_BATCH))),
                         controlWords(
                                 "?", 
                                 "get", 
-                                "find").withAny(
-                                        controlWord("task"), 
+                                "find").andAny(
+                                        controlWord("task").and(argumentsFor(FIND_TASK)), 
                                         controlWords(
                                                 "reminder", 
                                                 "rem", 
-                                                "remind"),
+                                                "remind").and(argumentsFor(FIND_TASK)),
                                         controlWord("event"),
                                         controlWords(
                                                 "loc", 
-                                                "location"),
+                                                "location").and(argumentsFor(FIND_LOCATION)),
                                         controlWords(
                                                 "page", 
                                                 "webpage", 
                                                 "webp", 
-                                                "web"),
+                                                "web").and(argumentsFor(FIND_PAGE)),
                                         controlWords(
                                                 "dir", 
                                                 "direct", 
-                                                "directory"),
+                                                "directory").and(argumentsFor(FIND_WEBDIRECTORY)),
                                         controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe")),
-                        controlWord("list").withAny(
-                                domainWord().with(argumentsFor(LIST_LOCATION)), 
-                                relativePath().with(argumentsFor(LIST_PATH))),
+                                                "exe").and(argumentsFor(FIND_BATCH))),
+                        controlWord("list").andAny(
+                                domainWord().and(argumentsFor(LIST_LOCATION)), 
+                                relativePath().and(argumentsFor(LIST_PATH))),
                         controlWords(
                                 "n", 
                                 "note", 
-                                "notes").priority(LOW).withAny(
-                                        relativePath().priority(HIGHER).with(argumentsFor(OPEN_PATH_IN_NOTES)), 
-                                        domainWord().with(argumentsFor(OPEN_TARGET_IN_NOTES)))
+                                "notes").priority(LOW).andAny(
+                                        relativePath().priority(HIGHER).and(argumentsFor(OPEN_PATH_IN_NOTES)), 
+                                        domainWord().and(argumentsFor(OPEN_TARGET_IN_NOTES)))
                 )
         );
     }

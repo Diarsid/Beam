@@ -214,13 +214,15 @@ public class WebPagesKeeperWorker
             if ( pagePattern.isEmpty() ) {
                 optPage = Optional.empty();
                 pageNotDefined = false;
+                continue;
             }
             pagePattern = this.helper.validateEntityNameInteractively(initiator, pagePattern);
 
             foundPages = this.daoPages.findByPattern(initiator, pagePattern);
 
             if ( foundPages.isEmpty() ) {
-                this.ioEngine.report(initiator, "page not found.");
+                this.ioEngine.report(initiator, format("page not found by '%s'.", pagePattern));
+                pagePattern = "";
             } else if ( hasOne(foundPages) ) {
                 optPage = Optional.of(getOne(foundPages));
                 pageNotDefined = false;

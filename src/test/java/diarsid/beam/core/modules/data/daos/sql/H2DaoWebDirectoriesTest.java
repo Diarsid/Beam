@@ -81,7 +81,7 @@ public class H2DaoWebDirectoriesTest {
         setupData();
     }
     
-    public static void setupData() throws Exception {
+    private static void setupData() throws Exception {
         JdbcTransaction transact = dataBase.transactionFactory().createTransaction();
         
         transact

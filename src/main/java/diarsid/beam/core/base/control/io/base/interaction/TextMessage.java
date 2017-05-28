@@ -12,6 +12,7 @@ import static java.util.Arrays.asList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 
 /**
  *
@@ -24,7 +25,7 @@ public class TextMessage implements Message {
     
     public TextMessage(String text1, String... text) {
         this.type = INFO;
-        this.text = asList(text);
+        this.text = arrayListOf(text);
         this.text.add(0, text1);
     }
     
@@ -35,7 +36,7 @@ public class TextMessage implements Message {
     
     public TextMessage(MessageType type, String text1, String... text) {
         this.type = type;
-        this.text = asList(text);
+        this.text = arrayListOf(text);
         this.text.add(0, text1);
     }
     

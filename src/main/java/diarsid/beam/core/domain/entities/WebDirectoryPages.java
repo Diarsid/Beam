@@ -37,7 +37,7 @@ public class WebDirectoryPages extends WebDirectory {
                 .map(page -> format("  - %s (%d)", page.name(), page.order()))
                 .collect(toList());
         message.add(0, format(
-                "%s (%d) %s :", this.name(), this.order(), lower(this.place().name())));
+                "%s (%s, %d) ", this.name(), lower(this.place().name()), this.order()));
         return new TextMessage(message);
     }
 

@@ -56,7 +56,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 
-
+// TODO more flexible 'find' algorithm
 class BatchesKeeperWorker 
         implements 
                 BatchesKeeper, 
@@ -107,7 +107,8 @@ class BatchesKeeperWorker
     @Override
     public ValueOperation<Batch> findByNamePattern(
             Initiator initiator, String batchNamePattern) {
-        List<String> foundBatchNames = this.getMatchingBatches(initiator, batchNamePattern);
+        List<String> foundBatchNames = 
+                this.dao.getBatchNamesByNamePattern(initiator, batchNamePattern);
         if ( hasOne(foundBatchNames) ) {
             return this.findByExactName(initiator, getOne(foundBatchNames));        
         } else if ( hasMany(foundBatchNames) ) {
@@ -138,11 +139,6 @@ class BatchesKeeperWorker
                 return valueCompletedEmpty();
             }
         }
-    }
-    
-    private List<String> getMatchingBatches(
-            Initiator initiator, String batchNamePattern) {
-        return this.dao.getBatchNamesByNamePattern(initiator, batchNamePattern);
     }
 
     @Override
@@ -440,7 +436,7 @@ class BatchesKeeperWorker
             return voidOperationStopped();
         }
         
-        List<String> batchNames = this.getMatchingBatches(initiator, name);
+        List<String> batchNames = this.dao.getBatchNamesByNamePattern(initiator, name);
         if ( hasOne(batchNames) ) {
             this.ioEngine.report(initiator, format("'%s' found.", getOne(batchNames)));
             if ( this.dao.removeBatch(initiator, getOne(batchNames)) ) {

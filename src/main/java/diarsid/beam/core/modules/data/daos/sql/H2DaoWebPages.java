@@ -228,6 +228,26 @@ class H2DaoWebPages
                 return false;
             } 
             
+            boolean directoryExists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT * " +
+                            "FROM web_directories " +
+                            "WHERE id IS ? ", 
+                            page.directoryId());
+            
+            if ( ! directoryExists ) {
+                super.ioEngine().report(initiator, "Not found directory to save this page.");
+                return false;
+            }
+            
+            int newPageOrder = transact
+                    .countQueryResultsVarargParams(
+                            "SELECT ordering " +
+                            "FROM web_pages " +
+                            "WHERE dir_id IS ? ", 
+                            page.directoryId());
+            page.setOrder(newPageOrder);
+            
             int inserted = transact
                     .doUpdateVarargParams(
                             "INSERT INTO web_pages (name, url, shortcuts, ordering, dir_id) " +
@@ -256,11 +276,36 @@ class H2DaoWebPages
             Initiator initiator, String name) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
+            Optional<WebPage> optPage = transact
+                    .doQueryAndConvertFirstRowVarargParams(
+                            WebPage.class,
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE LOWER(name) IS ? ",
+                            (row) -> {
+                                return Optional.of(ROW_TO_PAGE.convert(row));
+                            },
+                            lower(name));
+            
+            if ( ! optPage.isPresent() ) {
+                return false;
+            }
+            WebPage page = optPage.get();
+            
             int removed = transact
                     .doUpdateVarargParams(
                             "DELETE FROM web_pages " +
-                            "WHERE LOWER(name) IS ? ", 
-                            lower(name));
+                            "WHERE ( LOWER(name) IS ? ) AND ( ordering IS ? ) AND ( dir_id IS ? ) ", 
+                            lower(page.name()), page.order(), page.directoryId());
+            
+            if ( removed == 1 ) {
+                transact
+                        .doUpdateVarargParams(
+                                "UPDATE web_pages " +
+                                "SET ordering = (ordering - 1) " +
+                                "WHERE ( ordering > ? ) AND ( dir_id IS ? )", 
+                                page.order(), page.directoryId());
+            }
             
             transact
                     .ifTrue( removed > 1 )

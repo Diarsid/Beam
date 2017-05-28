@@ -108,7 +108,7 @@ public class WebDirectory
     @Override
     public Message toMessage() {
         return new TextMessage(format(
-                "%s (%d) %s", this.name, this.order, lower(this.place.name())));
+                "%s (%s, %d) ", this.name, lower(this.place.name()), this.order));
     }
     
     public boolean isNew() {

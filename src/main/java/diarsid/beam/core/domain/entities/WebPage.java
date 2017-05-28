@@ -22,6 +22,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 
 /*
@@ -129,7 +130,10 @@ public class WebPage
         List<String> message = new ArrayList<>();
         message.add(this.name);
         message.add("  url:   " + this.url);
-        message.add("  alias: " + this.shortcuts);
+        if ( nonEmpty(this.shortcuts) ) {
+            message.add("  alias: " + this.shortcuts);            
+        }
+        message.add("  order: " + this.pageOrder);
         return new TextMessage(message);
     } 
     

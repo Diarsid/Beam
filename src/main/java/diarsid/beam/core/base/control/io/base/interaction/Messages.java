@@ -16,6 +16,7 @@ import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.domain.entities.Task;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
@@ -61,7 +62,7 @@ public class Messages {
     }
     
     public static Message toMessage(Location location) {
-        return new TextMessage(INFO, location.toString());
+        return new TextMessage(INFO, asList(location.name(), "  path: " + location.path()));
     }
     
     public static Message toMessage(Program program) {

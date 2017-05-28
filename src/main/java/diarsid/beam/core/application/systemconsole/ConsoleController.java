@@ -54,9 +54,10 @@ public class ConsoleController implements OuterIoEngine {  // + Runnable
     private final ConsolePrinter printer;         //  
     private final ConsoleReader reader;           //  move to AbstractConsoleEnginge 
     private final AtomicBoolean isInDialogMode;   // 
-    private final AtomicBoolean isWorking;
-    private Initiator initiator;        
+    private final AtomicBoolean isWorking;        // 
+    private Initiator initiator;                  // 
     
+    // TODO rework it!
     public ConsoleController(ConsolePrinter printer, ConsoleReader reader) {
         this.printer = printer;
         this.reader = reader;        

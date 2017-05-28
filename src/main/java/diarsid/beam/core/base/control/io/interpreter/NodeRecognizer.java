@@ -28,13 +28,13 @@ public abstract class NodeRecognizer extends PrioritizedRecognizer {
         }
     }
     
-    public final NodeRecognizer with(Recognizer recognizer) {
+    public final NodeRecognizer and(Recognizer recognizer) {
         this.onlyIfRecognizerHasNotBeenSet();
         this.recognizer = recognizer;
         return this;
     }
    
-    public final NodeRecognizer withAny(PrioritizedRecognizer... recognizers) {
+    public final NodeRecognizer andAny(PrioritizedRecognizer... recognizers) {
         this.onlyIfRecognizerHasNotBeenSet();
         this.recognizer = new RecognizersCluster(recognizers);
         return this;
