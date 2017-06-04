@@ -34,12 +34,12 @@ class DataModuleWorker implements DataModule {
     }
 
     @Override
-    public DaoLocations getDaoLocations() {
+    public DaoLocations locations() {
         return this.daoLocations;
     }
 
     @Override
-    public DaoBatches getDaoBatches() {
+    public DaoBatches batches() {
         return this.daoBatches;
     }
 
@@ -49,32 +49,32 @@ class DataModuleWorker implements DataModule {
     }
 
     @Override
-    public DaoNamedEntities getDaoNamedEntities() {
+    public DaoNamedEntities namedEntities() {
         return this.daoNamedEntities;
     }
 
     @Override
-    public DaoCommands getDaoCommands() {
+    public DaoCommands commands() {
         return this.daoCommands;
     }
 
     @Override
-    public DaoKeyValueStorage getDaoKeyValueStorage() {
+    public DaoKeyValueStorage keyValues() {
         return this.daoKeyValueStorage;
     }
 
     @Override
-    public DaoTasks getDaoTasks() {
+    public DaoTasks tasks() {
         return this.daoTasks;
     }
 
     @Override
-    public DaoWebPages getDaoWebPages() {
+    public DaoWebPages webPages() {
         return this.daoWebPages;
     }
 
     @Override
-    public DaoWebDirectories getDaoWebDirectories() {
+    public DaoWebDirectories webDirectories() {
         return this.daoWebDirectories;
     }
 }

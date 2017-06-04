@@ -248,7 +248,13 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .batchesAdapter()
                             .findBatchAndReport(initiator, (ArgumentsCommand) command);
                     break;
-                }    
+                }   
+                case FIND_ALL : {
+                    this.domainModuleAdapter
+                            .allAdapter()
+                            .findAll(initiator, (ArgumentsCommand) command);
+                    break;
+                }
                 case EXIT : {
                     this.ioModule.unregisterIoEngine(initiator);
                     asyncDoIndependently(() -> exitBeamCoreNow());

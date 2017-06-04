@@ -73,19 +73,20 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         NotesKeeper notesKeeper;
         CommandsMemoryKeeper commandsMemoryKeeper;
         NamedEntitiesKeeper defaultKeeper;
+        AllKeeper allKeeper;
         
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
-                this.dataModule.getDaoCommands(), 
+                this.dataModule.commands(), 
                 ioEngine);
         locationsKeeper = new LocationsKeeperWorker(
-                this.dataModule.getDaoLocations(), 
+                this.dataModule.locations(), 
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
                 locationsInputParser, 
                 propertyAndTextParser);
         batchesKeeper = new BatchesKeeperWorker(
-                this.dataModule.getDaoBatches(), 
+                this.dataModule.batches(), 
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
@@ -97,31 +98,34 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 dialogHelper);
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
-                this.dataModule.getDaoTasks(), 
+                this.dataModule.tasks(), 
                 dialogHelper, 
                 timeAndTextParser, 
                 timeParser, 
                 timePeriodsParser);
         pagesKeeper = new WebPagesKeeperWorker(
-                this.dataModule.getDaoWebPages(), 
-                this.dataModule.getDaoWebDirectories(), 
+                this.dataModule.webPages(), 
+                this.dataModule.webDirectories(), 
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
                 propertyAndTextParser, 
                 webObjectsParser);
         directoriesKeeper = new WebDirectoriesKeeperWorker(
-                this.dataModule.getDaoWebDirectories(), 
+                this.dataModule.webDirectories(), 
                 ioEngine, 
                 dialogHelper, 
                 webObjectsParser);   
-        defaultKeeper = new AllNamedEntitiesKeeper(
+        defaultKeeper = new NamedEntitiesKeeperWorker(
                 ioEngine, 
-                this.dataModule.getDaoNamedEntities());
+                this.dataModule.namedEntities());
         notesKeeper = new NotesKeeperWorker(
                 ioEngine,
                 this.appComponentsHolderModule.getNotesCatalog(), 
                 dialogHelper);
+        allKeeper = new AllKeeperWorker(
+                this.dataModule,
+                programsKeeper);
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
                 batchesKeeper, 
@@ -131,6 +135,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 directoriesKeeper, 
                 notesKeeper,
                 commandsMemoryKeeper, 
-                defaultKeeper);
+                defaultKeeper, 
+                allKeeper);
     }
 }

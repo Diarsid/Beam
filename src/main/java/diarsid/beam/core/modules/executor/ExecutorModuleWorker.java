@@ -51,7 +51,6 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.textToMessage;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
@@ -79,6 +78,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 
 /**
  *
@@ -989,7 +989,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     Location location = locationFlow.asComplete().getOrThrow();
                     Optional<List<String>> listing = this.fileLister.listContentOf(location, 5);
                     if ( listing.isPresent() && nonEmpty(listing.get()) ) {
-                        this.ioEngine.reportMessage(initiator, textToMessage(listing.get()));
+                        this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
                     } else {
                         this.ioEngine.report(
                                 initiator, 
@@ -1097,7 +1097,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         Optional<List<String>> listing =
                 this.fileLister.listContentOf(combinePathFrom(location, subpath), 5);
         if ( listing.isPresent() ) {
-            this.ioEngine.reportMessage(initiator, textToMessage(listing.get()));
+            this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
         } else {
             this.ioEngine.report(
                     initiator, format("cannot list '%s/%s' content.", location, subpath));

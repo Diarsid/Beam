@@ -51,6 +51,19 @@ public class TextMessage implements Message {
     }
 
     @Override
+    public Message addHeader(String header) {
+        for (int i = 0; i < this.text.size(); i++) {
+            this.text.set(i, this.inline(this.text.get(i)));
+        }
+        this.text.add(0, header);
+        return this;
+    }
+
+    private String inline(String line) {
+        return "   " + line;
+    }
+
+    @Override
     public MessageType getType() {
         return this.type;
     }

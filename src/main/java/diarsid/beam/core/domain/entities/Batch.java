@@ -10,12 +10,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 
@@ -23,7 +27,10 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
  *
  * @author Diarsid
  */
-public class Batch implements NamedEntity {
+public class Batch 
+        implements 
+                NamedEntity, 
+                ConvertableToMessage {
     
     private final String name;
     private final List<BatchedCommand> commands;
@@ -51,6 +58,17 @@ public class Batch implements NamedEntity {
     @Override
     public Variant toVariant(int variantIndex) {
         return new Variant(this.name, format("%s (%s)", this.name, "Batch"), variantIndex);
+    }
+    
+    @Override
+    public Message toMessage() {
+        AtomicInteger counter = new AtomicInteger(1);
+        List<String> batchText = this.stringifyCommands()
+                .stream()
+                .map(command -> format(" %d) %s", counter.getAndIncrement(), command))
+                .collect(toList());
+        batchText.add(0, this.name);
+        return new TextMessage(INFO, batchText);
     }
     
     public int getCommandsQty() {

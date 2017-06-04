@@ -29,6 +29,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
@@ -265,7 +266,8 @@ public class Interpreter {
                                         controlWords(
                                                 "bat", 
                                                 "batch", 
-                                                "exe").and(argumentsFor(FIND_BATCH))),
+                                                "exe").and(argumentsFor(FIND_BATCH)),
+                                        domainWord().priority(LOWER).and(argumentsFor(FIND_ALL))),
                         controlWord("list").andAny(
                                 domainWord().and(argumentsFor(LIST_LOCATION)), 
                                 relativePath().and(argumentsFor(LIST_PATH))),

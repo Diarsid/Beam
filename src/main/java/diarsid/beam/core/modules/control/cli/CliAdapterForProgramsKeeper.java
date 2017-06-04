@@ -17,8 +17,6 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.modules.domainkeeper.ProgramsKeeper;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.toMessage;
-
 /**
  *
  * @author Diarsid
@@ -35,7 +33,7 @@ class CliAdapterForProgramsKeeper extends AbstractCliAdapter {
     void findProgramAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueOperation<Program> flow = this.programsKeeper.findProgram(initiator, command);
         Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
-            return toMessage((Program) success.getOrThrow());
+            return ((Program) success.getOrThrow()).toMessage();
         };
         super.reportValueOperationFlow(initiator, flow, ifSuccess, "not found.");
     }

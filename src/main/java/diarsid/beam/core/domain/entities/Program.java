@@ -14,10 +14,14 @@ import java.util.Objects;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
@@ -28,7 +32,10 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
  *
  * @author Diarsid
  */
-public class Program implements NamedEntity {
+public class Program 
+        implements 
+                NamedEntity, 
+                ConvertableToMessage {
     
     private final ProgramsCatalog programsCatalog;
     private final String fullName;
@@ -79,6 +86,11 @@ public class Program implements NamedEntity {
     }
 
     @Override
+    public Message toMessage() {
+        return new TextMessage(INFO, this.toString());
+    }   
+
+    @Override
     public Variant toVariant(int variantIndex) {
         return new Variant(
                 this.fullName, format("%s (%s)", this.fullName, "Program"), variantIndex);
@@ -121,6 +133,5 @@ public class Program implements NamedEntity {
     @Override
     public String toString() {
         return format("%s (%s)", this.fullName, this.type().displayName());
-    }
-    
+    } 
 }

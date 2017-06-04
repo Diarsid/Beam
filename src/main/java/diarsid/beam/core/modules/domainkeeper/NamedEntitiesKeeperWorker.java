@@ -34,13 +34,13 @@ import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
  *
  * @author Diarsid
  */
-class AllNamedEntitiesKeeper implements NamedEntitiesKeeper {
+class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoNamedEntities namedEntitiesDao;
     private final Set<CommandType> subjectedCommandTypes;
 
-    AllNamedEntitiesKeeper(InnerIoEngine ioEngine, DaoNamedEntities dao) {
+    NamedEntitiesKeeperWorker(InnerIoEngine ioEngine, DaoNamedEntities dao) {
         this.ioEngine = ioEngine;
         this.namedEntitiesDao = dao;
         this.subjectedCommandTypes = toSet(EXECUTOR_DEFAULT);

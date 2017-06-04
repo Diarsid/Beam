@@ -34,7 +34,7 @@ public class WebDirectoryPages extends WebDirectory {
     public Message toMessage() {
         List<String> message = this.pages
                 .stream()
-                .map(page -> format("  - %s (%d)", page.name(), page.order()))
+                .map(page -> format("  %d) %s ", page.order(), page.name()))
                 .collect(toList());
         message.add(0, format(
                 "%s (%s, %d) ", this.name(), lower(this.place().name()), this.order()));

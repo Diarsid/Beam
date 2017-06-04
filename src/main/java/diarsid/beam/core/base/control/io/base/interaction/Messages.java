@@ -8,15 +8,10 @@ package diarsid.beam.core.base.control.io.base.interaction;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Optional;
 
-import diarsid.beam.core.domain.entities.Batch;
-import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.domain.entities.Task;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
@@ -39,8 +34,19 @@ public class Messages {
         return new TextMessage(INFO, line, lines);
     }
     
-    public static Message textToMessage(List<String> lines) {
+    public static Message linesToMessage(List<String> lines) {
         return new TextMessage(INFO, lines);
+    }
+    
+    public static Optional<Message> joinToOptionalMessage(List<Message> messages) {
+        if ( messages.isEmpty() ) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new TextMessage(messages
+                    .stream()
+                    .flatMap(message -> message.toText().stream())
+                    .collect(toList())));
+        }
     }
     
     public static Message tasksToMessage(List<Task> tasks) {
@@ -53,30 +59,22 @@ public class Messages {
         return new TextMessage(INFO, lines);
     }
     
-    public static Message locationsToMessage(List<Location> locations) {
-        return new TextMessage(INFO, locations
-                .stream()
-                .map(location -> location.toString())
-                .collect(toList())
-        );
+    public static Optional<Message> tasksToOptionalMessageWithHeader(
+            String header, List<Task> tasks) {
+        if ( tasks.isEmpty() ) {
+            return Optional.empty();
+        } else {
+            return Optional.of(tasksToMessage(tasks).addHeader(header));
+        }
     }
     
-    public static Message toMessage(Location location) {
-        return new TextMessage(INFO, asList(location.name(), "  path: " + location.path()));
-    }
-    
-    public static Message toMessage(Program program) {
-        return new TextMessage(INFO, program.toString());
-    }
-    
-    public static Message toMessage(Batch batch) {
-        AtomicInteger counter = new AtomicInteger(1);
-        List<String> batchText = batch.stringifyCommands()
-                .stream()
-                .map(command -> format(" %d) %s", counter.getAndIncrement(), command))
-                .collect(toList());
-        batchText.add(0, batch.name());
-        return new TextMessage(INFO, batchText);
+    public static Optional<Message> linesToOptionalMessageWithHeader(
+            String header, List<String> lines) {
+        if ( lines.isEmpty() ) {
+            return Optional.empty();
+        } else {
+            return Optional.of(new TextMessage(INFO, lines).addHeader(header));
+        }
     }
     
     public static Message fromException(Exception e) {

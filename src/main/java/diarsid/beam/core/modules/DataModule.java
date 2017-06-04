@@ -21,19 +21,19 @@ import diarsid.beam.core.modules.data.DaoWebPages;
  */
 public interface DataModule extends StoppableBeamModule  {
     
-    DaoNamedEntities getDaoNamedEntities();
+    DaoNamedEntities namedEntities();
     
-    DaoLocations getDaoLocations();
+    DaoLocations locations();
     
-    DaoBatches getDaoBatches();
+    DaoBatches batches();
     
-    DaoCommands getDaoCommands();
+    DaoCommands commands();
     
-    DaoKeyValueStorage getDaoKeyValueStorage();
+    DaoKeyValueStorage keyValues();
     
-    DaoTasks getDaoTasks();
+    DaoTasks tasks();
     
-    DaoWebPages getDaoWebPages();
+    DaoWebPages webPages();
     
-    DaoWebDirectories getDaoWebDirectories();
+    DaoWebDirectories webDirectories();
 }

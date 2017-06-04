@@ -7,6 +7,7 @@ package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.modules.domainkeeper.AllKeeper;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
@@ -42,4 +43,6 @@ public interface DomainKeeperModule extends StoppableBeamModule  {
     NotesKeeper notes();
     
     CommandsMemoryKeeper commandsMemory();
+    
+    AllKeeper all();
 }

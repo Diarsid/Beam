@@ -15,11 +15,15 @@ import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
-import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -33,7 +37,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 public class Location 
         implements 
                 NamedEntity, 
-                ConvertableToVariant,
+                ConvertableToMessage, 
                 Serializable {
 
     private final String name;
@@ -47,6 +51,11 @@ public class Location
     @Override
     public String name() {
         return this.name;
+    }
+
+    @Override
+    public Message toMessage() {
+        return new TextMessage(INFO, asList(this.name, "  path: " + this.path));
     }
 
     @Override

@@ -22,30 +22,26 @@ public class DomainModuleToCliAdapter {
     private final CliAdapterForWebDirectoriesKeeper webDirectoriesKeeperAdapter;
     private final CliAdapterForWebPagesKeeper webPagesKeeperAdapter;
     private final CliAdapterForNotesKeeper notesKeeperAdapter;
+    private final CliAdapterForAllKeeper allKeeperAdapter;
     
     public DomainModuleToCliAdapter(
-            DomainKeeperModule domainModule, InnerIoEngine ioEngine) {
-        this.locationsKeeperAdapter = 
-                new CliAdapterForLocationsKeeper(
-                        domainModule.locations(), ioEngine);
-        this.batchesKeeperAdapter = 
-                new CliAdapterForBatchesKeeper(
-                        domainModule.batches(), ioEngine);
-        this.programsKeeperAdapter = 
-                new CliAdapterForProgramsKeeper(
-                        domainModule.programs(), ioEngine);
-        this.tasksKeeperAdapter = 
-                new CliAdapterForTasksKeeper(
-                        domainModule.tasks(), ioEngine);
-        this.webDirectoriesKeeperAdapter = 
-                new CliAdapterForWebDirectoriesKeeper(
-                        domainModule.webDirectories(), ioEngine);
-        this.webPagesKeeperAdapter = 
-                new CliAdapterForWebPagesKeeper(
-                        domainModule.webPages(), ioEngine);
-        this.notesKeeperAdapter = 
-                new CliAdapterForNotesKeeper(
-                        domainModule.notes(), ioEngine);
+            DomainKeeperModule domain, InnerIoEngine ioEngine) {
+        this.locationsKeeperAdapter = new CliAdapterForLocationsKeeper(
+                domain.locations(), ioEngine);
+        this.batchesKeeperAdapter = new CliAdapterForBatchesKeeper(
+                domain.batches(), ioEngine);
+        this.programsKeeperAdapter = new CliAdapterForProgramsKeeper(
+                domain.programs(), ioEngine);
+        this.tasksKeeperAdapter = new CliAdapterForTasksKeeper(
+                domain.tasks(), ioEngine);
+        this.webDirectoriesKeeperAdapter = new CliAdapterForWebDirectoriesKeeper(
+                domain.webDirectories(), ioEngine);
+        this.webPagesKeeperAdapter = new CliAdapterForWebPagesKeeper(
+                domain.webPages(), ioEngine);
+        this.notesKeeperAdapter = new CliAdapterForNotesKeeper(
+                domain.notes(), ioEngine);
+        this.allKeeperAdapter = new CliAdapterForAllKeeper(
+                domain.all(), ioEngine);
     }
     
     CliAdapterForLocationsKeeper locationsAdapter() {
@@ -74,5 +70,9 @@ public class DomainModuleToCliAdapter {
     
     CliAdapterForNotesKeeper notesAdaper() {
         return this.notesKeeperAdapter;
+    }
+    
+    CliAdapterForAllKeeper allAdapter() {
+        return this.allKeeperAdapter;
     }
 }

@@ -19,6 +19,8 @@ public interface Message extends Serializable {
         ERROR
     }
     
+    Message addHeader(String header);
+    
     List<String> toText();
     
     MessageType getType();
