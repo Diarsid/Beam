@@ -38,7 +38,7 @@ public class Analyze {
     private Analyze() {        
     }
     
-    public static WeightedVariants analyzeStrings(String pattern, List<String> variants) {
+    public static WeightedVariants weightStrings(String pattern, List<String> variants) {
         return weightVariants(pattern, stringsToVariants(variants));
     }
     
@@ -93,7 +93,7 @@ public class Analyze {
         String pattern = "pathjab";
         
         System.out.println("variants: " + variantsStrings.size());
-        WeightedVariants variants = analyzeStrings(pattern, variantsStrings);
+        WeightedVariants variants = weightStrings(pattern, variantsStrings);
         AtomicInteger printed = new AtomicInteger(0);
         while ( variants.next() ) {            
             if ( variants.currentIsMuchBetterThanNext() ) {

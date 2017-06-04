@@ -28,6 +28,7 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
@@ -55,8 +56,8 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
 
-// TODO more flexible 'find' algorithm
 class BatchesKeeperWorker 
         implements 
                 BatchesKeeper, 
@@ -102,6 +103,57 @@ class BatchesKeeperWorker
             this.commandsMemory.save(
                     initiator, new CallBatchCommand(batchName, batchName, NEW, TARGET_FOUND));
         });
+    }
+    
+    private ValueOperation<Batch> discussExistingBatch(Initiator initiator, String name) {
+        List<String> foundBatchNames;     
+        Optional<Batch> foundBatch;
+        WeightedVariants weightedBatchNames;
+        Answer answer;
+        batchDiscussing: while ( true ) {            
+            name = this.helper.validateEntityNameInteractively(initiator, name);
+            if (name.isEmpty()) {
+                return valueOperationStopped();
+            }
+
+            foundBatchNames = this.dao.getBatchNamesByNamePattern(initiator, name);
+            if ( hasOne(foundBatchNames) ) {
+                foundBatch = this.dao.getBatchByExactName(initiator, getOne(foundBatchNames));
+                if ( foundBatch.isPresent() ) {
+                    this.ioEngine.report(initiator, format("'%s' found.", foundBatch.get().name()));
+                    return valueCompletedWith(foundBatch);
+                } else {
+                    this.ioEngine.report(initiator, format("not found by '%s'", name));
+                    name = "";
+                    continue batchDiscussing;
+                }
+            } else if ( hasMany(foundBatchNames) ) {
+                weightedBatchNames = weightStrings(name, foundBatchNames);
+                answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedBatchNames);
+                if ( answer.isGiven() ) {
+                    foundBatch = this.dao.getBatchByExactName(initiator, answer.text());
+                    if ( foundBatch.isPresent() ) {
+                        return valueCompletedWith(foundBatch);
+                    } else {
+                        this.ioEngine.report(initiator, format("cannot get Batch by '%s'", name));
+                        name = "";
+                        continue batchDiscussing;
+                    }
+                } else if ( answer.isRejection() ) {
+                    return valueOperationStopped();
+                } else if ( answer.variantsAreNotSatisfactory() ) {
+                    name = "";
+                    continue batchDiscussing;
+                } else {
+                    this.ioEngine.report(initiator, "cannot determine your answer.");
+                    return valueOperationStopped();
+                }
+            } else {
+                this.ioEngine.report(initiator, format("not found by '%s'", name));
+                name = "";
+                continue batchDiscussing;
+            }
+        }
     }
 
     @Override
@@ -153,14 +205,9 @@ class BatchesKeeperWorker
             name = command.getFirstArg();
         } else {
             name = "";
-            name = this.helper.validateEntityNameInteractively(initiator, name);
         }
         
-        if ( name.isEmpty() ) {
-            return valueOperationStopped();
-        }
-        
-        return this.findByNamePattern(initiator, name);
+        return this.discussExistingBatch(initiator, name);
     }
 
     @Override
@@ -283,18 +330,12 @@ class BatchesKeeperWorker
             property = UNDEFINED_PROPERTY;
         }
         
-        name = this.helper.validateEntityNameInteractively(initiator, name);
-        if ( name.isEmpty() ) {
-            return voidOperationStopped();
-        } 
-        
         Batch editedBatch;
-        ValueOperation<Batch> batchFlow = this.findByNamePattern(initiator, name);
+        ValueOperation<Batch> batchFlow = this.discussExistingBatch(initiator, name);
         switch ( batchFlow.result() ) {
             case COMPLETE : {
                 if ( batchFlow.asComplete().hasValue() ) {
                     editedBatch = batchFlow.asComplete().getOrThrow();
-                    this.ioEngine.report(initiator, format("'%s' found.", editedBatch.name()));
                 } else {                    
                     return voidOperationFail("no such batch.");
                 }
@@ -431,35 +472,33 @@ class BatchesKeeperWorker
             name = "";
         }
         
-        name = this.helper.validateEntityNameInteractively(initiator, name);
-        if ( name.isEmpty() ) {
-            return voidOperationStopped();
-        }
-        
-        List<String> batchNames = this.dao.getBatchNamesByNamePattern(initiator, name);
-        if ( hasOne(batchNames) ) {
-            this.ioEngine.report(initiator, format("'%s' found.", getOne(batchNames)));
-            if ( this.dao.removeBatch(initiator, getOne(batchNames)) ) {
-                this.asyncCleanCommandsMemory(initiator, getOne(batchNames));
-                return voidCompleted();
-            } else {
-                return voidOperationFail("DAO failed to remove batch");
-            }
-        } else if ( hasMany(batchNames) ) {
-            VariantsQuestion question = question("choose batch").withAnswerStrings(batchNames);
-            Answer answer = this.ioEngine.ask(initiator, question);
-            if ( answer.isGiven() ) {
-                if ( this.dao.removeBatch(initiator, batchNames.get(answer.index())) ) {
-                    this.asyncCleanCommandsMemory(initiator, batchNames.get(answer.index()));
-                    return voidCompleted();
-                } else {
-                    return voidOperationFail("DAO failed to remove batch.");
+        Batch removedBatch;
+        ValueOperation<Batch> batchFlow = this.discussExistingBatch(initiator, name);
+        switch ( batchFlow.result() ) {
+            case COMPLETE : {
+                if ( batchFlow.asComplete().hasValue() ) {
+                    removedBatch = batchFlow.asComplete().getOrThrow();
+                } else {                    
+                    return voidOperationFail("no such batch.");
                 }
-            } else {
+                break; 
+            }
+            case FAIL : {
+                return voidOperationFail(batchFlow.asFail().reason());
+            }
+            case STOP : {
                 return voidOperationStopped();
             }
+            default : {
+                return voidOperationFail("unknown ValueOperation result.");
+            }
+        }
+        
+        if ( this.dao.removeBatch(initiator, removedBatch.name()) ) {
+            this.asyncCleanCommandsMemory(initiator, removedBatch.name());
+            return voidCompleted();
         } else {
-            return voidOperationFail("this is not the batch you are looking for.");
-        }        
+            return voidOperationFail("DAO failed to remove batch");
+        }      
     }
 }

@@ -77,7 +77,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.analyzeStrings;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
 
 /**
  *
@@ -541,7 +541,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 this.openTargetAndExtendCommand(initiator, location, target, command);
             } else {
                 Answer answer = this.ioEngine.chooseInWeightedVariants(
-                        initiator, analyzeStrings(target, result.success().foundFiles()));
+                        initiator, weightStrings(target, result.success().foundFiles()));
                 if ( answer.isGiven() ) {
                     target = answer.text();
                     this.openTargetAndExtendCommand(initiator, location, target, command);
@@ -715,7 +715,6 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void executeDefault(Initiator initiator, ExecutorDefaultCommand command) {
         debug("[EXECUTOR] [executeDefault] : " + command.argument());
-        // ???
         debug("[EXECUTOR] [executeDefault] find entity by exact name: " + command.argument());
         ValueOperation<? extends NamedEntity> entityFlow = this.domain
                 .allEntities()
@@ -755,7 +754,6 @@ class ExecutorModuleWorker implements ExecutorModule {
                 // do nothing, proceed.
             }            
         }
-        // ???
         
         ValueOperation<InvocationCommand> flow = this.domain
                 .commandsMemory()
@@ -1048,7 +1046,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void resolveMultipleFoldersAndDoListing(
             Initiator initiator, Location location, String subpathPattern, List<String> folders) {
-        WeightedVariants variants = analyzeStrings(subpathPattern, folders);
+        WeightedVariants variants = weightStrings(subpathPattern, folders);
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             this.doListing(initiator, location.path(), answer.text());

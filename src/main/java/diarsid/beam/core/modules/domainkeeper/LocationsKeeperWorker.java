@@ -55,7 +55,6 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
@@ -103,6 +102,43 @@ class LocationsKeeperWorker
                     initiator, new OpenLocationCommand(locationName, locationName, NEW, TARGET_FOUND));
         });
     }
+    
+    private ValueOperation<Location> discussExistingLocation(Initiator initiator, String name) {
+        List<Location> foundLocations;     
+        WeightedVariants weightedBatchNames;
+        Answer answer;
+        locationDiscussing: while ( true ) {            
+            name = this.helper.validateEntityNameInteractively(initiator, name);
+            if (name.isEmpty()) {
+                return valueOperationStopped();
+            }
+
+            foundLocations = this.dao.getLocationsByNamePattern(initiator, name);
+            if ( hasOne(foundLocations) ) {
+                this.ioEngine.report(
+                        initiator, format("'%s' found.", getOne(foundLocations).name()));
+                return valueCompletedWith(getOne(foundLocations));
+            } else if ( hasMany(foundLocations) ) {
+                weightedBatchNames = weightVariants(name, entitiesToVariants(foundLocations));
+                answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedBatchNames);
+                if ( answer.isGiven() ) {
+                    return valueCompletedWith(foundLocations.get(answer.index()));
+                } else if ( answer.isRejection() ) {
+                    return valueOperationStopped();
+                } else if ( answer.variantsAreNotSatisfactory() ) {
+                    name = "";
+                    continue locationDiscussing;
+                } else {
+                    this.ioEngine.report(initiator, "cannot determine your answer.");
+                    return valueOperationStopped();
+                }
+            } else {
+                this.ioEngine.report(initiator, format("not found by '%s'", name));
+                name = "";
+                continue locationDiscussing;
+            }
+        }
+    }
 
     @Override
     public boolean isSubjectedTo(InvocationCommand command) {
@@ -123,11 +159,17 @@ class LocationsKeeperWorker
     
     @Override
     public ValueOperation<Location> findByNamePattern(
-            Initiator initiator, String locationNamePattern) {
-        return this.findExactlyOneLocationByPattern(initiator, locationNamePattern);
+            Initiator initiator, String namePattern) {
+        List<Location> locations = this.dao.getLocationsByNamePattern(initiator, namePattern);
+        if ( hasOne(locations) ) {
+            return valueCompletedWith(getOne(locations));
+        } else if ( hasMany(locations) ) {
+            return this.manageWithManyLocations(initiator, namePattern, locations);
+        } else {
+            return valueCompletedEmpty();
+        }
     }
     
-    // TODO more flexible 'find' algorithm
     @Override
     public ValueOperation<Location> findLocation(
             Initiator initiator, ArgumentsCommand command) {
@@ -139,42 +181,21 @@ class LocationsKeeperWorker
             namePattern = command.getFirstArg();
         } 
         
-        namePattern = this.helper.validateInteractively(
-                initiator, namePattern, "name", ENTITY_NAME_RULE);
-        if ( namePattern.isEmpty() ) {
-            return valueCompletedEmpty();
-        } else {
-            return this.findExactlyOneLocationByPattern(initiator, namePattern);
-        }
-    }
-
-    private ValueOperation<Location> findExactlyOneLocationByPattern(
-            Initiator initiator, String namePattern) {
-        List<Location> locations = this.dao.getLocationsByNamePattern(initiator, namePattern);
-        if ( hasOne(locations) ) {
-            return valueCompletedWith(getOne(locations));
-        } else if ( hasMany(locations) ) {
-            return this.manageWithManyLocations(initiator, namePattern, locations);
-        } else {
-            return valueCompletedEmpty();
-        }
+        return this.discussExistingLocation(initiator, namePattern);
     }
 
     private ValueOperation<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
-        WeightedVariants question = 
-                weightVariants(pattern, entitiesToVariants(locations));
+        WeightedVariants question = weightVariants(pattern, entitiesToVariants(locations));
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
         if ( answer.isGiven() ) {
             return valueCompletedWith(locations.get(answer.index()));
+        } else if ( answer.isRejection() ) {
+            return valueOperationStopped();
+        } else if ( answer.variantsAreNotSatisfactory() ) {
+            return valueCompletedEmpty();
         } else {
-            if ( answer.isRejection() ) {
-                return valueOperationStopped();
-            } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueCompletedEmpty();
-            } else {
-                return valueCompletedEmpty();
-            }
+            return valueCompletedEmpty();
         }
     }
 
@@ -298,8 +319,7 @@ class LocationsKeeperWorker
         }
         
         Location location;
-        ValueOperation<Location> locationFlow = 
-                this.findExactlyOneLocationByPattern(initiator, name);
+        ValueOperation<Location> locationFlow = this.discussExistingLocation(initiator, name);
         switch ( locationFlow.result() ) {
             case COMPLETE : {
                 if ( locationFlow.asComplete().hasValue() ) {
@@ -319,8 +339,6 @@ class LocationsKeeperWorker
                 return voidOperationFail("unknown ValueOperation result.");
             }
         }
-        
-        this.ioEngine.report(initiator, format("'%s' found.", location.name()));
 
         property = this.helper.validatePropertyInteractively(
                 initiator, property, NAME, FILE_URL);

@@ -157,122 +157,121 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         List<InvocationCommand> foundCommands = 
                 this.daoCommands.getByExactOriginalOfAnyType(initiator, original);
         if ( hasOne(foundCommands) ) {
-            debug("[COMMANDS MEMORY] found one stored by exact : " + getOne(foundCommands).stringify());
-            InvocationCommand exactMatch = getOne(foundCommands);
-            if ( exactMatch.extendedArgument().equalsIgnoreCase(original) ) {
-                debug("[COMMANDS MEMORY] exact match! " + original + " -> " + getOne(foundCommands).stringify());
+            return this.doWhenOneFoundByExact(initiator, original, getOne(foundCommands));
+        } else if ( hasMany(foundCommands) ) {
+            debug("[COMMANDS MEMORY] many found by exact: " + foundCommands);
+            return this.chooseOneCommand(initiator, original, foundCommands);
+        } else {
+            return this.doWhenNoOneFoundByExact(initiator, original);
+        }
+    }
+    
+    private ValueOperation<InvocationCommand> doWhenOneFoundByExact(
+            Initiator initiator, String original, InvocationCommand foundCommand) {
+        debug("[COMMANDS MEMORY] found one stored by exact : " + foundCommand.stringify());
+        InvocationCommand exactMatch = foundCommand;
+        if ( exactMatch.extendedArgument().equalsIgnoreCase(original) ) {
+            debug("[COMMANDS MEMORY] exact match! " + original + " -> " + foundCommand.stringify());
+            return valueCompletedWith(exactMatch);
+        }
+        List<InvocationCommand> matchingCommands = 
+                this.daoCommands.searchInExtendedByPattern(initiator, original);
+        matchingCommands.add(exactMatch);
+        WeightedVariants variants = weightVariants(original, commandsToVariants(matchingCommands));
+        variants.removeWorseThan(exactMatch.extendedArgument());
+        if ( variants.hasOne() ) {
+            InvocationCommand newCommand = createInvocationCommandFrom(
+                    matchingCommands.get(variants.best().index()).type(), 
+                    original, 
+                    variants.best().text());
+            if ( exactMatch.equals(newCommand) ) {
                 return valueCompletedWith(exactMatch);
             }
-            List<InvocationCommand> matchingCommands = 
-                    this.daoCommands.searchInExtendedByPattern(initiator, original);
-            matchingCommands.add(exactMatch);
-            WeightedVariants variants = 
-                    weightVariants(original, commandsToVariants(matchingCommands));
-            variants.removeWorseThan(exactMatch.extendedArgument());
-            if ( variants.hasOne() ) {
+            asyncDo(() -> {                    
+                this.daoCommands.deleteByExactOriginalOfType(
+                        initiator, exactMatch.originalArgument(), exactMatch.type());
+                this.daoCommands.save(initiator, newCommand);
+            });
+            return valueCompletedWith(newCommand);
+        } else {
+            Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+            if ( answer.isGiven() ) {
                 InvocationCommand newCommand = createInvocationCommandFrom(
-                        matchingCommands.get(variants.best().index()).type(), 
+                        matchingCommands.get(answer.index()).type(),
                         original, 
-                        variants.best().text());
+                        answer.text());
                 if ( exactMatch.equals(newCommand) ) {
                     return valueCompletedWith(exactMatch);
                 }
-                asyncDo(() -> {                    
+                asyncDo(() -> {                        
                     this.daoCommands.deleteByExactOriginalOfType(
                             initiator, exactMatch.originalArgument(), exactMatch.type());
                     this.daoCommands.save(initiator, newCommand);
                 });
                 return valueCompletedWith(newCommand);
             } else {
-                Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
-                if ( answer.isGiven() ) {
-                    InvocationCommand newCommand = createInvocationCommandFrom(
-                            matchingCommands.get(answer.index()).type(),
-                            original, 
-                            answer.text());
-                    if ( exactMatch.equals(newCommand) ) {
-                        return valueCompletedWith(exactMatch);
-                    }
-                    asyncDo(() -> {                        
-                        this.daoCommands.deleteByExactOriginalOfType(
-                                initiator, exactMatch.originalArgument(), exactMatch.type());
-                        this.daoCommands.save(initiator, newCommand);
-                    });
-                    return valueCompletedWith(newCommand);
-                } else {
-                    if ( answer.isRejection() ) {
-                        return valueOperationStopped();
-                    } else if ( answer.variantsAreNotSatisfactory() ) {
-                        return valueCompletedEmpty();
-                    } else {
-                        return valueCompletedEmpty();
-                    }                    
-                }
-            }
-        } else if ( hasMany(foundCommands) ) {
-            debug("[COMMANDS MEMORY] many found by exact: " + foundCommands);
-            return this.chooseOneCommand(initiator, original, foundCommands);
-        } else {
-            debug("[COMMANDS MEMORY] not found by exact original: " + original);
-            foundCommands = this.daoCommands.searchInExtendedByPattern(initiator, original);
-            if ( hasOne(foundCommands) ) {
-                debug("[COMMANDS MEMORY] found one by original in extended: " + original + " -> " + getOne(foundCommands).extendedArgument() );
-                Choice choice = this.ioEngine.ask(initiator, getOne(foundCommands).stringify());
-                switch ( choice ) {
-                    case POSTIVE : {
-                        InvocationCommand found = getOne(foundCommands);
-                        InvocationCommand newCommand = createInvocationCommandFrom(
-                                found.type(), original, found.extendedArgument());
-                        asyncDo(() -> {                        
-                            this.daoCommands.save(initiator, newCommand);
-                        });
-                        return valueCompletedWith(newCommand);
-                    }
-                    case NEGATIVE : {
-                        return valueCompletedEmpty();
-                    }
-                    case REJECT : {
-                        return valueOperationStopped();
-                    }
-                    case NOT_MADE : 
-                    default : {
-                        return valueCompletedEmpty();
-                    }
-                }
-            } else if ( hasMany(foundCommands) ) {
-                debug("[COMMANDS MEMORY] found many by original in extended: " + original + " -> " + foundCommands);
-                WeightedVariants variants = 
-                        weightVariants(original, commandsToVariants(foundCommands));
-                Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
-                if ( answer.isGiven() ) {                    
-                    InvocationCommand newCommand = createInvocationCommandFrom(
-                            foundCommands.get(answer.index()).type(),
-                            original, 
-                            answer.text());
-                    asyncDo(() -> {               
-                        this.daoCommands.save(initiator, newCommand);
-                    });
-                    return valueCompletedWith(newCommand);
-                } else if ( answer.isRejection() ) {
+                if ( answer.isRejection() ) {
                     return valueOperationStopped();
                 } else if ( answer.variantsAreNotSatisfactory() ) {
                     return valueCompletedEmpty();
                 } else {
                     return valueCompletedEmpty();
-                }
-            } else {
-                return valueCompletedEmpty();
+                }                    
             }
         }
     }
-
-    public ValueOperation<InvocationCommand> obtainOneUsing(
-            Initiator initiator, String original, List<InvocationCommand> foundCommands) {
+    
+    private ValueOperation<InvocationCommand> doWhenNoOneFoundByExact(
+            Initiator initiator, String original) {
+        debug("[COMMANDS MEMORY] not found by exact original: " + original);
+        List<InvocationCommand> foundCommands = 
+                this.daoCommands.searchInExtendedByPattern(initiator, original);
         if ( hasOne(foundCommands) ) {
-            debug("[COMMANDS MEMORY] [obtain one] " + getOne(foundCommands).stringify() );
-            return valueCompletedWith(getOne(foundCommands));
+            debug("[COMMANDS MEMORY] found one by original in extended: " + original + " -> " + getOne(foundCommands).extendedArgument() );
+            Choice choice = this.ioEngine.ask(initiator, getOne(foundCommands).stringify());
+            switch ( choice ) {
+                case POSTIVE : {
+                    InvocationCommand found = getOne(foundCommands);
+                    InvocationCommand newCommand = createInvocationCommandFrom(
+                            found.type(), original, found.extendedArgument());
+                    asyncDo(() -> {                        
+                        this.daoCommands.save(initiator, newCommand);
+                    });
+                    return valueCompletedWith(newCommand);
+                }
+                case NEGATIVE : {
+                    return valueCompletedEmpty();
+                }
+                case REJECT : {
+                    return valueOperationStopped();
+                }
+                case NOT_MADE : 
+                default : {
+                    return valueCompletedEmpty();
+                }
+            }
+        } else if ( hasMany(foundCommands) ) {
+            debug("[COMMANDS MEMORY] found many by original in extended: " + original + " -> " + foundCommands);
+            WeightedVariants variants = weightVariants(original, commandsToVariants(foundCommands));
+            Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+            if ( answer.isGiven() ) {                    
+                InvocationCommand newCommand = createInvocationCommandFrom(
+                        foundCommands.get(answer.index()).type(),
+                        original, 
+                        answer.text());
+                asyncDo(() -> {               
+                    this.daoCommands.save(initiator, newCommand);
+                });
+                return valueCompletedWith(newCommand);
+            } else if ( answer.isRejection() ) {
+                return valueOperationStopped();
+            } else if ( answer.variantsAreNotSatisfactory() ) {
+                return valueCompletedEmpty();
+            } else {
+                return valueCompletedEmpty();
+            }
         } else {
-            return this.chooseOneCommand(initiator, original, foundCommands);
+            return valueCompletedEmpty();
         }
     }
     
@@ -300,26 +299,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             }            
         }
     }
-    
-//    @Override
-//    public ValueOperation<InvocationCommand> findStoredCommandByPatternOfAnyType(
-//            Initiator initiator, String pattern) {
-//        debug("[COMMANDS MEMORY] [find by pattern] " + pattern);
-//        List<InvocationCommand> foundCommands = 
-//                this.daoCommands.searchInOriginalByPattern(initiator, pattern);
-//        if ( nonEmpty(foundCommands) ) {
-//            debug("[COMMANDS MEMORY] [find by pattern] found in original");
-//            return this.obtainOneUsing(initiator, pattern, foundCommands);
-//        } else {
-//            foundCommands = this.daoCommands.searchInExtendedByPattern(initiator, pattern);
-//            if ( nonEmpty(foundCommands) ) {     
-//                debug("[COMMANDS MEMORY] [find by pattern] found in extended");
-//                return this.obtainOneUsing(initiator, pattern, foundCommands);
-//            } else {
-//                return valueCompletedEmpty();
-//            }
-//        }
-//    }
 
     @Override
     public void removeByExactExtendedAndType(
