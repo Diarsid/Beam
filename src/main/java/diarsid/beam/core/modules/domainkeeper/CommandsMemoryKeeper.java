@@ -19,8 +19,8 @@ public interface CommandsMemoryKeeper {
     ValueOperation<InvocationCommand> findStoredCommandOfAnyType(
             Initiator initiator, String original); 
     
-//    ValueOperation<InvocationCommand> findStoredCommandByPatternOfAnyType(
-//            Initiator initiator, String pattern);
+    ValueOperation<InvocationCommand> findStoredCommandByPatternAndType(
+            Initiator initiator, String pattern, CommandType type);
     
     void tryToExtendCommand(
             Initiator initiator, InvocationCommand command);

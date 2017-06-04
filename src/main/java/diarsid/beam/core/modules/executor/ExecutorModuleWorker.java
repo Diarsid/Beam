@@ -46,6 +46,7 @@ import static java.lang.Thread.sleep;
 import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
+import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
@@ -229,7 +230,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                         this.domain.commandsMemory().remove(initiator, command);
                         command.argument().unextend();
                         command.setTargetNotFound();
-                        return valueOperationFail("Not found.");
+                        return valueCompletedEmpty();
                     }
                 }
                 case FAIL : {
@@ -247,7 +248,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         } else {
             command.setTargetNotFound();
-            return valueOperationFail("Not found in extended.");
+            return valueCompletedEmpty();
         }
     }
     
@@ -354,10 +355,10 @@ class ExecutorModuleWorker implements ExecutorModule {
                                 this.thenDoOnSuccess(initiator, command), 
                                 this.thenDoOnFail(initiator, command));
                     } else {
-                        this.doWhenNotFound(initiator, command);
+                        this.doWhenLocationNotFound(initiator, command);
                     }
                 } else {
-                    this.doWhenNotFound(initiator, command);
+                    this.doWhenLocationNotFound(initiator, command);
                 }
                 break;
             }
@@ -373,6 +374,45 @@ class ExecutorModuleWorker implements ExecutorModule {
                 break;
             }
         }
+    }
+    
+    private void doWhenLocationNotFound(
+            Initiator initiator, OpenLocationCommand command) {        
+        this.deleteCommandIfNecessary(initiator, command);
+        debug("[EXECUTOR] location not found by: " + command.originalArgument());
+        debug("[EXECUTOR] try to proceed as OpenLocationTarget... ");
+        ValueOperation<InvocationCommand> commandFlow = this.domain
+                .commandsMemory()
+                .findStoredCommandByPatternAndType(
+                        initiator, command.originalArgument(), OPEN_LOCATION_TARGET);
+        switch ( commandFlow.result() ) {
+            case COMPLETE : {
+                if ( this.isOpenLocationTargetCommand(commandFlow) ) {
+                    this.openLocationTarget(
+                            initiator, 
+                            (OpenLocationTargetCommand) commandFlow.asComplete().getOrThrow());
+                } else {
+                    this.reportEntityNotFound(initiator, command);
+                }
+                break;
+            }
+            case FAIL : {
+                this.reportEntityNotFound(initiator, command, commandFlow.asFail());
+                break;
+            }
+            case STOP : {
+                break;
+            }
+            default : {
+                this.doWhenOperationResultUndefined(initiator, command);
+                break;
+            }
+        }
+    }
+    
+    private boolean isOpenLocationTargetCommand(ValueOperation<InvocationCommand> commandFlow) {
+        return commandFlow.asComplete().hasValue() && 
+                commandFlow.asComplete().getOrThrow().type().equals(OPEN_LOCATION_TARGET);
     }
     
     private void reportEntityNotFound(

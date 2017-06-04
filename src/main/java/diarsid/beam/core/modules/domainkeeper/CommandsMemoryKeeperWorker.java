@@ -157,25 +157,36 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         List<InvocationCommand> foundCommands = 
                 this.daoCommands.getByExactOriginalOfAnyType(initiator, original);
         if ( hasOne(foundCommands) ) {
-            return this.doWhenOneFoundByExact(initiator, original, getOne(foundCommands));
+            return this.doWhenOneFoundByExactAndType(
+                    initiator, original, getOne(foundCommands), Optional.empty());
         } else if ( hasMany(foundCommands) ) {
             debug("[COMMANDS MEMORY] many found by exact: " + foundCommands);
             return this.chooseOneCommand(initiator, original, foundCommands);
         } else {
-            return this.doWhenNoOneFoundByExact(initiator, original);
+            return this.doWhenNoOneFoundByExactAndType(initiator, original, Optional.empty());
         }
     }
     
-    private ValueOperation<InvocationCommand> doWhenOneFoundByExact(
-            Initiator initiator, String original, InvocationCommand foundCommand) {
+    private ValueOperation<InvocationCommand> doWhenOneFoundByExactAndType(
+            Initiator initiator, 
+            String original, 
+            InvocationCommand foundCommand, 
+            Optional<CommandType> type) {
         debug("[COMMANDS MEMORY] found one stored by exact : " + foundCommand.stringify());
         InvocationCommand exactMatch = foundCommand;
         if ( exactMatch.extendedArgument().equalsIgnoreCase(original) ) {
             debug("[COMMANDS MEMORY] exact match! " + original + " -> " + foundCommand.stringify());
             return valueCompletedWith(exactMatch);
         }
-        List<InvocationCommand> matchingCommands = 
-                this.daoCommands.searchInExtendedByPattern(initiator, original);
+        
+        List<InvocationCommand> matchingCommands;        
+        if ( type.isPresent() ) {
+            matchingCommands = this.daoCommands.searchInExtendedByPatternAndType(
+                    initiator, original, type.get());
+        } else {
+            matchingCommands = this.daoCommands.searchInExtendedByPattern(initiator, original);
+        }
+                
         matchingCommands.add(exactMatch);
         WeightedVariants variants = weightVariants(original, commandsToVariants(matchingCommands));
         variants.removeWorseThan(exactMatch.extendedArgument());
@@ -221,11 +232,17 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
     }
     
-    private ValueOperation<InvocationCommand> doWhenNoOneFoundByExact(
-            Initiator initiator, String original) {
+    private ValueOperation<InvocationCommand> doWhenNoOneFoundByExactAndType(
+            Initiator initiator, String original, Optional<CommandType> type) {
         debug("[COMMANDS MEMORY] not found by exact original: " + original);
-        List<InvocationCommand> foundCommands = 
-                this.daoCommands.searchInExtendedByPattern(initiator, original);
+        List<InvocationCommand> foundCommands;
+        if ( type.isPresent() ) {
+            foundCommands = this.daoCommands.searchInExtendedByPatternAndType(
+                    initiator, original, type.get());
+        } else {
+            foundCommands = this.daoCommands.searchInExtendedByPattern(initiator, original);
+        }
+                
         if ( hasOne(foundCommands) ) {
             debug("[COMMANDS MEMORY] found one by original in extended: " + original + " -> " + getOne(foundCommands).extendedArgument() );
             Choice choice = this.ioEngine.ask(initiator, getOne(foundCommands).stringify());
@@ -297,6 +314,20 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             } else {
                 return valueCompletedEmpty();
             }            
+        }
+    }
+
+    @Override
+    public ValueOperation<InvocationCommand> findStoredCommandByPatternAndType(
+            Initiator initiator, String pattern, CommandType type) {
+        Optional<InvocationCommand> found = 
+                this.daoCommands.getByExactOriginalAndType(initiator, pattern, type);
+        if ( found.isPresent() ) {
+            return this.doWhenOneFoundByExactAndType(
+                    initiator, pattern, found.get(), Optional.of(type));
+        } else {
+            return this.doWhenNoOneFoundByExactAndType(
+                    initiator, pattern, Optional.of(type));
         }
     }
 
