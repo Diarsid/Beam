@@ -22,6 +22,7 @@ public class DomainModuleToCliAdapter {
     private final CliAdapterForWebDirectoriesKeeper webDirectoriesKeeperAdapter;
     private final CliAdapterForWebPagesKeeper webPagesKeeperAdapter;
     private final CliAdapterForNotesKeeper notesKeeperAdapter;
+    private final CliAdapterForCommandsMemoryKeeper commandsMemoryKeeperAdapter;
     private final CliAdapterForAllKeeper allKeeperAdapter;
     
     public DomainModuleToCliAdapter(
@@ -40,6 +41,8 @@ public class DomainModuleToCliAdapter {
                 domain.webPages(), ioEngine);
         this.notesKeeperAdapter = new CliAdapterForNotesKeeper(
                 domain.notes(), ioEngine);
+        this.commandsMemoryKeeperAdapter = new CliAdapterForCommandsMemoryKeeper(
+                domain.commandsMemory(), ioEngine);
         this.allKeeperAdapter = new CliAdapterForAllKeeper(
                 domain.all(), ioEngine);
     }
@@ -70,6 +73,10 @@ public class DomainModuleToCliAdapter {
     
     CliAdapterForNotesKeeper notesAdaper() {
         return this.notesKeeperAdapter;
+    }
+    
+    CliAdapterForCommandsMemoryKeeper commandsMemoryAdapter() {
+        return this.commandsMemoryKeeperAdapter;
     }
     
     CliAdapterForAllKeeper allAdapter() {

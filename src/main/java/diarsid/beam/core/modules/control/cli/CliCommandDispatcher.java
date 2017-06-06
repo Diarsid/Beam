@@ -110,7 +110,9 @@ class CliCommandDispatcher implements CommandDispatcher {
                     break;
                 }    
                 case DELETE_MEM : {
-                    // TODO
+                    this.domainModuleAdapter
+                            .commandsMemoryAdapter()
+                            .deleteMemAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case DELETE_PAGE : {
@@ -240,7 +242,9 @@ class CliCommandDispatcher implements CommandDispatcher {
                     break;
                 }    
                 case FIND_MEM : {
-                    // TODO
+                    this.domainModuleAdapter
+                            .commandsMemoryAdapter()
+                            .findCommandAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }    
                 case FIND_BATCH : {

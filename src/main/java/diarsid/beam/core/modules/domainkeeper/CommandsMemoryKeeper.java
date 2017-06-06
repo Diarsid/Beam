@@ -5,8 +5,12 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
+import java.util.List;
+
 import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 
@@ -21,6 +25,12 @@ public interface CommandsMemoryKeeper {
     
     ValueOperation<InvocationCommand> findStoredCommandByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
+    
+    ValueOperation<List<InvocationCommand>> findMems(
+            Initiator initiator, ArgumentsCommand command);
+    
+    VoidOperation remove(
+            Initiator initiator, ArgumentsCommand command);
     
     void tryToExtendCommand(
             Initiator initiator, InvocationCommand command);

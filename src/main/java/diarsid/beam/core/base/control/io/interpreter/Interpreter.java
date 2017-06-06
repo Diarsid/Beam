@@ -19,6 +19,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_WEB_DIR;
@@ -32,6 +33,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIRECTORY;
@@ -238,6 +240,12 @@ public class Interpreter {
                                                         argumentsFor(DELETE_PAGE)
                                         ),
                                         controlWords(
+                                                "mem", 
+                                                "memory", 
+                                                "com", 
+                                                "comm", 
+                                                "command").and(argumentsFor(DELETE_MEM)),
+                                        controlWords(
                                                 "bat", 
                                                 "batch", 
                                                 "exe").and(argumentsFor(DELETE_BATCH))),
@@ -263,6 +271,12 @@ public class Interpreter {
                                                 "dir", 
                                                 "direct", 
                                                 "directory").and(argumentsFor(FIND_WEBDIRECTORY)),
+                                        controlWords(
+                                                "mem", 
+                                                "memory", 
+                                                "com", 
+                                                "comm", 
+                                                "command").and(argumentsFor(FIND_MEM)),
                                         controlWords(
                                                 "bat", 
                                                 "batch", 

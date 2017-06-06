@@ -177,7 +177,7 @@ class LocationsKeeperWorker
             return valueOperationFail("wrong command type!");
         }
         String namePattern = "";
-        if ( command.hasArguments()) {
+        if ( command.hasArguments() ) {
             namePattern = command.getFirstArg();
         } 
         

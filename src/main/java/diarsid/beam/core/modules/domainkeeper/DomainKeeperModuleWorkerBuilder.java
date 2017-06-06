@@ -77,7 +77,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
                 this.dataModule.commands(), 
-                ioEngine);
+                ioEngine, 
+                dialogHelper);
         locationsKeeper = new LocationsKeeperWorker(
                 this.dataModule.locations(), 
                 commandsMemoryKeeper,

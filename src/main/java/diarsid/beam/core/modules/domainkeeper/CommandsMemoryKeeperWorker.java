@@ -10,19 +10,30 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommands;
 
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
+import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
+import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_MEM;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -31,6 +42,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
 /**
@@ -41,14 +53,180 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoCommands daoCommands;
+    private final KeeperDialogHelper helper;
 
-    CommandsMemoryKeeperWorker(DaoCommands daoCommands, InnerIoEngine ioEngine) {
+    CommandsMemoryKeeperWorker(
+            DaoCommands daoCommands, InnerIoEngine ioEngine, KeeperDialogHelper helper) {
         this.daoCommands = daoCommands;
         this.ioEngine = ioEngine;
+        this.helper = helper;
     }
 
     @Override
-    public void tryToExtendCommand(Initiator initiator, InvocationCommand command) {
+    public ValueOperation<List<InvocationCommand>> findMems(
+            Initiator initiator, ArgumentsCommand command) {
+        if ( command.type().isNot(FIND_MEM) ) {
+            return valueOperationFail("wrong command type!");
+        }
+        
+        String memPattern;
+        if ( command.hasArguments() ) {
+            memPattern = command.joinedArguments();
+        } else {
+            memPattern = "";
+        }
+        
+        return this.findCommands(initiator, memPattern);
+    }
+
+    private ValueOperation<List<InvocationCommand>> findCommands(
+            Initiator initiator, String memPattern) {       
+        
+        memPattern = helper.validateInteractively(initiator, memPattern, "mem", TEXT_RULE);
+        
+        if ( memPattern.isEmpty() ) {
+            return valueOperationStopped();
+        }
+        
+        boolean isExactSearch = false;
+        Choice choice;
+        List<InvocationCommand> foundCommands;        
+        searching: while ( true ) { 
+            
+            choice = this.ioEngine.ask(initiator, "exact match");
+            if ( choice.isPositive() ) {
+                isExactSearch = true;
+            } else if ( choice.isNotMade() || choice.isNegative() ) {
+                isExactSearch = false;
+            } else if ( choice.isRejected() ) {
+                return valueOperationStopped();
+            } 
+            
+            if ( memPattern.isEmpty() ) {
+                memPattern = helper.validateInteractively(initiator, memPattern, "mem", TEXT_RULE);
+                if ( memPattern.isEmpty() ) {
+                    return valueOperationStopped();
+                }
+            }            
+            
+            if ( isExactSearch ) {
+                foundCommands = this.daoCommands.getByExactOriginalOfAnyType(initiator, memPattern);
+            } else {
+                foundCommands = this.daoCommands.searchInOriginalByPattern(initiator, memPattern);
+                foundCommands.addAll(
+                        this.daoCommands.searchInExtendedByPattern(initiator, memPattern));
+                foundCommands = foundCommands.stream().distinct().collect(toList());
+            }
+            
+            if ( foundCommands.isEmpty() ) {
+                this.ioEngine.report(initiator, format("not found by '%s'", memPattern));
+                memPattern = "";
+                continue searching;
+            } else {
+                return valueCompletedWith(foundCommands);
+            }
+        } 
+    }
+
+    @Override
+    public VoidOperation remove(Initiator initiator, ArgumentsCommand command) {
+        if ( command.type().isNot(DELETE_MEM) ) {
+            return voidOperationFail("wrong command type!");
+        }
+        
+        String memPattern;
+        if ( command.hasArguments() ) {
+            memPattern = command.joinedArguments();
+        } else {
+            memPattern = "";
+        }
+        
+        ValueOperation<List<InvocationCommand>> commandsFlow = 
+                this.findCommands(initiator, memPattern);
+        
+        
+        switch ( commandsFlow.result() ) {
+            case COMPLETE : {
+                return this.chooseOneCommandAndRemoveIt(
+                        initiator, memPattern, commandsFlow.asComplete().getOrThrow());
+            }
+            case FAIL : {
+                return voidOperationFail(commandsFlow.asFail().reason());
+            }
+            case STOP : {
+                return voidOperationStopped();
+            }
+            default : {
+                return voidOperationFail("unknown ValueOperation result.");
+            }
+        }
+    }
+    
+    private VoidOperation chooseOneCommandAndRemoveIt(
+            Initiator initiator, String memPattern, List<InvocationCommand> commands) {
+        if ( hasOne(commands) ) {
+            return this.removeCommand(initiator, getOne(commands));
+        } else if ( hasMany(commands) ) {            
+            return this.chooseOneAndRemoveCommand(initiator, memPattern, commands);
+        } else {
+            return voidOperationStopped();
+        }
+    }
+    
+    private VoidOperation removeCommand(
+            Initiator initiator, InvocationCommand command) {
+        this.ioEngine.report(initiator, format("found: %s", command.toMessageString()));
+        Choice choice = this.ioEngine.ask(initiator, "remove all related mems also");
+        if ( choice.isPositive() ) {
+            boolean removed = this.daoCommands.delete(initiator, command);
+            return this.reportRemoving(removed);
+        } else if ( choice.isNotMade() || choice.isNegative() ) {
+            boolean removed = this.daoCommands.deleteByExactOriginalOfType(
+                    initiator, command.originalArgument(), command.type());
+            return this.reportRemoving(removed);
+        } else if ( choice.isRejected() ) {
+            return voidOperationStopped();
+        } else {
+            return voidOperationFail("cannot determine choice.");
+        }
+    }
+
+    private VoidOperation reportRemoving(boolean removed) {
+        if ( removed ) {
+            return voidCompleted("removed.");
+        } else {
+            return voidOperationFail("DAO cannot remove command.");
+        }
+    }
+    
+    private VoidOperation chooseOneAndRemoveCommand(
+            Initiator initiator, String memPattern, List<InvocationCommand> commands) {
+        ValueOperation<InvocationCommand> removedFlow = 
+                    this.chooseOneCommand(initiator, memPattern, commands);
+        
+        switch ( removedFlow.result() ) {
+            case COMPLETE : {
+                if ( removedFlow.asComplete().hasValue() ) {
+                    return this.removeCommand(initiator, removedFlow.asComplete().getOrThrow());
+                } else {
+                    return voidOperationStopped();
+                }
+            }
+            case FAIL : {
+                return voidOperationFail(removedFlow.asFail().reason());
+            }
+            case STOP : {
+                return voidOperationStopped();
+            }
+            default : {
+                return voidOperationFail("unknown ValueOperation result.");
+            }  
+        }
+    }
+
+    @Override
+    public void tryToExtendCommand(
+            Initiator initiator, InvocationCommand command) {
         Optional<InvocationCommand> exactMatch = this.daoCommands.getByExactOriginalAndType(
                 initiator, command.originalArgument(), command.type());        
         debug("[COMMANDS MEMORY] [find by eaxct match] " + command.originalArgument());
@@ -93,7 +271,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
     
     @Override
-    public void tryToExtendCommandByPattern(Initiator initiator, InvocationCommand command) {
+    public void tryToExtendCommandByPattern(
+            Initiator initiator, InvocationCommand command) {
         List<InvocationCommand> foundCommands;
         foundCommands = this.daoCommands.searchInOriginalByPatternAndType(
                 initiator, command.originalArgument(), command.type());
