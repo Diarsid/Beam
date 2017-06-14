@@ -47,5 +47,5 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     void accept(Initiator initiator) throws RemoteException;
     
     @Override
-    String getName() throws RemoteException;
+    String name() throws RemoteException;
 } 

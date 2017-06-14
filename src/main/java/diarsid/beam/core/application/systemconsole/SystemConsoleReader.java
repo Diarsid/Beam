@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.application.systemconsole;
 
+import diarsid.beam.core.base.control.io.console.ConsoleReader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -13,15 +15,16 @@ import java.io.IOException;
  *
  * @author Diarsid
  */
-public class ConsoleReader {
+class SystemConsoleReader implements ConsoleReader {
     
     private final BufferedReader reader;   
     
-    public ConsoleReader(BufferedReader reader) {
+    SystemConsoleReader(BufferedReader reader) {
         this.reader = reader;
     }
     
-    String readLine() throws IOException {
+    @Override
+    public String readLine() throws IOException {
         return this.reader.readLine().trim();
     }
 }

@@ -9,6 +9,7 @@ package diarsid.beam.core.application.systemconsole;
 import java.io.IOException;
 
 import diarsid.beam.core.application.environment.Configuration;
+import diarsid.beam.core.base.control.io.console.ConsoleController;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 
 import static java.lang.Integer.parseInt;
@@ -18,7 +19,9 @@ import static java.lang.Thread.sleep;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.application.systemconsole.SystemIO.provideReader;
 import static diarsid.beam.core.application.systemconsole.SystemIO.provideWriter;
+import static diarsid.beam.core.base.control.io.console.ConsoleControllerBuilder.build;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
@@ -41,11 +44,14 @@ public class SystemConsole {
             Configuration configuration = configuration();
             PASSPORT.setName(SYS_CONSOLE_NAME);
             PASSPORT.setPort(parseInt(configuration.asString("rmi.sysconsole.port")));
-            ConsolePrinter printer = new ConsolePrinter(provideWriter());
-            ConsoleReader reader = new ConsoleReader(provideReader());
-            ConsoleController console = new ConsoleController(printer, reader);
+            SystemConsolePrinter printer = new SystemConsolePrinter(provideWriter());
+            SystemConsoleReader reader = new SystemConsoleReader(provideReader());
             ConsoleRemoteManager remoteManager = new ConsoleRemoteManager(configuration);
-            remoteManager.export(console);
+            SystemConsolePlatform platform = new SystemConsolePlatform(
+                    printer, reader, remoteManager.importRemoteAccess());
+            ConsoleController consoleController = build(platform);            
+            remoteManager.export(consoleController);
+            asyncDoIndependently(consoleController);
         } catch (StartupFailedException|WorkflowBrokenException e) {
             logError(SystemConsole.class, e.getCause());
             logError(SystemConsole.class, e);

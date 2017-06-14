@@ -19,7 +19,7 @@ import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
  */
 public interface OuterIoEngine {
     
-    String getName() throws IOException;
+    String name() throws IOException;
     
     String askForInput(String inputRequest) throws IOException;
     

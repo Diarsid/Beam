@@ -6,7 +6,8 @@
 
 package diarsid.beam.core.application.systemconsole;
 
-import java.io.IOException;
+import diarsid.beam.core.base.control.io.console.ConsoleController;
+
 import java.rmi.RemoteException;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -16,11 +17,6 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
-
-import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
-import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
-import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 
 /**
  *
@@ -35,92 +31,48 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public void close() throws RemoteException {
-        try {
+    public void close() throws RemoteException {        
             this.console.close();
-        } catch (IOException e) {
-            logError(this.getClass(), e);   
-            exitSystemConsole();
-        }
     }
     
     @Override
-    public String askForInput(String inputRequest) throws RemoteException {
-        try {
-            return this.console.askForInput(inputRequest);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-            return "";
-        }
+    public String askForInput(String inputRequest) throws RemoteException {        
+        return this.console.askForInput(inputRequest);
     }
     
     @Override
-    public Choice resolve(String yesOrNoQuestion) throws RemoteException {
-        try {
-            return this.console.resolve(yesOrNoQuestion);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-            return NOT_MADE;
-        }
+    public Choice resolve(String yesOrNoQuestion) throws RemoteException {        
+        return this.console.resolve(yesOrNoQuestion);
     }
 
     @Override
     public Answer resolve(VariantsQuestion question) throws RemoteException {
-        try {
-            return this.console.resolve(question);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-            return rejectedAnswer();
-        }
+        return this.console.resolve(question);
     }
 
     @Override
     public Answer resolve(WeightedVariants variants) throws RemoteException {
-        try {
-            return this.console.resolve(variants);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-            return rejectedAnswer();
-        }
+        return this.console.resolve(variants);
     }
 
     @Override
     public void report(String string) throws RemoteException {
-        try {
-            this.console.report(string);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-        }
+        this.console.report(string);
     }
 
     @Override
     public void report(Message message) throws RemoteException {
-        try {
-            this.console.report(message);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-        }
+        this.console.report(message);
     }
 
     @Override
     public void accept(Initiator initiator) throws RemoteException {
-        try {
-            this.console.accept(initiator);
-        } catch (IOException e) {
-            logError(this.getClass(), e);
-            exitSystemConsole();
-        }
+        this.console.accept(initiator);
     }
 
     @Override
-    public String getName() throws RemoteException {
-        return this.console.getName();
+    public String name() throws RemoteException {
+        return this.console.name();
     }
    
 }

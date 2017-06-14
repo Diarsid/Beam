@@ -16,8 +16,20 @@ public class StringHolder {
     
     private String string;
     
-    public StringHolder() {
+    private StringHolder() {
         this.string = "";
+    }
+    
+    private StringHolder(String s) {
+        this.string = s;
+    }
+    
+    public static StringHolder empty() {
+        return new StringHolder();
+    }
+    
+    public static StringHolder hold(String s) {
+        return new StringHolder(s);
     }
 
     public String get() {
@@ -26,6 +38,10 @@ public class StringHolder {
 
     public void set(String string) {
         this.string = string;
+    }
+    
+    public void setEmpty() {
+        this.string = "";
     }
     
     public boolean isEmpty() {

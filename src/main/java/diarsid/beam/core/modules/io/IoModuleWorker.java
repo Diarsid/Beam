@@ -42,7 +42,7 @@ public class IoModuleWorker implements IoModule {
     @Override
     public boolean registerOuterIoEngine(OuterIoEngine ioEngine) {
         try {
-            debug("register ioEngine: " + ioEngine.getName());
+            debug("register ioEngine: " + ioEngine.name());
         } catch (IOException ex) {
             logError(this.getClass(), ex);
         }

@@ -49,7 +49,7 @@ public class OuterIoEnginesHolder {
                     ioEngine.accept(initiator);
                     this.initiators.add(initiator);
                     log(this.getClass(), format("%s set with initiator: %s, into slot %d", 
-                            ioEngine.getName(), 
+                            ioEngine.name(), 
                             initiator.identity(), 
                             initiator.engineNumber()));
                     return true;
@@ -102,7 +102,7 @@ public class OuterIoEnginesHolder {
                     .forEach(initiator -> {
                         try {
                             OuterIoEngine engine = this.enginesManager.getEngine(initiator);
-                            String engineName = engine.getName();
+                            String engineName = engine.name();
                             engine.close();
                             this.enginesManager.removeEngine(initiator.engineNumber());
                             debug("closing engine: " + engineName);

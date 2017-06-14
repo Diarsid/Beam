@@ -18,6 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.util.StringHolder;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommands;
 
@@ -42,6 +43,8 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.StringHolder.empty;
+import static diarsid.beam.core.base.util.StringHolder.hold;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
 
@@ -69,20 +72,20 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return valueOperationFail("wrong command type!");
         }
         
-        String memPattern;
+        StringHolder memPattern;
         if ( command.hasArguments() ) {
-            memPattern = command.joinedArguments();
+            memPattern = hold(command.joinedArguments());
         } else {
-            memPattern = "";
+            memPattern = empty();
         }
         
         return this.findCommands(initiator, memPattern);
     }
 
     private ValueOperation<List<InvocationCommand>> findCommands(
-            Initiator initiator, String memPattern) {       
+            Initiator initiator, StringHolder memPattern) {       
         
-        memPattern = helper.validateInteractively(initiator, memPattern, "mem", TEXT_RULE);
+        memPattern.set(helper.validateInteractively(initiator, memPattern.get(), "mem", TEXT_RULE));
         
         if ( memPattern.isEmpty() ) {
             return valueOperationStopped();
@@ -103,24 +106,27 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             } 
             
             if ( memPattern.isEmpty() ) {
-                memPattern = helper.validateInteractively(initiator, memPattern, "mem", TEXT_RULE);
+                memPattern.set(helper.validateInteractively(
+                        initiator, memPattern.get(), "mem", TEXT_RULE));
                 if ( memPattern.isEmpty() ) {
                     return valueOperationStopped();
                 }
             }            
             
             if ( isExactSearch ) {
-                foundCommands = this.daoCommands.getByExactOriginalOfAnyType(initiator, memPattern);
+                foundCommands = this.daoCommands
+                        .getByExactOriginalOfAnyType(initiator, memPattern.get());
             } else {
-                foundCommands = this.daoCommands.searchInOriginalByPattern(initiator, memPattern);
-                foundCommands.addAll(
-                        this.daoCommands.searchInExtendedByPattern(initiator, memPattern));
+                foundCommands = this.daoCommands
+                        .searchInOriginalByPattern(initiator, memPattern.get());
+                foundCommands.addAll(this.daoCommands
+                        .searchInExtendedByPattern(initiator, memPattern.get()));
                 foundCommands = foundCommands.stream().distinct().collect(toList());
             }
             
             if ( foundCommands.isEmpty() ) {
                 this.ioEngine.report(initiator, format("not found by '%s'", memPattern));
-                memPattern = "";
+                memPattern.setEmpty();
                 continue searching;
             } else {
                 return valueCompletedWith(foundCommands);
@@ -134,21 +140,20 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return voidOperationFail("wrong command type!");
         }
         
-        String memPattern;
+        StringHolder memPattern;
         if ( command.hasArguments() ) {
-            memPattern = command.joinedArguments();
+            memPattern = hold(command.joinedArguments());
         } else {
-            memPattern = "";
+            memPattern = empty();
         }
         
         ValueOperation<List<InvocationCommand>> commandsFlow = 
-                this.findCommands(initiator, memPattern);
-        
+                this.findCommands(initiator, memPattern);        
         
         switch ( commandsFlow.result() ) {
             case COMPLETE : {
                 return this.chooseOneCommandAndRemoveIt(
-                        initiator, memPattern, commandsFlow.asComplete().getOrThrow());
+                        initiator, memPattern.get(), commandsFlow.asComplete().getOrThrow());
             }
             case FAIL : {
                 return voidOperationFail(commandsFlow.asFail().reason());

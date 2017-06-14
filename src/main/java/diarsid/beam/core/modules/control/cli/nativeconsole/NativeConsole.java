@@ -109,7 +109,7 @@ public class NativeConsole
     }
 
     @Override
-    public String getName() {
+    public String name() {
         return "Native console";
     }
 }

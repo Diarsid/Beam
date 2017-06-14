@@ -13,6 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 
 import diarsid.beam.core.application.environment.Configuration;
+import diarsid.beam.core.base.control.io.console.ConsoleController;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
@@ -52,11 +53,7 @@ public class ConsoleRemoteManager {
     }
     
     void export(ConsoleController console) {
-        try {            
-            RemoteCoreAccessEndpoint remoteAccess = this.importRemoteAccess();            
-            console.setRemoteAccess(remoteAccess);
-            ConsoleRemoteObjectsHolder.holdedRemoteCoreAccess = remoteAccess;
-                        
+        try {     
             Registry registry = null;
             boolean registryNotCreated = true;
             int otherConsolesCounter = 0;
@@ -88,7 +85,7 @@ public class ConsoleRemoteManager {
             ConsoleRemoteObjectsHolder.holdedRemoteConsole = remoteConsole;
             ConsoleRemoteObjectsHolder.holdedRemoteConsoleExported = remoteConsoleExported;
             getPassport().setName(this.consoleName);
-            remoteAccess.acceptRemoteOuterIoEngine(
+            ConsoleRemoteObjectsHolder.holdedRemoteCoreAccess.acceptRemoteOuterIoEngine(
                     this.consoleName, 
                     this.consoleRegistryHost, 
                     this.consoleRegistryPort);
@@ -99,13 +96,17 @@ public class ConsoleRemoteManager {
         }
     }
 
-    private RemoteCoreAccessEndpoint importRemoteAccess() 
-            throws NumberFormatException, RemoteException, NotBoundException {
-        RemoteCoreAccessEndpoint remoteAccess = (RemoteCoreAccessEndpoint) getRegistry(
-                        this.coreRegistryHost,
-                        this.coreRegistryPort
-                ).lookup(this.coreAccessEndpointName);
-        consoleDebug("RemoteAccess is imported successfully.");
-        return remoteAccess;
+    RemoteCoreAccessEndpoint importRemoteAccess() {
+        try {
+            RemoteCoreAccessEndpoint remoteAccess = 
+                    (RemoteCoreAccessEndpoint) getRegistry(
+                            this.coreRegistryHost,
+                            this.coreRegistryPort).lookup(this.coreAccessEndpointName);
+            consoleDebug("RemoteAccess is imported successfully.");
+            ConsoleRemoteObjectsHolder.holdedRemoteCoreAccess = remoteAccess;
+            return remoteAccess;
+        } catch (NumberFormatException|NotBoundException|RemoteException e) {
+            throw new StartupFailedException(e);
+        }
     }
 }
