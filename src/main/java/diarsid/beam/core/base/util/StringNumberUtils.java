@@ -21,6 +21,10 @@ public class StringNumberUtils {
         return s.matches("\\d+");
     }
     
+    public static boolean isNumericRange(String s) {
+        return s.matches("\\d+-\\d+");
+    }
+    
     public static boolean notNumeric(String s) {
         return ! s.matches("\\d+");
     }

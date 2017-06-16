@@ -12,6 +12,7 @@ import static java.lang.Integer.parseInt;
 import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
+import static diarsid.beam.core.base.util.StringNumberUtils.isNumericRange;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.TimePeriod.DAYS;
@@ -40,26 +41,31 @@ public class AllowedTimePeriodsParser {
         AllowedTimePeriod time = emptyTime();
         stream(numbers)
                 .filter(numberString -> nonEmpty(numberString))
-                .filter(numberString -> isNumeric(numberString) || numberString.matches("\\d+-\\d+") )
+                .filter(numberString -> isNumeric(numberString) || isNumericRange(numberString))
                 .forEach(numberString -> {
-                    if ( isNumeric(numberString) ) {
-                        if ( period.is(HOURS) ) {
-                            time.includeHourOfDay(parseInt(numberString));
-                        } else if ( period.is(DAYS) ) {
-                            time.includeDayOfWeek(parseInt(numberString));
-                        }                        
-                    } else if ( numberString.matches("\\d+-\\d+") ) {
-                        int dashIndex = numberString.indexOf("-");
-                        int from = parseInt(numberString.substring(0, dashIndex));
-                        int to = parseInt(numberString.substring(dashIndex + 1, numberString.length()));
-                        if ( period.is(HOURS) ) {
-                            time.includeHoursOfDayBetween(from, to);
-                        } else if ( period.is(DAYS) ) {
-                            time.includeDaysOfWeekBetween(from, to);
-                        }
-                    }
+                    this.parseTimeAndCollectInAllowedTimePeriod(numberString, period, time);
                 });
         return time;
+    }
+    
+    private void parseTimeAndCollectInAllowedTimePeriod(
+            String numberString, TimePeriod period, AllowedTimePeriod time) {
+        if ( isNumeric(numberString) ) {
+            if ( period.is(HOURS) ) {
+                time.includeHourOfDay(parseInt(numberString));
+            } else if ( period.is(DAYS) ) {
+                time.includeDayOfWeek(parseInt(numberString));
+            }                        
+        } else if ( isNumericRange(numberString) ) {
+            int dashIndex = numberString.indexOf("-");
+            int from = parseInt(numberString.substring(0, dashIndex));
+            int to = parseInt(numberString.substring(dashIndex + 1, numberString.length()));
+            if ( period.is(HOURS) ) {
+                time.includeHoursOfDayBetween(from, to);
+            } else if ( period.is(DAYS) ) {
+                time.includeDaysOfWeekBetween(from, to);
+            }
+        }
     }
     
     public AllowedTimePeriod parseAllowedHours(String timePattern) {

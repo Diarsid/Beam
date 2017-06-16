@@ -59,7 +59,7 @@ public class SystemConsole {
         }
     }
     
-    public static ConsolePassport getPassport() {
+    static ConsolePassport getPassport() {
         return PASSPORT;
     }
     

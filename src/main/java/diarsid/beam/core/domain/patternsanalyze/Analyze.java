@@ -32,9 +32,7 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  * @author Diarsid
  */
 public class Analyze {
-    
-    
-    // TODO sorting steps should tolerate good clusters.
+        
     private Analyze() {        
     }
     
@@ -77,14 +75,19 @@ public class Analyze {
     }
 
     public static void doAll() {
-//        weightAnalyzeCases();
+        weightAnalyzeCases();
 
-        analyzeImportance();
+//        analyzeImportance();
     }
 
     private static void analyzeImportance() {
         System.out.println(clustersImportanceDependingOn(1, 4, 3));
         System.out.println(clustersImportanceDependingOn(1, 2, 5));
+        System.out.println(clustersImportanceDependingOn(2, 7, 1));
+        System.out.println(clustersImportanceDependingOn(3, 9, 2));
+        System.out.println(clustersImportanceDependingOn(2, 9, 2));
+        System.out.println(clustersImportanceDependingOn(1, 9, 2));
+        System.out.println(clustersImportanceDependingOn(1, 8, 3));
     }
 
     private static void weightAnalyzeCases() {
@@ -184,8 +187,6 @@ public class Analyze {
         return variant.charAt(variant.length() - 1);
     }
     
-    // TODO improve pattern estimate. 
-    // TODO throw variant away 
     public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
         pattern = lower(pattern);
         sort(variants);
@@ -209,6 +210,9 @@ public class Analyze {
         int clustered;
         int nonClustered;
         int clustersWeight;
+        double clustersImportance;
+        double missedImportance;
+        double sortingStepsImportance;
         int currentClusterLength;
         int currentPosition;
         int nextPosition;
@@ -219,7 +223,7 @@ public class Analyze {
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
         
-        for (Variant variant : variants) {
+        variantsWeighting: for (Variant variant : variants) {
             variantText = lower(variant.text());
             // positions counting begins...
             patternChars = pattern.toCharArray();
@@ -269,11 +273,11 @@ public class Analyze {
             currentClusterLength = 0;
             clusterContinuation = false;
             containsFirstChar = false;
-            for (int i = 0; i < positions.length; i++) {
+            clustersCounting: for (int i = 0; i < positions.length; i++) {
                 currentPosition = positions[i];
                 if ( currentPosition < 0 ) {
                     missed++;
-                    continue;
+                    continue clustersCounting;
                 }
                 if ( currentPosition == 0 ) {
                     containsFirstChar = true;
@@ -320,20 +324,27 @@ public class Analyze {
                     }
                 }
             }
+            if ( missedToMuch(missed, variantText.length()) ) {
+                System.out.println(variantText + ", missed: " + missed + " to much, skip variant!");
+                continue variantsWeighting;
+            }
             nonClustered = nonClustered + missed;
             firstCharsMatchInVariantAndPattern = ( pattern.charAt(0) == variantText.charAt(0) );
+            clustersImportance = clustersImportanceDependingOn(clustersQty, clustered, nonClustered);
+            missedImportance = missedImportanceDependingOn(missed, clustersImportance);
+            sortingStepsImportance = sortingStepsImportanceDependingOn(sortingSteps, clustersImportance);
             variantWeight = variantWeight + (
                     ( nonClustered * 5.3 ) 
                     - ( clustered * 4.6 ) 
                     - ( firstCharMatchRatio(containsFirstChar) )
-                    - ( clustersImportanceDependingOn(clustersQty, clustered, nonClustered) )
+                    - ( clustersImportance )
                     + ( clustersWeight * clusterWeightRatioDependingOn(
                             containsFirstChar, 
                             firstCharsMatchInVariantAndPattern) ) 
                     - ( clustersQty * 5.4 ) 
-                    + ( missedRatio(missed) )
+                    + ( missedImportance )
                     + (( variantText.length() - clustered ) * 0.8 ) 
-                    + ( sortingSteps * 5.7 ) );            
+                    + ( sortingStepsImportance ) );            
             if ( ( clustered < 2 ) && ( sortingSteps > 0 ) ) {
                 variantWeight = variantWeight * 1.8;
             }
@@ -342,9 +353,12 @@ public class Analyze {
             System.out.println(String.format("   %-15s %s", "clusters", clustersQty));
             System.out.println(String.format("   %-15s %s", "clustered", clustered));
             System.out.println(String.format("   %-15s %s", "clusters weight", clustersWeight));
+            System.out.println(String.format("   %-15s %s", "clusters importance", clustersImportance));
             System.out.println(String.format("   %-15s %s", "non clustered", nonClustered));
             System.out.println(String.format("   %-15s %s", "missed", missed));
-            System.out.println(String.format("   %-15s %s", "sort steps", sortingSteps));
+            System.out.println(String.format("   %-15s %s", "missedImportance", missedImportance));
+            System.out.println(String.format("   %-15s %s", "sortSteps", sortingSteps));
+            System.out.println(String.format("   %-15s %s", "sortStepsImportance", sortingStepsImportance));
             System.out.println(String.format("   %-15s %s", "total weight", variantWeight));
             if ( variantWeight < minWeight ) {
                 minWeight = variantWeight;
@@ -382,9 +396,69 @@ public class Analyze {
                 .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
     }
+    
+    private static boolean missedToMuch(int missed, int variantLength) {
+        return ( ( (missed * 1.0) / (variantLength * 1.0) ) > 0.34 );
+    }
 
-    private static double missedRatio(int missed) {
-        return ( ( missed * 1.0) - 0.8 ) * 14.0;
+    private static double missedImportanceDependingOn(int missed, double clustersImportance) {
+        if ( missed == 0 ) {
+            return 0.0;
+        }
+        return ( ( missed * 1.0) - 0.8 ) * missedRatio(clustersImportance);
+    }
+    
+    private static double missedRatio(double clustersImportance) {
+        if ( clustersImportance < 0 ) {
+            return 19.0;
+        } else if ( clustersImportance >= 0.0 && clustersImportance < 10.0 ) {
+            return 14.0;
+        } else if ( clustersImportance >= 10.0 && clustersImportance < 20.0 ) {
+            return 12.0;
+        } else if ( clustersImportance >= 20.0 && clustersImportance < 30.0 ) {
+            return 10.0;
+        } else if ( clustersImportance >= 30.0 && clustersImportance < 40.0 ) {
+            return 8.0;
+        } else if ( clustersImportance >= 40.0 && clustersImportance < 60.0 ) {
+            return 6.0;
+        } else if ( clustersImportance >= 60.0 && clustersImportance < 80.0 ) {
+            return 4.0;
+        } else if ( clustersImportance >= 80.0 && clustersImportance < 100.0 ) {
+            return 2.0;
+        } else if ( clustersImportance >= 100.0 && clustersImportance < 130.0 ) {
+            return 1.0;
+        } else {
+            return 0.5;
+        }
+    }
+    
+    private static double sortingStepsImportanceDependingOn(
+            int sortingSteps, double clustersImportance) {
+        return sortingSteps * sortingStepsRatio(clustersImportance);
+    }
+    
+    private static double sortingStepsRatio(double clustersImportance) {
+        if ( clustersImportance < 0 ) {
+            return 14.3;
+        } else if ( clustersImportance >= 0.0 && clustersImportance < 10.0 ) {
+            return 8.9;
+        } else if ( clustersImportance >= 10.0 && clustersImportance < 20.0 ) {
+            return 7.3;
+        } else if ( clustersImportance >= 20.0 && clustersImportance < 30.0 ) {
+            return 5.1;
+        } else if ( clustersImportance >= 30.0 && clustersImportance < 40.0 ) {
+            return 3.7;
+        } else if ( clustersImportance >= 40.0 && clustersImportance < 60.0 ) {
+            return 2.3;
+        } else if ( clustersImportance >= 60.0 && clustersImportance < 80.0 ) {
+            return 1.8;
+        } else if ( clustersImportance >= 80.0 && clustersImportance < 100.0 ) {
+            return 1.1;
+        } else if ( clustersImportance >= 100.0 && clustersImportance < 130.0 ) {
+            return 0.8;
+        } else {
+            return 0.2;
+        }
     }
 
     private static boolean isDiversitySufficient(double minWeight, double maxWeight) {
