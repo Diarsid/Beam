@@ -140,6 +140,9 @@ class NotesKeeperWorker implements NotesKeeper {
             Initiator initiator, String noteTarget, List<String> foundNoteTargets) {
         WeightedVariants variants =
                 weightVariants(noteTarget, stringsToVariants(foundNoteTargets));
+        if ( variants.isEmpty() ) {
+            return voidOperationFail("not found.");
+        }
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             try {

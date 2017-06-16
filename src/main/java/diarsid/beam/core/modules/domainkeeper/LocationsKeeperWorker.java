@@ -120,6 +120,11 @@ class LocationsKeeperWorker
                 return valueCompletedWith(getOne(foundLocations));
             } else if ( hasMany(foundLocations) ) {
                 weightedBatchNames = weightVariants(name, entitiesToVariants(foundLocations));
+                if ( weightedBatchNames.isEmpty() ) {
+                    this.ioEngine.report(initiator, format("not found by '%s'", name));
+                    name = "";
+                    continue locationDiscussing;
+                }
                 answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedBatchNames);
                 if ( answer.isGiven() ) {
                     return valueCompletedWith(foundLocations.get(answer.index()));
@@ -186,8 +191,11 @@ class LocationsKeeperWorker
 
     private ValueOperation<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
-        WeightedVariants question = weightVariants(pattern, entitiesToVariants(locations));
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, question);
+        WeightedVariants variants = weightVariants(pattern, entitiesToVariants(locations));
+        if ( variants.isEmpty() ) {
+            return valueCompletedEmpty();
+        }
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             return valueCompletedWith(locations.get(answer.index()));
         } else if ( answer.isRejection() ) {

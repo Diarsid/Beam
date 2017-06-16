@@ -129,6 +129,11 @@ class BatchesKeeperWorker
                 }
             } else if ( hasMany(foundBatchNames) ) {
                 weightedBatchNames = weightStrings(name, foundBatchNames);
+                if ( weightedBatchNames.isEmpty() ) {
+                    this.ioEngine.report(initiator, format("cannot get Batch by '%s'", name));
+                    name = "";
+                    continue batchDiscussing;
+                }
                 answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedBatchNames);
                 if ( answer.isGiven() ) {
                     foundBatch = this.dao.getBatchByExactName(initiator, answer.text());

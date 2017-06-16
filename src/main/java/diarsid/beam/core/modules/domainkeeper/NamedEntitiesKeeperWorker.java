@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
@@ -77,7 +78,11 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
     
     private ValueOperation<? extends NamedEntity> manageWithMultipleEntities(
             Initiator initiator, String pattern, List<NamedEntity> entities) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, weightVariants(pattern, entitiesToVariants(entities)));
+        WeightedVariants variants = weightVariants(pattern, entitiesToVariants(entities));
+        if ( variants.isEmpty() ) {
+            return valueCompletedEmpty();
+        }
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             return valueCompletedWith(entities.get(answer.index()));
         } else {

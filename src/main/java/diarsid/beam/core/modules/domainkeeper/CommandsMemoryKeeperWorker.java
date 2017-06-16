@@ -257,6 +257,9 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         matchingCommands.add(exactMatch);
         WeightedVariants variants = weightVariants(
                 command.originalArgument(), commandsToVariants(matchingCommands));
+        if ( variants.isEmpty() ) {
+            return;
+        }
         variants.removeWorseThan(exactMatch.extendedArgument());
         if ( variants.hasOne() ) {
             command.setStored();
@@ -373,6 +376,9 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 
         matchingCommands.add(exactMatch);
         WeightedVariants variants = weightVariants(original, commandsToVariants(matchingCommands));
+        if ( variants.isEmpty() ) {
+            return valueCompletedEmpty();
+        }
         variants.removeWorseThan(exactMatch.extendedArgument());
         if ( variants.hasOne() ) {
             InvocationCommand newCommand = createInvocationCommandFrom(
@@ -454,6 +460,9 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         } else if ( hasMany(foundCommands) ) {
             debug("[COMMANDS MEMORY] found many by original in extended: " + original + " -> " + foundCommands);
             WeightedVariants variants = weightVariants(original, commandsToVariants(foundCommands));
+            if ( variants.isEmpty() ) {
+                return valueCompletedEmpty();
+            }
             Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
             if ( answer.isGiven() ) {                    
                 InvocationCommand newCommand = createInvocationCommandFrom(
@@ -481,6 +490,9 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             String pattern, 
             List<InvocationCommand> commands) {
         WeightedVariants variants = weightVariants(pattern, commandsToVariants(commands));
+        if ( variants.isEmpty() ) {
+            return valueCompletedEmpty();
+        }
         debug("[COMMANDS MEMORY] [chosing one] variants qty: " + variants.size() );
         if ( variants.best().text().equalsIgnoreCase(pattern) ) {
             return valueCompletedWith(commands.get(variants.best().index()));

@@ -19,9 +19,9 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 
 
 /**
@@ -41,6 +41,14 @@ public class WeightedVariants implements Serializable {
         this.currentVariantIndex = -1;
         this.isDiversityAcceptable = isDiversityAcceptable;
         this.currentSimilarVariants = null;
+    }
+    
+    public boolean isEmpty() {
+        return this.variants.isEmpty();
+    }
+    
+    public boolean isNotEmpty() {
+        return ! this.variants.isEmpty();
     }
     
     public Variant best() {

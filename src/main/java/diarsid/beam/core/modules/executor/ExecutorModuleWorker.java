@@ -51,6 +51,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
@@ -78,7 +79,6 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 
 /**
  *
@@ -580,8 +580,14 @@ class ExecutorModuleWorker implements ExecutorModule {
                 target = result.success().foundFile();
                 this.openTargetAndExtendCommand(initiator, location, target, command);
             } else {
-                Answer answer = this.ioEngine.chooseInWeightedVariants(
-                        initiator, weightStrings(target, result.success().foundFiles()));
+                WeightedVariants weightedStrings = 
+                        weightStrings(target, result.success().foundFiles());
+                if ( weightedStrings.isEmpty() ) {
+                    this.ioEngine.report(
+                            initiator, format("'%s' not found in %s", target, location.name()));
+                    return;
+                }
+                Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedStrings);
                 if ( answer.isGiven() ) {
                     target = answer.text();
                     this.openTargetAndExtendCommand(initiator, location, target, command);
@@ -1087,6 +1093,10 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void resolveMultipleFoldersAndDoListing(
             Initiator initiator, Location location, String subpathPattern, List<String> folders) {
         WeightedVariants variants = weightStrings(subpathPattern, folders);
+        if ( variants.isEmpty() ) {
+            this.ioEngine.report(initiator, format(
+                    "%s/%s nof found.", location.path(), subpathPattern));
+        }
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             this.doListing(initiator, location.path(), answer.text());

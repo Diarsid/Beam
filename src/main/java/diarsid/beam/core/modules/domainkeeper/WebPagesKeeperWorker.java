@@ -32,6 +32,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
@@ -168,8 +169,11 @@ public class WebPagesKeeperWorker
     
     private ValueOperation<WebPage> manageWithManyPages(
             Initiator initiator, String pattern, List<WebPage> pages) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
-                initiator, weightVariants(pattern, entitiesToVariants(pages)));
+        WeightedVariants variants = weightVariants(pattern, entitiesToVariants(pages));
+        if ( variants.isEmpty() ) {
+            return valueCompletedEmpty();
+        }
+        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             return valueCompletedWith(pages.get(answer.index()));
         } else {

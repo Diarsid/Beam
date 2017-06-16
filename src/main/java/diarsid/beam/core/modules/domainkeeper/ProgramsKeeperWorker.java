@@ -18,6 +18,7 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Program;
+import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
@@ -105,8 +106,11 @@ class ProgramsKeeperWorker
         if ( hasOne(programs) ) {
             return valueCompletedWith(getOne(programs));
         } else if ( hasMany(programs) ) {
-            Answer answer = this.ioEngine.chooseInWeightedVariants(
-                    initiator, weightVariants(pattern, entitiesToVariants(programs)));
+            WeightedVariants variants = weightVariants(pattern, entitiesToVariants(programs));
+            if ( variants.isEmpty() ) {
+                return valueCompletedEmpty();
+            }
+            Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
             if ( answer.isGiven() ) {
                 return valueCompletedWith(programs.get(answer.index()));
             } else {

@@ -359,7 +359,10 @@ public class Analyze {
             System.out.println(String.format("   %-15s %s", "missedImportance", missedImportance));
             System.out.println(String.format("   %-15s %s", "sortSteps", sortingSteps));
             System.out.println(String.format("   %-15s %s", "sortStepsImportance", sortingStepsImportance));
-            System.out.println(String.format("   %-15s %s", "total weight", variantWeight));
+            System.out.println(String.format("   %-15s %s", "total weight", variantWeight));            
+            if ( variantWeight > 80 ) {
+                continue variantsWeighting;
+            }
             if ( variantWeight < minWeight ) {
                 minWeight = variantWeight;
             }
