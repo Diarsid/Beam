@@ -113,7 +113,7 @@ public class CollectionsUtils {
     
     public static void shrink(List list, int size) {
         if ( list.size() > size ) {
-            for (int i = size; i < list.size(); i++) {
+            for (int i = size; i < list.size();) {
                 list.remove(i);
             }
         } 

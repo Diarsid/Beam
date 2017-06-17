@@ -7,6 +7,7 @@
 package diarsid.beam.core.domain.patternsanalyze;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,10 @@ public class Analyze {
                 "beam_server_project");
     }
     
+    private static List<String> dailyReportsCases() {
+        return asList("current_job/process/daily_reports_for_standup.txt");
+    }
+    
     private static List<String> readListCase() {
         return asList("Books/list_to_read.txt", "Tech/CS/Algorithms");
     }
@@ -91,9 +96,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = javapathCase();
+        List<String> variantsStrings = dailyReportsCases();
         
-        String pattern = "pathjab";
+        String pattern = "dlayreport";
         
         System.out.println("variants: " + variantsStrings.size());
         WeightedVariants variants = weightStrings(pattern, variantsStrings);
@@ -192,6 +197,7 @@ public class Analyze {
         sort(variants);
         Map<Character, Integer> reusableVisitedChars = new HashMap<>();
         Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
+        Map<String, Variant> variantsByText = new HashMap<>();
         WeightedVariant newVariant;
         WeightedVariant prevVariant;
         List<WeightedVariant> weightedVariants = new ArrayList<>();
@@ -204,7 +210,7 @@ public class Analyze {
         int possibleBetterCurrentCharPosition;
         char currentChar;
         
-        int sortingSteps;
+        int unsorted;
         int missed;
         int clustersQty;
         int clustered;
@@ -225,6 +231,12 @@ public class Analyze {
         
         variantsWeighting: for (Variant variant : variants) {
             variantText = lower(variant.text());
+            if ( variantsByText.containsKey(variantText) ) {
+                if ( variantsByText.get(variantText).equalsByLowerDisplayText(variant) ) {
+                    continue variantsWeighting;
+                }
+            }
+            variantsByText.put(variantText, variant);
             // positions counting begins...
             patternChars = pattern.toCharArray();
             positions = new int[patternChars.length];
@@ -263,7 +275,10 @@ public class Analyze {
             }
             reusableVisitedChars.clear();
             // positions counting ends, weight calculation begins...
-            sortingSteps = sortAndCountSteps(positions);
+            String positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
+            System.out.println("positions before sorting: " + positionsS);
+            unsorted = countUsorted(positions);
+            Arrays.sort(positions);
             missed = 0;
             variantWeight = 0;
             clustersQty = 0;
@@ -332,7 +347,7 @@ public class Analyze {
             firstCharsMatchInVariantAndPattern = ( pattern.charAt(0) == variantText.charAt(0) );
             clustersImportance = clustersImportanceDependingOn(clustersQty, clustered, nonClustered);
             missedImportance = missedImportanceDependingOn(missed, clustersImportance);
-            sortingStepsImportance = sortingStepsImportanceDependingOn(sortingSteps, clustersImportance);
+            sortingStepsImportance = sortingStepsImportanceDependingOn(unsorted, clustersImportance);
             variantWeight = variantWeight + (
                     ( nonClustered * 5.3 ) 
                     - ( clustered * 4.6 ) 
@@ -345,10 +360,10 @@ public class Analyze {
                     + ( missedImportance )
                     + (( variantText.length() - clustered ) * 0.8 ) 
                     + ( sortingStepsImportance ) );            
-            if ( ( clustered < 2 ) && ( sortingSteps > 0 ) ) {
+            if ( ( clustered < 2 ) && ( unsorted > 0 ) ) {
                 variantWeight = variantWeight * 1.8;
             }
-            String positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
+            positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
             System.out.println(variantText + ", positions: " + positionsS);
             System.out.println(String.format("   %-15s %s", "clusters", clustersQty));
             System.out.println(String.format("   %-15s %s", "clustered", clustered));
@@ -357,10 +372,10 @@ public class Analyze {
             System.out.println(String.format("   %-15s %s", "non clustered", nonClustered));
             System.out.println(String.format("   %-15s %s", "missed", missed));
             System.out.println(String.format("   %-15s %s", "missedImportance", missedImportance));
-            System.out.println(String.format("   %-15s %s", "sortSteps", sortingSteps));
+            System.out.println(String.format("   %-15s %s", "sortSteps", unsorted));
             System.out.println(String.format("   %-15s %s", "sortStepsImportance", sortingStepsImportance));
             System.out.println(String.format("   %-15s %s", "total weight", variantWeight));            
-            if ( variantWeight > 80 ) {
+            if ( variantIsTooBad(variantWeight, variantText.length()) ) {
                 continue variantsWeighting;
             }
             if ( variantWeight < minWeight ) {
@@ -398,6 +413,18 @@ public class Analyze {
                 .stream()
                 .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
+    }
+
+    private static boolean variantIsTooBad(double variantWeight, int variantLength) {
+        return variantWeight > 80 + lengthTolerance(variantLength);
+    }
+    
+    private static int lengthTolerance(int variantLength) {
+        if ( variantLength < 36 ) {
+            return 0;
+        } else {
+            return ( ( variantLength - 20 ) / 15 ) * 5;
+        }
     }
     
     private static boolean missedToMuch(int missed, int variantLength) {
@@ -512,7 +539,20 @@ public class Analyze {
             return 0.0;
         }
     }
-        
+    
+    public static int countUsorted(int[] data) {
+        int unsorted = 0;
+        for (int i = 0; i < data.length - 1; i++) {
+            if ( data[i] > data[i + 1] ) {
+                unsorted++;
+            }
+        }
+        if ( unsorted > 0 ) {
+            unsorted++;
+        }
+        return unsorted;
+    }
+    
     public static int sortAndCountSteps(int[] data) {
         int steps = 0;
         if ( data.length < 2 ) {
@@ -541,7 +581,7 @@ public class Analyze {
                     data[i] = next;
                     data[i + 1] = current;
                     steps++;
-                    dataIsUnsorted = true;                    
+                    dataIsUnsorted = true;   
                 }
             }
         }

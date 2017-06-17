@@ -9,6 +9,8 @@ package diarsid.beam.core.base.control.io.base.interaction;
 import java.io.Serializable;
 import java.util.Objects;
 
+import static diarsid.beam.core.base.util.StringUtils.lower;
+
 /**
  *
  * @author Diarsid
@@ -51,6 +53,15 @@ public class Variant implements Serializable, Comparable<Variant> {
 
     public String displayText() {
         return this.displayText;
+    }
+    
+    public boolean equalsByLowerText(Variant variant) {
+        return lower(this.text).equals(lower(variant.text));
+    }
+    
+    public boolean equalsByLowerDisplayText(Variant variant) {
+        return this.hasDisplayText() && 
+                lower(this.displayText).equals(lower(variant.displayText));
     }
     
     public int index() {

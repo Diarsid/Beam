@@ -8,6 +8,8 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
@@ -17,6 +19,7 @@ import static java.lang.String.format;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.upper;
@@ -65,6 +68,11 @@ public class BatchPauseCommand implements ExecutorCommand {
     
     private String stringifyPause() {
         return this.pauseDuration + " " + lower(this.getTimePeriod.name());
+    }
+
+    @Override
+    public Message toMessage() {
+        return new TextMessage(INFO, this.stringify());
     }
 
     @Override
