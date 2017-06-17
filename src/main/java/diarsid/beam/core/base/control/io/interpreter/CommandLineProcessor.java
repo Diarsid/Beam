@@ -11,7 +11,9 @@ import java.util.List;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.Command;
 
+import static diarsid.beam.core.base.control.io.commands.CommandType.INCORRECT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.joinFromIndex;
 import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
 
@@ -31,7 +33,11 @@ public class CommandLineProcessor {
     
     public void process(Initiator initiator, String commandLine) {
         Command command = this.interpreter.interprete(commandLine);
-        if ( command.type().isNot(MULTICOMMAND) ) {
+        if ( command.type().is(INCORRECT) || command.type().isUndefined() ) {
+            debug("initiator:" + initiator.identity() + " commandType: " + command.type());
+            return;
+        }
+        if ( command.type().isNot(MULTICOMMAND) && command.type().isDefined() ) {
             this.dispatcher.dispatch(initiator, command);
         } else {
             this.tryToInterpreteAsSentencesFromLeftToRight(

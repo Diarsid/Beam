@@ -71,6 +71,8 @@ public enum CommandType {
     CLOSE_CONSOLE (CORE_OPERATION),
     
     MULTICOMMAND (OTHER),
+    
+    INCORRECT (OTHER),
     UNDEFINED (OTHER);
 
     private CommandType() {

@@ -10,6 +10,7 @@ import diarsid.beam.core.base.control.io.commands.Command;
 
 import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectCommand;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 
 
@@ -45,6 +46,22 @@ public abstract class NodeRecognizer extends PrioritizedRecognizer {
             return this.recognizer.assess(input);
         } else {
             return undefinedCommand();
+        }
+    }
+    
+    protected final Command delegateRecognitionForwardIncorrectIfUndefined(Input input) {
+        if ( this.hasRecognizer() ) {
+            return incorrectIfUndefined(this.recognizer.assess(input));
+        } else {
+            return undefinedCommand();
+        }
+    }
+    
+    private Command incorrectIfUndefined(Command command) {
+        if ( command.type().isUndefined() ) {
+            return incorrectCommand();
+        } else {
+            return command;
         }
     }
 

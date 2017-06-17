@@ -35,12 +35,20 @@ class RecognizersCluster implements Recognizer {
         } else if ( this.childRecognizers.size() == 1 ) {
             return this.childRecognizers.iterator().next().assess(input);
         } else {
-            return this.childRecognizers
-                .stream()
-                .map(recognizer -> recognizer.assess(input))
-                .filter(command -> command.type().isDefined())
-                .findFirst()
-                .orElse(undefinedCommand());
+            Command command;
+            for (Recognizer recognizer : this.childRecognizers) {
+                command = recognizer.assess(input);
+                if ( command.type().isDefined() ) {
+                    return command;
+                }
+            }
+            return undefinedCommand();
+//            return this.childRecognizers
+//                .stream()
+//                .map(recognizer -> recognizer.assess(input))
+//                .filter(command -> command.type().isDefined())
+//                .findFirst()
+//                .orElse(undefinedCommand());
         }  
     }
 }

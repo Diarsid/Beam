@@ -274,6 +274,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                     this.ioModule.unregisterIoEngine(initiator);
                     break;
                 }
+                case INCORRECT : 
                 case UNDEFINED : {
                     break;
                 }

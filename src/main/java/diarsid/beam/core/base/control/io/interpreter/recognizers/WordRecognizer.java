@@ -25,7 +25,7 @@ public class WordRecognizer extends NodeRecognizer {
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() && lower(input.currentArg()).equals(this.controlWord) ) {
-            return super.delegateRecognitionForward(input.toNextArg());
+            return super.delegateRecognitionForwardIncorrectIfUndefined(input.toNextArg());
         } else {
             return undefinedCommand();
         }

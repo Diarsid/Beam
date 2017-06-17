@@ -11,12 +11,12 @@ import org.junit.Test;
 
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 
 import static org.junit.Assert.assertEquals;
@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
@@ -41,16 +42,15 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DE
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
-import static diarsid.beam.core.base.control.io.commands.CommandType.UNDEFINED;
 import static diarsid.beam.core.domain.entities.TimePeriod.MINUTES;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
-import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 
 /**
  *
@@ -264,13 +264,13 @@ public class InterpreterTest {
     @Test
     public void testInterprete_openPath_improperPath() {
         Command c = interpreter.interprete("open books/tolk%ien");
-        assertEquals(UNDEFINED, c.type());
+        assertEquals(MULTICOMMAND, c.type());
     }
     
     @Test
     public void testInterprete_openPath_improperPath_toShort() {
         Command c = interpreter.interprete("open b/tolkien");
-        assertEquals(UNDEFINED, c.type());
+        assertEquals(MULTICOMMAND, c.type());
     }
     
     @Test

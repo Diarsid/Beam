@@ -8,14 +8,17 @@ package diarsid.beam.core.base.control.io.commands;
 
 import java.util.Objects;
 
+import static diarsid.beam.core.base.control.io.commands.CommandType.INCORRECT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.UNDEFINED;
 
 
 public class EmptyCommand implements Command {
     
     private static final Command UNDEFINED_COMMAND;
+    private static final Command INCORRECT_COMMAND;
     static {
         UNDEFINED_COMMAND = new EmptyCommand(UNDEFINED);
+        INCORRECT_COMMAND = new EmptyCommand(INCORRECT);
     }
     
     private final CommandType type;
@@ -26,6 +29,10 @@ public class EmptyCommand implements Command {
 
     public static Command undefinedCommand() {
         return UNDEFINED_COMMAND;
+    }
+    
+    public static Command incorrectCommand() {
+        return INCORRECT_COMMAND;
     }
 
     @Override
