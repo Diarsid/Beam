@@ -6,7 +6,14 @@
 
 package diarsid.beam.core.base.control.io.interpreter;
 
+import java.util.List;
+
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.Command;
+
+import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
+import static diarsid.beam.core.base.util.StringUtils.joinFromIndex;
+import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
 
 /**
  *
@@ -23,7 +30,34 @@ public class CommandLineProcessor {
     }
     
     public void process(Initiator initiator, String commandLine) {
-        this.dispatcher.dispatch(
-                initiator, this.interpreter.interprete(commandLine));
+        Command command = this.interpreter.interprete(commandLine);
+        if ( command.type().isNot(MULTICOMMAND) ) {
+            this.dispatcher.dispatch(initiator, command);
+        } else {
+            this.tryToInterpreteAsSentencesFromLeftToRight(
+                    initiator, splitBySpacesToList(commandLine));
+//            splitBySpacesToList(commandLine)
+//                    .stream()
+//                    .map(newCommandLine -> this.interpreter.interprete(newCommandLine))
+//                    .forEach(newCommand -> this.dispatcher.dispatch(initiator, newCommand));            
+        }        
+    }
+    
+    private void tryToInterpreteAsSentencesFromLeftToRight(
+            Initiator initiator, List<String> fragments) {
+        Command command = this.interpreter.interprete(fragments.get(0));
+        this.dispatcher.dispatch(initiator, command);
+        for (int i = 1; i < fragments.size(); i++) {
+            command = this.interpreter.interprete(joinFromIndex(i, fragments));
+            if ( command.type().isDefined() && command.type().isNot(MULTICOMMAND) ) {
+                this.dispatcher.dispatch(initiator, command);
+                return;
+            } else {
+                command = this.interpreter.interprete(fragments.get(i));
+                if ( command.type().isDefined() ) {
+                    this.dispatcher.dispatch(initiator, command);
+                }                
+            }
+        }
     }
 }

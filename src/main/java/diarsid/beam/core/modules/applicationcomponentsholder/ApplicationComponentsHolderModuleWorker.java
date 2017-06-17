@@ -11,6 +11,7 @@ import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
+import diarsid.beam.core.base.control.plugins.GooglePlugin;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
@@ -34,6 +35,7 @@ class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHo
     ApplicationComponentsHolderModuleWorker() {    
         this.configuration = configuration();
         this.interpreter = new Interpreter();
+        this.interpreter.install(new GooglePlugin());
         this.programsCatalog = BeamEnvironment.programsCatalog();
         this.notesCatalog = BeamEnvironment.notesCatalog();
     }

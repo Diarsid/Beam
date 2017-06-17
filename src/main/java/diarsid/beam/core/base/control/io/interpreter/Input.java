@@ -87,6 +87,15 @@ public class Input {
         }        
     }
     
+    public void removePrefixFromCurrentArg(String prefix) {
+        String newArg = this.currentArg().substring(prefix.length());
+        if ( this.processedParamIndex >= this.splited.size() ) {
+            this.splited.set((this.splited.size() - 1), newArg);
+        } else {
+            this.splited.set(this.processedParamIndex, newArg);
+        }  
+    }
+    
     public String argAt(int i) {
         return this.safeArgGetByIndex(i);
     }

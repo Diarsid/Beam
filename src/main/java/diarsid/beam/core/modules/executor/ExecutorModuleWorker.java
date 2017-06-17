@@ -27,6 +27,7 @@ import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultComman
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
+import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.os.listing.FileLister;
 import diarsid.beam.core.base.os.search.FileSearcher;
@@ -1112,5 +1113,10 @@ class ExecutorModuleWorker implements ExecutorModule {
             this.ioEngine.report(
                     initiator, format("cannot list '%s/%s' content.", location, subpath));
         }
+    }
+
+    @Override
+    public void executePlugin(Initiator initiator, PluginTaskCommand command) {
+        this.ioEngine.report(initiator, "plugin execution: " + command.pluginName() + " -> " + command.argument());
     }
 }

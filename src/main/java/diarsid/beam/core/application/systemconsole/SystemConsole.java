@@ -8,7 +8,6 @@ package diarsid.beam.core.application.systemconsole;
 
 import java.io.IOException;
 
-import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.console.ConsoleController;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 
@@ -41,22 +40,33 @@ public class SystemConsole {
     
     public static void main(String[] args) throws IOException {
         try {
-            Configuration configuration = configuration();
-            PASSPORT.setName(SYS_CONSOLE_NAME);
-            PASSPORT.setPort(parseInt(configuration.asString("rmi.sysconsole.port")));
-            SystemConsolePrinter printer = new SystemConsolePrinter(provideWriter());
-            SystemConsoleReader reader = new SystemConsoleReader(provideReader());
-            ConsoleRemoteManager remoteManager = new ConsoleRemoteManager(configuration);
-            SystemConsolePlatform platform = new SystemConsolePlatform(
-                    printer, reader, remoteManager.importRemoteAccess());
-            ConsoleController consoleController = build(platform);            
+            createConsolePassport();            
+            ConsoleRemoteManager remoteManager = createRemoteManager();
+            ConsoleController consoleController = createConsoleController(remoteManager);            
             remoteManager.export(consoleController);
             asyncDoIndependently(consoleController);
         } catch (StartupFailedException|WorkflowBrokenException e) {
             logError(SystemConsole.class, e.getCause());
-            logError(SystemConsole.class, e);
             delayedShutdown();
         }
+    }
+
+    private static void createConsolePassport() throws NumberFormatException {
+        PASSPORT.setName(SYS_CONSOLE_NAME);
+        PASSPORT.setPort(parseInt(configuration().asString("rmi.sysconsole.port")));
+    }
+
+    private static ConsoleController createConsoleController(ConsoleRemoteManager remoteManager) {
+        SystemConsolePrinter printer = new SystemConsolePrinter(provideWriter());
+        SystemConsoleReader reader = new SystemConsoleReader(provideReader());
+        SystemConsolePlatform platform = new SystemConsolePlatform(
+                printer, reader, remoteManager.importRemoteAccess());
+        ConsoleController consoleController = build(platform);
+        return consoleController;
+    }
+
+    private static ConsoleRemoteManager createRemoteManager() {
+        return new ConsoleRemoteManager(configuration());
     }
     
     static ConsolePassport getPassport() {

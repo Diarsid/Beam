@@ -7,6 +7,8 @@
 package diarsid.beam.core.base.control.io.interpreter;
 
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.PluginPrefixesRecognizer;
+import diarsid.beam.core.base.control.plugins.Plugin;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
@@ -39,6 +41,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIRECTORY;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
@@ -61,6 +64,7 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recogniz
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.multipleArgs;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.only;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.pause;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.plugins;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.prefixes;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.relativePath;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.singleArg;
@@ -86,14 +90,17 @@ import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 public class Interpreter {
     
     private final Recognizer decisionTree;
+    private final PluginPrefixesRecognizer plugins;
     
     public Interpreter() {        
+        this.plugins = plugins();
         this.decisionTree = this.prepareRecognizersTree();
     }
     
     private Recognizer prepareRecognizersTree() {
         
         return correctInput().andAny(
+                this.plugins.priority(HIGH),
                 singleArg().priority(HIGH).andAny(
                         prefixes(
                                 "/", 
@@ -126,8 +133,7 @@ public class Interpreter {
                                         only(OPEN_NOTES)),
                         domainWord().priority(LOWEST).and(executable(EXECUTOR_DEFAULT)), 
                         relativePath().priority(LOWER).and(executable(OPEN_LOCATION_TARGET))),
-                multipleArgs().andAny(
-                        controlWords(
+                multipleArgs().andAny(controlWords(
                                 "see", 
                                 "www",
                                 "browse").priority(HIGH).and(domainWord().and(executable(BROWSE_WEBPAGE))), 
@@ -290,12 +296,25 @@ public class Interpreter {
                                 "note", 
                                 "notes").priority(LOW).andAny(
                                         relativePath().priority(HIGHER).and(argumentsFor(OPEN_PATH_IN_NOTES)), 
-                                        domainWord().and(argumentsFor(OPEN_TARGET_IN_NOTES)))
+                                        domainWord().and(argumentsFor(OPEN_TARGET_IN_NOTES))),
+                        argumentsFor(MULTICOMMAND).priority(lowerThan(LOWEST))
                 )
         );
     }
     
     public Command interprete(String inputString) {
         return this.decisionTree.assess(new Input(normalizeSpaces(inputString)));
+    }
+    
+    public boolean install(Plugin plugin) {
+        boolean pluginPrefixIsNotFree = 
+                this.interprete(plugin.prefix() + "testArgument").type().isDefined() ||
+                this.interprete(plugin.prefix() + "test argument").type().isNot(MULTICOMMAND) ||
+                this.interprete(plugin.prefix()).type().isDefined();
+        if ( pluginPrefixIsNotFree ) {
+            return false;
+        } else {
+            return this.plugins.install(plugin);
+        }        
     }
 }

@@ -9,6 +9,7 @@ package diarsid.beam.core.base.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.nonNull;
@@ -76,5 +77,9 @@ public class StringUtils {
 
     public static List<String> splitBySpacesToList(String target) {
         return new ArrayList<>(asList(target.split("\\s+")));
+    }
+    
+    public static String joinFromIndex(int start, List<String> list) {
+        return join(" ", list.subList(start, list.size()));
     }
 }

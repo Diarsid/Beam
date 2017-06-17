@@ -29,6 +29,7 @@ public enum CommandType {
     EXECUTOR_DEFAULT (EXECUTOR_OPERATION),
     LIST_LOCATION (EXECUTOR_OPERATION),
     LIST_PATH (EXECUTOR_OPERATION),
+    PLUGIN_TASK (EXECUTOR_OPERATION),
     
     OPEN_NOTES (KEEPER_OTHER_OPERATION),
     OPEN_TARGET_IN_NOTES (KEEPER_OTHER_OPERATION),
@@ -69,6 +70,7 @@ public enum CommandType {
     EXIT (CORE_OPERATION),
     CLOSE_CONSOLE (CORE_OPERATION),
     
+    MULTICOMMAND (OTHER),
     UNDEFINED (OTHER);
 
     private CommandType() {
@@ -89,7 +91,15 @@ public enum CommandType {
         return ! this.equals(type);
     }
     
-    public static boolean isDefined(CommandType type) {
-        return ( ! type.equals(UNDEFINED) );
+    public boolean is(CommandType commandType) {
+        return this.equals(commandType);
+    }
+    
+    public boolean isDefined() {
+        return ( ! this.equals(UNDEFINED) );
+    }
+    
+    public boolean isUndefined() {
+        return this.equals(UNDEFINED);
     }
 }

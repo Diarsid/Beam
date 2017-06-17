@@ -40,6 +40,10 @@ public class Recognizers {
         return new PrefixesRecognizer(controlPrefixes);
     }
     
+    public static PluginPrefixesRecognizer plugins() {
+        return new PluginPrefixesRecognizer();
+    }
+    
     public static RelativePathRecognizer relativePath() {
         return new RelativePathRecognizer();
     }

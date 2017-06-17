@@ -8,12 +8,13 @@ package diarsid.beam.core.modules;
 import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
+import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 
 /**
  *
@@ -36,5 +37,7 @@ public interface ExecutorModule extends StoppableBeamModule {
     void listLocation(Initiator initiator, ArgumentsCommand command);
     
     void listPath(Initiator initiator, ArgumentsCommand command);
+    
+    void executePlugin(Initiator initiator, PluginTaskCommand command);
     
 }

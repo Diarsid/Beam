@@ -13,7 +13,6 @@ import diarsid.beam.core.base.control.io.commands.Command;
 
 import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.base.control.io.commands.CommandType.isDefined;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 
 /**
@@ -39,7 +38,7 @@ class RecognizersCluster implements Recognizer {
             return this.childRecognizers
                 .stream()
                 .map(recognizer -> recognizer.assess(input))
-                .filter(command -> isDefined(command.type()))
+                .filter(command -> command.type().isDefined())
                 .findFirst()
                 .orElse(undefinedCommand());
         }  

@@ -39,7 +39,7 @@ public class PrefixesRecognizer extends NodeRecognizer {
                     .filter(prefix -> lower(input.currentArg()).startsWith(prefix))
                     .findFirst();
             if ( foundPrefix.isPresent() ) {
-                input.resetCurrentArg(input.currentArg().substring(foundPrefix.get().length()));
+                input.removePrefixFromCurrentArg(foundPrefix.get());
                 return super.delegateRecognitionForward(input);
             } else {
                 return undefinedCommand();

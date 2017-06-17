@@ -15,6 +15,7 @@ import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
+import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
 import diarsid.beam.core.modules.ExecutorModule;
@@ -85,6 +86,11 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .executeDefault(initiator, (ExecutorDefaultCommand) command);
                     break;
                 }    
+                case PLUGIN_TASK : {
+                    this.executorModule
+                            .executePlugin(initiator, (PluginTaskCommand) command);
+                    break;
+                }
                 case CREATE_NOTE : {
                     this.domainModuleAdapter
                             .notesAdaper()
