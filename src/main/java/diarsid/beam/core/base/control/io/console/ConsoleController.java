@@ -131,7 +131,7 @@ public class ConsoleController
                 this.engine.printYesNoQuestion(variants.current().bestText());
                 choice = choiceOfPattern(this.engine.read());
                 switch ( choice ) {
-                    case POSTIVE : {
+                    case POSITIVE : {
                         return answerOfVariant(variants.current());
                     }
                     case NEGATIVE : {

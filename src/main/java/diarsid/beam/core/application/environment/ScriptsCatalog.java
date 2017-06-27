@@ -17,9 +17,9 @@ public interface ScriptsCatalog extends Catalog {
     
     ScriptBuilder newScript(String name);
 
-    List<Script> getScripts();
+    List<Script> scripts();
     
     boolean notContains(Script script);
 
-    Optional<Script> getScriptByName(String name);
+    Optional<Script> findScriptByName(String name);
 }

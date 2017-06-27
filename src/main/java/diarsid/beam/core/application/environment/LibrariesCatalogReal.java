@@ -35,7 +35,7 @@ public class LibrariesCatalogReal
     }
 
     @Override
-    public List<String> getLibraries() {        
+    public List<String> libraries() {        
         try {
             return Files.list(this.librariesPath)
                     .map(path -> this.applicationPath.relativize(path).toString())
@@ -47,7 +47,7 @@ public class LibrariesCatalogReal
     }
 
     @Override
-    public List<String> getLibrariesWithAny(String... fragments) {
+    public List<String> librariesWithAny(String... fragments) {
         List<String> libFragments = asList(fragments);
         try {
             return Files.list(this.librariesPath)

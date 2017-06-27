@@ -52,23 +52,23 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
         this.newScript("beam.core")
                 .invokeClass(Beam.class)
                 .usingJavaw()
-                .withClasspath(this.librariesCatalog.getLibraries())
-                .withJvmOptions(this.config.getAsList("core.jvm.option"))
+                .withClasspath(this.librariesCatalog.libraries())
+                .withJvmOptions(this.config.asList("core.jvm.option"))
                 .complete()
                 .save();
 
         this.newScript("beam.sysconsole")
                 .invokeClass(SystemConsole.class)
-                .withClasspath(this.librariesCatalog.getLibrariesWithAny("log", "slf"))
-                .withJvmOptions(this.config.getAsList("sysconsole.jvm.option"))
+                .withClasspath(this.librariesCatalog.librariesWithAny("log", "slf"))
+                .withJvmOptions(this.config.asList("sysconsole.jvm.option"))
                 .complete()
                 .save();
 
         this.newScript("beam")
                 .invokeClass(Starter.class)
                 .usingJavaw()
-                .withClasspath(this.librariesCatalog.getLibraries())
-                .withJvmOptions(this.config.getAsList("starter.jvm.option"))
+                .withClasspath(this.librariesCatalog.libraries())
+                .withJvmOptions(this.config.asList("starter.jvm.option"))
                 .withArguments(START_ALL.text())
                 .complete()
                 .save();            
@@ -82,7 +82,7 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
     }
     
     @Override
-    public List<Script> getScripts() {
+    public List<Script> scripts() {
         try {
             return Files.list(this.catalogPath)
                     .filter(path -> isRegularFile(path))
@@ -100,7 +100,7 @@ public class ScriptsCatalogReal implements ScriptsCatalog {
     }
     
     @Override
-    public Optional<Script> getScriptByName(String name) {
+    public Optional<Script> findScriptByName(String name) {
         String nameWithExtension = this.scriptSyntax.addExtensionTo(name);
         try {
             return Files.find(this.catalogPath, 

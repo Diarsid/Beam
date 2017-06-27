@@ -31,7 +31,7 @@ public class LibrariesCatalogRealTest {
      */
     @Test
     public void testGetLibraries() {
-        libraries.getLibraries().forEach(System.out::println);
+        libraries.libraries().forEach(System.out::println);
     }
 
 }

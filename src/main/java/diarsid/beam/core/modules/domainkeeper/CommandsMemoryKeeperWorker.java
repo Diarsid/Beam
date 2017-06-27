@@ -437,7 +437,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             debug("[COMMANDS MEMORY] found one by original in extended: " + original + " -> " + getOne(foundCommands).extendedArgument() );
             Choice choice = this.ioEngine.ask(initiator, getOne(foundCommands).stringify());
             switch ( choice ) {
-                case POSTIVE : {
+                case POSITIVE : {
                     InvocationCommand found = getOne(foundCommands);
                     InvocationCommand newCommand = createInvocationCommandFrom(
                             found.type(), original, found.extendedArgument());

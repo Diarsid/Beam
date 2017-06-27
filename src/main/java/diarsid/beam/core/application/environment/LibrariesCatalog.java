@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface LibrariesCatalog extends Catalog {
     
-    List<String> getLibraries();
+    List<String> libraries();
     
-    List<String> getLibrariesWithAny(String... fragments);
+    List<String> librariesWithAny(String... fragments);
 }

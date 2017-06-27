@@ -17,14 +17,14 @@ import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.is
  */
 public enum Choice implements Serializable {
     
-    POSTIVE,
+    POSITIVE,
     NEGATIVE,
     REJECT,
     NOT_MADE;
     
     public static Choice choiceOfPattern(String input) {
         if ( isYes(input) ) {
-            return POSTIVE;
+            return POSITIVE;
         } else if ( isNo(input) ) {
             return NEGATIVE;
         } else if ( isRejection(input) ) {
@@ -35,11 +35,11 @@ public enum Choice implements Serializable {
     }
     
     public boolean isPositive() {
-        return this.equals(POSTIVE);
+        return this.equals(POSITIVE);
     }
     
     public boolean isNotPositive() {
-        return ! this.equals(POSTIVE);
+        return ! this.equals(POSITIVE);
     }
     
     public boolean isNegative() {

@@ -6,12 +6,12 @@
 
 package diarsid.beam.core.application.environment;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
-import static java.util.Arrays.asList;
 
 /**
  *
@@ -66,11 +66,11 @@ public class Configuration {
         }
     }
     
-    public List<String> getAsList(String option) {
+    public List<String> asList(String option) {
         if ( this.has(option) ) {
             Object config = this.options.get(option);
             if ( config instanceof String ) {
-                return asList((String) config);
+                return Arrays.asList((String) config);
             } else if ( config instanceof List ) {
                 return (List<String>) config;
             } else {

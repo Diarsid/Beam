@@ -105,7 +105,7 @@ class LocationsKeeperWorker
     
     private ValueOperation<Location> discussExistingLocation(Initiator initiator, String name) {
         List<Location> foundLocations;     
-        WeightedVariants weightedBatchNames;
+        WeightedVariants weightedLocations;
         Answer answer;
         locationDiscussing: while ( true ) {            
             name = this.helper.validateEntityNameInteractively(initiator, name);
@@ -119,13 +119,13 @@ class LocationsKeeperWorker
                         initiator, format("'%s' found.", getOne(foundLocations).name()));
                 return valueCompletedWith(getOne(foundLocations));
             } else if ( hasMany(foundLocations) ) {
-                weightedBatchNames = weightVariants(name, entitiesToVariants(foundLocations));
-                if ( weightedBatchNames.isEmpty() ) {
+                weightedLocations = weightVariants(name, entitiesToVariants(foundLocations));
+                if ( weightedLocations.isEmpty() ) {
                     this.ioEngine.report(initiator, format("not found by '%s'", name));
                     name = "";
                     continue locationDiscussing;
                 }
-                answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedBatchNames);
+                answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedLocations);
                 if ( answer.isGiven() ) {
                     return valueCompletedWith(foundLocations.get(answer.index()));
                 } else if ( answer.isRejection() ) {

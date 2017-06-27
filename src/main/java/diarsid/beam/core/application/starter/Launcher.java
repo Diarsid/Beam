@@ -98,7 +98,7 @@ class Launcher {
     }
 
     private void executeCoreScript() throws RequirementException {
-        Optional<Script> coreScript = this.scriptsCatalog.getScriptByName("beam.core");
+        Optional<Script> coreScript = this.scriptsCatalog.findScriptByName("beam.core");
         if ( coreScript.isPresent() ) {
             coreScript.get().execute();
         } else {
@@ -106,8 +106,8 @@ class Launcher {
                     .newScript("beam.core")
                     .invokeClass(Beam.class)
                     .usingJavaw()
-                    .withClasspath(this.librariesCatalog.getLibraries())
-                    .withJvmOptions(this.config.getAsList("core.jvm.option"))
+                    .withClasspath(this.librariesCatalog.libraries())
+                    .withJvmOptions(this.config.asList("core.jvm.option"))
                     .complete()
                     .save()
                     .execute();
@@ -115,15 +115,15 @@ class Launcher {
     }
     
     private void executeSysConsoleScript() throws RequirementException {
-        Optional<Script> coreScript = this.scriptsCatalog.getScriptByName("beam.sysconsole");
+        Optional<Script> coreScript = this.scriptsCatalog.findScriptByName("beam.sysconsole");
         if ( coreScript.isPresent() ) {
             coreScript.get().execute();
         } else {
             this.scriptsCatalog
                     .newScript("beam.sysconsole")
                     .invokeClass(SystemConsole.class)
-                    .withClasspath(this.librariesCatalog.getLibrariesWithAny("log", "slf"))
-                    .withJvmOptions(this.config.getAsList("sysconsole.jvm.option"))
+                    .withClasspath(this.librariesCatalog.librariesWithAny("log", "slf"))
+                    .withJvmOptions(this.config.asList("sysconsole.jvm.option"))
                     .complete()
                     .save()
                     .execute();
