@@ -16,12 +16,14 @@ import diarsid.beam.core.base.util.CollectionsUtils;
 
 import static java.util.Collections.sort;
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
 /**
@@ -53,6 +55,13 @@ public class WeightedVariants implements Serializable {
     
     public Variant best() {
         return this.variants.get(0);
+    }
+    
+    public String stamp() {
+        return this.variants
+                .stream()
+                .map(variant -> lower(variant.text()))
+                .collect(joining(";"));
     }
     
     public void removeWorseThan(String variantValue) {

@@ -19,6 +19,8 @@ public interface DaosProvider {
     
     DaoCommands createDaoCommands();
     
+    DaoCommandsChoices createDaoCommandsChoices();
+    
     DaoKeyValueStorage createDaoKeyValueStorage();
     
     DaoTasks createDaoTasks();

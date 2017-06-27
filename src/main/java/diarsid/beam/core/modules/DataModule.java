@@ -8,6 +8,7 @@ package diarsid.beam.core.modules;
 import diarsid.beam.core.StoppableBeamModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
@@ -28,6 +29,8 @@ public interface DataModule extends StoppableBeamModule  {
     DaoBatches batches();
     
     DaoCommands commands();
+    
+    DaoCommandsChoices commandsChoices();
     
     DaoKeyValueStorage keyValues();
     

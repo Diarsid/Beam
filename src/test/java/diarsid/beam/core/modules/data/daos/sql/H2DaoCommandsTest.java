@@ -80,7 +80,8 @@ public class H2DaoCommandsTest {
     public void setupCase() throws Exception {
         base.transactionFactory()
                 .createDisposableTransaction()
-                .doBatchUpdateVarargParams("INSERT INTO commands ( com_type, com_original, com_extended ) " +
+                .doBatchUpdateVarargParams(
+                        "INSERT INTO commands ( com_type, com_original, com_extended ) " +
                         "VALUES ( ?, ?, ? ) ", 
                         params(RUN_PROGRAM, "netb", "dev/NetBeans_8.2"),
                         params(OPEN_LOCATION, "netpred", "Net_predictions"),

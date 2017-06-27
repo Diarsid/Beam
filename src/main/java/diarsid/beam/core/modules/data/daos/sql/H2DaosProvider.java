@@ -10,6 +10,7 @@ import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
+import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
@@ -57,6 +58,11 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoCommands createDaoCommands() {
         return new H2DaoCommands(this.dataBase, this.ioModule.getInnerIoEngine());
+    }
+    
+    @Override
+    public DaoCommandsChoices createDaoCommandsChoices() {
+        return new H2DaoCommandsChoices(this.dataBase, this.ioModule.getInnerIoEngine());
     }
 
     @Override

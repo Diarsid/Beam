@@ -16,6 +16,7 @@ class DataModuleWorker implements DataModule {
     private final DaoBatches daoBatches;
     private final DaoNamedEntities daoNamedEntities;
     private final DaoCommands daoCommands;
+    private final DaoCommandsChoices daoCommandsChoices;
     private final DaoKeyValueStorage daoKeyValueStorage;
     private final DaoTasks daoTasks;
     private final DaoWebPages daoWebPages;
@@ -27,6 +28,7 @@ class DataModuleWorker implements DataModule {
         this.daoBatches = daosProvider.createDaoBatches();
         this.daoNamedEntities = daosProvider.createDaoNamedEntities();
         this.daoCommands = daosProvider.createDaoCommands();
+        this.daoCommandsChoices = daosProvider.createDaoCommandsChoices();
         this.daoKeyValueStorage = daosProvider.createDaoKeyValueStorage();
         this.daoTasks = daosProvider.createDaoTasks();
         this.daoWebPages = daosProvider.createDaoWebPages();
@@ -56,6 +58,11 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoCommands commands() {
         return this.daoCommands;
+    }
+    
+    @Override
+    public DaoCommandsChoices commandsChoices() {
+        return this.daoCommandsChoices;
     }
 
     @Override

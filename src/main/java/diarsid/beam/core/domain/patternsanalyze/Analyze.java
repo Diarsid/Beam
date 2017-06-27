@@ -22,6 +22,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
@@ -375,7 +376,7 @@ public class Analyze {
             System.out.println(String.format("   %-15s %s", "sortSteps", unsorted));
             System.out.println(String.format("   %-15s %s", "sortStepsImportance", sortingStepsImportance));
             System.out.println(String.format("   %-15s %s", "total weight", variantWeight));            
-            if ( variantIsTooBad(variantWeight, variantText.length()) ) {
+            if ( isVariantTooBad(variantWeight, variantText.length()) ) {
                 continue variantsWeighting;
             }
             if ( variantWeight < minWeight ) {
@@ -405,7 +406,11 @@ public class Analyze {
         }
         
         double delta = minWeight;
-        weightedVariants.forEach(adjustedVariant -> adjustedVariant.adjustWeight(delta));
+        weightedVariants = weightedVariants
+                .stream()
+                .peek(weightedVariant -> weightedVariant.adjustWeight(delta))
+                .filter(weightedVariant -> isVariantOk(weightedVariant))
+                .collect(toList());
         sort(weightedVariants);
         shrink(weightedVariants, 11);
         debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());        
@@ -415,8 +420,12 @@ public class Analyze {
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
     }
 
-    private static boolean variantIsTooBad(double variantWeight, int variantLength) {
+    private static boolean isVariantTooBad(double variantWeight, int variantLength) {
         return variantWeight > 80 + lengthTolerance(variantLength);
+    }
+    
+    private static boolean isVariantOk(WeightedVariant variant) {
+        return variant.weight() <= 80 + lengthTolerance(variant.text().length());
     }
     
     private static int lengthTolerance(int variantLength) {

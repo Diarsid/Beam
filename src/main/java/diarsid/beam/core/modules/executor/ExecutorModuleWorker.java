@@ -154,14 +154,14 @@ class ExecutorModuleWorker implements ExecutorModule {
             this.domain.commandsMemory().tryToExtendCommand(initiator, command); 
         }
         if ( command.argument().isExtended() ) {
-            ValueOperation<? extends NamedEntity> valueFlow = this.domain
+            ValueOperation<? extends NamedEntity> entityFlow = this.domain
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
-            switch ( valueFlow.result() ) {
+            switch ( entityFlow.result() ) {
                 case COMPLETE : {
-                    if ( valueFlow.asComplete().hasValue() ) {
+                    if ( entityFlow.asComplete().hasValue() ) {
                         command.setTargetFound();
-                        return valueFlow;
+                        return entityFlow;
                     } else {
                         this.domain.commandsMemory().remove(initiator, command);
                         command.argument().unextend();
@@ -176,7 +176,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     return this.findNamedEntityByNamePattern(initiator, command);
                 }
                 case STOP : {
-                    return valueFlow;
+                    return entityFlow;
                 }
                 default : {
                     return valueOperationFail("Unknown ValueOperation result.");
@@ -190,15 +190,15 @@ class ExecutorModuleWorker implements ExecutorModule {
     private ValueOperation<? extends NamedEntity> findNamedEntityByNamePattern(
             Initiator initiator, InvocationCommand command) {
         command.setNew();
-        ValueOperation<? extends NamedEntity> valueFlow = this.domain
+        ValueOperation<? extends NamedEntity> entityFlow = this.domain
                 .entitiesOperatedBy(command)
                 .findByNamePattern(initiator, command.argument().original());
-        switch ( valueFlow.result() ) {
+        switch ( entityFlow.result() ) {
             case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                    command.argument().setExtended(valueFlow.asComplete().getOrThrow().name());        
+                if ( entityFlow.asComplete().hasValue() ) {
+                    command.argument().setExtended(entityFlow.asComplete().getOrThrow().name());        
                     command.setTargetFound();
-                    return valueFlow;
+                    return entityFlow;
                 } else {
                     return this.tryToFindEntityInExtendedCommands(initiator, command);
                 }
@@ -207,7 +207,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 return this.tryToFindEntityInExtendedCommands(initiator, command);
             }
             case STOP : {
-                return valueFlow;
+                return entityFlow;
             }
             default : {
                 return valueOperationFail("Unknown ValueOperation result.");
@@ -219,14 +219,14 @@ class ExecutorModuleWorker implements ExecutorModule {
             Initiator initiator, InvocationCommand command) {
         this.domain.commandsMemory().tryToExtendCommandByPattern(initiator, command);
         if ( command.argument().isExtended() ) {
-            ValueOperation<? extends NamedEntity> valueFlow = this.domain
+            ValueOperation<? extends NamedEntity> entityFlow = this.domain
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
-            switch ( valueFlow.result() ) {
+            switch ( entityFlow.result() ) {
                 case COMPLETE : {
-                    if ( valueFlow.asComplete().hasValue() ) {
+                    if ( entityFlow.asComplete().hasValue() ) {
                         command.setNew().setTargetFound();
-                        return valueFlow;
+                        return entityFlow;
                     } else {
                         this.domain.commandsMemory().remove(initiator, command);
                         command.argument().unextend();
@@ -238,10 +238,10 @@ class ExecutorModuleWorker implements ExecutorModule {
                     this.domain.commandsMemory().remove(initiator, command);
                     command.argument().unextend();
                     command.setTargetNotFound();
-                    return valueFlow;
+                    return entityFlow;
                 }
                 case STOP : {
-                    return valueFlow;
+                    return entityFlow;
                 }
                 default : {
                     return valueOperationFail("Unknown ValueOperation result.");
@@ -345,11 +345,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void openLocation(
             Initiator initiator, OpenLocationCommand command) {
-        ValueOperation<? extends NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
-        switch ( valueFlow.result() ) {
+        ValueOperation<? extends NamedEntity> entityFlow = this.findNamedEntity(initiator, command);
+        switch ( entityFlow.result() ) {
             case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                    NamedEntity entity = valueFlow.asComplete().getOrThrow();
+                if ( entityFlow.asComplete().hasValue() ) {
+                    NamedEntity entity = entityFlow.asComplete().getOrThrow();
                     if ( entity.is(LOCATION) ) {
                         this.ioEngine.report(initiator, "...opening " + asLocation(entity).name());
                         asLocation(entity).openAsync(
@@ -364,7 +364,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 break;
             }
             case FAIL : {
-                this.doWhenOperationFailed(initiator, command, valueFlow.asFail());
+                this.doWhenOperationFailed(initiator, command, entityFlow.asFail());
                 break;
             }
             case STOP : {
