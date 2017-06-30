@@ -7,7 +7,6 @@
 package diarsid.beam.core.domain.patternsanalyze;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,9 @@ import static diarsid.beam.core.base.control.io.base.interaction.Variants.string
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
+import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isDiversitySufficient;
+import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isVariantOk;
 
 /**
  *
@@ -36,6 +38,10 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 public class Analyze {
         
     private Analyze() {        
+    }    
+    
+    public static void main(String[] args) {        
+        doAll();
     }
     
     public static WeightedVariants weightStrings(String pattern, List<String> variants) {
@@ -120,288 +126,171 @@ public class Analyze {
         System.out.println("printed: " + printed.get());
     }
     
-    private static boolean patternAdvancedSearch(String pattern, String analyzed) {
-        int patternLength = pattern.length();
-        List<Integer> positions = new ArrayList<>();
-        char currentChar;
-        int currentCharPosition;
-        int maxClusterLength = Integer.MIN_VALUE;
-        for (int currentCharIndex = 0; currentCharIndex < patternLength; currentCharIndex++) {
-            currentChar = pattern.charAt(currentCharIndex);
-            currentCharPosition = analyzed.indexOf(currentChar);
-            positions.add(currentCharPosition);
-            while ( currentCharPosition > 0 ) {
-                currentCharPosition = analyzed.indexOf(currentChar, currentCharPosition + 1);
-                if ( currentCharPosition > 0 ) {
-                    positions.add(currentCharPosition);
-                }
-            }
-        }
-        sort(positions);
-        int previousPosition = Integer.MIN_VALUE;
-        int foundClusterLength = 0;
-        for (Integer position : positions) {
-            System.out.print(position + " ");
-            if ( position == previousPosition + 1 ) {
-                if ( foundClusterLength == 0 ) {
-                    foundClusterLength = 2;
-                } else {
-                    foundClusterLength++;
-                }                
-            } else {
-                if ( foundClusterLength > maxClusterLength ) {
-                    maxClusterLength = foundClusterLength;
-                    foundClusterLength = 0;
-                }
-            }
-            previousPosition = position;
-        }
-        if ( foundClusterLength > maxClusterLength ) {
-            maxClusterLength = foundClusterLength;
-        }
-        System.out.println("cluster length: " + maxClusterLength);
-        return maxClusterLength >= patternLength;
-    }
-    
-    private static int countWords(String variant) {
-        char[] chars = variant.toCharArray();
-        char current;
-        int wordsCount = 1;
-        boolean previousCharIsNotSeparator = true;
-        for (int currentIndex = 0; currentIndex < chars.length; currentIndex++) {
-            current = chars[currentIndex];
-            if ( isWordsSeparator(current) ) {
-                if ( currentIndex > 0 ) {
-                    if ( previousCharIsNotSeparator ) {
-                        wordsCount++;
-                        previousCharIsNotSeparator = false;
-                    }
-                } else {
-                    previousCharIsNotSeparator = false;
-                }
-            } else {
-                previousCharIsNotSeparator = true;
-            }
-        }
-        if ( isWordsSeparator(lastCharOf(variant)) ) {
-            wordsCount--;
-        }
-        return wordsCount;
-    }
-
-    private static char lastCharOf(String variant) {
-        return variant.charAt(variant.length() - 1);
-    }
+//    private static boolean patternAdvancedSearch(String pattern, String analyzed) {
+//        int patternLength = pattern.length();
+//        List<Integer> positions = new ArrayList<>();
+//        char currentChar;
+//        int currentCharPosition;
+//        int maxClusterLength = Integer.MIN_VALUE;
+//        for (int currentCharIndex = 0; currentCharIndex < patternLength; currentCharIndex++) {
+//            currentChar = pattern.charAt(currentCharIndex);
+//            currentCharPosition = analyzed.indexOf(currentChar);
+//            positions.add(currentCharPosition);
+//            while ( currentCharPosition > 0 ) {
+//                currentCharPosition = analyzed.indexOf(currentChar, currentCharPosition + 1);
+//                if ( currentCharPosition > 0 ) {
+//                    positions.add(currentCharPosition);
+//                }
+//            }
+//        }
+//        sort(positions);
+//        int previousPosition = Integer.MIN_VALUE;
+//        int foundClusterLength = 0;
+//        for (Integer position : positions) {
+//            System.out.print(position + " ");
+//            if ( position == previousPosition + 1 ) {
+//                if ( foundClusterLength == 0 ) {
+//                    foundClusterLength = 2;
+//                } else {
+//                    foundClusterLength++;
+//                }                
+//            } else {
+//                if ( foundClusterLength > maxClusterLength ) {
+//                    maxClusterLength = foundClusterLength;
+//                    foundClusterLength = 0;
+//                }
+//            }
+//            previousPosition = position;
+//        }
+//        if ( foundClusterLength > maxClusterLength ) {
+//            maxClusterLength = foundClusterLength;
+//        }
+//        System.out.println("cluster length: " + maxClusterLength);
+//        return maxClusterLength >= patternLength;
+//    }
+//    
+//    private static int countWords(String variant) {
+//        char[] chars = variant.toCharArray();
+//        char current;
+//        int wordsCount = 1;
+//        boolean previousCharIsNotSeparator = true;
+//        for (int currentIndex = 0; currentIndex < chars.length; currentIndex++) {
+//            current = chars[currentIndex];
+//            if ( isWordsSeparator(current) ) {
+//                if ( currentIndex > 0 ) {
+//                    if ( previousCharIsNotSeparator ) {
+//                        wordsCount++;
+//                        previousCharIsNotSeparator = false;
+//                    }
+//                } else {
+//                    previousCharIsNotSeparator = false;
+//                }
+//            } else {
+//                previousCharIsNotSeparator = true;
+//            }
+//        }
+//        if ( isWordsSeparator(lastCharOf(variant)) ) {
+//            wordsCount--;
+//        }
+//        return wordsCount;
+//    }
+//
+//    private static char lastCharOf(String variant) {
+//        return variant.charAt(variant.length() - 1);
+//    }
     
     public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
         pattern = lower(pattern);
-        sort(variants);
-        Map<Character, Integer> reusableVisitedChars = new HashMap<>();
+        sort(variants);        
         Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
         Map<String, Variant> variantsByText = new HashMap<>();
-        WeightedVariant newVariant;
-        WeightedVariant prevVariant;
-        List<WeightedVariant> weightedVariants = new ArrayList<>();
-        String variantText;
-        
-        int[] positions;
-        double variantWeight;
-        char[] patternChars;
-        int currentCharPosition;
-        int possibleBetterCurrentCharPosition;
-        char currentChar;
-        
-        int unsorted;
-        int missed;
-        int clustersQty;
-        int clustered;
-        int nonClustered;
-        int clustersWeight;
-        double clustersImportance;
-        double missedImportance;
-        double sortingStepsImportance;
-        int currentClusterLength;
-        int currentPosition;
-        int nextPosition;
-        boolean clusterContinuation;
-        boolean containsFirstChar;
-        boolean firstCharsMatchInVariantAndPattern;
+        List<WeightedVariant> weightedVariants = new ArrayList<>();        
+        AnalyzeData data = new AnalyzeData();
         
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
         
         variantsWeighting: for (Variant variant : variants) {
-            variantText = lower(variant.text());
-            if ( variantsByText.containsKey(variantText) ) {
-                if ( variantsByText.get(variantText).equalsByLowerDisplayText(variant) ) {
+            data.variantText = lower(variant.text());
+            if ( variantsByText.containsKey(data.variantText) ) {
+                if ( variantsByText.get(data.variantText).equalsByLowerDisplayText(variant) ) {
                     continue variantsWeighting;
                 }
             }
-            variantsByText.put(variantText, variant);
+            variantsByText.put(data.variantText, variant);
             // positions counting begins...
-            patternChars = pattern.toCharArray();
-            positions = new int[patternChars.length];
+            data.patternChars = pattern.toCharArray();
+            data.positions = new int[data.patternChars.length];
 
-            for (int currentCharIndex = 0; currentCharIndex < patternChars.length; currentCharIndex++) {
-                currentChar = patternChars[currentCharIndex];
-                if ( reusableVisitedChars.containsKey(currentChar) ) {
-                    currentCharPosition = 
-                            variantText.indexOf(currentChar, reusableVisitedChars.get(currentChar) + 1);
+            for (int currentCharIndex = 0; currentCharIndex < data.patternChars.length; currentCharIndex++) {
+                data.currentCharIs(currentCharIndex);
+                if ( data.isCurrentCharAlreadyVisited() ) {
+                    data.setCurrentCharPositionNextFoundAfterLastVisitedOne();
                 } else {
-                    currentCharPosition = 
-                            variantText.indexOf(currentChar);                
+                    data.setCurrentCharPosition();                
                 }
-                if ( currentCharPosition > -1 ) {
-                    reusableVisitedChars.put(currentChar, currentCharPosition);
+                if ( data.currentCharFound() ) {
+                    data.addCurrentCharToVisited();
                 }
-                if ( ( currentCharIndex > 0 ) && ( currentCharPosition < positions[currentCharIndex - 1] ) ) {
-                    possibleBetterCurrentCharPosition = 
-                            variantText.indexOf(currentChar, currentCharPosition + 1);  
+                if ( data.currentCharIndexInRange(currentCharIndex) ) {
+                    data.findBetterCurrentCharPosition();  
                     //System.out.println(format("better position of '%s' in '%s' is: %s instead of: %s", currentChar, variantText, possibleBetterCurrentCharPosition, currentCharPosition));
-                    if ( possibleBetterCurrentCharPosition > -1 ) {
-                        if ( possibleBetterCurrentCharPosition == positions[currentCharIndex - 1] + 1 ) {
-                            System.out.println(format("assign position of '%s' in '%s' as %s instead of %s", currentChar, variantText, possibleBetterCurrentCharPosition, currentCharPosition));
-                            currentCharPosition = possibleBetterCurrentCharPosition;
+                    if ( data.isBetterCharPositionFound() ) {
+                        if ( data.isCurrentCharBetterPostionInCluster(currentCharIndex) ) {                            
+                            data.replaceCurrentPositionWithBetterPosition();
                         } else {
-                            possibleBetterCurrentCharPosition = 
-                                    variantText.indexOf(currentChar, positions[currentCharIndex - 1] + 1);  
-                            if ( ( possibleBetterCurrentCharPosition > -1 ) && 
-                                    (possibleBetterCurrentCharPosition == positions[currentCharIndex - 1] + 1) ) {
-                                currentCharPosition = possibleBetterCurrentCharPosition;
+                            data.findBetterCurrentCharPositionFromPreviousCharPosition(currentCharIndex);  
+                            if ( data.isBetterCharPositionFoundAndInCluster(currentCharIndex) ) {
+                                data.replaceCurrentPositionWithBetterPosition();
                             }
                         }
                     } 
                 }
-                positions[currentCharIndex] = currentCharPosition;            
+                data.saveCurrentCharFinalPosition(currentCharIndex);            
             }
-            reusableVisitedChars.clear();
+            data.reusableVisitedChars.clear();
+            
             // positions counting ends, weight calculation begins...
-            String positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
+            String positionsS = stream(data.positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
             System.out.println("positions before sorting: " + positionsS);
-            unsorted = countUsorted(positions);
-            Arrays.sort(positions);
-            missed = 0;
-            variantWeight = 0;
-            clustersQty = 0;
-            clustered = 0;
-            nonClustered = 0;
-            clustersWeight = 0;
-            currentClusterLength = 0;
-            clusterContinuation = false;
-            containsFirstChar = false;
-            clustersCounting: for (int i = 0; i < positions.length; i++) {
-                currentPosition = positions[i];
-                if ( currentPosition < 0 ) {
-                    missed++;
-                    continue clustersCounting;
-                }
-                if ( currentPosition == 0 ) {
-                    containsFirstChar = true;
-                }
-                if ( i < positions.length - 1 ) { 
-                    nextPosition = positions[i + 1];
-                    if ( currentPosition == nextPosition - 1 ) {                    
-                        if ( clusterContinuation ) {                        
-                            clustered++;
-                            //clustersWeight++;
-                            currentClusterLength++;
-                        } else {                        
-                            clustered++;
-                            clustersQty++;
-                            clusterContinuation = true;
-                            currentClusterLength = 1;
-                            clustersWeight = clustersWeight + ( currentPosition / 2 );                        
-                            if ( currentPosition > 0 ) {
-                                if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
-                                    variantWeight = variantWeight - 4;
-                                }
-                            }
-                        }
-                    } else {
-                        if ( clusterContinuation ) {
-                            clustered++;
-                            //clustersWeight++;
-                            clusterContinuation = false;
-                        } else {
-                            nonClustered++;
-                        }
-                    }
-                } else {
-                    if ( currentPosition > 0 ) {
-                        if ( isWordsSeparator(variantText.charAt(currentPosition - 1)) ) {
-                            variantWeight = variantWeight - 3;
-                        }
-                    }                    
-                    if ( clusterContinuation ) {
-                        clustered++;
-                        //clustersWeight++;
-                    } else {
-                        nonClustered++;
-                    }
-                }
-            }
-            if ( missedToMuch(missed, variantText.length()) ) {
-                System.out.println(variantText + ", missed: " + missed + " to much, skip variant!");
+            
+            data.countUnsortedPositions();
+            data.sortPositions();
+            data.clearClustersInfo();
+            data.findClusters();
+            if ( data.areTooMuchPositionsMissed() ) {
+                System.out.println(data.variantText + ", missed: " + data.missed + " to much, skip variant!");
                 continue variantsWeighting;
             }
-            nonClustered = nonClustered + missed;
-            firstCharsMatchInVariantAndPattern = ( pattern.charAt(0) == variantText.charAt(0) );
-            clustersImportance = clustersImportanceDependingOn(clustersQty, clustered, nonClustered);
-            missedImportance = missedImportanceDependingOn(missed, clustersImportance);
-            sortingStepsImportance = sortingStepsImportanceDependingOn(unsorted, clustersImportance);
-            variantWeight = variantWeight + (
-                    ( nonClustered * 5.3 ) 
-                    - ( clustered * 4.6 ) 
-                    - ( firstCharMatchRatio(containsFirstChar) )
-                    - ( clustersImportance )
-                    + ( clustersWeight * clusterWeightRatioDependingOn(
-                            containsFirstChar, 
-                            firstCharsMatchInVariantAndPattern) ) 
-                    - ( clustersQty * 5.4 ) 
-                    + ( missedImportance )
-                    + (( variantText.length() - clustered ) * 0.8 ) 
-                    + ( sortingStepsImportance ) );            
-            if ( ( clustered < 2 ) && ( unsorted > 0 ) ) {
-                variantWeight = variantWeight * 1.8;
-            }
-            positionsS = stream(positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
-            System.out.println(variantText + ", positions: " + positionsS);
-            System.out.println(String.format("   %-15s %s", "clusters", clustersQty));
-            System.out.println(String.format("   %-15s %s", "clustered", clustered));
-            System.out.println(String.format("   %-15s %s", "clusters weight", clustersWeight));
-            System.out.println(String.format("   %-15s %s", "clusters importance", clustersImportance));
-            System.out.println(String.format("   %-15s %s", "non clustered", nonClustered));
-            System.out.println(String.format("   %-15s %s", "missed", missed));
-            System.out.println(String.format("   %-15s %s", "missedImportance", missedImportance));
-            System.out.println(String.format("   %-15s %s", "sortSteps", unsorted));
-            System.out.println(String.format("   %-15s %s", "sortStepsImportance", sortingStepsImportance));
-            System.out.println(String.format("   %-15s %s", "total weight", variantWeight));            
-            if ( isVariantTooBad(variantWeight, variantText.length()) ) {
+            data.isFirstCharMatchInVariantAndPattern(pattern);
+            data.calculateWeight();            
+            data.strangeConditionOnUnsorted();
+            data.logState();            
+            if ( data.isVariantTooBad() ) {
                 continue variantsWeighting;
             }
-            if ( variantWeight < minWeight ) {
-                minWeight = variantWeight;
+            if ( data.variantWeight < minWeight ) {
+                minWeight = data.variantWeight;
             }
-            if ( variantWeight > maxWeight ) {
-                maxWeight = variantWeight;
+            if ( data.variantWeight > maxWeight ) {
+                maxWeight = data.variantWeight;
             }
-            // weight calculation ends
-            newVariant = new WeightedVariant(variant, variantWeight);
-            if ( newVariant.hasDisplayText() ) {
-                debug("[ANALYZE] " + newVariant.text() + ":" + newVariant.displayText());
+            data.setNewVariant(variant);
+            if ( data.newVariant.hasDisplayText() ) {
+                debug("[ANALYZE] " + data.newVariant.text() + ":" + data.newVariant.displayText());
                 if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {
-                    prevVariant = variantsByDisplay.get(lower(newVariant.displayText()));
-                    if ( newVariant.betterThan(prevVariant) ) {
-                        debug("[ANALYZE] [DUPLICATE] " + newVariant.text() + " is better than: " + prevVariant.text());
-                        variantsByDisplay.put(lower(newVariant.displayText()), newVariant);
-                        weightedVariants.add(newVariant);
+                    data.setPreviousVariantWithSameDisplayText(variantsByDisplay);
+                    if ( data.isNewVariantBetterThanPrevious() ) {
+                        debug("[ANALYZE] [DUPLICATE] " + data.newVariant.text() + " is better than: " + data.prevVariant.text());
+                        variantsByDisplay.put(lower(data.newVariant.displayText()), data.newVariant);
+                        weightedVariants.add(data.newVariant);
                     } 
                 } else {
-                    variantsByDisplay.put(lower(newVariant.displayText()), newVariant);
-                    weightedVariants.add(newVariant);
+                    variantsByDisplay.put(lower(data.newVariant.displayText()), data.newVariant);
+                    weightedVariants.add(data.newVariant);
                 }
             } else {
-                weightedVariants.add(newVariant);
+                weightedVariants.add(data.newVariant);
             }           
         }
         
@@ -418,193 +307,5 @@ public class Analyze {
                 .stream()
                 .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
-    }
-
-    private static boolean isVariantTooBad(double variantWeight, int variantLength) {
-        return variantWeight > 80 + lengthTolerance(variantLength);
-    }
-    
-    private static boolean isVariantOk(WeightedVariant variant) {
-        return variant.weight() <= 80 + lengthTolerance(variant.text().length());
-    }
-    
-    private static int lengthTolerance(int variantLength) {
-        if ( variantLength < 36 ) {
-            return 0;
-        } else {
-            return ( ( variantLength - 20 ) / 15 ) * 5;
-        }
-    }
-    
-    private static boolean missedToMuch(int missed, int variantLength) {
-        return ( ( (missed * 1.0) / (variantLength * 1.0) ) > 0.34 );
-    }
-
-    private static double missedImportanceDependingOn(int missed, double clustersImportance) {
-        if ( missed == 0 ) {
-            return 0.0;
-        }
-        return ( ( missed * 1.0) - 0.8 ) * missedRatio(clustersImportance);
-    }
-    
-    private static double missedRatio(double clustersImportance) {
-        if ( clustersImportance < 0 ) {
-            return 19.0;
-        } else if ( clustersImportance >= 0.0 && clustersImportance < 10.0 ) {
-            return 14.0;
-        } else if ( clustersImportance >= 10.0 && clustersImportance < 20.0 ) {
-            return 12.0;
-        } else if ( clustersImportance >= 20.0 && clustersImportance < 30.0 ) {
-            return 10.0;
-        } else if ( clustersImportance >= 30.0 && clustersImportance < 40.0 ) {
-            return 8.0;
-        } else if ( clustersImportance >= 40.0 && clustersImportance < 60.0 ) {
-            return 6.0;
-        } else if ( clustersImportance >= 60.0 && clustersImportance < 80.0 ) {
-            return 4.0;
-        } else if ( clustersImportance >= 80.0 && clustersImportance < 100.0 ) {
-            return 2.0;
-        } else if ( clustersImportance >= 100.0 && clustersImportance < 130.0 ) {
-            return 1.0;
-        } else {
-            return 0.5;
-        }
-    }
-    
-    private static double sortingStepsImportanceDependingOn(
-            int sortingSteps, double clustersImportance) {
-        return sortingSteps * sortingStepsRatio(clustersImportance);
-    }
-    
-    private static double sortingStepsRatio(double clustersImportance) {
-        if ( clustersImportance < 0 ) {
-            return 14.3;
-        } else if ( clustersImportance >= 0.0 && clustersImportance < 10.0 ) {
-            return 8.9;
-        } else if ( clustersImportance >= 10.0 && clustersImportance < 20.0 ) {
-            return 7.3;
-        } else if ( clustersImportance >= 20.0 && clustersImportance < 30.0 ) {
-            return 5.1;
-        } else if ( clustersImportance >= 30.0 && clustersImportance < 40.0 ) {
-            return 3.7;
-        } else if ( clustersImportance >= 40.0 && clustersImportance < 60.0 ) {
-            return 2.3;
-        } else if ( clustersImportance >= 60.0 && clustersImportance < 80.0 ) {
-            return 1.8;
-        } else if ( clustersImportance >= 80.0 && clustersImportance < 100.0 ) {
-            return 1.1;
-        } else if ( clustersImportance >= 100.0 && clustersImportance < 130.0 ) {
-            return 0.8;
-        } else {
-            return 0.2;
-        }
-    }
-
-    private static boolean isDiversitySufficient(double minWeight, double maxWeight) {
-        return ((maxWeight - minWeight) > (minWeight * 0.25));
-    }
-    
-    public static void main(String[] args) {        
-        doAll();
-    }
-    
-    private static int CLUSTER_QTY_TRESHOLD = 4;
-    private static double clustersImportanceDependingOn(
-            int clustersQty, int clustered, int nonClustered) {
-        if ( clustersQty == 0 ) {
-            return CLUSTER_QTY_TRESHOLD * nonClustered * -1.0 ;
-        }
-        if ( nonClustered == 0 ) {
-            return clustered * clustered * 1.0;
-        }
-        if ( clustersQty > CLUSTER_QTY_TRESHOLD ) {
-            return ( clustersQty - CLUSTER_QTY_TRESHOLD ) * -8.34;
-        }
-        
-        return 1.32 * ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
-                ( 1.0 + ( ( clustered * 1.0 ) / ( nonClustered * 1.0 ) ) ) * 
-                ( ( ( clustered * 1.0 ) / ( clustersQty * 1.0 ) ) * 0.8 - 0.79 ) + ( ( clustered - 2 ) * 1.0 ) ;
-    }
-    
-    private static double clusterWeightRatioDependingOn(
-            boolean containsFirstChar, 
-            boolean firstCharsMatchInVariantAndPattern) {
-        if ( containsFirstChar ) {
-            if ( firstCharsMatchInVariantAndPattern ) {
-                System.out.println("first chars matches!");
-                return 0.9;
-            } else {
-                return 1.5;                
-            }
-        } else {
-            return 2.2;
-        }
-    }
-    
-    private static double firstCharMatchRatio(boolean isMatch) {
-        if ( isMatch ) {
-            return 8.0;
-        } else {
-            return 0.0;
-        }
-    }
-    
-    public static int countUsorted(int[] data) {
-        int unsorted = 0;
-        for (int i = 0; i < data.length - 1; i++) {
-            if ( data[i] > data[i + 1] ) {
-                unsorted++;
-            }
-        }
-        if ( unsorted > 0 ) {
-            unsorted++;
-        }
-        return unsorted;
-    }
-    
-    public static int sortAndCountSteps(int[] data) {
-        int steps = 0;
-        if ( data.length < 2 ) {
-            return 0;
-        } else if ( data.length == 2 ) {
-            if ( data[0] > data[1] ) {
-                int swap = data[0];
-                data[0] = data[1];
-                data[1] = swap;
-                return 1;
-            }
-            return 0;
-        }
-        
-        boolean dataIsUnsorted = true;
-        int current;
-        int next;
-        int dataLength = data.length;
-        
-        while ( dataIsUnsorted ) {
-            dataIsUnsorted = false;
-            for (int i = 0; i < dataLength - 1; i++) {
-                current = data[i];
-                next = data[i + 1];
-                if ( current > next ) {
-                    data[i] = next;
-                    data[i + 1] = current;
-                    steps++;
-                    dataIsUnsorted = true;   
-                }
-            }
-        }
-        return steps;
-    }
-    
-    private static boolean isWordsSeparator(char c) {
-        return 
-                c == '.' ||
-                c == ',' ||
-                c == ' ' || 
-                c == '_' || 
-                c == '-' || 
-                c == '/' || 
-                c == '\\';
     }
 }

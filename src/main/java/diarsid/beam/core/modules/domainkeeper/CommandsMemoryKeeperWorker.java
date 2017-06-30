@@ -131,7 +131,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             }
             
             if ( foundCommands.isEmpty() ) {
-                this.ioEngine.report(initiator, format("not found by '%s'", memPattern));
+                this.ioEngine.report(initiator, format("not found by '%s'", memPattern.get()));
                 memPattern.setEmpty();
                 continue searching;
             } else {
@@ -429,8 +429,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     });
                     return valueCompletedWith(exactMatch);
                 } else {
-                    asyncDo(() -> {      
-                        // TODO daoCommands.rewrite(initiator, oldCommand, newCommand);
+                    asyncDo(() -> {
                         this.daoCommands.deleteByExactOriginalOfType(
                                 initiator, exactMatch.originalArgument(), exactMatch.type());
                         this.daoCommands.save(initiator, newCommand);

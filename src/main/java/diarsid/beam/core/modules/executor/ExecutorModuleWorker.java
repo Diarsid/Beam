@@ -843,41 +843,6 @@ class ExecutorModuleWorker implements ExecutorModule {
             case FAIL : {
                 debug("[EXECUTOR] [executeDefault] entity not found by: " + command.argument());
                 return;
-//                // entity was not found, need to proceed.
-//                ValueOperation<InvocationCommand> commandFlow = this.domain
-//                        .commandsMemory()
-//                        .findStoredCommandByPatternOfAnyType(initiator, command.argument());
-//                switch ( commandFlow.result() ) {
-//                    case COMPLETE : {
-//                        if ( commandFlow.asComplete().hasValue() ) {                            
-//                            Optional<InvocationCommand> invocation = 
-//                                    command.mergeWith(commandFlow.asComplete().getOrThrow());
-//                            if ( invocation.isPresent() ) {
-//                                debug("[EXECUTOR] [executeDefault] [merging command] " + invocation.get().stringifyOriginal() + ":" + invocation.get().stringify());
-//                                this.dispatchCommandInternally(initiator, invocation.get());
-//                            } else {
-//                                this.ioEngine.report(
-//                                        initiator, format(
-//                                                "cannot merge %s command.", 
-//                                                invocation.get().type().name()));
-//                            }
-//                        } else {
-//                            this.ioEngine.report(initiator, "not found.");
-//                        }
-//                        return;
-//                    }
-//                    case FAIL : {
-//                        this.ioEngine.report(initiator, commandFlow.asFail().reason());
-//                        return;
-//                    }
-//                    case STOP : {
-//                        return; 
-//                    }
-//                    default : {
-//                        this.ioEngine.report(initiator, "unknown ValueOperation result.");
-//                        return; 
-//                    }
-//                }    
             }
             default : {
                 this.ioEngine.report(initiator, "unknown ValueOperation result.");    
