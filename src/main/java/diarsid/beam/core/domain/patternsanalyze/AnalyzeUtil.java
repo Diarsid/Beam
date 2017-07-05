@@ -5,21 +5,22 @@
  */
 package diarsid.beam.core.domain.patternsanalyze;
 
+import static java.lang.Math.abs;
+import static java.lang.String.format;
+
 /**
  *
  * @author Diarsid
  */
-class AnalyzeUtil { 
+class AnalyzeUtil {     
     
-    static boolean isVariantOk(WeightedVariant variant) {
-        return variant.weight() <= 80 + lengthTolerance(variant.text().length());
-    }
+    private static final double WEIGHT_TRESHOLD = 30;
     
     static int lengthTolerance(int variantLength) {
-        if ( variantLength < 36 ) {
+        if ( variantLength < 20 ) {
             return 0;
         } else {
-            return ( ( variantLength - 20 ) / 15 ) * 5;
+            return ( ( variantLength - 11 ) / 10 ) * 5;
         }
     }
     
@@ -47,18 +48,18 @@ class AnalyzeUtil {
         }
     }
     
-    static double sortingStepsImportanceDependingOn(
-            int sortingSteps, double clustersImportance) {
-        return sortingSteps * sortingStepsRatio(clustersImportance);
+    static double unsortedImportanceDependingOn(
+            int unsorted, double clustersImportance) {
+        return unsorted * unsortedRatioDependingOn(clustersImportance);
     }
     
-    static double sortingStepsRatio(double clustersImportance) {
+    static double unsortedRatioDependingOn(double clustersImportance) {
         if ( clustersImportance < 0 ) {
-            return 14.3;
+            return 26.8;
         } else if ( clustersImportance >= 0.0 && clustersImportance < 10.0 ) {
-            return 8.9;
+            return 14.3;
         } else if ( clustersImportance >= 10.0 && clustersImportance < 20.0 ) {
-            return 7.3;
+            return 8.9;
         } else if ( clustersImportance >= 20.0 && clustersImportance < 30.0 ) {
             return 5.1;
         } else if ( clustersImportance >= 30.0 && clustersImportance < 40.0 ) {
@@ -80,45 +81,25 @@ class AnalyzeUtil {
         return ((maxWeight - minWeight) > (minWeight * 0.25));
     }
     
-    static int CLUSTER_QTY_TRESHOLD = 4;
+    static final int CLUSTER_QTY_TRESHOLD = 4;
     static double clustersImportanceDependingOn(
             int clustersQty, int clustered, int nonClustered) {
         if ( clustersQty == 0 ) {
             return CLUSTER_QTY_TRESHOLD * nonClustered * -1.0 ;
         }
         if ( nonClustered == 0 ) {
-            return clustered * clustered * 1.0;
+            System.out.println(format("importance: %s (clastersQty: %s, clustered: %s, nonclustered: %s)", (clustered * clustered * 2.2), clustersQty, clustered, nonClustered));
+            return clustered * clustered * 2.2;
         }
         if ( clustersQty > CLUSTER_QTY_TRESHOLD ) {
             return ( clustersQty - CLUSTER_QTY_TRESHOLD ) * -8.34;
         }
         
-        return 1.32 * ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
+        double result = 1.32 * ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
                 ( 1.0 + ( ( clustered * 1.0 ) / ( nonClustered * 1.0 ) ) ) * 
                 ( ( ( clustered * 1.0 ) / ( clustersQty * 1.0 ) ) * 0.8 - 0.79 ) + ( ( clustered - 2 ) * 1.0 ) ;
-    }
-    
-    static double clusterWeightRatioDependingOn(
-            boolean containsFirstChar, 
-            boolean firstCharsMatchInVariantAndPattern) {
-        if ( containsFirstChar ) {
-            if ( firstCharsMatchInVariantAndPattern ) {
-                System.out.println("first chars matches!");
-                return 0.9;
-            } else {
-                return 1.5;                
-            }
-        } else {
-            return 2.2;
-        }
-    }
-    
-    static double firstCharMatchRatio(boolean isMatch) {
-        if ( isMatch ) {
-            return 8.0;
-        } else {
-            return 0.0;
-        }
+        System.out.println(format("importance: %s (clastersQty: %s, clustered: %s, nonclustered: %s)", result, clustersQty, clustered, nonClustered));
+        return result;
     }
     
     public static int countUsorted(int[] data) {
@@ -127,9 +108,6 @@ class AnalyzeUtil {
             if ( data[i] > data[i + 1] ) {
                 unsorted++;
             }
-        }
-        if ( unsorted > 0 ) {
-            unsorted++;
         }
         return unsorted;
     }
@@ -159,14 +137,24 @@ class AnalyzeUtil {
                 current = data[i];
                 next = data[i + 1];
                 if ( current > next ) {
+                    if ( abs(current - next) > 1 ) {
+                        System.out.println(format("bad current %s next %s", current, next));
+                        steps++;
+                    } 
                     data[i] = next;
                     data[i + 1] = current;
-                    steps++;
                     dataIsUnsorted = true;   
+                } else {
+                    steps--;
                 }
             }
         }
         return steps;
+    }
+    
+    public static void main(String[] args) {
+        int[] a = new int[] {10,4,-1,-1,-1,2,9,8};
+        System.out.println("unsorted: " + countUsorted(a));
     }
     
     static boolean isWordsSeparator(char c) {
@@ -179,9 +167,13 @@ class AnalyzeUtil {
                 c == '/' || 
                 c == '\\';
     }
+    
+    static boolean isVariantOk(WeightedVariant variant) {
+        return variant.weight() <= WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
+    }
 
     static boolean isVariantTextLengthTooBad(double variantWeight, int variantLength) {
-        return variantWeight > 80 + lengthTolerance(variantLength);
+        return variantWeight > WEIGHT_TRESHOLD + lengthTolerance(variantLength);
     }
     
     static boolean missedTooMuch(int missed, int variantLength) {
@@ -190,7 +182,7 @@ class AnalyzeUtil {
 
     static double missedImportanceDependingOn(int missed, double clustersImportance) {
         if ( missed == 0 ) {
-            return 0.0;
+            return -3.0;
         }
         return ( ( missed * 1.0) - 0.8 ) * missedRatio(clustersImportance);
     }

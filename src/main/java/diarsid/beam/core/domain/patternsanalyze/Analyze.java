@@ -18,12 +18,11 @@ import static java.lang.Double.MAX_VALUE;
 import static java.lang.Double.MIN_VALUE;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -75,11 +74,12 @@ public class Analyze {
                 "abe_netpro",
                 "babel_pro",
                 "netbeans_projects", 
-                "beam_server_project");
+                "beam_server_project"
+        );
     }
     
     private static List<String> dailyReportsCases() {
-        return asList("current_job/process/daily_reports_for_standup.txt");
+        return arrayListOf("current_job/process/daily_reports_for_standup.txt");
     }
     
     private static List<String> readListCase() {
@@ -93,6 +93,7 @@ public class Analyze {
     }
 
     private static void analyzeImportance() {
+        System.out.println(clustersImportanceDependingOn(1, 9, 0));
         System.out.println(clustersImportanceDependingOn(1, 4, 3));
         System.out.println(clustersImportanceDependingOn(1, 2, 5));
         System.out.println(clustersImportanceDependingOn(2, 7, 1));
@@ -103,9 +104,10 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = dailyReportsCases();
+        List<String> variantsStrings = beamProjectCase();
         
-        String pattern = "dlayreport";
+        String pattern = "beaproj";
+//        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
         WeightedVariants variants = weightStrings(pattern, variantsStrings);
@@ -199,99 +201,110 @@ public class Analyze {
 //        return variant.charAt(variant.length() - 1);
 //    }
     
+//    public static boolean entityIsSatisfiable(InvocationCommand command, NamedEntity entity) {
+//        return weightVariant(command.originalArgument(), entity.toSingleVariant()).isPresent();
+//    }
+    
+//    public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
+//        AnalyzeData data = new AnalyzeData();
+//        data.setVariantText(variant);
+//        data.setPatternCharsAndPositions(pattern);
+//
+//        data.findPatternCharsPositions();
+//
+//        // positions counting ends, weight calculation begins...
+//        String positionsS = stream(data.forwardPositions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
+//        System.out.println("positions before sorting: " + positionsS);
+//
+//        data.countUnsortedPositions();
+//        data.sortPositions();
+//        data.clearClustersInfo();
+//        data.findPositionsClusters();
+//        if ( data.areTooMuchPositionsMissed() ) {
+//            System.out.println(data.variantText + ", missed: " + data.missed + " to much, skip variant!");
+//            return Optional.empty();
+//        }
+//        data.calculateClustersImportance();
+//        data.isFirstCharMatchInVariantAndPattern(pattern);
+//        data.calculateWeight();            
+//        data.checkStrangeConditionOnUnsorted();
+//        if ( data.isVariantTooBad() ) {
+//            return Optional.empty();
+//        }
+//        data.logState(); 
+//        data.setNewVariant(variant);
+//        return Optional.of(data.newVariant);
+//    }
+    
     public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
         pattern = lower(pattern);
         sort(variants);        
         Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
         Map<String, Variant> variantsByText = new HashMap<>();
         List<WeightedVariant> weightedVariants = new ArrayList<>();        
-        AnalyzeData data = new AnalyzeData();
-        
+        AnalyzeData analyze = getAnalyzeData();
+        String lowerVariantText;
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
         
-        variantsWeighting: for (Variant variant : variants) {
-            data.variantText = lower(variant.text());
-            if ( variantsByText.containsKey(data.variantText) ) {
-                if ( variantsByText.get(data.variantText).equalsByLowerDisplayText(variant) ) {
+        variantsWeighting: for (Variant variant : variants) { 
+            
+            lowerVariantText = lower(variant.text());
+            if ( variantsByText.containsKey(lowerVariantText) ) {
+                if ( variantsByText.get(lowerVariantText).equalsByLowerDisplayText(variant) ) {
                     continue variantsWeighting;
                 }
             }
-            variantsByText.put(data.variantText, variant);
-            // positions counting begins...
-            data.patternChars = pattern.toCharArray();
-            data.positions = new int[data.patternChars.length];
-
-            for (int currentCharIndex = 0; currentCharIndex < data.patternChars.length; currentCharIndex++) {
-                data.currentCharIs(currentCharIndex);
-                if ( data.isCurrentCharAlreadyVisited() ) {
-                    data.setCurrentCharPositionNextFoundAfterLastVisitedOne();
-                } else {
-                    data.setCurrentCharPosition();                
-                }
-                if ( data.currentCharFound() ) {
-                    data.addCurrentCharToVisited();
-                }
-                if ( data.currentCharIndexInRange(currentCharIndex) ) {
-                    data.findBetterCurrentCharPosition();  
-                    //System.out.println(format("better position of '%s' in '%s' is: %s instead of: %s", currentChar, variantText, possibleBetterCurrentCharPosition, currentCharPosition));
-                    if ( data.isBetterCharPositionFound() ) {
-                        if ( data.isCurrentCharBetterPostionInCluster(currentCharIndex) ) {                            
-                            data.replaceCurrentPositionWithBetterPosition();
-                        } else {
-                            data.findBetterCurrentCharPositionFromPreviousCharPosition(currentCharIndex);  
-                            if ( data.isBetterCharPositionFoundAndInCluster(currentCharIndex) ) {
-                                data.replaceCurrentPositionWithBetterPosition();
-                            }
-                        }
-                    } 
-                }
-                data.saveCurrentCharFinalPosition(currentCharIndex);            
-            }
-            data.reusableVisitedChars.clear();
+            variantsByText.put(lowerVariantText, variant);
             
-            // positions counting ends, weight calculation begins...
-            String positionsS = stream(data.positions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
-            System.out.println("positions before sorting: " + positionsS);
-            
-            data.countUnsortedPositions();
-            data.sortPositions();
-            data.clearClustersInfo();
-            data.findClusters();
-            if ( data.areTooMuchPositionsMissed() ) {
-                System.out.println(data.variantText + ", missed: " + data.missed + " to much, skip variant!");
+            analyze.setVariantText(variant);
+            analyze.checkIfVariantTextContainsPatternDirectly(pattern);
+            analyze.setPatternCharsAndPositions(pattern);
+            analyze.findPatternCharsPositions();
+            analyze.logUnsortedPositions();
+            analyze.countUnsortedPositions();
+            analyze.sortPositions();
+            analyze.findPositionsClusters();
+            if ( analyze.areTooMuchPositionsMissed() ) {
+                analyze.clearAnalyze();
                 continue variantsWeighting;
             }
-            data.isFirstCharMatchInVariantAndPattern(pattern);
-            data.calculateWeight();            
-            data.strangeConditionOnUnsorted();
-            data.logState();            
-            if ( data.isVariantTooBad() ) {
+            analyze.calculateClustersImportance();
+            analyze.isFirstCharMatchInVariantAndPattern(pattern);
+            analyze.strangeConditionOnUnsorted();
+            analyze.calculateWeight();   
+            analyze.logState();
+            if ( analyze.isVariantTooBad() ) {
+                System.out.println(analyze.variantText + " is too bad.");
+                analyze.clearAnalyze();
                 continue variantsWeighting;
             }
-            if ( data.variantWeight < minWeight ) {
-                minWeight = data.variantWeight;
+            
+            if ( analyze.variantWeight < minWeight ) {
+                minWeight = analyze.variantWeight;
             }
-            if ( data.variantWeight > maxWeight ) {
-                maxWeight = data.variantWeight;
+            if ( analyze.variantWeight > maxWeight ) {
+                maxWeight = analyze.variantWeight;
             }
-            data.setNewVariant(variant);
-            if ( data.newVariant.hasDisplayText() ) {
-                debug("[ANALYZE] " + data.newVariant.text() + ":" + data.newVariant.displayText());
+            
+            analyze.setNewVariant(variant);
+            if ( analyze.newVariant.hasDisplayText() ) {
+                debug("[ANALYZE] " + analyze.newVariant.text() + ":" + analyze.newVariant.displayText());
                 if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {
-                    data.setPreviousVariantWithSameDisplayText(variantsByDisplay);
-                    if ( data.isNewVariantBetterThanPrevious() ) {
-                        debug("[ANALYZE] [DUPLICATE] " + data.newVariant.text() + " is better than: " + data.prevVariant.text());
-                        variantsByDisplay.put(lower(data.newVariant.displayText()), data.newVariant);
-                        weightedVariants.add(data.newVariant);
+                    analyze.setPreviousVariantWithSameDisplayText(variantsByDisplay);
+                    if ( analyze.isNewVariantBetterThanPrevious() ) {
+                        debug("[ANALYZE] [DUPLICATE] " + analyze.newVariant.text() + " is better than: " + analyze.prevVariant.text());
+                        variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
+                        weightedVariants.add(analyze.newVariant);
                     } 
                 } else {
-                    variantsByDisplay.put(lower(data.newVariant.displayText()), data.newVariant);
-                    weightedVariants.add(data.newVariant);
+                    variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
+                    weightedVariants.add(analyze.newVariant);
                 }
             } else {
-                weightedVariants.add(data.newVariant);
-            }           
+                weightedVariants.add(analyze.newVariant);
+            } 
+            analyze.clearAnalyze();
         }
         
         double delta = minWeight;
@@ -307,5 +320,9 @@ public class Analyze {
                 .stream()
                 .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
+    }
+
+    private static AnalyzeData getAnalyzeData() {
+        return new AnalyzeData();
     }
 }

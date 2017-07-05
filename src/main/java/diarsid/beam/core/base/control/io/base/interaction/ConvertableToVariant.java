@@ -12,4 +12,8 @@ package diarsid.beam.core.base.control.io.base.interaction;
 public interface ConvertableToVariant {
     
     Variant toVariant(int variantIndex);
+    
+    default Variant toSingleVariant() {
+        return this.toVariant(0);
+    }
 }

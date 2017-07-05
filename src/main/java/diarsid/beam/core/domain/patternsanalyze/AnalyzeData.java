@@ -5,26 +5,23 @@
  */
 package diarsid.beam.core.domain.patternsanalyze;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
-import static java.lang.String.format;
+import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
+import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.clusterWeightRatioDependingOn;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.countUsorted;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.firstCharMatchRatio;
+import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
+import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
+import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.UNINITIALIZED;
 import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isVariantTextLengthTooBad;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isWordsSeparator;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.missedImportanceDependingOn;
 import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.missedTooMuch;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.sortingStepsImportanceDependingOn;
 
 /**
  *
@@ -32,33 +29,19 @@ import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.sortingStepsI
  */
 class AnalyzeData {
     
-    Map<Character, Integer> reusableVisitedChars = new HashMap<>();
+    final Map<Character, Integer> reusableVisitedChars = new HashMap<>();    
+    final AnalyzePositionsData forward = new AnalyzePositionsData(this, FORWARD);
+    final AnalyzePositionsData reverse = new AnalyzePositionsData(this, REVERSE);
+    
+    AnalyzePositionsData best;
+            
     WeightedVariant newVariant;
     WeightedVariant prevVariant;
+    
     String variantText;
     
-    int[] positions;
     double variantWeight;
     char[] patternChars;
-    int currentCharPosition;
-    int betterCurrentCharPosition;
-    char currentChar;
-
-    int unsorted;
-    int missed;
-    int clustersQty;
-    int clustered;
-    int nonClustered;
-    int clustersWeight;
-    double clustersImportance;
-    double missedImportance;
-    double sortingStepsImportance;
-    int currentClusterLength;
-    int currentPosition;
-    int nextPosition;
-    boolean clusterContinuation;
-    boolean containsFirstChar;
-    boolean firstCharsMatchInVariantAndPattern;
 
     AnalyzeData() {
     }
@@ -76,23 +59,27 @@ class AnalyzeData {
         this.newVariant = new WeightedVariant(variant, this.variantWeight);
     }
 
-    void calculateWeight() {
-        this.nonClustered = this.nonClustered + this.missed;
-        this.clustersImportance = clustersImportanceDependingOn(this.clustersQty, this.clustered, this.nonClustered);
-        this.missedImportance = missedImportanceDependingOn(this.missed, this.clustersImportance);
-        this.sortingStepsImportance = sortingStepsImportanceDependingOn(this.unsorted, this.clustersImportance);
+    void calculateWeight() {        
+        this.best = this.bestPositions();
+        System.out.println("weight before calculation: " + this.variantWeight);
+        double lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.8 ;
         this.variantWeight = this.variantWeight + (
-                ( this.nonClustered * 5.3 )
-                - ( this.clustered * 4.6 )
-                - ( firstCharMatchRatio(this.containsFirstChar) )
-                - ( this.clustersImportance )
-                + ( this.clustersWeight * clusterWeightRatioDependingOn(
-                        this.containsFirstChar,
-                        this.firstCharsMatchInVariantAndPattern) )
-                - ( this.clustersQty * 5.4 )
-                + ( this.missedImportance )
-                + (( this.variantText.length() - this.clustered ) * 0.8 )
-                + ( this.sortingStepsImportance ) );
+                ( this.best.nonClustered * 5.3 )
+                - ( this.best.clustered * 4.6 )
+                - ( this.best.clustersImportance )
+                + ( this.best.missedImportance )
+                + ( lengthDelta )
+                + ( this.best.unsortedImportance ) );
+    }
+
+    void calculateClustersImportance() {
+        this.forward.calculateImportance();
+        this.reverse.calculateImportance();
+    }
+    
+    AnalyzePositionsData bestPositions() {
+        return this.forward.clustersImportance > this.reverse.clustersImportance ? 
+                this.forward : this.reverse;
     }
 
     boolean isVariantTooBad() {
@@ -100,205 +87,101 @@ class AnalyzeData {
     }
 
     void isFirstCharMatchInVariantAndPattern(String pattern) {
-        this.firstCharsMatchInVariantAndPattern = ( pattern.charAt(0) == this.variantText.charAt(0) );
+        if ( pattern.charAt(0) == this.variantText.charAt(0) ) {            
+            this.variantWeight = this.variantWeight - 3.4;            
+        }
     }
 
     void logState() {
-        System.out.println(this.variantText + ", positions: " + stream(this.positions).mapToObj(position -> String.valueOf(position)).collect(joining(" ")));
-        System.out.println(String.format("   %-15s %s", "clusters", this.clustersQty));
-        System.out.println(String.format("   %-15s %s", "clustered", this.clustered));
-        System.out.println(String.format("   %-15s %s", "clusters weight", this.clustersWeight));
-        System.out.println(String.format("   %-15s %s", "clusters importance", this.clustersImportance));
-        System.out.println(String.format("   %-15s %s", "non clustered", this.nonClustered));
-        System.out.println(String.format("   %-15s %s", "missed", this.missed));
-        System.out.println(String.format("   %-15s %s", "missedImportance", this.missedImportance));
-        System.out.println(String.format("   %-15s %s", "sortSteps", this.unsorted));
-        System.out.println(String.format("   %-15s %s", "sortStepsImportance", this.sortingStepsImportance));
-        System.out.println(String.format("   %-15s %s", "total weight", this.variantWeight));
-    }
-
-    void strangeConditionOnUnsorted() {
-        if ( ( this.clustered < 2 ) && ( this.unsorted > 0 ) ) {
-            this.variantWeight = this.variantWeight * 1.8;
-        }
+        AnalyzePositionsData positions = this.bestPositions();
+        System.out.println(this.variantText + ", positions: " + stream(positions.positions).mapToObj(position -> String.valueOf(position)).collect(joining(" ")));
+        System.out.println(String.format("   %-20s %s", "direction", positions.direction));
+        System.out.println(String.format("   %-20s %s", "clusters", positions.clustersQty));
+        System.out.println(String.format("   %-20s %s", "clustered", positions.clustered));
+        System.out.println(String.format("   %-20s %s", "nonClustered", positions.nonClustered));
+        System.out.println(String.format("   %-20s %s", "clustersImportance", positions.clustersImportance));
+        System.out.println(String.format("   %-20s %s", "missed", positions.missed));
+        System.out.println(String.format("   %-20s %s", "missedImportance", positions.missedImportance));
+        System.out.println(String.format("   %-20s %s", "unsorted", positions.unsorted));
+        System.out.println(String.format("   %-20s %s", "unsortedImportance", positions.unsortedImportance));
+        System.out.println(String.format("   %-20s %s", "total weight", this.variantWeight));
     }
 
     boolean areTooMuchPositionsMissed() {
-        return missedTooMuch(this.missed, this.variantText.length());
-    }
-
-    boolean isCurrentPositionNotMissed() {
-        return this.currentPosition > 0;
-    }
-
-    void clusterEnds() {
-        this.clustered++;
-        this.clusterContinuation = false;
-    }
-
-    void newClusterStarts() {
-        this.clustered++;
-        this.clustersQty++;
-        this.clusterContinuation = true;
-        this.currentClusterLength = 1;
-        this.clustersWeight = this.clustersWeight + ( this.currentPosition / 2 );
-        if ( this.isCurrentPositionNotMissed() ) {
-            if ( this.isPreviousCharWordSeparator() ) {
-                this.variantWeight = this.variantWeight - 4;
-            }
+        boolean tooMuchMissed = missedTooMuch(this.forward.missed, this.variantText.length());
+        if ( tooMuchMissed ) {
+            System.out.println(this.variantText + ", missed: " + this.forward.missed + " to much, skip variant!");
         }
-    }
-
-    boolean isPreviousCharWordSeparator() {
-        return isWordsSeparator(this.variantText.charAt(this.currentPosition - 1));
-    }
-
-    void clusterIsContinuing() {
-        this.clustered++;
-        this.currentClusterLength++;
-    }
-
-    boolean isCurrentAndNextPositionInCluster() {
-        return this.currentPosition == this.nextPosition - 1;
-    }
-
-    void setNextPosition(int i) {
-        this.nextPosition = this.positions[i + 1];
-    }
-
-    boolean hasNextPosition(int i) {
-        return i < this.positions.length - 1;
-    }
-
-    boolean isCurrentPositionAtPatternStart() {
-        return this.currentPosition == 0;
-    }
-
-    boolean isCurrentPositionMissed() {
-        return this.currentPosition < 0;
-    }
-
-    void setCurrentPosition(int i) {
-        this.currentPosition = this.positions[i];
-    }
-
-    void clearClustersInfo() {
-        this.missed = 0;
-        this.variantWeight = 0;
-        this.clustersQty = 0;
-        this.clustered = 0;
-        this.nonClustered = 0;
-        this.clustersWeight = 0;
-        this.currentClusterLength = 0;
-        this.clusterContinuation = false;
-        this.containsFirstChar = false;
+        return tooMuchMissed;
     }
 
     void sortPositions() {
-        Arrays.sort(this.positions);
+        this.forward.sortPositions();
+        this.reverse.sortPositions();
     }
 
     void countUnsortedPositions() {
-        this.unsorted = countUsorted(this.positions);
+        this.forward.countUnsortedPositions();
+        this.reverse.countUnsortedPositions();
     }
 
-    void saveCurrentCharFinalPosition(int currentCharIndex) {
-        this.positions[currentCharIndex] = this.currentCharPosition;
-    }
-
-    void findBetterCurrentCharPositionFromPreviousCharPosition(int currentCharIndex) {
-        this.betterCurrentCharPosition = this.variantText.indexOf(this.currentChar, this.positions[currentCharIndex - 1] + 1);
-    }
-
-    boolean isBetterCharPositionFoundAndInCluster(int currentCharIndex) {
-        return isBetterCharPositionFound() && isCurrentCharBetterPostionInCluster(currentCharIndex);
-    }
-
-    void replaceCurrentPositionWithBetterPosition() {
-        System.out.println(format("assign position of '%s' in '%s' as %s instead of %s", this.currentChar, this.variantText, this.betterCurrentCharPosition, this.currentCharPosition));
-        this.currentCharPosition = this.betterCurrentCharPosition;
-    }
-
-    boolean isCurrentCharBetterPostionInCluster(int currentCharIndex) {
-        return this.betterCurrentCharPosition == this.positions[currentCharIndex - 1] + 1;
-    }
-
-    boolean isBetterCharPositionFound() {
-        return this.betterCurrentCharPosition > -1;
-    }
-
-    void findBetterCurrentCharPosition() {
-        this.betterCurrentCharPosition =
-                this.variantText.indexOf(this.currentChar, this.currentCharPosition + 1);
-    }
-
-    boolean currentCharIndexInRange(int currentCharIndex) {
-        return ( currentCharIndex > 0 ) && ( this.currentCharPosition < this.positions[currentCharIndex - 1] );
-    }
-
-    boolean currentCharFound() {
-        return this.currentCharPosition > -1;
-    }
-
-    void currentCharIs(int currentCharIndex) {
-        this.currentChar = this.patternChars[currentCharIndex];
+    void setVariantText(Variant variant) {
+        this.variantText = lower(variant.text());
     }
     
-    boolean isCurrentCharAlreadyVisited() {
-        return this.reusableVisitedChars.containsKey(this.currentChar);
+    void findPositionsClusters() {
+        this.forward.findPositionsClusters();
+        this.reverse.findPositionsClusters();
     }
 
-    void setCurrentCharPosition() {
-        this.currentCharPosition = this.variantText.indexOf(this.currentChar);
-    }
-
-    void setCurrentCharPositionNextFoundAfterLastVisitedOne() {
-        this.currentCharPosition = this.variantText.indexOf(
-                this.currentChar,
-                reusableVisitedChars.get(this.currentChar) + 1);
-    }
-
-    void addCurrentCharToVisited() {
-        this.reusableVisitedChars.put(this.currentChar, this.currentCharPosition);
-    }
-    
-    void findClusters() {
-        clustersCounting: for (int i = 0; i < this.positions.length; i++) {
-            this.setCurrentPosition(i);
-            if ( this.isCurrentPositionMissed() ) {
-                this.missed++;
-                continue clustersCounting;
-            }
-            if ( this.isCurrentPositionAtPatternStart() ) {
-                this.containsFirstChar = true;
-            }
-            if ( this.hasNextPosition(i)) {
-                this.setNextPosition(i);
-                if ( this.isCurrentAndNextPositionInCluster() ) {
-                    if ( this.clusterContinuation ) {
-                        this.clusterIsContinuing();
-                    } else {
-                        this.newClusterStarts();
-                    }
-                } else {
-                    if ( this.clusterContinuation ) {
-                        this.clusterEnds();
-                    } else {
-                        this.nonClustered++;
-                    }
-                }
-            } else {
-                if ( this.isCurrentPositionNotMissed() ) {
-                    if ( this.isPreviousCharWordSeparator() ) {
-                        this.variantWeight = this.variantWeight - 3;
-                    }
-                }
-                if ( this.clusterContinuation ) {
-                    this.clustered++;
-                } else {
-                    this.nonClustered++;
-                }
-            }
+    void checkIfVariantTextContainsPatternDirectly(String pattern) {
+        if ( containsIgnoreCase(this.variantText, pattern) ) {
+            debug("variant contains pattern!");
+            this.variantWeight = this.variantWeight - patternLengthRatio(pattern);
         }
+    }
+
+    void setPatternCharsAndPositions(String pattern) {
+        this.patternChars = pattern.toCharArray();
+        this.forward.positions = new int[this.patternChars.length];
+        fill(this.forward.positions, UNINITIALIZED);
+        this.reverse.positions = new int[this.patternChars.length];
+        fill(this.reverse.positions, UNINITIALIZED);
+    }
+    
+    private static double patternLengthRatio(String pattern) {
+        return pattern.length() * 5.5;
+    }
+
+    void findPatternCharsPositions() {
+        this.forward.findPatternCharsPositions();
+        this.reverse.findPatternCharsPositions();
+    }
+
+    void logUnsortedPositions() {
+        this.logUnsortedPositionsOf(this.forward);
+        this.logUnsortedPositionsOf(this.reverse);
+    }
+
+    private void logUnsortedPositionsOf(AnalyzePositionsData data) {
+        String positionsS = stream(data.positions)
+                .mapToObj(position -> String.valueOf(position))
+                .collect(joining(" "));
+        System.out.println(data.direction + " positions before sorting: " + positionsS);
+    }
+    
+    void clearAnalyze() {
+        this.forward.clearPositionsAnalyze();
+        this.reverse.clearPositionsAnalyze();
+        this.best = null;
+        this.variantText = "";
+        this.variantWeight = 0;
+        this.newVariant = null;
+        this.prevVariant = null;
+    }
+    
+    void strangeConditionOnUnsorted() {
+        this.forward.strangeConditionOnUnsorted();
+        this.reverse.strangeConditionOnUnsorted();
     }
 }

@@ -79,6 +79,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
+import static diarsid.beam.core.domain.patternsanalyze.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
 
 /**
@@ -351,10 +352,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 if ( entityFlow.asComplete().hasValue() ) {
                     NamedEntity entity = entityFlow.asComplete().getOrThrow();
                     if ( entity.is(LOCATION) ) {
-                        this.ioEngine.report(initiator, "...opening " + asLocation(entity).name());
-                        asLocation(entity).openAsync(
-                                this.thenDoOnSuccess(initiator, command), 
-                                this.thenDoOnFail(initiator, command));
+                        this.doWhenLocationFound(initiator, command, entity);                        
                     } else {
                         this.doWhenLocationNotFound(initiator, command);
                     }
@@ -374,6 +372,19 @@ class ExecutorModuleWorker implements ExecutorModule {
                 this.doWhenOperationResultUndefined(initiator, command);
                 break;
             }
+        }
+    }
+
+    private void doWhenLocationFound(
+            Initiator initiator, OpenLocationCommand command, NamedEntity entity) {
+        if ( entityIsSatisfiable(command, entity) ) {
+            this.ioEngine.report(initiator, "...opening " + asLocation(entity).name());
+            asLocation(entity).openAsync(
+                    this.thenDoOnSuccess(initiator, command),
+                    this.thenDoOnFail(initiator, command));
+        } else {
+            debug(format("[EXECUTOR] entity %s is not satisfiable! ", entity.toString()));
+            this.doWhenLocationNotFound(initiator, command);
         }
     }
     
