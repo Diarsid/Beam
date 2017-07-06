@@ -10,9 +10,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.domain.entities.NamedEntity;
 
 import static java.lang.Double.MAX_VALUE;
 import static java.lang.Double.MIN_VALUE;
@@ -106,7 +109,7 @@ public class Analyze {
     private static void weightAnalyzeCases() {
         List<String> variantsStrings = beamProjectCase();
         
-        String pattern = "beaproj";
+        String pattern = "beaporj";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
@@ -201,40 +204,39 @@ public class Analyze {
 //        return variant.charAt(variant.length() - 1);
 //    }
     
-//    public static boolean entityIsSatisfiable(InvocationCommand command, NamedEntity entity) {
-//        return weightVariant(command.originalArgument(), entity.toSingleVariant()).isPresent();
-//    }
+    public static boolean entityIsSatisfiable(InvocationCommand command, NamedEntity entity) {
+        return weightVariant(command.originalArgument(), entity.toSingleVariant()).isPresent();
+    }
     
-//    public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
-//        AnalyzeData data = new AnalyzeData();
-//        data.setVariantText(variant);
-//        data.setPatternCharsAndPositions(pattern);
-//
-//        data.findPatternCharsPositions();
-//
-//        // positions counting ends, weight calculation begins...
-//        String positionsS = stream(data.forwardPositions).mapToObj(position -> String.valueOf(position)).collect(joining(" "));
-//        System.out.println("positions before sorting: " + positionsS);
-//
-//        data.countUnsortedPositions();
-//        data.sortPositions();
-//        data.clearClustersInfo();
-//        data.findPositionsClusters();
-//        if ( data.areTooMuchPositionsMissed() ) {
-//            System.out.println(data.variantText + ", missed: " + data.missed + " to much, skip variant!");
-//            return Optional.empty();
-//        }
-//        data.calculateClustersImportance();
-//        data.isFirstCharMatchInVariantAndPattern(pattern);
-//        data.calculateWeight();            
-//        data.checkStrangeConditionOnUnsorted();
-//        if ( data.isVariantTooBad() ) {
-//            return Optional.empty();
-//        }
-//        data.logState(); 
-//        data.setNewVariant(variant);
-//        return Optional.of(data.newVariant);
-//    }
+    public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
+        AnalyzeData analyze = new AnalyzeData();
+        analyze.setVariantText(variant);
+        analyze.checkIfVariantTextContainsPatternDirectly(pattern);
+        analyze.setPatternCharsAndPositions(pattern);
+        analyze.findPatternCharsPositions();
+        analyze.logUnsortedPositions();
+        analyze.countUnsortedPositions();
+        analyze.sortPositions();
+        analyze.findPositionsClusters();
+        if ( analyze.areTooMuchPositionsMissed() ) {
+            analyze.clearAnalyze();
+            return Optional.empty();
+        }
+        analyze.calculateClustersImportance();
+        analyze.isFirstCharMatchInVariantAndPattern(pattern);
+        analyze.strangeConditionOnUnsorted();
+        analyze.calculateWeight();   
+        analyze.logState();
+        if ( analyze.isVariantTooBad() ) {
+            System.out.println(analyze.variantText + " is too bad.");
+            analyze.clearAnalyze();
+            return Optional.empty();
+        }
+        analyze.setNewVariant(variant);
+        Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
+        analyze.clearAnalyze();
+        return weightedVariant;
+    }
     
     public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
         pattern = lower(pattern);

@@ -284,8 +284,13 @@ class AnalyzePositionsData {
     }
     
     boolean isReverseCurrentCharBetterPostionInCluster(int currentCharIndex) {
-        return ( this.betterCurrentCharPosition == this.positions[currentCharIndex + 1] + 1 ) || 
-                ( this.betterCurrentCharPosition == this.positions[currentCharIndex + 1] - 1 ) ;
+        if ( currentCharIndex == this.positions.length - 1 ) {
+            return ( this.betterCurrentCharPosition == this.positions[currentCharIndex] + 1 ) || 
+                    ( this.betterCurrentCharPosition == this.positions[currentCharIndex] - 1 ) ;
+        } else {
+            return ( this.betterCurrentCharPosition == this.positions[currentCharIndex + 1] + 1 ) || 
+                    ( this.betterCurrentCharPosition == this.positions[currentCharIndex + 1] - 1 ) ;
+        }        
     }
 
     boolean isBetterCharPositionFound() {
