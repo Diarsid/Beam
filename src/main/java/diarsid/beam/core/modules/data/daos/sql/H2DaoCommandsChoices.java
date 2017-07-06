@@ -5,13 +5,17 @@
  */
 package diarsid.beam.core.modules.data.daos.sql;
 
+import java.util.Optional;
+
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.Row;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -44,6 +48,29 @@ public class H2DaoCommandsChoices
     }
 
     @Override
+    public Optional<CommandType> isTypeChoiceDoneFor(String original, WeightedVariants variants) {
+        try {
+            return super.openDisposableTransaction()
+                    .doQueryAndConvertFirstRowVarargParams(CommandType.class,
+                            "SELECT * " +
+                            "FROM commands_choices " +
+                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_variants_stamp IS ? )", 
+                            (row) -> {
+                                return rowToOptionalCommandType(row);
+                            },
+                            lower(original), variants.stamp());
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return Optional.empty();            
+        }
+    }    
+
+    private static Optional<CommandType> rowToOptionalCommandType(Row row) 
+            throws TransactionHandledSQLException {
+        return Optional.of(CommandType.valueOf((String) row.get("com_type")));
+    }
+
+    @Override
     public boolean save(InvocationCommand command, WeightedVariants variants) {
         debug("[DAO COMMANDS CHOICES] save: " + command.stringify() + ", stamp: " + variants.stamp());
         try (JdbcTransaction transact = super.openTransaction()) {
@@ -60,15 +87,18 @@ public class H2DaoCommandsChoices
                 modified = transact
                         .doUpdateVarargParams(
                                 "UPDATE commands_choices " +
-                                "SET com_variants_stamp = ? " +
+                                "SET com_variants_stamp = ?, com_type = ? " +
                                 "WHERE com_original IS ? ", 
-                                variants.stamp(), lower(command.originalArgument()));
+                                variants.stamp(), command.type(), lower(command.originalArgument()));
             } else {
                 modified = transact
                         .doUpdateVarargParams(
-                                "INSERT INTO commands_choices (com_original, com_variants_stamp) " +
-                                "VALUES ( ?, ? ) ", 
-                                lower(command.originalArgument()), variants.stamp());
+                                "INSERT INTO commands_choices (" +
+                                "   com_original, " +
+                                "   com_type, " +
+                                "   com_variants_stamp) " +
+                                "VALUES ( ?, ?, ? ) ", 
+                                lower(command.originalArgument()), command.type(), variants.stamp());
             }
             
             transact
@@ -102,5 +132,4 @@ public class H2DaoCommandsChoices
     public boolean delete(InvocationCommand command) {
         return this.delete(command.originalArgument());
     }
-    
 }

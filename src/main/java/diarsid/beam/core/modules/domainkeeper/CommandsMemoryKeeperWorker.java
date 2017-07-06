@@ -554,6 +554,14 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.best().text().equalsIgnoreCase(pattern) ) {
             return valueCompletedWith(commands.get(variants.best().index()));
         }
+        Optional<CommandType> chosenType = 
+                this.daoCommandsChoices.isTypeChoiceDoneFor(pattern, variants);
+        if ( chosenType.isPresent() ) {
+            return valueCompletedWith(commands
+                    .stream()
+                    .filter(command -> command.type().is(chosenType.get()))
+                    .findFirst());
+        }
         Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
         if ( answer.isGiven() ) {
             InvocationCommand chosen = commands.get(answer.index());

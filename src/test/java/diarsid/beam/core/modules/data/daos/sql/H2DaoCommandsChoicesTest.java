@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules.data.daos.sql;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -19,6 +20,7 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
@@ -33,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
@@ -77,10 +80,11 @@ public class H2DaoCommandsChoicesTest {
         base.transactionFactory()
                 .createDisposableTransaction()
                 .doBatchUpdateVarargParams(
-                        "INSERT INTO commands_choices ( com_original, com_variants_stamp ) " +
-                        "VALUES ( ?, ? )", 
-                        params("beaproj", "c:/projects/netbeans;c:/projects/netbeans/beam"),
-                        params("beaporj", "c:/projects/netbeans;c:/projects/netbeans/beam"));
+                        "INSERT INTO commands_choices ( com_original, com_type, com_variants_stamp ) " +
+                        "VALUES ( ?, ?, ? )", 
+                        params("beaproj", "OPEN_LOCATION_TARGET", "c:/projects/netbeans/beam;c:/projects/netbeans"),
+                        params("beaporj", "OPEN_LOCATION_TARGET", "c:/projects/netbeans/beam;c:/projects/netbeans"),
+                        params("fb", "BROWSE_WEBPAGE", "c:/books/library/common/author/book.fb2;facebook"));
         
         String pattern = "beaproj";
         List<String> variantsStrings = arrayListOf("C:/Projects/NetBeans", "C:/Projects/NetBeans/Beam");
@@ -107,6 +111,17 @@ public class H2DaoCommandsChoicesTest {
         
         isDone = dao.isChoiceDoneFor("nebeaproj", variants);        
         assertEquals(false, isDone);
+    }
+    
+    @Test
+    public void testIsTypeChoiceDoneFor() {
+        String pattern = "fb";
+        List<String> variantsStrings = arrayListOf("c:/books/library/common/author/book.fb2", "facebook");
+        WeightedVariants fbVariants = weightVariants(pattern, stringsToVariants(variantsStrings));
+        
+        Optional<CommandType> type = dao.isTypeChoiceDoneFor("Fb", fbVariants);
+        assertEquals(true, type.isPresent());
+        assertEquals(BROWSE_WEBPAGE, type.get());
     }
     
     @Test

@@ -5,6 +5,9 @@
  */
 package diarsid.beam.core.modules.data;
 
+import java.util.Optional;
+
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
@@ -15,6 +18,8 @@ import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 public interface DaoCommandsChoices {
     
     boolean isChoiceDoneFor(String original, WeightedVariants variants);
+    
+    Optional<CommandType> isTypeChoiceDoneFor(String original, WeightedVariants variants);
     
     boolean save(InvocationCommand command, WeightedVariants variants);
     

@@ -61,9 +61,10 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "commands_choices", 
                 "CREATE TABLE commands_choices (" +
                 "com_original           VARCHAR     NOT NULL," +
+                "com_type               VARCHAR     NOT NULL, " +         
                 "com_variants_stamp     VARCHAR     NOT NULL, " +
                 "       PRIMARY KEY (com_original) )", 
-                2);
+                3);
         
         SqlTable tasks = new H2SqlTable(
                 "tasks", 
