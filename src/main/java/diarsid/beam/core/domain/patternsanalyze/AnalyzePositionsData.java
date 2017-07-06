@@ -65,7 +65,10 @@ class AnalyzePositionsData {
                 this.missed++;
                 continue clustersCounting;
             }
-            if ( this.isCurrentPositionAtPatternStart() ) {
+            if ( this.isCurrentPositionAtVariantStart()  ) {
+                this.data.variantWeight = this.data.variantWeight - 5.9;
+            }
+            if ( this.isCurrentPositionAtVariantEnd() ) {
                 this.data.variantWeight = this.data.variantWeight - 5.9;
             }
             if ( this.hasNextPosition(i)) {
@@ -199,8 +202,12 @@ class AnalyzePositionsData {
         return i < this.positions.length - 1;
     }
 
-    boolean isCurrentPositionAtPatternStart() {
+    boolean isCurrentPositionAtVariantStart() {
         return this.currentPosition == 0;
+    }
+    
+    boolean isCurrentPositionAtVariantEnd() {
+        return this.currentPosition == this.data.variantText.length() - 1;
     }
 
     boolean isCurrentPositionMissed() {
