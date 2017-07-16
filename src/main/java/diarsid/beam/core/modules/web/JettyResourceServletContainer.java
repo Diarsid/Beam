@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.web.engines;
+package diarsid.beam.core.modules.web;
 
 import java.util.EnumSet;
 
@@ -27,14 +27,17 @@ import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.util.Logs.logError;
+
+import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
+
+import static diarsid.beam.core.Beam.systemInitiator;
 
 /**
  *
  * @author Diarsid
  */
-public class JettyResourceServletContainer implements ResourceServletContainer {
+class JettyResourceServletContainer extends ResourceServletContainer {
     
     private final InnerIoEngine ioEngine;
     private final Server jettyServer;
@@ -42,7 +45,8 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     private final String internetConnectorName;
     private final String localConnectorName;
     
-    public JettyResourceServletContainer(InnerIoEngine io, Configuration config) {     
+    JettyResourceServletContainer(InnerIoEngine io, Configuration config, Objectivizer jsonizer) {     
+        super(jsonizer);
         this.ioEngine = io;
         this.internetConnectorName = "internet_jetty_connector";
         this.localConnectorName = "localhost_jetty_connector";
@@ -93,8 +97,7 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
     @Override 
     public void startServer() { 
         if ( this.jettyServer.getConnectors().length < 1 ) {
-            this.ioEngine.reportAndExitLater(
-                    getSystemInitiator(), "Jetty ServerConnectors have not been set.");
+            this.ioEngine.reportAndExitLater(systemInitiator(), "Jetty ServerConnectors have not been set.");
             throw new ModuleInitializationException(
                     "Jetty ServerConnectors have not been set.");
         }
@@ -102,8 +105,7 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
             this.jettyServer.start();
         } catch (Exception e) {
             logError(this.getClass(), e);
-            this.ioEngine.reportAndExitLater(
-                    getSystemInitiator(), "It is impossible to start Jetty Server.");
+            this.ioEngine.reportAndExitLater(systemInitiator(), "It is impossible to start Jetty Server.");
             throw new ModuleInitializationException(
                     "It is impossible to start Jetty Server.");
         } 
@@ -115,7 +117,7 @@ public class JettyResourceServletContainer implements ResourceServletContainer {
             this.jettyServer.stop();
         } catch (Exception e) {
             logError(this.getClass(), e);            
-            this.ioEngine.report(getSystemInitiator(), "Jetty Server fails to stop.");
+            this.ioEngine.report(systemInitiator(), "Jetty Server fails to stop.");
         }        
     }
     

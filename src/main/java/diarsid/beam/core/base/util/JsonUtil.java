@@ -4,11 +4,14 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.web.core.jsonconversion;
+package diarsid.beam.core.base.util;
 
-import java.util.List;
+import java.util.Collection;
+
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 
 import static java.lang.String.join;
+import static java.util.stream.Collectors.joining;
 
 /**
  *
@@ -25,7 +28,7 @@ public class JsonUtil {
                 "text", text);
     }
     
-    static String asJsonArray(List<String> jsons) {
+    public static String stringsAsJsonArray(Collection<String> jsons) {
         return new StringBuilder()
                 .append("[")
                 .append(join(",", jsons))
@@ -33,7 +36,15 @@ public class JsonUtil {
                 .toString();
     }
     
-    static String asJson(
+    public static String convertablesAsJsonArray(
+            Collection<? extends ConvertableToJson> convertables) {
+        return convertables
+                .stream()
+                .map(convertable -> convertable.toJson())
+                .collect(joining(",", "[", "]"));
+    }
+    
+    public static String asJson(
             String key0, String value0) {
         return new StringBuilder()
                 .append("{")
@@ -44,7 +55,7 @@ public class JsonUtil {
                 .toString();
     }
     
-    static String asJson(
+    public static String asJson(
             String key0, String value0, 
             String key1, String value1) {
         return new StringBuilder()
@@ -60,7 +71,7 @@ public class JsonUtil {
                 .toString();
     }
     
-    static String asJson(
+    public static String asJson(
             String key0, String value0, 
             String key1, String value1, 
             String key2, String value2) {
@@ -81,7 +92,7 @@ public class JsonUtil {
                 .toString();
     }
     
-    static String asJson(
+    public static String asJson(
             String key0, String value0, 
             String key1, String value1, 
             String key2, String value2, 
@@ -107,7 +118,7 @@ public class JsonUtil {
                 .toString();
     }
     
-    static String asJson(
+    public static String asJson(
             String key0, String value0, 
             String key1, String value1, 
             String key2, String value2, 
@@ -138,7 +149,7 @@ public class JsonUtil {
                 .toString();
     }
     
-    static String asJson(
+    public static String asJson(
             String key0, String value0, 
             String key1, String value1, 
             String key2, String value2, 

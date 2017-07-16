@@ -6,20 +6,28 @@
 
 package diarsid.beam.core.modules.web;
 
+
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.WebModule;
+import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
+import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
 import diarsid.beam.core.modules.web.core.container.ExceptionToJsonMapper;
 import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
-import diarsid.beam.core.modules.web.engines.JettyResourceServletContainer;
+import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
 import diarsid.beam.core.modules.web.service.resources.AllDirectoriesResource;
+import diarsid.beam.core.modules.web.service.resources.AllPagesResource;
+import diarsid.beam.core.modules.web.service.resources.SingleDirectoryPropertyResource;
+import diarsid.beam.core.modules.web.service.resources.SingleDirectoryResource;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import static diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer.buildObjectivizer;
 
 /**
  *
@@ -44,20 +52,29 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     public WebModule buildModule() {
         Resources resources;
         InnerIoEngine ioEngine;
-        Configuration configuration;
+        Configuration configuration;        
+        
+        Objectivizer objectivizer = buildObjectivizer();        
         
         ExceptionToJsonMapper exceptionMapper;
         ResourceDispatcherServlet dispatcherServlet;
-        ResourceServletContainer container;
+        ResourceServletContainer container;        
         
-        resources = new Resources(new AllDirectoriesResource());
+        WebDirectoriesKeeper webDirectoriesKeeper = this.domainKeeperModule.webDirectories();
+        WebPagesKeeper webPagesKeeper = this.domainKeeperModule.webPages();
+        resources = new Resources(
+                new AllDirectoriesResource(webDirectoriesKeeper),
+                new AllPagesResource(webPagesKeeper),
+                new SingleDirectoryResource(webDirectoriesKeeper),
+                new SingleDirectoryPropertyResource(webDirectoriesKeeper));
+        
         exceptionMapper = new ExceptionToJsonMapper();
         
         ioEngine = this.ioModule.getInnerIoEngine();
         configuration = this.applicationComponentsHolderModule.getConfiguration();
         
         dispatcherServlet = new ResourceDispatcherServlet(resources, exceptionMapper);
-        container = new JettyResourceServletContainer(ioEngine, configuration);
+        container = new JettyResourceServletContainer(ioEngine, configuration, objectivizer);
         
         container.install(dispatcherServlet, resources);
         container.startServer();

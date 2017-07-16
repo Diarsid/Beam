@@ -11,6 +11,7 @@ import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -21,6 +22,7 @@ import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.JsonUtil.asJson;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
@@ -42,6 +44,7 @@ public class WebPage
                 Serializable, 
                 ConvertableToVariant, 
                 ConvertableToMessage,
+                ConvertableToJson,
                 Comparable<WebPage> {    
     
     // page info
@@ -123,6 +126,15 @@ public class WebPage
     @Override
     public Variant toVariant(int variantIndex) {
         return new Variant(this.name, format("%s (%s)", this.name, "WebPage"), variantIndex);        
+    }
+
+    @Override
+    public String toJson() {
+        return asJson(
+                "name", this.name, 
+                "url", this.url, 
+                "order", String.valueOf(this.pageOrder), 
+                "dirId", String.valueOf(this.directoryId));
     }
 
     @Override

@@ -3,15 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.web.core.jsonconversion;
+package diarsid.beam.core.base.util;
+
+import java.util.Optional;
 
 /**
  *
  * @author Diarsid
  */
-public interface ConverterObjectToJson {
+public class OptionalUtil {
     
-    boolean isApplicableTo(Object obj); 
+    private OptionalUtil() {}
     
-    String convert(Object obj);    
+    public static boolean isNotPresent(Optional optional) {
+        return ! optional.isPresent();
+    }
 }

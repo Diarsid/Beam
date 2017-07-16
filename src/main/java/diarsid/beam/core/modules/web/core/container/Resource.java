@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+
 
 public abstract class Resource 
         extends HttpServlet 
@@ -52,78 +54,75 @@ public abstract class Resource
     @Override
     protected final void doTrace(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.TRACE(wrap(req), wrap(resp));
+        this.TRACE(wrap(req, resp));
     }
 
     @Override
     protected final void doOptions(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.OPTIONS(wrap(req), wrap(resp));
+        this.OPTIONS(wrap(req, resp));
     }
 
     @Override
     protected final void doDelete(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.DELETE(wrap(req), wrap(resp));
+        this.DELETE(wrap(req, resp));
     }
 
     @Override
     protected final void doPut(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.PUT(wrap(req), wrap(resp));
+        this.PUT(wrap(req, resp));
     }
 
     @Override
     protected final void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.POST(wrap(req), wrap(resp));
+        this.POST(wrap(req, resp));
     }
 
     @Override
     protected final void doHead(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.HEAD(wrap(req), wrap(resp));
+        this.HEAD(wrap(req, resp));
     }
 
     @Override
     protected final void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        this.GET(wrap(req), wrap(resp));
+        this.GET(wrap(req, resp));
     }
     
-    private ResourceRequest wrap(HttpServletRequest servletRequest) {
-        return new ResourceRequest(servletRequest, this.mappingUrlSchema);
+    private WebRequestImpl wrap(
+            HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        return new WebRequestImpl(servletRequest, servletResponse, this.mappingUrlSchema);
     }
     
-    private ResourceResponse wrap(HttpServletResponse servletResponse) {
-        return new ResourceResponse(servletResponse);
+    protected void GET(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("GET");
     }
     
-    protected void GET(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("GET");
+    protected void POST(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("POST");
     }
     
-    protected void POST(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("POST");
+    protected void PUT(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("PUT");
     }
     
-    protected void PUT(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("PUT");
+    protected void DELETE(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("DELETE");
     }
     
-    protected void DELETE(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("DELETE");
+    protected void OPTIONS(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("OPTIONS");
     }
     
-    protected void OPTIONS(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("OPTIONS");
+    protected void TRACE(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("TRACE");
     }
     
-    protected void TRACE(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("TRACE");
-    }
-    
-    protected void HEAD(ResourceRequest request, ResourceResponse response) throws IOException {
-        response.sendHttpMethodNotSupported("HEAD");
+    protected void HEAD(WebRequest webRequest) throws IOException {
+        ((WebRequestImpl) webRequest).sendHttpMethodNotSupported("HEAD");
     }
 }

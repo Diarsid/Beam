@@ -12,12 +12,12 @@ import java.util.Objects;
  *
  * @author Diarsid
  */
-public class JsonError {
+class JsonError {
     
     private final int status;
     private final String json;
 
-    public JsonError(int status, String json) {
+    JsonError(int status, String json) {
         this.status = status;
         this.json = json;
     }

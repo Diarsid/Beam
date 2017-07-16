@@ -5,11 +5,13 @@
  */
 package diarsid.beam.core.modules.web.core.container;
 
+import java.io.IOException;
+
 /**
  *
  * @author Diarsid
  */
-public class ResourceUrlParsingException extends RuntimeException {
+public class ResourceUrlParsingException extends IOException {
 
     /**
      * Constructs an instance of <code>ResourceUrlParsingException</code> with the specified detail

@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
+import static diarsid.beam.core.base.util.JsonUtil.errorJson;
 
 /**
  *

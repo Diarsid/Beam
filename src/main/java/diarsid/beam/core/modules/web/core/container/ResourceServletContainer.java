@@ -8,20 +8,32 @@ package diarsid.beam.core.modules.web.core.container;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
+import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
+
 
 /**
  *
  * @author Diarsid
  */
-public interface ResourceServletContainer {
+public abstract class ResourceServletContainer {
+    
+    private static Objectivizer objectivizer;
+    
+    protected ResourceServletContainer(Objectivizer jsonizer) {
+        ResourceServletContainer.objectivizer = jsonizer;
+    }
+        
+    static Objectivizer objectivizer() {
+        return objectivizer;
+    }
             
-    void startServer();
+    public abstract void startServer();
     
-    void stopServer();
+    public abstract void stopServer();
     
-    void install(ResourceDispatcherServlet dispatcher, Resources resources);
+    public abstract void install(ResourceDispatcherServlet dispatcher, Resources resources);
     
-    void addFilter(
+    public abstract void addFilter(
             Filter filter, 
             String filterUrlMapping, 
             DispatcherType t1, 

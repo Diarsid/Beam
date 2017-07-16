@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
@@ -21,6 +22,7 @@ import diarsid.beam.core.modules.IoModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timeAndTextParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
@@ -48,6 +50,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
     public DomainKeeperModule buildModule() {
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
         Interpreter interpreter = this.appComponentsHolderModule.getInterpreter();
+        Initiator systemInitiator = systemInitiator();
         KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
         
         LocationsInputParser locationsInputParser;
@@ -110,6 +113,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.dataModule.webDirectories(), 
                 commandsMemoryKeeper,
                 ioEngine, 
+                systemInitiator,
                 dialogHelper, 
                 propertyAndTextParser, 
                 webObjectsParser);

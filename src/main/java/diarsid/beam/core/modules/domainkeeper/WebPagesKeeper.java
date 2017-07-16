@@ -5,15 +5,15 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
+import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.domain.entities.WebPlace;
-import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
 
 /**
  *
@@ -44,11 +44,27 @@ public interface WebPagesKeeper extends NamedEntitiesKeeper {
     ValueOperation<WebPage> findByNamePattern(
             Initiator initiator, String name);
     
-    boolean createWebPage(
-            Initiator initiator, String name, String url, WebPlace place, String directory)
-            throws DomainConsistencyException;
+    void createWebPage(
+            WebRequest webRequest) throws IOException;
     
-    boolean editWebPageName(
-            Initiator initiator, String name, String newName)
-            throws DomainConsistencyException;
+    void getWebPagesInDirectory(
+            WebRequest webRequest) throws IOException;
+    
+    void deleteWebPage(
+            WebRequest webRequest) throws IOException;
+    
+    void editWebPageName(
+            WebRequest webRequest) throws IOException;
+    
+    void editWebPageUrl(
+            WebRequest webRequest) throws IOException;
+    
+    void editWebPageDirectory(
+            WebRequest webRequest) throws IOException;
+    
+    void editWebPageDirectoryAndPlace(
+            WebRequest webRequest) throws IOException;
+    
+    void editWebPageOrder(
+            WebRequest webRequest) throws IOException;
 }

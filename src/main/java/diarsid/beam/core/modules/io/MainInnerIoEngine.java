@@ -20,7 +20,6 @@ import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
@@ -29,6 +28,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
+import static diarsid.beam.core.Beam.systemInitiator;
 
 /**
  *
@@ -46,7 +46,7 @@ public class MainInnerIoEngine
     public MainInnerIoEngine(OuterIoEnginesHolder ioEnginesHolder, Gui gui) {
         this.ioEnginesHolder = ioEnginesHolder;
         this.gui = gui;
-        this.systemInitiator = getSystemInitiator();
+        this.systemInitiator = systemInitiator();
     }
 
     @Override

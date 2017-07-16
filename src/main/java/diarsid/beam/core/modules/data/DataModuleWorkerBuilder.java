@@ -22,10 +22,10 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
+import static diarsid.beam.core.Beam.systemInitiator;
 
 
 /**
@@ -60,7 +60,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         List<String> reports = verifier.verify(dataBase, model);        
         
         if ( nonEmpty(reports) ) {
-            ioEngine.reportMessage(getSystemInitiator(), linesToMessage(reports));
+            ioEngine.reportMessage(systemInitiator(), linesToMessage(reports));
         }
         
         DaosProvider daosProvider = new H2DaosProvider(
@@ -75,8 +75,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
             logError(DataModuleWorkerBuilder.class, e);
             this.ioModule
                     .getInnerIoEngine()
-                    .reportAndExitLater(
-                            getSystemInitiator(), 
+                    .reportAndExitLater(systemInitiator(), 
                             "Data base driver class loading failure.");
             throw new ModuleInitializationException();
         }

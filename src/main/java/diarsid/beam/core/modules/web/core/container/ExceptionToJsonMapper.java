@@ -15,7 +15,7 @@ import diarsid.beam.core.domain.entities.exceptions.DomainOperationException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
-import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
+import static diarsid.beam.core.base.util.JsonUtil.errorJson;
 
 /**
  *

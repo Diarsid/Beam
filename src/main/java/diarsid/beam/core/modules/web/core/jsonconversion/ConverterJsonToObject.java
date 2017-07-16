@@ -15,7 +15,7 @@ public interface ConverterJsonToObject {
     
     boolean isApplicableTo(Class clazz);
     
-    Object convert(String json);
+    Object convert(String json) throws JsonConversionException;
     
-    Object convert(Reader readerWithJson);
+    Object convert(Reader readerWithJson) throws JsonConversionException;
 }

@@ -7,52 +7,36 @@
 package diarsid.beam.core.modules.web.service.resources;
 
 import java.io.IOException;
-import java.util.Optional;
 
-import diarsid.beam.core.domain.entities.WebPlace;
+import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
-import diarsid.beam.core.modules.web.core.container.ResourceRequest;
-import diarsid.beam.core.modules.web.core.container.ResourceResponse;
-
-import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
-import static diarsid.beam.core.modules.web.core.jsonconversion.JsonUtil.errorJson;
 
 /**
  *
  * @author Diarsid
  */
 public class AllDirectoriesResource extends Resource {
+    
+    private final WebDirectoriesKeeper directoriesKeeper;
         
-    public AllDirectoriesResource() {
+    public AllDirectoriesResource(WebDirectoriesKeeper directoriesKeeper) {
         super("/resources/{place}/directories");
+        this.directoriesKeeper = directoriesKeeper;
     }
     
     @Override
-    protected void OPTIONS(ResourceRequest request, ResourceResponse response) throws IOException {
+    protected void OPTIONS(WebRequest webRequest) throws IOException {
         
     }
     
     @Override
-    protected void GET(ResourceRequest request, ResourceResponse response) throws IOException {
-        Optional<String> optPlace = request.getParam("place");
-        if ( optPlace.isPresent() ) {
-            WebPlace place = parsePlace(optPlace.get());
-            if ( place.isDefined() ) {
-                response.okWithJson(this.getJsonDirectoriesFrom(place));
-            } else {
-                response.badRequestWithJson(errorJson("web place is not specified."));
-            }            
-        } else {
-            response.badRequestWithJson(errorJson("web place is not specified."));
-        }
-    }
-    
-    private String getJsonDirectoriesFrom(WebPlace placement) {
-        return "fake";
+    protected void GET(WebRequest webRequest) throws IOException {
+        this.directoriesKeeper.getAllDirectoriesInPlace(webRequest);
     }
     
     @Override
-    protected void POST(ResourceRequest request, ResourceResponse response) throws IOException {
-        
+    protected void POST(WebRequest webRequest) throws IOException {
+        this.directoriesKeeper.createWebDirectory(webRequest);
     }
 }

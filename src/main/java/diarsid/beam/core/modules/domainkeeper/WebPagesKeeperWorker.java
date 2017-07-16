@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +17,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
@@ -39,7 +41,7 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
+import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -89,6 +91,7 @@ public class WebPagesKeeperWorker
     private final DaoWebDirectories daoDirectories;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
+    private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
     private final PropertyAndTextParser propetyTextParser;
     private final WebObjectsInputParser webObjectsParser;
@@ -100,6 +103,7 @@ public class WebPagesKeeperWorker
             DaoWebDirectories daoDirectories,
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
+            Initiator systemInitiator,
             KeeperDialogHelper helper,
             PropertyAndTextParser propetyTextParser,
             WebObjectsInputParser parser) {
@@ -108,6 +112,7 @@ public class WebPagesKeeperWorker
         this.commandsMemory = commandsMemory;
         this.daoDirectories = daoDirectories;
         this.ioEngine = ioEngine;
+        this.systemInitiator = systemInitiator;
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
         this.webObjectsParser = parser;
@@ -116,13 +121,12 @@ public class WebPagesKeeperWorker
     }
     
     private WebDirectory getOrCreateDefaultDirectory() {
-        Optional<WebDirectory> defaultDir = this.daoDirectories.getDirectoryByNameAndPlace(
-                getSystemInitiator(), "Common", WEBPANEL);
+        Optional<WebDirectory> defaultDir = this.daoDirectories.getDirectoryByNameAndPlace(systemInitiator(), "Common", WEBPANEL);
         if ( defaultDir.isPresent() ) {
             return defaultDir.get();
         } else {
             WebDirectory directory = newDirectory("Common", WEBPANEL);
-            if ( this.daoDirectories.save(getSystemInitiator(), directory) ) {
+            if ( this.daoDirectories.save(systemInitiator(), directory) ) {
                 return directory;
             } else {
                 throw new WorkflowBrokenException("Cannot create default WebDirectory 'Common'.");
@@ -562,12 +566,10 @@ public class WebPagesKeeperWorker
     }
 
     @Override
-    public boolean createWebPage(
-            Initiator initiator, String name, String url, WebPlace place, String directory) 
-            throws 
-                    DomainConsistencyException, 
-                    DomainOperationException {
-        Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(initiator, name);
+    public void createWebPage(
+            WebRequest webRequest) throws IOException {
+        WebPage webPage = (WebPage) webRequest.bodyOf(WebPage.class);        
+        Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(this.systemInitiator, name);
         if ( ! freeNameIndex.isPresent() ) {
             throw new DomainOperationException("Cannot get free name next index.");
         }
@@ -601,11 +603,8 @@ public class WebPagesKeeperWorker
     }
 
     @Override
-    public boolean editWebPageName(
-            Initiator initiator, String name, String newName) 
-            throws 
-                    DomainConsistencyException, 
-                    DomainOperationException {
+    public void editWebPageName(
+            WebRequest webRequest) throws IOException {
         Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(initiator, newName);
         if ( ! freeNameIndex.isPresent() ) {
             throw new DomainOperationException("Cannot get free name next index.");

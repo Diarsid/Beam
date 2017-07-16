@@ -66,7 +66,7 @@ public class Beam {
         }));        
     }
     
-    public static Initiator getSystemInitiator() {
+    public static Initiator systemInitiator() {
         return SYSTEM_INITIATOR;
     }
     

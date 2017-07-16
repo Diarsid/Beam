@@ -41,7 +41,8 @@ public class RestUrlParametersUtil {
                 templateUrlPart.endsWith("}");
     }
     
-    public static Map<String, String> parse(String urlTemplate, String actualUrl) {
+    public static Map<String, String> parse(String urlTemplate, String actualUrl) 
+            throws ResourceUrlParsingException {
         return v1parse(urlTemplate, actualUrl);
     } 
     
@@ -82,7 +83,7 @@ public class RestUrlParametersUtil {
         Map<String, String> pathParams = new HashMap<>();
         
         if ( templateUrlParts.length != actualUrlParts.length ) {
-            throw new ResourceUrlParsingException("actual url doesnt match expcted template.");
+            throw new ResourceUrlParsingException("actual url doesnt match expected template.");
         }   
         int partsQty = templateUrlParts.length;
         

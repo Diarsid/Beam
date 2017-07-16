@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -19,6 +20,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.util.JsonUtil.asJson;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
@@ -33,6 +35,7 @@ public class WebDirectory
                 Serializable, 
                 ConvertableToVariant,
                 ConvertableToMessage,
+                ConvertableToJson, 
                 Comparable<WebDirectory> {
     
     private final int id;
@@ -103,6 +106,15 @@ public class WebDirectory
                 this.name,
                 this.name + " :: " + lower(this.place.name()), 
                 variantIndex);
+    }
+
+    @Override
+    public String toJson() {
+        return asJson(
+                "name", this.name, 
+                "place", this.place.name(), 
+                "order", String.valueOf(this.order), 
+                "id", String.valueOf(this.id));
     }
 
     @Override

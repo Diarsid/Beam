@@ -17,7 +17,7 @@ import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
+import static diarsid.beam.core.Beam.systemInitiator;
 
 /**
  *
@@ -42,7 +42,7 @@ class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherMo
         ScheduledThreadPoolExecutor scheduler;        
         TimeMessagesIo tasksIo;
         TasksKeeper tasksKeeper;
-        Initiator watcherPrivateInitiator = getSystemInitiator();
+        Initiator watcherPrivateInitiator = systemInitiator();
         
         tasksIo = this.ioModule.getTimeScheduledIo();
         tasksKeeper = this.domainKeeperModule.tasks();

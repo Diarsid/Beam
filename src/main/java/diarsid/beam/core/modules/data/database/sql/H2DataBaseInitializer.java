@@ -18,9 +18,9 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.Beam.systemInitiator;
 
 
 public class H2DataBaseInitializer implements SqlDataBaseInitializer {
@@ -57,8 +57,7 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
 
     private void handleExceptionAndTerminate(Exception ex) {
         logError(H2DataBaseInitializer.class, ex);
-        this.ioEngine.reportAndExitLater(
-                getSystemInitiator(), "Cannot verify existing data base tables.");
+        this.ioEngine.reportAndExitLater(systemInitiator(), "Cannot verify existing data base tables.");
         throw new ModuleInitializationException();
     }
     
@@ -85,8 +84,7 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
             return format("SQL table '%s' has been created.", table.name());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DataBaseInitializer.class, ex);
-            this.ioEngine.reportAndExitLater(
-                    getSystemInitiator(), format("Cannot create '%s' SQL table.", table.name()));
+            this.ioEngine.reportAndExitLater(systemInitiator(), format("Cannot create '%s' SQL table.", table.name()));
             throw new ModuleInitializationException();
         } 
     }

@@ -25,12 +25,12 @@ import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteCoreAccessE
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
-import static diarsid.beam.core.Beam.getSystemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRegistry;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRemoteAccessEndpoint;
+import static diarsid.beam.core.Beam.systemInitiator;
 
 
 public class RemoteManagerModuleWorker implements RemoteManagerModule {
@@ -63,7 +63,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
             holdedRemoteAccessEndpoint = access;
             debug("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
-            this.io.getInnerIoEngine().reportMessageAndExitLater(getSystemInitiator(), 
+            this.io.getInnerIoEngine().reportMessageAndExitLater(systemInitiator(), 
                     new TextMessage(ERROR, 
                             "Export Beam.Server modules failure.",
                             "Program will be closed.")
@@ -85,7 +85,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
 //            registry.unbind(config.get(WEB_PAGES_HANDLER_NAME));
         } catch (NotBoundException|RemoteException e) {            
             this.io.getInnerIoEngine()
-                    .reportMessage(getSystemInitiator(), new TextMessage(e));
+                    .reportMessage(systemInitiator(), new TextMessage(e));
         }        
     }
 

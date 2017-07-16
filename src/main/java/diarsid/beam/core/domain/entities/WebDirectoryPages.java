@@ -15,6 +15,8 @@ import static java.lang.String.format;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.JsonUtil.asJson;
+import static diarsid.beam.core.base.util.JsonUtil.convertablesAsJsonArray;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -39,6 +41,16 @@ public class WebDirectoryPages extends WebDirectory {
         message.add(0, format(
                 "%s (%s, %d) ", this.name(), lower(this.place().name()), this.order()));
         return new TextMessage(message);
+    }
+
+    @Override
+    public String toJson() {
+        return asJson(
+                "name", this.name(), 
+                "place", this.place().name(), 
+                "order", String.valueOf(this.order()), 
+                "id", String.valueOf(this.id()),
+                "pages", convertablesAsJsonArray(this.pages));
     }
 
     public List<WebPage> pages() {
