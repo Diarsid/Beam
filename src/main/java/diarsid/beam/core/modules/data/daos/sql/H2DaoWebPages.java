@@ -46,7 +46,7 @@ class H2DaoWebPages
     }
 
     @Override
-    public Optional<Integer> freeNameNextIndex(
+    public Optional<Integer> findFreeNameNextIndex(
             Initiator initiator, String name) {
         try (JdbcTransaction transact = super.openTransaction()) {
             

@@ -5,14 +5,14 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
-import java.io.IOException;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
+import diarsid.beam.core.domain.entities.WebPlace;
 
 /**
  *
@@ -32,27 +32,19 @@ public interface WebDirectoriesKeeper {
     ValueOperation<? extends WebDirectory> findWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
-    void createWebDirectory(
-            WebRequest webRequest) throws IOException;
+    WebResponse createWebDirectory(WebPlace place, String name);
     
-    void deleteWebDirectory(
-            WebRequest webRequest) throws IOException;
+    WebResponse deleteWebDirectory(WebPlace place, String name);
     
-    void editWebDirectoryName(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebDirectoryName(WebPlace place, String name, String newName);
     
-    void editWebDirectoryPlace(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebDirectoryPlace(WebPlace place, String name, WebPlace newPlace);
     
-    void editWebDirectoryOrder(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebDirectoryOrder(WebPlace place, String name, int newOrder);
     
-    void getWebDirectory(
-            WebRequest webRequest) throws IOException;
+    WebResponse getWebDirectory(WebPlace place, String name);
     
-    void getWebDirectoryPages(
-            WebRequest webRequest) throws IOException;
+    WebResponse getWebDirectoryPages(WebPlace place, String name);
     
-    void getAllDirectoriesInPlace(
-            WebRequest webRequest) throws IOException;
+    WebResponse getAllDirectoriesInPlace(WebPlace place);
 }

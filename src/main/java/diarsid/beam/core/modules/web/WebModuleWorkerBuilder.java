@@ -19,15 +19,15 @@ import diarsid.beam.core.modules.web.core.container.ExceptionToJsonMapper;
 import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
-import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
 import diarsid.beam.core.modules.web.service.resources.AllDirectoriesResource;
 import diarsid.beam.core.modules.web.service.resources.AllPagesResource;
 import diarsid.beam.core.modules.web.service.resources.SingleDirectoryPropertyResource;
 import diarsid.beam.core.modules.web.service.resources.SingleDirectoryResource;
+import diarsid.beam.core.modules.web.service.resources.SinglePagePropertyResource;
+import diarsid.beam.core.modules.web.service.resources.SinglePageResource;
+import diarsid.beam.core.modules.web.service.resources.WebObjectsValidationResource;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
-
-import static diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer.buildObjectivizer;
 
 /**
  *
@@ -52,9 +52,7 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     public WebModule buildModule() {
         Resources resources;
         InnerIoEngine ioEngine;
-        Configuration configuration;        
-        
-        Objectivizer objectivizer = buildObjectivizer();        
+        Configuration configuration;           
         
         ExceptionToJsonMapper exceptionMapper;
         ResourceDispatcherServlet dispatcherServlet;
@@ -66,7 +64,10 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
                 new AllDirectoriesResource(webDirectoriesKeeper),
                 new AllPagesResource(webPagesKeeper),
                 new SingleDirectoryResource(webDirectoriesKeeper),
-                new SingleDirectoryPropertyResource(webDirectoriesKeeper));
+                new SingleDirectoryPropertyResource(webDirectoriesKeeper),
+                new SinglePageResource(webPagesKeeper),
+                new SinglePagePropertyResource(webPagesKeeper),
+                new WebObjectsValidationResource());
         
         exceptionMapper = new ExceptionToJsonMapper();
         
@@ -74,7 +75,7 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
         configuration = this.applicationComponentsHolderModule.getConfiguration();
         
         dispatcherServlet = new ResourceDispatcherServlet(resources, exceptionMapper);
-        container = new JettyResourceServletContainer(ioEngine, configuration, objectivizer);
+        container = new JettyResourceServletContainer(ioEngine, configuration);
         
         container.install(dispatcherServlet, resources);
         container.startServer();

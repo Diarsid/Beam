@@ -17,7 +17,7 @@ import diarsid.beam.core.domain.entities.WebPage;
  */
 public interface DaoWebPages {
     
-    Optional<Integer> freeNameNextIndex(
+    Optional<Integer> findFreeNameNextIndex(
             Initiator initiator, String name);
     
     Optional<WebPage> getByExactName(

@@ -8,8 +8,12 @@ package diarsid.beam.core.modules.web.service.resources;
 import java.io.IOException;
 
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
+import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
+
+import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 
 /**
  *
@@ -20,17 +24,27 @@ public class SingleDirectoryResource extends Resource {
     private final WebDirectoriesKeeper directoriesKeeper;
     
     public SingleDirectoryResource(WebDirectoriesKeeper webDirectoriesKeeper) {
-        super("resources/{place}/directories/{name}");
+        super("resources/{place}/directories/{dirName}");
         this.directoriesKeeper = webDirectoriesKeeper;
     }
     
     @Override
     protected void GET(WebRequest webRequest) throws IOException {
-        this.directoriesKeeper.getWebDirectoryPages(webRequest);
+        String directoryName = webRequest.pathParam("dirName");
+        WebPlace place = parsePlace(webRequest.pathParam("place"));
+        
+        WebResponse webResponse = this.directoriesKeeper.getWebDirectoryPages(place, directoryName);
+        
+        webRequest.send(webResponse);
     }
     
     @Override
     protected void DELETE(WebRequest webRequest) throws IOException {
-        this.directoriesKeeper.deleteWebDirectory(webRequest);
+        String directoryName = webRequest.pathParam("dirName");
+        WebPlace place = parsePlace(webRequest.pathParam("place"));
+        
+        WebResponse webResponse = this.directoriesKeeper.deleteWebDirectory(place, directoryName);
+        
+        webRequest.send(webResponse);
     }
 }

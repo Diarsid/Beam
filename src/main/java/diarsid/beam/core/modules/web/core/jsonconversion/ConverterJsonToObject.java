@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.modules.web.core.jsonconversion;
 
+import diarsid.beam.core.modules.web.core.container.JsonConversionException;
+
 import java.io.Reader;
 
 /**

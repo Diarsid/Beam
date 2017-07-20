@@ -27,11 +27,8 @@ import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
 
-import static diarsid.beam.core.base.util.Logs.logError;
-
-import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
-
 import static diarsid.beam.core.Beam.systemInitiator;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
@@ -45,8 +42,7 @@ class JettyResourceServletContainer extends ResourceServletContainer {
     private final String internetConnectorName;
     private final String localConnectorName;
     
-    JettyResourceServletContainer(InnerIoEngine io, Configuration config, Objectivizer jsonizer) {     
-        super(jsonizer);
+    JettyResourceServletContainer(InnerIoEngine io, Configuration config) { 
         this.ioEngine = io;
         this.internetConnectorName = "internet_jetty_connector";
         this.localConnectorName = "localhost_jetty_connector";

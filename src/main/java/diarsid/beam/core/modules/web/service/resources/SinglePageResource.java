@@ -7,7 +7,6 @@ package diarsid.beam.core.modules.web.service.resources;
 
 import java.io.IOException;
 
-import diarsid.beam.core.base.control.io.base.interaction.Json;
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.domain.entities.WebPlace;
@@ -20,36 +19,33 @@ import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
  *
  * @author Diarsid
  */
-public class AllPagesResource extends Resource {
+public class SinglePageResource extends Resource {
     
     private final WebPagesKeeper webPagesKeeper;
     
-    public AllPagesResource(WebPagesKeeper webPagesKeeper) {
-        super("resources/{place}/directories/{dirName}/pages");
+    public SinglePageResource(WebPagesKeeper webPagesKeeper) {
+        super("resources/{place}/directories/{dirName}/pages/{pageName}");
         this.webPagesKeeper = webPagesKeeper;
     }
     
     @Override
     protected void GET(WebRequest webRequest) throws IOException {
-        String directoryName = webRequest.pathParam("dirName");
         WebPlace place = parsePlace(webRequest.pathParam("place"));
+        String directoryName = webRequest.pathParam("dirName");
+        String pageName = webRequest.pathParam("pageName");
         
-        WebResponse webResponse = this.webPagesKeeper.getWebPagesInDirectory(
-                place, directoryName);
+        WebResponse webResponse = this.webPagesKeeper.getWebPage(place, directoryName, pageName);
         
         webRequest.send(webResponse);
     }
     
     @Override
-    protected void POST(WebRequest webRequest) throws IOException {
-        Json json = webRequest.json();
-        String name = json.stringOf("name");
-        String url = json.stringOf("url");
-        String directoryName = webRequest.pathParam("dirName");
+    protected void DELETE(WebRequest webRequest) throws IOException {
         WebPlace place = parsePlace(webRequest.pathParam("place"));
+        String directoryName = webRequest.pathParam("dirName");
+        String pageName = webRequest.pathParam("pageName");
         
-        WebResponse webResponse = this.webPagesKeeper.createWebPage(
-                place, directoryName, name, url);
+        WebResponse webResponse = this.webPagesKeeper.deleteWebPage(place, directoryName, pageName);
         
         webRequest.send(webResponse);
     }

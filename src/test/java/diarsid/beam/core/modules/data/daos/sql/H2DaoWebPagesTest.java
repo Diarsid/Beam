@@ -152,7 +152,7 @@ public class H2DaoWebPagesTest {
 
     @Test
     public void testFreeNameNextIndex() {
-        Optional<Integer> index = dao.freeNameNextIndex(initiator, "facebook");
+        Optional<Integer> index = dao.findFreeNameNextIndex(initiator, "facebook");
         assertTrue(index.isPresent());
         assertEquals(2, (int) index.get());
     }

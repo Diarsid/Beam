@@ -5,15 +5,15 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
-import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebPage;
+import diarsid.beam.core.domain.entities.WebPlace;
 
 /**
  *
@@ -44,27 +44,34 @@ public interface WebPagesKeeper extends NamedEntitiesKeeper {
     ValueOperation<WebPage> findByNamePattern(
             Initiator initiator, String name);
     
-    void createWebPage(
-            WebRequest webRequest) throws IOException;
+    WebResponse createWebPage(
+            WebPlace place, String directoryName, String pageName, String url);
     
-    void getWebPagesInDirectory(
-            WebRequest webRequest) throws IOException;
+    WebResponse getWebPage(
+            WebPlace place, String directoryName, String pageName);
     
-    void deleteWebPage(
-            WebRequest webRequest) throws IOException;
+    WebResponse getWebPagesInDirectory(
+            WebPlace place, String directoryName);
     
-    void editWebPageName(
-            WebRequest webRequest) throws IOException;
+    WebResponse deleteWebPage(
+            WebPlace place, String directoryName, String pageName);
     
-    void editWebPageUrl(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebPageName(
+            WebPlace place, String directoryName, String pageName, String pageNewName);
     
-    void editWebPageDirectory(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebPageUrl(
+            WebPlace place, String directoryName, String pageName, String pageUrl);
     
-    void editWebPageDirectoryAndPlace(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebPageDirectory(
+            WebPlace place, String directoryName, String pageName, String newDirectoryName);
     
-    void editWebPageOrder(
-            WebRequest webRequest) throws IOException;
+    WebResponse editWebPageDirectoryAndPlace(
+            WebPlace place, 
+            String directoryName, 
+            String pageName, 
+            WebPlace newPlace, 
+            String newDirectoryName);
+    
+    WebResponse editWebPageOrder(
+            WebPlace place, String directoryName, String pageName, int newOrder);
 }

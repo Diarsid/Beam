@@ -98,6 +98,15 @@ class BatchesKeeperWorker
         });
     }
     
+    private void asyncChangeCommandsMemory(
+            Initiator initiator, String batchOldName, String batchNewName) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(initiator, batchOldName, CALL_BATCH);
+            this.commandsMemory.save(
+                    initiator, new CallBatchCommand(batchNewName, batchNewName, NEW, TARGET_FOUND));
+        });
+    }
+    
     private void asyncAddCommand(Initiator initiator, String batchName) {
         asyncDo(() -> {
             this.commandsMemory.save(
@@ -395,7 +404,7 @@ class BatchesKeeperWorker
             }
         }
         if ( this.dao.editBatchName(initiator, batch.name(), newName) ) {
-            this.asyncCleanCommandsMemory(initiator, batch.name());
+            this.asyncChangeCommandsMemory(initiator, batch.name(), newName);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to rename batch.");

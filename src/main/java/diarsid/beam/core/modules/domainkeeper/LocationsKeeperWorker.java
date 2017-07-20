@@ -103,6 +103,19 @@ class LocationsKeeperWorker
         });
     }
     
+    private void asyncChangeCommandsMemory(
+            Initiator initiator, String locationOldName, String locationNewName) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(
+                    initiator, locationOldName, OPEN_LOCATION);
+            this.commandsMemory.removeByExactExtendedLocationPrefixInPath(
+                    initiator, locationOldName);
+            this.commandsMemory.save(
+                    initiator, new OpenLocationCommand(
+                            locationNewName, locationNewName, NEW, TARGET_FOUND));
+        });
+    }
+    
     private ValueOperation<Location> discussExistingLocation(Initiator initiator, String name) {
         List<Location> foundLocations;     
         WeightedVariants weightedLocations;
@@ -365,7 +378,7 @@ class LocationsKeeperWorker
                     return voidOperationStopped();
                 }
                 if ( this.dao.editLocationName(initiator, location.name(), newName) ) {
-                    this.asyncCleanCommandsMemory(initiator, location.name());
+                    this.asyncChangeCommandsMemory(initiator, location.name(), newName);
                     return voidCompleted();
                 } else {
                     return voidOperationFail("DAO failed to edit name.");

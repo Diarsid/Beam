@@ -20,8 +20,6 @@ public interface Objectivizer {
     public static Objectivizer buildObjectivizer() {
         Set<ConverterJsonToObject> jsonToObjects = new HashSet<>();
         
-        jsonToObjects.add(new ConverterFromJsonToJsonPayload());
-        
         return new ObjectivizerWorker(jsonToObjects);
     }
 }

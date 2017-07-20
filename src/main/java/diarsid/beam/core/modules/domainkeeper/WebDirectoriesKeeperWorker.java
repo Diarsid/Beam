@@ -16,9 +16,11 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
+import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNameAndPlace;
@@ -35,6 +37,7 @@ import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
@@ -42,6 +45,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIR
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
@@ -57,20 +61,32 @@ class WebDirectoriesKeeperWorker
         implements WebDirectoriesKeeper {
     
     private final DaoWebDirectories daoDirectories;
+    private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final WebObjectsInputParser webObjectsParser;
 
     public WebDirectoriesKeeperWorker(
             DaoWebDirectories daoDirectories, 
+            CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper helper, 
             WebObjectsInputParser webObjectsParser) {
         super(ioEngine);
         this.daoDirectories = daoDirectories;
+        this.commandsMemory = commandsMemory;
         this.ioEngine = ioEngine;
         this.helper = helper;
         this.webObjectsParser = webObjectsParser;
+    }
+    
+    private void asyncCleanCommandsMemory(Initiator initiator, List<WebPage> pages) {
+        asyncDo(() -> {
+            pages.stream().forEach(page -> {
+                this.commandsMemory.removeByExactExtendedAndType(
+                        initiator, page.name(), BROWSE_WEBPAGE);
+            });            
+        });
     }
     
     @Override
@@ -183,16 +199,21 @@ class WebDirectoriesKeeperWorker
             name = "";
         }
         
-        Optional<WebDirectory> removed = this.discussExistingDirectoryBy(initiator, name, place);
-        if ( ! removed.isPresent() ) {
+        Optional<WebDirectory> directoryToRemove = 
+                this.discussExistingDirectoryBy(initiator, name, place);
+        if ( ! directoryToRemove.isPresent() ) {
             return voidOperationStopped();
         }
         
         this.ioEngine.report(initiator, "all pages in this directory will be removed also.");
         Choice choice = this.ioEngine.ask(initiator, "are you sure?");
         
+        Optional<WebDirectoryPages> pages = this.daoDirectories
+                .getDirectoryPagesById(initiator, directoryToRemove.get().id());
         if ( choice.isPositive() ) {
-            if ( daoDirectories.remove(initiator, removed.get().name(), removed.get().place()) ) {
+            if ( daoDirectories.remove(
+                    initiator, directoryToRemove.get().name(), directoryToRemove.get().place()) ) {
+                this.asyncCleanCommandsMemory(initiator, pages.get().pages());
                 return voidCompleted();
             } else {
                 return voidOperationFail("cannot remove directory.");
@@ -350,4 +371,44 @@ class WebDirectoriesKeeperWorker
             return valueCompletedWith(searched.get());
         }
     }    
+
+    @Override
+    public WebResponse createWebDirectory(WebPlace place, String name) {
+        
+    }
+
+    @Override
+    public WebResponse deleteWebDirectory(WebPlace place, String name) {
+        
+    }
+
+    @Override
+    public WebResponse editWebDirectoryName(WebPlace place, String name, String newName) {
+        
+    }
+
+    @Override
+    public WebResponse editWebDirectoryPlace(WebPlace place, String name, WebPlace newPlace) {
+        
+    }
+
+    @Override
+    public WebResponse editWebDirectoryOrder(WebPlace place, String name, int newOrder) {
+        
+    }
+
+    @Override
+    public WebResponse getWebDirectory(WebPlace place, String name) {
+        
+    }
+
+    @Override
+    public WebResponse getWebDirectoryPages(WebPlace place, String name) {
+        
+    }
+
+    @Override
+    public WebResponse getAllDirectoriesInPlace(WebPlace place) {
+        
+    }
 }

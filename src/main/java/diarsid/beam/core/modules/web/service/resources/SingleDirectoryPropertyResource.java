@@ -7,11 +7,15 @@ package diarsid.beam.core.modules.web.service.resources;
 
 import java.io.IOException;
 
+import diarsid.beam.core.base.control.io.base.interaction.Json;
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
+import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
 
-import static diarsid.beam.core.base.util.JsonUtil.errorJson;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
+import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 
 /**
  *
@@ -22,28 +26,42 @@ public class SingleDirectoryPropertyResource extends Resource {
     private final WebDirectoriesKeeper directoriesKeeper;
     
     public SingleDirectoryPropertyResource(WebDirectoriesKeeper directoriesKeeper) {
-        super("resources/{place}/directories/{name}/{property}");
+        super("resources/{place}/directories/{dirName}/{property}");
         this.directoriesKeeper = directoriesKeeper;
     }
     
     @Override
-    protected void PUT(WebRequest webRequest) throws IOException {        
-        switch ( webRequest.pathParam("property") ) {
+    protected void PUT(WebRequest webRequest) throws IOException {
+        WebPlace place = parsePlace(webRequest.pathParam("place"));
+        String directoryName = webRequest.pathParam("dirName");
+        String property = webRequest.pathParam("property");
+        Json json = webRequest.json();
+
+        WebResponse webResponse;
+        switch ( property ) {
             case "name" : {
-                this.directoriesKeeper.editWebDirectoryName(webRequest);
+                String newDirectoryName = json.stringOf("payload");
+                webResponse = this.directoriesKeeper
+                        .editWebDirectoryName(place, directoryName, newDirectoryName);
                 break;
             }
-            case "placement" : {
-                this.directoriesKeeper.editWebDirectoryPlace(webRequest);
+            case "place" : {
+                WebPlace newPlace = parsePlace(json.stringOf("payload"));
+                webResponse = this.directoriesKeeper
+                        .editWebDirectoryPlace(place, directoryName, newPlace);
                 break;
             }
             case "order" : {
-                this.directoriesKeeper.editWebDirectoryOrder(webRequest);
+                int newOrder = json.intOf("payload");
+                webResponse = this.directoriesKeeper
+                        .editWebDirectoryOrder(place, directoryName, newOrder);
                 break;
             }
             default : {
-                webRequest.sendBadRequestWithJson(errorJson("directory property is empty!"));
+                webResponse = badRequestWithJson("directory property is not defined!");
             }
         }
+        
+        webRequest.send(webResponse);
     }
 }

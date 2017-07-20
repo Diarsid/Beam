@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -17,17 +17,16 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
+import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.domain.entities.WebDirectory;
+import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
-import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
-import diarsid.beam.core.domain.entities.exceptions.DomainOperationException;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
@@ -41,7 +40,6 @@ import diarsid.beam.core.modules.data.DaoWebPages;
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 
-import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -51,6 +49,10 @@ import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.notFoundWithJson;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.ok;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.okWithJson;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
@@ -63,6 +65,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
@@ -121,12 +124,13 @@ public class WebPagesKeeperWorker
     }
     
     private WebDirectory getOrCreateDefaultDirectory() {
-        Optional<WebDirectory> defaultDir = this.daoDirectories.getDirectoryByNameAndPlace(systemInitiator(), "Common", WEBPANEL);
+        Optional<WebDirectory> defaultDir = this.daoDirectories.getDirectoryByNameAndPlace(
+                this.systemInitiator, "Common", WEBPANEL);
         if ( defaultDir.isPresent() ) {
             return defaultDir.get();
         } else {
             WebDirectory directory = newDirectory("Common", WEBPANEL);
-            if ( this.daoDirectories.save(systemInitiator(), directory) ) {
+            if ( this.daoDirectories.save(this.systemInitiator, directory) ) {
                 return directory;
             } else {
                 throw new WorkflowBrokenException("Cannot create default WebDirectory 'Common'.");
@@ -142,6 +146,16 @@ public class WebPagesKeeperWorker
     private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
         asyncDo(() -> {
             this.commandsMemory.removeByExactExtendedAndType(initiator, extended, BROWSE_WEBPAGE);
+        });
+    }
+    
+    private void asyncChangeCommandsMemory(
+            Initiator initiator, String pageOldName, String pageNewName) {
+        asyncDo(() -> {
+            this.commandsMemory.removeByExactExtendedAndType(
+                    initiator, pageOldName, BROWSE_WEBPAGE);
+            this.commandsMemory.save(
+                    initiator, new BrowsePageCommand(pageNewName, pageNewName, NEW, TARGET_FOUND));
         });
     }
     
@@ -343,7 +357,7 @@ public class WebPagesKeeperWorker
         if ( name.isEmpty() ) {
             return voidOperationStopped();
         }
-        Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(initiator, name);
+        Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
         if ( ! freeNameIndex.isPresent() ) {
             return voidOperationFail("DAO failed to get free name index.");
         }
@@ -415,7 +429,7 @@ public class WebPagesKeeperWorker
                 return this.editPageName(initiator, page.name());
             }
             case SHORTCUTS : {
-                return this.editPageShortcuts(initiator, page.name());
+                return this.editPageShortcuts(initiator, page.name(), page.shortcuts());
             }
             case WEB_URL : {
                 return this.editPageUrl(initiator, page.name());
@@ -438,19 +452,21 @@ public class WebPagesKeeperWorker
             return voidOperationStopped();
         }
         if ( this.daoPages.editName(initiator, pageName, newName) ) {
-            this.asyncCleanCommandsMemory(initiator, pageName);
+            this.asyncChangeCommandsMemory(initiator, pageName, newName);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to rename page.");
         }
     }
     
-    private VoidOperation editPageShortcuts(Initiator initiator, String pageName) {
-        String shortcuts = this.discussShortcuts(initiator);
-        if ( shortcuts.isEmpty() ) {
+    private VoidOperation editPageShortcuts(
+            Initiator initiator, String pageName, String oldShortcuts) {
+        String newShortcuts = this.discussShortcuts(initiator);
+        if ( newShortcuts.isEmpty() ) {
             return voidOperationStopped();
         }
-        if ( this.daoPages.editShortcuts(initiator, pageName, shortcuts) ) {
+        if ( this.daoPages.editShortcuts(initiator, pageName, newShortcuts) ) {
+            this.asyncChangeCommandsMemory(initiator, oldShortcuts, newShortcuts);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to change shortcuts.");
@@ -566,63 +582,262 @@ public class WebPagesKeeperWorker
     }
 
     @Override
-    public void createWebPage(
-            WebRequest webRequest) throws IOException {
-        WebPage webPage = (WebPage) webRequest.bodyOf(WebPage.class);        
-        Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(this.systemInitiator, name);
+    public WebResponse createWebPage(
+            WebPlace place, String directoryName, String pageName, String pageUrl) {   
+        ValidationResult urlValidity = WEB_URL_RULE.applyTo(pageUrl);
+        if ( urlValidity.isFail() ) {
+            return badRequestWithJson(urlValidity.getFailureMessage());
+        }
+        
+        ValidationResult pageNameValidity = ENTITY_NAME_RULE.applyTo(pageName);
+        if ( pageNameValidity.isFail() ) {
+            return badRequestWithJson(pageNameValidity.getFailureMessage());
+        }
+        
+        Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(
+                this.systemInitiator, pageName);
         if ( ! freeNameIndex.isPresent() ) {
-            throw new DomainOperationException("Cannot get free name next index.");
+            return badRequestWithJson("Cannot get free name next index.");
         }
         if ( freeNameIndex.get() > 0 ) {
-            name = format("%s (%d)", name, freeNameIndex.get());
+            pageName = format("%s (%d)", pageName, freeNameIndex.get());
         }
         
-        ValidationResult urlValidity = WEB_URL_RULE.applyTo(url);
-        if ( urlValidity.isFail() ) {
-            throw new DomainConsistencyException(urlValidity.getFailureMessage());
-        }
-        
-        ValidationResult dirNameValidity = ENTITY_NAME_RULE.applyTo(directory);
-        if ( dirNameValidity.isFail() ) {
-            throw new DomainConsistencyException(dirNameValidity.getFailureMessage());
-        }
-        
-        Optional<Integer> optId = 
-                this.daoDirectories.getDirectoryIdByNameAndPlace(initiator, name, place);
+        Optional<Integer> optId =  this.daoDirectories.getDirectoryIdByNameAndPlace(
+                this.systemInitiator, directoryName, place);
         if ( ! optId.isPresent() ) {
-            throw new DomainConsistencyException(
-                    format("%s does not exist in %s", directory, place.name()));
+            return notFoundWithJson(
+                    format("WebDirectory '%s' does not exist in %s", directoryName, place.name()));
         } 
         
-        if ( this.daoPages.save(initiator, newWebPage(name, "", url, optId.get())) ) {
-            this.asyncAddCommand(initiator, name);
-            return true;
+        boolean saved = this.daoPages.save(
+                this.systemInitiator, newWebPage(pageName, "", pageUrl, optId.get()));
+        if ( saved ) {
+            this.asyncAddCommand(this.systemInitiator, pageName);
+            return ok();
         } else {
-            return false;
+            return badRequestWithJson(
+                    format("page '%s' not saved in '%s'.", pageName, directoryName));
         }
     }
 
     @Override
-    public void editWebPageName(
-            WebRequest webRequest) throws IOException {
-        Optional<Integer> freeNameIndex = daoPages.freeNameNextIndex(initiator, newName);
+    public WebResponse editWebPageName(
+            WebPlace place, String directoryName, String pageOldName, String pageNewName) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        Optional<WebPage> page = webDirectoryPages.get().pages()
+                .stream()
+                .filter(webPage -> webPage.name().equalsIgnoreCase(pageOldName))
+                .findFirst();
+        
+        if ( isNotPresent(page) ) {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageOldName, directoryName));
+        }
+        
+        ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(pageNewName);
+        if ( newNameValidity.isFail() ) {
+            return badRequestWithJson(newNameValidity.getFailureMessage());
+        }
+        
+        Optional<Integer> freeNameIndex = daoPages
+                .findFreeNameNextIndex(this.systemInitiator, pageNewName);
         if ( ! freeNameIndex.isPresent() ) {
-            throw new DomainOperationException("Cannot get free name next index.");
+            return badRequestWithJson("Cannot get free name next index.");
         }
         if ( freeNameIndex.get() > 0 ) {
-            newName = format("%s (%d)", newName, freeNameIndex.get());
+            pageNewName = format("%s (%d)", pageNewName, freeNameIndex.get());
         }
         
-        ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(newName);
-        if ( newNameValidity.isFail() ) {
-            throw new DomainConsistencyException(newNameValidity.getFailureMessage());
-        }
-        
-        if ( this.daoPages.editName(initiator, name, newName) ) {
-            this.asyncCleanCommandsMemory(initiator, name);
-            return true;
+        boolean edited = this.daoPages
+                .editName(this.systemInitiator, page.get().name(), pageNewName);
+        if ( edited ) {
+            this.asyncChangeCommandsMemory(this.systemInitiator, pageOldName, pageNewName);
+            return ok();
         } else {
-            return false;
+            return badRequestWithJson(format("Page '%s' is not renamed.", page.get().name()));
         }     
+    }
+
+    @Override
+    public WebResponse getWebPage(WebPlace place, String directoryName, String pageName) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        Optional<WebPage> page = webDirectoryPages.get().pages()
+                .stream()
+                .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
+                .findFirst();
+        
+        if ( page.isPresent() ) {
+            return okWithJson(page.get());
+        } else {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageName, directoryName));
+        }
+    }
+
+    @Override
+    public WebResponse getWebPagesInDirectory(WebPlace place, String directoryName) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        
+        if ( webDirectoryPages.isPresent() ) {
+            return okWithJson(webDirectoryPages.get().pages());
+        } else {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+    }
+
+    @Override
+    public WebResponse deleteWebPage(WebPlace place, String directoryName, String pageName) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        Optional<WebPage> page = webDirectoryPages.get().pages()
+                .stream()
+                .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
+                .findFirst();
+        
+        if ( isNotPresent(page) ) {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageName, directoryName));
+        }
+        
+        boolean deleted = this.daoPages.remove(this.systemInitiator, page.get().name());
+        if ( deleted ) {
+            this.asyncCleanCommandsMemory(this.systemInitiator, page.get().name());
+            return ok();
+        } else {
+            return badRequestWithJson(format("Page '%s' is not removed.", page.get().name()));
+        } 
+    }
+
+    @Override
+    public WebResponse editWebPageUrl(
+            WebPlace place, String directoryName, String pageName, String pageUrl) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        Optional<WebPage> page = webDirectoryPages.get().pages()
+                .stream()
+                .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
+                .findFirst();
+        
+        if ( isNotPresent(page) ) {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageName, directoryName));
+        }
+        
+        ValidationResult urlValidity = WEB_URL_RULE.applyTo(pageUrl);
+        if ( urlValidity.isFail() ) {
+            return badRequestWithJson(urlValidity.getFailureMessage());
+        }
+        
+        boolean changed = this.daoPages.editUrl(this.systemInitiator, page.get().name(), pageUrl);
+        if ( changed ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format("Page '%s' URL is not changed.", page.get().name()));
+        }
+    }
+
+    @Override
+    public WebResponse editWebPageDirectory(
+            WebPlace place, String directoryName, String pageName, String newDirectoryName) {        
+        return this.editWebPageDirectoryAndPlace(
+                place, directoryName, pageName, place, newDirectoryName);
+    }
+
+    @Override
+    public WebResponse editWebPageDirectoryAndPlace(
+            WebPlace place, 
+            String directoryName, 
+            String pageName, 
+            WebPlace newPlace, 
+            String newDirectoryName) {
+        Optional<WebDirectory> newDirectory = daoDirectories
+                .getDirectoryByNameAndPlace(this.systemInitiator, newDirectoryName, newPlace);
+        if ( isNotPresent(newDirectory) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", newDirectoryName, newPlace.name()));
+        }
+        
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        Optional<WebPage> page = webDirectoryPages.get().pages()
+                .stream()
+                .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
+                .findFirst();
+        
+        if ( isNotPresent(page) ) {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageName, directoryName));
+        }
+        
+        boolean moved = daoPages
+                .movePageFromDirToDir(this.systemInitiator, page.get(), newDirectory.get().id());
+        if ( moved ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format(
+                    "Page '%s' directory is not changed.", page.get().name()));
+        }
+    }
+
+    @Override
+    public WebResponse editWebPageOrder(
+            WebPlace place, String directoryName, String pageName, int newOrder) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        Optional<WebPage> page = webDirectoryPages.get().pages()
+                .stream()
+                .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
+                .findFirst();
+        
+        if ( isNotPresent(page) ) {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageName, directoryName));
+        }
+        
+        List<WebPage> pages = new ArrayList<>(webDirectoryPages.get().pages());
+        reorderAccordingToNewOrder(pages, page.get().order(), newOrder);
+        sort(pages);
+        boolean changed = this.daoPages.updatePageOrdersInDir(this.systemInitiator, pages);
+        if ( changed ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format(
+                    "Page '%s' order is not changed.", page.get().name()));
+        }
     }
 }

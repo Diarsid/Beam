@@ -8,8 +8,6 @@ package diarsid.beam.core.modules.web.core.container;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
-import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
-
 
 /**
  *
@@ -17,14 +15,7 @@ import diarsid.beam.core.modules.web.core.jsonconversion.Objectivizer;
  */
 public abstract class ResourceServletContainer {
     
-    private static Objectivizer objectivizer;
-    
-    protected ResourceServletContainer(Objectivizer jsonizer) {
-        ResourceServletContainer.objectivizer = jsonizer;
-    }
-        
-    static Objectivizer objectivizer() {
-        return objectivizer;
+    protected ResourceServletContainer() {
     }
             
     public abstract void startServer();
