@@ -24,7 +24,7 @@ public class SingleDirectoryResource extends Resource {
     private final WebDirectoriesKeeper directoriesKeeper;
     
     public SingleDirectoryResource(WebDirectoriesKeeper webDirectoriesKeeper) {
-        super("resources/{place}/directories/{dirName}");
+        super("/resources/{place}/directories/{dirName}");
         this.directoriesKeeper = webDirectoriesKeeper;
     }
     

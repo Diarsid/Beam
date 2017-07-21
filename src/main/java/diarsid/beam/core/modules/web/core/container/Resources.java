@@ -6,12 +6,13 @@
 
 package diarsid.beam.core.modules.web.core.container;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toSet;
+import static java.util.Collections.sort;
+import static java.util.stream.Collectors.toList;
 
 /**
  *
@@ -19,18 +20,18 @@ import static java.util.stream.Collectors.toSet;
  */
 public class Resources {
     
-    private final Set<Resource> resources;
+    private final List<Resource> resources;
     
     public Resources(Resource... resources) {
         this.resources = stream(resources)
-                .collect(toSet());
+                .collect(toList());
+        sort(this.resources);
     }
     
-    Optional<String> getMatchingResourceNameFor(String url) {
+    Optional<Resource> getMatchingResourceFor(String url, String method) {
         return this.resources
                 .stream()
-                .filter(resource -> resource.matchesUrl(url))
-                .map(resource -> resource.name())
+                .filter(resource -> resource.matchesTo(url, method))
                 .findFirst();
     }
     

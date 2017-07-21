@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules.web.service.resources;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import diarsid.beam.core.base.control.io.base.interaction.Json;
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
@@ -13,6 +14,8 @@ import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
+
+import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 
@@ -25,7 +28,7 @@ public class AllPagesResource extends Resource {
     private final WebPagesKeeper webPagesKeeper;
     
     public AllPagesResource(WebPagesKeeper webPagesKeeper) {
-        super("resources/{place}/directories/{dirName}/pages");
+        super("/resources/{place}/directories/{dirName}/pages");
         this.webPagesKeeper = webPagesKeeper;
     }
     
@@ -52,5 +55,11 @@ public class AllPagesResource extends Resource {
                 place, directoryName, name, url);
         
         webRequest.send(webResponse);
+    }
+    
+    public static void main(String[] args) {
+        AllPagesResource res = new AllPagesResource(null);
+        Method[] methods = res.getClass().getDeclaredMethods();
+        stream(methods).forEach(method -> System.out.println(method.getName()));
     }
 }

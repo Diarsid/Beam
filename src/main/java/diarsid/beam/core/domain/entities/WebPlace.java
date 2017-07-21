@@ -32,6 +32,13 @@ public enum WebPlace implements Serializable {
     public boolean isDefined() {
         return ! this.equals(UNDEFINED_PLACE);
     }
+    
+    public boolean is(WebPlace another) {
+        if ( this.isUndefined() || another.isUndefined() ) {
+            return false;
+        }
+        return this.equals(another);
+    }
 
     public static WebPlace parsePlace(String arg) {
         switch ( lower(arg) ) {

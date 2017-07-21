@@ -24,7 +24,7 @@ public class SinglePageResource extends Resource {
     private final WebPagesKeeper webPagesKeeper;
     
     public SinglePageResource(WebPagesKeeper webPagesKeeper) {
-        super("resources/{place}/directories/{dirName}/pages/{pageName}");
+        super("/resources/{place}/directories/{dirName}/pages/{pageName}");
         this.webPagesKeeper = webPagesKeeper;
     }
     

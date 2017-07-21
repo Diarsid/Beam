@@ -119,7 +119,9 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 webObjectsParser);
         directoriesKeeper = new WebDirectoriesKeeperWorker(
                 this.dataModule.webDirectories(), 
+                commandsMemoryKeeper,
                 ioEngine, 
+                systemInitiator,
                 dialogHelper, 
                 webObjectsParser);   
         defaultKeeper = new NamedEntitiesKeeperWorker(

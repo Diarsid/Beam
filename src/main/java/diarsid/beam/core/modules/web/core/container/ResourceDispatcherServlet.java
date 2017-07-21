@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static diarsid.beam.core.base.util.JsonUtil.errorJson;
+import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *
@@ -34,35 +35,30 @@ public class ResourceDispatcherServlet extends HttpServlet {
     }
     
     @Override
-    protected final void service(HttpServletRequest req, HttpServletResponse resp)
+    protected final void service(HttpServletRequest request, HttpServletResponse response)
                 throws ServletException, IOException {        
-        Optional<String> resourceName = this.getResourceNameForUrl(req.getPathInfo());        
-        if ( resourceName.isPresent() ) {   
+        Optional<Resource> resource = this.getResourceFor(request);
+        if ( resource.isPresent() ) {   
             try {
-                this.dispatchRequestForwardToNamedResource(req, resp, resourceName.get());      
+                debug(request.getPathInfo());
+                debug(resource.get().name());
+                debug(request.getMethod());
+                super.getServletContext()
+                        .getNamedDispatcher(resource.get().name())
+                        .forward(request, response);    
             } catch (Exception e) {
-                this.sendAppropriateError(resp, e);
+                this.sendAppropriateError(response, e);
             } 
-            if ( ! resp.isCommitted() ) {
-                this.sendUnprocessedRequestError(resp);
+            if ( ! response.isCommitted() ) {
+                this.sendUnprocessedRequestError(response);
             }
         } else {     
-            this.sendUnrecognizableUrlError(resp);
+            this.sendUnrecognizableUrlError(response);
         } 
     }
     
-    private Optional<String> getResourceNameForUrl(String url) {
-        return this.resources.getMatchingResourceNameFor(url);
-    }
-    
-    private void dispatchRequestForwardToNamedResource(
-            HttpServletRequest req, 
-            HttpServletResponse resp, 
-            String name) 
-                throws ServletException, IOException  {        
-        super.getServletContext()
-                .getNamedDispatcher(name)
-                .forward(req, resp);               
+    private Optional<Resource> getResourceFor(HttpServletRequest req) {
+        return this.resources.getMatchingResourceFor(req.getPathInfo(), req.getMethod());     
     }
     
     private void sendAppropriateError(HttpServletResponse resp, Exception e) throws IOException {

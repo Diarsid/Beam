@@ -23,12 +23,14 @@ import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNameAndPlace;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNamePlaceAndProperty;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 
 import static java.lang.String.format;
+import static java.util.Collections.sort;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -37,6 +39,10 @@ import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.notFoundWithJson;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.ok;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.okWithJson;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_WEB_DIR;
@@ -46,6 +52,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
@@ -54,6 +61,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLACE;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 
 
 class WebDirectoriesKeeperWorker 
@@ -63,6 +71,7 @@ class WebDirectoriesKeeperWorker
     private final DaoWebDirectories daoDirectories;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
+    private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
     private final WebObjectsInputParser webObjectsParser;
 
@@ -70,12 +79,14 @@ class WebDirectoriesKeeperWorker
             DaoWebDirectories daoDirectories, 
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
+            Initiator systemInitiator,
             KeeperDialogHelper helper, 
             WebObjectsInputParser webObjectsParser) {
         super(ioEngine);
         this.daoDirectories = daoDirectories;
         this.commandsMemory = commandsMemory;
         this.ioEngine = ioEngine;
+        this.systemInitiator = systemInitiator;
         this.helper = helper;
         this.webObjectsParser = webObjectsParser;
     }
@@ -283,6 +294,7 @@ class WebDirectoriesKeeperWorker
         int newOrder = this.helper.discussIntInRange(
                 initiator, 0, directories.size() - 1, "new order");
         reorderAccordingToNewOrder(directories, directory.order(), newOrder);
+        sort(directories);
         if ( this.daoDirectories.updateWebDirectoryOrders(initiator, directories) ) {
             return voidCompleted();
         } else {
@@ -368,47 +380,149 @@ class WebDirectoriesKeeperWorker
                 return valueOperationFail("cannot get directory with pages.");
             }            
         } else {
-            return valueCompletedWith(searched.get());
+            return valueCompletedWith(searched);
         }
     }    
 
     @Override
     public WebResponse createWebDirectory(WebPlace place, String name) {
+        ValidationResult nameValidity = ENTITY_NAME_RULE.applyTo(name);
+        if ( nameValidity.isFail() ) {
+            return badRequestWithJson(nameValidity.getFailureMessage());
+        }
         
+        Optional<Integer> freeNameIndex = this.daoDirectories
+                .freeNameNextIndex(this.systemInitiator, name, place);
+        if ( ! freeNameIndex.isPresent() ) {
+            return badRequestWithJson("Cannot get free name index.");
+        } 
+        if ( freeNameIndex.get() > 0 ) {
+            name = format("%s (%d)", name, freeNameIndex.get());
+        }
+        
+        WebDirectory directory = newDirectory(name, place);        
+        boolean saved = this.daoDirectories.save(this.systemInitiator, directory);
+        if ( saved ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format("Directory '%s' not saved in %s", name, place.name()));
+        }
     }
 
     @Override
     public WebResponse deleteWebDirectory(WebPlace place, String name) {
-        
+        boolean removed = this.daoDirectories.remove(this.systemInitiator, name, place);
+        if ( removed ) {
+            return ok();
+        } else {
+            return badRequestWithJson(
+                    format("Directory '%s' not removed from %s", name, place.name()));
+        }
     }
 
     @Override
     public WebResponse editWebDirectoryName(WebPlace place, String name, String newName) {
+        Optional<WebDirectory> directory = this.daoDirectories
+                .getDirectoryByNameAndPlace(this.systemInitiator, name, place);
         
+        if ( isNotPresent(directory) ) {
+            return notFoundWithJson(format("Directory '%s' not found in %s", name, place.name()));
+        } 
+        
+        ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(newName);
+        if ( newNameValidity.isFail() ) {
+            return badRequestWithJson(newNameValidity.getFailureMessage());
+        }
+        
+        boolean edited = this.daoDirectories
+                .editDirectoryName(this.systemInitiator, name, place, newName);
+        if ( edited ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format(
+                    "Directory '%s' name not changed", directory.get().name(), place.name()));
+        }
     }
 
     @Override
     public WebResponse editWebDirectoryPlace(WebPlace place, String name, WebPlace newPlace) {
+        if ( place.is(newPlace) ) {
+            return ok();
+        }
         
+        Optional<WebDirectory> directory = this.daoDirectories
+                .getDirectoryByNameAndPlace(this.systemInitiator, name, place);
+        
+        if ( isNotPresent(directory) ) {
+            return notFoundWithJson(format("Directory '%s' not found in %s", name, place.name()));
+        } 
+        
+        boolean moved = this.daoDirectories.moveDirectoryToPlace(
+                this.systemInitiator, directory.get().name(), place, newPlace);
+        if ( moved ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format(
+                    "Directory '%s' not moved to %s", directory.get().name(), newPlace.name()));
+        }
     }
 
     @Override
     public WebResponse editWebDirectoryOrder(WebPlace place, String name, int newOrder) {
+        List<WebDirectory> directories = this.daoDirectories
+                .getAllDirectoriesInPlace(this.systemInitiator, place);
         
+        Optional<WebDirectory> directory = directories
+                .stream()
+                .filter(dir -> dir.name().equalsIgnoreCase(name))
+                .findFirst();
+        
+        if ( isNotPresent(directory) ) {
+            return notFoundWithJson(format("Directory '%s' not found in %s", name, place.name()));
+        } 
+        
+        reorderAccordingToNewOrder(directories, directory.get().order(), newOrder);
+        sort(directories);
+        
+        boolean changed = this.daoDirectories
+                .updateWebDirectoryOrders(this.systemInitiator, directories);
+        if ( changed ) {
+            return ok();
+        } else {
+            return badRequestWithJson(format(
+                    "Directory '%s' not moved to %s order", directory.get().name(), newOrder));
+        }
     }
 
     @Override
     public WebResponse getWebDirectory(WebPlace place, String name) {
+        Optional<WebDirectory> directory = this.daoDirectories
+                .getDirectoryByNameAndPlace(this.systemInitiator, name, place);
         
+        if ( directory.isPresent() ) {
+            return okWithJson(directory.get());
+        } else {
+            return notFoundWithJson(format("Directory '%s' not found in %s", name, place.name()));
+        }
     }
 
     @Override
     public WebResponse getWebDirectoryPages(WebPlace place, String name) {
+        Optional<WebDirectoryPages> directory = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, name, place);
         
+        if ( directory.isPresent() ) {
+            return okWithJson(directory.get());
+        } else {
+            return notFoundWithJson(format("Directory '%s' not found in %s", name, place.name()));
+        }
     }
 
     @Override
     public WebResponse getAllDirectoriesInPlace(WebPlace place) {
+        List<WebDirectoryPages> directories = this.daoDirectories
+                .getAllDirectoriesPagesInPlace(this.systemInitiator, place);
         
+        return okWithJson(directories);
     }
 }

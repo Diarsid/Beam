@@ -25,6 +25,15 @@ public class RestUrlParametersUtil {
                 requestUrl.contains("}");
     }
     
+    static int countParams(String urlSchema) {
+        int index = 0;
+        int count = 0;
+        while ( (index = urlSchema.indexOf("{", index + 1)) > 0 ) {            
+            count++;
+        }
+        return count;        
+    }
+    
     private static String extractParamName(String param) {
         param = param.trim();
         if ( isParam(param) ) {
