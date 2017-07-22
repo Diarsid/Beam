@@ -16,6 +16,8 @@ import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
 
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.domain.entities.validation.Validation.asName;
+import static diarsid.beam.core.domain.entities.validation.Validation.validate;
 
 /**
  *
@@ -26,7 +28,7 @@ public class AllDirectoriesResource extends Resource {
     private final WebDirectoriesKeeper directoriesKeeper;
         
     public AllDirectoriesResource(WebDirectoriesKeeper directoriesKeeper) {
-        super("/resources/{place}/directories");
+        super("/{place}/directories");
         this.directoriesKeeper = directoriesKeeper;
     }
     
@@ -38,6 +40,7 @@ public class AllDirectoriesResource extends Resource {
     @Override
     protected void GET(WebRequest webRequest) throws IOException {
         WebPlace place = parsePlace(webRequest.pathParam("place"));
+        validate(place);
         
         WebResponse webResponse = this.directoriesKeeper.getAllDirectoriesInPlace(place);
         
@@ -49,6 +52,7 @@ public class AllDirectoriesResource extends Resource {
         WebPlace place = parsePlace(webRequest.pathParam("place"));
         Json json = webRequest.json();
         String name = json.stringOf("name");
+        validate(place, asName(name));
         
         WebResponse webResponse = this.directoriesKeeper.createWebDirectory(place, name);
         

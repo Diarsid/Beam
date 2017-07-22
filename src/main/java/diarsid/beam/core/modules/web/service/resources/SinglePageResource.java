@@ -14,6 +14,8 @@ import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
 
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.domain.entities.validation.Validation.asNames;
+import static diarsid.beam.core.domain.entities.validation.Validation.validate;
 
 /**
  *
@@ -24,7 +26,7 @@ public class SinglePageResource extends Resource {
     private final WebPagesKeeper webPagesKeeper;
     
     public SinglePageResource(WebPagesKeeper webPagesKeeper) {
-        super("/resources/{place}/directories/{dirName}/pages/{pageName}");
+        super("/{place}/directories/{dirName}/pages/{pageName}");
         this.webPagesKeeper = webPagesKeeper;
     }
     
@@ -33,6 +35,7 @@ public class SinglePageResource extends Resource {
         WebPlace place = parsePlace(webRequest.pathParam("place"));
         String directoryName = webRequest.pathParam("dirName");
         String pageName = webRequest.pathParam("pageName");
+        validate(place, asNames(directoryName, pageName));
         
         WebResponse webResponse = this.webPagesKeeper.getWebPage(place, directoryName, pageName);
         
@@ -44,6 +47,7 @@ public class SinglePageResource extends Resource {
         WebPlace place = parsePlace(webRequest.pathParam("place"));
         String directoryName = webRequest.pathParam("dirName");
         String pageName = webRequest.pathParam("pageName");
+        validate(place, asNames(directoryName, pageName));
         
         WebResponse webResponse = this.webPagesKeeper.deleteWebPage(place, directoryName, pageName);
         

@@ -6,7 +6,6 @@
 package diarsid.beam.core.modules.web.service.resources;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import diarsid.beam.core.base.control.io.base.interaction.Json;
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
@@ -15,9 +14,11 @@ import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
 import diarsid.beam.core.modules.web.core.container.Resource;
 
-import static java.util.Arrays.stream;
-
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.domain.entities.validation.Validation.asName;
+import static diarsid.beam.core.domain.entities.validation.Validation.asNames;
+import static diarsid.beam.core.domain.entities.validation.Validation.asUrl;
+import static diarsid.beam.core.domain.entities.validation.Validation.validate;
 
 /**
  *
@@ -28,7 +29,7 @@ public class AllPagesResource extends Resource {
     private final WebPagesKeeper webPagesKeeper;
     
     public AllPagesResource(WebPagesKeeper webPagesKeeper) {
-        super("/resources/{place}/directories/{dirName}/pages");
+        super("/{place}/directories/{dirName}/pages");
         this.webPagesKeeper = webPagesKeeper;
     }
     
@@ -36,6 +37,7 @@ public class AllPagesResource extends Resource {
     protected void GET(WebRequest webRequest) throws IOException {
         String directoryName = webRequest.pathParam("dirName");
         WebPlace place = parsePlace(webRequest.pathParam("place"));
+        validate(place, asName(directoryName));
         
         WebResponse webResponse = this.webPagesKeeper.getWebPagesInDirectory(
                 place, directoryName);
@@ -50,16 +52,11 @@ public class AllPagesResource extends Resource {
         String url = json.stringOf("url");
         String directoryName = webRequest.pathParam("dirName");
         WebPlace place = parsePlace(webRequest.pathParam("place"));
+        validate(place, asNames(directoryName, name), asUrl(url));
         
         WebResponse webResponse = this.webPagesKeeper.createWebPage(
                 place, directoryName, name, url);
         
         webRequest.send(webResponse);
-    }
-    
-    public static void main(String[] args) {
-        AllPagesResource res = new AllPagesResource(null);
-        Method[] methods = res.getClass().getDeclaredMethods();
-        stream(methods).forEach(method -> System.out.println(method.getName()));
     }
 }

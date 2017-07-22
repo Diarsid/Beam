@@ -88,8 +88,11 @@ class AnalyzeUtil {
             return CLUSTER_QTY_TRESHOLD * nonClustered * -1.0 ;
         }
         if ( nonClustered == 0 ) {
-            System.out.println(format("importance: %s (clastersQty: %s, clustered: %s, nonclustered: %s)", (clustered * clustered * 2.2), clustersQty, clustered, nonClustered));
-            return clustered * clustered * 2.2;
+            if ( clustersQty < CLUSTER_QTY_TRESHOLD ) {
+                return clustered * clustered * (CLUSTER_QTY_TRESHOLD - clustersQty);
+            } else {
+                return clustered * clustered * 0.8;
+            }            
         }
         if ( clustersQty > CLUSTER_QTY_TRESHOLD ) {
             return ( clustersQty - CLUSTER_QTY_TRESHOLD ) * -8.34;

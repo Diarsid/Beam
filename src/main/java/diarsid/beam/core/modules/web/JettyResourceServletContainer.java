@@ -16,6 +16,8 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -26,6 +28,8 @@ import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import diarsid.beam.core.modules.web.core.container.Resources;
+
+import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -48,14 +52,28 @@ class JettyResourceServletContainer extends ResourceServletContainer {
         this.localConnectorName = "localhost_jetty_connector";
         this.jettyServer = new Server();
         
-        this.jettyContext = new ServletContextHandler(
-                ServletContextHandler.NO_SESSIONS);   
+        this.jettyContext = new ServletContextHandler(NO_SESSIONS); 
         this.jettyContext.setContextPath(config.asString("web.local.path"));
         
         this.jettyServer.setHandler(this.jettyContext);
         this.configureServerAddresses(config);
         
+        ServletHolder staticHolder = this.configureStaticServletHolder(config);        
+        this.jettyContext.addServlet(staticHolder, "/static/*");
+        
+        ErrorPageErrorHandler errorHandler = new ErrorPageErrorHandler();
+        errorHandler.addErrorPage(404, "/static/welcome.html");
+        this.jettyContext.setErrorHandler(errorHandler);
+
         this.jettyServer.setStopAtShutdown(true);
+    }
+
+    private ServletHolder configureStaticServletHolder(Configuration config) {
+        ServletHolder staticHolder = new ServletHolder("[BEAM.WEB.STATIC]", new DefaultServlet());
+        staticHolder.setInitParameter("resourceBase", config.asString("web.local.resources"));
+        staticHolder.setInitParameter("dirAllowed","true");
+        staticHolder.setInitParameter("pathInfoOnly","true");
+        return staticHolder;
     }
     
     private void configureServerAddresses(Configuration config) {
@@ -93,7 +111,8 @@ class JettyResourceServletContainer extends ResourceServletContainer {
     @Override 
     public void startServer() { 
         if ( this.jettyServer.getConnectors().length < 1 ) {
-            this.ioEngine.reportAndExitLater(systemInitiator(), "Jetty ServerConnectors have not been set.");
+            this.ioEngine.reportAndExitLater(
+                    systemInitiator(), "Jetty ServerConnectors have not been set.");
             throw new ModuleInitializationException(
                     "Jetty ServerConnectors have not been set.");
         }
@@ -101,7 +120,8 @@ class JettyResourceServletContainer extends ResourceServletContainer {
             this.jettyServer.start();
         } catch (Exception e) {
             logError(this.getClass(), e);
-            this.ioEngine.reportAndExitLater(systemInitiator(), "It is impossible to start Jetty Server.");
+            this.ioEngine.reportAndExitLater(
+                    systemInitiator(), "It is impossible to start Jetty Server.");
             throw new ModuleInitializationException(
                     "It is impossible to start Jetty Server.");
         } 
@@ -119,7 +139,8 @@ class JettyResourceServletContainer extends ResourceServletContainer {
     
     @Override
     public void install(ResourceDispatcherServlet dispatcher, Resources resources) {
-        this.jettyContext.addServlet(new ServletHolder("{dispatcher}", dispatcher), "/*");
+        this.jettyContext.addServlet(
+                new ServletHolder("[BEAM.WEB.DISPATCHER]", dispatcher), "/resources/*");
         resources.doForEach(resource -> {
             this.jettyContext.addServlet(
                     new ServletHolder(resource.name(), resource), resource.url());

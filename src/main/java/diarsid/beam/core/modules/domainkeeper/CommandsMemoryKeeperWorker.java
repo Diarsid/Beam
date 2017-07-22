@@ -237,7 +237,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
 
     @Override
-    public void tryToExtendCommand(
+    public VoidOperation tryToExtendCommand(
             Initiator initiator, InvocationCommand command) {
         Optional<InvocationCommand> exactMatch = this.daoCommands.getByExactOriginalAndType(
                 initiator, command.originalArgument(), command.type());        
@@ -248,15 +248,18 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     this.daoCommands.searchInExtendedByPatternAndType(
                             initiator, command.originalArgument(), command.type());
             if ( nonEmpty(matchingCommands) ) {
-                this.replaceExtendedIfNecessary(
+                return this.replaceExtendedIfNecessary(
                         initiator, command, exactMatch.get(), matchingCommands);
-            }            
+            } else {
+                return voidCompleted();
+            } 
         } else {
             command.setNew();
+            return voidCompleted();
         }
     }  
 
-    private void replaceExtendedIfNecessary(
+    private VoidOperation replaceExtendedIfNecessary(
             Initiator initiator, 
             InvocationCommand command, 
             InvocationCommand exactMatch, 
@@ -265,12 +268,13 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         WeightedVariants variants = weightVariants(
                 command.originalArgument(), commandsToVariants(matchingCommands));
         if ( variants.isEmpty() ) {
-            return;
+            return voidCompleted();
         }
         variants.removeWorseThan(exactMatch.extendedArgument());
         if ( variants.hasOne() ) {
             command.setStored();
             command.argument().setExtended(exactMatch.extendedArgument());
+            return voidCompleted();
         } else {
             if ( this.daoCommandsChoices.isChoiceDoneFor(command.originalArgument(), variants) ) {
                 debug("[COMMANDS MEMORY] choice is done for original: " + command.originalArgument() + ", return " + exactMatch.stringify());
@@ -279,6 +283,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 asyncDo(() -> {
                     this.daoCommands.save(initiator, command);
                 });
+                return voidCompleted();
             } else {
                 Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
                 if ( answer.isGiven() ) {
@@ -288,36 +293,44 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                         this.daoCommandsChoices.save(command, variants);
                         this.daoCommands.save(initiator, command);
                     });
+                    return voidCompleted();
+                } else if ( answer.isRejection() ) {
+                    command.setNew();
+                    return voidOperationStopped();
                 } else {
                     command.setNew();
+                    return voidCompleted();
                 }
             }            
         }
     }
     
     @Override
-    public void tryToExtendCommandByPattern(
+    public VoidOperation tryToExtendCommandByPattern(
             Initiator initiator, InvocationCommand command) {
         List<InvocationCommand> foundCommands;
         foundCommands = this.daoCommands.searchInOriginalByPatternAndType(
                 initiator, command.originalArgument(), command.type());
         if ( nonEmpty(foundCommands) ) {
-            this.chooseOneCommandAndUseAsExtension(initiator, foundCommands, command);
+            return this.chooseOneCommandAndUseAsExtension(initiator, foundCommands, command);
         } else {
             foundCommands = this.daoCommands.searchInExtendedByPatternAndType(
                     initiator, command.originalArgument(), command.type());
             if ( nonEmpty(foundCommands) ) {
-                this.chooseOneCommandAndUseAsExtension(initiator, foundCommands, command);
+                return this.chooseOneCommandAndUseAsExtension(initiator, foundCommands, command);
+            } else {
+                return voidCompleted();
             }
         }
     }
 
-    private void chooseOneCommandAndUseAsExtension(
+    private VoidOperation chooseOneCommandAndUseAsExtension(
             Initiator initiator, 
             List<InvocationCommand> foundCommands, 
             InvocationCommand command) {
         if ( hasOne(foundCommands) ) {
             command.argument().setExtended(getOne(foundCommands).extendedArgument());
+            return voidCompleted();
         } else {
             ValueOperation<InvocationCommand> commandFlow = this.chooseOneCommandAndSaveChoice(
                     initiator, command.originalArgument(), foundCommands);
@@ -327,18 +340,16 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                         command.argument().setExtended(
                                 commandFlow.asComplete().getOrThrow().extendedArgument());
                     } 
-                    break; 
+                    return voidCompleted();
                 }
                 case FAIL : {
-                    this.ioEngine.report(initiator, commandFlow.asFail().reason());
-                    break; 
+                    return voidOperationFail(commandFlow.asFail().reason());
                 }
                 case STOP : {
-                    break; 
+                    return voidOperationStopped();
                 }
                 default : {
-                    this.ioEngine.report(initiator, "unkown ValueOperation result.");
-                    break; 
+                    return voidOperationFail("unkown ValueOperation result.");
                 }
             }
         }        

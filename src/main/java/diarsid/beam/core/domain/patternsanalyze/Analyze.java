@@ -90,20 +90,22 @@ public class Analyze {
     }
 
     public static void doAll() {
-        weightAnalyzeCases();
+//        weightAnalyzeCases();
 
-//        analyzeImportance();
+        analyzeImportance();
     }
 
     private static void analyzeImportance() {
-        System.out.println(clustersImportanceDependingOn(1, 9, 0));
-        System.out.println(clustersImportanceDependingOn(1, 4, 3));
-        System.out.println(clustersImportanceDependingOn(1, 2, 5));
-        System.out.println(clustersImportanceDependingOn(2, 7, 1));
-        System.out.println(clustersImportanceDependingOn(3, 9, 2));
-        System.out.println(clustersImportanceDependingOn(2, 9, 2));
-        System.out.println(clustersImportanceDependingOn(1, 9, 2));
-        System.out.println(clustersImportanceDependingOn(1, 8, 3));
+        System.out.println(clustersImportanceDependingOn(1, 6, 0));
+        System.out.println(clustersImportanceDependingOn(2, 6, 0));
+        System.out.println(clustersImportanceDependingOn(3, 6, 0));
+        System.out.println(clustersImportanceDependingOn(4, 6, 0));
+//        System.out.println(clustersImportanceDependingOn(1, 2, 5));
+//        System.out.println(clustersImportanceDependingOn(2, 7, 1));
+//        System.out.println(clustersImportanceDependingOn(3, 9, 2));
+//        System.out.println(clustersImportanceDependingOn(2, 9, 2));
+//        System.out.println(clustersImportanceDependingOn(1, 9, 2));
+//        System.out.println(clustersImportanceDependingOn(1, 8, 3));
     }
 
     private static void weightAnalyzeCases() {

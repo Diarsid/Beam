@@ -27,7 +27,7 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_UR
 public class WebObjectsValidationResource extends Resource {
     
     public WebObjectsValidationResource() {
-        super("/resources/validation/webobjects/{property}");
+        super("/validation/webobjects/{property}");
     }
     
     @Override

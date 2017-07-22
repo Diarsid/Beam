@@ -16,6 +16,10 @@ import diarsid.beam.core.modules.web.core.container.Resource;
 
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.domain.entities.validation.Validation.asName;
+import static diarsid.beam.core.domain.entities.validation.Validation.asNames;
+import static diarsid.beam.core.domain.entities.validation.Validation.asOrder;
+import static diarsid.beam.core.domain.entities.validation.Validation.validate;
 
 /**
  *
@@ -26,7 +30,7 @@ public class SingleDirectoryPropertyResource extends Resource {
     private final WebDirectoriesKeeper directoriesKeeper;
     
     public SingleDirectoryPropertyResource(WebDirectoriesKeeper directoriesKeeper) {
-        super("/resources/{place}/directories/{dirName}/{property}");
+        super("/{place}/directories/{dirName}/{property}");
         this.directoriesKeeper = directoriesKeeper;
     }
     
@@ -41,18 +45,21 @@ public class SingleDirectoryPropertyResource extends Resource {
         switch ( property ) {
             case "name" : {
                 String newDirectoryName = json.stringOf("payload");
+                validate(place, asNames(newDirectoryName, directoryName));
                 webResponse = this.directoriesKeeper
                         .editWebDirectoryName(place, directoryName, newDirectoryName);
                 break;
             }
             case "place" : {
                 WebPlace newPlace = parsePlace(json.stringOf("payload"));
+                validate(place, newPlace, asName(directoryName));
                 webResponse = this.directoriesKeeper
                         .editWebDirectoryPlace(place, directoryName, newPlace);
                 break;
             }
             case "order" : {
                 int newOrder = json.intOf("payload");
+                validate(place, asName(directoryName), asOrder(newOrder));
                 webResponse = this.directoriesKeeper
                         .editWebDirectoryOrder(place, directoryName, newOrder);
                 break;

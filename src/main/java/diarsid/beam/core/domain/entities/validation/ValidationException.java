@@ -9,17 +9,9 @@ package diarsid.beam.core.domain.entities.validation;
  *
  * @author Diarsid
  */
-public interface ValidationResult {
+public class ValidationException extends RuntimeException {
     
-    boolean isOk();
-    
-    boolean isFail();
-    
-    String getFailureMessage();
-    
-    default void throwIfFail() {
-        if ( this.isFail() ) {
-            throw new ValidationException(this.getFailureMessage());
-        }
+    public ValidationException(String msg) {
+        super(msg);
     }
 }

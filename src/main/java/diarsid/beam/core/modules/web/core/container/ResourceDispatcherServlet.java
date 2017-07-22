@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static diarsid.beam.core.base.util.JsonUtil.errorJson;
-import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *
@@ -40,9 +39,6 @@ public class ResourceDispatcherServlet extends HttpServlet {
         Optional<Resource> resource = this.getResourceFor(request);
         if ( resource.isPresent() ) {   
             try {
-                debug(request.getPathInfo());
-                debug(resource.get().name());
-                debug(request.getMethod());
                 super.getServletContext()
                         .getNamedDispatcher(resource.get().name())
                         .forward(request, response);    

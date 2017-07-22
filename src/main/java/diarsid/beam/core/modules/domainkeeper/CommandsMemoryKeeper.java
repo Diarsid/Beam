@@ -32,10 +32,10 @@ public interface CommandsMemoryKeeper {
     VoidOperation remove(
             Initiator initiator, ArgumentsCommand command);
     
-    void tryToExtendCommand(
+    VoidOperation tryToExtendCommand(
             Initiator initiator, InvocationCommand command);
     
-    void tryToExtendCommandByPattern(
+    VoidOperation tryToExtendCommandByPattern(
             Initiator initiator, InvocationCommand command);
     
     void save(

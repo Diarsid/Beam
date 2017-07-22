@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import diarsid.beam.core.domain.entities.exceptions.DomainConsistencyException;
 import diarsid.beam.core.domain.entities.exceptions.DomainOperationException;
+import diarsid.beam.core.domain.entities.validation.ValidationException;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -33,6 +34,9 @@ public class ExceptionToJsonMapper {
         });
         this.mappers.put(DomainOperationException.class, (throwable) -> {
             return new JsonError(SC_INTERNAL_SERVER_ERROR, errorJson(throwable.getMessage()));
+        });
+        this.mappers.put(ValidationException.class, (throwable) -> {
+            return new JsonError(SC_BAD_REQUEST, errorJson(throwable.getMessage()));
         });
         this.defaultMapper = (throwable) -> {
             return new JsonError(SC_INTERNAL_SERVER_ERROR, errorJson(throwable.getMessage()));

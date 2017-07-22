@@ -43,6 +43,7 @@ class ConfigurationReading {
                 "web.local.host = 127.0.0.1",
                 "web.local.port = 32001",
                 "web.local.path = /beam/core",
+                "web.local.resources = ../res/static_web_context",
                 "rmi.core.port = 43006",
                 "rmi.core.host = 127.0.0.1",
                 "rmi.sysconsole.port = 43005",

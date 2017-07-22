@@ -49,6 +49,7 @@ import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
 import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
@@ -152,7 +153,18 @@ class ExecutorModuleWorker implements ExecutorModule {
     private ValueOperation<? extends NamedEntity> findNamedEntity(
             Initiator initiator, InvocationCommand command) {
         if ( command.argument().isNotExtended() ) {
-            this.domain.commandsMemory().tryToExtendCommand(initiator, command); 
+            VoidOperation flow = this.domain
+                    .commandsMemory().tryToExtendCommand(initiator, command);
+            switch ( flow.result() ) {
+                case FAIL:
+                    return valueOperationFail(flow.message());
+                case STOP : {
+                    return valueOperationStopped();
+                }  
+                default : {
+                    // just proceed.
+                }
+            }
         }
         if ( command.argument().isExtended() ) {
             ValueOperation<? extends NamedEntity> entityFlow = this.domain
@@ -218,7 +230,18 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private ValueOperation<? extends NamedEntity> tryToFindEntityInExtendedCommands(
             Initiator initiator, InvocationCommand command) {
-        this.domain.commandsMemory().tryToExtendCommandByPattern(initiator, command);
+        VoidOperation flow = this.domain.commandsMemory()
+                .tryToExtendCommandByPattern(initiator, command);
+        switch ( flow.result() ) {
+            case FAIL:
+                return valueOperationFail(flow.message());
+            case STOP : {
+                return valueOperationStopped();
+            }  
+            default : {
+                // just proceed.
+            }
+        }
         if ( command.argument().isExtended() ) {
             ValueOperation<? extends NamedEntity> entityFlow = this.domain
                     .entitiesOperatedBy(command)
@@ -478,7 +501,18 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void openLocationTarget(Initiator initiator, OpenLocationTargetCommand command) {
         if ( command.argument().isNotExtended() ) {
-            this.domain.commandsMemory().tryToExtendCommand(initiator, command);
+            VoidOperation flow = this.domain
+                    .commandsMemory().tryToExtendCommand(initiator, command);
+            switch ( flow.result() ) {
+                case FAIL:
+                    this.ioEngine.report(initiator, flow.message());
+                case STOP : {
+                    return;
+                }  
+                default : {
+                    // just proceed.
+                }
+            }
         }    
         if ( command.argument().isExtended() ) {
             this.openTargetUsingExtendedArgument(command, initiator);

@@ -40,9 +40,9 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_WEB_DIR;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
+import static diarsid.beam.core.base.control.io.commands.CommandType.INCORRECT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
-import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
@@ -262,15 +262,21 @@ public class InterpreterTest {
     }
     
     @Test
+    public void testInterprete_open_withoutArgs() {
+        Command c = interpreter.interprete("open");
+        assertEquals(INCORRECT, c.type());
+    }
+    
+    @Test
     public void testInterprete_openPath_improperPath() {
         Command c = interpreter.interprete("open books/tolk%ien");
-        assertEquals(MULTICOMMAND, c.type());
+        assertEquals(INCORRECT, c.type());
     }
     
     @Test
     public void testInterprete_openPath_improperPath_toShort() {
         Command c = interpreter.interprete("open b/tolkien");
-        assertEquals(MULTICOMMAND, c.type());
+        assertEquals(INCORRECT, c.type());
     }
     
     @Test
