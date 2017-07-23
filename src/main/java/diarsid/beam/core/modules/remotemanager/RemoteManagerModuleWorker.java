@@ -50,7 +50,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
     }
     
     private void exportAndSaveExportedEndpoints() {
-        Configuration configuration = this.appComponentsHolderModule.getConfiguration();
+        Configuration configuration = this.appComponentsHolderModule.configuration();
         try {
             int beamCorePort = Integer.parseInt(configuration.asString("rmi.core.port"));
             Registry registry = LocateRegistry.createRegistry(beamCorePort);
@@ -74,7 +74,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
 
     @Override
     public void stopModule() {
-        Configuration configuration = this.appComponentsHolderModule.getConfiguration();
+        Configuration configuration = this.appComponentsHolderModule.configuration();
         int beamCorePort = Integer.parseInt(configuration.asString("rmi.core.port"));
         try {            
             Registry registry = getRegistry(beamCorePort);

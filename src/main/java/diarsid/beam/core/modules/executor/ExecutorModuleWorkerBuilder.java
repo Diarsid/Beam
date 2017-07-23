@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.executor;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.modules.PluginsLoaderModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -22,10 +23,15 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     private final IoModule ioModule;
     private final DomainKeeperModule domainKeeperModule;
+    private final PluginsLoaderModule pluginsLoaderModule;
 
-    public ExecutorModuleWorkerBuilder(IoModule ioModule, DomainKeeperModule domainKeeperModule) {
+    public ExecutorModuleWorkerBuilder(
+            IoModule ioModule, 
+            DomainKeeperModule domainKeeperModule, 
+            PluginsLoaderModule pluginsLoaderModule) {
         this.ioModule = ioModule;
         this.domainKeeperModule = domainKeeperModule;
+        this.pluginsLoaderModule = pluginsLoaderModule;
     }
 
     @Override
@@ -33,6 +39,7 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
         return new ExecutorModuleWorker(
                 this.ioModule.getInnerIoEngine(), 
                 this.domainKeeperModule, 
+                this.pluginsLoaderModule.plugins(),
                 searcherWithDepthsOf(5, 5), 
                 getLister());
     }

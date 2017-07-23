@@ -49,7 +49,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
     @Override
     public DomainKeeperModule buildModule() {
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
-        Interpreter interpreter = this.appComponentsHolderModule.getInterpreter();
+        Interpreter interpreter = this.appComponentsHolderModule.interpreter();
         Initiator systemInitiator = systemInitiator();
         KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
         
@@ -99,7 +99,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 propertyAndTextParser);
         programsKeeper = new ProgramsKeeperWorker(
                 ioEngine,
-                this.appComponentsHolderModule.getProgramsCatalog(), 
+                this.appComponentsHolderModule.programsCatalog(), 
                 dialogHelper);
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
@@ -129,7 +129,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.dataModule.namedEntities());
         notesKeeper = new NotesKeeperWorker(
                 ioEngine,
-                this.appComponentsHolderModule.getNotesCatalog(), 
+                this.appComponentsHolderModule.notesCatalog(), 
                 dialogHelper);
         allKeeper = new AllKeeperWorker(
                 this.dataModule,

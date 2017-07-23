@@ -8,8 +8,11 @@ package diarsid.beam.core.modules.executor;
 
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.ValueOperationFail;
@@ -29,6 +32,7 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
+import diarsid.beam.core.base.control.plugins.Plugin;
 import diarsid.beam.core.base.os.listing.FileLister;
 import diarsid.beam.core.base.os.search.FileSearcher;
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
@@ -109,17 +113,21 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final DomainKeeperModule domain;
     private final InnerIoEngine ioEngine;
     private final FileSearcher fileSearcher;
-    private final FileLister fileLister;
+    private final FileLister fileLister;    
+    private final Map<String, Plugin> plugins;
 
     ExecutorModuleWorker(
             InnerIoEngine ioEngine, 
             DomainKeeperModule domain,
+            Set<Plugin> plugins,
             FileSearcher fileSearcher,
             FileLister fileLister) {
         this.ioEngine = ioEngine;
         this.fileSearcher = fileSearcher;
         this.domain = domain;
         this.fileLister = fileLister;
+        this.plugins = new HashMap<>();
+        plugins.forEach(plugin -> this.plugins.put(plugin.name(), plugin));        
     }
 
     private void asyncSaveCommandIfNecessary(
@@ -1127,6 +1135,9 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void executePlugin(Initiator initiator, PluginTaskCommand command) {
-        this.ioEngine.report(initiator, "plugin execution: " + command.pluginName() + " -> " + command.argument());
+        Optional<Plugin> plugin = Optional.ofNullable(this.plugins.get(command.pluginName()));
+        if ( plugin.isPresent() ) {
+            plugin.get().process(initiator, command);
+        } 
     }
 }

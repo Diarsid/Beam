@@ -72,7 +72,7 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
         exceptionMapper = new ExceptionToJsonMapper();
         
         ioEngine = this.ioModule.getInnerIoEngine();
-        configuration = this.applicationComponentsHolderModule.getConfiguration();
+        configuration = this.applicationComponentsHolderModule.configuration();
         
         dispatcherServlet = new ResourceDispatcherServlet(resources, exceptionMapper);
         container = new JettyResourceServletContainer(ioEngine, configuration);

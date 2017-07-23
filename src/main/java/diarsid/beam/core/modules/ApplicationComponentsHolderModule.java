@@ -18,11 +18,11 @@ import com.drs.gem.injector.module.GemModule;
  */
 public interface ApplicationComponentsHolderModule extends GemModule {
     
-    Configuration getConfiguration();
+    Configuration configuration();
     
-    Interpreter getInterpreter();
+    Interpreter interpreter();
     
-    ProgramsCatalog getProgramsCatalog();
+    ProgramsCatalog programsCatalog();
     
-    NotesCatalog getNotesCatalog();
+    NotesCatalog notesCatalog();
 }

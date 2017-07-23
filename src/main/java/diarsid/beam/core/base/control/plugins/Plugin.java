@@ -5,29 +5,43 @@
  */
 package diarsid.beam.core.base.control.plugins;
 
+import java.util.List;
+
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
+
 /**
  *
  * @author Diarsid
  */
 public abstract class Plugin {
     
-    private final String prefix;
     private final String name;
+    private final InnerIoEngine ioEngine;
     
-    public Plugin(String name, String prefix) {
-        this.name = name;
-        this.prefix = prefix;
+    protected Plugin(InnerIoEngine ioEngine) {
+        this.name = this.name();
+        this.ioEngine = ioEngine;
     }
     
-    public final String prefix() {
-        return this.prefix;
+    public final InnerIoEngine ioEngine() {
+        return this.ioEngine;
     }
     
-    public final boolean equalsByPrefix(Plugin other) {
-        return this.prefix.equals(other.prefix);
+    public abstract String name();
+    
+    public abstract void process(Initiator initiator, PluginTaskCommand command);
+    
+    public boolean isPluginCommand(String command) {
+        return false;
     }
     
-    public final String name() {
-        return this.name;
+    public boolean isPluginCommandFirstArg(String arg) {
+        return false;
+    }
+    
+    public boolean isPluginCommandArgs(List<String> commandArgs) {
+        return false;
     }
 }

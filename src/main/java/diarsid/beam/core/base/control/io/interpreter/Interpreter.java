@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.base.control.io.interpreter;
 
+import java.util.Set;
+
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.recognizers.PluginPrefixesRecognizer;
 import diarsid.beam.core.base.control.plugins.Plugin;
@@ -102,7 +104,7 @@ public class Interpreter {
     private Recognizer prepareRecognizersTree() {
         
         return correctInput().andAny(
-                this.plugins.priority(HIGH),                
+                this.plugins.priority(HIGHEST),                
                 prefixes(
                         "/", 
                         "l/").priority(HIGH).andAny(
@@ -302,15 +304,16 @@ public class Interpreter {
         return this.decisionTree.assess(new Input(normalizeSpaces(inputString)));
     }
     
-    public boolean install(Plugin plugin) {
-        boolean pluginPrefixIsNotFree = 
-                this.interprete(plugin.prefix() + "testArgument").type().isDefined() ||
-                this.interprete(plugin.prefix() + "test argument").type().isNot(MULTICOMMAND) ||
-                this.interprete(plugin.prefix()).type().isDefined();
-        if ( pluginPrefixIsNotFree ) {
-            return false;
-        } else {
-            return this.plugins.install(plugin);
-        }        
+    public void install(Set<Plugin> plugins) {
+        plugins.forEach(plugin -> this.plugins.install(plugin));
+//        boolean pluginPrefixIsNotFree = 
+//                this.interprete(plugin.prefix() + "testArgument").type().isDefined() ||
+//                this.interprete(plugin.prefix() + "test argument").type().isNot(MULTICOMMAND) ||
+//                this.interprete(plugin.prefix()).type().isDefined();
+//        if ( pluginPrefixIsNotFree ) {
+//            return false;
+//        } else {
+//            return this.plugins.install(plugin);
+//        }        
     }
 }

@@ -25,6 +25,7 @@ import static java.util.Arrays.asList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.DesktopUtil.openWithDesktop;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
@@ -78,7 +79,7 @@ public class Location
             if ( location.exists() && location.isDirectory() ) {
                 if ( finalTarget.exists() ) {
                     try {
-                        Desktop.getDesktop().open(finalTarget);   
+                        openWithDesktop(finalTarget);   
                         successCallback.call();
                     } catch (IOException | IllegalArgumentException e) {
                         failCallback.onEvent("cannot open target due to: " + e.getMessage());

@@ -11,10 +11,7 @@ import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
-import diarsid.beam.core.base.control.plugins.GooglePlugin;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
-
-import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 
 /**
  * Module intended to convey configuration parameters 
@@ -33,30 +30,29 @@ class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHo
     private final NotesCatalog notesCatalog;
     
     ApplicationComponentsHolderModuleWorker() {    
-        this.configuration = configuration();
+        this.configuration = BeamEnvironment.configuration();
         this.interpreter = new Interpreter();
-        this.interpreter.install(new GooglePlugin());
         this.programsCatalog = BeamEnvironment.programsCatalog();
         this.notesCatalog = BeamEnvironment.notesCatalog();
     }
     
     @Override
-    public Configuration getConfiguration() {
+    public Configuration configuration() {
         return this.configuration;
     }
 
     @Override
-    public Interpreter getInterpreter() {
+    public Interpreter interpreter() {
         return this.interpreter;
     }
 
     @Override
-    public ProgramsCatalog getProgramsCatalog() {
+    public ProgramsCatalog programsCatalog() {
         return this.programsCatalog;
     }
 
     @Override
-    public NotesCatalog getNotesCatalog() {
+    public NotesCatalog notesCatalog() {
         return this.notesCatalog;
     }
 }

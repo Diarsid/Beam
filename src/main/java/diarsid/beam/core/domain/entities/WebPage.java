@@ -1,9 +1,7 @@
 package diarsid.beam.core.domain.entities;
 
-import java.awt.Desktop;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +20,7 @@ import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -101,7 +100,7 @@ public class WebPage
             CallbackEvent callbackOnFail) {
         asyncDo(() -> {
             try {
-                Desktop.getDesktop().browse(new URI(this.url));
+                browseWithDesktop(this.url);
                 calbackOnSuccess.call();
             } catch (URISyntaxException|IOException ex) {
                 logError(this.getClass(), ex.getMessage());

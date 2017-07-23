@@ -52,7 +52,7 @@ public class H2DaosProvider implements DaosProvider {
         return new H2DaoNamedEntities(
                 this.dataBase, 
                 this.ioModule.getInnerIoEngine(), 
-                this.components.getProgramsCatalog());
+                this.components.programsCatalog());
     }
 
     @Override

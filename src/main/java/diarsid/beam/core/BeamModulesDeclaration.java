@@ -15,6 +15,7 @@ import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.modules.PluginsLoaderModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.WebModule;
@@ -79,6 +80,11 @@ class BeamModulesDeclaration implements Declaration {
         modules.add(new GemModuleDeclaration(
                 ExecutorModule.class.getCanonicalName(), 
                 "diarsid.beam.core.modules.executor.ExecutorModuleWorker",
+                GemModuleType.SINGLETON));
+        
+        modules.add(new GemModuleDeclaration(
+                PluginsLoaderModule.class.getCanonicalName(), 
+                "diarsid.beam.core.modules.pluginsloader.PluginsLoaderModuleWorker",
                 GemModuleType.SINGLETON));
         
         return modules;

@@ -29,31 +29,31 @@ public class PluginPrefixesRecognizer extends NodeRecognizer {
         this.plugins = new HashSet<>();
     }
     
-    public boolean install(Plugin newPlugin) {
-        boolean canBeInstalled = this.isPluginWithThisPrefixNotInstalled(newPlugin);
-        if ( canBeInstalled ) {
-            this.plugins.add(newPlugin);
-        }
-        return canBeInstalled;
+    public void install(Plugin newPlugin) {
+        this.plugins.add(newPlugin);
+//        boolean canBeInstalled = this.isPluginWithThisPrefixNotInstalled(newPlugin);
+//        if ( canBeInstalled ) {
+//            
+//        }
+//        return canBeInstalled;
     }
 
-    private boolean isPluginWithThisPrefixNotInstalled(Plugin newPlugin) {
-        return ! this.plugins
-                .stream()
-                .filter(plugin -> plugin.equalsByPrefix(newPlugin))
-                .findFirst()
-                .isPresent();
-    }
+//    private boolean isPluginWithThisPrefixNotInstalled(Plugin newPlugin) {
+//        return ! this.plugins
+//                .stream()
+//                .filter(plugin -> plugin.equalsByPrefix(newPlugin))
+//                .findFirst()
+//                .isPresent();
+//    }
     
     @Override
     public Command assess(Input input) {
         if ( input.hasNotRecognizedArgs() ) {
             Optional<Plugin> foundPlugin = this.plugins
                     .stream()
-                    .filter(plugin -> input.currentArg().startsWith(plugin.prefix()))
+                    .filter(plugin -> this.isPluginApplicableToInput(plugin, input))
                     .findFirst();
             if ( foundPlugin.isPresent() ) {
-                input.removePrefixFromCurrentArg(foundPlugin.get().prefix());
                 return pluginCommandOf(input, foundPlugin.get());
             } else {
                 return undefinedCommand();
@@ -61,6 +61,13 @@ public class PluginPrefixesRecognizer extends NodeRecognizer {
         } else {
             return undefinedCommand();
         }
+    }
+    
+    private boolean isPluginApplicableToInput(Plugin plugin, Input input) {
+        return 
+                plugin.isPluginCommandFirstArg(input.currentArg()) ||
+                plugin.isPluginCommandArgs(input.allRemainingArgs()) ||
+                plugin.isPluginCommand(input.allRemainingArgsString());
     }
     
     private PluginTaskCommand pluginCommandOf(Input input, Plugin plugin) {

@@ -27,7 +27,7 @@ public class CommandLineProcessorBuilder {
             ApplicationComponentsHolderModule appComponentsHolderModule, 
             ExecutorModule executorModule,
             DomainKeeperModule domainModule) {
-        Interpreter interpreter = appComponentsHolderModule.getInterpreter();
+        Interpreter interpreter = appComponentsHolderModule.interpreter();
         DomainModuleToCliAdapter domainToCliAdapter = 
                 new DomainModuleToCliAdapter(domainModule, ioModule.getInnerIoEngine());
         CliCommandDispatcher commandDispatcher = 

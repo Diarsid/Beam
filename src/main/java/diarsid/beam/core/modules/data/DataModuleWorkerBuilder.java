@@ -48,7 +48,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     public DataModule buildModule() {
         this.loadDriver();
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
-        Configuration config = this.applicationComponentsHolderModule.getConfiguration();
+        Configuration config = this.applicationComponentsHolderModule.configuration();
         String dataBaseUrl = "jdbc:h2:" + config.asString("data.store") + "/BeamData";
         String user = config.asString("data.user");
         String pass = config.asString("data.pass");
