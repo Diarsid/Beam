@@ -7,8 +7,12 @@
 package diarsid.beam.core.modules.web;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.util.Pair;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
@@ -50,17 +54,24 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     
     @Override
     public WebModule buildModule() {
-        Resources resources;
         InnerIoEngine ioEngine;
-        Configuration configuration;           
-        
-        ExceptionToJsonMapper exceptionMapper;
-        ResourceDispatcherServlet dispatcherServlet;
-        ResourceServletContainer container;        
+        Configuration configuration; 
         
         WebDirectoriesKeeper webDirectoriesKeeper = this.domainKeeperModule.webDirectories();
-        WebPagesKeeper webPagesKeeper = this.domainKeeperModule.webPages();
+        WebPagesKeeper webPagesKeeper = this.domainKeeperModule.webPages();          
+        
+        ExceptionToJsonMapper exceptionMapper;
+        Resources resources;
+        Map<Integer, String> redirections;
+        Pair<String, String> staticContent;
+        ResourceDispatcherServlet dispatcherServlet;
+        ResourceServletContainer container;
+        
+        ioEngine = this.ioModule.getInnerIoEngine();
+        configuration = this.applicationComponentsHolderModule.configuration();        
+        
         resources = new Resources(
+                "/resources/*",
                 new AllDirectoriesResource(webDirectoriesKeeper),
                 new AllPagesResource(webPagesKeeper),
                 new SingleDirectoryResource(webDirectoriesKeeper),
@@ -69,15 +80,17 @@ class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
                 new SinglePagePropertyResource(webPagesKeeper),
                 new WebObjectsValidationResource());
         
-        exceptionMapper = new ExceptionToJsonMapper();
+        redirections = new HashMap<>();
+        redirections.put(404, "/static/welcome.html");
         
-        ioEngine = this.ioModule.getInnerIoEngine();
-        configuration = this.applicationComponentsHolderModule.configuration();
+        staticContent = new Pair<>("/static/*", configuration.asString("web.local.resources"));
+        
+        exceptionMapper = new ExceptionToJsonMapper();
         
         dispatcherServlet = new ResourceDispatcherServlet(resources, exceptionMapper);
         container = new JettyResourceServletContainer(ioEngine, configuration);
         
-        container.install(dispatcherServlet, resources);
+        container.install(dispatcherServlet, redirections, staticContent);
         container.startServer();
         
         return new WebModuleWorker(container);

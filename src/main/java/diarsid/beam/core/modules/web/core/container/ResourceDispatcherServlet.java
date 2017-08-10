@@ -53,6 +53,10 @@ public class ResourceDispatcherServlet extends HttpServlet {
         } 
     }
     
+    public Resources resources() {
+        return this.resources;
+    }
+    
     private Optional<Resource> getResourceFor(HttpServletRequest req) {
         return this.resources.getMatchingResourceFor(req.getPathInfo(), req.getMethod());     
     }

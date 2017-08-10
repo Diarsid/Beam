@@ -13,6 +13,8 @@ import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import static java.lang.String.join;
 import static java.util.stream.Collectors.joining;
 
+import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
+
 /**
  *
  * @author Diarsid
@@ -44,13 +46,29 @@ public class JsonUtil {
                 .collect(joining(",", "[", "]"));
     }
     
+    private static String jsonStringOf(String value) {
+        if ( isArray(value) || isNumeric(value) || isObject(value) ) {
+            return value;
+        } else {
+            return "\"" + value + "\"";
+        }
+    }
+
+    private static boolean isArray(String value) {
+        return value.startsWith("[") && value.endsWith("]");
+    }
+    
+    private static boolean isObject(String value) {
+        return value.startsWith("{") && value.endsWith("}");
+    }
+    
     public static String asJson(
             String key0, String value0) {
         return new StringBuilder()
                 .append("{")
                 .append("\"").append(key0).append("\"")
                 .append(":")
-                .append("\"").append(value0).append("\"")
+                .append(jsonStringOf(value0))
                 .append("}")
                 .toString();
     }
@@ -62,11 +80,11 @@ public class JsonUtil {
                 .append("{")
                 .append("\"").append(key0).append("\"")
                 .append(":")
-                .append("\"").append(value0).append("\"")
+                .append(jsonStringOf(value0))
                 .append(",")
                 .append("\"").append(key1).append("\"")
                 .append(":")
-                .append("\"").append(value1).append("\"")
+                .append(jsonStringOf(value1))
                 .append("}")
                 .toString();
     }
@@ -79,15 +97,15 @@ public class JsonUtil {
                 .append("{")
                 .append("\"").append(key0).append("\"")
                 .append(":")
-                .append("\"").append(value0).append("\"")
+                .append(jsonStringOf(value0))
                 .append(",")
                 .append("\"").append(key1).append("\"")
                 .append(":")
-                .append("\"").append(value1).append("\"")
+                .append(jsonStringOf(value1))
                 .append(",")
                 .append("\"").append(key2).append("\"")
                 .append(":")
-                .append("\"").append(value2).append("\"")
+                .append(jsonStringOf(value2))
                 .append("}")
                 .toString();
     }
@@ -101,19 +119,19 @@ public class JsonUtil {
                 .append("{")
                 .append("\"").append(key0).append("\"")
                 .append(":")
-                .append("\"").append(value0).append("\"")
+                .append(jsonStringOf(value0))
                 .append(",")
                 .append("\"").append(key1).append("\"")
                 .append(":")
-                .append("\"").append(value1).append("\"")
+                .append(jsonStringOf(value1))
                 .append(",")
                 .append("\"").append(key2).append("\"")
                 .append(":")
-                .append("\"").append(value2).append("\"")
+                .append(jsonStringOf(value2))
                 .append(",")
                 .append("\"").append(key3).append("\"")
                 .append(":")
-                .append("\"").append(value3).append("\"")
+                .append(jsonStringOf(value3))
                 .append("}")
                 .toString();
     }
@@ -128,23 +146,23 @@ public class JsonUtil {
                 .append("{")
                 .append("\"").append(key0).append("\"")
                 .append(":")
-                .append("\"").append(value0).append("\"")
+                .append(jsonStringOf(value0))
                 .append(",")
                 .append("\"").append(key1).append("\"")
                 .append(":")
-                .append("\"").append(value1).append("\"")
+                .append(jsonStringOf(value1))
                 .append(",")
                 .append("\"").append(key2).append("\"")
                 .append(":")
-                .append("\"").append(value2).append("\"")
+                .append(jsonStringOf(value2))
                 .append(",")
                 .append("\"").append(key3).append("\"")
                 .append(":")
-                .append("\"").append(value3).append("\"")
+                .append(jsonStringOf(value3))
                 .append(",")
                 .append("\"").append(key4).append("\"")
                 .append(":")
-                .append("\"").append(value4).append("\"")
+                .append(jsonStringOf(value4))
                 .append("}")
                 .toString();
     }
@@ -160,27 +178,27 @@ public class JsonUtil {
                 .append("{")
                 .append("\"").append(key0).append("\"")
                 .append(":")
-                .append("\"").append(value0).append("\"")
+                .append(jsonStringOf(value0))
                 .append(",")
                 .append("\"").append(key1).append("\"")
                 .append(":")
-                .append("\"").append(value1).append("\"")
+                .append(jsonStringOf(value1))
                 .append(",")
                 .append("\"").append(key2).append("\"")
                 .append(":")
-                .append("\"").append(value2).append("\"")
+                .append(jsonStringOf(value2))
                 .append(",")
                 .append("\"").append(key3).append("\"")
                 .append(":")
-                .append("\"").append(value3).append("\"")
+                .append(jsonStringOf(value3))
                 .append(",")
                 .append("\"").append(key4).append("\"")
                 .append(":")
-                .append("\"").append(value4).append("\"")
+                .append(jsonStringOf(value4))
                 .append(",")
                 .append("\"").append(key5).append("\"")
                 .append(":")
-                .append("\"").append(value5).append("\"")
+                .append(jsonStringOf(value5))
                 .append("}")
                 .toString();
     }

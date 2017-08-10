@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.web;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -25,9 +26,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
+import diarsid.beam.core.base.util.Pair;
 import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
-import diarsid.beam.core.modules.web.core.container.Resources;
 
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
@@ -38,7 +39,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
  *
  * @author Diarsid
  */
-class JettyResourceServletContainer extends ResourceServletContainer {
+class JettyResourceServletContainer implements ResourceServletContainer {
     
     private final InnerIoEngine ioEngine;
     private final Server jettyServer;
@@ -56,24 +57,9 @@ class JettyResourceServletContainer extends ResourceServletContainer {
         this.jettyContext.setContextPath(config.asString("web.local.path"));
         
         this.jettyServer.setHandler(this.jettyContext);
-        this.configureServerAddresses(config);
-        
-        ServletHolder staticHolder = this.configureStaticServletHolder(config);        
-        this.jettyContext.addServlet(staticHolder, "/static/*");
-        
-        ErrorPageErrorHandler errorHandler = new ErrorPageErrorHandler();
-        errorHandler.addErrorPage(404, "/static/welcome.html");
-        this.jettyContext.setErrorHandler(errorHandler);
+        this.configureServerAddresses(config);        
 
         this.jettyServer.setStopAtShutdown(true);
-    }
-
-    private ServletHolder configureStaticServletHolder(Configuration config) {
-        ServletHolder staticHolder = new ServletHolder("[BEAM.WEB.STATIC]", new DefaultServlet());
-        staticHolder.setInitParameter("resourceBase", config.asString("web.local.resources"));
-        staticHolder.setInitParameter("dirAllowed","true");
-        staticHolder.setInitParameter("pathInfoOnly","true");
-        return staticHolder;
     }
     
     private void configureServerAddresses(Configuration config) {
@@ -138,13 +124,40 @@ class JettyResourceServletContainer extends ResourceServletContainer {
     }
     
     @Override
-    public void install(ResourceDispatcherServlet dispatcher, Resources resources) {
+    public void install(
+            ResourceDispatcherServlet dispatcher, 
+            Map<Integer, String> redirections, 
+            Pair<String, String> staticContent) {
+        this.installDispatcherAndItsResources(dispatcher);
+        this.installRedirections(redirections);
+        this.installStatic(staticContent);
+    }
+
+    private void installDispatcherAndItsResources(ResourceDispatcherServlet dispatcher) {
         this.jettyContext.addServlet(
-                new ServletHolder("[BEAM.WEB.DISPATCHER]", dispatcher), "/resources/*");
-        resources.doForEach(resource -> {
+                new ServletHolder("[BEAM.WEB.DISPATCHER]", dispatcher), 
+                dispatcher.resources().path());
+        dispatcher.resources().doForEach(resource -> {
             this.jettyContext.addServlet(
                     new ServletHolder(resource.name(), resource), resource.url());
         });
+    }
+    
+    private void installRedirections(Map<Integer, String> redirections) {        
+        ErrorPageErrorHandler errorHandler = new ErrorPageErrorHandler();
+        redirections.forEach((errorCode, redirectionPath) -> {
+            errorHandler.addErrorPage(errorCode, redirectionPath);
+        });        
+        this.jettyContext.setErrorHandler(errorHandler);
+    }
+    
+    private void installStatic(Pair<String, String> staticContent) {
+        ServletHolder staticHolder = new ServletHolder("[BEAM.WEB.STATIC]", new DefaultServlet());
+        staticHolder.setInitParameter("resourceBase", staticContent.second());
+        staticHolder.setInitParameter("dirAllowed","true");
+        staticHolder.setInitParameter("pathInfoOnly","true");
+        
+        this.jettyContext.addServlet(staticHolder, staticContent.first());
     }
     
     @Override

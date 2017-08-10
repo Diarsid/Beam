@@ -65,8 +65,10 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
@@ -159,13 +161,23 @@ public class WebPagesKeeperWorker
         });
     }
     
-    private void asyncAddCommand(Initiator initiator, String pageName) {
+    private void asyncAddBrowsePageCommands(Initiator initiator, WebPage page) {
         asyncDo(() -> {
             this.commandsMemory.save(
-                    initiator, new BrowsePageCommand(pageName, pageName, NEW, TARGET_FOUND));
+                    initiator, new BrowsePageCommand(page.name(), page.name(), NEW, TARGET_FOUND));
+            if ( nonEmpty(page.shortcuts()) ) {
+                splitBySpacesToList(page.shortcuts())
+                        .stream()
+                        .peek(alias -> debug("[WEB PAGES KEEPER] save alias as command: " + alias))
+                        .forEach(alias -> {
+                            this.commandsMemory.save(
+                                    initiator, 
+                                    new BrowsePageCommand(alias, page.name(), NEW, TARGET_FOUND));
+                        });
+            }
         });
     }
-
+    
     @Override
     public ValueOperation<WebPage> findByExactName(
             Initiator initiator, String name) {
@@ -387,7 +399,7 @@ public class WebPagesKeeperWorker
         
         WebPage page = newWebPage(name, shortcuts, url, optDirectory.get().id());
         if ( daoPages.save(initiator, page) ) {
-            this.asyncAddCommand(initiator, page.name());
+            this.asyncAddBrowsePageCommands(initiator, page);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save new page.");
@@ -417,6 +429,7 @@ public class WebPagesKeeperWorker
             return voidOperationStopped();
         }
         WebPage page = optPage.get();
+        this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
         propertyToEdit = this.helper.validatePropertyInteractively(
                 initiator, propertyToEdit, SHORTCUTS, WEB_URL, NAME, ORDER, WEB_DIRECTORY);
@@ -463,7 +476,7 @@ public class WebPagesKeeperWorker
             Initiator initiator, String pageName, String oldShortcuts) {
         String newShortcuts = this.discussShortcuts(initiator);
         if ( newShortcuts.isEmpty() ) {
-            return voidOperationStopped();
+            this.ioEngine.report(initiator, "removing shortcuts...");
         }
         if ( this.daoPages.editShortcuts(initiator, pageName, newShortcuts) ) {
             this.asyncChangeCommandsMemory(initiator, oldShortcuts, newShortcuts);
@@ -610,10 +623,10 @@ public class WebPagesKeeperWorker
                     format("WebDirectory '%s' does not exist in %s", directoryName, place.name()));
         } 
         
-        boolean saved = this.daoPages.save(
-                this.systemInitiator, newWebPage(pageName, "", pageUrl, optId.get()));
+        WebPage newPage = newWebPage(pageName, "", pageUrl, optId.get());
+        boolean saved = this.daoPages.save(this.systemInitiator, newPage);
         if ( saved ) {
-            this.asyncAddCommand(this.systemInitiator, pageName);
+            this.asyncAddBrowsePageCommands(this.systemInitiator, newPage);
             return ok();
         } else {
             return badRequestWithJson(

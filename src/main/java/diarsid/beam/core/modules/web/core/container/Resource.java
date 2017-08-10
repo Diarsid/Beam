@@ -28,7 +28,7 @@ public abstract class Resource
     
     private static final String PARAMETER_REGEXP;
     static {        
-        PARAMETER_REGEXP = "[a-zA-Z0-9-_\\.>\\s]+";
+        PARAMETER_REGEXP = "[a-zA-Z0-9-_\\.> ]+";
     }
     
     private final String name;

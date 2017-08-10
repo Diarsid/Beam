@@ -23,6 +23,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
@@ -61,6 +62,8 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesT
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
@@ -1003,8 +1006,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
+    // TODO LOW asks when nebetnpors -> open Projects/NetBeans? open!!!
     @Override
     public void listLocation(Initiator initiator, ArgumentsCommand command) {
+        this.checkExpectedTypeOf(initiator, command.type(), LIST_LOCATION);
         ValueOperation<Location> locationFlow = this.domain
                 .locations()
                 .findByNamePattern(initiator, command.joinedArguments());
@@ -1014,6 +1019,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     Location location = locationFlow.asComplete().getOrThrow();
                     Optional<List<String>> listing = this.fileLister.listContentOf(location, 5);
                     if ( listing.isPresent() && nonEmpty(listing.get()) ) {
+                        listing.get().add(0, format("'%s' content: ", location.name()));
                         this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
                     } else {
                         this.ioEngine.report(
@@ -1021,8 +1027,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                                 format("cannot list '%s' content.", location.name()));
                     }
                 } else {
-                    this.ioEngine.report(
-                        initiator, format("cannot find '%s' Location", command.joinedArguments()));
+                    this.doWhenListedLocationNotFound(initiator, command.joinedArguments());                    
                 }
                 break; 
             }
@@ -1039,11 +1044,51 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }
     }
+    
+    private void doWhenListedLocationNotFound(Initiator initiator, String pattern) {
+        ValueOperation<InvocationCommand> commandFlow = this.domain
+                .commandsMemory()
+                .findStoredCommandByPatternAndType(
+                        initiator, pattern, OPEN_LOCATION_TARGET);
+        switch ( commandFlow.result() ) {
+            case COMPLETE : {
+                if ( commandFlow.asComplete().hasValue() ) {
+                    this.listPathString(
+                            initiator, commandFlow.asComplete().getOrThrow().extendedArgument());
+                } else {
+                    this.ioEngine.report(
+                        initiator, format("cannot find '%s'", pattern));
+                }
+                break; 
+            }
+            case FAIL : {
+                break; 
+            }
+            case STOP : {
+                break; 
+            }
+            default : {
+                break; 
+            }
+        }        
+    }
+
+    private void checkExpectedTypeOf(
+            Initiator initiator, CommandType actual, CommandType expected) {
+        if ( actual.isNot(expected) ) {
+            this.ioEngine.report(initiator,
+                    format("command type is %s but expected is %s", actual, expected));
+        }
+    }
 
     @Override
     public void listPath(Initiator initiator, ArgumentsCommand command) {
-        String path = command.joinedArguments();
-        if ( containsPathSeparator(path) ) {            
+        this.checkExpectedTypeOf(initiator, command.type(), LIST_PATH);
+        this.listPathString(initiator, command.joinedArguments());            
+    }    
+
+    private void listPathString(Initiator initiator, String path) {
+        if ( containsPathSeparator(path) ) {
             this.proceedListPath(initiator, path);
         } else {
             this.ioEngine.report(

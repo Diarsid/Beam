@@ -20,12 +20,18 @@ import static java.util.stream.Collectors.toList;
  */
 public class Resources {
     
+    private final String resourcesPath;
     private final List<Resource> resources;
     
-    public Resources(Resource... resources) {
+    public Resources(String path, Resource... resources) {
+        this.resourcesPath = path;
         this.resources = stream(resources)
                 .collect(toList());
         sort(this.resources);
+    }
+    
+    public String path() {
+        return resourcesPath;
     }
     
     Optional<Resource> getMatchingResourceFor(String url, String method) {

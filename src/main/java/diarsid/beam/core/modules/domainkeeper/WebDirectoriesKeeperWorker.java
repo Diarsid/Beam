@@ -434,6 +434,15 @@ class WebDirectoriesKeeperWorker
             return badRequestWithJson(newNameValidity.getFailureMessage());
         }
         
+        Optional<Integer> freeNameIndex = this.daoDirectories
+                .freeNameNextIndex(this.systemInitiator, newName, place);
+        if ( ! freeNameIndex.isPresent() ) {
+            return badRequestWithJson("Cannot get free name index.");
+        } 
+        if ( freeNameIndex.get() > 0 ) {
+            newName = format("%s (%d)", newName, freeNameIndex.get());
+        }
+        
         boolean edited = this.daoDirectories
                 .editDirectoryName(this.systemInitiator, name, place, newName);
         if ( edited ) {

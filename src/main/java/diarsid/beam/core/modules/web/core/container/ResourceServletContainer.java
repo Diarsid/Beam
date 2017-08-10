@@ -5,26 +5,30 @@
  */
 package diarsid.beam.core.modules.web.core.container;
 
+import java.util.Map;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
+
+import diarsid.beam.core.base.util.Pair;
 
 
 /**
  *
  * @author Diarsid
  */
-public abstract class ResourceServletContainer {
-    
-    protected ResourceServletContainer() {
-    }
+public interface ResourceServletContainer {
             
-    public abstract void startServer();
+    void startServer();
     
-    public abstract void stopServer();
+    void stopServer();
     
-    public abstract void install(ResourceDispatcherServlet dispatcher, Resources resources);
+    void install(
+            ResourceDispatcherServlet dispatcher,
+            Map<Integer, String> redirections,
+            Pair<String, String> staticContent);
     
-    public abstract void addFilter(
+    void addFilter(
             Filter filter, 
             String filterUrlMapping, 
             DispatcherType t1, 
