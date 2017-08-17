@@ -44,6 +44,9 @@ public interface CommandsMemoryKeeper {
     void remove(
             Initiator initiator, InvocationCommand command);
     
+    void removeByExactOriginalAndType(
+            Initiator initiator, String original, CommandType type);
+    
     void removeByExactExtendedAndType(
             Initiator initiator, String extended, CommandType type);
     

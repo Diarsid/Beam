@@ -6,7 +6,11 @@
 package diarsid.beam.core.domain.patternsanalyze;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 import static java.lang.String.format;
+
+import static diarsid.beam.core.base.util.DecimalUtil.onePointRatio;
+import static diarsid.beam.core.base.util.DecimalUtil.ratio;
 
 /**
  *
@@ -48,9 +52,40 @@ class AnalyzeUtil {
         }
     }
     
+    /*
+     * Returns importance of unsorted characters in a pattern.
+     * Positive value means that unsorted characters makes pattern evaluation worse.
+     * Negative value means that there are not unsorted characters, and pattern becames better 
+     * depending on other conditions.
+     */
     static double unsortedImportanceDependingOn(
-            int unsorted, double clustersImportance) {
-        return unsorted * unsortedRatioDependingOn(clustersImportance);
+            int allInVariant, 
+            int allInPattern, 
+            int unsorted, 
+            int clustered, 
+            double clustersImportance) {
+        if ( clustered > 0 ) {
+            if ( unsorted == 0 ) {
+                return -( 
+                        allInPattern + 
+                        pow(unsortedRatioDependingOn(clustersImportance), 
+                                onePointRatio(allInPattern, allInVariant)) );
+            } else {
+                double ratio = ratio(allInPattern, allInVariant);
+                return unsorted * onePointRatio(unsorted, allInPattern) *
+                        pow(unsortedRatioDependingOn(clustersImportance), 1.55 + ratio ) * 
+                        (1.0 + ratio);
+            } 
+        } else {
+            if ( unsorted == 0 ) {
+                return -pow(allInPattern, onePointRatio(allInPattern, allInVariant));
+            } else {
+                double ratio = ratio(allInPattern, allInVariant);
+                return unsorted * 
+                        pow(unsortedRatioDependingOn(clustersImportance), 1.55 + ratio ) * 
+                        (1.5 + ratio);
+            }
+        }               
     }
     
     static double unsortedRatioDependingOn(double clustersImportance) {

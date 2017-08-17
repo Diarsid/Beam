@@ -365,6 +365,12 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         this.daoCommandsChoices.delete(command);
         this.daoCommands.delete(initiator, command);
     }
+    
+    @Override
+    public void removeByExactOriginalAndType(
+            Initiator initiator, String original, CommandType type) {
+        this.daoCommands.deleteByExactOriginalOfType(initiator, original, type);
+    }
 
     @Override
     public ValueOperation<InvocationCommand> findStoredCommandOfAnyType(
@@ -568,6 +574,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         Optional<CommandType> chosenType = 
                 this.daoCommandsChoices.isTypeChoiceDoneFor(pattern, variants);
         if ( chosenType.isPresent() ) {
+            debug("[COMMANDS MEMORY] [chosing one] choice " + chosenType.get() + " found for stamp:" + variants.stamp());
             return valueCompletedWith(commands
                     .stream()
                     .filter(command -> command.type().is(chosenType.get()))
@@ -578,7 +585,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             InvocationCommand chosen = commands.get(answer.index());
             debug("[COMMANDS MEMORY] [choosen one] " + chosen.stringify());
             asyncDo(() -> {
-                variants.removeWorseThan(chosen.extendedArgument());
+//                variants.removeWorseThan(chosen.extendedArgument());
                 this.daoCommandsChoices.save(chosen, variants);
             });
             return valueCompletedWith(commands.get(answer.index()));

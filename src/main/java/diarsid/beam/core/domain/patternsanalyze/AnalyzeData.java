@@ -61,6 +61,7 @@ class AnalyzeData {
 
     void calculateWeight() {        
         this.best = this.bestPositions();
+        this.variantWeight = this.variantWeight + this.best.positionsWeight;
         System.out.println("weight before calculation: " + this.variantWeight);
         double lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.8 ;
         this.variantWeight = this.variantWeight + (
@@ -78,7 +79,8 @@ class AnalyzeData {
     }
     
     AnalyzePositionsData bestPositions() {
-        return this.forward.clustersImportance > this.reverse.clustersImportance ? 
+        return this.forward.clustersImportance + this.forward.positionsWeight 
+                > this.reverse.clustersImportance + this.reverse.positionsWeight ? 
                 this.forward : this.reverse;
     }
 

@@ -57,7 +57,6 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
@@ -165,7 +164,8 @@ class ExecutorModuleWorker implements ExecutorModule {
             Initiator initiator, InvocationCommand command) {
         if ( command.argument().isNotExtended() ) {
             VoidOperation flow = this.domain
-                    .commandsMemory().tryToExtendCommand(initiator, command);
+                    .commandsMemory()
+                    .tryToExtendCommand(initiator, command);
             switch ( flow.result() ) {
                 case FAIL:
                     return valueOperationFail(flow.message());
@@ -513,10 +513,13 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void openLocationTarget(Initiator initiator, OpenLocationTargetCommand command) {
         if ( command.argument().isNotExtended() ) {
             VoidOperation flow = this.domain
-                    .commandsMemory().tryToExtendCommand(initiator, command);
+                    .commandsMemory()
+                    .tryToExtendCommand(initiator, command);
             switch ( flow.result() ) {
-                case FAIL:
+                case FAIL : {
                     this.ioEngine.report(initiator, flow.message());
+                    return;
+                }    
                 case STOP : {
                     return;
                 }  
@@ -868,7 +871,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     this.dispatchCommandInternally(initiator, flow.asComplete().getOrThrow());
                 } else {
                     debug("[EXECUTOR] [executeDefault] stored command not found by: " + command.argument());
-                    this.proceedDefaultExecution(initiator, command);
+                    this.findAndInvokeAnyNamedEntity(initiator, command);
                 }
                 break; 
             }
@@ -886,53 +889,26 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private void proceedDefaultExecution(Initiator initiator, ExecutorDefaultCommand command) {
-        debug("[EXECUTOR] [executeDefault] [proceed] find any named entity" );
-        VoidOperation operation = this.findAndInvokeAnyNamedEntity(initiator, command);
-        switch ( operation.result() ) {
-            case COMPLETE : {
-                return;
-            }
-            case STOP : {
-                return;
-            }
-            case FAIL : {
-                debug("[EXECUTOR] [executeDefault] entity not found by: " + command.argument());
-                return;
-            }
-            default : {
-                this.ioEngine.report(initiator, "unknown ValueOperation result.");    
-            }
-        }       
-    }
-    
-    private ValueOperation<? extends NamedEntity> findNamedEntityByArgument(
-            Initiator initiator, String argument) {
-        ValueOperation<? extends NamedEntity> valueFlow = 
-                this.domain.allEntities().findByExactName(initiator, argument);
-        switch ( valueFlow.result() ) {
-            case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                     return valueFlow;
-                } else {
-                    debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
-                    return this.domain.allEntities().findByNamePattern(initiator, argument);
-                }
-            }
-            case FAIL : {
-                debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
-                return this.domain.allEntities().findByNamePattern(initiator, argument);
-            }
-            case STOP : {
-                return valueFlow;
-            }
-            default : {
-                return valueOperationFail("unknown ValueOperation result.");
-            }
-        }
-    }
+//    // TODO remove this method
+//    private void proceedDefaultExecution(Initiator initiator, ExecutorDefaultCommand command) {
+//        debug("[EXECUTOR] [executeDefault] [proceed] find any named entity" );
+//        VoidOperation operation = this.findAndInvokeAnyNamedEntity(initiator, command);
+//        switch ( operation.result() ) {
+//            case COMPLETE :
+//            case STOP : {
+//                return;
+//            }
+//            case FAIL : {
+//                debug("[EXECUTOR] [executeDefault] entity not found by: " + command.argument());
+//                return;
+//            }
+//            default : {
+//                this.ioEngine.report(initiator, "unknown ValueOperation result.");    
+//            }
+//        }       
+//    }
  
-    private VoidOperation findAndInvokeAnyNamedEntity(
+    private void findAndInvokeAnyNamedEntity(
             Initiator initiator, ExecutorDefaultCommand command) {
         debug("[EXECUTOR] [executeDefault] [find and invoke any entity by] : " + command.argument());
         ValueOperation<? extends NamedEntity> valueFlow = 
@@ -940,20 +916,67 @@ class ExecutorModuleWorker implements ExecutorModule {
         switch ( valueFlow.result() ) {
             case COMPLETE : {
                 if ( valueFlow.asComplete().hasValue() ) {
-                    return this.invokeFoundEntity(
+                    VoidOperation invokeFlow = this.invokeFoundEntity(
                             initiator, valueFlow.asComplete().getOrThrow(), command);
+                    switch ( invokeFlow.result() ) {
+                        case COMPLETE : 
+                        case STOP : {
+                            return;
+                        }
+                        case FAIL : {
+                            this.ioEngine.report(initiator, invokeFlow.message());
+                            return; 
+                        }
+                        default : {
+                            this.ioEngine.report(initiator, "Unkown VoidOperation type.");
+                            return; 
+                        }
+                    }
                 } else {
-                    return voidOperationFail("Not found");
+                    // do nothing.
                 }
+                return;
             } 
             case FAIL : {
-                return voidOperationFail(valueFlow.asFail().reason());
+                this.ioEngine.report(initiator, valueFlow.asFail().reason());
+                return;
             }
             case STOP : {
-                return voidOperationStopped();
+                return;
             }
             default : {
-                return voidOperationFail("Unkown ValueOperation type.");
+                this.ioEngine.report(initiator, "Unkown ValueOperation type.");
+            }
+        }
+    }
+    
+    private ValueOperation<? extends NamedEntity> findNamedEntityByArgument(
+            Initiator initiator, String argument) {
+        ValueOperation<? extends NamedEntity> valueFlow = this.domain
+                .allEntities()
+                .findByExactName(initiator, argument);
+        switch ( valueFlow.result() ) {
+            case COMPLETE : {
+                if ( valueFlow.asComplete().hasValue() ) {
+                     return valueFlow;
+                } else {
+                    debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
+                    return this.domain
+                            .allEntities()
+                            .findByNamePattern(initiator, argument);
+                }
+            }
+            case FAIL : {
+                debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
+                return this.domain
+                        .allEntities()
+                        .findByNamePattern(initiator, argument);
+            }
+            case STOP : {
+                return valueFlow;
+            }
+            default : {
+                return valueOperationFail("unknown ValueOperation result.");
             }
         }
     }

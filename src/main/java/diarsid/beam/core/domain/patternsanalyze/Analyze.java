@@ -57,12 +57,38 @@ public class Analyze {
                 "Books/Tech/Java");
     }
     
+    private static List<String> toolsCase() {
+        return asList(
+                "LostFilm", 
+                "Dev/3__Tools");
+    }
+    
     private static List<String> facebookCase() {
         return asList(                
                 "fb",
                 "fixed beam",
                 "facebook",
                 "epicfantasy crossbooking");
+    }
+    
+    private static List<String> researchCase() {
+        return asList(                
+                "dev/3__tools",
+                "tech/langs/java/specifications");
+    }
+    
+    private static List<String> javaSpecCase() {
+        return asList(                
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Tech/langs/Java/Specifications");
+    }
+    
+    private static List<String> netBeansCase() {
+        return asList(                
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Beam",
+                "Projects/Diarsid/NetBeans/Research.Java",
+                "Dev/NetBeans_8.2.lnk");
     }
     
     private static List<String> beamProjectCase() {
@@ -90,9 +116,9 @@ public class Analyze {
     }
 
     public static void doAll() {
-//        weightAnalyzeCases();
+        weightAnalyzeCases();
 
-        analyzeImportance();
+//        analyzeImportance();
     }
 
     private static void analyzeImportance() {
@@ -109,9 +135,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = beamProjectCase();
+        List<String> variantsStrings = javaSpecCase();
         
-        String pattern = "beaporj";
+        String pattern = "jaspec";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
@@ -251,14 +277,15 @@ public class Analyze {
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
         
-        variantsWeighting: for (Variant variant : variants) { 
-            
+        variantsWeighting: for (Variant variant : variants) {             
             lowerVariantText = lower(variant.text());
             if ( variantsByText.containsKey(lowerVariantText) ) {
                 if ( variantsByText.get(lowerVariantText).equalsByLowerDisplayText(variant) ) {
                     continue variantsWeighting;
                 }
             }
+            System.out.println();
+            System.out.println(" ==== ANALYZE : " + variant.text() + " ==== ");
             variantsByText.put(lowerVariantText, variant);
             
             analyze.setVariantText(variant);

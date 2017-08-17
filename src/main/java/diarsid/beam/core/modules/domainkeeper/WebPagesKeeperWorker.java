@@ -145,13 +145,14 @@ public class WebPagesKeeperWorker
         return this.subjectedCommandTypes.contains(command.type());
     }
 
-    private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
+    private void asyncRemoveCommandsForPage(Initiator initiator, WebPage page) {
         asyncDo(() -> {
-            this.commandsMemory.removeByExactExtendedAndType(initiator, extended, BROWSE_WEBPAGE);
+            this.commandsMemory.removeByExactExtendedAndType(
+                    initiator, page.name(), BROWSE_WEBPAGE);
         });
     }
     
-    private void asyncChangeCommandsMemory(
+    private void asyncChangeCommandsForPageNames(
             Initiator initiator, String pageOldName, String pageNewName) {
         asyncDo(() -> {
             this.commandsMemory.removeByExactExtendedAndType(
@@ -161,7 +162,32 @@ public class WebPagesKeeperWorker
         });
     }
     
-    private void asyncAddBrowsePageCommands(Initiator initiator, WebPage page) {
+    private void asyncChangeCommandsForPageShortcuts(
+            Initiator initiator, String pageName, String pageOldShorts, String pageNewShorts) {
+        asyncDo(() -> {
+            if ( nonEmpty(pageOldShorts) ) {
+                splitBySpacesToList(pageOldShorts)
+                        .stream()
+                        .peek(alias -> debug("[WEB PAGES KEEPER] delete command by alias: " + alias))
+                        .forEach(alias -> {
+                            this.commandsMemory.removeByExactOriginalAndType(
+                                    initiator, alias, BROWSE_WEBPAGE);
+                        });
+            }
+            if ( nonEmpty(pageNewShorts) ) {
+                splitBySpacesToList(pageNewShorts)
+                        .stream()
+                        .peek(alias -> debug("[WEB PAGES KEEPER] save alias as command: " + alias))
+                        .forEach(alias -> {
+                            this.commandsMemory.save(
+                                    initiator, 
+                                    new BrowsePageCommand(alias, pageName, NEW, TARGET_FOUND));
+                        });
+            }
+        });
+    }
+    
+    private void asyncAddCommandsForPage(Initiator initiator, WebPage page) {
         asyncDo(() -> {
             this.commandsMemory.save(
                     initiator, new BrowsePageCommand(page.name(), page.name(), NEW, TARGET_FOUND));
@@ -399,7 +425,7 @@ public class WebPagesKeeperWorker
         
         WebPage page = newWebPage(name, shortcuts, url, optDirectory.get().id());
         if ( daoPages.save(initiator, page) ) {
-            this.asyncAddBrowsePageCommands(initiator, page);
+            this.asyncAddCommandsForPage(initiator, page);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to save new page.");
@@ -465,7 +491,7 @@ public class WebPagesKeeperWorker
             return voidOperationStopped();
         }
         if ( this.daoPages.editName(initiator, pageName, newName) ) {
-            this.asyncChangeCommandsMemory(initiator, pageName, newName);
+            this.asyncChangeCommandsForPageNames(initiator, pageName, newName);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to rename page.");
@@ -479,7 +505,8 @@ public class WebPagesKeeperWorker
             this.ioEngine.report(initiator, "removing shortcuts...");
         }
         if ( this.daoPages.editShortcuts(initiator, pageName, newShortcuts) ) {
-            this.asyncChangeCommandsMemory(initiator, oldShortcuts, newShortcuts);
+            this.asyncChangeCommandsForPageShortcuts(
+                    initiator, pageName, oldShortcuts, newShortcuts);
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to change shortcuts.");
@@ -551,15 +578,15 @@ public class WebPagesKeeperWorker
             pagePattern = "";
         }
         
-        Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
-        if ( ! optPage.isPresent() ) {
-            return voidOperationStopped();
+        Optional<WebPage> page = this.discussExistingPage(initiator, pagePattern);
+        if ( page.isPresent() ) {
+            this.ioEngine.report(initiator, format("'%s' found.", page.get().name()));            
         } else {
-            this.ioEngine.report(initiator, format("'%s' found.", optPage.get().name()));
+            return voidOperationStopped();
         }
         
-        if ( this.daoPages.remove(initiator, optPage.get().name()) ) {
-            this.asyncCleanCommandsMemory(initiator, optPage.get().name());
+        if ( this.daoPages.remove(initiator, page.get().name()) ) {
+            this.asyncRemoveCommandsForPage(initiator, page.get());
             return voidCompleted();
         } else {
             return voidOperationFail("DAO failed to remove page.");
@@ -626,7 +653,7 @@ public class WebPagesKeeperWorker
         WebPage newPage = newWebPage(pageName, "", pageUrl, optId.get());
         boolean saved = this.daoPages.save(this.systemInitiator, newPage);
         if ( saved ) {
-            this.asyncAddBrowsePageCommands(this.systemInitiator, newPage);
+            this.asyncAddCommandsForPage(this.systemInitiator, newPage);
             return ok();
         } else {
             return badRequestWithJson(
@@ -671,7 +698,7 @@ public class WebPagesKeeperWorker
         boolean edited = this.daoPages
                 .editName(this.systemInitiator, page.get().name(), pageNewName);
         if ( edited ) {
-            this.asyncChangeCommandsMemory(this.systemInitiator, pageOldName, pageNewName);
+            this.asyncChangeCommandsForPageNames(this.systemInitiator, pageOldName, pageNewName);
             return ok();
         } else {
             return badRequestWithJson(format("Page '%s' is not renamed.", page.get().name()));
@@ -734,7 +761,7 @@ public class WebPagesKeeperWorker
         
         boolean deleted = this.daoPages.remove(this.systemInitiator, page.get().name());
         if ( deleted ) {
-            this.asyncCleanCommandsMemory(this.systemInitiator, page.get().name());
+            this.asyncRemoveCommandsForPage(this.systemInitiator, page.get());
             return ok();
         } else {
             return badRequestWithJson(format("Page '%s' is not removed.", page.get().name()));
