@@ -45,6 +45,10 @@ class AnalyzePositionsData {
     int nextPosition;
     
     char currentChar;
+    char nextCharInPattern;
+    char nextCharInVariant;
+    char previousCharInPattern;
+    char previousCharInVariant;
     int currentPatternCharPositionInVariant;
     int betterCurrentPatternCharPositionInVariant;
     
@@ -324,12 +328,12 @@ class AnalyzePositionsData {
         if ( this.currentPatternCharPositionInVariant <= 0 ) {
             return false;
         }
-        char previousPatternChar = this.data.patternChars[currentPatternCharIndex - 1];
-        char previousVariantChar = this.data.variantText.charAt(this.currentPatternCharPositionInVariant - 1);
-        if ( previousPatternChar == previousVariantChar ) {
-            System.out.println("previous matching found: " + previousPatternChar + " while tesing: " + this.data.patternChars[currentPatternCharIndex]);
+        this.previousCharInPattern = this.data.patternChars[currentPatternCharIndex - 1];
+        this.previousCharInVariant = this.data.variantText.charAt(this.currentPatternCharPositionInVariant - 1);
+        if ( this.previousCharInPattern == this.previousCharInVariant ) {
+            System.out.println("previous matching found: " + this.previousCharInPattern + " while tesing: " + this.data.patternChars[currentPatternCharIndex]);
         }
-        return ( previousPatternChar == previousVariantChar );
+        return ( this.previousCharInPattern == this.previousCharInVariant );
     }
     
     boolean nextCharInClusterWithCurrentChar(int currentPatternCharIndex) {        
@@ -337,12 +341,12 @@ class AnalyzePositionsData {
              this.currentPatternCharPositionInVariant >= this.data.variantText.length() ) {
             return false;
         }
-        char nextPatternChar = this.data.patternChars[currentPatternCharIndex + 1];
-        char nextVariantChar = this.data.variantText.charAt(this.currentPatternCharPositionInVariant + 1);
-        if ( nextPatternChar == nextVariantChar ) {
-            System.out.println("next matching found: " + nextPatternChar + " while tesing: " + this.data.patternChars[currentPatternCharIndex]);
+        this.nextCharInPattern = this.data.patternChars[currentPatternCharIndex + 1];
+        this.nextCharInVariant = this.data.variantText.charAt(this.currentPatternCharPositionInVariant + 1);
+        if ( this.nextCharInPattern == this.nextCharInVariant ) {
+            System.out.println("next matching found: " + this.nextCharInPattern + " while tesing: " + this.data.patternChars[currentPatternCharIndex]);
         }
-        return ( nextPatternChar == nextVariantChar );
+        return ( this.nextCharInPattern == this.nextCharInVariant );
     }
     
 //    boolean previousCharInClusterWithCurrentBetterChar(int currentPatternCharIndex) {
