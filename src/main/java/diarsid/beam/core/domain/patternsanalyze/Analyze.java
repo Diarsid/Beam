@@ -137,7 +137,7 @@ public class Analyze {
     private static void weightAnalyzeCases() {
         List<String> variantsStrings = javaSpecCase();
         
-        String pattern = "jaspec";
+        String pattern = "jspec";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
