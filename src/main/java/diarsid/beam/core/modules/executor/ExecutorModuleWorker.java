@@ -42,7 +42,7 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 
@@ -86,8 +86,8 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.entityIsSatisfiable;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.entityIsSatisfiable;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightStrings;
 
 /**
  *

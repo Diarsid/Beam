@@ -15,8 +15,8 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.util.StringHolder;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariant;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariant;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;

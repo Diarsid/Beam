@@ -33,7 +33,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
@@ -82,7 +82,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 
 
 public class WebPagesKeeperWorker 

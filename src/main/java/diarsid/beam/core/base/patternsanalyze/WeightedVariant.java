@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.domain.patternsanalyze;
+package diarsid.beam.core.base.patternsanalyze;
 
 import java.io.Serializable;
 

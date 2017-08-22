@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.patternsanalyze;
+package diarsid.beam.core.base.patternsanalyze;
 
 import java.util.Arrays;
 
@@ -11,12 +11,12 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.countUsorted;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isWordsSeparator;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.missedImportanceDependingOn;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.unsortedImportanceDependingOn;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.countUsorted;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isWordsSeparator;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedImportanceDependingOn;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.unsortedImportanceDependingOn;
 
 /**
  *

@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 
 /**
  *

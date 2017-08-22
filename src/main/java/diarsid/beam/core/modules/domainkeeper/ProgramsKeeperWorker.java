@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Program;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
@@ -32,7 +32,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 
 
 class ProgramsKeeperWorker 

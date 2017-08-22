@@ -28,7 +28,7 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
@@ -56,7 +56,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightStrings;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightStrings;
 
 class BatchesKeeperWorker 
         implements 

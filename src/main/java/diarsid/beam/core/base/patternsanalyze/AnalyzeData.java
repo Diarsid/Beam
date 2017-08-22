@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.patternsanalyze;
+package diarsid.beam.core.base.patternsanalyze;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,11 +19,11 @@ import static java.util.stream.Collectors.joining;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzePositionsData.UNINITIALIZED;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isVariantTextLengthTooBad;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.missedTooMuch;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.UNINITIALIZED;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isVariantTextLengthTooBad;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedTooMuch;
 
 /**
  *

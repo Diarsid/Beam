@@ -14,7 +14,7 @@ import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariant;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariant;
 
 import static java.lang.String.format;
 

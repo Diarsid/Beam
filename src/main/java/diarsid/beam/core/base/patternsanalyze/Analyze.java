@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.domain.patternsanalyze;
+package diarsid.beam.core.base.patternsanalyze;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,9 +29,9 @@ import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isDiversitySufficient;
-import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.isVariantOk;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isDiversitySufficient;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isVariantOk;
 
 /**
  *

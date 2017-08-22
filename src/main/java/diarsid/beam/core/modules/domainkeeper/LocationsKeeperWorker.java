@@ -25,7 +25,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoLocations;
 
 import static java.lang.String.format;
@@ -56,7 +56,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 
 
 

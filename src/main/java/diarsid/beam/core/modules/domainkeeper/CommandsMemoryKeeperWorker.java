@@ -19,7 +19,7 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.util.StringHolder;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 
@@ -47,7 +47,7 @@ import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringHolder.empty;
 import static diarsid.beam.core.base.util.StringHolder.hold;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
-import static diarsid.beam.core.domain.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 
 /**
  *

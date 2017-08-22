@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.domain.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
