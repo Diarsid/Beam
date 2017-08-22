@@ -84,7 +84,7 @@ public class H2DaoCommandsChoicesTest {
                         "VALUES ( ?, ?, ? )", 
                         params("beaproj", "OPEN_LOCATION_TARGET", "c:/projects/netbeans/beam;c:/projects/netbeans"),
                         params("beaporj", "OPEN_LOCATION_TARGET", "c:/projects/netbeans/beam;c:/projects/netbeans"),
-                        params("fb", "BROWSE_WEBPAGE", "c:/books/library/common/author/book.fb2;facebook"));
+                        params("fb", "BROWSE_WEBPAGE", "c:/books/library/common/author/book.fb2"));
         
         String pattern = "beaproj";
         List<String> variantsStrings = arrayListOf("C:/Projects/NetBeans", "C:/Projects/NetBeans/Beam");

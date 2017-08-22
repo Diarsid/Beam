@@ -59,28 +59,28 @@ class AnalyzeUtil {
      * depending on other conditions.
      */
     static double unsortedImportanceDependingOn(
-            int allInVariant, 
-            int allInPattern, 
+            int patternInVariantLength, 
+            int patternLength, 
             int unsorted, 
             int clustered, 
             double clustersImportance) {
         if ( clustered > 0 ) {
             if ( unsorted == 0 ) {
                 return -( 
-                        allInPattern + 
+                        patternLength + 
                         pow(unsortedRatioDependingOn(clustersImportance), 
-                                onePointRatio(allInPattern, allInVariant)) );
+                                onePointRatio(patternLength, patternInVariantLength)) );
             } else {
-                double ratio = ratio(allInPattern, allInVariant);
-                return unsorted * onePointRatio(unsorted, allInPattern) *
+                double ratio = ratio(patternLength, patternInVariantLength);
+                return unsorted * onePointRatio(unsorted, patternLength) *
                         pow(unsortedRatioDependingOn(clustersImportance), 1.55 + ratio ) * 
                         (1.0 + ratio);
             } 
         } else {
             if ( unsorted == 0 ) {
-                return -pow(allInPattern, onePointRatio(allInPattern, allInVariant));
+                return -pow(patternLength, onePointRatio(patternLength, patternInVariantLength));
             } else {
-                double ratio = ratio(allInPattern, allInVariant);
+                double ratio = ratio(patternLength, patternInVariantLength);
                 return unsorted * 
                         pow(unsortedRatioDependingOn(clustersImportance), 1.55 + ratio ) * 
                         (1.5 + ratio);

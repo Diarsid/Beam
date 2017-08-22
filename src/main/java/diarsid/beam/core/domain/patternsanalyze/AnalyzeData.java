@@ -6,7 +6,9 @@
 package diarsid.beam.core.domain.patternsanalyze;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
@@ -30,6 +32,7 @@ import static diarsid.beam.core.domain.patternsanalyze.AnalyzeUtil.missedTooMuch
 class AnalyzeData {
     
     final Map<Character, Integer> reusableVisitedChars = new HashMap<>();    
+    final Set<Character> skippedChars = new HashSet<>();
     final AnalyzePositionsData forward = new AnalyzePositionsData(this, FORWARD);
     final AnalyzePositionsData reverse = new AnalyzePositionsData(this, REVERSE);
     
@@ -79,8 +82,8 @@ class AnalyzeData {
     }
     
     AnalyzePositionsData bestPositions() {
-        return this.forward.clustersImportance + this.forward.positionsWeight 
-                > this.reverse.clustersImportance + this.reverse.positionsWeight ? 
+        return this.forward.clustersImportance + ( this.forward.positionsWeight * -1.0d ) - this.forward.unsorted
+                > this.reverse.clustersImportance + ( this.reverse.positionsWeight * -1.0d ) - this.reverse.unsorted ? 
                 this.forward : this.reverse;
     }
 

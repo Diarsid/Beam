@@ -118,4 +118,12 @@ public class CollectionsUtils {
             }
         } 
     } 
+    
+    public static int first(int[] ints) {
+        return ints[0];
+    }
+    
+    public static int last(int[] ints) {
+        return ints[ints.length - 1];
+    }
 }

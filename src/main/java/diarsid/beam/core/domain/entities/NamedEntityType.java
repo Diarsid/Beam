@@ -69,4 +69,8 @@ public enum NamedEntityType {
     public boolean isDefined() {
         return ! this.equals(UNDEFINED_ENTITY);
     }
+    
+    public boolean isNotDefined() {
+        return this.equals(UNDEFINED_ENTITY);
+    }
 }

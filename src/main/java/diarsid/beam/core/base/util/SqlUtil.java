@@ -52,12 +52,24 @@ public class SqlUtil {
         return "%" + lower(part);
     }
     
+    public static String wildcardSpaceBefore(String lowerPart) {
+        return "% " + lowerPart;
+    }
+    
     public static String lowerWildcardAfter(String part) {
         return lower(part) + "%";
     }
     
+    public static String wildcardSpaceAfter(String lowerPart) {
+        return lowerPart + " %";
+    }
+    
     public static String lowerWildcard(String part) {
         return "%" + lower(part) + "%";
+    }
+    
+    public static String spacingWildcards(String lowerPart) {
+        return "% " + lowerPart + " %";
     }
     
     public static List<String> lowerWildcardLists(List<String>... parts) {
@@ -328,12 +340,6 @@ public class SqlUtil {
             criterias.set(reverseShifting, shifted);
         }
         return criterias;
-    }
-    
-    public static void main(String[] args) {
-//        List<String> list = asList("1", "_", "2", "_");
-//        System.out.println(shift(list).stream().collect(joining(", ")));
-        System.out.println(patternToCharCriterias("b__k"));
     }
     
     public static List<String> patternToCharCriterias(String pattern) {

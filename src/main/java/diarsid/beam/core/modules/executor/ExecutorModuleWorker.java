@@ -888,36 +888,17 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }
     }
-
-//    // TODO remove this method
-//    private void proceedDefaultExecution(Initiator initiator, ExecutorDefaultCommand command) {
-//        debug("[EXECUTOR] [executeDefault] [proceed] find any named entity" );
-//        VoidOperation operation = this.findAndInvokeAnyNamedEntity(initiator, command);
-//        switch ( operation.result() ) {
-//            case COMPLETE :
-//            case STOP : {
-//                return;
-//            }
-//            case FAIL : {
-//                debug("[EXECUTOR] [executeDefault] entity not found by: " + command.argument());
-//                return;
-//            }
-//            default : {
-//                this.ioEngine.report(initiator, "unknown ValueOperation result.");    
-//            }
-//        }       
-//    }
  
     private void findAndInvokeAnyNamedEntity(
             Initiator initiator, ExecutorDefaultCommand command) {
         debug("[EXECUTOR] [executeDefault] [find and invoke any entity by] : " + command.argument());
-        ValueOperation<? extends NamedEntity> valueFlow = 
+        ValueOperation<? extends NamedEntity> entityFlow = 
                 this.findNamedEntityByArgument(initiator, command.argument());
-        switch ( valueFlow.result() ) {
+        switch ( entityFlow.result() ) {
             case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
+                if ( entityFlow.asComplete().hasValue() ) {
                     VoidOperation invokeFlow = this.invokeFoundEntity(
-                            initiator, valueFlow.asComplete().getOrThrow(), command);
+                            initiator, entityFlow.asComplete().getOrThrow(), command);
                     switch ( invokeFlow.result() ) {
                         case COMPLETE : 
                         case STOP : {
@@ -938,7 +919,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 return;
             } 
             case FAIL : {
-                this.ioEngine.report(initiator, valueFlow.asFail().reason());
+                this.ioEngine.report(initiator, entityFlow.asFail().reason());
                 return;
             }
             case STOP : {
@@ -983,49 +964,49 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private VoidOperation invokeFoundEntity(
             Initiator initiator, NamedEntity entity, ExecutorDefaultCommand command) {
-        if ( entity.type().isDefined() ) {
-            invocation: switch ( entity.type() ) {
-                case LOCATION : {
-                    this.ioEngine.report(initiator, "...opening " + asLocation(entity).name());
-                    asLocation(entity).openAsync(
-                            this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
-                            this.thenDoOnFail(initiator));
-                    return voidCompleted();
-                }
-                case WEBPAGE : {
-                    this.ioEngine.report(initiator, "...browsing " + asWebPage(entity).name());
-                    asWebPage(entity).browseAsync(
-                            this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
-                            this.thenDoOnFail(initiator));
-                    return voidCompleted();
-                }
-                case PROGRAM : {
-                    this.ioEngine.report(initiator, "...running " + asProgram(entity).simpleName());
-                    asProgram(entity).runAsync(
-                            this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
-                            this.thenDoOnFail(initiator));
-                    return voidCompleted();
-                }
-                case BATCH : {
-                    this.ioEngine.report(initiator, "...executing " + entity.name());
-                    this.executeBatchInternally(initiator, asBatch(entity));
-                    this.asyncSaveCommandIfNecessary(initiator, command.mergeWith(entity));
-                    return voidCompleted();
-                }
-                case UNDEFINED_ENTITY : {
-                    return voidOperationFail(
-                            format("...type of '%s' is not defined.", entity.name()));
-                }
-                default : {
-                    return voidOperationFail(
-                            format("...cannot do anything with %s '%s'", 
-                                    entity.type().displayName(), 
-                                    entity.name()));
-                }
-            }
-        } else {
+        if ( entity.type().isNotDefined() ) {
             debug("[EXECUTOR] [executeDefault] [find any entity by] not found any : " + command.argument());
             return voidOperationFail(format("...type of '%s' is not defined.", entity.name()));
+        }        
+        
+        invocation: switch ( entity.type() ) {
+            case LOCATION : {
+                this.ioEngine.report(initiator, "...opening " + asLocation(entity).name());
+                asLocation(entity).openAsync(
+                        this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
+                        this.thenDoOnFail(initiator));
+                return voidCompleted();
+            }
+            case WEBPAGE : {
+                this.ioEngine.report(initiator, "...browsing " + asWebPage(entity).name());
+                asWebPage(entity).browseAsync(
+                        this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
+                        this.thenDoOnFail(initiator));
+                return voidCompleted();
+            }
+            case PROGRAM : {
+                this.ioEngine.report(initiator, "...running " + asProgram(entity).simpleName());
+                asProgram(entity).runAsync(
+                        this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
+                        this.thenDoOnFail(initiator));
+                return voidCompleted();
+            }
+            case BATCH : {
+                this.ioEngine.report(initiator, "...executing " + entity.name());
+                this.executeBatchInternally(initiator, asBatch(entity));
+                this.asyncSaveCommandIfNecessary(initiator, command.mergeWith(entity));
+                return voidCompleted();
+            }
+            case UNDEFINED_ENTITY : {
+                return voidOperationFail(
+                        format("...type of '%s' is not defined.", entity.name()));
+            }
+            default : {
+                return voidOperationFail(
+                        format("...cannot do anything with %s '%s'", 
+                                entity.type().displayName(), 
+                                entity.name()));
+            }
         }
     }
 

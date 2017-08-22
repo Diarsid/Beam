@@ -39,6 +39,9 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
+import static diarsid.beam.core.base.util.SqlUtil.spacingWildcards;
+import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceAfter;
+import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceBefore;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
@@ -54,7 +57,7 @@ class H2DaoNamedEntities
         implements DaoNamedEntities {
     
     private final ProgramsCatalog programsCatalog;
-    private final PerRowConversion<NamedEntity> rowToNamedEntity;
+    private final PerRowConversion<NamedEntity> rowToNamedEntityMask;
     private final NamedEntityComparator namedEntityComparator;
     
     H2DaoNamedEntities(
@@ -63,7 +66,7 @@ class H2DaoNamedEntities
             ProgramsCatalog programsCatalog) {
         super(dataBase, ioEngine);
         this.programsCatalog = programsCatalog;
-        this.rowToNamedEntity = (row) -> {
+        this.rowToNamedEntityMask = (row) -> {
             return new NamedEntityMask(row);
         };
         this.namedEntityComparator = new NamedEntityComparator();
@@ -86,29 +89,28 @@ class H2DaoNamedEntities
                         lower(name));
             }        
             case WEBPAGE : {
-                String lowerName = lower(name);
                 return transact.doQueryAndConvertFirstRowVarargParams(
                         WebPage.class,
                         "SELECT name, shortcuts, url, ordering, dir_id " +
                         "FROM web_pages " +
-                        "WHERE ( LOWER(name) IS ? ) OR ( LOWER(shortcuts) IS ? ) ",
+                        "WHERE ( LOWER(name) IS ? )", 
                         (row) -> {
                             return Optional.of(ROW_TO_PAGE.convert(row));
                         },
-                        lowerName, lowerName);
+                        lower(name));
             }        
             case PROGRAM : {
                 debug("[ALL ENTITIES DAO] [find real program] " + name);
                 return this.programsCatalog.findProgramByDirectName(name);
             }        
             case BATCH : {
-                
+                String lowerName = lower(name);
                 boolean batchExists = transact
                         .doesQueryHaveResultsVarargParams(
                                 "SELECT bat_name " +
                                 "FROM batches " + 
                                 "WHERE LOWER(bat_name) IS ? ",
-                                lower(name));
+                                lowerName);
 
                 List<ExecutorCommand> commands = transact
                         .ifTrue( batchExists )
@@ -120,10 +122,10 @@ class H2DaoNamedEntities
                                 "WHERE LOWER(bat_name) IS ? " +
                                 "ORDER BY bat_command_order" ,
                                 ROW_TO_COMMAND,
-                                lower(name))
+                                lowerName)
                         .collect(toList());
 
-                if ( nonEmpty(commands) ) {
+                if ( batchExists && nonEmpty(commands) ) {
                     return Optional.of(new Batch(name, commands));
                 } else {
                     return Optional.empty();
@@ -151,28 +153,38 @@ class H2DaoNamedEntities
     public Optional<? extends NamedEntity> getByExactName(
             Initiator initiator, String exactName) {
         try (JdbcTransaction transact = super.openTransaction()) {
+            
+            transact.logHistoryAfterCommit();
+            
             String lowerExactName = lower(exactName);
             List<NamedEntity> maskedEntities = transact
                     .doQueryAndStreamVarargParams(
                             NamedEntity.class,
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
-                            "WHERE LOWER(loc_name) IS ? " +
+                            "WHERE ( LOWER(loc_name) IS ? ) " +
                             "       UNION ALL " +
                             "SELECT bat_name, 'batch' " +
                             "FROM batches " +
-                            "WHERE LOWER(bat_name) IS ? " +
+                            "WHERE ( LOWER(bat_name) IS ? ) " +
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE ( LOWER(name) IS ? ) OR ( LOWER(shortcuts) IS ? ) ",
+                            "WHERE ( LOWER(name) IS ? ) " +
+                            "       OR ( LOWER(shortcuts) IS ? ) " +
+                            "       OR ( LOWER(shortcuts) LIKE ? ) " +
+                            "       OR ( LOWER(shortcuts) LIKE ? ) " +
+                            "       OR ( LOWER(shortcuts) LIKE ? ) ", 
                             (row) -> {
                                 return new NamedEntityMask(row);
                             },
                             lowerExactName, 
                             lowerExactName, 
                             lowerExactName,
-                            lowerExactName)
+                            lowerExactName,
+                            wildcardSpaceAfter(exactName),
+                            wildcardSpaceBefore(exactName),
+                            spacingWildcards(exactName))
                     .collect(toList());
             
             maskedEntities.addAll(this.programsCatalog.findProgramsByStrictName(exactName));
@@ -201,6 +213,8 @@ class H2DaoNamedEntities
             Initiator initiator, String namePattern) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
+            transact.logHistoryAfterCommit();
+            
             String lowerNamePattern = lowerWildcard(namePattern);
             List<NamedEntity> entityMasks;
             entityMasks = transact
@@ -216,8 +230,8 @@ class H2DaoNamedEntities
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(name) LIKE ? )",
-                            this.rowToNamedEntity,
+                            "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? )", 
+                            this.rowToNamedEntityMask,
                             lowerNamePattern, 
                             lowerNamePattern, 
                             lowerNamePattern,
@@ -244,8 +258,12 @@ class H2DaoNamedEntities
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE " + multipleLowerLikeAnd("name", criterias.size()),
-                            this.rowToNamedEntity,
+                            "WHERE " + 
+                                    multipleLowerLikeAnd("name", criterias.size()) + 
+                                    " OR " + 
+                                    multipleLowerLikeAnd("shortcuts", criterias.size()),
+                            this.rowToNamedEntityMask,
+                            criterias, 
                             criterias, 
                             criterias, 
                             criterias)
@@ -263,8 +281,10 @@ class H2DaoNamedEntities
                     multipleLowerGroupedLikesOr("loc_name", criterias.size());
             String andOrConditionBatces = 
                     multipleLowerGroupedLikesOr("bat_name", criterias.size());
-            String andOrConditionPages = 
+            String andOrConditionPagesName = 
                     multipleLowerGroupedLikesOr("name", criterias.size());
+            String andOrConditionPagesShortcuts = 
+                    multipleLowerGroupedLikesOr("shortcuts", criterias.size());
             List<NamedEntity> shiftedMaskedEntities;
             
             entityMasks = transact
@@ -280,8 +300,12 @@ class H2DaoNamedEntities
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE " + andOrConditionPages,
-                            this.rowToNamedEntity,
+                            "WHERE " + 
+                                    andOrConditionPagesName + 
+                                    " OR " + 
+                                    andOrConditionPagesShortcuts,
+                            this.rowToNamedEntityMask,
+                            criterias, 
                             criterias, 
                             criterias, 
                             criterias)
@@ -302,8 +326,12 @@ class H2DaoNamedEntities
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
-                            "WHERE " + andOrConditionPages,
-                            this.rowToNamedEntity,
+                            "WHERE " + 
+                                    andOrConditionPagesName + 
+                                    " OR " + 
+                                    andOrConditionPagesShortcuts,
+                            this.rowToNamedEntityMask,
+                            criterias, 
                             criterias, 
                             criterias, 
                             criterias)

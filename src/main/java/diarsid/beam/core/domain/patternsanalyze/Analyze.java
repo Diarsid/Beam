@@ -71,6 +71,18 @@ public class Analyze {
                 "epicfantasy crossbooking");
     }
     
+    private static List<String> facebookCase2() {
+        return asList(                
+                "c:/books/library/common/author/book.fb2",
+                "facebook");
+    }
+    
+    private static List<String> commonBooksCase() {
+        return asList(                
+                "Books/Common/Tolkien_J.R.R",
+                "Books/Common");
+    }
+    
     private static List<String> researchCase() {
         return asList(                
                 "dev/3__tools",
@@ -135,9 +147,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = javaSpecCase();
+        List<String> variantsStrings = toolsCase();
         
-        String pattern = "jspec";
+        String pattern = "tols";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
@@ -148,12 +160,13 @@ public class Analyze {
                 System.out.println(variants.current().text() + " is much better than next: " + variants.current().weight());
                 printed.incrementAndGet();
             } else {
-                List<WeightedVariant> similar = variants.nextSimilarVariants();
                 System.out.println("next candidates are similar: ");                
-                similar.stream().forEach(candidate -> {
-                    System.out.println("  - " + candidate.text() + " : " + candidate.weight());
-                    printed.incrementAndGet();
-                });
+                variants.nextSimilarVariants()
+                        .stream()
+                        .forEach(candidate -> {
+                            System.out.println("  - " + candidate.text() + " : " + candidate.weight());
+                            printed.incrementAndGet();
+                        });
             }
         }
         System.out.println("printed: " + printed.get());

@@ -113,6 +113,8 @@ class H2DaoWebPages
             Initiator initiator, String pattern) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
+            transact.logHistoryAfterCommit();
+            
             String lowerWildcardPattern = lowerWildcard(pattern);
             List<WebPage> pages = transact
                     .doQueryAndStreamVarargParams(
