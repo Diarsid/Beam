@@ -45,6 +45,13 @@ public class WeightedVariants implements Serializable {
         this.currentSimilarVariants = null;
     }
     
+    public void resetTraversing() {
+        this.currentVariantIndex = -1;
+        if ( nonNull(this.currentSimilarVariants) ) {
+            this.currentSimilarVariants.clear();
+        }
+    }
+    
     public boolean isEmpty() {
         return this.variants.isEmpty();
     }

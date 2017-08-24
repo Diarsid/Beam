@@ -6,17 +6,23 @@
 package diarsid.beam.core.base.patternsanalyze;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.CollectionsUtils.first;
-import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.countUsorted;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isWordsSeparator;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedImportanceDependingOn;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.unsortedImportanceDependingOn;
+import static diarsid.beam.core.base.patternsanalyze.FindPositionsStep.STEP_1;
+import static diarsid.beam.core.base.patternsanalyze.FindPositionsStep.STEP_2;
+import static diarsid.beam.core.base.patternsanalyze.FindPositionsStep.STEP_3;
+import static diarsid.beam.core.base.util.CollectionsUtils.first;
+import static diarsid.beam.core.base.util.CollectionsUtils.last;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 
 /**
  *
@@ -28,7 +34,8 @@ class AnalyzePositionsData {
         FORWARD,
         REVERSE
     }
-    static final int UNINITIALIZED = -10;
+    
+    static final int UNINITIALIZED = -9;    
     
     final AnalyzeData data;
     final AnalyzePositionsDirection direction;
@@ -54,6 +61,23 @@ class AnalyzePositionsData {
     char previousCharInVariant;
     int currentPatternCharPositionInVariant;
     int betterCurrentPatternCharPositionInVariant;
+    
+    // v.2
+    Set<Integer> filledPositions = new HashSet<>();
+    Set<Integer> unclusteredPatternCharIndexes = new HashSet<>();
+    Set<Integer> localUnclusteredPatternCharIndexes = new HashSet<>();
+    FindPositionsStep findPositionsStep;
+    boolean hasPreviousInPattern;
+    boolean hasNextInPattern;
+    boolean hasPreviousInVariant;
+    boolean hasNextInVariant;
+    boolean positionAlreadyFilled;
+    boolean addCurrentCharFoundPositionToPositions;
+    boolean continueFinding;
+    int charsInClusterQty;
+    int currentCharInVariantQty;
+    int savedCurrentPatternCharPositionInVariant;
+    // --
     
     boolean clusterContinuation;
     
@@ -83,7 +107,7 @@ class AnalyzePositionsData {
                 System.out.println(" -8.6 : current poisition is at variant end, " + this.direction);
                 this.positionsWeight = this.positionsWeight - 8.6;
             }
-            if ( this.hasNextPosition(i)) {
+            if ( this.hasNextPosition(i) ) {
                 this.setNextPosition(i);
                 if ( this.isCurrentAndNextPositionInCluster() ) {
                     if ( this.clusterContinuation ) {
@@ -118,7 +142,7 @@ class AnalyzePositionsData {
     
     void findPatternCharsPositions() {        
         if ( this.direction.equals(FORWARD) ) {
-            this.findPatternCharsPositionsInForward();
+            this.findPatternCharsPositionsInForward_2();
         } else {
             this.findPatternCharsPositionsInReverse();
         }        
@@ -139,7 +163,7 @@ class AnalyzePositionsData {
             }
             
             if ( this.currentCharIndexInReverseRange(currentPatternCharIndex) ) {
-                if ( this.nextCharInClusterWithCurrentChar(currentPatternCharIndex) ) {
+                if ( this.nextCharInVariantInClusterWithCurrentChar(currentPatternCharIndex) ) {
                     this.fillNextAndCurrentPositions(currentPatternCharIndex);
                 } else {
                     this.findReverseBetterCurrentCharPosition();
@@ -160,6 +184,125 @@ class AnalyzePositionsData {
         this.data.reusableVisitedChars.clear();
         this.data.skippedChars.clear();
     }
+    
+    private void findPatternCharsPositionsInForward_2() {
+        
+        for (int currentPatternCharIndex = 0; currentPatternCharIndex < data.patternChars.length; currentPatternCharIndex++) {
+            findPositionsStep = STEP_1;
+            processCurrentPatternCharOf(currentPatternCharIndex);
+        }            
+        unclusteredPatternCharIndexes.addAll(localUnclusteredPatternCharIndexes);
+        localUnclusteredPatternCharIndexes.clear(); 
+        // define if first step was good enough
+        
+        if ( nonEmpty(unclusteredPatternCharIndexes) ) {
+            findPositionsStep = STEP_2;
+            for (Integer currentPatternCharIndex : unclusteredPatternCharIndexes) {
+                processCurrentPatternCharOf(currentPatternCharIndex);
+            }
+        }           
+        this.unclusteredPatternCharIndexes.clear();
+        this.unclusteredPatternCharIndexes.addAll(localUnclusteredPatternCharIndexes);
+        this.localUnclusteredPatternCharIndexes.clear();
+//        if ( firstStepTooBad ) {
+//            runSecondStepOneMoreTime
+//            define if secont step was good enough ???
+//        }
+//        if ( secondStepWasTooBad ) {
+//            runSecondStepOneMoreTime
+//        }
+        
+        if ( nonEmpty(unclusteredPatternCharIndexes) ) {
+            findPositionsStep = STEP_3;
+            for (Integer currentPatternCharIndex : unclusteredPatternCharIndexes) {
+                processCurrentPatternCharOf(currentPatternCharIndex);
+            }
+        }      
+        this.unclusteredPatternCharIndexes.clear();
+        this.unclusteredPatternCharIndexes.addAll(this.localUnclusteredPatternCharIndexes);
+        this.localUnclusteredPatternCharIndexes.clear();
+        
+        this.filledPositions.clear();
+        this.unclusteredPatternCharIndexes.clear();
+        this.hasPreviousInPattern = false;
+        this.hasNextInPattern = false;
+        this.hasPreviousInVariant = false;
+        this.hasNextInVariant = false;
+        this.positionAlreadyFilled = false;
+        this.charsInClusterQty = 0;
+        this.currentChar = ' ';
+        this.findPositionsStep = STEP_1;
+    }
+    
+    private void processCurrentPatternCharOf(int currentPatternCharIndex) {
+        currentChar = data.patternChars[currentPatternCharIndex];
+
+        hasPreviousInPattern = currentPatternCharIndex > 0;
+        hasNextInPattern = currentPatternCharIndex < data.patternChars.length - 1;
+
+        currentPatternCharPositionInVariant = data.variantText.indexOf(currentChar);
+        currentCharInVariantQty = 0;
+        if ( currentPatternCharPositionInVariant >= 0 ) {
+            hasPreviousInVariant = currentPatternCharPositionInVariant > 0;
+            hasNextInVariant = currentPatternCharPositionInVariant < data.variantText.length() - 1;
+            charsInClusterQty = 0;
+            continueFinding = true;
+
+            characterFinding : while ( currentPatternCharPositionInVariant >= 0 && continueFinding ) {
+                currentCharInVariantQty++;
+                positionAlreadyFilled = filledPositions.contains(this.currentPatternCharPositionInVariant);
+                charsInClusterQty = 0;
+                
+                if ( ! positionAlreadyFilled ) {
+                    
+                    if ( hasPreviousInPattern && hasPreviousInVariant ) {
+                        if ( previousCharInVariantInClusterWithCurrentChar(currentPatternCharIndex) 
+                                || filledPositions.contains(currentPatternCharPositionInVariant - 1) ) {
+                            charsInClusterQty++;
+                        }
+                    }
+                    if ( hasNextInPattern && hasNextInVariant ) {
+                        if ( this.nextCharInVariantInClusterWithCurrentChar(currentPatternCharIndex) 
+                                || filledPositions.contains(this.currentPatternCharPositionInVariant + 1) ) {
+                            charsInClusterQty++;
+                        }
+                    }
+                    
+                    if ( findPositionsStep.canAddToPositions(charsInClusterQty) ) {
+                        addCurrentCharFoundPositionToPositions = true;
+                        System.out.println(format("Positions [%s]: '%s':%s", this.findPositionsStep, this.currentChar, this.currentPatternCharPositionInVariant));
+                        positions[currentPatternCharIndex] = currentPatternCharPositionInVariant;
+                        filledPositions.add(currentPatternCharPositionInVariant);
+                        continueFinding = false;
+                    }
+                     
+                }         
+                
+                savedCurrentPatternCharPositionInVariant = currentPatternCharPositionInVariant;
+                currentPatternCharPositionInVariant = 
+                        data.variantText
+                                .indexOf(
+                                        currentChar, 
+                                        currentPatternCharPositionInVariant + 1);
+
+            }
+            
+            if ( ! addCurrentCharFoundPositionToPositions ) {
+                if ( findPositionsStep.equals(STEP_1) && currentCharInVariantQty == 1 ) {
+                    System.out.println(format("Positions [%s]: '%s':%s", this.findPositionsStep, this.currentChar, this.savedCurrentPatternCharPositionInVariant));
+                    positions[currentPatternCharIndex] = savedCurrentPatternCharPositionInVariant;
+                    filledPositions.add(savedCurrentPatternCharPositionInVariant);
+                } else {
+                    localUnclusteredPatternCharIndexes.add(currentPatternCharIndex);
+                }                
+            }
+            
+            addCurrentCharFoundPositionToPositions = false;
+            savedCurrentPatternCharPositionInVariant = UNINITIALIZED;
+        } else {
+            positions[currentPatternCharIndex] = -1;
+        }    
+    }
 
     private void findPatternCharsPositionsInForward() {
         for (int currentPatternCharIndex = 0; currentPatternCharIndex < this.data.patternChars.length; currentPatternCharIndex++) {
@@ -176,7 +319,7 @@ class AnalyzePositionsData {
             }
             
             if ( this.currentCharIndexInForwardRange(currentPatternCharIndex) ) {
-                if ( this.previousCharInClusterWithCurrentChar(currentPatternCharIndex) ) {
+                if ( this.previousCharInVariantInClusterWithCurrentChar(currentPatternCharIndex) ) {
                     this.fillPreviousAndCurrentPositions(currentPatternCharIndex);
                 } else {
                     this.findForwardBetterCurrentCharPosition();
@@ -190,9 +333,9 @@ class AnalyzePositionsData {
                                 this.replaceCurrentPositionWithBetterPosition();
                             }
                         }
-                    } 
-                }                                              
-            }
+                    }
+                } 
+            }                                              
             this.saveCurrentCharFinalPosition(currentPatternCharIndex);
         }
         this.data.reusableVisitedChars.clear();
@@ -316,12 +459,12 @@ class AnalyzePositionsData {
 
     void findForwardBetterCurrentCharPositionFromPreviousCharPosition(int currentCharIndex) {
         this.betterCurrentPatternCharPositionInVariant = this.data.variantText.indexOf(
-                this.currentChar, this.positions[currentCharIndex - 1] + 1);
+                this.currentChar, this.betterCurrentPatternCharPositionInVariant + 1);
     }
     
     void findReverseBetterCurrentCharPositionFromPreviousCharPosition(int currentCharIndex) {
         this.betterCurrentPatternCharPositionInVariant = this.data.variantText.lastIndexOf(
-                this.currentChar, this.positions[currentCharIndex - 1] - 1);
+                this.currentChar, this.betterCurrentPatternCharPositionInVariant - 1);
     }
 
     boolean isForwardBetterCharPositionFoundAndInCluster(int currentCharIndex) {
@@ -340,7 +483,7 @@ class AnalyzePositionsData {
         this.data.skippedChars.add(this.currentChar);
     }
     
-    boolean previousCharInClusterWithCurrentChar(int currentPatternCharIndex) {
+    boolean previousCharInVariantInClusterWithCurrentChar(int currentPatternCharIndex) {
         if ( this.currentPatternCharPositionInVariant <= 0 ) {
             return false;
         }
@@ -348,12 +491,12 @@ class AnalyzePositionsData {
         this.previousCharInVariant = this.data.variantText.charAt(this.currentPatternCharPositionInVariant - 1);
         if ( this.previousCharInPattern == this.previousCharInVariant ) {
             System.out.println("previous matching found: " + this.previousCharInPattern + " while tesing: " + this.data.patternChars[currentPatternCharIndex]);
-        }
+        } 
         return ( this.previousCharInPattern == this.previousCharInVariant );
     }
     
-    boolean nextCharInClusterWithCurrentChar(int currentPatternCharIndex) {        
-        if ( this.currentPatternCharPositionInVariant <= 0 || 
+    boolean nextCharInVariantInClusterWithCurrentChar(int currentPatternCharIndex) {        
+        if ( this.currentPatternCharPositionInVariant < 0 || 
              this.currentPatternCharPositionInVariant >= this.data.variantText.length() - 1 ) {
             return false;
         }

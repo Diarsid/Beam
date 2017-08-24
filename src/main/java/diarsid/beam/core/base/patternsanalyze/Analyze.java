@@ -25,13 +25,13 @@ import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isDiversitySufficient;
+import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isVariantOk;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isDiversitySufficient;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isVariantOk;
 
 /**
  *
@@ -97,24 +97,24 @@ public class Analyze {
     
     private static List<String> netBeansCase() {
         return asList(                
-                "Projects/Diarsid/NetBeans",
+//                "Projects/Diarsid/NetBeans",
+//                "Dev/NetBeans_8.2.lnk",
                 "Projects/Diarsid/NetBeans/Beam",
-                "Projects/Diarsid/NetBeans/Research.Java",
-                "Dev/NetBeans_8.2.lnk");
+                "Projects/Diarsid/NetBeans/Research.Java");
     }
     
     private static List<String> beamProjectCase() {
         return asList(
-                "beam_project_home",
-                "beam_project",
-                "beam_home",
-                "awesome java libs",
-                "git>beam",
-                "beam_project/src",
-                "beam netpro",
-                "abe_netpro",
-                "babel_pro",
-                "netbeans_projects", 
+//                "beam_project_home",
+//                "beam_project",
+//                "beam_home",
+//                "awesome java libs",
+//                "git>beam",
+//                "beam_project/src",
+//                "beam netpro",
+//                "abe_netpro",
+//                "babel_pro",
+//                "netbeans_projects", 
                 "beam_server_project"
         );
     }
@@ -147,9 +147,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = toolsCase();
+        List<String> variantsStrings = netBeansCase();
         
-        String pattern = "tols";
+        String pattern = "nebaens";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
