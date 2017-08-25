@@ -57,7 +57,8 @@ class TasksWatcherModuleWorker implements TasksWatcherModule {
                 .withCallback(event -> {
                     debug("async tasks refreshing...");
                     this.executionScheduler.refresh();
-                }).done();
+                })
+                .done();
     }
     
 }

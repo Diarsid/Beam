@@ -6,15 +6,14 @@
 
 package diarsid.beam.core.base.events;
 
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEventPayload;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import diarsid.beam.core.base.control.io.base.interaction.Callback;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEventPayload;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 
@@ -27,11 +26,37 @@ public class BeamEventRuntime {
     private static final Map<String, Set<CallbackEvent>> EMPTY_CALLBACKS;
     private static final Map<String, Set<CallbackEventPayload>> PAYLOAD_CALLBACKS;
     private static final Object CALLBACKS_SYNC_MONITOR;
+    private static final ThenFireAsyncConditionally WHEN_FALSE;
+    private static final ThenFireAsyncConditionally WHEN_TRUE;
     
     static {
         EMPTY_CALLBACKS = new HashMap<>();
         PAYLOAD_CALLBACKS = new HashMap<>();
         CALLBACKS_SYNC_MONITOR = new Object();
+        WHEN_FALSE = new ThenFireAsyncConditionally() {
+            
+            @Override
+            public void thenFireAsync(String eventType) {
+                // do nothing.
+            }
+
+            @Override
+            public void thenFireAsync(String eventType, Object payload) {
+                // do nothing.
+            }
+        };
+        WHEN_TRUE = new ThenFireAsyncConditionally() {
+            
+            @Override
+            public void thenFireAsync(String eventType) {
+                fireAsync(eventType);
+            }
+
+            @Override
+            public void thenFireAsync(String eventType, Object payload) {
+                fireAsync(eventType, payload);
+            }
+        };
     }
     
     private BeamEventRuntime() {
@@ -97,4 +122,12 @@ public class BeamEventRuntime {
                     });
         });
     }
+    
+    public static ThenFireAsyncConditionally when(boolean condition) {
+        if ( condition ) {
+            return WHEN_TRUE;
+        } else {
+            return WHEN_FALSE;
+        }
+    } 
 }

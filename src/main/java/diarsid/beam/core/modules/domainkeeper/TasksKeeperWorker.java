@@ -47,6 +47,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
+import static diarsid.beam.core.base.events.BeamEventRuntime.when;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -60,6 +61,9 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
+import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
+import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
+import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -104,7 +108,7 @@ public class TasksKeeperWorker implements TasksKeeper {
     public boolean updateTasks(
             Initiator initiator, List<Task> tasks) {
         boolean updated = this.dao.updateTasks(initiator, tasks);
-        fireAsync("tasks_updated");
+        when(updated).thenFireAsync("tasks_updated");
         return updated;
     }
 
