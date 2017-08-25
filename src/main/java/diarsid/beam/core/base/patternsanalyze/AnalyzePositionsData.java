@@ -243,12 +243,14 @@ class AnalyzePositionsData {
         currentPatternCharPositionInVariant = data.variantText.indexOf(currentChar);
         currentCharInVariantQty = 0;
         if ( currentPatternCharPositionInVariant >= 0 ) {
-            hasPreviousInVariant = currentPatternCharPositionInVariant > 0;
-            hasNextInVariant = currentPatternCharPositionInVariant < data.variantText.length() - 1;
             charsInClusterQty = 0;
             continueFinding = true;
 
             characterFinding : while ( currentPatternCharPositionInVariant >= 0 && continueFinding ) {
+                
+                hasPreviousInVariant = currentPatternCharPositionInVariant > 0;
+                hasNextInVariant = currentPatternCharPositionInVariant < data.variantText.length() - 1;
+            
                 currentCharInVariantQty++;
                 positionAlreadyFilled = filledPositions.contains(this.currentPatternCharPositionInVariant);
                 charsInClusterQty = 0;
@@ -262,9 +264,31 @@ class AnalyzePositionsData {
                         }
                     }
                     if ( hasNextInPattern && hasNextInVariant ) {
-                        if ( this.nextCharInVariantInClusterWithCurrentChar(currentPatternCharIndex) 
-                                || filledPositions.contains(this.currentPatternCharPositionInVariant + 1) ) {
+                        if ( nextCharInVariantInClusterWithCurrentChar(currentPatternCharIndex) 
+                                || filledPositions.contains(currentPatternCharPositionInVariant + 1) ) {
                             charsInClusterQty++;
+                        }
+                    }
+                    if ( findPositionsStep.typoSearchingAllowed() ) {
+                        if ( hasPreviousInPattern && hasNextInVariant ) {
+                            
+                            previousCharInPattern = data.patternChars[currentPatternCharIndex - 1];
+                            nextCharInVariant = data.variantText.charAt(currentPatternCharPositionInVariant + 1);
+                            
+                            if ( previousCharInPattern == nextCharInVariant ) {
+                                System.out.println(format("Positions [%s]: '%s':%s <- typo found", this.findPositionsStep, this.currentChar, this.currentPatternCharPositionInVariant));
+                                charsInClusterQty++;
+                            }
+                        }
+                        if ( hasPreviousInVariant && hasNextInPattern ) {
+                            
+                            previousCharInVariant = data.variantText.charAt(currentPatternCharPositionInVariant - 1);
+                            nextCharInPattern = data.patternChars[currentPatternCharIndex + 1];
+                            
+                            if ( previousCharInVariant == nextCharInPattern ) {
+                                System.out.println(format("Positions [%s]: '%s':%s <- typo found", this.findPositionsStep, this.currentChar, this.currentPatternCharPositionInVariant));
+                                charsInClusterQty++;
+                            }
                         }
                     }
                     

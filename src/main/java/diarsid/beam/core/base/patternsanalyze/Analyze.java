@@ -86,7 +86,14 @@ public class Analyze {
     private static List<String> researchCase() {
         return asList(                
                 "dev/3__tools",
-                "tech/langs/java/specifications");
+                "tech/langs/java/specifications");        
+    }
+    
+    private static List<String> ukrPostApiCase() {
+        return asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
     }
     
     private static List<String> javaSpecCase() {
@@ -147,9 +154,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = netBeansCase();
+        List<String> variantsStrings = ukrPostApiCase();
         
-        String pattern = "nebaens";
+        String pattern = "urkposth";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
