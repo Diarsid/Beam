@@ -5,10 +5,7 @@
  */
 package diarsid.beam.core.base.patternsanalyze;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
@@ -16,14 +13,14 @@ import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.UNINITIALIZED;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isVariantTextLengthTooBad;
 import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedTooMuch;
+import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
  *
@@ -31,8 +28,8 @@ import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedTooMuch;
  */
 class AnalyzeData {
     
-    final Map<Character, Integer> reusableVisitedChars = new HashMap<>();    
-    final Set<Character> skippedChars = new HashSet<>();
+//    final Map<Character, Integer> reusableVisitedChars = new HashMap<>();    
+//    final Set<Character> skippedChars = new HashSet<>();
     final AnalyzePositionsData forward = new AnalyzePositionsData(this, FORWARD);
     final AnalyzePositionsData reverse = new AnalyzePositionsData(this, REVERSE);
     

@@ -98,7 +98,7 @@ public class Analyze {
     
     private static List<String> javaSpecCase() {
         return asList(                
-                "Projects/UkrPoshta/UkrPostAPI",
+//                "Projects/UkrPoshta/UkrPostAPI",
                 "Tech/langs/Java/Specifications");
     }
     
@@ -156,7 +156,7 @@ public class Analyze {
     private static void weightAnalyzeCases() {
         List<String> variantsStrings = ukrPostApiCase();
         
-        String pattern = "urkposth";
+        String pattern = "pohstaip";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());
