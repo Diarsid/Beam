@@ -21,11 +21,11 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedC
  *
  * @author Diarsid
  */
-public class PluginPrefixesRecognizer extends NodeRecognizer {
+public class PluginsRecognizer extends NodeRecognizer {
     
     private final Set<Plugin> plugins;
     
-    PluginPrefixesRecognizer() {
+    PluginsRecognizer() {
         this.plugins = new HashSet<>();
     }
     

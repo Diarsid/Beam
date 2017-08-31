@@ -265,6 +265,13 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .findAll(initiator, (ArgumentsCommand) command);
                     break;
                 }
+                case GET_WEBPANEL : 
+                case GET_BOOKMARKS : {
+                    this.domainModuleAdapter
+                            .webPagesAdapter()
+                            .showWebPlace(initiator, (EmptyCommand) command);
+                    break;
+                }
                 case EXIT : {
                     this.ioModule.unregisterIoEngine(initiator);
                     asyncDoIndependently(() -> exitBeamCoreNow());

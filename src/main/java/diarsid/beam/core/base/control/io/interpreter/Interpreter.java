@@ -9,10 +9,12 @@ package diarsid.beam.core.base.control.io.interpreter;
 import java.util.Set;
 
 import diarsid.beam.core.base.control.io.commands.Command;
-import diarsid.beam.core.base.control.io.interpreter.recognizers.PluginPrefixesRecognizer;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.ControlWordsContext;
+import diarsid.beam.core.base.control.io.interpreter.recognizers.PluginsRecognizer;
 import diarsid.beam.core.base.control.plugins.Plugin;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
@@ -41,6 +43,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIRECTORY;
+import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
@@ -50,6 +54,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectCommand;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGH;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGHER;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGHEST;
@@ -58,20 +63,24 @@ import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.L
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.higherThan;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.lowerThan;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.argumentsFor;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.controlWord;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.controlWords;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.correctInput;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.domainWord;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.executable;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.executableWith;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.multipleArgs;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.only;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.pause;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.plugins;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.prefixes;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.relativePath;
-import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognizers.singleArg;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.argumentsFor;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.controlWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.controlWords;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.controlWordsContext;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.correctInput;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.domainWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.executable;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.executableWith;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.independentWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.independentWords;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.multipleArgs;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.only;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.pause;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.plugins;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.prefixes;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.relativePath;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.singleArg;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
 /**
@@ -94,17 +103,18 @@ import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 public class Interpreter {
     
     private final Recognizer decisionTree;
-    private final PluginPrefixesRecognizer plugins;
+    private final PluginsRecognizer plugins;
+    private final ControlWordsContext controlWordsContext;
     
     public Interpreter() {        
         this.plugins = plugins();
         this.decisionTree = this.prepareRecognizersTree();
+        this.controlWordsContext = controlWordsContext();
     }
     
     private Recognizer prepareRecognizersTree() {
         
-        return correctInput().andAny(
-                this.plugins.priority(HIGHEST),                
+        return correctInput().andAny(this.plugins.priority(HIGHEST),                
                 prefixes(
                         "/", 
                         "l/").priority(HIGH).andAny(
@@ -122,12 +132,12 @@ public class Interpreter {
                         "b/", 
                         "e/", 
                         "c/").priority(HIGH).and(domainWord().and(executable(CALL_BATCH))),
-                controlWord("exit").priority(HIGH).and(only(EXIT)),
-                controlWord("close").priority(HIGH).and(only(CLOSE_CONSOLE)),
-                controlWords(
+                controlWord(independentWord("exit")).priority(HIGH).and(only(EXIT)),
+                controlWord(independentWord("close")).priority(HIGH).and(only(CLOSE_CONSOLE)),
+                controlWords(independentWords(
                         "n", 
                         "note", 
-                        "notes").priority(HIGH).andAny(
+                        "notes")).priority(HIGH).andAny(
                                 singleArg().priority(HIGH).and(only(OPEN_NOTES)),
                                 relativePath().priority(HIGHER).and(argumentsFor(OPEN_PATH_IN_NOTES)),
                                 domainWord().and(argumentsFor(OPEN_TARGET_IN_NOTES)),
@@ -161,6 +171,10 @@ public class Interpreter {
                 controlWord("stop").priority(HIGH).andAny(
                                 domainWord().and(executableWith(RUN_PROGRAM, "stop")),
                                 relativePath().and(executableWith(RUN_PROGRAM, "stop"))),
+                controlWords(independentWords(
+                        "webpanel",
+                        "wpanel",
+                        "panel")).and(only(BROWSE_WEBPANEL)),
                 controlWord("pause").priority(HIGH).and(pause()),
                 controlWords(
                         "edit", 
@@ -261,8 +275,7 @@ public class Interpreter {
                 controlWords(
                         "?", 
                         "get", 
-                        "find").andAny(
-                                controlWord("task").and(argumentsFor(FIND_TASK)), 
+                        "find").andAny(controlWord("task").and(argumentsFor(FIND_TASK)), 
                                 controlWords(
                                         "reminder", 
                                         "rem", 
@@ -290,6 +303,14 @@ public class Interpreter {
                                         "bat", 
                                         "batch", 
                                         "exe").and(argumentsFor(FIND_BATCH)),
+                                controlWords(independentWords(
+                                        "webpanel",
+                                        "wpanel",
+                                        "panel")).and(only(GET_WEBPANEL)),
+                                controlWords(
+                                        "bookmarks", 
+                                        "bmarks", 
+                                        "marks").and(only(GET_BOOKMARKS)),
                                 domainWord().priority(LOWER).and(argumentsFor(FIND_ALL))),
                 controlWord("list").andAny(
                         domainWord().and(argumentsFor(LIST_LOCATION)), 
@@ -301,6 +322,10 @@ public class Interpreter {
     }
     
     public Command interprete(String inputString) {
+        if ( this.controlWordsContext.isDependentControlWord(inputString) ) {
+            debug("[INTERPRETER] " + inputString + " is dependent control word.");
+            return incorrectCommand();
+        }
         return this.decisionTree.assess(new Input(normalizeSpaces(inputString)));
     }
     

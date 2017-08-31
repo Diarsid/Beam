@@ -15,15 +15,19 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public enum WebPlace implements Serializable {
     
-    BOOKMARKS ("bookmarks"),
-    WEBPANEL ("webpanel"),
+    BOOKMARKS ("Bookmarks"),
+    WEBPANEL ("WebPanel"),
     UNDEFINED_PLACE ("undefined");    
     
-    private final String place;
+    private final String displayName;
     
     private WebPlace(String place) {    
-        this.place = place;
+        this.displayName = place;
     }   
+    
+    public String displayName() {
+        return this.displayName;
+    }
     
     public boolean isUndefined() {
         return this.equals(UNDEFINED_PLACE);

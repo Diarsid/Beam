@@ -16,13 +16,17 @@ import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
+import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
+import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
+import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
@@ -33,12 +37,12 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
-import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
@@ -47,6 +51,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopp
 import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
@@ -60,6 +65,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -72,6 +78,7 @@ import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
+import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlace.UNDEFINED_PLACE;
 import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
@@ -82,7 +89,8 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
+import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
 
 
 public class WebPagesKeeperWorker 
@@ -619,6 +627,45 @@ public class WebPagesKeeperWorker
     public List<WebPage> findWebPagesByPattern(
             Initiator initiator, String pattern) {
         return this.daoPages.findByPattern(initiator, pattern);
+    }
+    
+    @Override
+    public ValueOperation<Message> getWebPlace(
+            Initiator initiator, EmptyCommand command) {
+        if ( command.type().isNot(GET_WEBPANEL) && command.type().isNot(GET_BOOKMARKS) ) {
+            return valueOperationFail("wrong command type!");
+        }
+        
+        WebPlace place = this.commandTypeToPlace(command.type());
+        if ( place.isUndefined() ) {
+            return valueOperationFail("cannot define WebPlace.");
+        }
+        
+        List<WebDirectoryPages> directories = this.daoDirectories
+                .getAllDirectoriesPagesInPlace(initiator, place);
+        
+        if ( directories.isEmpty() ) {
+            return valueCompletedWith(new TextMessage(place.displayName() + " is empty."));
+        }
+        
+        Message message = linesToMessage(directories
+                .stream()
+                .sorted()
+                .flatMap(directory -> directory.toMessage().toText().stream())                
+                .collect(toList()));
+        message.addHeader(place.displayName());
+        
+        return valueCompletedWith(message);
+    }
+    
+    private WebPlace commandTypeToPlace(CommandType type) {
+        if ( type.is(GET_WEBPANEL) ) {
+            return WEBPANEL;
+        }
+        if ( type.is(GET_BOOKMARKS) ) {
+            return BOOKMARKS;
+        }
+        return UNDEFINED_PLACE;
     }
 
     @Override

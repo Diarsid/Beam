@@ -9,14 +9,15 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.function.Function;
 
 import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 
 /**
  *
@@ -52,5 +53,13 @@ class CliAdapterForWebPagesKeeper extends AbstractCliAdapter {
     void deleteWebPageAndReport(Initiator initiator, ArgumentsCommand command) {
         VoidOperation flow = this.pagesKeeper.removeWebPage(initiator, command);
         super.reportVoidOperationFlow(initiator, flow, "removed.");
+    }
+    
+    void showWebPlace(Initiator initiator, EmptyCommand command) {
+        ValueOperation<Message> flow = this.pagesKeeper.getWebPlace(initiator, command);
+        Function<ValueOperationComplete, Message> onSuccess = (success) -> {
+            return (Message) success.getOrThrow();
+        }; 
+        super.reportValueOperationFlow(initiator, flow, onSuccess, "Panel not available.");
     }
 }

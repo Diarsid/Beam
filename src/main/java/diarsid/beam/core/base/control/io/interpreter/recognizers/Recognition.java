@@ -11,9 +11,31 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
  *
  * @author Diarsid
  */
-public class Recognizers {
+public class Recognition {
     
-    private Recognizers() {        
+    private static final ControlWordsContext CONTEXT;
+    
+    static {
+        CONTEXT = new ControlWordsContext();
+    }
+    
+    private Recognition() {        
+    }
+    
+    public static ControlWordsContext controlWordsContext() {
+        return CONTEXT;
+    }
+    
+    public static String independentWord(String word) {
+        CONTEXT.add(word);
+        CONTEXT.addToIndependent(word);
+        return word;
+    }
+    
+    public static String[] independentWords(String... words) {
+        CONTEXT.add(words);
+        CONTEXT.addToIndependent(words);
+        return words;
     }
     
     public static InputCorrectnessRecognizer correctInput() {
@@ -40,8 +62,8 @@ public class Recognizers {
         return new PrefixesRecognizer(controlPrefixes);
     }
     
-    public static PluginPrefixesRecognizer plugins() {
-        return new PluginPrefixesRecognizer();
+    public static PluginsRecognizer plugins() {
+        return new PluginsRecognizer();
     }
     
     public static RelativePathRecognizer relativePath() {
@@ -52,11 +74,13 @@ public class Recognizers {
         return new DomainWordRecognizer();
     }
     
-    public static WordRecognizer controlWord(String controlWord) {
+    public static WordRecognizer controlWord(String controlWord) {        
+        CONTEXT.add(controlWord);
         return new WordRecognizer(controlWord);
     }
     
     public static WordsRecognizer controlWords(String... controlWords) {
+        CONTEXT.add(controlWords);
         return new WordsRecognizer(controlWords);
     }
     
