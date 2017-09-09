@@ -32,6 +32,9 @@ public interface WebPagesKeeper extends NamedEntitiesKeeper {
     VoidOperation removeWebPage(
             Initiator initiator, ArgumentsCommand command);
     
+    VoidOperation captureImage(
+            Initiator initiator, ArgumentsCommand command);
+    
     ValueOperation<WebPage> findWebPageByPattern(
             Initiator initiator, ArgumentsCommand command);
     
@@ -57,6 +60,9 @@ public interface WebPagesKeeper extends NamedEntitiesKeeper {
     
     WebResponse getWebPagesInDirectory(
             WebPlace place, String directoryName);
+    
+    WebResponse getWebPageImage(
+            WebPlace place, String directoryName, String pageName);
     
     WebResponse deleteWebPage(
             WebPlace place, String directoryName, String pageName);

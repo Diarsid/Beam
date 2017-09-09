@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static java.lang.String.join;
 
@@ -63,6 +64,20 @@ public class Configuration {
         } else {
             throw new IllegalArgumentException(
                     format("There isn't configured '%s' option.", option));
+        }
+    }
+    
+    public boolean asBoolean(String option) {
+        if ( this.has(option) ) {
+            Object config = this.options.get(option);
+            if ( config instanceof String ) {
+                return parseBoolean((String) config);
+            } else {
+                throw new IllegalArgumentException(
+                        format("'%s' option is not String.", option));
+            }
+        } else {
+            return false;
         }
     }
     

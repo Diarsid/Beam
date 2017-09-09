@@ -83,10 +83,10 @@ public class Analyze {
                 "Books/Common");
     }
     
-    private static List<String> researchCase() {
+    private static List<String> tmmCase() {
         return asList(                
-                "dev/3__tools",
-                "tech/langs/java/specifications");        
+                "Domain/ТММ/Functional_Design/Connote_entity_simplified_structure.txt"
+        );        
     }
     
     private static List<String> ukrPostApiCase() {
@@ -154,9 +154,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = ukrPostApiCase();
+        List<String> variantsStrings = tmmCase();
         
-        String pattern = "pohstaip";
+        String pattern = "doma/tmm";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());

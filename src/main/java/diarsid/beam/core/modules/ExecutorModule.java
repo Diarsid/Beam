@@ -40,4 +40,6 @@ public interface ExecutorModule extends StoppableBeamModule {
     
     void executePlugin(Initiator initiator, PluginTaskCommand command);
     
+    void browseWebPanel(Initiator initiator);
+    
 }

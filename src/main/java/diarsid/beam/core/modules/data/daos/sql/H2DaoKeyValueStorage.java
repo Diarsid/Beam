@@ -17,7 +17,6 @@ import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -26,21 +25,15 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.Attribute.optionalAttribute;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_ATTRIBUTE;
 
 
 class H2DaoKeyValueStorage 
         extends BeamCommonDao
         implements DaoKeyValueStorage {
     
-    private final PerRowConversion<Attribute> rowToAttributeConversion;
-    
     H2DaoKeyValueStorage(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
-        this.rowToAttributeConversion = (row) -> {
-            return new Attribute(
-                    (String) row.get("key"),
-                    (String) row.get("value"));
-        };
     }
 
     @Override
@@ -53,7 +46,7 @@ class H2DaoKeyValueStorage
                             "FROM key_value " +
                             "WHERE LOWER(key) IS ? ",
                             (firstRow) -> {
-                                return Optional.of( (String) firstRow.get("value"));
+                                return (String) firstRow.get("value");
                             },
                             lower(key));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -156,7 +149,7 @@ class H2DaoKeyValueStorage
                             Attribute.class,
                             "SELECT key, value " +
                             "FROM key_value",
-                            this.rowToAttributeConversion)
+                            ROW_TO_ATTRIBUTE)
                     .collect(toSet());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

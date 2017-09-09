@@ -66,7 +66,11 @@ class WebRequestImpl implements WebRequest {
     @Override
     public void send(WebResponse webResponse) throws IOException {
         if ( webResponse.hasBody() ) {
-            this.sendStatusWithJson(webResponse.status(), webResponse.body());
+            if ( webResponse.isBodyJson() ) {
+                this.sendStatusWithJson(webResponse.status(), webResponse.jsonBody());
+            } else {
+                this.sendStatusWithBytes(webResponse.status(), webResponse.binaryBody());
+            }    
         } else {
             this.sendStatus(webResponse.status());
         }
@@ -84,6 +88,17 @@ class WebRequestImpl implements WebRequest {
         this.servletResponse.setContentLength(json.length());
         this.servletResponse.getWriter().write(json);
         this.servletResponse.getWriter().close();
+    }
+    
+    private void sendStatusWithBytes(int status, byte[] bytes) throws IOException {
+        this.servletResponse.setStatus(status);
+//        this.servletResponse.setContentType("application/json");
+        this.servletResponse.setCharacterEncoding("UTF-8");
+        this.servletResponse.setContentLength(bytes.length);
+        // TODO MIDDLE
+        this.servletResponse.getOutputStream().write(bytes);
+        this.servletResponse.getOutputStream().flush();
+        this.servletResponse.getOutputStream().close();
     }
     
     private void parseParams() throws ResourceUrlParsingException {

@@ -22,10 +22,10 @@ import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static diarsid.beam.core.Beam.systemInitiator;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
-import static diarsid.beam.core.Beam.systemInitiator;
 
 
 /**
@@ -49,10 +49,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         this.loadDriver();
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
         Configuration config = this.applicationComponentsHolderModule.configuration();
-        String dataBaseUrl = "jdbc:h2:" + config.asString("data.store") + "/BeamData";
-        String user = config.asString("data.user");
-        String pass = config.asString("data.pass");
-        DataBase dataBase = new H2DataBase(dataBaseUrl, user, pass);
+        DataBase dataBase = new H2DataBase(config);
         
         DataBaseModel model = new H2DataBaseModel();
         DataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);

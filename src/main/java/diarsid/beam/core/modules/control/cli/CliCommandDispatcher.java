@@ -281,12 +281,24 @@ class CliCommandDispatcher implements CommandDispatcher {
                     this.ioModule.unregisterIoEngine(initiator);
                     break;
                 }
+                case BROWSE_WEBPANEL : {
+                    this.executorModule.browseWebPanel(initiator);
+                    break;
+                }
+                case CAPTURE_PAGE_IMAGE : {
+                    this.domainModuleAdapter
+                            .webPagesAdapter()
+                            .captureWebPageImage(initiator, (ArgumentsCommand) command);
+                    break;
+                }
                 case INCORRECT : 
                 case UNDEFINED : {
                     break;
                 }
                 default : {
-                    this.ioModule.getInnerIoEngine().report(initiator, "unknown command type.");
+                    this.ioModule
+                            .getInnerIoEngine()
+                            .report(initiator, "undispatchable command type.");
                 }
             }
         } catch (ClassCastException cce) {

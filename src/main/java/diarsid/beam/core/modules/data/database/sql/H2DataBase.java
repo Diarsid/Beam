@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.data.database.sql;
 
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;
 import diarsid.jdbc.transactions.core.JdbcPreparedStatementSetter;
@@ -17,12 +18,16 @@ public class H2DataBase implements DataBase {
     
     private final JdbcTransactionFactory transactionFactory;
     
-    public H2DataBase(String dataBaseUrl, String user, String pass) {
-        JdbcConnectionsSource source = new H2JdbcConnectionsSource(dataBaseUrl, user, pass);
+    public H2DataBase(Configuration configuration) {
+        JdbcConnectionsSource source = new H2JdbcConnectionsSource(
+                "jdbc:h2:" + configuration.asString("data.store") + "/BeamData", 
+                configuration.asString("data.user"), 
+                configuration.asString("data.pass"));
         JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(1);
         JdbcPreparedStatementSetter paramsSetter = new JdbcPreparedStatementSetter();
         this.transactionFactory = new JdbcTransactionFactory(
                 source, transactionGuard, paramsSetter);
+        this.transactionFactory.logHistory(configuration.asBoolean("data.log"));
     }
 
     @Override

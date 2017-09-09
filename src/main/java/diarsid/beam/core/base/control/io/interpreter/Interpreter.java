@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.plugins.Plugin;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CAPTURE_PAGE_IMAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CLOSE_CONSOLE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
@@ -224,6 +225,13 @@ public class Interpreter {
                                         "webpage", 
                                         "webp", 
                                         "web").andAny(
+                                                controlWords(
+                                                        "image", 
+                                                        "img", 
+                                                        "picture", 
+                                                        "pic", 
+                                                        "icon", 
+                                                        "ico").and(argumentsFor(CAPTURE_PAGE_IMAGE)),
                                                 controlWords(
                                                         "dir", 
                                                         "direct", 

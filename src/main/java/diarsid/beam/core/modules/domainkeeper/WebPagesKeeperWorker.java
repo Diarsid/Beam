@@ -27,6 +27,7 @@ import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.domain.entities.Image;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
@@ -37,6 +38,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
+import diarsid.beam.core.modules.data.DaoImages;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
@@ -58,19 +60,25 @@ import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.bad
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.notFoundWithJson;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.ok;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.okWithJson;
+import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.optionalOkWithBinary;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.CAPTURE_PAGE_IMAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
 import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -89,8 +97,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
-import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
 
 
 public class WebPagesKeeperWorker 
@@ -102,6 +108,7 @@ public class WebPagesKeeperWorker
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
+    private final DaoImages daoImages;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final Initiator systemInitiator;
@@ -114,6 +121,7 @@ public class WebPagesKeeperWorker
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
             DaoWebDirectories daoDirectories,
+            DaoImages daoImages,
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
             Initiator systemInitiator,
@@ -124,6 +132,7 @@ public class WebPagesKeeperWorker
         this.daoPages = dao;
         this.commandsMemory = commandsMemory;
         this.daoDirectories = daoDirectories;
+        this.daoImages = daoImages;
         this.ioEngine = ioEngine;
         this.systemInitiator = systemInitiator;
         this.helper = helper;
@@ -600,6 +609,45 @@ public class WebPagesKeeperWorker
             return voidOperationFail("DAO failed to remove page.");
         }
     }
+    
+    @Override
+    public VoidOperation captureImage(
+            Initiator initiator, ArgumentsCommand command) {
+        if ( command.type().isNot(CAPTURE_PAGE_IMAGE) ) {
+            return voidOperationFail("wrong command type!");
+        }
+        
+        String pageNamePattern;
+        if ( command.hasArguments() ) {
+            pageNamePattern = command.joinedArguments();
+        } else {
+            pageNamePattern = "";
+        }
+        
+        Optional<WebPage> optPage = this.discussExistingPage(initiator, pageNamePattern);
+        if ( ! optPage.isPresent() ) {
+            return voidOperationStopped();
+        }
+        WebPage page = optPage.get();
+        this.ioEngine.report(initiator, format("'%s' found.", page.name()));
+        
+        Optional<Image> image = awaitGet(() -> {
+            // TODO HIGH
+            return new Image("");
+        });
+        
+        if ( ! image.isPresent() ) {
+            return voidCompleted();
+        }
+        
+        boolean saved = this.daoImages.save(initiator, image.get());
+        if ( saved ) {
+            fireAsync("image_saved", image.get().name());
+            return voidCompleted("captured!");
+        } else {
+            return voidOperationFail("image not saved.");
+        }        
+    }
 
     @Override
     public ValueOperation<WebPage> findWebPageByPattern(
@@ -784,6 +832,28 @@ public class WebPagesKeeperWorker
         } else {
             return notFoundWithJson(format(
                     "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+    }
+    
+    @Override
+    public WebResponse getWebPageImage(
+            WebPlace place, String directoryName, String pageName) {
+        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+        if ( isNotPresent(webDirectoryPages) ) {
+            return notFoundWithJson(format(
+                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        }
+        
+        boolean pageExists = webDirectoryPages.get().pages()
+                .stream()
+                .anyMatch(webPage -> webPage.name().equalsIgnoreCase(pageName));
+        
+        if ( pageExists ) {
+            return optionalOkWithBinary(this.daoImages.getByName(this.systemInitiator, pageName));
+        } else {
+            return notFoundWithJson(format(
+                    "Page '%s' not found in %s!", pageName, directoryName));
         }
     }
 

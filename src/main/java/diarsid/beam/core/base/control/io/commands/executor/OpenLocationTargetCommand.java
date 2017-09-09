@@ -6,12 +6,17 @@
 
 package diarsid.beam.core.base.control.io.commands.executor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
+import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
+import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
+import static diarsid.beam.core.base.util.PathUtils.decomposePath;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
@@ -60,6 +65,29 @@ public class OpenLocationTargetCommand extends InvocationCommand {
     
     public String extendedTarget() {
         return extractTargetFromPath(super.extendedArgument());
+    }
+    
+    public List<InvocationCommand> decompose() {
+        List<InvocationCommand> commands = new ArrayList<>();
+        commands.add(this);
+        
+        if ( super.argument().isNotExtended() ) {
+            return commands;
+        }
+        
+        String locationName = this.extendedLocation();
+        commands.add(createInvocationCommandFrom(OPEN_LOCATION, locationName, locationName));
+        
+        String path = super.extendedArgument();
+        List<String> decomposedPaths = decomposePath(path);
+        decomposedPaths.remove(locationName);
+        
+        decomposedPaths.forEach(decomosedPath -> {
+            commands.add(createInvocationCommandFrom(
+                    OPEN_LOCATION_TARGET, decomosedPath, decomosedPath));
+        });
+        
+        return commands;
     }
 
     @Override

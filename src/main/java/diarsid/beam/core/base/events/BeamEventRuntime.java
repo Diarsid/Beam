@@ -62,8 +62,12 @@ public class BeamEventRuntime {
     private BeamEventRuntime() {
     }
     
-    public static SubscriptionBuilder subscribeOn(String type) {
+    public static SubscriptionBuilder onEvent(String type) {
         return new SubscriptionBuilder(type);
+    }
+    
+    public static Subscription subscribe(SubscriptionBuilder subscriptionBuilder) {
+        return subscriptionBuilder.finish();
     }
     
     static void registerCallbackForType(String type, CallbackEvent callback) {

@@ -56,6 +56,10 @@ public class ExtendableArgument {
         return this.extendedArgument.isEmpty();
     }
     
+    public boolean isOriginalEqualToExtended() {
+        return this.originalArgument.equalsIgnoreCase(this.extendedArgument);
+    }
+    
     public String get() {
         if ( this.isExtended() ) {
             return this.extendedArgument;

@@ -12,6 +12,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.join;
@@ -193,5 +194,16 @@ public class PathUtils {
         } else {
             return file.toString();
         }
+    }
+    
+    public static List<String> decomposePath(String path) {
+        List<String> decomposedPaths = new ArrayList<>();
+        path = normalizeArgument(path);
+        decomposedPaths.add(path);
+        while ( containsPathSeparator(path) ) {            
+            path = path.substring(0, indexOfLastPathSeparator(path));
+            decomposedPaths.add(path);
+        }
+        return decomposedPaths;
     }
 }

@@ -38,6 +38,7 @@ class ConfigurationReading {
                 "data.store = ../res/data",
                 "data.user = root",
                 "data.pass = root",
+                "data.log = true",
                 "catalogs.programs = ../env/programs",
                 "catalogs.notes = ../env/notes",
                 "web.local.host = 127.0.0.1",

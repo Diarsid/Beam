@@ -21,6 +21,7 @@ class DataModuleWorker implements DataModule {
     private final DaoTasks daoTasks;
     private final DaoWebPages daoWebPages;
     private final DaoWebDirectories daoWebDirectories;
+    private final DaoImages daoImages;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
@@ -33,6 +34,7 @@ class DataModuleWorker implements DataModule {
         this.daoTasks = daosProvider.createDaoTasks();
         this.daoWebPages = daosProvider.createDaoWebPages();
         this.daoWebDirectories = daosProvider.createDaoWebDirectories();
+        this.daoImages = daosProvider.createDaoImages();
     }
 
     @Override
@@ -78,6 +80,11 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoWebPages webPages() {
         return this.daoWebPages;
+    }
+    
+    @Override
+    public DaoImages images() {
+        return this.daoImages;
     }
 
     @Override

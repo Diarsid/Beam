@@ -62,4 +62,9 @@ class CliAdapterForWebPagesKeeper extends AbstractCliAdapter {
         }; 
         super.reportValueOperationFlow(initiator, flow, onSuccess, "Panel not available.");
     }
+    
+    void captureWebPageImage(Initiator initiator, ArgumentsCommand command) {
+        VoidOperation flow = this.pagesKeeper.captureImage(initiator, command);
+        super.reportVoidOperationFlow(initiator, flow);
+    }
 }

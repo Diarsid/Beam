@@ -22,7 +22,7 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "locations", 
                 "CREATE TABLE locations (" +
                 "loc_name   VARCHAR(300)    NOT NULL PRIMARY KEY," +
-                "loc_path   VARCHAR(1000)    NOT NULL)", 
+                "loc_path   VARCHAR(1000)   NOT NULL)", 
                 2);
         
         SqlTable batches = new H2SqlTable(
@@ -97,6 +97,13 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "ordering   INTEGER     NOT NULL )", 
                 4);
         
+        SqlTable images = new H2SqlTable(
+                "images", 
+                "CREATE TABLE images (" +
+                "name   VARCHAR     NOT NULL PRIMARY KEY, " +
+                "bytes  BLOB        NOT NULL )", 
+                2);
+        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
@@ -106,6 +113,7 @@ public class H2DataBaseModel implements SqlDataBaseModel {
         this.tables.add(tasks);
         this.tables.add(webPages);
         this.tables.add(webDirs);
+        this.tables.add(images);
     }
 
     @Override

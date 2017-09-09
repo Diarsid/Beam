@@ -19,7 +19,6 @@ import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -27,7 +26,6 @@ import static java.lang.String.join;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocationCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -37,22 +35,15 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_INVOCATION_COMMAND;
 
 
 class H2DaoCommands 
         extends BeamCommonDao
         implements DaoCommands {
-    
-    private final PerRowConversion<InvocationCommand> rowToCommandConversion;
-    
+        
     H2DaoCommands(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
-        this.rowToCommandConversion = (row) -> {
-            return restoreInvocationCommandFrom(
-                    (String) row.get("com_type"), 
-                    (String) row.get("com_original"),
-                    (String) row.get("com_extended"));
-        };
     }
 
     @Override
@@ -65,9 +56,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( com_type IS ? ) AND ( LOWER(com_original) IS ? ) ",
-                            (firstRow) -> {
-                                return Optional.of(this.rowToCommandConversion.convert(firstRow));
-                            },
+                            ROW_TO_INVOCATION_COMMAND,
                             type.name(), lower(original));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
@@ -85,7 +74,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_original) IS ? ",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             lower(original))
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -107,7 +96,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_original) LIKE ? ",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -126,7 +115,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerLikeAnd("com_original", criterias.size()),
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -145,7 +134,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -157,7 +146,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -187,7 +176,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_original) LIKE ? ) AND ( com_type IS ? )",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern), type)
                     .collect(toList());
             
@@ -208,7 +197,7 @@ class H2DaoCommands
                             "WHERE " + 
                                     multipleLowerLikeAnd("com_original", criterias.size()) + 
                                     " AND ( com_type IS ? ) ",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -227,7 +216,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -239,7 +228,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -268,7 +257,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_extended) LIKE ? ",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -287,7 +276,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerLikeAnd("com_extended", criterias.size()),
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -306,7 +295,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -318,7 +307,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -348,7 +337,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? )",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern), type)
                     .collect(toList());
             
@@ -369,7 +358,7 @@ class H2DaoCommands
                             "WHERE " + 
                                     multipleLowerLikeAnd("com_extended", criterias.size()) + 
                                     " AND ( com_type IS ? ) ",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -388,7 +377,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -400,7 +389,7 @@ class H2DaoCommands
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            this.rowToCommandConversion,
+                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -422,72 +411,117 @@ class H2DaoCommands
             Initiator initiator, InvocationCommand command) {        
             debug("[DAO COMMANDS] saving: " + command.originalArgument() + ":" + command.stringify());
         try (JdbcTransaction transact = super.openTransaction()) {
-            
-            boolean commandExists = transact
-                    .doesQueryHaveResultsVarargParams(
-                            "SELECT * " +
-                            "FROM commands " +
-                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                            lower(command.originalArgument()), command.type());
-            
-            int modified = 0;
-            if ( commandExists ) {
-                modified = modified + transact
-                        .doUpdateVarargParams(
-                                "UPDATE commands " +
-                                "SET com_extended = ? " +
-                                "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                                command.extendedArgument(), 
-                                lower(command.originalArgument()), 
-                                command.type());
-            } else {
-                modified = modified + transact
-                        .doUpdateVarargParams(
-                                "INSERT INTO commands ( com_type, com_original, com_extended )" +
-                                "VALUES ( ?, ?, ? ) " , 
-                                command.type(),
-                                command.originalArgument(),
-                                command.extendedArgument());
-            }
-            
-            if ( command.argument().isExtended() ) {
-                boolean extendedExistsInOriginal = transact
-                    .doesQueryHaveResultsVarargParams(
-                            "SELECT * " +
-                            "FROM commands " +
-                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                            lower(command.extendedArgument()), command.type());
-                
-                if ( extendedExistsInOriginal ) {
-                    modified = modified + transact
-                            .doUpdateVarargParams(
-                                    "UPDATE commands " +
-                                    "SET com_extended = ? " +
-                                    "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
-                                    command.extendedArgument(), 
-                                    lower(command.extendedArgument()), 
-                                    command.type());
-                } else {
-                    modified = modified + transact
-                            .doUpdateVarargParams(
-                                    "INSERT INTO commands ( com_type, com_original, com_extended )" +
-                                    "VALUES ( ?, ?, ? ) " , 
-                                    command.type(),
-                                    command.extendedArgument(),
-                                    command.extendedArgument());
-                }
-            }
-            
-            if ( modified > 0 ) {
-                debug("[DAO COMMANDS] saved: " + modified);
-            }
-            
-            return ( modified > 0 );
-            
+            return this.saveUsingTransaction(command, transact);
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
         }
+    }
+    
+    @Override
+    public boolean save(
+            Initiator initiator, List<InvocationCommand> commands) {       
+        commands.forEach(command -> debug("[DAO COMMANDS] saving: " + command.originalArgument() + ":" + command.stringify()));
+        try (JdbcTransaction transact = super.openTransaction()) {
+            boolean done = false;
+            for (InvocationCommand command : commands) {
+                done = this.saveUsingTransaction(command, transact);
+                if ( ! done ) {
+                    transact.rollbackAndProceed();
+                    return false;
+                }
+            }
+            return done;
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return false;
+        }
+    }
+    
+    private boolean saveUsingTransaction(InvocationCommand command, JdbcTransaction transact) 
+            throws TransactionHandledSQLException, TransactionHandledException {
+        int modified;
+        
+        if ( command.argument().isOriginalEqualToExtended() ) {
+            modified = this.saveBasicallyUsingTransaction(command, transact);
+        } else {
+            modified = this.saveAdvancinglyUsingTransaction(command, transact);
+        }
+        
+        return modified > 0;
+    }
+    
+    private int saveBasicallyUsingTransaction(
+            InvocationCommand command, JdbcTransaction transact) 
+            throws TransactionHandledSQLException, TransactionHandledException {
+        
+        boolean commandExists = transact
+                .doesQueryHaveResultsVarargParams(
+                        "SELECT * " +
+                        "FROM commands " +
+                        "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
+                        lower(command.originalArgument()), command.type());
+
+        int modified = 0;
+        if ( commandExists ) {
+            modified = modified + transact
+                    .doUpdateVarargParams(
+                            "UPDATE commands " +
+                            "SET com_extended = ? " +
+                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
+                            command.extendedArgument(), 
+                            lower(command.originalArgument()), 
+                            command.type());
+        } else {
+            modified = modified + transact
+                    .doUpdateVarargParams(
+                            "INSERT INTO commands ( com_type, com_original, com_extended )" +
+                            "VALUES ( ?, ?, ? ) " , 
+                            command.type(),
+                            command.originalArgument(),
+                            command.extendedArgument());
+        }
+        
+        return modified;
+    }
+    
+    private int saveAdvancinglyUsingTransaction(
+            InvocationCommand command, JdbcTransaction transact) 
+            throws TransactionHandledSQLException, TransactionHandledException {        
+        
+        int modified = this.saveBasicallyUsingTransaction(command, transact);
+
+        boolean extendedExistsInOriginal = transact
+                .doesQueryHaveResultsVarargParams(
+                    "SELECT * " +
+                    "FROM commands " +
+                    "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
+                    lower(command.extendedArgument()), command.type());
+
+        if ( extendedExistsInOriginal ) {
+            modified = modified + transact
+                    .doUpdateVarargParams(
+                            "UPDATE commands " +
+                            "SET com_extended = ? " +
+                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_type IS ? ) ", 
+                            command.extendedArgument(), 
+                            lower(command.extendedArgument()), 
+                            command.type());
+        } else {
+            modified = modified + transact
+                    .doUpdateVarargParams(
+                            "INSERT INTO commands ( com_type, com_original, com_extended )" +
+                            "VALUES ( ?, ?, ? ) " , 
+                            command.type(),
+                            command.extendedArgument(),
+                            command.extendedArgument());
+        }
+
+        if ( modified > 0 ) {
+            debug("[DAO COMMANDS] saved: " + modified);
+        }
+
+        return modified;
     }
     
     @Override

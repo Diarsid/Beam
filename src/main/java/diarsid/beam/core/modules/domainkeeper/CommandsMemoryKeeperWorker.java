@@ -18,8 +18,9 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.base.util.StringHolder;
+import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.util.StringHolder;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 
@@ -38,6 +39,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
+import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -47,7 +49,6 @@ import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringHolder.empty;
 import static diarsid.beam.core.base.util.StringHolder.hold;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
-import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
 
 /**
  *
@@ -357,7 +358,17 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
 
     @Override
     public void save(Initiator initiator, InvocationCommand command) {
-        this.daoCommands.save(initiator, command);
+        switch ( command.type() ) {
+            case OPEN_LOCATION_TARGET : {
+                List<InvocationCommand> derived = 
+                        ((OpenLocationTargetCommand) command).decompose();
+                this.daoCommands.save(initiator, derived);
+                break;
+            }
+            default : {
+                this.daoCommands.save(initiator, command);
+            }
+        }
     }
 
     @Override

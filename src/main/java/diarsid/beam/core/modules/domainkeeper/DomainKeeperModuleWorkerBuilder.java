@@ -111,6 +111,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         pagesKeeper = new WebPagesKeeperWorker(
                 this.dataModule.webPages(), 
                 this.dataModule.webDirectories(), 
+                this.dataModule.images(),
                 commandsMemoryKeeper,
                 ioEngine, 
                 systemInitiator,

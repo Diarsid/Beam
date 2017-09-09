@@ -22,7 +22,6 @@ import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -39,9 +38,8 @@ import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.multipleValues;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
-import static diarsid.beam.core.domain.entities.TaskRepeat.valueOf;
-import static diarsid.beam.core.domain.entities.Tasks.restoreTask;
 import static diarsid.beam.core.domain.entities.Tasks.stringifyTaskText;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_TASK;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
@@ -50,21 +48,10 @@ class H2DaoTasks
         extends BeamCommonDao 
         implements DaoTasks {
     
-    private final PerRowConversion<Task> rowToTaskConversion;
     private final Function<Task, Params> taskToParamsConversion;
     
     H2DaoTasks(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
-        this.rowToTaskConversion = (row) -> {
-            return restoreTask(
-                    (int) row.get("id"), 
-                    valueOf((String) row.get("type")), 
-                    ((Timestamp) row.get("time")).toLocalDateTime(), 
-                    (boolean) row.get("status"), 
-                    (String) row.get("days"), 
-                    (String) row.get("hours"), 
-                    (String) row.get("text"));
-        };
+        super(dataBase, ioEngine);        
         this.taskToParamsConversion = (task) -> {            
             return params(
                     task.time(), 
@@ -90,9 +77,9 @@ class H2DaoTasks
                             (row) -> {
                                 Object time = row.get("time");
                                 if ( nonNull(time) ) {
-                                    return Optional.of(((Timestamp) time).toLocalDateTime());
+                                    return ((Timestamp) time).toLocalDateTime();
                                 } else {
-                                    return Optional.empty();
+                                    return null;
                                 }                                
                             });
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
@@ -114,7 +101,7 @@ class H2DaoTasks
                             "       AND ( time >= ? ) AND ( time <= ? ) " +        
                             "       AND ( status IS TRUE ) " +
                             "ORDER BY time ",
-                            this.rowToTaskConversion,
+                            ROW_TO_TASK,
                             types, from, to)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -134,7 +121,7 @@ class H2DaoTasks
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE ( status IS TRUE ) AND ( time <= ? ) ",
-                            this.rowToTaskConversion,
+                            ROW_TO_TASK,
                             tillNow)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -309,7 +296,7 @@ class H2DaoTasks
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE ( LOWER(text) LIKE ? )", 
-                            this.rowToTaskConversion, 
+                            ROW_TO_TASK, 
                             lowerWildcard(textPattern))
                         .collect(toList());
             
@@ -324,7 +311,7 @@ class H2DaoTasks
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE " + multipleLowerLikeAnd("text", criterias.size()), 
-                            this.rowToTaskConversion, 
+                            ROW_TO_TASK, 
                             criterias)
                         .collect(toList());
             

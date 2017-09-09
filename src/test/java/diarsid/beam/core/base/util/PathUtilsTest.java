@@ -6,12 +6,17 @@
 
 package diarsid.beam.core.base.util;
 
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static java.util.Arrays.asList;
 
 import static org.junit.Assert.*;
 
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.decomposePath;
 import static diarsid.beam.core.base.util.PathUtils.indexOfNextPathSeparatorAfter;
 import static diarsid.beam.core.base.util.PathUtils.subpathToPattern;
 
@@ -184,6 +189,17 @@ public class PathUtilsTest {
      */
     @Test
     public void testRelativizeFileName() {
+    }
+    
+    @Test
+    public void testDecomposePath() {
+        String path = "some/path/to/decompose";
+        List<String> expectedDecomposedPaths = asList(
+                "some/path/to/decompose", 
+                "some/path/to", 
+                "some/path", 
+                "some");
+        assertEquals(expectedDecomposedPaths, decomposePath(path));
     }
 
 }

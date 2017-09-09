@@ -23,7 +23,7 @@ import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
+import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -47,9 +47,9 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_COMMAND;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_LOCATION;
-import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_PAGE;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBPAGE;
 
 
 class H2DaoNamedEntities 
@@ -57,7 +57,7 @@ class H2DaoNamedEntities
         implements DaoNamedEntities {
     
     private final ProgramsCatalog programsCatalog;
-    private final PerRowConversion<NamedEntity> rowToNamedEntityMask;
+    private final RowConversion<NamedEntity> rowToNamedEntityMask;
     private final NamedEntityComparator namedEntityComparator;
     
     H2DaoNamedEntities(
@@ -83,9 +83,7 @@ class H2DaoNamedEntities
                         "SELECT loc_name, loc_path " +
                         "FROM locations " +
                         "WHERE ( LOWER(loc_name) IS ? ) ",
-                        (row) -> {
-                            return Optional.of(ROW_TO_LOCATION.convert(row));
-                        }, 
+                        ROW_TO_LOCATION, 
                         lower(name));
             }        
             case WEBPAGE : {
@@ -94,9 +92,7 @@ class H2DaoNamedEntities
                         "SELECT name, shortcuts, url, ordering, dir_id " +
                         "FROM web_pages " +
                         "WHERE ( LOWER(name) IS ? )", 
-                        (row) -> {
-                            return Optional.of(ROW_TO_PAGE.convert(row));
-                        },
+                        ROW_TO_WEBPAGE,
                         lower(name));
             }        
             case PROGRAM : {
@@ -114,14 +110,13 @@ class H2DaoNamedEntities
 
                 List<ExecutorCommand> commands = transact
                         .ifTrue( batchExists )
-                        .doQueryAndStreamVarargParams(
-                                ExecutorCommand.class,
+                        .doQueryAndStreamVarargParams(ExecutorCommand.class,
                                 "SELECT bat_command_type, " +
                                 "       bat_command_original " +
                                 "FROM batch_commands " +
                                 "WHERE LOWER(bat_name) IS ? " +
                                 "ORDER BY bat_command_order" ,
-                                ROW_TO_COMMAND,
+                                ROW_TO_EXECUTOR_COMMAND,
                                 lowerName)
                         .collect(toList());
 

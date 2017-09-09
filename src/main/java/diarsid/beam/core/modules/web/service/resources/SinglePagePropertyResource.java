@@ -89,4 +89,23 @@ public class SinglePagePropertyResource extends Resource {
         webRequest.send(webResponse);
     }
     
+    @Override
+    protected void GET(WebRequest webRequest) throws IOException {
+        WebPlace place = parsePlace(webRequest.pathParam("place"));
+        String directoryName = webRequest.pathParam("dirName");
+        String pageName = webRequest.pathParam("pageName");
+        String property = webRequest.pathParam("property");
+        
+        validate(place, asNames(directoryName, pageName));
+        
+        WebResponse webResponse;
+        if ( property.equalsIgnoreCase("image") ) {
+            webResponse = this.webPagesKeeper.getWebPageImage(place, directoryName, pageName);
+        } else {
+            webResponse = badRequestWithJson("page property is not defined!");
+        }
+        
+        webRequest.send(webResponse);
+    }
+    
 }

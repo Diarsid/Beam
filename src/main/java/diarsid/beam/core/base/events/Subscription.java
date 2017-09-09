@@ -21,7 +21,7 @@ public class Subscription {
     private final String type;
     private final Set<Callback> callbacks;
     
-    public Subscription(String type, Set<Callback> callbacks) {
+    Subscription(String type, Set<Callback> callbacks) {
         this.type = type;
         this.callbacks = callbacks;
     }

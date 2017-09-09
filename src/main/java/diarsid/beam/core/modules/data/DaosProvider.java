@@ -27,5 +27,8 @@ public interface DaosProvider {
     
     DaoWebDirectories createDaoWebDirectories();
     
-    DaoWebPages createDaoWebPages();    
+    DaoWebPages createDaoWebPages();
+
+    DaoImages createDaoImages();
+    
 }

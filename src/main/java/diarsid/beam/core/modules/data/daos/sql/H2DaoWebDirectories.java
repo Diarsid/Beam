@@ -22,7 +22,6 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -43,33 +42,17 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.restorePage;
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
 class H2DaoWebDirectories 
         extends BeamCommonDao 
         implements DaoWebDirectories {
-    
-    private final PerRowConversion<WebDirectory> rowToDirectoryConversion;
-    private final PerRowConversion<WebPage> rowTorPageConversion;
 
     H2DaoWebDirectories(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
-        this.rowToDirectoryConversion = (row) -> {
-            return restoreDirectory(
-                    (int) row.get("id"),
-                    (String) row.get("name"), 
-                    parsePlace((String) row.get("place")), 
-                    (int) row.get("ordering"));
-        };
-        this.rowTorPageConversion = (row) -> {
-            return restorePage(
-                    (String) row.get("name"), 
-                    (String) row.get("shortcuts"), 
-                    (String) row.get("url"), 
-                    (int) row.get("ordering"), 
-                    (int) row.get("dir_id"));
-        };
+        super(dataBase, ioEngine);        
     }   
 
     @Override
@@ -265,9 +248,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE id IS ? ", 
-                            (row) -> {
-                                return Optional.of(this.rowToDirectoryConversion.convert(row));
-                            }, 
+                            ROW_TO_WEBDIRECTORY, 
                             id);
             
             if ( ! directory.isPresent() ) {
@@ -280,7 +261,7 @@ class H2DaoWebDirectories
                             "SELECT name, url, shortcuts, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ", 
-                            this.rowTorPageConversion, 
+                            ROW_TO_WEBPAGE, 
                             directory.get().id())
                     .collect(toList());
             
@@ -302,9 +283,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            (row) -> {
-                                return Optional.of(this.rowToDirectoryConversion.convert(row));
-                            }, 
+                            ROW_TO_WEBDIRECTORY, 
                             lower(name), place);
             
             if ( ! directory.isPresent() ) {
@@ -317,7 +296,7 @@ class H2DaoWebDirectories
                             "SELECT name, url, shortcuts, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ", 
-                            this.rowTorPageConversion, 
+                            ROW_TO_WEBPAGE, 
                             directory.get().id())
                     .collect(toList());
             
@@ -338,9 +317,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )", 
-                            (row) -> {
-                                return Optional.of(this.rowToDirectoryConversion.convert(row));
-                            }, 
+                            ROW_TO_WEBDIRECTORY, 
                             lower(name), place);
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             
@@ -361,7 +338,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND ( LOWER(name) LIKE ? ) ", 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             place, lowerWildcard(pattern))
                     .sorted()
                     .collect(toList());
@@ -378,7 +355,7 @@ class H2DaoWebDirectories
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND " + 
                                     multipleLowerLikeAnd("name", criterias.size()), 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             place, criterias)
                     .sorted()
                     .collect(toList());
@@ -395,7 +372,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND " + multipleGroupedLikeOrNameCondition, 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             place, criterias)
                     .sorted()
                     .collect(toList());
@@ -408,7 +385,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND " + multipleGroupedLikeOrNameCondition, 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             place, criterias)
                     .sorted()
                     .collect(toList());
@@ -437,7 +414,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( LOWER(name) LIKE ? ) ", 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             lowerWildcard(pattern))
                     .sorted()
                     .collect(toList());
@@ -453,7 +430,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE " + multipleLowerLikeAnd("name", criterias.size()), 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             criterias)
                     .sorted()
                     .collect(toList());
@@ -470,7 +447,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE " + multipleGroupedLikeOrNameCondition, 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             criterias)
                     .sorted()
                     .collect(toList());
@@ -483,7 +460,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE " + multipleGroupedLikeOrNameCondition, 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             criterias)
                     .sorted()
                     .collect(toList());
@@ -509,7 +486,7 @@ class H2DaoWebDirectories
                             WebDirectory.class, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories ", 
-                            this.rowToDirectoryConversion)
+                            ROW_TO_WEBDIRECTORY)
                     .sorted()
                     .collect(toList());
             
@@ -530,7 +507,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE place IS ? ", 
-                            this.rowToDirectoryConversion, 
+                            ROW_TO_WEBDIRECTORY, 
                             place)
                     .sorted()
                     .collect(toList());
@@ -691,9 +668,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, ordering, place " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            (row) -> {
-                                return Optional.of(this.rowToDirectoryConversion.convert(row));
-                            }, 
+                            ROW_TO_WEBDIRECTORY, 
                             lower(name), place);
             
             if ( ! optDirectory.isPresent() ) {
@@ -744,9 +719,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            (row) -> {
-                                return Optional.of(this.rowToDirectoryConversion.convert(row));
-                            },
+                            ROW_TO_WEBDIRECTORY,
                             lower(name), oldPlace);
             
             if ( ! movedDir.isPresent() ) {
@@ -863,9 +836,7 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE id IS ? ",
-                            (row) -> {
-                                return Optional.of(this.rowToDirectoryConversion.convert(row));
-                            });
+                            ROW_TO_WEBDIRECTORY);
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return Optional.empty();
@@ -880,10 +851,10 @@ class H2DaoWebDirectories
                     .doQueryAndConvertFirstRowVarargParams(
                             Integer.class,
                             "SELECT id " +
-                                    "FROM web_directories " +
-                                    "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )",
+                            "FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )",
                             (row) -> {
-                                return Optional.ofNullable((int) row.get("id"));
+                                return (int) row.get("id");
                             },
                             lower(name), place);
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {

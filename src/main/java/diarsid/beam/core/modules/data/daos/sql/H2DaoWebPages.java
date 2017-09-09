@@ -32,8 +32,8 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_PAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBPAGE;
 
 
 
@@ -93,14 +93,11 @@ class H2DaoWebPages
             Initiator initiator, String name) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(
-                            WebPage.class,
+                    .doQueryAndConvertFirstRowVarargParams(WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
-                            (row) -> {
-                                return Optional.of(ROW_TO_PAGE.convert(row));
-                            },
+                            ROW_TO_WEBPAGE,
                             lower(name));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
@@ -117,12 +114,11 @@ class H2DaoWebPages
             
             String lowerWildcardPattern = lowerWildcard(pattern);
             List<WebPage> pages = transact
-                    .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                    .doQueryAndStreamVarargParams(WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
-                            ROW_TO_PAGE, 
+                            ROW_TO_WEBPAGE, 
                             lowerWildcardPattern, lowerWildcardPattern)
                     .sorted()
                     .collect(toList());
@@ -133,15 +129,14 @@ class H2DaoWebPages
             
             List<String> criterias = patternToCharCriterias(pattern);
             pages = transact
-                    .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                    .doQueryAndStreamVarargParams(WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " +
                                     multipleLowerLikeAnd("name", criterias.size()) + 
                                     " OR " + 
                                     multipleLowerLikeAnd("shortcuts", criterias.size()), 
-                            ROW_TO_PAGE, 
+                            ROW_TO_WEBPAGE, 
                             criterias, criterias)
                     .collect(toList());
             
@@ -155,30 +150,28 @@ class H2DaoWebPages
                     multipleLowerGroupedLikesOr("shortcuts", criterias.size());
             
             pages = transact
-                    .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                    .doQueryAndStreamVarargParams(WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " + 
                                     multipleGroupedLikeOrNameCondition + 
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
-                            ROW_TO_PAGE, 
+                            ROW_TO_WEBPAGE, 
                             criterias, criterias)
                     .collect(toList());
             
             shift(criterias);
             
             List<WebPage> shiftedPages = transact
-                    .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                    .doQueryAndStreamVarargParams(WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " + 
                                     multipleGroupedLikeOrNameCondition + 
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
-                            ROW_TO_PAGE, 
+                            ROW_TO_WEBPAGE, 
                             criterias, criterias)
                     .collect(toList());
             
@@ -198,12 +191,11 @@ class H2DaoWebPages
             Initiator initiator, int directoryId) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndStreamVarargParams(
-                            WebPage.class,
+                    .doQueryAndStreamVarargParams(WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ",
-                            ROW_TO_PAGE,
+                            ROW_TO_WEBPAGE,
                             directoryId)
                     .sorted()
                     .collect(toList());
@@ -279,14 +271,11 @@ class H2DaoWebPages
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebPage> optPage = transact
-                    .doQueryAndConvertFirstRowVarargParams(
-                            WebPage.class,
+                    .doQueryAndConvertFirstRowVarargParams(WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
-                            (row) -> {
-                                return Optional.of(ROW_TO_PAGE.convert(row));
-                            },
+                            ROW_TO_WEBPAGE,
                             lower(name));
             
             if ( ! optPage.isPresent() ) {

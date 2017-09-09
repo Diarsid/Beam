@@ -15,19 +15,19 @@ import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.Row;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_COMMAND_TYPE;
 
 
-public class H2DaoCommandsChoices
+class H2DaoCommandsChoices
         extends BeamCommonDao 
         implements DaoCommandsChoices {
 
-    public H2DaoCommandsChoices(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoCommandsChoices(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
     }
 
@@ -55,21 +55,13 @@ public class H2DaoCommandsChoices
                             "SELECT * " +
                             "FROM commands_choices " +
                             "WHERE ( LOWER(com_original) IS ? ) AND ( com_variants_stamp IS ? )", 
-                            (row) -> {
-                                return rowToOptionalCommandType(row);
-                            },
+                            ROW_TO_COMMAND_TYPE,
                             lower(original), variants.stamp());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return Optional.empty();            
         }
-    }    
-
-    private static Optional<CommandType> rowToOptionalCommandType(Row row) 
-            throws TransactionHandledSQLException {
-        return Optional.of(CommandType.valueOf((String) row.get("com_type")));
-    }
-
+    }  
     @Override
     public boolean save(InvocationCommand command, WeightedVariants variants) {
         debug("[DAO COMMANDS CHOICES] save: " + command.stringify() + ", stamp: " + variants.stamp());

@@ -6,13 +6,12 @@
 
 package diarsid.beam.core.base.events;
 
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
-import diarsid.beam.core.base.control.io.base.interaction.CallbackEventPayload;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import diarsid.beam.core.base.control.io.base.interaction.Callback;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEventPayload;
 
 import static diarsid.beam.core.base.events.BeamEventRuntime.registerCallbackForType;
 
@@ -29,6 +28,7 @@ public class SubscriptionBuilder {
         this.eventType = eventType;
         this.callbacks = new HashSet<>();
     }
+    
     public SubscriptionBuilder withCallback(CallbackEvent callback) {
         registerCallbackForType(this.eventType, callback);
         this.callbacks.add(callback);
@@ -41,7 +41,7 @@ public class SubscriptionBuilder {
         return this;
     }
     
-    public Subscription done() {
+    Subscription finish() {
         return new Subscription(this.eventType, this.callbacks);
     }
 }

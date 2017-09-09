@@ -21,7 +21,6 @@ import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.PerRowConversion;
 import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -40,15 +39,18 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
+
+import diarsid.jdbc.transactions.RowConversion;
+
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 
 
 class H2DaoBatches 
         extends BeamCommonDao 
         implements DaoBatches {
     
-    private final PerRowConversion<String> rowToBatchNameConversion;
+    private final RowConversion<String> rowToBatchNameConversion;
     private final Function<BatchedCommand, Params> batchedCommandToParams;
     private final Function<Map.Entry<String, List<ExecutorCommand>>, Batch> entryToBatch;
     
@@ -172,14 +174,13 @@ class H2DaoBatches
             
             List<ExecutorCommand> commands = transact
                     .ifTrue( batchExists )
-                    .doQueryAndStreamVarargParams(
-                            ExecutorCommand.class,
+                    .doQueryAndStreamVarargParams(ExecutorCommand.class,
                             "SELECT bat_command_type, " +
                             "       bat_command_original " +
                             "FROM batch_commands " +
                             "WHERE LOWER(bat_name) IS ? " +
                             "ORDER BY bat_command_order" ,
-                            ROW_TO_COMMAND,
+                            ROW_TO_EXECUTOR_COMMAND,
                             lower(name))
                     .collect(toList());
             
@@ -388,17 +389,15 @@ class H2DaoBatches
             Map<String, List<ExecutorCommand>> collectedBatches = new HashMap<>();
             
             super.openDisposableTransaction()
-                    .doQuery(
-                            "SELECT bat_name, " + 
+                    .doQuery("SELECT bat_name, " + 
                             "       bat_command_type, " +
                             "       bat_command_original " +
                             "FROM batch_commands " +
                             "ORDER BY bat_name, bat_command_order",
                             (row) -> { 
-                                mergeInMapWithArrayLists(
-                                        collectedBatches, 
+                                mergeInMapWithArrayLists(collectedBatches, 
                                         (String) row.get("bat_name"), 
-                                        ROW_TO_COMMAND.convert(row));
+                                        ROW_TO_EXECUTOR_COMMAND.convert(row));
                             });
             
             return collectedBatches
