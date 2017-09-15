@@ -41,6 +41,7 @@ class ConfigurationReading {
                 "data.log = true",
                 "catalogs.programs = ../env/programs",
                 "catalogs.notes = ../env/notes",
+                "ui.resources.images = ../res/images/",
                 "web.local.host = 127.0.0.1",
                 "web.local.port = 32001",
                 "web.local.path = /beam/core",

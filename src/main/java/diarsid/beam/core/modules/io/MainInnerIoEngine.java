@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.modules.io;
 
+import diarsid.beam.core.application.gui.Gui;
+
 import java.io.IOException;
 import java.util.List;
 

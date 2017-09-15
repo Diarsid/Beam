@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -27,7 +28,7 @@ import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
-import diarsid.beam.core.domain.entities.Image;
+import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
@@ -38,7 +39,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
-import diarsid.beam.core.modules.data.DaoImages;
+import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
@@ -78,7 +79,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGetValue;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -108,9 +109,10 @@ public class WebPagesKeeperWorker
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
-    private final DaoImages daoImages;
+    private final DaoPictures daoImages;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
+    private final Gui gui;
     private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
     private final PropertyAndTextParser propetyTextParser;
@@ -121,9 +123,10 @@ public class WebPagesKeeperWorker
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
             DaoWebDirectories daoDirectories,
-            DaoImages daoImages,
+            DaoPictures daoImages,
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
+            Gui gui,
             Initiator systemInitiator,
             KeeperDialogHelper helper,
             PropertyAndTextParser propetyTextParser,
@@ -134,6 +137,7 @@ public class WebPagesKeeperWorker
         this.daoDirectories = daoDirectories;
         this.daoImages = daoImages;
         this.ioEngine = ioEngine;
+        this.gui = gui;
         this.systemInitiator = systemInitiator;
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
@@ -625,24 +629,39 @@ public class WebPagesKeeperWorker
         }
         
         Optional<WebPage> optPage = this.discussExistingPage(initiator, pageNamePattern);
-        if ( ! optPage.isPresent() ) {
+        if ( isNotPresent(optPage) ) {
             return voidOperationStopped();
         }
         WebPage page = optPage.get();
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
-        Optional<Image> image = awaitGet(() -> {
-            // TODO HIGH
-            return new Image("");
+        ValueOperation<Picture> pictureFlow = awaitGetValue(() -> {     
+            return this.gui.capturePictureOnScreen(page.name());
         });
         
-        if ( ! image.isPresent() ) {
-            return voidCompleted();
+        switch ( pictureFlow.result() ) {
+            case COMPLETE : {
+                if ( ! pictureFlow.asComplete().hasValue() ) {
+                    return pictureFlow.toVoid();
+                } 
+                break;
+            }    
+            case FAIL : 
+            case STOP : {
+                return pictureFlow.toVoid();
+            }    
+            default : {
+                this.ioEngine.report(
+                        initiator, "unexpected picture flow result " + pictureFlow.result().name());
+                return voidOperationStopped();
+            }    
         }
         
-        boolean saved = this.daoImages.save(initiator, image.get());
+        Picture picture = pictureFlow.asComplete().getOrThrow();
+        
+        boolean saved = this.daoImages.save(initiator, picture);
         if ( saved ) {
-            fireAsync("image_saved", image.get().name());
+            fireAsync("image_saved", picture.name());
             return voidCompleted("captured!");
         } else {
             return voidOperationFail("image not saved.");

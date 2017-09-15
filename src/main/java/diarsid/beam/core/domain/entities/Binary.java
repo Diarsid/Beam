@@ -13,5 +13,7 @@ public interface Binary {
     
     boolean hasData();
     
+    boolean hasNoData();
+    
     byte[] bytes();
 }

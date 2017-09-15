@@ -29,6 +29,6 @@ public interface DaosProvider {
     
     DaoWebPages createDaoWebPages();
 
-    DaoImages createDaoImages();
+    DaoPictures createDaoImages();
     
 }

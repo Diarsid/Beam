@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.io.javafxgui.window;
+package diarsid.beam.core.application.gui.javafx.window;
 
 import java.util.List;
 import java.util.StringJoiner;
@@ -20,8 +20,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
-import diarsid.beam.core.modules.io.javafxgui.WindowController;
-import diarsid.beam.core.modules.io.javafxgui.WindowResources;
+import diarsid.beam.core.application.gui.javafx.WindowController;
+import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 
 

@@ -61,9 +61,6 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatNames;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
-import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
-import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
-import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
 
 
 public class TasksKeeperWorker implements TasksKeeper {

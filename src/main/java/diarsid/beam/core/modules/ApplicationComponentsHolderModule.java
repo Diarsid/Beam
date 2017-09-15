@@ -5,9 +5,10 @@
  */
 package diarsid.beam.core.modules;
 
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 
 import com.drs.gem.injector.module.GemModule;
@@ -25,4 +26,6 @@ public interface ApplicationComponentsHolderModule extends GemModule {
     ProgramsCatalog programsCatalog();
     
     NotesCatalog notesCatalog();
+    
+    Gui gui();
 }

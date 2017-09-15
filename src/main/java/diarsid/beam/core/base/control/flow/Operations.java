@@ -70,6 +70,11 @@ public class Operations {
             public OperationResult result() {
                 return STOP;
             }
+            
+            @Override
+            public VoidOperation toVoid() {
+                return STOPPED_VOID_OPERATION;
+            }
         };
     }
     
@@ -138,6 +143,11 @@ public class Operations {
             public ValueOperationFail asFail() {                
                 throw new IllegalStateException("This is Complete operation.");
             }
+            
+            @Override
+            public VoidOperation toVoid() {
+                return OK_VOID_OPERATION;
+            }
         };
     }
     
@@ -171,6 +181,11 @@ public class Operations {
             @Override
             public ValueOperationFail asFail() {                
                 throw new IllegalStateException("This is Complete operation.");
+            }
+            
+            @Override
+            public VoidOperation toVoid() {
+                return OK_VOID_OPERATION;
             }
         };
     }
@@ -222,6 +237,11 @@ public class Operations {
             @Override
             public ValueOperationFail asFail() {
                 return this;
+            }
+            
+            @Override
+            public VoidOperation toVoid() {
+                return voidOperationFail(failMessage);
             }
         };
     }

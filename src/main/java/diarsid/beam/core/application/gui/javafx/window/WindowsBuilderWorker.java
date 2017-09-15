@@ -4,15 +4,15 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.io.javafxgui.window;
+package diarsid.beam.core.application.gui.javafx.window;
 
 import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
-import diarsid.beam.core.modules.io.javafxgui.WindowController;
-import diarsid.beam.core.modules.io.javafxgui.WindowResources;
-import diarsid.beam.core.modules.io.javafxgui.WindowsBuilder;
+import diarsid.beam.core.application.gui.javafx.ReusableTaskWindow;
+import diarsid.beam.core.application.gui.javafx.WindowController;
+import diarsid.beam.core.application.gui.javafx.WindowResources;
+import diarsid.beam.core.application.gui.javafx.WindowsBuilder;
 
 /**
  *

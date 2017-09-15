@@ -8,19 +8,19 @@ package diarsid.beam.core.modules.data;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.domain.entities.Image;
+import diarsid.beam.core.domain.entities.Picture;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoImages {
+public interface DaoPictures {
     
-    Optional<Image> getByName(Initiator initiator, String name);
+    Optional<Picture> getByName(Initiator initiator, String name);
     
-    boolean save(Initiator initiator, Image image);
+    boolean save(Initiator initiator, Picture image);
     
     boolean removeByName(Initiator initiator, String name);
     
-    boolean remove(Initiator initiator, Image image);
+    boolean remove(Initiator initiator, Picture image);
 }

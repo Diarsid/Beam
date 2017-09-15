@@ -3,8 +3,10 @@
  * author: Diarsid
  */
 
-package diarsid.beam.core.modules.io.javafxgui;
+package diarsid.beam.core.application.gui.javafx;
 
+import java.awt.AWTException;
+import java.awt.Robot;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -14,10 +16,14 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
+import diarsid.beam.core.application.gui.Gui;
+import diarsid.beam.core.application.gui.javafx.window.WindowsBuilderWorker;
+import diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow;
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.modules.io.Gui;
-import diarsid.beam.core.modules.io.javafxgui.window.WindowsBuilderWorker;
+import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
+import diarsid.beam.core.domain.entities.Picture;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
@@ -45,6 +51,7 @@ public class GuiJavaFX
     private final WindowController windowsController;  
     private final WindowsBuilder windowsBuilder;
     private final PriorityQueue<ReusableTaskWindow> taskWindows;
+    private final ScreenCapturerWindow screenCapturerWindow;
     
     private Image taskImage;
     private Image taskIcon;
@@ -74,11 +81,13 @@ public class GuiJavaFX
             errorIcon = new Image("file:"+ imagesLocation + "exception_ico.png");
             errorImage = new Image("file:"+ imagesLocation + "exception.png");           
         });
-    }
-    
-    @Override
-    public void stopJavaFXPlatform() {
-        //Platform.exit();
+        try {
+            Robot robot = new Robot();
+            this.screenCapturerWindow = new ScreenCapturerWindow(robot);
+            Platform.runLater(screenCapturerWindow);
+        } catch (AWTException aWTException) {
+            throw new WorkflowBrokenException(aWTException);
+        }
     }
     
     @Override
@@ -180,5 +189,10 @@ public class GuiJavaFX
     @Override
     public String getPathToCssFile() {
         return this.pathToCssFile;
+    }
+
+    @Override
+    public ValueOperation<Picture> capturePictureOnScreen(String imageName) {        
+        return this.screenCapturerWindow.blockingGetCaptureFor(imageName);
     }
 }

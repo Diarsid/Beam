@@ -2,12 +2,14 @@
  * project: Beam
  * author: Diarsid
  */
-package diarsid.beam.core.modules.io;
+package diarsid.beam.core.application.gui;
 
 import java.util.List;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
+import diarsid.beam.core.domain.entities.Picture;
 
 /*
  * 'Native' program`s output interface.
@@ -18,8 +20,6 @@ import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
  * Is implemented with JavaFX or Swing technology which is choosed from config.xml.
  */
 public interface Gui {
-    
-    void stopJavaFXPlatform();
     
     /*
      * Method used to show user`s tasks.
@@ -41,4 +41,6 @@ public interface Gui {
      * cancelation after the last window is closed.
      */
     void exitAfterAllWindowsClosed();
+    
+    ValueOperation<Picture> capturePictureOnScreen(String imageName);
 }

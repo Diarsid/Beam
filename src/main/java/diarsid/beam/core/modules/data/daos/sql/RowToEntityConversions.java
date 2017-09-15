@@ -12,7 +12,7 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Attribute;
-import diarsid.beam.core.domain.entities.Image;
+import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
@@ -74,8 +74,8 @@ class RowToEntityConversions {
         return CommandType.valueOf((String) row.get("com_type"));
     };
     
-    static final RowConversion<Image> ROW_TO_IMAGE = (row) -> {
-        return new Image(
+    static final RowConversion<Picture> ROW_TO_IMAGE = (row) -> {
+        return new Picture(
                 row.get("name", String.class), 
                 row.getBytes("bytes"));
     };   

@@ -14,4 +14,6 @@ public interface ValueOperation<T extends Object> extends Operation {
     ValueOperationComplete<T> asComplete();
     
     ValueOperationFail asFail();
+    
+    VoidOperation toVoid();
 }

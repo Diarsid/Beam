@@ -2,7 +2,7 @@
  * project: Beam
  * author: Diarsid
  */
-package diarsid.beam.core.modules.io.javafxgui.window;
+package diarsid.beam.core.application.gui.javafx.window;
 
 import java.util.StringJoiner;
 
@@ -15,9 +15,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
-import diarsid.beam.core.modules.io.javafxgui.WindowController;
-import diarsid.beam.core.modules.io.javafxgui.WindowResources;
+import diarsid.beam.core.application.gui.javafx.ReusableTaskWindow;
+import diarsid.beam.core.application.gui.javafx.WindowController;
+import diarsid.beam.core.application.gui.javafx.WindowResources;
 
 /**
  *

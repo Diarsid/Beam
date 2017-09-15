@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.io.javafxgui;
+package diarsid.beam.core.application.gui.javafx;
 
 import java.util.Deque;
 import java.util.LinkedList;

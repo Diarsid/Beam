@@ -1,4 +1,4 @@
-package diarsid.beam.core.modules.io.javafxgui.window;
+package diarsid.beam.core.application.gui.javafx.window;
 
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
@@ -18,10 +18,10 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-import diarsid.beam.core.modules.io.javafxgui.ReusableTaskWindow;
-import diarsid.beam.core.modules.io.javafxgui.WindowController;
-import diarsid.beam.core.modules.io.javafxgui.WindowPosition;
-import diarsid.beam.core.modules.io.javafxgui.WindowResources;
+import diarsid.beam.core.application.gui.javafx.ReusableTaskWindow;
+import diarsid.beam.core.application.gui.javafx.WindowController;
+import diarsid.beam.core.application.gui.javafx.WindowPosition;
+import diarsid.beam.core.application.gui.javafx.WindowResources;
 
 import static javafx.animation.Animation.Status.RUNNING;
 

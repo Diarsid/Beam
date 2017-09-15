@@ -43,7 +43,7 @@ public class GooglePlugin extends Plugin {
         try {
             browseWithDesktop(this.convertToGoolgeQuery(line));
             this.ioEngine().report(initiator, "...googling");
-        } catch (URISyntaxException|IOException ex) {
+        } catch (URISyntaxException | IOException ex) {
             logError(this.getClass(), ex.getMessage());
             this.ioEngine().report(initiator, ex.getMessage());
         } 

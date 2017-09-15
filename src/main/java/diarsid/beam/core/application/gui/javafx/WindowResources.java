@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.io.javafxgui;
+package diarsid.beam.core.application.gui.javafx;
 
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;

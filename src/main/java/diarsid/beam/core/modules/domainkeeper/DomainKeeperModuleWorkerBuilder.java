@@ -114,6 +114,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.dataModule.images(),
                 commandsMemoryKeeper,
                 ioEngine, 
+                this.appComponentsHolderModule.gui(),
                 systemInitiator,
                 dialogHelper, 
                 propertyAndTextParser, 

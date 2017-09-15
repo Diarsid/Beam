@@ -11,9 +11,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import diarsid.beam.core.base.control.flow.ValueOperation;
+
 import static java.lang.Runtime.getRuntime;
 import static java.util.Optional.empty;
 
+import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
@@ -33,9 +36,18 @@ public class ConcurrencyUtil {
     private ConcurrencyUtil() {
     }
     
-    public static <T> Optional<T>  awaitGet(Callable<T> callable) {
+    public static <T> ValueOperation<T> awaitGetValue(Callable<ValueOperation<T>> callable) {
         try {
-            return Optional.of(EXECUTOR.submit(callable).get());
+            return EXECUTOR.submit(callable).get();
+        } catch (InterruptedException | ExecutionException e) {
+            logError(ConcurrencyUtil.class, e);
+            return valueOperationFail("waiting for value has been interrupted!");
+        } 
+    }
+    
+    public static <T> Optional<T> awaitGet(Callable<T> callable) {
+        try {
+            return Optional.ofNullable(EXECUTOR.submit(callable).get());
         } catch (InterruptedException | ExecutionException e) {
             logError(ConcurrencyUtil.class, e);
             return empty();

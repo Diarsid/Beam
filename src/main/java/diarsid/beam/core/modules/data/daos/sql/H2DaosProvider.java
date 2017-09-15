@@ -11,7 +11,6 @@ import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
-import diarsid.beam.core.modules.data.DaoImages;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
@@ -20,6 +19,7 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DaosProvider;
 import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.modules.data.DaoPictures;
 
 /**
  *
@@ -87,7 +87,7 @@ public class H2DaosProvider implements DaosProvider {
     }
     
     @Override
-    public DaoImages createDaoImages() {
-        return new H2DaoImages(this.dataBase, this.ioModule.getInnerIoEngine());
+    public DaoPictures createDaoImages() {
+        return new H2DaoPictures(this.dataBase, this.ioModule.getInnerIoEngine());
     }
 }

@@ -9,8 +9,8 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.Image;
-import diarsid.beam.core.modules.data.DaoImages;
+import diarsid.beam.core.domain.entities.Picture;
+import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
@@ -19,6 +19,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_IMAGE;
@@ -27,36 +28,36 @@ import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW
  *
  * @author Diarsid
  */
-class H2DaoImages 
+class H2DaoPictures 
         extends BeamCommonDao 
-        implements DaoImages {
+        implements DaoPictures {
     
-    H2DaoImages(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoPictures(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
     }
 
     @Override
-    public Optional<Image> getByName(Initiator initiator, String name) {
+    public Optional<Picture> getByName(Initiator initiator, String name) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(
-                            Image.class, 
+                    .doQueryAndConvertFirstRowVarargParams(Picture.class, 
                             "SELECT name, bytes " +
                             "FROM images " +
                             "WHERE LOWER(name) IS ? ", 
                             ROW_TO_IMAGE, 
                             lower(name));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoImages.class, ex);
+            logError(H2DaoPictures.class, ex);
             super.ioEngine().report(initiator, format("cannot get '%s' image.", name));
             return Optional.empty();
         }
     }
 
     @Override
-    public boolean save(Initiator initiator, Image image) {
-        if ( image.hasData() ) {
-            this.ioEngine().report(initiator, format("image '%s' data is empty.", image.name()));
+    public boolean save(Initiator initiator, Picture picture) {
+        debug("[DAO PICTURES] saving picture: " + picture.toString());
+        if ( picture.hasNoData() ) {
+            this.ioEngine().report(initiator, format("image '%s' data is empty.", picture.name()));
             return false;
         }
         
@@ -67,7 +68,7 @@ class H2DaoImages
                             "SELECT name " +
                             "FROM images " +
                             "WHERE LOWER(name) IS ? ", 
-                            lower(image.name()));
+                            lower(picture.name()));
             
             int mofidied;
             if ( exists ) {
@@ -76,13 +77,13 @@ class H2DaoImages
                                 "UPDATE images " +
                                 "SET bytes = ? " +
                                 "WHERE LOWER(name) IS ? ", 
-                                image.bytes(), lower(image.name()));
+                                picture.bytes(), lower(picture.name()));
             } else {
                 mofidied = transact
                         .doUpdateVarargParams(
                                 "INSERT INTO images (name, bytes) " +
                                 "VALUES ( ?, ? ) ", 
-                                image.name(), image.bytes());                
+                                picture.name(), picture.bytes());                
             }
             
             if ( mofidied == 1 ) {
@@ -93,8 +94,8 @@ class H2DaoImages
             }
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoImages.class, ex);
-            super.ioEngine().report(initiator, format("cannot save '%s' image.", image.name()));
+            logError(H2DaoPictures.class, ex);
+            super.ioEngine().report(initiator, format("cannot save '%s' image.", picture.name()));
             return false;
         }
     }
@@ -108,7 +109,7 @@ class H2DaoImages
                             "WHERE LOWER(name) IS ? ", 
                             lower(name));
             
-            if ( removed == 1 ) {
+            if ( removed == 1 || removed == 0 ) {
                 return true;
             } else {
                 transact.rollbackAndProceed();
@@ -116,14 +117,14 @@ class H2DaoImages
             }
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoImages.class, ex);
+            logError(H2DaoPictures.class, ex);
             super.ioEngine().report(initiator, format("cannot remove '%s' image.", name));
             return false;
         }
     }
 
     @Override
-    public boolean remove(Initiator initiator, Image image) {
+    public boolean remove(Initiator initiator, Picture image) {
         return this.removeByName(initiator, image.name());
     }
 }

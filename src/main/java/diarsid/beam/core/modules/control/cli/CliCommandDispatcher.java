@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.control.cli;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
@@ -273,8 +274,13 @@ class CliCommandDispatcher implements CommandDispatcher {
                     break;
                 }
                 case EXIT : {
-                    this.ioModule.unregisterIoEngine(initiator);
-                    asyncDoIndependently(() -> exitBeamCoreNow());
+                    Choice choice = this.ioModule
+                            .getInnerIoEngine()
+                            .ask(initiator, "are you sure");
+                    if ( choice.isPositive() ) {
+                        this.ioModule.unregisterIoEngine(initiator);
+                        asyncDoIndependently(() -> exitBeamCoreNow());
+                    }                    
                     break;
                 }
                 case CLOSE_CONSOLE : {
