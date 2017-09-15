@@ -83,7 +83,7 @@ public class GuiJavaFX
         });
         try {
             Robot robot = new Robot();
-            this.screenCapturerWindow = new ScreenCapturerWindow(robot);
+            this.screenCapturerWindow = new ScreenCapturerWindow(robot, this);
             Platform.runLater(screenCapturerWindow);
         } catch (AWTException aWTException) {
             throw new WorkflowBrokenException(aWTException);

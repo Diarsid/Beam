@@ -19,7 +19,7 @@ public enum ResizeMode {
     DECREASE_BY_X,
     DECREASE_BY_Y;
     
-    static ResizeMode defineResizeMode(double deltaX, double deltaY) {        
+    public static ResizeMode defineResizeMode(double deltaX, double deltaY) {        
         if ( deltaX > 0 && deltaY > 0 ) {
             return INCREASE;
         } else if ( deltaX < 0 && deltaY < 0 ) {

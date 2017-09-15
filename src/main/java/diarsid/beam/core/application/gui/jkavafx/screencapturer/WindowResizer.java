@@ -61,7 +61,7 @@ public class WindowResizer {
         this.stage.sizeToScene();        
     }
     
-    void onMousePressed(MouseEvent mouseEvent) {
+    void mousePressed(MouseEvent mouseEvent) {
         this.initialMouseX = mouseEvent.getScreenX();
         this.initialMouseY = mouseEvent.getScreenY();
         Bounds capturePaneScreenCoordinates = pane.localToScreen(pane.getBoundsInLocal());
@@ -86,7 +86,7 @@ public class WindowResizer {
 //        System.out.println("");
     }
     
-    void onMouseDragged(MouseEvent mouseEvent) {
+    void mouseDragged(MouseEvent mouseEvent) {
         if ( this.drag.equals(LEFT_DRAG) || this.drag.equals(TOP_DRAG) ) {
             return;
         }

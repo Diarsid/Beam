@@ -26,6 +26,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.domain.entities.Picture;
 
@@ -42,6 +43,7 @@ import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopp
  */
 public class ScreenCapturerWindow implements Runnable {
 
+    private final WindowResources windowResources;
     private final WindowMover windowMover;
     private final WindowResizer windowResizer;
     private final ScreenCapturer screenCapturer;    
@@ -56,7 +58,8 @@ public class ScreenCapturerWindow implements Runnable {
     private boolean ready;
     private boolean hasAwaiter;
 
-    public ScreenCapturerWindow(Robot robot) {
+    public ScreenCapturerWindow(Robot robot, WindowResources windowResources) {
+        this.windowResources = windowResources;
         this.windowMover = new WindowMover();
         this.windowResizer = new WindowResizer(300, 200);
         this.screenCapturer = new ScreenCapturer(robot);
@@ -78,7 +81,7 @@ public class ScreenCapturerWindow implements Runnable {
     }
     
     private void show() {
-        this.controlPaneLabel.setText("Capture " + this.pageName);
+        this.controlPaneLabel.setText(this.pageName);
         this.stage.centerOnScreen();
         this.stage.show();
     }
@@ -119,7 +122,7 @@ public class ScreenCapturerWindow implements Runnable {
         
         Scene scene = new Scene(mainVBox);
         scene.setFill(Color.TRANSPARENT);
-        scene.getStylesheets().add("file:D:/DEV/1__Projects/Diarsid/NetBeans/Research.Java/src/main/resources/beam.css");
+        scene.getStylesheets().add(this.windowResources.getPathToCssFile());
         this.stage.setScene(scene);
         this.ready = true;
     }
@@ -177,13 +180,7 @@ public class ScreenCapturerWindow implements Runnable {
         sh.setSpread(sh.getSpread() * 1.4);
         sh.setColor(Color.BLACK);
         hBox.setEffect(sh);
-        hBox.getStyleClass().add("main");
-        hBox.setStyle(
-                "-fx-background-radius: 12px 12px 12px 12px; " +
-                "-fx-border-radius: 10px 10px 10px 10px;" + 
-                "-fx-background-color: white; ");
-//        hBox.setMinWidth(300);
-//        hBox.setMinHeight(50);
+        hBox.setId("screen-capture-control-pane");
         hBox.setPadding(new Insets(3));
 
         Button captureButton = new Button();    
@@ -255,10 +252,10 @@ public class ScreenCapturerWindow implements Runnable {
                 this.screenCapturePane.localToScreen(
                         this.screenCapturePane.getBoundsInLocal());
         Rectangle screen = new Rectangle(
-                (int) capturePaneScreenCoordinates.getMinX(),
-                (int) capturePaneScreenCoordinates.getMinY(),
-                (int) capturePaneScreenCoordinates.getWidth(),
-                (int) capturePaneScreenCoordinates.getHeight());
+                (int) capturePaneScreenCoordinates.getMinX() + 16,
+                (int) capturePaneScreenCoordinates.getMinY() + 5,
+                (int) capturePaneScreenCoordinates.getWidth() - 32,
+                (int) capturePaneScreenCoordinates.getHeight() - 10);
         
         return this.screenCapturer.captureRectangle(screen);
     }
@@ -267,22 +264,16 @@ public class ScreenCapturerWindow implements Runnable {
         VBox screenCaptureBox = new VBox(15);
         screenCaptureBox.setMinWidth(300);
         screenCaptureBox.setMinHeight(200);
-        screenCaptureBox.setStyle(
-                "-fx-border-insets: 0 10px 0 10px; " + 
-                "-fx-effect: null;" + 
-                "-fx-border-style: solid; " +         
-                "-fx-border-radius: 6px 6px 6px 6px; " +
-                "-fx-border-color: grey; " +
-                "-fx-border-width: 4px; ");
         screenCaptureBox.setAlignment(Pos.TOP_CENTER);
+        screenCaptureBox.setId("screen-capture-capture-pane");
         this.windowResizer.acceptPane(screenCaptureBox);
         
         screenCaptureBox.setOnMousePressed((mouseEvent) -> {
-            this.windowResizer.onMousePressed(mouseEvent);
+            this.windowResizer.mousePressed(mouseEvent);
         });
         
         screenCaptureBox.setOnMouseDragged((mouseEvent) -> {
-            this.windowResizer.onMouseDragged(mouseEvent);
+            this.windowResizer.mouseDragged(mouseEvent);
         });
         
         return screenCaptureBox;

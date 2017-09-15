@@ -15,7 +15,7 @@ public enum BorderDragType {
     RIGHT_DRAG,
     BOTTOM_DRAG;
 
-    static BorderDragType defineBorderDragType(
+    public static BorderDragType defineBorderDragType(
                 double initialMouseX, double initialMouseY, 
                 double initialPaneX, double initialPaneY, 
                 double initialPaneWidth, double initialPaneHeight) {
