@@ -17,6 +17,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -30,6 +31,7 @@ import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.domain.entities.Picture;
 
 import static javafx.geometry.Insets.EMPTY;
+import static javafx.scene.control.OverrunStyle.ELLIPSIS;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
@@ -44,14 +46,14 @@ public class ScreenCapturerWindow implements Runnable {
 
     private final WindowResources windowResources;
     private final WindowMover windowMover;
-    private final WindowResizer windowResizer;
+    private final ScreenCapturerWindowResizer windowResizer;
     private final ScreenCapturer screenCapturer;    
     private final BlockingQueue<ValueOperation<Picture>> valueOperationAwaitQueue;
     private final Object queueLock;
     private final Object captureLock;
     private String pageName;
     private Stage stage;
-//    private Label controlPaneLabel;
+    private Label controlPaneLabel;
     private Pane controlPane;
     private Pane screenCapturePane;
     private boolean ready;
@@ -60,7 +62,7 @@ public class ScreenCapturerWindow implements Runnable {
     public ScreenCapturerWindow(Robot robot, WindowResources windowResources) {
         this.windowResources = windowResources;
         this.windowMover = new WindowMover();
-        this.windowResizer = new WindowResizer(142, 90);
+        this.windowResizer = new ScreenCapturerWindowResizer(142, 90);
         this.screenCapturer = new ScreenCapturer(robot);
         this.valueOperationAwaitQueue = new ArrayBlockingQueue<>(1, true);
         this.queueLock = new Object();
@@ -80,7 +82,8 @@ public class ScreenCapturerWindow implements Runnable {
     }
     
     private void show() {
-//        this.controlPaneLabel.setText("x");
+        this.controlPaneLabel.setText(this.pageName);        
+        this.windowResizer.toDefaultSize();
         this.stage.centerOnScreen();
         this.stage.show();
     }
@@ -110,10 +113,10 @@ public class ScreenCapturerWindow implements Runnable {
         this.windowMover.acceptStage(this.stage);
         this.windowResizer.acceptStage(this.stage);
         
-//        this.controlPaneLabel = new Label();
-//        this.controlPaneLabel.setTextOverrun(ELLIPSIS);
-//        this.controlPane = createControlPane(this.controlPaneLabel);
-        this.controlPane = createControlPane();
+        this.controlPaneLabel = new Label();
+        this.controlPaneLabel.setTextOverrun(ELLIPSIS);
+        this.windowResizer.acceptLabel(this.controlPaneLabel);
+        this.controlPane = createControlPane(this.controlPaneLabel);
         this.screenCapturePane = createScreenCapturePane();
         
         VBox mainVBox = new VBox();
@@ -164,7 +167,7 @@ public class ScreenCapturerWindow implements Runnable {
         }
     }
     
-    private Pane createControlPane() {
+    private Pane createControlPane(Label controlPaneLabel) {
         HBox hBox = new HBox(15); 
         
         hBox.setOnMousePressed((mouseEvent) -> {
@@ -216,7 +219,7 @@ public class ScreenCapturerWindow implements Runnable {
             this.close();
         });
         
-        hBox.getChildren().addAll(captureButton, cancelButton);
+        hBox.getChildren().addAll(captureButton, cancelButton, controlPaneLabel);
         hBox.setAlignment(Pos.CENTER_LEFT);
         
         return hBox;

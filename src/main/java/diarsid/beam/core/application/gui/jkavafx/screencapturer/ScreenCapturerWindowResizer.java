@@ -6,6 +6,7 @@
 package diarsid.beam.core.application.gui.jkavafx.screencapturer;
 
 import javafx.geometry.Bounds;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -21,13 +22,14 @@ import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ResizeMod
  *
  * @author Diarsid
  */
-public class WindowResizer {
+public class ScreenCapturerWindowResizer {
     
     private final int defaultWidth;
     private final int defaultHeight;
     
     private Stage stage;
     private Pane pane;
+    private Label label;
     
     private double widthToHeightRatio;
     private double initialMouseX;
@@ -36,10 +38,11 @@ public class WindowResizer {
     private double initialPaneY;
     private double initialPaneWidth;
     private double initialPaneHeight;
+    private double initialLabelWidth;
     
     private BorderDragType drag;
 
-    public WindowResizer(int defaultWidth, int defaultHeight) {
+    public ScreenCapturerWindowResizer(int defaultWidth, int defaultHeight) {
         this.defaultWidth = defaultWidth;
         this.defaultHeight = defaultHeight;
         this.widthToHeightRatio = 110.0d / 80.0d;
@@ -56,7 +59,13 @@ public class WindowResizer {
         this.toDefaultSize();
     }
     
+    void acceptLabel(Label label) {
+        this.label = label;
+        this.label.setMinWidth(60);
+    }
+    
     void toDefaultSize() {
+        this.label.setPrefWidth(60);
         this.pane.setPrefWidth(this.defaultWidth);
         this.pane.setPrefHeight(this.defaultHeight);        
         this.stage.sizeToScene();        
@@ -69,22 +78,13 @@ public class WindowResizer {
         this.initialPaneX = capturePaneScreenCoordinates.getMinX();
         this.initialPaneY = capturePaneScreenCoordinates.getMinY();
         this.initialPaneWidth = this.pane.getWidth();
-        this.initialPaneHeight = this.pane.getHeight();      
+        this.initialPaneHeight = this.pane.getHeight();     
+        this.initialLabelWidth = this.label.getWidth();
         
         this.drag = defineBorderDragType(
                 this.initialMouseX, this.initialMouseY, 
                 this.initialPaneX, this.initialPaneY, 
                 this.initialPaneWidth, this.initialPaneHeight);
-//        System.out.printf("initialMouse: x: %s, y: %s", this.initialMouseX, this.initialMouseY);
-//        System.out.println("");
-//        System.out.printf("initialPane: x: %s, y: %s", this.initialPaneX, this.initialPaneY);
-//        System.out.println("");
-//        System.out.printf("initialPane: width: %s, height: %s", this.initialPaneWidth, this.initialPaneHeight);
-        System.out.println("");
-        System.out.printf("w2hRatio: %s", this.widthToHeightRatio);
-        System.out.println("");
-//        System.out.println("drag: " + drag);
-//        System.out.println("");
     }
     
     void mouseDragged(MouseEvent mouseEvent) {
@@ -94,13 +94,8 @@ public class WindowResizer {
         
         double deltaX = mouseEvent.getScreenX() - this.initialMouseX;
         double deltaY = mouseEvent.getScreenY() - this.initialMouseY;
-//        System.out.printf("delta: x: %s, y: %s", deltaX, deltaY);
-//        System.out.println("");
         
         ResizeMode resize = defineResizeMode(deltaX, deltaY);
-        
-//        System.out.printf("resize mode: %s", resize);
-//        System.out.println("");
         
         double newWidth;
         double newHeight;
@@ -154,10 +149,18 @@ public class WindowResizer {
             }    
         }
         
-        
+        double actualWidthDelta = ( newWidth + 32.0d ) - this.initialPaneWidth;
+        double labelNewWidth = this.initialLabelWidth + actualWidthDelta;
+                
         this.pane.setPrefWidth(newWidth + 32.0d);
         this.pane.setPrefHeight(newHeight + 10.0d);
         
+        if ( labelNewWidth < 60.0d ) {
+            labelNewWidth = 60.0d;
+        } 
+        this.label.setPrefWidth(labelNewWidth);     
+        this.label.autosize();
+
         this.stage.sizeToScene();
     }
 }
