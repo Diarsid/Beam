@@ -42,6 +42,7 @@ public class WindowResizer {
     public WindowResizer(int defaultWidth, int defaultHeight) {
         this.defaultWidth = defaultWidth;
         this.defaultHeight = defaultHeight;
+        this.widthToHeightRatio = 110.0d / 80.0d;
     }
     
     void acceptStage(Stage stage) {
@@ -68,8 +69,8 @@ public class WindowResizer {
         this.initialPaneX = capturePaneScreenCoordinates.getMinX();
         this.initialPaneY = capturePaneScreenCoordinates.getMinY();
         this.initialPaneWidth = this.pane.getWidth();
-        this.initialPaneHeight = this.pane.getHeight();        
-        this.widthToHeightRatio = this.pane.getWidth() / this.pane.getHeight();
+        this.initialPaneHeight = this.pane.getHeight();      
+        
         this.drag = defineBorderDragType(
                 this.initialMouseX, this.initialMouseY, 
                 this.initialPaneX, this.initialPaneY, 
@@ -79,9 +80,9 @@ public class WindowResizer {
 //        System.out.printf("initialPane: x: %s, y: %s", this.initialPaneX, this.initialPaneY);
 //        System.out.println("");
 //        System.out.printf("initialPane: width: %s, height: %s", this.initialPaneWidth, this.initialPaneHeight);
-//        System.out.println("");
-//        System.out.printf("w2hRatio: %s", this.widthToHeightRatio);
-//        System.out.println("");
+        System.out.println("");
+        System.out.printf("w2hRatio: %s", this.widthToHeightRatio);
+        System.out.println("");
 //        System.out.println("drag: " + drag);
 //        System.out.println("");
     }
@@ -104,44 +105,47 @@ public class WindowResizer {
         double newWidth;
         double newHeight;
         
+        double virtualPaneWidth = this.initialPaneWidth - 32;
+        double virtualPaneHeight = this.initialPaneHeight - 10;
+        
         switch ( resize ) {
             case INCREASE : {
                 if ( deltaX > deltaY ) {
-                    newWidth = this.initialPaneWidth + deltaX;
+                    newWidth = virtualPaneWidth + deltaX;
                     newHeight = newWidth * ( 1.0 / widthToHeightRatio );
                 } else {
-                    newHeight = this.initialPaneHeight + deltaY;
+                    newHeight = virtualPaneHeight + deltaY;
                     newWidth = newHeight * widthToHeightRatio;
                 }   
                 break;
             }    
             case DECREASE : {
                 if ( deltaX < deltaY ) {
-                    newWidth = this.initialPaneWidth + deltaX;
+                    newWidth = virtualPaneWidth + deltaX;
                     newHeight = newWidth * ( 1.0 / widthToHeightRatio );
                 } else {
-                    newHeight = this.initialPaneHeight + deltaY;
+                    newHeight = virtualPaneHeight + deltaY;
                     newWidth = newHeight * widthToHeightRatio;
                 }   
                 break;
             }    
             case INCREASE_BY_X : {
-                newWidth = this.initialPaneWidth + deltaX;
+                newWidth = virtualPaneWidth + deltaX;
                 newHeight = newWidth * ( 1.0 / widthToHeightRatio );
                 break;
             }    
             case INCREASE_BY_Y : {
-                newHeight = this.initialPaneHeight + deltaY;
+                newHeight = virtualPaneHeight + deltaY;
                 newWidth = newHeight * widthToHeightRatio;
                 break;
             }    
             case DECREASE_BY_X : {
-                newWidth = this.initialPaneWidth + deltaX;
+                newWidth = virtualPaneWidth + deltaX;
                 newHeight = newWidth * ( 1.0 / widthToHeightRatio );
                 break;
             }    
             case DECREASE_BY_Y : {
-                newHeight = this.initialPaneHeight + deltaY;
+                newHeight = virtualPaneHeight + deltaY;
                 newWidth = newHeight * widthToHeightRatio;
                 break;
             }    
@@ -151,11 +155,9 @@ public class WindowResizer {
         }
         
         
-        this.pane.setPrefWidth(newWidth);
-        this.pane.setPrefHeight(newHeight);
+        this.pane.setPrefWidth(newWidth + 32.0d);
+        this.pane.setPrefHeight(newHeight + 10.0d);
         
         this.stage.sizeToScene();
-//        
-//        System.out.println("");
     }
 }

@@ -17,7 +17,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -52,7 +51,7 @@ public class ScreenCapturerWindow implements Runnable {
     private final Object captureLock;
     private String pageName;
     private Stage stage;
-    private Label controlPaneLabel;
+//    private Label controlPaneLabel;
     private Pane controlPane;
     private Pane screenCapturePane;
     private boolean ready;
@@ -61,7 +60,7 @@ public class ScreenCapturerWindow implements Runnable {
     public ScreenCapturerWindow(Robot robot, WindowResources windowResources) {
         this.windowResources = windowResources;
         this.windowMover = new WindowMover();
-        this.windowResizer = new WindowResizer(300, 200);
+        this.windowResizer = new WindowResizer(142, 90);
         this.screenCapturer = new ScreenCapturer(robot);
         this.valueOperationAwaitQueue = new ArrayBlockingQueue<>(1, true);
         this.queueLock = new Object();
@@ -81,7 +80,7 @@ public class ScreenCapturerWindow implements Runnable {
     }
     
     private void show() {
-        this.controlPaneLabel.setText(this.pageName);
+//        this.controlPaneLabel.setText("x");
         this.stage.centerOnScreen();
         this.stage.show();
     }
@@ -96,8 +95,8 @@ public class ScreenCapturerWindow implements Runnable {
         this.stage = new Stage();
         this.stage.initStyle(StageStyle.TRANSPARENT);
         this.stage.setAlwaysOnTop(true);
-        this.stage.setMinWidth(100);
-        this.stage.setMinHeight(100);
+        this.stage.setMinWidth(110);
+        this.stage.setMinHeight(90);
         this.stage.setResizable(true);
         this.stage.centerOnScreen();
         this.stage.setOnCloseRequest((windowEvent) -> {
@@ -111,8 +110,10 @@ public class ScreenCapturerWindow implements Runnable {
         this.windowMover.acceptStage(this.stage);
         this.windowResizer.acceptStage(this.stage);
         
-        this.controlPaneLabel = new Label();
-        this.controlPane = createControlPane(this.controlPaneLabel);
+//        this.controlPaneLabel = new Label();
+//        this.controlPaneLabel.setTextOverrun(ELLIPSIS);
+//        this.controlPane = createControlPane(this.controlPaneLabel);
+        this.controlPane = createControlPane();
         this.screenCapturePane = createScreenCapturePane();
         
         VBox mainVBox = new VBox();
@@ -124,6 +125,7 @@ public class ScreenCapturerWindow implements Runnable {
         scene.setFill(Color.TRANSPARENT);
         scene.getStylesheets().add(this.windowResources.getPathToCssFile());
         this.stage.setScene(scene);
+        this.stage.sizeToScene();
         this.ready = true;
     }
     
@@ -162,7 +164,7 @@ public class ScreenCapturerWindow implements Runnable {
         }
     }
     
-    private Pane createControlPane(Label controlPaneLabel) {
+    private Pane createControlPane() {
         HBox hBox = new HBox(15); 
         
         hBox.setOnMousePressed((mouseEvent) -> {
@@ -214,7 +216,7 @@ public class ScreenCapturerWindow implements Runnable {
             this.close();
         });
         
-        hBox.getChildren().addAll(captureButton, cancelButton, controlPaneLabel);
+        hBox.getChildren().addAll(captureButton, cancelButton);
         hBox.setAlignment(Pos.CENTER_LEFT);
         
         return hBox;
@@ -262,8 +264,8 @@ public class ScreenCapturerWindow implements Runnable {
     
     private Pane createScreenCapturePane() {
         VBox screenCaptureBox = new VBox(15);
-        screenCaptureBox.setMinWidth(300);
-        screenCaptureBox.setMinHeight(200);
+        screenCaptureBox.setMinWidth(142);
+        screenCaptureBox.setMinHeight(90);
         screenCaptureBox.setAlignment(Pos.TOP_CENTER);
         screenCaptureBox.setId("screen-capture-capture-pane");
         this.windowResizer.acceptPane(screenCaptureBox);
