@@ -7,7 +7,6 @@ package diarsid.beam.core.application.gui.jkavafx.screencapturer;
 
 import java.awt.Rectangle;
 import java.awt.Robot;
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -26,6 +25,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.domain.entities.Picture;
@@ -33,7 +33,6 @@ import diarsid.beam.core.domain.entities.Picture;
 import static javafx.geometry.Insets.EMPTY;
 import static javafx.scene.control.OverrunStyle.ELLIPSIS;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
 
@@ -59,17 +58,24 @@ public class ScreenCapturerWindow implements Runnable {
     private boolean ready;
     private boolean hasAwaiter;
 
-    public ScreenCapturerWindow(Robot robot, WindowResources windowResources) {
+    ScreenCapturerWindow(ScreenCapturer screenCapturer, WindowResources windowResources) {
         this.windowResources = windowResources;
         this.windowMover = new WindowMover();
         this.windowResizer = new ScreenCapturerWindowResizer(142, 90);
-        this.screenCapturer = new ScreenCapturer(robot);
+        this.screenCapturer = screenCapturer;
         this.valueOperationAwaitQueue = new ArrayBlockingQueue<>(1, true);
         this.queueLock = new Object();
         this.captureLock = new Object();
         this.pageName = "";
         this.ready = false;
         this.hasAwaiter = false;
+    }
+    
+    public static ScreenCapturerWindow buildScreenCapturerWindow(
+            Configuration configuration, Robot robot, WindowResources windowResources) {
+        ScreenCapturer screenCapturer = new ScreenCapturer(
+                robot, configuration.asBoolean("ui.images.capture.webpages.resize"));
+        return new ScreenCapturerWindow(screenCapturer, windowResources);
     }
     
     @Override
@@ -235,16 +241,9 @@ public class ScreenCapturerWindow implements Runnable {
 
     private void makeScreenCapture() {
         try {
-            ValueOperation<Picture> pictureFlow;
-            Optional<byte[]> bytes = this.captureScreenRectangle();
-            
-            if ( bytes.isPresent() ) {
-                pictureFlow = valueCompletedWith(new Picture(pageName, bytes.get()));
-            } else {
-                pictureFlow = valueOperationFail("cannot get picture bytes.");
-            }
-            
-            this.valueOperationAwaitQueue.put(pictureFlow);
+            this.valueOperationAwaitQueue.put(
+                    this.captureScreenRectangle()
+                            .map(bytes -> new Picture(this.pageName, bytes)));
             this.close();
         } catch (InterruptedException ex) {
             // TODO MEDIUM
@@ -252,7 +251,7 @@ public class ScreenCapturerWindow implements Runnable {
         }
     }
 
-    private Optional<byte[]> captureScreenRectangle() {
+    private ValueOperation<byte[]> captureScreenRectangle() {
         Bounds capturePaneScreenCoordinates =
                 this.screenCapturePane.localToScreen(
                         this.screenCapturePane.getBoundsInLocal());

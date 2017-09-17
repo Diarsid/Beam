@@ -37,7 +37,7 @@ class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHo
         this.interpreter = new Interpreter();
         this.programsCatalog = BeamEnvironment.programsCatalog();
         this.notesCatalog = BeamEnvironment.notesCatalog();
-        this.gui = new GuiJavaFX(this.configuration.asString("ui.resources.images"));
+        this.gui = new GuiJavaFX(this.configuration);
     }
     
     @Override

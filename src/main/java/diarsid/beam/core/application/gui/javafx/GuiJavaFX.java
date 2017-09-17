@@ -16,6 +16,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.application.gui.javafx.window.WindowsBuilderWorker;
 import diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow;
@@ -25,6 +26,7 @@ import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.domain.entities.Picture;
 
+import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow.buildScreenCapturerWindow;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 
@@ -62,7 +64,7 @@ public class GuiJavaFX
     
     private DropShadow buttonShadow;
     
-    public GuiJavaFX(String imagesLocation) {
+    public GuiJavaFX(Configuration configuration) {
         this.windowsController = new WindowController();
         this.windowsBuilder = new WindowsBuilderWorker();
         this.taskWindows = new PriorityQueue<>();
@@ -70,6 +72,7 @@ public class GuiJavaFX
         // only within Java FX Application Thread, so
         // it is necessary to init them inside of Runnable.run() {...}
         // that will be executed inside the Java FX platform own thread.
+        String imagesLocation = configuration.asString("ui.images.resources");
         Platform.runLater(() -> {
             buttonShadow = new DropShadow();
             buttonShadow.setColor(Color.YELLOW);
@@ -83,7 +86,7 @@ public class GuiJavaFX
         });
         try {
             Robot robot = new Robot();
-            this.screenCapturerWindow = new ScreenCapturerWindow(robot, this);
+            this.screenCapturerWindow = buildScreenCapturerWindow(configuration, robot, this);
             Platform.runLater(screenCapturerWindow);
         } catch (AWTException aWTException) {
             throw new WorkflowBrokenException(aWTException);

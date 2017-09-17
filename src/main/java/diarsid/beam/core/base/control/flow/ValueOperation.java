@@ -5,11 +5,15 @@
  */
 package diarsid.beam.core.base.control.flow;
 
+import java.util.function.Function;
+
 /**
  *
  * @author Diarsid
  */
 public interface ValueOperation<T extends Object> extends Operation {
+    
+    <R> ValueOperation<R> map(Function<T, R> mapFunction);
     
     ValueOperationComplete<T> asComplete();
     

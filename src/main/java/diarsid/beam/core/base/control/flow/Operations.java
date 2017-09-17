@@ -7,6 +7,7 @@
 package diarsid.beam.core.base.control.flow;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
@@ -74,6 +75,11 @@ public class Operations {
             @Override
             public VoidOperation toVoid() {
                 return STOPPED_VOID_OPERATION;
+            }
+
+            @Override
+            public ValueOperation map(Function mapFunction) {
+                return this;
             }
         };
     }
@@ -148,6 +154,11 @@ public class Operations {
             public VoidOperation toVoid() {
                 return OK_VOID_OPERATION;
             }
+
+            @Override
+            public <R> ValueOperation<R> map(Function<T, R> mapFunction) {
+                return valueCompletedWith(mapFunction.apply(t));
+            }
         };
     }
     
@@ -186,6 +197,11 @@ public class Operations {
             @Override
             public VoidOperation toVoid() {
                 return OK_VOID_OPERATION;
+            }
+
+            @Override
+            public <R> ValueOperation<R> map(Function<T, R> mapFunction) {
+                return valueCompletedEmpty();
             }
         };
     }
@@ -242,6 +258,11 @@ public class Operations {
             @Override
             public VoidOperation toVoid() {
                 return voidOperationFail(failMessage);
+            }
+
+            @Override
+            public ValueOperation map(Function mapFunction) {
+                return this;
             }
         };
     }
