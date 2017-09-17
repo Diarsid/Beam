@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.base.patternsanalyze;
+package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.io.Serializable;
 

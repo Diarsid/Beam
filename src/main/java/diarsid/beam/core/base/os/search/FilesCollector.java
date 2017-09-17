@@ -14,13 +14,13 @@ import java.util.stream.Stream;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.cleanSeparators;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.isSimilarIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -50,7 +50,7 @@ class FilesCollector {
         if ( containsIgnoreCase(nameFromPath, nameToFind) ) {
             return true;
         } else {
-            boolean result = isSimilarIgnoreCase(nameFromPath, nameToFind);
+            boolean result = isSimilar(nameFromPath, nameToFind);
             return result;
         }
     }
@@ -71,7 +71,7 @@ class FilesCollector {
             searchedPart = searchedPathParts[counter];
             if ( containsIgnoreCase(realPart, searchedPart) ) {
                 counter++;
-            } else if ( isSimilarIgnoreCase(realPart, searchedPart) ) {
+            } else if ( isSimilar(realPart, searchedPart) ) {
                 counter++;
             }
         }

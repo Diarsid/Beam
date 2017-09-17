@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
 import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
@@ -29,7 +29,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 
 /**
  *

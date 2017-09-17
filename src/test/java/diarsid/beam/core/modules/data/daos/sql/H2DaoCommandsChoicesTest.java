@@ -22,7 +22,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DataBaseVerifier;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
@@ -39,7 +39,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBP
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
-import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 

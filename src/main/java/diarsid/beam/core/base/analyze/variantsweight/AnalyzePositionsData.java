@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.patternsanalyze;
+package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,15 +14,15 @@ import java.util.TreeSet;
 import static java.lang.String.format;
 import static java.util.Collections.reverseOrder;
 
-import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.clustersImportanceDependingOn;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.countUsorted;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isWordsSeparator;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedImportanceDependingOn;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.unsortedImportanceDependingOn;
-import static diarsid.beam.core.base.patternsanalyze.FindPositionsStep.STEP_1;
-import static diarsid.beam.core.base.patternsanalyze.FindPositionsStep.STEP_2;
-import static diarsid.beam.core.base.patternsanalyze.FindPositionsStep.STEP_3;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.countUsorted;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isWordsSeparator;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedImportanceDependingOn;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.unsortedImportanceDependingOn;
+import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
+import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
+import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;

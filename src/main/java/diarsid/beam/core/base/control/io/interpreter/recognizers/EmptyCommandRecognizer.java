@@ -11,6 +11,7 @@ import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.NodeRecognizer;
 
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.LOWEST;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.lowerThan;
 
@@ -29,6 +30,10 @@ public class EmptyCommandRecognizer extends NodeRecognizer {
 
     @Override
     public Command assess(Input input) {
-        return new EmptyCommand(this.commandType);
+        if ( input.hasNotRecognizedArgs() ) {
+            return undefinedCommand();
+        } else {
+            return new EmptyCommand(this.commandType);
+        }        
     }    
 }

@@ -7,6 +7,11 @@ package diarsid.beam.core.base.control.io.interpreter.recognizers;
 
 import diarsid.beam.core.base.control.io.commands.CommandType;
 
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.EXPECTS_MORE_ARGS;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.NOT_EXPECTS_MORE_ARGS;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.EmptyArgsTolerance.NOT_TOLERATE_EMPTY_ARGS;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.EmptyArgsTolerance.TOLERATE_EMPTY_ARGS;
+
 /**
  *
  * @author Diarsid
@@ -76,12 +81,27 @@ public class Recognition {
     
     public static WordRecognizer controlWord(String controlWord) {        
         CONTEXT.add(controlWord);
-        return new WordRecognizer(controlWord);
+        return new WordRecognizer(TOLERATE_EMPTY_ARGS, EXPECTS_MORE_ARGS, controlWord);
+    }
+    
+    public static WordRecognizer justControlWord(String controlWord) {        
+        CONTEXT.add(controlWord);
+        return new WordRecognizer(NOT_TOLERATE_EMPTY_ARGS, NOT_EXPECTS_MORE_ARGS, controlWord);
+    }
+    
+    public static WordsRecognizer mediatoryControlWords(String... controlWords) {
+        CONTEXT.add(controlWords);
+        return new WordsRecognizer(NOT_TOLERATE_EMPTY_ARGS, EXPECTS_MORE_ARGS, controlWords);
     }
     
     public static WordsRecognizer controlWords(String... controlWords) {
         CONTEXT.add(controlWords);
-        return new WordsRecognizer(controlWords);
+        return new WordsRecognizer(TOLERATE_EMPTY_ARGS, EXPECTS_MORE_ARGS, controlWords);
+    }
+    
+    public static WordsRecognizer justControlWords(String... controlWords) {
+        CONTEXT.add(controlWords);
+        return new WordsRecognizer(NOT_TOLERATE_EMPTY_ARGS, NOT_EXPECTS_MORE_ARGS, controlWords);
     }
     
     public static ArgumentsRecognizer argumentsFor(CommandType commandType) {

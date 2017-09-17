@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;

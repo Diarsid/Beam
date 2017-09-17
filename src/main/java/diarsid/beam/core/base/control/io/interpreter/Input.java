@@ -112,6 +112,10 @@ public class Input {
         return ( this.splited.size() > qty );
     }
     
+    public boolean hasMoreArgsAfterCurrent() {
+        return this.splited.size() > this.processedParamIndex + 1;
+    }
+    
     public boolean hasLessArgsThan(int qty) {
         return ( this.splited.size() < qty );
     }

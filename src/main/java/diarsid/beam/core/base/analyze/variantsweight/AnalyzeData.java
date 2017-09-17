@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.patternsanalyze;
+package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.Map;
 
@@ -13,11 +13,11 @@ import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzePositionsData.UNINITIALIZED;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.isVariantTextLengthTooBad;
-import static diarsid.beam.core.base.patternsanalyze.AnalyzeUtil.missedTooMuch;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.UNINITIALIZED;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantTextLengthTooBad;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;

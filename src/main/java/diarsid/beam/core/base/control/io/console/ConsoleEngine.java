@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.patternsanalyze.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 
 
 class ConsoleEngine {

@@ -11,12 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.lang.Integer.MIN_VALUE;
-import static java.lang.Math.abs;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -168,40 +165,5 @@ public class StringIgnoreCaseUtil {
                 return null;
             }
         }    
-    }
-    
-    public static boolean isSimilarIgnoreCase(String realTarget, String pattern) {
-        realTarget = lower(realTarget);
-        pattern = lower(pattern);
-        int notFoundChars = 0;
-        int realTargetCharIndex;
-        int realTargetPreviousCharIndex = MIN_VALUE;
-        int clustered = 0;
-        for (int patternCharIndex = 0; patternCharIndex < pattern.length(); patternCharIndex++) {
-            realTargetCharIndex = realTarget.indexOf(pattern.charAt(patternCharIndex));
-            if ( realTargetCharIndex < 0 ) {
-                realTargetPreviousCharIndex = MIN_VALUE;
-                notFoundChars++;
-            } else {
-                if ( abs(realTargetCharIndex - realTargetPreviousCharIndex) == 1 || 
-                        realTargetCharIndex == realTargetPreviousCharIndex ) {
-                    if ( clustered == 0 ) {
-                        clustered++;
-                    } 
-                    clustered++;
-                }
-                realTargetPreviousCharIndex = realTargetCharIndex;
-            }
-        }
-        debug("[SIMILARITY] " + realTarget + "::" + pattern + " = clustered " + clustered);
-        if ( notFoundChars == 0 ) {
-            return clustered > 0;
-        } else if ( notFoundChars == pattern.length() ) {
-            return false;
-        } else {
-            return 
-                    ( ( (notFoundChars * 1.0f) / (pattern.length() * 1.0f) ) <= 0.2f ) &&
-                    ( clustered > 0 );
-        }        
     }
 }

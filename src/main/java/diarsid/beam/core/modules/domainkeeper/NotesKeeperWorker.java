@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
-import diarsid.beam.core.base.patternsanalyze.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -35,7 +35,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.SIMPLE_PATH_RULE;
-import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 
 /**
  *

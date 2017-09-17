@@ -74,6 +74,9 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognit
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.executableWith;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.independentWord;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.independentWords;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.justControlWord;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.justControlWords;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.mediatoryControlWords;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.multipleArgs;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.only;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.pause;
@@ -133,8 +136,8 @@ public class Interpreter {
                         "b/", 
                         "e/", 
                         "c/").priority(HIGH).and(domainWord().and(executable(CALL_BATCH))),
-                controlWord(independentWord("exit")).priority(HIGH).and(only(EXIT)),
-                controlWord(independentWord("close")).priority(HIGH).and(only(CLOSE_CONSOLE)),
+                justControlWord(independentWord("exit")).priority(HIGH).and(only(EXIT)),
+                justControlWord(independentWord("close")).priority(HIGH).and(only(CLOSE_CONSOLE)),
                 controlWords(independentWords(
                         "n", 
                         "note", 
@@ -142,26 +145,26 @@ public class Interpreter {
                                 singleArg().priority(HIGH).and(only(OPEN_NOTES)),
                                 relativePath().priority(HIGHER).and(argumentsFor(OPEN_PATH_IN_NOTES)),
                                 domainWord().and(argumentsFor(OPEN_TARGET_IN_NOTES)),
-                                controlWords(
+                                mediatoryControlWords(
                                         "+", 
                                         "new", 
                                         "add", 
                                         "create").priority(higherThan(HIGHEST)).and(argumentsFor(CREATE_NOTE))), 
-                controlWords(
+                mediatoryControlWords(
                         "see", 
                         "www",
                         "browse").priority(HIGH).and(domainWord().and(executable(BROWSE_WEBPAGE))), 
-                controlWords(
+                mediatoryControlWords(
                         "o", 
                         "op", 
                         "open").priority(HIGH).andAny(
                                 domainWord().and(executable(OPEN_LOCATION)),
                                 relativePath().and(executable(OPEN_LOCATION_TARGET))),
-                controlWords(
+                mediatoryControlWords(
                         "call", 
                         "exe", 
                         "exec").priority(HIGH).and(domainWord().and(executable(CALL_BATCH))), 
-                controlWords(
+                mediatoryControlWords(
                         "r", 
                         "run").priority(HIGH).andAny(
                                 domainWord().and(executable(RUN_PROGRAM)),
@@ -172,12 +175,12 @@ public class Interpreter {
                 controlWord("stop").priority(HIGH).andAny(
                                 domainWord().and(executableWith(RUN_PROGRAM, "stop")),
                                 relativePath().and(executableWith(RUN_PROGRAM, "stop"))),
-                controlWords(independentWords(
+                justControlWords(independentWords(
                         "webpanel",
                         "wpanel",
                         "panel")).and(only(BROWSE_WEBPANEL)),
                 controlWord("pause").priority(HIGH).and(pause()),
-                controlWords(
+                mediatoryControlWords(
                         "edit", 
                         "change", 
                         "alter").andAny(
@@ -204,12 +207,11 @@ public class Interpreter {
                                         "bat", 
                                         "batch", 
                                         "exe").and(argumentsFor(EDIT_BATCH))),
-                controlWords(
+                mediatoryControlWords(
                         "+", 
                         "add", 
                         "new", 
-                        "create").andAny(
-                                controlWords(
+                        "create").andAny(controlWords(
                                         "loc", 
                                         "location").and(argumentsFor(CREATE_LOCATION)),
                                 controlWord(
@@ -224,8 +226,7 @@ public class Interpreter {
                                         "page", 
                                         "webpage", 
                                         "webp", 
-                                        "web").andAny(
-                                                controlWords(
+                                        "web").andAny(controlWords(
                                                         "image", 
                                                         "img", 
                                                         "picture", 
@@ -246,12 +247,11 @@ public class Interpreter {
                                         "note", 
                                         "not", 
                                         "nt").andAny(argumentsFor(CREATE_NOTE))),
-                controlWords(
+                mediatoryControlWords(
                         "-", 
                         "del", 
                         "delete", 
-                        "remove").andAny(
-                                controlWords(
+                        "remove").andAny(controlWords(
                                         "loc", 
                                         "location").and(argumentsFor(DELETE_LOCATION)),
                                 controlWord("task").and(argumentsFor(DELETE_TASK)),
@@ -264,7 +264,7 @@ public class Interpreter {
                                         "webpage", 
                                         "webp", 
                                         "web").andAny(
-                                                controlWords(
+                                                mediatoryControlWords(
                                                         "dir", 
                                                         "direct", 
                                                         "directory").and(argumentsFor(DELETE_WEB_DIR)),
@@ -280,7 +280,7 @@ public class Interpreter {
                                         "bat", 
                                         "batch", 
                                         "exe").and(argumentsFor(DELETE_BATCH))),
-                controlWords(
+                mediatoryControlWords(
                         "?", 
                         "get", 
                         "find").andAny(controlWord("task").and(argumentsFor(FIND_TASK)), 
@@ -311,11 +311,11 @@ public class Interpreter {
                                         "bat", 
                                         "batch", 
                                         "exe").and(argumentsFor(FIND_BATCH)),
-                                controlWords(independentWords(
+                                justControlWords(independentWords(
                                         "webpanel",
                                         "wpanel",
                                         "panel")).and(only(GET_WEBPANEL)),
-                                controlWords(
+                                justControlWords(
                                         "bookmarks", 
                                         "bmarks", 
                                         "marks").and(only(GET_BOOKMARKS)),

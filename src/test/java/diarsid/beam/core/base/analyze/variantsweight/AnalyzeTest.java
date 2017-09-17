@@ -3,7 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.patternsanalyze;
+package diarsid.beam.core.base.analyze.variantsweight;
+
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +23,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.patternsanalyze.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 
 /**
  *

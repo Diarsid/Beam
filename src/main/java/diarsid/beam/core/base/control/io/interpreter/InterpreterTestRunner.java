@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import diarsid.beam.core.base.control.io.commands.Command;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXIT;
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 
 /**
  *
@@ -27,14 +28,12 @@ public class InterpreterTestRunner {
     
     public static void main(String[] args) throws Exception {
         String commandLine;
-        Command command;
-        boolean work = true;
-        while ( work ) {
+        Command command = undefinedCommand();
+        while ( command.type().isNot(EXIT) ) {
             System.out.print(" > ");
             commandLine = reader.readLine(); 
             command = interpreter.interprete(commandLine);
             System.out.println(command.type());
-            work = ! command.type().equals(EXIT);
         }
     }
 }
