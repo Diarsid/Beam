@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.domain.entities;
 
+import diarsid.beam.core.base.control.io.base.interaction.Binary;
+
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
@@ -48,5 +50,10 @@ public class Picture implements Binary {
     @Override
     public String toString() {
         return format("Picture(name:'%s', bytes:%s)", this.name, this.bytes.length);
+    }
+
+    @Override
+    public String contentType() {
+        return "image/png";
     }
 }

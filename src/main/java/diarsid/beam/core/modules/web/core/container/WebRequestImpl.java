@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import diarsid.beam.core.base.control.io.base.interaction.Binary;
 import diarsid.beam.core.base.control.io.base.interaction.Json;
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
@@ -69,7 +70,7 @@ class WebRequestImpl implements WebRequest {
             if ( webResponse.isBodyJson() ) {
                 this.sendStatusWithJson(webResponse.status(), webResponse.jsonBody());
             } else {
-                this.sendStatusWithBytes(webResponse.status(), webResponse.binaryBody());
+                this.sendStatusWithBinary(webResponse.status(), webResponse.binaryBody());
             }    
         } else {
             this.sendStatus(webResponse.status());
@@ -90,13 +91,12 @@ class WebRequestImpl implements WebRequest {
         this.servletResponse.getWriter().close();
     }
     
-    private void sendStatusWithBytes(int status, byte[] bytes) throws IOException {
+    private void sendStatusWithBinary(int status, Binary binary) throws IOException {
         this.servletResponse.setStatus(status);
-//        this.servletResponse.setContentType("application/json");
+        this.servletResponse.setContentType(binary.contentType());
         this.servletResponse.setCharacterEncoding("UTF-8");
-        this.servletResponse.setContentLength(bytes.length);
-        // TODO MIDDLE
-        this.servletResponse.getOutputStream().write(bytes);
+        this.servletResponse.setContentLength(binary.bytes().length);
+        this.servletResponse.getOutputStream().write(binary.bytes());
         this.servletResponse.getOutputStream().flush();
         this.servletResponse.getOutputStream().close();
     }

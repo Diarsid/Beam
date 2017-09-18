@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.entities;
+package diarsid.beam.core.base.control.io.base.interaction;
 
 /**
  *
@@ -16,4 +16,6 @@ public interface Binary {
     boolean hasNoData();
     
     byte[] bytes();
+    
+    String contentType();
 }

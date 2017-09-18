@@ -8,8 +8,6 @@ package diarsid.beam.core.base.control.io.base.interaction;
 import java.util.Collection;
 import java.util.Optional;
 
-import diarsid.beam.core.domain.entities.Binary;
-
 import static java.util.Objects.nonNull;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -52,7 +50,7 @@ public class WebResponse {
         this.isJson = true;
     }
     
-    private WebResponse(int status, byte[] body) {
+    private WebResponse(int status, Binary body) {
         this.status = status;
         this.body = body;
         this.isJson = false;
@@ -78,11 +76,11 @@ public class WebResponse {
         }
     }
     
-    public byte[] binaryBody() {
+    public Binary binaryBody() {
         if ( this.isJson ) {
             throw new IllegalStateException("This WebResponse is not a binary.");
         } else {
-            return (byte[]) this.body;
+            return (Binary) this.body;
         }
     }
 
@@ -124,7 +122,7 @@ public class WebResponse {
     }
     
     public static WebResponse okWithBinary(Binary binary) {
-        return new WebResponse(SC_OK, binary.bytes());
+        return new WebResponse(SC_OK, binary);
     }
 
     public static WebResponse optionalOkWithJson(
