@@ -59,6 +59,21 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilarStrong_directory_directory() {
+        assertTrue(isStrictSimilar("directory", "dierctry"));
+    }
+    
+    @Test
+    public void test_isSimilarStrong_webpanel_peabwlne() {
+        assertFalse(isStrictSimilar("webpanel", "peabwlne"));
+    }
+    
+    @Test
+    public void test_isSimilarStrong_directory_yretdoicr() {
+        assertFalse(isStrictSimilar("directory", "yretdoicr"));
+    }
+    
+    @Test
     public void test_isSimilarStrong_panel_page() {
         assertFalse(isStrictSimilar("panel", "page"));
     }

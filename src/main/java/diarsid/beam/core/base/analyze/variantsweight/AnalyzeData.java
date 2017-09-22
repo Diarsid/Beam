@@ -28,8 +28,6 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 class AnalyzeData {
     
-//    final Map<Character, Integer> reusableVisitedChars = new HashMap<>();    
-//    final Set<Character> skippedChars = new HashSet<>();
     final AnalyzePositionsData forward = new AnalyzePositionsData(this, FORWARD);
     final AnalyzePositionsData reverse = new AnalyzePositionsData(this, REVERSE);
     

@@ -24,10 +24,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOk;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
@@ -292,7 +292,7 @@ public class Analyze {
         Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
         Map<String, Variant> variantsByText = new HashMap<>();
         List<WeightedVariant> weightedVariants = new ArrayList<>();        
-        AnalyzeData analyze = getAnalyzeData();
+        AnalyzeData analyze = new AnalyzeData();
         String lowerVariantText;
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
@@ -371,9 +371,5 @@ public class Analyze {
                 .stream()
                 .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
-    }
-
-    private static AnalyzeData getAnalyzeData() {
-        return new AnalyzeData();
     }
 }
