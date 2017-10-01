@@ -3,18 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.domain.inputparsing.time;
-
-import java.util.List;
-import java.util.Optional;
+package diarsid.beam.core.base.control.flow;
 
 /**
  *
  * @author Diarsid
  */
-interface TimePatternParser {
+public interface ValueFlowCompleted<T extends Object> extends ValueFlow<T> {
     
-    List<String> timePatterns();
+    boolean hasValue();
     
-    Optional<Time> parse(String timePattern);
+    T getOrThrow();
+    
+    T getOrDefault(T defaultT);
 }

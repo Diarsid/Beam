@@ -32,8 +32,8 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.jdbc.transactions.core.Params.params;
 import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBPAGE;
+import static diarsid.jdbc.transactions.core.Params.params;
 
 
 
@@ -271,7 +271,8 @@ class H2DaoWebPages
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebPage> optPage = transact
-                    .doQueryAndConvertFirstRowVarargParams(WebPage.class,
+                    .doQueryAndConvertFirstRowVarargParams(
+                            WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",

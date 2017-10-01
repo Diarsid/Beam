@@ -5,8 +5,10 @@
  */
 package diarsid.beam.core.domain.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
@@ -16,18 +18,37 @@ import static java.util.stream.Collectors.toList;
  */
 public enum TaskRepeat {
     
-    NO_REPEAT ("no repeat"),
-    HOURLY_REPEAT ("hourly repeat"),
-    DAILY_REPEAT ("every day of week"),
-    MONTHLY_REPEAT ("every month"),
-    YEARLY_REPEAT ("every year"),
+    NO_REPEAT (
+            "no repeat", 
+            "Task will never be repeated again."),
+    HOURLY_REPEAT (
+            "hourly repeat", 
+            "Will be repeated every allowed hour and day.",
+            "For example, from Tuesday till Friday from 10:00 to 18:00."),
+    DAILY_REPEAT (
+            "every day of week", 
+            "Will be repeated at the same time every allowed day of week.", 
+            "For example, from Monday till Thursday at 19:00."),
+    MONTHLY_REPEAT (
+            "every month", 
+            "Will be repeated every month at the same day of ",
+            "month (0-31) and the same time"),
+    YEARLY_REPEAT (
+            "every year", 
+            "Will be repeated every year at the same month, day and time."),
     
     UNDEFINED_REPEAT ("undefined"); 
     
     private final String displayName;
+    private final List<String> description;
     
-    private TaskRepeat(String name) {
-        this.displayName = name;
+    private TaskRepeat(String displayName, String... description) {
+        this.displayName = displayName;
+        this.description = asList(description);
+    }
+    
+    public List<String> description() {
+        return this.description;
     }
     
     public boolean isDefined() {
@@ -64,5 +85,19 @@ public enum TaskRepeat {
                 .filter(repeat -> displayName.equals(repeat.displayName))
                 .findFirst()
                 .orElseGet(() -> UNDEFINED_REPEAT);
+    }
+    
+    public static List<String> repeatsDescription() {
+        List<String> repeatInfo = new ArrayList<>();
+        for (TaskRepeat repeat : values()) {
+            if ( repeat.isUndefined() ) {
+                continue;
+            }
+            repeatInfo.add(repeat.displayName);
+            repeat.description.forEach((description) -> {
+                repeatInfo.add("  " + description);
+            });
+        }
+        return repeatInfo;
     }
 }

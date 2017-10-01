@@ -7,22 +7,33 @@
 package diarsid.beam.core.domain.inputparsing.time;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
 import static java.time.Year.isLeap;
+import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.FULL_DATE;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.FULL_DATE;
 
 
 class ParserForFullDatePattern implements TimePatternParser {
     
     ParserForFullDatePattern() {
     }
+    
+    @Override
+    public List<String> timePatterns() {
+        return asList(
+                "full time:",
+                "  2017.09.01 21:35",
+                "  2017y-09m-01d 21h:35m",
+                "  2017.9.1 7:12");
+    }
 
     @Override
-    public Optional<TaskTime> parse(String timePattern) {
+    public Optional<Time> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{4}y?(\\.|-)\\d{1,2}m?(\\.|-)\\d{1,2}d? \\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.replace("d", "").replace("h", "").replace("m", "").replace("y", "");
             int spaceIndex = timePattern.indexOf(" ");
@@ -58,7 +69,7 @@ class ParserForFullDatePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TaskTime(time, FULL_DATE));
+                return Optional.of(new Time(time, FULL_DATE));
             } else {
                 return Optional.empty();
             }
@@ -97,7 +108,7 @@ class ParserForFullDatePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TaskTime(time, FULL_DATE));
+                return Optional.of(new Time(time, FULL_DATE));
             } else {
                 return Optional.empty();
             }

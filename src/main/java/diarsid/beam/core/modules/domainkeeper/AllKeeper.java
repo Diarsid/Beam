@@ -5,10 +5,10 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -16,5 +16,5 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
  */
 public interface AllKeeper {
     
-    ValueOperation<Message> findAll(Initiator initiator, ArgumentsCommand command);
+    ValueFlow<Message> findAll(Initiator initiator, ArgumentsCommand command);
 }

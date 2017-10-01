@@ -5,8 +5,14 @@
  */
 package diarsid.beam.core.domain.entities.validation;
 
-import static java.lang.String.format;
+import java.util.List;
 
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
+
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_DOMAIN_CHARS;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_TEXT_CHARS;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.domainWordIsNotAcceptable;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInDomainWord;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
@@ -26,6 +32,15 @@ public enum ValidationRule {
     
     TEXT_RULE {
         @Override
+        public List<String> helpInfo() {
+            return asList(
+                    "Print plain text.",
+                    "It can contain any characters except following chars:",
+                    UNACCEPTABLE_TEXT_CHARS.stream().collect(joining()),
+                    "Use dot or empty line to break.");
+        }
+        
+        @Override
         public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
@@ -42,6 +57,13 @@ public enum ValidationRule {
     
     WEB_URL_RULE {
         @Override
+        public List<String> helpInfo() {
+            return asList(
+                    "Print URL.",
+                    "It should be a valid URL.");
+        }
+        
+        @Override
         public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
@@ -56,6 +78,13 @@ public enum ValidationRule {
     
     LOCAL_DIRECTORY_PATH_RULE {
         @Override
+        public List<String> helpInfo() {
+            return asList(
+                    "Print URL path pointing to a local directory.",
+                    "Directory must exist.");
+        }
+        
+        @Override
         public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
@@ -68,6 +97,16 @@ public enum ValidationRule {
     },
     
     SIMPLE_PATH_RULE {
+        @Override
+        public List<String> helpInfo() {
+            return asList(
+                    "Print slash-separated path.",
+                    "It can be any relative path, not neccesary",
+                    "pointing to real file or folder. Path must not",
+                    "contain following chars: " + 
+                            UNACCEPTABLE_TEXT_CHARS.stream().collect(joining()));
+        }
+        
         @Override 
         public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
@@ -83,6 +122,14 @@ public enum ValidationRule {
     },
     
     ENTITY_NAME_RULE {
+        @Override
+        public List<String> helpInfo() {
+            return asList(
+                    "Print name.",
+                    "It must not contain any path separators or following",
+                    "chars: " + UNACCEPTABLE_DOMAIN_CHARS.stream().collect(joining()));
+        }
+        
         @Override
         public ValidationResult applyTo(String target) {
             if ( target.isEmpty() ) {
@@ -101,6 +148,8 @@ public enum ValidationRule {
     };
     
     public abstract ValidationResult applyTo(String target);
+    
+    public abstract List<String> helpInfo();
     
     public static ValidationResult applyValidatationRule(String target, ValidationRule rule) {
         return rule.applyTo(target);

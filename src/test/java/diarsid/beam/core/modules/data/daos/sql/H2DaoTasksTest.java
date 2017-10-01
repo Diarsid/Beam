@@ -46,9 +46,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
-import static diarsid.beam.core.domain.entities.TaskRepeat.NO_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.YEARLY_REPEAT;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
+import static diarsid.beam.core.domain.entities.TaskRepeat.NO_REPEAT;
 
 /**
  *
@@ -84,8 +84,7 @@ public class H2DaoTasksTest {
     public void setupCase() {
         List<Task> tasks = new ArrayList<>();
         
-        Task t1 = Tasks.restoreTask(
-                MIN_VALUE, 
+        Task t1 = Tasks.restoreTask(MIN_VALUE, 
                 NO_REPEAT, 
                 now().minusDays(1).withMinute(0).withSecond(0).withNano(0), 
                 false, 
@@ -93,8 +92,7 @@ public class H2DaoTasksTest {
                 "", 
                 "line 1 \\ line 2 \\ line 3");
         
-        Task t8 = Tasks.restoreTask(
-                MIN_VALUE, 
+        Task t8 = Tasks.restoreTask(MIN_VALUE, 
                 NO_REPEAT, 
                 now().withSecond(0).withNano(0), 
                 true, 
@@ -102,8 +100,7 @@ public class H2DaoTasksTest {
                 "", 
                 "task to invoke right now!");
         
-        Task t2 = Tasks.restoreTask(
-                MIN_VALUE, 
+        Task t2 = Tasks.restoreTask(MIN_VALUE, 
                 NO_REPEAT, 
                 now().minusHours(3).withMinute(0).withSecond(0).withNano(0), 
                 false, 
@@ -111,8 +108,7 @@ public class H2DaoTasksTest {
                 "", 
                 "line 1 \\ line 2 \\ line 3");
         
-        Task t3 = Tasks.restoreTask(
-                MIN_VALUE, 
+        Task t3 = Tasks.restoreTask(MIN_VALUE, 
                 NO_REPEAT, 
                 now().plusHours(1).withMinute(0).withSecond(0).withNano(0), 
                 true, 
@@ -138,8 +134,7 @@ public class H2DaoTasksTest {
                 "", 
                 "John's birthday in 5 days");
         
-        Task t6  = Tasks.restoreTask(
-                MIN_VALUE, 
+        Task t6  = Tasks.restoreTask(MIN_VALUE, 
                 NO_REPEAT, 
                 now().plusWeeks(2).plusDays(1).withMinute(0).withSecond(0).withNano(0), 
                 true, 

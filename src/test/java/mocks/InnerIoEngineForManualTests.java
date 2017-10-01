@@ -8,15 +8,18 @@ package mocks;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -42,7 +45,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
     }
 
     @Override
-    public String askInput(Initiator initiator, String inputQuestion) {
+    public String askInput(Initiator initiator, String inputQuestion, Help help) {
         try {
             String input = "";
             boolean answerIsNotGiven = true;
@@ -63,7 +66,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
     }
 
     @Override
-    public Choice ask(Initiator initiator, String yesOrNoQuestion) {
+    public Choice ask(Initiator initiator, String yesOrNoQuestion, Help help) {
         try {
             System.out.println("fake io > " + yesOrNoQuestion);
             System.out.print("fake io > ");
@@ -74,7 +77,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer ask(Initiator initiator, VariantsQuestion question) {
+    public Answer ask(Initiator initiator, VariantsQuestion question, Help help) {
         try {
             Variant variant;
             System.out.println(format("fake io > %s", question.getQuestion()));
@@ -147,7 +150,17 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants) {
+    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants, Help help) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HelpKey addToHelpContext(String... help) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HelpKey addToHelpContext(List<String> help) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

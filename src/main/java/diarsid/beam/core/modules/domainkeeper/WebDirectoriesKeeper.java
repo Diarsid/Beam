@@ -6,13 +6,13 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPlace;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -20,16 +20,16 @@ import diarsid.beam.core.domain.entities.WebPlace;
  */
 public interface WebDirectoriesKeeper {
     
-    VoidOperation createWebDirectory(
+    VoidFlow createWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation deleteWebDirectory(
+    VoidFlow deleteWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation editWebDirectory(
+    VoidFlow editWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
-    ValueOperation<? extends WebDirectory> findWebDirectory(
+    ValueFlow<? extends WebDirectory> findWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
     WebResponse createWebDirectory(WebPlace place, String name);

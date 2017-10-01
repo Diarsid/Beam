@@ -9,11 +9,13 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Set;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
@@ -25,18 +27,19 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoLocations;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
@@ -47,6 +50,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_DOMAIN_CHARS;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -56,7 +60,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 
 
 
@@ -72,6 +75,9 @@ class LocationsKeeperWorker
     private final LocationsInputParser locationInpurParser;
     private final PropertyAndTextParser propertyTextParser;
     private final Set<CommandType> subjectedCommandTypes;
+    private final Help chooseOneLocationHelp;
+    private final Help enterLocationNameHelp;
+    private final Help enterLocationPathHelp;
     
     LocationsKeeperWorker(
             DaoLocations dao, 
@@ -87,6 +93,24 @@ class LocationsKeeperWorker
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
         this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_LOCATION_TARGET);
+        this.chooseOneLocationHelp = this.ioEngine.addToHelpContext(
+                "Choose one Location from given variants.",
+                "Use:",
+                "   - number to choose Location",
+                "   - part of Location name to choose it",
+                "   - n/no to see more found Locations if any",
+                "   - dot to break"
+        );
+        this.enterLocationNameHelp = this.ioEngine.addToHelpContext(
+                "Enter Location's name.",
+                "Name must be unique and must not contain path separators",
+                "nor following characters: " + 
+                        UNACCEPTABLE_DOMAIN_CHARS.stream().collect(joining())
+        );
+        this.enterLocationPathHelp = this.ioEngine.addToHelpContext(
+                "Enter Location's path.",
+                "Path must point to existing directory."
+        );
     }
     
     private void asyncCleanCommandsMemory(Initiator initiator, String extended) {
@@ -116,21 +140,21 @@ class LocationsKeeperWorker
         });
     }
     
-    private ValueOperation<Location> discussExistingLocation(Initiator initiator, String name) {
+    private ValueFlow<Location> discussExistingLocation(Initiator initiator, String name) {
         List<Location> foundLocations;     
         WeightedVariants weightedLocations;
         Answer answer;
         locationDiscussing: while ( true ) {            
             name = this.helper.validateEntityNameInteractively(initiator, name);
             if (name.isEmpty()) {
-                return valueOperationStopped();
+                return valueFlowStopped();
             }
 
             foundLocations = this.dao.getLocationsByNamePattern(initiator, name);
             if ( hasOne(foundLocations) ) {
                 this.ioEngine.report(
                         initiator, format("'%s' found.", getOne(foundLocations).name()));
-                return valueCompletedWith(getOne(foundLocations));
+                return valueFlowCompletedWith(getOne(foundLocations));
             } else if ( hasMany(foundLocations) ) {
                 weightedLocations = weightVariants(name, entitiesToVariants(foundLocations));
                 if ( weightedLocations.isEmpty() ) {
@@ -138,17 +162,18 @@ class LocationsKeeperWorker
                     name = "";
                     continue locationDiscussing;
                 }
-                answer = this.ioEngine.chooseInWeightedVariants(initiator, weightedLocations);
+                answer = this.ioEngine.chooseInWeightedVariants(
+                        initiator, weightedLocations, this.chooseOneLocationHelp);
                 if ( answer.isGiven() ) {
-                    return valueCompletedWith(foundLocations.get(answer.index()));
+                    return valueFlowCompletedWith(foundLocations.get(answer.index()));
                 } else if ( answer.isRejection() ) {
-                    return valueOperationStopped();
+                    return valueFlowStopped();
                 } else if ( answer.variantsAreNotSatisfactory() ) {
                     name = "";
                     continue locationDiscussing;
                 } else {
                     this.ioEngine.report(initiator, "cannot determine your answer.");
-                    return valueOperationStopped();
+                    return valueFlowStopped();
                 }
             } else {
                 this.ioEngine.report(initiator, format("not found by '%s'", name));
@@ -164,9 +189,9 @@ class LocationsKeeperWorker
     }
     
     @Override
-    public ValueOperation<Location> findByExactName(
+    public ValueFlow<Location> findByExactName(
             Initiator initiator, String exactName) {
-        return valueCompletedWith(this.dao.getLocationByExactName(initiator, exactName));
+        return valueFlowCompletedWith(this.dao.getLocationByExactName(initiator, exactName));
     }
     
     @Override
@@ -176,23 +201,23 @@ class LocationsKeeperWorker
     }
     
     @Override
-    public ValueOperation<Location> findByNamePattern(
+    public ValueFlow<Location> findByNamePattern(
             Initiator initiator, String namePattern) {
         List<Location> locations = this.dao.getLocationsByNamePattern(initiator, namePattern);
         if ( hasOne(locations) ) {
-            return valueCompletedWith(getOne(locations));
+            return valueFlowCompletedWith(getOne(locations));
         } else if ( hasMany(locations) ) {
             return this.manageWithManyLocations(initiator, namePattern, locations);
         } else {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
     }
     
     @Override
-    public ValueOperation<Location> findLocation(
+    public ValueFlow<Location> findLocation(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_LOCATION) ) {
-            return valueOperationFail("wrong command type!");
+            return valueFlowFail("wrong command type!");
         }
         String namePattern = "";
         if ( command.hasArguments() ) {
@@ -202,28 +227,29 @@ class LocationsKeeperWorker
         return this.discussExistingLocation(initiator, namePattern);
     }
 
-    private ValueOperation<Location> manageWithManyLocations(
+    private ValueFlow<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
         WeightedVariants variants = weightVariants(pattern, entitiesToVariants(locations));
         if ( variants.isEmpty() ) {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, variants, this.chooseOneLocationHelp);
         if ( answer.isGiven() ) {
-            return valueCompletedWith(locations.get(answer.index()));
+            return valueFlowCompletedWith(locations.get(answer.index()));
         } else if ( answer.isRejection() ) {
-            return valueOperationStopped();
+            return valueFlowStopped();
         } else if ( answer.variantsAreNotSatisfactory() ) {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         } else {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
     }
 
     @Override
-    public VoidOperation createLocation(Initiator initiator, ArgumentsCommand command) {
+    public VoidFlow createLocation(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_LOCATION) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String name;
@@ -239,41 +265,41 @@ class LocationsKeeperWorker
         
         path = this.helper.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH_RULE);
         if ( path.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }        
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }    
         nameDefining: while ( true ) {
             if ( this.dao.isNameFree(initiator, name) ) {
                 break nameDefining;
             } else {
                 this.ioEngine.report(initiator, "this name is not free!");
-                name = this.ioEngine.askInput(initiator, "name");
+                name = this.ioEngine.askInput(initiator, "name", this.enterLocationNameHelp);
                 if ( name.isEmpty() ) {
-                    return voidOperationStopped();
+                    return voidFlowStopped();
                 }
                 name = this.helper.validateEntityNameInteractively(initiator, name);
                 if ( name.isEmpty() ) {
-                    return voidOperationStopped();
+                    return voidFlowStopped();
                 }                    
             }
         }
 
         if ( this.dao.saveNewLocation(initiator, new Location(name, path)) ) {
             this.asyncAddCommand(initiator, name);
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to save Location.");
+            return voidFlowFail("DAO failed to save Location.");
         }     
     }
 
     @Override
-    public VoidOperation removeLocation(Initiator initiator, ArgumentsCommand command) {
+    public VoidFlow removeLocation(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(DELETE_LOCATION) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String name;
@@ -285,7 +311,7 @@ class LocationsKeeperWorker
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         List<Location> locationsToRemove = this.dao.getLocationsByNamePattern(initiator, name);
@@ -294,33 +320,33 @@ class LocationsKeeperWorker
             this.ioEngine.report(initiator, format("'%s' found.", locationName));
             if ( this.dao.removeLocation(initiator, locationName) ) {
                 this.asyncCleanCommandsMemory(initiator, locationName);
-                return voidCompleted();
+                return voidFlowCompleted();
             } else {
-                return voidOperationFail("DAO failed to remove location.");
+                return voidFlowFail("DAO failed to remove location.");
             }
         } else if ( locationsToRemove.isEmpty() ) {
-            return voidOperationFail("no such location.");
+            return voidFlowFail("no such location.");
         } else {
             VariantsQuestion question = question("choose").withAnswerEntities(locationsToRemove);
-            Answer answer = this.ioEngine.ask(initiator, question);
+            Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneLocationHelp);
             if ( answer.isGiven() ) {
                 String locationName = locationsToRemove.get(answer.index()).name();
                 if ( this.dao.removeLocation(initiator, locationName) ) {
                     this.asyncCleanCommandsMemory(initiator, locationName);
-                    return voidCompleted();
+                    return voidFlowCompleted();
                 } else {
-                    return voidOperationFail("DAO failed to remove location.");
+                    return voidFlowFail("DAO failed to remove location.");
                 }                    
             } else {
-                return voidOperationStopped();
+                return voidFlowStopped();
             }
         }        
     }
 
     @Override
-    public VoidOperation editLocation(Initiator initiator, ArgumentsCommand command) {
+    public VoidFlow editLocation(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(EDIT_LOCATION) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String name;
@@ -336,83 +362,85 @@ class LocationsKeeperWorker
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         Location location;
-        ValueOperation<Location> locationFlow = this.discussExistingLocation(initiator, name);
+        ValueFlow<Location> locationFlow = this.discussExistingLocation(initiator, name);
         switch ( locationFlow.result() ) {
             case COMPLETE : {
                 if ( locationFlow.asComplete().hasValue() ) {
                     location = locationFlow.asComplete().getOrThrow();
                 } else {
-                    return voidOperationFail("no such location.");
+                    return voidFlowFail("no such location.");
                 }
                 break; 
             }
             case FAIL : {
-                return voidOperationFail(locationFlow.asFail().reason());
+                return voidFlowFail(locationFlow.asFail().reason());
             }
             case STOP : {
-                return voidOperationStopped();
+                return voidFlowStopped();
             }
             default : {
-                return voidOperationFail("unknown ValueOperation result.");
+                return voidFlowFail("unknown ValueFlow result.");
             }
         }
 
         property = this.helper.validatePropertyInteractively(
                 initiator, property, NAME, FILE_URL);
         if ( property.isUndefined() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
 
         switch ( property ) {
             case NAME : {
-                String newName = this.ioEngine.askInput(initiator, "new name");                    
+                String newName = this.ioEngine.askInput(
+                        initiator, "new name", this.enterLocationNameHelp);                    
                 if ( newName.isEmpty() ) {
-                    return voidOperationStopped();
+                    return voidFlowStopped();
                 }
                 newName = this.helper.validateEntityNameInteractively(initiator, newName);
                 if ( newName.isEmpty() ) {
-                    return voidOperationStopped();
+                    return voidFlowStopped();
                 }
                 if ( this.dao.editLocationName(initiator, location.name(), newName) ) {
                     this.asyncChangeCommandsMemory(initiator, location.name(), newName);
-                    return voidCompleted();
+                    return voidFlowCompleted();
                 } else {
-                    return voidOperationFail("DAO failed to edit name.");
+                    return voidFlowFail("DAO failed to edit name.");
                 }
             }
             case FILE_URL : {
-                String newPath = this.ioEngine.askInput(initiator, "new path");
+                String newPath = this.ioEngine.askInput(
+                        initiator, "new path", this.enterLocationPathHelp);
                 if ( newPath.isEmpty() ) {
-                    return voidOperationStopped();
+                    return voidFlowStopped();
                 }
                 newPath = this.helper.validateInteractively(
                         initiator, newPath, "new path", LOCAL_DIRECTORY_PATH_RULE);
                 if ( newPath.isEmpty() ) {
-                    return voidOperationStopped();
+                    return voidFlowStopped();
                 }
                 if ( this.dao.editLocationPath(initiator, location.name(), newPath) ) {
-                    return voidCompleted();
+                    return voidFlowCompleted();
                 } else {
-                    return voidOperationFail("DAO failed to edit path.");
+                    return voidFlowFail("DAO failed to edit path.");
                 }
             }
             default : {
-                return voidOperationFail("unexpected property.");
+                return voidFlowFail("unexpected property.");
             }
         }          
     }
 
     @Override
-    public VoidOperation replaceInPaths(
+    public VoidFlow replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
         if ( this.dao.replaceInPaths(initiator, replaceable, replacement) ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to replace path fragment.");
+            return voidFlowFail("DAO failed to replace path fragment.");
         }
     }
 

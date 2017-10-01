@@ -5,10 +5,10 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 
 /**
  *
@@ -16,11 +16,11 @@ import diarsid.beam.core.base.control.io.commands.EmptyCommand;
  */
 public interface NotesKeeper {
     
-    VoidOperation openNotes(Initiator initiator, EmptyCommand command);
+    VoidFlow openNotes(Initiator initiator, EmptyCommand command);
     
-    VoidOperation openTargetInNotes(Initiator initiator, ArgumentsCommand command);
+    VoidFlow openTargetInNotes(Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation openPathInNotes(Initiator initiator, ArgumentsCommand command);
+    VoidFlow openPathInNotes(Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation createNote(Initiator initiator, ArgumentsCommand command);
+    VoidFlow createNote(Initiator initiator, ArgumentsCommand command);
 }

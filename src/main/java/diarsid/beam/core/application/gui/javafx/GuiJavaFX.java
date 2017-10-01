@@ -20,7 +20,6 @@ import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.application.gui.javafx.window.WindowsBuilderWorker;
 import diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow;
-import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
@@ -29,6 +28,8 @@ import diarsid.beam.core.domain.entities.Picture;
 import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow.buildScreenCapturerWindow;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /*
  * Main class for JavaFX based gui.
@@ -195,7 +196,7 @@ public class GuiJavaFX
     }
 
     @Override
-    public ValueOperation<Picture> capturePictureOnScreen(String imageName) {        
+    public ValueFlow<Picture> capturePictureOnScreen(String imageName) {        
         return this.screenCapturerWindow.blockingGetCaptureFor(imageName);
     }
 }

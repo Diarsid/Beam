@@ -5,27 +5,74 @@
  */
 package diarsid.beam.core.domain.entities.metadata;
 
-import static java.util.Arrays.stream;
+import java.io.Serializable;
+import java.util.List;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import diarsid.beam.core.base.util.ParseableEnum;
+
+import static java.lang.String.join;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+
+import static diarsid.beam.core.base.util.EnumUtils.argMatchesEnum;
 
 /**
  *
  * @author Diarsid
  */
-public enum EntityProperty {
+public enum EntityProperty implements Serializable, ParseableEnum {
     
-    COMMANDS,
-    NAME,
-    TEXT,
-    ORDER,
-    WEB_PLACE,
-    WEB_DIRECTORY,
-    WEB_URL,
-    SHORTCUTS,
-    FILE_URL,
+    COMMANDS (
+            "commands", 
+            asList("commands", "comm")),
+    NAME (
+            "name", 
+            asList("name")),
+    TEXT (
+            "text", 
+            asList("text", "txt")),
+    ORDER (
+            "order", 
+            asList("order")),
+    WEB_PLACE (
+            "WebPlace", 
+            asList("webplace", "wplace", "place")),
+    WEB_DIRECTORY (
+            "WebDirectory", 
+            asList("webdirectory", "wdirectory", "webdir", "wdir", "directory")),
+    WEB_URL (
+            "url", 
+            asList("url", "weburl", "wurl", "link")),
+    SHORTCUTS (
+            "shortcuts", 
+            asList("shortcuts", "shorts", "alias")),
+    FILE_URL (
+            "path", 
+            asList("path", "file")),
     
-    UNDEFINED_PROPERTY;
+    UNDEFINED_PROPERTY ("undefined", emptyList());
+    
+    private final String displayName;
+    private final List<String> keyWords;
+
+    private EntityProperty(String name, List<String> keyWords) {
+        this.displayName = name;
+        this.keyWords = keyWords;
+    }
+    
+    @Override
+    public List<String> keyWords() {
+        return this.keyWords;
+    }
+    
+    public String displayName() {
+        return this.displayName;
+    }
+    
+    public String joinKeywords() {
+        return join(", ", this.keyWords);
+    }
 
     public boolean isDefined() {
         return this != UNDEFINED_PROPERTY;
@@ -37,7 +84,7 @@ public enum EntityProperty {
     
     public static EntityProperty propertyOf(String property) {
         return stream(values())
-                .filter(value -> lower(value.name()).equals(lower(property)))
+                .filter(value -> value.name().equalsIgnoreCase(property))
                 .findFirst()
                 .orElse(UNDEFINED_PROPERTY);
     }
@@ -52,51 +99,11 @@ public enum EntityProperty {
                 .noneMatch(possibleProperty -> this.equals(possibleProperty));
     }
     
+    // TODO MEDIUM add tests
     public static EntityProperty argToProperty(String arg) {
-        switch ( lower(arg) ) {
-            case "name" : {
-                return NAME;
-            }
-            case "txt" : 
-            case "tex" : 
-            case "text" : {
-                return TEXT;
-            }
-            case "comm" :
-            case "commands" :
-            case "operations" : {
-                return COMMANDS;
-            }   
-            case "order" : {
-                return ORDER;
-            }
-            case "place" :
-            case "placement" : {
-                return WEB_PLACE;
-            }
-            case "short" :
-            case "shortcuts" :
-            case "shortcut" : {
-                return SHORTCUTS;
-            }   
-            case "dir" :
-            case "webdir" : 
-            case "directory" : 
-            case "web_directory" : 
-            case "webdirectory" : {
-                return WEB_DIRECTORY;
-            }    
-            case "url" :
-            case "address" :
-            case "link" : {
-                return WEB_URL;
-            }   
-            case "path" : {
-                return FILE_URL;
-            }            
-            default : {
-                return UNDEFINED_PROPERTY;
-            }
-        }    
+        return stream(values())
+                .filter(property -> argMatchesEnum(arg, property))
+                .findFirst()
+                .orElse(UNDEFINED_PROPERTY);
     }
 }

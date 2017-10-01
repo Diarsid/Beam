@@ -7,11 +7,12 @@ package diarsid.beam.core.base.control.io.base.actors;
 
 import java.io.IOException;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 /**
  *
@@ -32,6 +33,8 @@ public interface OuterIoEngine {
     void report(String string) throws IOException;
     
     void report(Message message) throws IOException;
+    
+    void report(HelpInfo helpInfo) throws IOException;
     
     void close() throws IOException;
     

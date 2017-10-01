@@ -7,11 +7,11 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Batch;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -20,26 +20,26 @@ import diarsid.beam.core.domain.entities.Batch;
 public interface BatchesKeeper extends NamedEntitiesKeeper {
     
     @Override
-    ValueOperation<Batch> findByNamePattern(
+    ValueFlow<Batch> findByNamePattern(
             Initiator initiator, String batchNamePattern); 
     
     @Override
-    ValueOperation<Batch> findByExactName(
+    ValueFlow<Batch> findByExactName(
             Initiator initiator, String batchNamePattern); 
     
     List<Batch> getAllBatches(
             Initiator initiator);
     
-    ValueOperation<Batch> findBatch(
+    ValueFlow<Batch> findBatch(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation createBatch(
+    VoidFlow createBatch(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation editBatch(
+    VoidFlow editBatch(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation removeBatch(
+    VoidFlow removeBatch(
             Initiator initiator, ArgumentsCommand command);
     
 }

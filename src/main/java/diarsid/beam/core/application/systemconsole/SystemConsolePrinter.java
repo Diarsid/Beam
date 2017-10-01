@@ -6,15 +6,15 @@
 
 package diarsid.beam.core.application.systemconsole;
 
-import diarsid.beam.core.base.control.io.console.ConsolePrinter;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.control.io.console.ConsolePrinter;
 
 import static java.lang.String.format;
 
@@ -100,6 +100,18 @@ class SystemConsolePrinter implements ConsolePrinter {
         this.writer.write("Beam[ndmr] > ");
         this.writer.flush();
     }
+    
+    @Override
+    public void printNonDuringInteraction(HelpInfo help) throws IOException {
+        this.writer.newLine();
+        for (String helpLine : help.getLines()) {
+            this.writer.write(format("  %s", helpLine));
+            this.writer.newLine();
+        }
+        this.writer.newLine();
+        this.writer.write("Beam > ");
+        this.writer.flush();
+    }
 
     @Override
     public void printDuringInteraction(Message message) throws IOException {
@@ -107,6 +119,17 @@ class SystemConsolePrinter implements ConsolePrinter {
             this.writer.write(format("       %s", s));
             this.writer.newLine();
         }
+        this.writer.flush();
+    }
+    
+    @Override
+    public void printDuringInteraction(HelpInfo help) throws IOException {
+        this.writer.newLine();
+        for (String helpLine : help.getLines()) {
+            this.writer.write(format("  %s", helpLine));
+            this.writer.newLine();
+        }
+        this.writer.newLine();
         this.writer.flush();
     }
     

@@ -6,10 +6,10 @@ package diarsid.beam.core.application.gui;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.domain.entities.Picture;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /*
  * 'Native' program`s output interface.
@@ -42,5 +42,5 @@ public interface Gui {
      */
     void exitAfterAllWindowsClosed();
     
-    ValueOperation<Picture> capturePictureOnScreen(String imageName);
+    ValueFlow<Picture> capturePictureOnScreen(String imageName);
 }

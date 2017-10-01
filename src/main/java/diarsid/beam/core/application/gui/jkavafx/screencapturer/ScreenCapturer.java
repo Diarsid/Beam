@@ -15,11 +15,15 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.util.Logs.debug;
+
+import diarsid.beam.core.base.control.flow.ValueFlow;
+
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 
 
 /**
@@ -40,7 +44,7 @@ public class ScreenCapturer {
         this.doResize = doResize;
     }
     
-    ValueOperation<byte[]> captureRectangle(Rectangle rectangle) {
+    ValueFlow<byte[]> captureRectangle(Rectangle rectangle) {
         BufferedImage image = this.captureToBufferedImage(rectangle);
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -48,11 +52,11 @@ public class ScreenCapturer {
             baos.flush();                 
             byte[] imageBytes = baos.toByteArray();
             debug("[SCREEN CAPTURER] bytes: " + imageBytes.length);
-            return valueCompletedWith(imageBytes);
+            return valueFlowCompletedWith(imageBytes);
         } catch (IOException e) {
             // TODO MEDIUM
             e.printStackTrace();
-            return valueOperationFail("cannot capture image!");
+            return valueFlowFail("cannot capture image!");
         }
     }
     

@@ -11,13 +11,11 @@ import java.io.InputStreamReader;
 
 import mocks.InnerIoEngineForManualTests;
 
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
-import diarsid.beam.core.domain.inputparsing.time.TimeAndTextParser;
-import diarsid.beam.core.domain.inputparsing.time.TimePatternParsersHolder;
+import diarsid.beam.core.domain.inputparsing.time.TimeParser;
 import diarsid.beam.core.modules.data.DaoTasks;
 
 import static java.util.Arrays.asList;
@@ -27,11 +25,12 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
+import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
-import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timeAndTextParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
+
+import diarsid.beam.core.base.control.flow.VoidFlow;
 
 /**
  *
@@ -51,15 +50,14 @@ public class IntegrationManualTasksKeeperWorkerTest {
         DaoTasks dao = mock(DaoTasks.class);
         when(dao.saveTask(any(Initiator.class), anyObject())).thenReturn(true);
         
-        TimeAndTextParser timeAndTextParser = timeAndTextParser();
-        TimePatternParsersHolder timeParser = timePatternParsersHolder();
+        TimeParser timeParser = timePatternParsersHolder();
         AllowedTimePeriodsParser timePeriodsParser = allowedTimePeriodsParser();
         TasksKeeper tasksKeeper = new TasksKeeperWorker(
-                ioEngine, dao, helper, timeAndTextParser, timeParser, timePeriodsParser);
+                ioEngine, dao, helper, timeParser, timePeriodsParser);
         
         String input = "";
         ArgumentsCommand command;
-        VoidOperation flow;
+        VoidFlow flow;
         while ( true ) {
             System.out.print("command : ");            
             input = reader.readLine();

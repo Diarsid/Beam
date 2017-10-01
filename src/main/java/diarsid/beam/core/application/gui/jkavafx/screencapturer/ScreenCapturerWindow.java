@@ -27,14 +27,14 @@ import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.javafx.WindowResources;
-import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.domain.entities.Picture;
 
 import static javafx.geometry.Insets.EMPTY;
 import static javafx.scene.control.OverrunStyle.ELLIPSIS;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 
 
 /**
@@ -47,7 +47,7 @@ public class ScreenCapturerWindow implements Runnable {
     private final WindowMover windowMover;
     private final ScreenCapturerWindowResizer windowResizer;
     private final ScreenCapturer screenCapturer;    
-    private final BlockingQueue<ValueOperation<Picture>> valueOperationAwaitQueue;
+    private final BlockingQueue<ValueFlow<Picture>> awaitValueFlowQueue;
     private final Object queueLock;
     private final Object captureLock;
     private String pageName;
@@ -63,7 +63,7 @@ public class ScreenCapturerWindow implements Runnable {
         this.windowMover = new WindowMover();
         this.windowResizer = new ScreenCapturerWindowResizer(142, 90);
         this.screenCapturer = screenCapturer;
-        this.valueOperationAwaitQueue = new ArrayBlockingQueue<>(1, true);
+        this.awaitValueFlowQueue = new ArrayBlockingQueue<>(1, true);
         this.queueLock = new Object();
         this.captureLock = new Object();
         this.pageName = "";
@@ -110,7 +110,7 @@ public class ScreenCapturerWindow implements Runnable {
         this.stage.centerOnScreen();
         this.stage.setOnCloseRequest((windowEvent) -> {
             try {
-                this.valueOperationAwaitQueue.put(valueOperationStopped());
+                this.awaitValueFlowQueue.put(valueFlowStopped());
             } catch (InterruptedException ex) {
                 // TODO MEDIUM
             }
@@ -138,7 +138,7 @@ public class ScreenCapturerWindow implements Runnable {
         this.ready = true;
     }
     
-    public ValueOperation<Picture> blockingGetCaptureFor(String pageName) {
+    public ValueFlow<Picture> blockingGetCaptureFor(String pageName) {
         this.cancelPreviouslyAwaitedTaskIfAny();        
         return this.beginNewAwaitedTask(pageName);
     }
@@ -147,7 +147,7 @@ public class ScreenCapturerWindow implements Runnable {
         synchronized ( this.queueLock ) {
             if ( this.hasAwaiter ) {
                 try {
-                    this.valueOperationAwaitQueue.put(valueOperationStopped());
+                    this.awaitValueFlowQueue.put(valueFlowStopped());
                 } catch (InterruptedException ex) {
                     // TODO MEDIUM
                     ex.printStackTrace();
@@ -156,17 +156,17 @@ public class ScreenCapturerWindow implements Runnable {
         }
     }
 
-    private ValueOperation<Picture> beginNewAwaitedTask(String pageName) {
+    private ValueFlow<Picture> beginNewAwaitedTask(String pageName) {
         synchronized ( this.captureLock ) {
             this.hasAwaiter = true;
             this.pageName = pageName;
             Platform.runLater(this);
-            ValueOperation<Picture> pictureFlow;
+            ValueFlow<Picture> pictureFlow;
             try {
-                pictureFlow = this.valueOperationAwaitQueue.take();
+                pictureFlow = this.awaitValueFlowQueue.take();
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
-                pictureFlow = valueOperationFail("waiting for screen capture has been interrupted.");
+                pictureFlow = valueFlowFail("waiting for screen capture has been interrupted.");
             }
             this.hasAwaiter = false;
             return pictureFlow;
@@ -233,7 +233,7 @@ public class ScreenCapturerWindow implements Runnable {
 
     private void cancelScreenCapture() {
         try {
-            this.valueOperationAwaitQueue.put(valueOperationStopped());
+            this.awaitValueFlowQueue.put(valueFlowStopped());
         } catch (InterruptedException ex) {
             // TODO MEDIUM
         }
@@ -241,7 +241,7 @@ public class ScreenCapturerWindow implements Runnable {
 
     private void makeScreenCapture() {
         try {
-            this.valueOperationAwaitQueue.put(
+            this.awaitValueFlowQueue.put(
                     this.captureScreenRectangle()
                             .map(bytes -> new Picture(this.pageName, bytes)));
             this.close();
@@ -251,7 +251,7 @@ public class ScreenCapturerWindow implements Runnable {
         }
     }
 
-    private ValueOperation<byte[]> captureScreenRectangle() {
+    private ValueFlow<byte[]> captureScreenRectangle() {
         Bounds capturePaneScreenCoordinates =
                 this.screenCapturePane.localToScreen(
                         this.screenCapturePane.getBoundsInLocal());

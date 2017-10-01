@@ -6,13 +6,17 @@
 
 package mocks;
 
+import java.util.List;
+
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 /**
  *
@@ -30,18 +34,18 @@ public class InnerIoEngineAutomatedTestsShell implements InnerIoEngine {
     }
 
     @Override
-    public String askInput(Initiator initiator, String inputQuestion) {
-        return this.resetableIoShell.askInput(initiator, inputQuestion);
+    public String askInput(Initiator initiator, String inputQuestion, Help help) {
+        return this.resetableIoShell.askInput(initiator, inputQuestion, help);
     }
 
     @Override
-    public Choice ask(Initiator initiator, String yesOrNoQuestion) {
-        return this.resetableIoShell.ask(initiator, yesOrNoQuestion);
+    public Choice ask(Initiator initiator, String yesOrNoQuestion, Help help) {
+        return this.resetableIoShell.ask(initiator, yesOrNoQuestion, help);
     }
 
     @Override
-    public Answer ask(Initiator initiator, VariantsQuestion question) {
-        return this.resetableIoShell.ask(initiator, question);
+    public Answer ask(Initiator initiator, VariantsQuestion question, Help help) {
+        return this.resetableIoShell.ask(initiator, question, help);
     }
 
     @Override
@@ -65,7 +69,18 @@ public class InnerIoEngineAutomatedTestsShell implements InnerIoEngine {
     }
 
     @Override
-    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants) {
+    public Answer chooseInWeightedVariants(
+            Initiator initiator, WeightedVariants variants, Help help) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HelpKey addToHelpContext(String... help) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HelpKey addToHelpContext(List<String> help) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

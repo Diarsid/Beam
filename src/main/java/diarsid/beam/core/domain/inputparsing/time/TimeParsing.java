@@ -17,9 +17,8 @@ import static java.util.Arrays.asList;
  */
 public class TimeParsing {
     
-    private final static TimePatternParsersHolder PARSERS_HOLDER;
+    private final static TimeParser PARSERS_HOLDER;
     private final static AllowedTimePeriodsParser ALLOWED_TIME_PARSER;
-    private final static TimeAndTextParser TIME_AND_TEXT_PARSER;
     
     static {        
         Set<TimePatternParser> allDefined = new HashSet<>(asList(
@@ -30,13 +29,12 @@ public class TimeParsing {
                 new ParserForNextMinutePattern(),
                 new ParserForNextHourMinutePattern(),
                 new ParserForNextDaysHoursMinutesPattern(),
-                new ParserForNextMonthDayHourMinutPattern(),
+                new ParserForNextMonthDayHourMinutePattern(),
                 new ParserForFullDatePattern()
         ));
         
-        PARSERS_HOLDER = new TimePatternParsersHolder(allDefined);        
+        PARSERS_HOLDER = new TimeParser(allDefined);        
         ALLOWED_TIME_PARSER = new AllowedTimePeriodsParser();
-        TIME_AND_TEXT_PARSER = new TimeAndTextParser(PARSERS_HOLDER);
     }
     
     private TimeParsing() {
@@ -46,11 +44,7 @@ public class TimeParsing {
         return ALLOWED_TIME_PARSER;
     }
     
-    public static TimePatternParsersHolder timePatternParsersHolder() {
+    public static TimeParser timePatternParsersHolder() {
         return PARSERS_HOLDER;
-    }
-    
-    public static TimeAndTextParser timeAndTextParser() {
-        return TIME_AND_TEXT_PARSER;
     }
 }

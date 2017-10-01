@@ -11,13 +11,13 @@ import java.util.function.Function;
  *
  * @author Diarsid
  */
-public interface ValueOperation<T extends Object> extends Operation {
+public interface ValueFlow<T extends Object> extends Flow {
     
-    <R> ValueOperation<R> map(Function<T, R> mapFunction);
+    <R> ValueFlow<R> map(Function<T, R> mapFunction);
     
-    ValueOperationComplete<T> asComplete();
+    ValueFlowCompleted<T> asComplete();
     
-    ValueOperationFail asFail();
+    ValueFlowFail asFail();
     
-    VoidOperation toVoid();
+    VoidFlow toVoid();
 }

@@ -9,19 +9,17 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Set;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -29,7 +27,15 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+
+import diarsid.beam.core.base.control.flow.ValueFlow;
+
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 
 /**
  *
@@ -40,11 +46,20 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
     private final InnerIoEngine ioEngine;
     private final DaoNamedEntities namedEntitiesDao;
     private final Set<CommandType> subjectedCommandTypes;
+    private final Help chooseOneEntityHelp;
 
     NamedEntitiesKeeperWorker(InnerIoEngine ioEngine, DaoNamedEntities dao) {
         this.ioEngine = ioEngine;
         this.namedEntitiesDao = dao;
         this.subjectedCommandTypes = toSet(EXECUTOR_DEFAULT);
+        this.chooseOneEntityHelp = this.ioEngine.addToHelpContext(
+                "Choose one variant.",
+                "Use:",
+                "   - variant number to choose it",
+                "   - part of variant to choose it",
+                "   - n/no to see other, less relevant variants",
+                "   - dot to break"
+        );
     }
 
     @Override
@@ -53,45 +68,46 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
     }
 
     @Override
-    public ValueOperation<? extends NamedEntity> findByExactName(
+    public ValueFlow<? extends NamedEntity> findByExactName(
             Initiator initiator, String name) {
         debug("[ALL ENTITIES KEEPER] [by exact name] " + name);
-        return valueCompletedWith(this.namedEntitiesDao.getByExactName(initiator, name));
+        return valueFlowCompletedWith(this.namedEntitiesDao.getByExactName(initiator, name));
     }
 
     @Override
-    public ValueOperation<? extends NamedEntity> findByNamePattern(
+    public ValueFlow<? extends NamedEntity> findByNamePattern(
             Initiator initiator, String pattern) {
         debug("[ALL ENTITIES KEEPER] [by name pattern] " + pattern);
         List<NamedEntity> entities = 
                 this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);        
         if ( hasOne(entities) ) {
             debug("[ALL ENTITIES KEEPER] [by name pattern] one : " + getOne(entities).name());
-            return valueCompletedWith(getOne(entities));
+            return valueFlowCompletedWith(getOne(entities));
         } else if ( hasMany(entities) ) {
             debug("[ALL ENTITIES KEEPER] [by name pattern] many : " + entities.size());
             return this.manageWithMultipleEntities(initiator, pattern, entities);
         } else {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
     }
     
-    private ValueOperation<? extends NamedEntity> manageWithMultipleEntities(
+    private ValueFlow<? extends NamedEntity> manageWithMultipleEntities(
             Initiator initiator, String pattern, List<NamedEntity> entities) {
         WeightedVariants variants = weightVariants(pattern, entitiesToVariants(entities));
         if ( variants.isEmpty() ) {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, variants, this.chooseOneEntityHelp);
         if ( answer.isGiven() ) {
-            return valueCompletedWith(entities.get(answer.index()));
+            return valueFlowCompletedWith(entities.get(answer.index()));
         } else {
             if ( answer.isRejection() ) {                
-                return valueOperationStopped();
+                return valueFlowStopped();
             } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueCompletedEmpty();
+                return valueFlowCompletedEmpty();
             } else {
-                return valueCompletedEmpty();
+                return valueFlowCompletedEmpty();
             }
         }
     }   

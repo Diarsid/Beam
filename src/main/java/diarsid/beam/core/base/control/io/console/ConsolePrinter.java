@@ -8,9 +8,10 @@ package diarsid.beam.core.base.control.io.console;
 import java.io.IOException;
 import java.util.List;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 
 /**
  *
@@ -27,12 +28,16 @@ public interface ConsolePrinter {
     void printDuringInteraction(String report) throws IOException;
 
     void printDuringInteraction(Message message) throws IOException;
+    
+    void printDuringInteraction(HelpInfo help) throws IOException;
 
     void printInDialogInviteLine(String invite) throws IOException;
 
     void printNonDuringInteraction(String report) throws IOException;
 
     void printNonDuringInteraction(Message message) throws IOException;
+    
+    void printNonDuringInteraction(HelpInfo help) throws IOException;
 
     void printReadyForNewCommandLine() throws IOException;
 

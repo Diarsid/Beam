@@ -7,12 +7,12 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -20,22 +20,22 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
  */
 public interface CommandsMemoryKeeper {
     
-    ValueOperation<InvocationCommand> findStoredCommandOfAnyType(
+    ValueFlow<InvocationCommand> findStoredCommandOfAnyType(
             Initiator initiator, String original); 
     
-    ValueOperation<InvocationCommand> findStoredCommandByPatternAndType(
+    ValueFlow<InvocationCommand> findStoredCommandByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
     
-    ValueOperation<List<InvocationCommand>> findMems(
+    ValueFlow<List<InvocationCommand>> findMems(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation remove(
+    VoidFlow remove(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation tryToExtendCommand(
+    VoidFlow tryToExtendCommand(
             Initiator initiator, InvocationCommand command);
     
-    VoidOperation tryToExtendCommandByPattern(
+    VoidFlow tryToExtendCommandByPattern(
             Initiator initiator, InvocationCommand command);
     
     void save(

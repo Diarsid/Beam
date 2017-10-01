@@ -7,11 +7,11 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -20,29 +20,29 @@ import diarsid.beam.core.domain.entities.Location;
 public interface LocationsKeeper extends NamedEntitiesKeeper {
     
     @Override
-    ValueOperation<Location> findByExactName(
+    ValueFlow<Location> findByExactName(
             Initiator initiator, String exactName);
     
     @Override
-    ValueOperation<Location> findByNamePattern(
+    ValueFlow<Location> findByNamePattern(
             Initiator initiator, String locationNamePattern);
     
     List<Location> getLocationsByNamePattern(
             Initiator initiator, String namePattern);
     
-    ValueOperation<Location> findLocation(
+    ValueFlow<Location> findLocation(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation createLocation(
+    VoidFlow createLocation(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation removeLocation(
+    VoidFlow removeLocation(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation editLocation(
+    VoidFlow editLocation(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation replaceInPaths(
+    VoidFlow replaceInPaths(
             Initiator initiator, String replaceable, String replacement);
             
     List<Location> getAllLocations(

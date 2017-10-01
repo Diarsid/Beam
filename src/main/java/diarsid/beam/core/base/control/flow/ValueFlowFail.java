@@ -9,11 +9,6 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public interface ValueOperationComplete<T extends Object> extends ValueOperation<T> {
-    
-    boolean hasValue();
-    
-    T getOrThrow();
-    
-    T getOrDefault(T defaultT);
+public interface ValueFlowFail extends ValueFlow {
+    String reason();
 }

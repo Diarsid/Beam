@@ -12,8 +12,7 @@ import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
-import diarsid.beam.core.domain.inputparsing.time.TimeAndTextParser;
-import diarsid.beam.core.domain.inputparsing.time.TimePatternParsersHolder;
+import diarsid.beam.core.domain.inputparsing.time.TimeParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
@@ -24,7 +23,6 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
-import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timeAndTextParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
 
 /**
@@ -54,14 +52,12 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
         
         LocationsInputParser locationsInputParser;
-        TimeAndTextParser timeAndTextParser;
         PropertyAndTextParser propertyAndTextParser;
-        TimePatternParsersHolder timeParser;
+        TimeParser timeParser;
         AllowedTimePeriodsParser timePeriodsParser;
         WebObjectsInputParser webObjectsParser;
         
         locationsInputParser = new LocationsInputParser();
-        timeAndTextParser = timeAndTextParser();
         timeParser = timePatternParsersHolder();
         propertyAndTextParser = new PropertyAndTextParser();
         timePeriodsParser = allowedTimePeriodsParser();
@@ -105,7 +101,6 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 ioEngine, 
                 this.dataModule.tasks(), 
                 dialogHelper, 
-                timeAndTextParser, 
                 timeParser, 
                 timePeriodsParser);
         pagesKeeper = new WebPagesKeeperWorker(

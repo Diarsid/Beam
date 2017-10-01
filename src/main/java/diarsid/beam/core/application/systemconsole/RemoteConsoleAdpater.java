@@ -6,17 +6,17 @@
 
 package diarsid.beam.core.application.systemconsole;
 
-import diarsid.beam.core.base.control.io.console.ConsoleController;
-
 import java.rmi.RemoteException;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
+import diarsid.beam.core.base.control.io.console.ConsoleController;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 /**
  *
@@ -63,6 +63,11 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     @Override
     public void report(Message message) throws RemoteException {
         this.console.report(message);
+    }
+
+    @Override
+    public void report(HelpInfo help) throws RemoteException {
+        this.console.report(help);
     }
 
     @Override

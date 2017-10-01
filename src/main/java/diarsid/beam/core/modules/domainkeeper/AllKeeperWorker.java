@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -19,13 +18,19 @@ import diarsid.beam.core.modules.DataModule;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+
+import diarsid.beam.core.base.control.flow.ValueFlow;
+
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 
 
 class AllKeeperWorker implements AllKeeper {
@@ -39,12 +44,12 @@ class AllKeeperWorker implements AllKeeper {
     }
 
     @Override
-    public ValueOperation<Message> findAll(Initiator initiator, ArgumentsCommand command) {
+    public ValueFlow<Message> findAll(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_ALL) ) {
-            return valueOperationFail("wrong command type!");
+            return valueFlowFail("wrong command type!");
         }
         
-        return valueCompletedWith(this.collectAll(initiator, command.joinedArguments()));
+        return valueFlowCompletedWith(this.collectAll(initiator, command.joinedArguments()));
     }
     
     private Optional<Message> collectAll(Initiator initiator, String argument) {

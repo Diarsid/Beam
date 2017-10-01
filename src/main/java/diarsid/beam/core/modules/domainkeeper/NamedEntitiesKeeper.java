@@ -5,10 +5,10 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -16,9 +16,9 @@ import diarsid.beam.core.domain.entities.NamedEntity;
  */
 public interface NamedEntitiesKeeper {
     
-    ValueOperation<? extends NamedEntity> findByExactName(Initiator initiator, String name);
+    ValueFlow<? extends NamedEntity> findByExactName(Initiator initiator, String name);
     
-    ValueOperation<? extends NamedEntity> findByNamePattern(Initiator initiator, String pattern);
+    ValueFlow<? extends NamedEntity> findByNamePattern(Initiator initiator, String pattern);
     
     boolean isSubjectedTo(InvocationCommand command);
     

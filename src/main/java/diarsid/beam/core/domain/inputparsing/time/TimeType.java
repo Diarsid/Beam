@@ -10,14 +10,14 @@ import java.time.LocalDateTime;
 import static java.time.LocalDateTime.now;
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.Relativeness.ABSOLUTE_TIME;
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.Relativeness.RELATIVE_TIME;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.Relativeness.ABSOLUTE_TIME;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.Relativeness.RELATIVE_TIME;
 
 /**
  *
  * @author Diarsid
  */
-public enum TasksTimeType {
+public enum TimeType {
     
     PLUS_MINUTES (RELATIVE_TIME) {
         @Override
@@ -103,7 +103,7 @@ public enum TasksTimeType {
     
     private final Relativeness quality;
     
-    private TasksTimeType(Relativeness type) {
+    private TimeType(Relativeness type) {
         this.quality = type;
     }
     
@@ -114,11 +114,11 @@ public enum TasksTimeType {
     
     public abstract LocalDateTime leapToFutureAccordingToType(LocalDateTime pastTime);
     
-    public boolean is(TasksTimeType other) {
+    public boolean is(TimeType other) {
         return this.equals(other);
     }
     
-    public boolean isNot(TasksTimeType other) {
+    public boolean isNot(TimeType other) {
         return ! this.equals(other);
     }
     
@@ -134,11 +134,11 @@ public enum TasksTimeType {
         return this.quality.equals(otherQality);
     }
     
-    public boolean isOneOf(TasksTimeType... others) {
+    public boolean isOneOf(TimeType... others) {
         return stream(others).anyMatch(other -> this.equals(other));
     }
     
-    public boolean isNotOneOf(TasksTimeType... others) {
+    public boolean isNotOneOf(TimeType... others) {
         return stream(others).noneMatch(other -> this.equals(other));
     }
 }

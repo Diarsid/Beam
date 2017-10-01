@@ -10,27 +10,26 @@ abstract class NotGivenAnswer implements Answer {
     
     static final NotGivenAnswer UNSATISFIED_ANSWER;
     static final NotGivenAnswer REJECTED_ANSWER;
+    static final NotGivenAnswer HELP_REQUEST_ANSWER;
+    
     static {
         UNSATISFIED_ANSWER = new NotGivenAnswer() {
             @Override
             public boolean variantsAreNotSatisfactory() {
                 return true;
             }
-
-            @Override
-            public boolean isRejection() {
-                return false;
-            }
         };
         
         REJECTED_ANSWER = new NotGivenAnswer() {
             @Override
-            public boolean variantsAreNotSatisfactory() {
-                return false;
-            }
-
-            @Override
             public boolean isRejection() {
+                return true;
+            }
+        };
+        
+        HELP_REQUEST_ANSWER = new NotGivenAnswer() {
+            @Override
+            public boolean isHelpRequest() {
                 return true;
             }
         };
@@ -57,6 +56,21 @@ abstract class NotGivenAnswer implements Answer {
     @Override
     public boolean isNotGiven() {
         return true;
+    }
+
+    @Override
+    public boolean isRejection() {
+        return false;
+    }
+    
+    @Override
+    public boolean variantsAreNotSatisfactory() {
+        return false;
+    }
+    
+    @Override
+    public boolean isHelpRequest() {
+        return false;
     }
 
     @Override

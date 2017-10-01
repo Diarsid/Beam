@@ -8,23 +8,26 @@ package diarsid.beam.core.base.control.io.console;
 
 import java.util.List;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.util.StringHolder;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.helpRequestAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
+import static diarsid.beam.core.base.control.io.base.interaction.Help.isHelpRequest;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isNo;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
@@ -100,11 +103,15 @@ public class ConsoleController
                 } else if ( isNo(line) ) {
                     notResolved = false;
                     answer = variantsDontContainSatisfiableAnswer();
+                } else if ( isHelpRequest(line) ) { 
+                    notResolved = false;
+                    answer = helpRequestAnswer();
                 } else {
                     answer = question.ifPartOfAnyVariant(line);
                     if ( answer.isGiven() ) {
                         notResolved = false;
                     } else {
+                        this.engine.print(format("cannot choose by '%s'.", line));
                         this.engine.printInvite("choose");
                     }                    
                 }
@@ -142,7 +149,10 @@ public class ConsoleController
                     }
                     case NOT_MADE : {
                         return variantsDontContainSatisfiableAnswer();
-                    }    
+                    }
+                    case HELP_REQUEST : {
+                        return helpRequestAnswer();
+                    }
                     default : {
                         continue variantsChoosing;
                     }
@@ -161,6 +171,8 @@ public class ConsoleController
                             this.engine.printInvite("choose");
                             continue similarVariantsChoosing;
                         }
+                    } else if ( isHelpRequest(line) ) {
+                        return helpRequestAnswer();
                     } else {
                         if ( isNo(line) ) {
                             continue variantsChoosing;
@@ -171,6 +183,7 @@ public class ConsoleController
                             if ( answer.isGiven() ) {
                                 return answer;
                             } else {
+                                this.engine.print(format("cannot choose by '%s'.", line));
                                 this.engine.printInvite("choose");
                                 continue similarVariantsChoosing;
                             }                            
@@ -210,6 +223,11 @@ public class ConsoleController
     @Override
     public void report(Message message) {
         this.engine.print(message);
+    }
+
+    @Override
+    public void report(HelpInfo help) {
+        this.engine.print(help);
     }
 
     @Override

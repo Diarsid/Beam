@@ -9,16 +9,17 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 
-import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
-import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
-import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
+import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
+import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
+
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -40,8 +41,8 @@ abstract class AbstractCliAdapter {
         this.ioEngine.reportMessage(initiator, message);
     }
     
-    protected final void reportVoidOperationFlow(
-            Initiator initiator, VoidOperation flow) {
+    protected final void reportVoidFlow(
+            Initiator initiator, VoidFlow flow) {
         switch ( flow.result() ) {
             case COMPLETE : {
                 if ( flow.hasMessage() ) {
@@ -63,8 +64,8 @@ abstract class AbstractCliAdapter {
         }        
     }
 
-    protected final void reportVoidOperationFlow(
-            Initiator initiator, VoidOperation flow, String onSuccess) {
+    protected final void reportVoidFlow(
+            Initiator initiator, VoidFlow flow, String onSuccess) {
         switch ( flow.result() ) {
             case COMPLETE : {
                 this.ioEngine.report(initiator, onSuccess);
@@ -84,10 +85,10 @@ abstract class AbstractCliAdapter {
         }        
     }
     
-    protected final void reportValueOperationFlow(
+    protected final void reportValueFlow(
             Initiator initiator, 
-            ValueOperation flow, 
-            Function<ValueOperationComplete, Message> ifNonEmptyFunction, 
+            ValueFlow flow, 
+            Function<ValueFlowCompleted, Message> ifNonEmptyFunction, 
             String ifEmptyMessage) {
         switch ( flow.result() ) {
             case COMPLETE : {

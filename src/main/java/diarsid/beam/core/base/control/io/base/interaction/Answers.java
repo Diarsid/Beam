@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import static diarsid.beam.core.base.control.io.base.interaction.NotGivenAnswer.HELP_REQUEST_ANSWER;
 import static diarsid.beam.core.base.control.io.base.interaction.NotGivenAnswer.REJECTED_ANSWER;
 import static diarsid.beam.core.base.control.io.base.interaction.NotGivenAnswer.UNSATISFIED_ANSWER;
 
@@ -20,6 +21,10 @@ public class Answers {
     
     public static Answer rejectedAnswer() {
         return REJECTED_ANSWER;
+    }
+    
+    public static Answer helpRequestAnswer() {
+        return HELP_REQUEST_ANSWER;
     }
     
     public static Answer answerOfVariant(Variant variant) {

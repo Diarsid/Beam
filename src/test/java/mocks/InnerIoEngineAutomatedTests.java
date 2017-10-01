@@ -7,15 +7,18 @@
 package mocks;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Queue;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 /**
  *
@@ -53,17 +56,17 @@ public class InnerIoEngineAutomatedTests implements InnerIoEngine {
     }
 
     @Override
-    public String askInput(Initiator initiator, String inputQuestion) {
+    public String askInput(Initiator initiator, String inputQuestion, Help help) {
         return this.inputsQueue.remove();
     }
 
     @Override
-    public Choice ask(Initiator initiator, String yesOrNoQuestion) {
+    public Choice ask(Initiator initiator, String yesOrNoQuestion, Help help) {
         return this.choicesQueue.remove();
     }
 
     @Override
-    public Answer ask(Initiator initiator, VariantsQuestion question) {
+    public Answer ask(Initiator initiator, VariantsQuestion question, Help help) {
         return this.answersQueue.remove();
     }
 
@@ -88,7 +91,18 @@ public class InnerIoEngineAutomatedTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants) {
+    public Answer chooseInWeightedVariants(
+            Initiator initiator, WeightedVariants variants, Help help) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HelpKey addToHelpContext(String... help) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public HelpKey addToHelpContext(List<String> help) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

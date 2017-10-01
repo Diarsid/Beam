@@ -7,12 +7,14 @@
 package diarsid.beam.core.domain.inputparsing.time;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
+import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.PLUS_MINUTES;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.PLUS_MINUTES;
 
 
 class ParserForPlusMinutesPattern implements TimePatternParser {
@@ -20,12 +22,21 @@ class ParserForPlusMinutesPattern implements TimePatternParser {
     ParserForPlusMinutesPattern() {
     }
     
+    @Override
+    public List<String> timePatterns() {
+        return asList(
+                "plus minutes:",
+                "  +35m",
+                "  +01",
+                "  +1");
+    }
+    
     private int parseMinutes(String timePattern) {
         return parseInt(timePattern.trim().replace("m", "").substring(1));
     }
 
     @Override
-    public Optional<TaskTime> parse(String timePattern) {
+    public Optional<Time> parse(String timePattern) {
         if ( timePattern.trim().matches("\\+\\d{1,2}m?") ) {
             int minutes = this.parseMinutes(timePattern);
             if ( minutes > 0 && minutes < 100 ) {
@@ -33,7 +44,7 @@ class ParserForPlusMinutesPattern implements TimePatternParser {
                         .plusMinutes(this.parseMinutes(timePattern))
                         .withSecond(0)
                         .withNano(0);
-                TaskTime schedulableTime = new TaskTime(time, PLUS_MINUTES);
+                Time schedulableTime = new Time(time, PLUS_MINUTES);
                 return Optional.of(schedulableTime);
             } else {
                 return Optional.empty();

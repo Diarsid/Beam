@@ -9,12 +9,11 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -32,12 +31,6 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 import static java.lang.String.format;
 import static java.util.Collections.sort;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.notFoundWithJson;
@@ -63,6 +56,22 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLACE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+
 
 class WebDirectoriesKeeperWorker 
         extends WebObjectsCommonKeeper 
@@ -74,6 +83,9 @@ class WebDirectoriesKeeperWorker
     private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
     private final WebObjectsInputParser webObjectsParser;
+    private final Help chooseOneDirectoryHelp;
+    private final Help withPagesChoiceHelp;
+    private final Help deleteDirectoryConfirmationHelp;
 
     public WebDirectoriesKeeperWorker(
             DaoWebDirectories daoDirectories, 
@@ -89,6 +101,28 @@ class WebDirectoriesKeeperWorker
         this.systemInitiator = systemInitiator;
         this.helper = helper;
         this.webObjectsParser = webObjectsParser;
+        this.chooseOneDirectoryHelp = this.ioEngine.addToHelpContext(
+                "Choose one WebDirectory.",
+                "Use:",
+                "   - number to choose WebDirectory",
+                "   - WebDirectory name part to choose it",
+                "   - n/no to see more variants, if any",
+                "   - dot to break"
+        );
+        this.withPagesChoiceHelp = this.ioEngine.addToHelpContext(
+                "Choose whether you want to find all WebPages",
+                "this WebDirectory contains or not.",
+                "Use:",
+                "   - y/yes/+ to find WebDirectory's pages",
+                "   - n/no/. if not"
+        );
+        this.deleteDirectoryConfirmationHelp = this.ioEngine.addToHelpContext(
+                "Choose wheter you want to remove entire WebDirectory. ",
+                "That will remove all WebPages it contains too.",
+                "This operation cannot be undone.",
+                "Use:",
+                "   - y/yes/+ to confirm removing",
+                "   - n/no/. to cancel");
     }
     
     private void asyncCleanCommandsMemory(Initiator initiator, List<WebPage> pages) {
@@ -101,10 +135,10 @@ class WebDirectoriesKeeperWorker
     }
     
     @Override
-    public VoidOperation createWebDirectory(
+    public VoidFlow createWebDirectory(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_WEB_DIR) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         WebPlace place;
@@ -122,18 +156,18 @@ class WebDirectoriesKeeperWorker
         if ( place.isUndefined() ) {
             place = super.discussWebPlace(initiator);
             if ( place.isUndefined() ) {
-                return voidOperationStopped();
+                return voidFlowStopped();
             }
         }
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         Optional<Integer> freeNameIndex = this.daoDirectories.freeNameNextIndex(initiator, name, place);
         if ( ! freeNameIndex.isPresent() ) {
-            return voidOperationFail("cannot obtain free name index.");
+            return voidFlowFail("cannot obtain free name index.");
         } 
         if ( freeNameIndex.get() > 0 ) {
             this.ioEngine.report(initiator, 
@@ -144,9 +178,9 @@ class WebDirectoriesKeeperWorker
         
         WebDirectory directory = newDirectory(name, place);
         if ( this.daoDirectories.save(initiator, directory) ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("cannot save new directory.");
+            return voidFlowFail("cannot save new directory.");
         }
     }
     
@@ -180,7 +214,7 @@ class WebDirectoriesKeeperWorker
             return Optional.of(toRemove);
         } else if ( hasMany(foundDirs) ) {
             VariantsQuestion question = question("choose").withAnswerEntities(foundDirs);
-            Answer answer = this.ioEngine.ask(initiator, question);
+            Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneDirectoryHelp);
             if ( answer.isGiven() ) {
                 return Optional.of(foundDirs.get(answer.index()));
             } else {
@@ -192,10 +226,10 @@ class WebDirectoriesKeeperWorker
     }
 
     @Override
-    public VoidOperation deleteWebDirectory(
+    public VoidFlow deleteWebDirectory(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(DELETE_WEB_DIR) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         WebPlace place;
@@ -213,11 +247,12 @@ class WebDirectoriesKeeperWorker
         Optional<WebDirectory> directoryToRemove = 
                 this.discussExistingDirectoryBy(initiator, name, place);
         if ( ! directoryToRemove.isPresent() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
-        this.ioEngine.report(initiator, "all pages in this directory will be removed also.");
-        Choice choice = this.ioEngine.ask(initiator, "are you sure?");
+        this.ioEngine.report(initiator, "all WebPages in this WebDirectory will be removed also.");
+        Choice choice = this.ioEngine.ask(
+                initiator, "are you sure?", this.deleteDirectoryConfirmationHelp);
         
         Optional<WebDirectoryPages> pages = this.daoDirectories
                 .getDirectoryPagesById(initiator, directoryToRemove.get().id());
@@ -225,20 +260,20 @@ class WebDirectoriesKeeperWorker
             if ( daoDirectories.remove(
                     initiator, directoryToRemove.get().name(), directoryToRemove.get().place()) ) {
                 this.asyncCleanCommandsMemory(initiator, pages.get().pages());
-                return voidCompleted();
+                return voidFlowCompleted();
             } else {
-                return voidOperationFail("cannot remove directory.");
+                return voidFlowFail("cannot remove WebDirectory.");
             }
         } else {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }       
     }
 
     @Override
-    public VoidOperation editWebDirectory(
+    public VoidFlow editWebDirectory(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(EDIT_WEB_DIR) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String name;
@@ -258,13 +293,13 @@ class WebDirectoriesKeeperWorker
         
         Optional<WebDirectory> optEdited = this.discussExistingDirectoryBy(initiator, name, place);
         if ( ! optEdited.isPresent() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         propertyToEdit = this.helper.validatePropertyInteractively(
                 initiator, propertyToEdit, ORDER, WEB_PLACE, NAME);
         if ( propertyToEdit.isUndefined() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         switch ( propertyToEdit ) {
@@ -278,17 +313,17 @@ class WebDirectoriesKeeperWorker
                 return this.editWebDirectoryName(initiator, optEdited.get());
             }
             default : {
-                return voidOperationFail("undefined property.");
+                return voidFlowFail("undefined property.");
             }
         }
     }
     
-    private VoidOperation editWebDirectoryOrder(
+    private VoidFlow editWebDirectoryOrder(
             Initiator initiator, WebDirectory directory) {
         List<WebDirectory> directories = 
                 this.daoDirectories.getAllDirectoriesInPlace(initiator, directory.place());
         if ( directories.isEmpty() ) {
-            return voidOperationFail(format(
+            return voidFlowFail(format(
                     "there are no directories in '%s'.", directory.place()));
         }
         int newOrder = this.helper.discussIntInRange(
@@ -296,37 +331,37 @@ class WebDirectoriesKeeperWorker
         reorderAccordingToNewOrder(directories, directory.order(), newOrder);
         sort(directories);
         if ( this.daoDirectories.updateWebDirectoryOrders(initiator, directories) ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("cannot save reordered directories.");
+            return voidFlowFail("cannot save reordered directories.");
         }        
     }
     
-    private VoidOperation editWebDirectoryPlace(
+    private VoidFlow editWebDirectoryPlace(
             Initiator initiator, WebDirectory directory) {
         WebPlace destinationPlace = super.discussWebPlace(initiator);
         if ( destinationPlace.isUndefined() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         boolean moved = this.daoDirectories.moveDirectoryToPlace(
                 initiator, directory.name(), directory.place(), destinationPlace);
         if ( moved ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("cannot move directory to new place.");
+            return voidFlowFail("cannot move directory to new place.");
         }
     }
     
-    private VoidOperation editWebDirectoryName(
+    private VoidFlow editWebDirectoryName(
             Initiator initiator, WebDirectory directory) {
         String newName = this.helper.validateEntityNameInteractively(initiator, "");
         if ( newName.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         Optional<Integer> freeNameIndex = 
                 this.daoDirectories.freeNameNextIndex(initiator, newName, directory.place());
         if ( ! freeNameIndex.isPresent() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         if ( freeNameIndex.get() > 0 ) {
             this.ioEngine.report(initiator, format(
@@ -339,17 +374,17 @@ class WebDirectoriesKeeperWorker
         boolean renamed = this.daoDirectories
                 .editDirectoryName(initiator, directory.name(), directory.place(), newName);
         if ( renamed ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("cannot rename directory.");
+            return voidFlowFail("cannot rename directory.");
         }
     }
 
     @Override
-    public ValueOperation<? extends WebDirectory> findWebDirectory(
+    public ValueFlow<? extends WebDirectory> findWebDirectory(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_WEBDIRECTORY) ) {
-            return valueOperationFail("wrong command type!");
+            return valueFlowFail("wrong command type!");
         }
         
         String name;
@@ -366,21 +401,21 @@ class WebDirectoriesKeeperWorker
         
         Optional<WebDirectory> searched = this.discussExistingDirectoryBy(initiator, name, place);
         if ( ! searched.isPresent() ) {
-            return valueOperationStopped();
+            return valueFlowStopped();
         }
         
-        Choice needWithPages = this.ioEngine.ask(initiator, "with pages");   
+        Choice needWithPages = this.ioEngine.ask(initiator, "with pages", this.withPagesChoiceHelp);   
         
         if ( needWithPages.isPositive() ) {
             Optional<WebDirectoryPages> directoryWithPages = 
                     this.daoDirectories.getDirectoryPagesById(initiator, searched.get().id());
             if ( directoryWithPages.isPresent() ) {
-                return valueCompletedWith(directoryWithPages);
+                return valueFlowCompletedWith(directoryWithPages);
             } else {
-                return valueOperationFail("cannot get directory with pages.");
+                return valueFlowFail("cannot get directory with pages.");
             }            
         } else {
-            return valueCompletedWith(searched);
+            return valueFlowCompletedWith(searched);
         }
     }    
 

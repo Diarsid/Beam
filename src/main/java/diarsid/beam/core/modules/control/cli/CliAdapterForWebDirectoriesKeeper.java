@@ -8,15 +8,15 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -33,27 +33,27 @@ class CliAdapterForWebDirectoriesKeeper extends AbstractCliAdapter {
     }
     
     void findWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueOperation<? extends WebDirectory> flow = 
+        ValueFlow<? extends WebDirectory> flow = 
                 this.directoriesKeeper.findWebDirectory(initiator, command);
-        Function<ValueOperationComplete, Message> onSuccess = (success) -> {
+        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
             return ((WebDirectory) success.getOrThrow()).toMessage();
         };
-        super.reportValueOperationFlow(initiator, flow, onSuccess, "web directory not found.");
+        super.reportValueFlow(initiator, flow, onSuccess, "web directory not found.");
     }
     
     void createWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.directoriesKeeper.createWebDirectory(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "created!");
+        VoidFlow flow = this.directoriesKeeper.createWebDirectory(initiator, command);
+        super.reportVoidFlow(initiator, flow, "created!");
     }
     
     void editWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.directoriesKeeper.editWebDirectory(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "done!");
+        VoidFlow flow = this.directoriesKeeper.editWebDirectory(initiator, command);
+        super.reportVoidFlow(initiator, flow, "done!");
     }
     
     void removeWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.directoriesKeeper.deleteWebDirectory(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "removed.");
+        VoidFlow flow = this.directoriesKeeper.deleteWebDirectory(initiator, command);
+        super.reportVoidFlow(initiator, flow, "removed.");
     }
     
 }

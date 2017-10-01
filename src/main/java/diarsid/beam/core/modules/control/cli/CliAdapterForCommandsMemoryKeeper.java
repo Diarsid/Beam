@@ -8,9 +8,6 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.List;
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -21,6 +18,10 @@ import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
+
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -37,20 +38,20 @@ class CliAdapterForCommandsMemoryKeeper extends AbstractCliAdapter {
     }
     
     void findCommandAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueOperation<List<InvocationCommand>> commandFlow = 
+        ValueFlow<List<InvocationCommand>> commandFlow = 
                 this.commandsMemoryKeeper.findMems(initiator, command);
-        Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
+        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
             List<InvocationCommand> foundCommands = (List<InvocationCommand>) success.getOrThrow();
             return linesToMessage(foundCommands
                     .stream()
                     .map(foundCommand -> foundCommand.toMessageString())
                     .collect(toList()));
         };
-        super.reportValueOperationFlow(initiator, commandFlow, ifSuccess, "not found.");
+        super.reportValueFlow(initiator, commandFlow, ifSuccess, "not found.");
     }
     
     void deleteMemAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation removeFlow = this.commandsMemoryKeeper.remove(initiator, command);
-        super.reportVoidOperationFlow(initiator, removeFlow);
+        VoidFlow removeFlow = this.commandsMemoryKeeper.remove(initiator, command);
+        super.reportVoidFlow(initiator, removeFlow);
     }
 }

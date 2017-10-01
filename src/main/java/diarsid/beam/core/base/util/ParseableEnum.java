@@ -3,15 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.control.flow;
+package diarsid.beam.core.base.util;
+
+import java.util.List;
 
 /**
  *
  * @author Diarsid
  */
-public interface VoidOperation extends Operation {
+public interface ParseableEnum {
     
-    boolean hasMessage();
+    String name();
     
-    String message();
+    List<String> keyWords();
 }

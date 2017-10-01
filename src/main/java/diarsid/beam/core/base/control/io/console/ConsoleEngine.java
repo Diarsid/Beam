@@ -9,10 +9,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 
 
 class ConsoleEngine {
@@ -72,6 +73,18 @@ class ConsoleEngine {
                 this.printer.printDuringInteraction(message);
             } else {
                 this.printer.printNonDuringInteraction(message);
+            }
+        } catch (IOException e) {
+            this.consolePlatform.reportException(e);
+        }
+    }
+    
+    void print(HelpInfo help) {
+        try {
+            if ( this.isInteractionLasts.get() ) {
+                this.printer.printDuringInteraction(help);
+            } else {
+                this.printer.printNonDuringInteraction(help);
             }
         } catch (IOException e) {
             this.consolePlatform.reportException(e);

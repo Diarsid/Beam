@@ -10,19 +10,20 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 
 /**
  *
@@ -111,5 +112,10 @@ public class NativeConsole
     @Override
     public String name() {
         return "Native console";
+    }
+
+    @Override
+    public void report(HelpInfo help) throws IOException {
+        // ...
     }
 }

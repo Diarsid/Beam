@@ -8,15 +8,15 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 
 /**
@@ -34,25 +34,25 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     }
     
     void findLocationAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueOperation<Location> flow = this.locationsKeeper.findLocation(initiator, command);
-        Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
+        ValueFlow<Location> flow = this.locationsKeeper.findLocation(initiator, command);
+        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
             return ((Location) success.getOrThrow()).toMessage();
         };
-        super.reportValueOperationFlow(initiator, flow, ifSuccess, "location not found");
+        super.reportValueFlow(initiator, flow, ifSuccess, "location not found");
     }
     
     void editLocationAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.locationsKeeper.editLocation(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "done!");
+        VoidFlow flow = this.locationsKeeper.editLocation(initiator, command);
+        super.reportVoidFlow(initiator, flow, "done!");
     }
     
     void createLocationAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.locationsKeeper.createLocation(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "created!");        
+        VoidFlow flow = this.locationsKeeper.createLocation(initiator, command);
+        super.reportVoidFlow(initiator, flow, "created!");        
     }
     
     void removeLocationAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.locationsKeeper.removeLocation(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "removed.");  
+        VoidFlow flow = this.locationsKeeper.removeLocation(initiator, command);
+        super.reportVoidFlow(initiator, flow, "removed.");  
     }
 }

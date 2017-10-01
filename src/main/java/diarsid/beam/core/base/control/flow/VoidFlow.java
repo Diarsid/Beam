@@ -9,7 +9,9 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public interface Operation {
+public interface VoidFlow extends Flow {
     
-    OperationResult result();    
+    boolean hasMessage();
+    
+    String message();
 }

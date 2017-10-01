@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.control.cli;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
@@ -36,6 +37,7 @@ class CliCommandDispatcher implements CommandDispatcher {
     private final IoModule ioModule;
     private final ExecutorModule executorModule;
     private final DomainModuleToCliAdapter domainModuleAdapter;
+    private final HelpKey exitHelp;
     
     CliCommandDispatcher(
             IoModule ioModule,
@@ -44,6 +46,12 @@ class CliCommandDispatcher implements CommandDispatcher {
         this.ioModule = ioModule;
         this.executorModule = executorModule;
         this.domainModuleAdapter = domainModuleAdapter;
+        this.exitHelp = this.ioModule.getInnerIoEngine().addToHelpContext(
+                "Confirm if you want to exit Beam.",
+                "Use:",
+                "   - y/yes/+ to confirm exiting",
+                "   - n/no or any other key to break"
+        );
     }
     
     @Override
@@ -276,7 +284,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                 case EXIT : {
                     Choice choice = this.ioModule
                             .getInnerIoEngine()
-                            .ask(initiator, "are you sure");
+                            .ask(initiator, "are you sure", this.exitHelp);
                     if ( choice.isPositive() ) {
                         this.ioModule.unregisterIoEngine(initiator);
                         asyncDoIndependently(() -> exitBeamCoreNow());

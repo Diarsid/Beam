@@ -57,4 +57,9 @@ class GivenAnswer implements Answer {
     public boolean isRejection() {
         return false;
     }
+
+    @Override
+    public boolean isHelpRequest() {
+        return false;
+    }
 }

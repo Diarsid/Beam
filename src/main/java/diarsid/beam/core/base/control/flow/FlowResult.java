@@ -11,23 +11,23 @@ import static java.util.Arrays.stream;
  *
  * @author Diarsid
  */
-public enum OperationResult {
+public enum FlowResult {
     COMPLETE,
     FAIL,
     STOP;
     
-    public boolean is(OperationResult result) {
+    public boolean is(FlowResult result) {
         return this.equals(result);
     }
     
-    public boolean isAny(OperationResult... results) {
+    public boolean isAny(FlowResult... results) {
         return stream(results)
                 .filter(result -> this.equals(result))
                 .findFirst()
                 .isPresent();
     }
     
-    public boolean isNot(OperationResult result) {
+    public boolean isNot(FlowResult result) {
         return ! this.equals(result);
     }
 }

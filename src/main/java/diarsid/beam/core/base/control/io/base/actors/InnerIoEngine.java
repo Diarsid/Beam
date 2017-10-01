@@ -5,11 +5,15 @@
  */
 package diarsid.beam.core.base.control.io.base.actors;
 
+import java.util.List;
+
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 /**
  *
@@ -17,13 +21,18 @@ import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
  */
 public interface InnerIoEngine {
     
-    String askInput(Initiator initiator, String inputQuestion);
+    String askInput(Initiator initiator, String inputQuestion, Help help);
     
-    Choice ask(Initiator initiator, String yesOrNoQuestion);
+    Choice ask(Initiator initiator, String yesOrNoQuestion, Help help);
     
-    Answer ask(Initiator initiator, VariantsQuestion question);
+    Answer ask(Initiator initiator, VariantsQuestion question, Help help);
     
-    Answer chooseInWeightedVariants(Initiator initiator, WeightedVariants variants);
+    Answer chooseInWeightedVariants(
+            Initiator initiator, WeightedVariants variants, Help help);
+    
+    HelpKey addToHelpContext(String... help);
+    
+    HelpKey addToHelpContext(List<String> help);
     
     void report(Initiator initiator, String string);
     

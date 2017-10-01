@@ -6,27 +6,47 @@
 package diarsid.beam.core.domain.entities;
 
 import java.io.Serializable;
+import java.util.List;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import diarsid.beam.core.base.util.ParseableEnum;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+
+import static diarsid.beam.core.base.util.EnumUtils.argMatchesEnum;
+
 
 /**
  *
  * @author Diarsid
  */
-public enum WebPlace implements Serializable {
+public enum WebPlace implements Serializable, ParseableEnum {
     
-    BOOKMARKS ("Bookmarks"),
-    WEBPANEL ("WebPanel"),
-    UNDEFINED_PLACE ("undefined");    
+    BOOKMARKS (
+            "Bookmarks", 
+            asList("bookmarks", "bookm", "bkmarks", "bmarks", "marks")),
+    WEBPANEL (
+            "WebPanel", 
+            asList("webpanel", "panel", "wpanel")),
+    UNDEFINED_PLACE (
+            "undefined", 
+            emptyList());    
     
     private final String displayName;
+    private final List<String> keyWords;
     
-    private WebPlace(String place) {    
+    private WebPlace(String place, List<String> keyWords) {    
         this.displayName = place;
+        this.keyWords = keyWords;
     }   
     
     public String displayName() {
         return this.displayName;
+    }
+    
+    @Override
+    public List<String> keyWords() {
+        return this.keyWords;
     }
     
     public boolean isUndefined() {
@@ -44,23 +64,14 @@ public enum WebPlace implements Serializable {
         return this.equals(another);
     }
 
+    // TODO MEDIUM add tests
     public static WebPlace parsePlace(String arg) {
-        switch ( lower(arg) ) {
-            case "webp":
-            case "webpanel":
-            case "panel": {
-                return WEBPANEL;
-            }
-            case "bookm":
-            case "bmark":
-            case "bmarks":
-            case "bookmarks":
-            case "bookmark": {
-                return BOOKMARKS;
-            }
-            default: {
-                return UNDEFINED_PLACE;
-            }
+        if ( argMatchesEnum(arg, WEBPANEL) ) {
+            return WEBPANEL;
+        } else if ( argMatchesEnum(arg, BOOKMARKS) ) {
+            return BOOKMARKS;
+        } else {
+            return UNDEFINED_PLACE;
         }
     }
 }

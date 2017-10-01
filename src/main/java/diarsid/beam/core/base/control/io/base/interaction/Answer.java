@@ -27,4 +27,6 @@ public interface Answer extends Serializable {
     
     boolean isRejection();
     
+    boolean isHelpRequest();
+    
 }

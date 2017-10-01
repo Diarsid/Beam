@@ -10,21 +10,19 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.NotesCatalog;
-import diarsid.beam.core.base.control.flow.VoidOperation;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_NOTE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
@@ -35,7 +33,15 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.SIMPLE_PATH_RULE;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+
+import diarsid.beam.core.base.control.flow.VoidFlow;
+
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 
 /**
  *
@@ -46,6 +52,7 @@ class NotesKeeperWorker implements NotesKeeper {
     private final InnerIoEngine ioEngine;
     private final NotesCatalog notesCatalog;
     private final KeeperDialogHelper helper;
+    private final Help chooseOneNoteHelp;
     
     // TODO ??? find closest path te/rea -> is tech/react/ ?
     NotesKeeperWorker(
@@ -53,6 +60,13 @@ class NotesKeeperWorker implements NotesKeeper {
         this.ioEngine = ioEngine;
         this.notesCatalog = notesCatalog;
         this.helper = helper;
+        this.chooseOneNoteHelp = this.ioEngine.addToHelpContext(
+                "Choose one note.",
+                "Use:",
+                "   - number to choose note",
+                "   - name part of note to choose it",
+                "   - n/no to see more variants, if any",
+                "   - dot to break");
     }    
 
     private void reportAndOpen(Initiator initiator, String noteTarget) throws IOException {
@@ -66,42 +80,42 @@ class NotesKeeperWorker implements NotesKeeper {
     }
 
     @Override
-    public VoidOperation openNotes(Initiator initiator, EmptyCommand command) {
+    public VoidFlow openNotes(Initiator initiator, EmptyCommand command) {
         if ( command.type().isNot(OPEN_NOTES) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         try {
             this.ioEngine.report(initiator, "...openinig Notes");
             this.notesCatalog.open();
         } catch (IOException ex) {
-            return voidOperationFail(ex.getMessage());
+            return voidFlowFail(ex.getMessage());
         }    
-        return voidCompleted();
+        return voidFlowCompleted();
     }
 
     @Override
-    public VoidOperation openTargetInNotes(Initiator initiator, ArgumentsCommand command) {
+    public VoidFlow openTargetInNotes(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(OPEN_TARGET_IN_NOTES) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String noteName = command.joinedArguments();
         if ( noteName.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         } 
         
         List<String> foundNotes = this.notesCatalog.findByNoteName(noteName);
         if ( foundNotes.isEmpty() ) {
-            return voidOperationFail("not found.");
+            return voidFlowFail("not found.");
         }
         
         if ( hasOne(foundNotes) ) {
             try {
                 this.reportAndOpen(initiator, getOne(foundNotes));                
-                return voidCompleted();
+                return voidFlowCompleted();
             } catch (IOException ex) {
-                return voidOperationFail(ex.getMessage());
+                return voidFlowFail(ex.getMessage());
             }
         } else {
             return this.processMultipleNotes(initiator, noteName, foundNotes);
@@ -109,57 +123,58 @@ class NotesKeeperWorker implements NotesKeeper {
     }
 
     @Override
-    public VoidOperation openPathInNotes(Initiator initiator, ArgumentsCommand command) {
+    public VoidFlow openPathInNotes(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(OPEN_PATH_IN_NOTES) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String pathToOpen = command.getFirstArg();
         if ( pathToOpen.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         } 
         
         List<String> foundNotePaths = this.notesCatalog.findByPath(pathToOpen);
         if ( foundNotePaths.isEmpty() ) {
-            return voidOperationFail("not found.");
+            return voidFlowFail("not found.");
         }
         
         if ( hasOne(foundNotePaths) ) {
             try {
                 this.reportAndOpen(initiator, getOne(foundNotePaths));
-                return voidCompleted();
+                return voidFlowCompleted();
             } catch (IOException ex) {
-                return voidOperationFail(ex.getMessage());
+                return voidFlowFail(ex.getMessage());
             }    
         } else {            
             return this.processMultipleNotes(initiator, pathToOpen, foundNotePaths);
         }
     }    
 
-    private VoidOperation processMultipleNotes(
+    private VoidFlow processMultipleNotes(
             Initiator initiator, String noteTarget, List<String> foundNoteTargets) {
         WeightedVariants variants =
                 weightVariants(noteTarget, stringsToVariants(foundNoteTargets));
         if ( variants.isEmpty() ) {
-            return voidOperationFail("not found.");
+            return voidFlowFail("not found.");
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, variants, this.chooseOneNoteHelp);
         if ( answer.isGiven() ) {
             try {
                 this.reportAndOpen(initiator, answer.text());
-                return voidCompleted();
+                return voidFlowCompleted();
             } catch (IOException ex) {
-                return voidOperationFail(ex.getMessage());
+                return voidFlowFail(ex.getMessage());
             }
         } else {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
     }
 
     @Override
-    public VoidOperation createNote(Initiator initiator, ArgumentsCommand command) {
+    public VoidFlow createNote(Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_NOTE) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String noteName = command.joinedArguments();
@@ -176,14 +191,14 @@ class NotesKeeperWorker implements NotesKeeper {
         }
         
         if ( noteName.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         try {
             this.reportCreateAndOpen(initiator, noteName);
-            return voidCompleted();
+            return voidFlowCompleted();
         } catch (IOException ex) {
-            return voidOperationFail(ex.getMessage());
+            return voidFlowFail(ex.getMessage());
         }
     }
 }

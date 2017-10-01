@@ -15,17 +15,17 @@ import static java.time.LocalDateTime.now;
  *
  * @author Diarsid
  */
-public class TaskTime {
+public class Time {
     
     private final LocalDateTime time;
-    private final TasksTimeType timeType;
+    private final TimeType timeType;
 
-    TaskTime(LocalDateTime time, TasksTimeType timeType) {
+    Time(LocalDateTime time, TimeType timeType) {
         this.time = time;
         this.timeType = timeType;
     }
 
-    public LocalDateTime actualizedTime() {
+    public LocalDateTime actualTime() {
         if ( this.time.isBefore(now()) ) {
             return this.timeType.leapToFutureAccordingToType(this.time);
         } else {
@@ -33,11 +33,11 @@ public class TaskTime {
         }        
     }
     
-    public boolean isTimeAbsolute(){
+    public boolean isAbsolute(){
         return this.timeType.isAbsolute();
     }
     
-    public boolean isTimeRelative(){
+    public boolean isRelative(){
         return this.timeType.isRelative();
     }
 
@@ -60,7 +60,7 @@ public class TaskTime {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final TaskTime other = ( TaskTime ) obj;
+        final Time other = ( Time ) obj;
         if ( !Objects.equals(this.time, other.time) ) {
             return false;
         }

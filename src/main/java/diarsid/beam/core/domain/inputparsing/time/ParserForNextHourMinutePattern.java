@@ -7,21 +7,32 @@
 package diarsid.beam.core.domain.inputparsing.time;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
+import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.NEXT_HOURS_AND_MINUTES;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.NEXT_HOURS_AND_MINUTES;
 
 
 class ParserForNextHourMinutePattern implements TimePatternParser {
     
     ParserForNextHourMinutePattern() {
     }
+    
+    @Override
+    public List<String> timePatterns() {
+        return asList(
+                "current or next day time:",
+                "  21:35",
+                "  21h:35m",
+                "  7:12");
+    }
 
     @Override
-    public Optional<TaskTime> parse(String timePattern) {
+    public Optional<Time> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.trim().replace("h", "").replace("m", "");
             int semicolonIndex = timePattern.indexOf(":");
@@ -35,7 +46,7 @@ class ParserForNextHourMinutePattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TaskTime(time, NEXT_HOURS_AND_MINUTES));
+                return Optional.of(new Time(time, NEXT_HOURS_AND_MINUTES));
             } else {
                 return Optional.empty();
             }

@@ -8,14 +8,14 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.modules.domainkeeper.ProgramsKeeper;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -31,10 +31,10 @@ class CliAdapterForProgramsKeeper extends AbstractCliAdapter {
     }
     
     void findProgramAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueOperation<Program> flow = this.programsKeeper.findProgram(initiator, command);
-        Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
+        ValueFlow<Program> flow = this.programsKeeper.findProgram(initiator, command);
+        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
             return ((Program) success.getOrThrow()).toMessage();
         };
-        super.reportValueOperationFlow(initiator, flow, ifSuccess, "not found.");
+        super.reportValueFlow(initiator, flow, ifSuccess, "not found.");
     }
 }

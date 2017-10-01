@@ -7,21 +7,32 @@
 package diarsid.beam.core.domain.inputparsing.time;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
+import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.PLUS_HOURS_AND_MINUTES;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.PLUS_HOURS_AND_MINUTES;
 
 
 class ParserForPlusHourMinutePattern implements TimePatternParser {
     
     ParserForPlusHourMinutePattern() {
     }
+    
+    @Override
+    public List<String> timePatterns() {
+        return asList(
+                "plus hour and minute:",
+                "  +02:35",
+                "  +12h:20m",
+                "  +1:30");
+    }
 
     @Override
-    public Optional<TaskTime> parse(String timePattern) {
+    public Optional<Time> parse(String timePattern) {
         if ( timePattern.trim().matches("\\+\\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.trim().replace("h", "").replace("m", "").substring(1);
             int semicolonIndex = timePattern.indexOf(":");
@@ -35,7 +46,7 @@ class ParserForPlusHourMinutePattern implements TimePatternParser {
                         .plusMinutes(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TaskTime(time, PLUS_HOURS_AND_MINUTES));
+                return Optional.of(new Time(time, PLUS_HOURS_AND_MINUTES));
             } else {
                 return Optional.empty();
             }

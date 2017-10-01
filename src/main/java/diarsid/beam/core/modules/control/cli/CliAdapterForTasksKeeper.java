@@ -9,8 +9,6 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.List;
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -20,7 +18,9 @@ import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToMessage;
 
-import diarsid.beam.core.base.control.flow.ValueOperationComplete;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -36,25 +36,25 @@ public class CliAdapterForTasksKeeper extends AbstractCliAdapter {
     }
     
     void removeTaskAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.tasksKeeper.deleteTask(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "removed.");
+        VoidFlow flow = this.tasksKeeper.deleteTask(initiator, command);
+        super.reportVoidFlow(initiator, flow, "removed.");
     }
     
     void createTaskAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.tasksKeeper.createTask(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "created!");
+        VoidFlow flow = this.tasksKeeper.createTask(initiator, command);
+        super.reportVoidFlow(initiator, flow, "created!");
     }
     
     void editTaskAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.tasksKeeper.editTask(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "done!");
+        VoidFlow flow = this.tasksKeeper.editTask(initiator, command);
+        super.reportVoidFlow(initiator, flow, "done!");
     }
     
     void findTasksAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueOperation<List<Task>> flow = this.tasksKeeper.findTasks(initiator, command);
-        Function<ValueOperationComplete, Message> ifSuccess = (success) -> {
+        ValueFlow<List<Task>> flow = this.tasksKeeper.findTasks(initiator, command);
+        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
             return tasksToMessage((List<Task>) success.getOrThrow());
         };
-        super.reportValueOperationFlow(initiator, flow, ifSuccess, "tasks not found.");
+        super.reportValueFlow(initiator, flow, ifSuccess, "tasks not found.");
     }
 }

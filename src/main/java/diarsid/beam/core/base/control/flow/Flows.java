@@ -9,22 +9,22 @@ package diarsid.beam.core.base.control.flow;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static diarsid.beam.core.base.control.flow.OperationResult.COMPLETE;
-import static diarsid.beam.core.base.control.flow.OperationResult.FAIL;
-import static diarsid.beam.core.base.control.flow.OperationResult.STOP;
+import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
+import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
 
 /**
  *
  * @author Diarsid
  */
-public class Operations {
+public class Flows {
     
-    private static final VoidOperation OK_VOID_OPERATION;
-    private static final VoidOperation STOPPED_VOID_OPERATION;
-    private static final ValueOperation STOPPED_RETURN_OPERATION;
+    private static final VoidFlow VOID_FLOW_COMPLETED;
+    private static final VoidFlow VOID_FLOW_STOPPED;
+    private static final ValueFlow VALUE_FLOW_STOPPED;
     
     static {
-        OK_VOID_OPERATION = new VoidOperation() {
+        VOID_FLOW_COMPLETED = new VoidFlow() {
             @Override
             public boolean hasMessage() {
                 return false;
@@ -32,15 +32,15 @@ public class Operations {
 
             @Override
             public String message() {
-                throw new IllegalStateException("this VoidOperation doesn't have message."); 
+                throw new IllegalStateException("this VoidFlow doesn't have message."); 
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return COMPLETE;
             }
         };
-        STOPPED_VOID_OPERATION = new VoidOperation() {
+        VOID_FLOW_STOPPED = new VoidFlow() {
             @Override
             public boolean hasMessage() {
                 return false;
@@ -48,51 +48,51 @@ public class Operations {
 
             @Override
             public String message() {
-                throw new IllegalStateException("this VoidOperation doesn't have message."); 
+                throw new IllegalStateException("this VoidFlow doesn't have message."); 
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return STOP;
             }
         };
-        STOPPED_RETURN_OPERATION = new ValueOperation() {
+        VALUE_FLOW_STOPPED = new ValueFlow() {
             @Override
-            public ValueOperationComplete asComplete() {
+            public ValueFlowCompleted asComplete() {
                 throw new IllegalStateException("This is Stop operation");
             }
 
             @Override
-            public ValueOperationFail asFail() {
+            public ValueFlowFail asFail() {
                 throw new IllegalStateException("This is Stop operation");
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return STOP;
             }
             
             @Override
-            public VoidOperation toVoid() {
-                return STOPPED_VOID_OPERATION;
+            public VoidFlow toVoid() {
+                return VOID_FLOW_STOPPED;
             }
 
             @Override
-            public ValueOperation map(Function mapFunction) {
+            public ValueFlow map(Function mapFunction) {
                 return this;
             }
         };
     }
     
-    private Operations() {
+    private Flows() {
     }
     
-    public static VoidOperation voidCompleted() {
-        return OK_VOID_OPERATION;
+    public static VoidFlow voidFlowCompleted() {
+        return VOID_FLOW_COMPLETED;
     }
     
-    public static VoidOperation voidCompleted(String message) {
-        return new VoidOperation() {
+    public static VoidFlow voidFlowCompleted(String message) {
+        return new VoidFlow() {
             @Override
             public boolean hasMessage() {
                 return true;
@@ -104,22 +104,23 @@ public class Operations {
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return COMPLETE;
             }
         };
     }
     
-    public static <T extends Object> ValueOperation<T> valueCompletedWith(Optional<T> optT) {
+    public static <T extends Object> ValueFlow<T> valueFlowCompletedWith(
+            Optional<T> optT) {
         if ( optT.isPresent() ) {
-            return Operations.valueCompletedWith(optT.get());
+            return Flows.valueFlowCompletedWith(optT.get());
         } else {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
     }
     
-    public static <T extends Object> ValueOperation<T> valueCompletedWith(T t) {
-        return new ValueOperationComplete<T>() {
+    public static <T extends Object> ValueFlow<T> valueFlowCompletedWith(T t) {
+        return new ValueFlowCompleted<T>() {
             @Override
             public boolean hasValue() {
                 return true;
@@ -136,34 +137,34 @@ public class Operations {
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return COMPLETE;
             }
 
             @Override
-            public ValueOperationComplete<T> asComplete() {
+            public ValueFlowCompleted<T> asComplete() {
                 return this;
             }
 
             @Override
-            public ValueOperationFail asFail() {                
+            public ValueFlowFail asFail() {                
                 throw new IllegalStateException("This is Complete operation.");
             }
             
             @Override
-            public VoidOperation toVoid() {
-                return OK_VOID_OPERATION;
+            public VoidFlow toVoid() {
+                return VOID_FLOW_COMPLETED;
             }
 
             @Override
-            public <R> ValueOperation<R> map(Function<T, R> mapFunction) {
-                return valueCompletedWith(mapFunction.apply(t));
+            public <R> ValueFlow<R> map(Function<T, R> mapFunction) {
+                return valueFlowCompletedWith(mapFunction.apply(t));
             }
         };
     }
     
-    public static <T extends Object> ValueOperation<T> valueCompletedEmpty() {
-        return new ValueOperationComplete<T>() {
+    public static <T extends Object> ValueFlow<T> valueFlowCompletedEmpty() {
+        return new ValueFlowCompleted<T>() {
             @Override
             public boolean hasValue() {
                 return false;
@@ -171,7 +172,7 @@ public class Operations {
 
             @Override
             public T getOrThrow() {
-                throw new IllegalStateException("This is empty return.");
+                throw new IllegalStateException("This is empty flow.");
             }
 
             @Override
@@ -180,42 +181,42 @@ public class Operations {
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return COMPLETE;
             }
 
             @Override
-            public ValueOperationComplete<T> asComplete() {
+            public ValueFlowCompleted<T> asComplete() {
                 return this;
             }
 
             @Override
-            public ValueOperationFail asFail() {                
-                throw new IllegalStateException("This is Complete operation.");
+            public ValueFlowFail asFail() {                
+                throw new IllegalStateException("This is Completed flow.");
             }
             
             @Override
-            public VoidOperation toVoid() {
-                return OK_VOID_OPERATION;
+            public VoidFlow toVoid() {
+                return VOID_FLOW_COMPLETED;
             }
 
             @Override
-            public <R> ValueOperation<R> map(Function<T, R> mapFunction) {
-                return valueCompletedEmpty();
+            public <R> ValueFlow<R> map(Function<T, R> mapFunction) {
+                return valueFlowCompletedEmpty();
             }
         };
     }
     
-    public static VoidOperation voidOperationStopped() {
-        return STOPPED_VOID_OPERATION;
+    public static VoidFlow voidFlowStopped() {
+        return VOID_FLOW_STOPPED;
     }
     
-    public static ValueOperation valueOperationStopped() {
-        return STOPPED_RETURN_OPERATION;
+    public static ValueFlow valueFlowStopped() {
+        return VALUE_FLOW_STOPPED;
     }
     
-    public static VoidOperation voidOperationFail(String failMessage) {
-        return new VoidOperation() {
+    public static VoidFlow voidFlowFail(String failMessage) {
+        return new VoidFlow() {
             @Override
             public boolean hasMessage() {
                 return true;
@@ -227,41 +228,41 @@ public class Operations {
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return FAIL;
             }
         };
     }
     
-    public static ValueOperationFail valueOperationFail(String failMessage) {
-        return new ValueOperationFail() {
+    public static ValueFlowFail valueFlowFail(String failMessage) {
+        return new ValueFlowFail() {
             @Override
             public String reason() {
                 return failMessage;
             }
 
             @Override
-            public OperationResult result() {
+            public FlowResult result() {
                 return FAIL;
             }
 
             @Override
-            public ValueOperationComplete asComplete() {                
+            public ValueFlowCompleted asComplete() {                
                 throw new IllegalStateException("This is Fail operation.");
             }
 
             @Override
-            public ValueOperationFail asFail() {
+            public ValueFlowFail asFail() {
                 return this;
             }
             
             @Override
-            public VoidOperation toVoid() {
-                return voidOperationFail(failMessage);
+            public VoidFlow toVoid() {
+                return voidFlowFail(failMessage);
             }
 
             @Override
-            public ValueOperation map(Function mapFunction) {
+            public ValueFlow map(Function mapFunction) {
                 return this;
             }
         };

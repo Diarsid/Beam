@@ -5,7 +5,8 @@
  */
 package diarsid.beam.core.base.analyze.similarity;
 
-import java.util.Set;
+
+import java.util.Collection;
 
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.Integer.max;
@@ -130,9 +131,13 @@ public class Similarity {
         return new StringBuilder(s).reverse().toString();
     }
     
-    public static boolean isSimilar(String realTarget, String pattern) {
-        realTarget = lower(realTarget);
+    public static boolean isSimilar(String target, String pattern) {
+        target = lower(target);
         pattern = lower(pattern);
+        
+        if ( target.equals(pattern) ) {
+            return true;
+        }
         
         int notFoundChars = 0;
         int realTargetCharIndex = 0;
@@ -140,7 +145,7 @@ public class Similarity {
         int clustered = 0;
         
         for (int patternCharIndex = 0; patternCharIndex < pattern.length(); patternCharIndex++) {
-            realTargetCharIndex = realTarget.indexOf(pattern.charAt(patternCharIndex));
+            realTargetCharIndex = target.indexOf(pattern.charAt(patternCharIndex));
             if ( realTargetCharIndex < 0 ) {
                 realTargetPreviousCharIndex = MIN_VALUE;
                 notFoundChars++;
@@ -156,7 +161,7 @@ public class Similarity {
             }
         }
         
-        debug("[SIMILARITY] " + realTarget + "::" + pattern + " = clustered " + clustered);
+        debug("[SIMILARITY] " + target + "::" + pattern + " = clustered " + clustered);
         
         if ( notFoundChars == 0 ) {
             return clustered > 0;
@@ -170,14 +175,18 @@ public class Similarity {
     }
     
     private static boolean isSimilar(
-            String realTarget, String pattern, SimilarityAnalyzeData data) {
-        realTarget = lower(realTarget);
+            String target, String pattern, SimilarityAnalyzeData data) {
+        target = lower(target);
         pattern = lower(pattern);        
-                
+        
+        if ( target.equals(pattern) ) {
+            return true;
+        }  
+        
         data.clear();
         
         for (int patternCharIndex = 0; patternCharIndex < pattern.length(); patternCharIndex++) {
-            data.realTargetCharIndex = realTarget.indexOf(pattern.charAt(patternCharIndex));
+            data.realTargetCharIndex = target.indexOf(pattern.charAt(patternCharIndex));
             if ( data.realTargetCharIndex < 0 ) {
                 data.realTargetPreviousCharIndex = MIN_VALUE;
                 data.notFoundChars++;
@@ -193,7 +202,7 @@ public class Similarity {
             }
         }
         
-        debug("[SIMILARITY] " + realTarget + "::" + pattern + " = clustered " + data.clustered);
+        debug("[SIMILARITY] " + target + "::" + pattern + " = clustered " + data.clustered);
         
         boolean similar;
         if ( data.notFoundChars == 0 ) {
@@ -209,12 +218,12 @@ public class Similarity {
         data.clear();
         
         if ( similar ) {
-            debug("[SIMILARITY] [FOUND] " + realTarget + "::" + pattern);
+            debug("[SIMILARITY] [FOUND] " + target + "::" + pattern);
         }
         return similar;
     }
     
-    public static boolean hasSimilar(Set<String> realTargets, String pattern) {
+    public static boolean hasSimilar(Collection<String> realTargets, String pattern) {
         SimilarityAnalyzeData analyzeData = new SimilarityAnalyzeData();
         return realTargets
                 .stream()
@@ -224,6 +233,10 @@ public class Similarity {
     public static boolean isStrictSimilar(String target, String pattern) {
         target = lower(target);
         pattern = lower(pattern);
+        
+        if ( target.equals(pattern) ) {
+            return true;
+        }
         
         int presentChars = 0;
         
@@ -271,6 +284,10 @@ public class Similarity {
         target = lower(target);
         pattern = lower(pattern);
         
+        if ( target.equals(pattern) ) {
+            return true;
+        }
+        
         data.clear();
         
         if ( target.length() == pattern.length() ) {
@@ -312,7 +329,7 @@ public class Similarity {
         return acceptable;
     }
     
-    public static boolean hasStrictSimilar(Set<String> realTargets, String pattern) {
+    public static boolean hasStrictSimilar(Collection<String> realTargets, String pattern) {
         StrictSimilarityAnalyzeData analyzeData = new StrictSimilarityAnalyzeData();
         return realTargets
                 .stream()

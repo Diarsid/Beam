@@ -7,22 +7,33 @@
 package diarsid.beam.core.domain.inputparsing.time;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.now;
 import static java.time.Year.isLeap;
+import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.domain.inputparsing.time.TasksTimeType.NEXT_MONTH_DAY_HOURS_AND_MINUTES;
+import static diarsid.beam.core.domain.inputparsing.time.TimeType.NEXT_MONTH_DAY_HOURS_AND_MINUTES;
 
 
-class ParserForNextMonthDayHourMinutPattern implements TimePatternParser {
+class ParserForNextMonthDayHourMinutePattern implements TimePatternParser {
     
-    ParserForNextMonthDayHourMinutPattern() {
+    ParserForNextMonthDayHourMinutePattern() {
+    }
+    
+    @Override
+    public List<String> timePatterns() {
+        return asList(
+                "current or next year month and time:",
+                "  09.01 21:35",
+                "  09m-01d 21h:35m",
+                "  9.1 7:12");
     }
 
     @Override
-    public Optional<TaskTime> parse(String timePattern) {
+    public Optional<Time> parse(String timePattern) {
         if ( timePattern.trim().matches("\\d{1,2}m?(\\.|-)\\d{1,2}d? \\d{1,2}h?:\\d{1,2}m?") ) {
             timePattern = timePattern.replace("d", "").replace("h", "").replace("m", "");
             int spaceIndex = timePattern.indexOf(" ");
@@ -51,7 +62,7 @@ class ParserForNextMonthDayHourMinutPattern implements TimePatternParser {
                         .withMinute(minutes)
                         .withSecond(0)
                         .withNano(0);
-                return Optional.of(new TaskTime(time, NEXT_MONTH_DAY_HOURS_AND_MINUTES));
+                return Optional.of(new Time(time, NEXT_MONTH_DAY_HOURS_AND_MINUTES));
             } else {
                 return Optional.empty();
             }

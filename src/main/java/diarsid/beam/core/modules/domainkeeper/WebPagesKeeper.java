@@ -7,8 +7,6 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
@@ -16,6 +14,8 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -23,33 +23,33 @@ import diarsid.beam.core.domain.entities.WebPlace;
  */
 public interface WebPagesKeeper extends NamedEntitiesKeeper {
     
-    VoidOperation createWebPage(
+    VoidFlow createWebPage(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation editWebPage(
+    VoidFlow editWebPage(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation removeWebPage(
+    VoidFlow removeWebPage(
             Initiator initiator, ArgumentsCommand command);
     
-    VoidOperation captureImage(
+    VoidFlow captureImage(
             Initiator initiator, ArgumentsCommand command);
     
-    ValueOperation<WebPage> findWebPageByPattern(
+    ValueFlow<WebPage> findWebPageByPattern(
             Initiator initiator, ArgumentsCommand command);
     
     List<WebPage> findWebPagesByPattern(
             Initiator initiator, String pattern);
     
-    ValueOperation<Message> getWebPlace(
+    ValueFlow<Message> getWebPlace(
             Initiator initiator, EmptyCommand command);
     
     @Override
-    ValueOperation<WebPage> findByExactName(
+    ValueFlow<WebPage> findByExactName(
             Initiator initiator, String name);
     
     @Override
-    ValueOperation<WebPage> findByNamePattern(
+    ValueFlow<WebPage> findByNamePattern(
             Initiator initiator, String name);
     
     WebResponse createWebPage(

@@ -12,11 +12,11 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.gui.Gui;
-import diarsid.beam.core.base.control.flow.ValueOperation;
-import diarsid.beam.core.base.control.flow.VoidOperation;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
@@ -27,7 +27,6 @@ import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
@@ -44,16 +43,11 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 
 import static java.lang.String.format;
+import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Operations.valueCompletedWith;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.valueOperationStopped;
-import static diarsid.beam.core.base.control.flow.Operations.voidCompleted;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationFail;
-import static diarsid.beam.core.base.control.flow.Operations.voidOperationStopped;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
@@ -72,8 +66,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMAR
 import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_DOMAIN_CHARS;
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -99,6 +93,23 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
 
+import diarsid.beam.core.base.control.flow.VoidFlow;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+
 
 public class WebPagesKeeperWorker 
         extends 
@@ -119,6 +130,12 @@ public class WebPagesKeeperWorker
     private final WebObjectsInputParser webObjectsParser;
     private final Set<CommandType> subjectedCommandTypes;
     private final WebDirectory defaultDirectory;
+    private final Help chooseOnePageHelp;
+    private final Help enterNewPageNameHelp;
+    private final Help enterExistingPageNameHelp;
+    private final Help chooseOneDirectoryHelp;
+    private final Help enterDirectoryNameHelp;
+    private final Help enterShortcutsHelp;
     
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
@@ -143,7 +160,43 @@ public class WebPagesKeeperWorker
         this.propetyTextParser = propetyTextParser;
         this.webObjectsParser = parser;
         this.subjectedCommandTypes = toSet(BROWSE_WEBPAGE);
-        this.defaultDirectory = this.getOrCreateDefaultDirectory();                 
+        this.defaultDirectory = this.getOrCreateDefaultDirectory();   
+        this.chooseOnePageHelp = this.ioEngine.addToHelpContext(
+                "Choose one WebPage.",
+                "Use:",
+                "   - WebPage number to choose it",
+                "   - WebPage name part to choose it",
+                "   - n/no to see more WebPages, if any",
+                "   - dot to break"
+        );
+        this.enterNewPageNameHelp = this.ioEngine.addToHelpContext(
+                "Enter WebPage name.",
+                "Name cannot contain following chars: " + join("", UNACCEPTABLE_DOMAIN_CHARS)
+        );
+        this.enterExistingPageNameHelp = this.ioEngine.addToHelpContext(
+                "Enter existing WebPage name or name pattern.",
+                "Name cannot contain following chars: " + join("", UNACCEPTABLE_DOMAIN_CHARS)
+        );
+        this.chooseOneDirectoryHelp = this.ioEngine.addToHelpContext(
+                "Choose one WebDirectory.",
+                "Use:",
+                "   - WebDirectory number to choose it",
+                "   - WebDirectory name part to choose it",
+                "   - n/no to see more WebDirectories, if any",
+                "   - dot to break"
+        );
+        this.enterDirectoryNameHelp = this.ioEngine.addToHelpContext(
+                "Enter existing WebDirectory name or name pattern.",
+                "Name cannot contain following chars: " + join("", UNACCEPTABLE_DOMAIN_CHARS)
+        );
+        this.enterShortcutsHelp = this.ioEngine.addToHelpContext(
+                "Enter WebPage shortcuts. Shortcuts is a name",
+                "substitution and can be used to search or invoke",
+                "the WebPage by its shortcuts as by its name.",
+                "Shorcuts can contain words separated by spaces and",
+                "cannot contain following chars: " + join("", UNACCEPTABLE_DOMAIN_CHARS) +".",
+                "Shortcuts can be empty."
+        );
     }
     
     private WebDirectory getOrCreateDefaultDirectory() {
@@ -226,50 +279,52 @@ public class WebPagesKeeperWorker
     }
     
     @Override
-    public ValueOperation<WebPage> findByExactName(
+    public ValueFlow<WebPage> findByExactName(
             Initiator initiator, String name) {
-        return valueCompletedWith(this.daoPages.getByExactName(initiator, name));
+        return valueFlowCompletedWith(this.daoPages.getByExactName(initiator, name));
     }
     
     @Override
-    public ValueOperation<WebPage> findByNamePattern(
+    public ValueFlow<WebPage> findByNamePattern(
             Initiator initiator, String namePattern) {
         List<WebPage> foundPages = this.daoPages.findByPattern(initiator, namePattern);
         if ( hasOne(foundPages) ) {
-            return valueCompletedWith(getOne(foundPages));
+            return valueFlowCompletedWith(getOne(foundPages));
         } else if ( hasMany(foundPages) ) {
             return this.manageWithManyPages(initiator, namePattern, foundPages);
         } else {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
     }
     
-    private ValueOperation<WebPage> manageWithManyPages(
+    private ValueFlow<WebPage> manageWithManyPages(
             Initiator initiator, String pattern, List<WebPage> pages) {
         WeightedVariants variants = weightVariants(pattern, entitiesToVariants(pages));
         if ( variants.isEmpty() ) {
-            return valueCompletedEmpty();
+            return valueFlowCompletedEmpty();
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(initiator, variants);
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, variants, this.chooseOnePageHelp);
         if ( answer.isGiven() ) {
-            return valueCompletedWith(pages.get(answer.index()));
+            return valueFlowCompletedWith(pages.get(answer.index()));
         } else {
             if ( answer.isRejection() ) {
-                return valueOperationStopped();
+                return valueFlowStopped();
             } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueCompletedEmpty();
+                return valueFlowCompletedEmpty();
             } else {
-                return valueCompletedEmpty();
+                return valueFlowCompletedEmpty();
             }
         }
     }
 
     private String discussShortcuts(Initiator initiator) {
-        String shortcuts = this.ioEngine.askInput(initiator, "shortcuts, if any");
+        String shortcuts = this.ioEngine.askInput(
+                initiator, "shortcuts, if any", this.enterShortcutsHelp);
         if ( nonEmpty(shortcuts) ) {
             ValidationResult shortcutsValidity = ENTITY_NAME_RULE.applyTo(shortcuts);
             validation: while ( shortcutsValidity.isFail() ) {
-                shortcuts = this.ioEngine.askInput(initiator, "shortcuts");
+                shortcuts = this.ioEngine.askInput(initiator, "shortcuts", this.enterShortcutsHelp);
                 if ( shortcuts.isEmpty() ) {
                     break validation;
                 } else {
@@ -290,7 +345,8 @@ public class WebPagesKeeperWorker
         VariantsQuestion question;
         directoryDefining: while ( pageNotDefined ) {  
             if ( pagePattern.isEmpty() ) {
-                pagePattern = this.ioEngine.askInput(initiator, "page name");
+                pagePattern = this.ioEngine.askInput(
+                        initiator, "page name", this.enterExistingPageNameHelp);
             }            
             if ( pagePattern.isEmpty() ) {
                 optPage = Optional.empty();
@@ -309,7 +365,7 @@ public class WebPagesKeeperWorker
                 pageNotDefined = false;
             } else {
                 question = question("choose page").withAnswerEntities(foundPages);
-                Answer answer = this.ioEngine.ask(initiator, question);
+                Answer answer = this.ioEngine.ask(initiator, question, this.chooseOnePageHelp);
                 if ( answer.isGiven() ) {
                     optPage = foundPages
                             .stream()
@@ -328,7 +384,7 @@ public class WebPagesKeeperWorker
         String pageNewName = "";
         boolean newNameNotDefined = true;
         newNameDefining: while ( newNameNotDefined ) {            
-            pageNewName = this.ioEngine.askInput(initiator, "new name");
+            pageNewName = this.ioEngine.askInput(initiator, "new name", this.enterNewPageNameHelp);
             if ( pageNewName.isEmpty() ) {
                 return "";
             }
@@ -357,7 +413,8 @@ public class WebPagesKeeperWorker
         boolean directoryNotDefined = true;
         VariantsQuestion question;        
         directoryDefining: while ( directoryNotDefined ) {            
-            directoryName = this.ioEngine.askInput(initiator, "directory name");
+            directoryName = this.ioEngine.askInput(
+                    initiator, "directory name", this.enterDirectoryNameHelp);
             if ( directoryName.isEmpty() ) {
                 return Optional.empty();                
             }
@@ -376,7 +433,7 @@ public class WebPagesKeeperWorker
                 directoryNotDefined = false;
             } else {
                 question = question("choose directory").withAnswerEntities(foundDirectories);
-                Answer answer = this.ioEngine.ask(initiator, question);
+                Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneDirectoryHelp);
                 if ( answer.isGiven() ) {
                     optDirectory = foundDirectories
                             .stream()
@@ -392,10 +449,10 @@ public class WebPagesKeeperWorker
     }
 
     @Override
-    public VoidOperation createWebPage(
+    public VoidFlow createWebPage(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CREATE_PAGE) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         WebPlace place;
@@ -414,11 +471,11 @@ public class WebPagesKeeperWorker
         
         name = this.helper.validateEntityNameInteractively(initiator, name);
         if ( name.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
         if ( ! freeNameIndex.isPresent() ) {
-            return voidOperationFail("DAO failed to get free name index.");
+            return voidFlowFail("DAO failed to get free name index.");
         }
         if ( freeNameIndex.get() > 0 ) {
             this.ioEngine.report(initiator, format("page '%s' already exists.", name));
@@ -428,36 +485,36 @@ public class WebPagesKeeperWorker
         
         url = this.helper.validateInteractively(initiator, url, "url", WEB_URL_RULE);
         if ( url.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         String shortcuts = this.discussShortcuts(initiator);
         
-        Optional<WebDirectory> optDirectory = this.discussExistingWebDirectory(initiator, place);
-        if ( ! optDirectory.isPresent() ) {
+        Optional<WebDirectory> directory = this.discussExistingWebDirectory(initiator, place);
+        if ( isNotPresent(directory) ) {
             this.ioEngine.report(
                     initiator, 
                     format("default directory '%s' will be used.", this.defaultDirectory.name()));
-            optDirectory = Optional.of(this.defaultDirectory);
+            directory = Optional.of(this.defaultDirectory);
         } else {
             this.ioEngine.report(
-                    initiator, format("directory found: '%s'", optDirectory.get().name()));
+                    initiator, format("directory found: '%s'", directory.get().name()));
         }       
         
-        WebPage page = newWebPage(name, shortcuts, url, optDirectory.get().id());
+        WebPage page = newWebPage(name, shortcuts, url, directory.get().id());
         if ( daoPages.save(initiator, page) ) {
             this.asyncAddCommandsForPage(initiator, page);
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to save new page.");
+            return voidFlowFail("DAO failed to save new page.");
         }
     }
 
     @Override
-    public VoidOperation editWebPage(
+    public VoidFlow editWebPage(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(EDIT_PAGE) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String pagePattern;
@@ -473,7 +530,7 @@ public class WebPagesKeeperWorker
         
         Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( ! optPage.isPresent() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         WebPage page = optPage.get();
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
@@ -481,7 +538,7 @@ public class WebPagesKeeperWorker
         propertyToEdit = this.helper.validatePropertyInteractively(
                 initiator, propertyToEdit, SHORTCUTS, WEB_URL, NAME, ORDER, WEB_DIRECTORY);
         if ( propertyToEdit.isUndefined() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         switch ( propertyToEdit ) {
@@ -501,25 +558,25 @@ public class WebPagesKeeperWorker
                 return this.editPageWebDirectory(initiator, page);
             }
             default : {
-                return voidOperationFail("undefined property.");
+                return voidFlowFail("undefined property.");
             }
         }        
     }
     
-    private VoidOperation editPageName(Initiator initiator, String pageName) {
+    private VoidFlow editPageName(Initiator initiator, String pageName) {
         String newName = this.discussPageNewName(initiator);
         if ( newName.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         if ( this.daoPages.editName(initiator, pageName, newName) ) {
             this.asyncChangeCommandsForPageNames(initiator, pageName, newName);
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to rename page.");
+            return voidFlowFail("DAO failed to rename page.");
         }
     }
     
-    private VoidOperation editPageShortcuts(
+    private VoidFlow editPageShortcuts(
             Initiator initiator, String pageName, String oldShortcuts) {
         String newShortcuts = this.discussShortcuts(initiator);
         if ( newShortcuts.isEmpty() ) {
@@ -528,68 +585,68 @@ public class WebPagesKeeperWorker
         if ( this.daoPages.editShortcuts(initiator, pageName, newShortcuts) ) {
             this.asyncChangeCommandsForPageShortcuts(
                     initiator, pageName, oldShortcuts, newShortcuts);
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to change shortcuts.");
+            return voidFlowFail("DAO failed to change shortcuts.");
         }
     }
     
-    private VoidOperation editPageUrl(Initiator initiator, String pageName) {
+    private VoidFlow editPageUrl(Initiator initiator, String pageName) {
         String url = "";
         url = this.helper.validateInteractively(initiator, url, "url", WEB_URL_RULE);
         if ( url.isEmpty() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         if ( this.daoPages.editUrl(initiator, pageName, url) ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to change url.");
+            return voidFlowFail("DAO failed to change url.");
         }
     }
     
-    private VoidOperation editPageOrder(Initiator initiator, WebPage page) {
+    private VoidFlow editPageOrder(Initiator initiator, WebPage page) {
         List<WebPage> pagesInDirectory = this.daoPages
                 .allFromDirectory(initiator, page.directoryId());
         if ( pagesInDirectory.isEmpty() ) {
-            return voidOperationFail("cannot find all pages from directory.");
+            return voidFlowFail("cannot find all pages from directory.");
         }
         int pageNewOrder = this.helper.discussIntInRange(
                 initiator, 0, pagesInDirectory.size() - 1, "new order");
         if ( pageNewOrder < 0 ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         reorderAccordingToNewOrder(pagesInDirectory, page.order(), pageNewOrder);
         sort(pagesInDirectory);
         if ( this.daoPages.updatePageOrdersInDir(initiator, pagesInDirectory) ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DOA failed to reorder directory with new page order.");
+            return voidFlowFail("DOA failed to reorder directory with new page order.");
         }
     }
     
-    private VoidOperation editPageWebDirectory(Initiator initiator, WebPage page) {
+    private VoidFlow editPageWebDirectory(Initiator initiator, WebPage page) {
         this.ioEngine.report(initiator, "choosing new page directory...");
         Optional<WebDirectory> optDirectory = 
                 this.discussExistingWebDirectory(initiator, UNDEFINED_PLACE);
         if ( ! optDirectory.isPresent() ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         boolean pageMoved = this.daoPages
                 .movePageFromDirToDir(initiator, page, optDirectory.get().id());
         
         if ( pageMoved ) {
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to move page to new directory.");
+            return voidFlowFail("DAO failed to move page to new directory.");
         }
     }
 
     @Override
-    public VoidOperation removeWebPage(
+    public VoidFlow removeWebPage(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(DELETE_PAGE) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String pagePattern;
@@ -603,22 +660,22 @@ public class WebPagesKeeperWorker
         if ( page.isPresent() ) {
             this.ioEngine.report(initiator, format("'%s' found.", page.get().name()));            
         } else {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         
         if ( this.daoPages.remove(initiator, page.get().name()) ) {
             this.asyncRemoveCommandsForPage(initiator, page.get());
-            return voidCompleted();
+            return voidFlowCompleted();
         } else {
-            return voidOperationFail("DAO failed to remove page.");
+            return voidFlowFail("DAO failed to remove page.");
         }
     }
     
     @Override
-    public VoidOperation captureImage(
+    public VoidFlow captureImage(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(CAPTURE_PAGE_IMAGE) ) {
-            return voidOperationFail("wrong command type!");
+            return voidFlowFail("wrong command type!");
         }
         
         String pageNamePattern;
@@ -630,12 +687,12 @@ public class WebPagesKeeperWorker
         
         Optional<WebPage> optPage = this.discussExistingPage(initiator, pageNamePattern);
         if ( isNotPresent(optPage) ) {
-            return voidOperationStopped();
+            return voidFlowStopped();
         }
         WebPage page = optPage.get();
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
-        ValueOperation<Picture> pictureFlow = awaitGetValue(() -> {     
+        ValueFlow<Picture> pictureFlow = awaitGetValue(() -> {     
             return this.gui.capturePictureOnScreen(page.name());
         });
         
@@ -653,7 +710,7 @@ public class WebPagesKeeperWorker
             default : {
                 this.ioEngine.report(
                         initiator, "unexpected picture flow result " + pictureFlow.result().name());
-                return voidOperationStopped();
+                return voidFlowStopped();
             }    
         }
         
@@ -662,17 +719,17 @@ public class WebPagesKeeperWorker
         boolean saved = this.daoImages.save(initiator, picture);
         if ( saved ) {
             fireAsync("image_saved", picture.name());
-            return voidCompleted("captured!");
+            return voidFlowCompleted("captured!");
         } else {
-            return voidOperationFail("image not saved.");
+            return voidFlowFail("image not saved.");
         }        
     }
 
     @Override
-    public ValueOperation<WebPage> findWebPageByPattern(
+    public ValueFlow<WebPage> findWebPageByPattern(
             Initiator initiator, ArgumentsCommand command) {
         if ( command.type().isNot(FIND_PAGE) ) {
-            return valueOperationFail("wrong command type!");
+            return valueFlowFail("wrong command type!");
         }
         
         String pagePattern;
@@ -684,9 +741,9 @@ public class WebPagesKeeperWorker
         
         Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
         if ( optPage.isPresent() ) {
-            return valueCompletedWith(optPage.get());
+            return valueFlowCompletedWith(optPage.get());
         } else {
-            return valueOperationStopped();
+            return valueFlowStopped();
         }
     }
 
@@ -697,22 +754,22 @@ public class WebPagesKeeperWorker
     }
     
     @Override
-    public ValueOperation<Message> getWebPlace(
+    public ValueFlow<Message> getWebPlace(
             Initiator initiator, EmptyCommand command) {
         if ( command.type().isNot(GET_WEBPANEL) && command.type().isNot(GET_BOOKMARKS) ) {
-            return valueOperationFail("wrong command type!");
+            return valueFlowFail("wrong command type!");
         }
         
         WebPlace place = this.commandTypeToPlace(command.type());
         if ( place.isUndefined() ) {
-            return valueOperationFail("cannot define WebPlace.");
+            return valueFlowFail("cannot define WebPlace.");
         }
         
         List<WebDirectoryPages> directories = this.daoDirectories
                 .getAllDirectoriesPagesInPlace(initiator, place);
         
         if ( directories.isEmpty() ) {
-            return valueCompletedWith(new TextMessage(place.displayName() + " is empty."));
+            return valueFlowCompletedWith(new TextMessage(place.displayName() + " is empty."));
         }
         
         Message message = linesToMessage(directories
@@ -722,7 +779,7 @@ public class WebPagesKeeperWorker
                 .collect(toList()));
         message.addHeader(place.displayName());
         
-        return valueCompletedWith(message);
+        return valueFlowCompletedWith(message);
     }
     
     private WebPlace commandTypeToPlace(CommandType type) {

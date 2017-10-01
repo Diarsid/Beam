@@ -6,12 +6,12 @@
 
 package diarsid.beam.core.modules.control.cli;
 
-import diarsid.beam.core.base.control.flow.VoidOperation;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.modules.domainkeeper.NotesKeeper;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 
 /**
  *
@@ -27,22 +27,22 @@ class CliAdapterForNotesKeeper extends AbstractCliAdapter{
     }
 
     void createNoteAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.notesKeeper.createNote(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow, "created!");
+        VoidFlow flow = this.notesKeeper.createNote(initiator, command);
+        super.reportVoidFlow(initiator, flow, "created!");
     }
     
     void openNotesAndReport(Initiator initiator, EmptyCommand command) {
-        VoidOperation flow = this.notesKeeper.openNotes(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow);
+        VoidFlow flow = this.notesKeeper.openNotes(initiator, command);
+        super.reportVoidFlow(initiator, flow);
     }
     
     void openTargetInNotesAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.notesKeeper.openTargetInNotes(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow);
+        VoidFlow flow = this.notesKeeper.openTargetInNotes(initiator, command);
+        super.reportVoidFlow(initiator, flow);
     }
     
     void openPathInNotesAndReport(Initiator initiator, ArgumentsCommand command) {
-        VoidOperation flow = this.notesKeeper.openPathInNotes(initiator, command);
-        super.reportVoidOperationFlow(initiator, flow);
+        VoidFlow flow = this.notesKeeper.openPathInNotes(initiator, command);
+        super.reportVoidFlow(initiator, flow);
     }
 }

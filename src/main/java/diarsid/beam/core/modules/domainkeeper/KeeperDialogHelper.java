@@ -6,8 +6,14 @@
 
 package diarsid.beam.core.modules.domainkeeper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
@@ -15,6 +21,7 @@ import diarsid.beam.core.domain.entities.validation.ValidationRule;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
 import static diarsid.beam.core.base.util.StringNumberUtils.notNumeric;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -29,9 +36,16 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY
 public class KeeperDialogHelper {
     
     private final InnerIoEngine ioEngine;
+    private final Map<ValidationRule, Help> validationRulesHelp;
     
     public KeeperDialogHelper(InnerIoEngine ioEngine) {
         this.ioEngine = ioEngine;
+        this.validationRulesHelp = new HashMap<>();
+        Help ruleHelp;
+        for (ValidationRule rule : ValidationRule.values()) {
+            ruleHelp = this.ioEngine.addToHelpContext(rule.helpInfo());
+            this.validationRulesHelp.put(rule, ruleHelp);
+        }
     }
     
     public String validateInteractively(
@@ -62,7 +76,8 @@ public class KeeperDialogHelper {
         String value;
         ValidationResult validity;
         valueDefining: while ( true ) {
-            value = this.ioEngine.askInput(initiator, ioRequest);
+            value = this.ioEngine.askInput(
+                    initiator, ioRequest, this.validationRulesHelp.get(rule));
             if ( value.isEmpty() ) {
                 return "";
             } else {
@@ -85,7 +100,9 @@ public class KeeperDialogHelper {
             Initiator initiator, EntityProperty property, EntityProperty... possibleProperties) {
         String propertyArg;
         while ( property.isUndefined() || property.isNotOneOf(possibleProperties) ) { 
-            propertyArg = this.ioEngine.askInput(initiator, "property to edit");
+            
+            propertyArg = this.ioEngine.askInput(
+                    initiator, "property to edit", this.propertiesToHelp(possibleProperties));
             if ( propertyArg.isEmpty() ) {
                 return UNDEFINED_PROPERTY;
             }
@@ -99,13 +116,25 @@ public class KeeperDialogHelper {
         return property;
     }
     
+    private Help propertiesToHelp(EntityProperty[] properties) {
+        List<String> helpLines = new ArrayList<>();
+        helpLines.add("Choose property to edit:");
+        for (EntityProperty property : properties) {
+            helpLines.add(format(
+                    "  - %s (use %s)", property.displayName(), property.joinKeywords()));
+        }
+        return asHelp(helpLines);
+    }
+    
     public int discussIntInRange(
             Initiator initiator, int fromInclusive, int toInclusive, String request) {
         int i = -1;
         boolean intNotDefined = true;
         String intInput;
+        Help help = asHelp(
+                format("Choose number from %s to %s inclusive.", fromInclusive, toInclusive));
         intDefining: while ( intNotDefined ) {            
-            intInput = this.ioEngine.askInput(initiator, request);
+            intInput = this.ioEngine.askInput(initiator, request, help);
             if ( intInput.isEmpty() ) {
                 i = -1;
                 intNotDefined = false;
