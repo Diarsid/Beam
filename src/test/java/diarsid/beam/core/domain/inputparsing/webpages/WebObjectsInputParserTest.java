@@ -83,7 +83,7 @@ public class WebObjectsInputParserTest {
     
     @Test
     public void testParseNameUrlAndPlace_place() {
-        WebPageNameUrlAndPlace input = parser.parseNameUrlAndPlace(asList("webp"));
+        WebPageNameUrlAndPlace input = parser.parseNameUrlAndPlace(asList("webpanl"));
         assertEquals("", input.name());
         assertEquals(WEBPANEL, input.place());
         assertEquals("", input.url());
@@ -195,7 +195,7 @@ public class WebObjectsInputParserTest {
     @Test
     public void testParseNamePlaceAndProperty_name_place_property() {
         WebDirectoryNamePlaceAndProperty input = 
-                parser.parseNamePlaceAndProperty(asList("common", "webp", "order"));
+                parser.parseNamePlaceAndProperty(asList("common", "webpnel", "order"));
         assertEquals("common", input.name());
         assertEquals(WEBPANEL, input.place());
         assertEquals(ORDER, input.property());

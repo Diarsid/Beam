@@ -22,6 +22,7 @@ class StrictSimilarityAnalyzeData {
     int chainOrder;
     int reverseChainOrder;        
     int inconsistency;
+    int fixer;
 
     public StrictSimilarityAnalyzeData() {
         this.presentChars = 0;
@@ -35,6 +36,7 @@ class StrictSimilarityAnalyzeData {
         this.chainOrder = 0;
         this.reverseChainOrder = 0;        
         this.inconsistency = 0;
+        this.fixer = 0;
     }
     
     void clear() {
@@ -49,6 +51,7 @@ class StrictSimilarityAnalyzeData {
         this.chainOrder = 0;
         this.reverseChainOrder = 0;        
         this.inconsistency = 0;
+        this.fixer = 0;
     }
     
 }

@@ -59,7 +59,7 @@ public class SimilarityTest {
     }
     
     @Test
-    public void test_isSimilarStrong_directory_directory() {
+    public void test_isSimilarStrong_directory_dierctry() {
         assertTrue(isStrictSimilar("directory", "dierctry"));
     }
     

@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.base.util;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -24,23 +22,10 @@ public class EnumUtilsTest {
     
     public EnumUtilsTest() {
     }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
 
     @Test
     public void argMatchesEnum_webdir_WEB_DIRECTORY() {
         assertThat(argMatchesEnum("webdir", WEB_DIRECTORY), equalTo(true));
-    }
-    
-    @Test
-    public void argMatchesEnum_webdirect_WEB_DIRECTORY() {
-        assertThat(argMatchesEnum("webdirect", WEB_DIRECTORY), equalTo(true));
     }
     
     @Test

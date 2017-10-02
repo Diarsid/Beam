@@ -26,8 +26,8 @@ public class Similarity {
     }
     
     public static void main(String[] args) {
-        String a = "webpanel";
-        String b = "webpnel";
+        String a = "webdirectory";
+        String b = "webdrictory";
         String c = "tegr";
         String x = "srcq";
         
@@ -35,10 +35,15 @@ public class Similarity {
         System.out.println(measureInconsistency(a, b));
 //        System.out.println(measureInconsistency(a, c));
 //        System.out.println(measureInconsistency(a, x));
-    }
+    }    
     
-    private static char[] array(char... chars) {
-        return chars;
+    private static int fix(int index, int chainOrder, int fixer) {
+        int diff = chainOrder - index;
+        if ( diff == fixer ) {
+            return 0;
+        } else {
+            return abs(diff);
+        }
     }
     
     private static int measureInconsistency(String target, String pattern) {
@@ -51,27 +56,28 @@ public class Similarity {
         int chainOrder;
         int reverseChainOrder;        
         int inconsistency = 0;
+        int fixer = 0;
         
         for (int i = 0; i < pattern.length() - 1; i++) {
             chain = pattern.substring(i, i + 2);
             chainOrder = target.indexOf(chain);
             if ( chainOrder > -1 ) {
-                inconsistency = inconsistency + abs(i - chainOrder);
+                inconsistency = inconsistency + fix(i, chainOrder, fixer);
             } else {
                 reverseChain = reverse(chain);
                 reverseChainOrder = target.indexOf(reverseChain);
                 if ( reverseChainOrder > -1 ) {
-                    prevChain = getOrFirst(target, reverseChainOrder - 1);
-                    nextChain = getOrLast(target, reverseChainOrder + 1);
+                    prevChain = getChainByOrderOrFirst(target, reverseChainOrder - 1);
+                    nextChain = getChainByOrderOrLast(target, reverseChainOrder + 1);
                     if ( areConsistent(prevChain, reverseChain, nextChain) ) {
-//                        inconsistency = inconsistency + abs(i - reverseChainOrder - 1);
-                        inconsistency = inconsistency + abs(i - reverseChainOrder) - 1;
-//                        inconsistency = inconsistency + abs(i - reverseChainOrder + 1);
+                        inconsistency--;
+                        fixer--;
                     } else {               
                         inconsistency = inconsistency + abs(i - reverseChainOrder);
                     }
                 } else {
-                    inconsistency = inconsistency + i;
+                    inconsistency++;
+                    fixer++;
                 }
             }
         }
@@ -84,22 +90,22 @@ public class Similarity {
             data.chain = pattern.substring(i, i + 2);
             data.chainOrder = target.indexOf(data.chain);
             if ( data.chainOrder > -1 ) {
-                data.inconsistency = data.inconsistency + abs(i - data.chainOrder);
+                data.inconsistency = data.inconsistency + fix(i, data.chainOrder, data.fixer);
             } else {
                 data.reverseChain = reverse(data.chain);
                 data.reverseChainOrder = target.indexOf(data.reverseChain);
                 if ( data.reverseChainOrder > -1 ) {
-                    data.prevChain = getOrFirst(target, data.reverseChainOrder - 1);
-                    data.nextChain = getOrLast(target, data.reverseChainOrder + 1);
+                    data.prevChain = getChainByOrderOrFirst(target, data.reverseChainOrder - 1);
+                    data.nextChain = getChainByOrderOrLast(target, data.reverseChainOrder + 1);
                     if ( areConsistent(data.prevChain, data.reverseChain, data.nextChain) ) {
-//                        inconsistency = inconsistency + abs(i - reverseChainOrder - 1);
-                        data.inconsistency = data.inconsistency + abs(i - data.reverseChainOrder) - 1;
-//                        inconsistency = inconsistency + abs(i - reverseChainOrder + 1);
+                        data.inconsistency--;                        
+                        data.fixer--;
                     } else {               
                         data.inconsistency = data.inconsistency + abs(i - data.reverseChainOrder);
                     }
                 } else {
-                    data.inconsistency = data.inconsistency + i;
+                    data.inconsistency++;
+                    data.fixer++;
                 }
             }
         }
@@ -111,7 +117,7 @@ public class Similarity {
                reverseChain.charAt(1) == nextChain.charAt(0);
     }
     
-    private static String getOrFirst(String target, int chainOrder) {
+    private static String getChainByOrderOrFirst(String target, int chainOrder) {
         if ( chainOrder < 1 ) {
             return target.substring(0, 2);
         } else {
@@ -119,7 +125,7 @@ public class Similarity {
         }                   
     }
     
-    private static String getOrLast(String target, int chainOrder) {
+    private static String getChainByOrderOrLast(String target, int chainOrder) {
         if ( chainOrder >= target.length() - 2 ) {
             return target.substring(target.length() - 2);
         } else {
@@ -273,7 +279,7 @@ public class Similarity {
                 isRatioAcceptable(target.length(), pattern.length());
         
         if ( acceptable && target.length() > 6 ) {
-            acceptable = measureInconsistency(target, pattern) <= target.length();
+            acceptable = measureInconsistency(target, pattern) <= ( ( target.length() / 4 ) + 1 );
         }
         
         return acceptable;
@@ -321,7 +327,8 @@ public class Similarity {
                 isRatioAcceptable(target.length(), pattern.length());
         
         if ( acceptable && target.length() > 6 ) {
-            acceptable = measureInconsistency(target, pattern, data) <= target.length();
+            acceptable = measureInconsistency(target, pattern, data) <= 
+                    ( ( target.length() / 4 ) + 1 );
         }
         
         data.clear();
