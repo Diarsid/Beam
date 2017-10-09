@@ -40,7 +40,7 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
                 this.ioModule.getInnerIoEngine(), 
                 this.domainKeeperModule, 
                 this.pluginsLoaderModule.plugins(),
-                searcherWithDepthsOf(5, 5), 
+                searcherWithDepthsOf(5), 
                 getLister());
     }
 }

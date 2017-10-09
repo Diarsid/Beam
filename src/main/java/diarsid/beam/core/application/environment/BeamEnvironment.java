@@ -32,12 +32,12 @@ public class BeamEnvironment {
     public static ProgramsCatalog programsCatalog() {
         return new ProgramsCatalogReal(
                 configuration().asString("catalogs.programs"), 
-                searcherWithDepthsOf(3, 3));
+                searcherWithDepthsOf(3));
     }
 
     public static NotesCatalog notesCatalog() {
         return new NotesCatalogReal(
-                configuration().asString("catalogs.notes"), searcherWithDepthsOf(5, 5));
+                configuration().asString("catalogs.notes"), searcherWithDepthsOf(5));
     }
     
     public static Configuration configuration() {

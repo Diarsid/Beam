@@ -60,10 +60,9 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
             throws IOException {
         
         FolderType type = this.programFolderDetector.examineTypeOf(dir);
-        switch (type) {
+        switch ( type ) {
             case PROGRAM_FOLDER : {
                 this.formatter.skipFolderWithMessage(dir, "(program)", INLINE_SKIPPED);
-                //debug("[FILE LIST VISITOR] program folder!");
                 return SKIP_SUBTREE;
             }
             case RESTRICTED_FOLDER : {
@@ -71,7 +70,6 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
             }
             case PROJECT_FOLDER : {
                 this.formatter.skipFolderWithMessage(dir, "(project)", INLINE_SKIPPED);
-                //debug("[FILE LIST VISITOR] project folder!");
                 return SKIP_SUBTREE;
             }
             default : {
@@ -80,10 +78,8 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
         }
         if ( ! dir.equals(this.root) && this.largeFolderDetector.examine(dir) ) {
             this.formatter.skipFolderWithMessage(dir, " ...too large", NEW_LINE_SKIPPED);
-            //debug("[FILE LIST VISITOR] too large, skip subtree");
             return SKIP_SUBTREE;
         }
-        //debug("[FILE LIST VISITOR] include: " + dir);
         this.formatter.includeItem(dir);
         return CONTINUE;
     }

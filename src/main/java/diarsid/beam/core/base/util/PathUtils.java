@@ -166,7 +166,7 @@ public class PathUtils {
         return target.replaceAll("[/\\\\]+", "/");
     }
     
-    public static String cleanSeparators(String target) {
+    public static String removeSeparators(String target) {
         return target.replaceAll("[/\\\\]+", "");
     }
     

@@ -48,7 +48,7 @@ public class FileSearcherServiceTest {
     private static final FileSearcher searcher;
     private static final String root;
     static {        
-        searcher = searcherWithDepthsOf(5, 5);
+        searcher = searcherWithDepthsOf(5);
         
         root = Paths.get("./temp").normalize().toAbsolutePath().toString();
         System.out.println("[FileIntelligentSearcherTest] ROOT: " + root);

@@ -15,10 +15,8 @@ import diarsid.beam.core.base.os.search.result.FileSearchResult;
  */
 public interface FileSearcher {
     
-    public static FileSearcher searcherWithDepthsOf(
-            int depthOfSearchByName, int depthOfSearchByPath) {
-        FilesCollector filesCollector = new FilesCollector(depthOfSearchByName, depthOfSearchByPath);
-        return new FileSearcherService(filesCollector);
+    public static FileSearcher searcherWithDepthsOf(int depthOfSearch) {
+        return new FileSearcherService(new FilesCollectorByVisitor(depthOfSearch));
     } 
     
     FileSearchResult find(
