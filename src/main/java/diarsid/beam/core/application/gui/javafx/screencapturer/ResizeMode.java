@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.gui.jkavafx.screencapturer;
+package diarsid.beam.core.application.gui.javafx.screencapturer;
 
 import static java.lang.Math.abs;
 

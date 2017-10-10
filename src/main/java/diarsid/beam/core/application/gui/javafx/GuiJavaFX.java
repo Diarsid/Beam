@@ -19,13 +19,13 @@ import javafx.scene.paint.Color;
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.application.gui.javafx.window.WindowsBuilderWorker;
-import diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow;
+import diarsid.beam.core.application.gui.javafx.screencapturer.ScreenCapturerWindow;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.domain.entities.Picture;
 
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ScreenCapturerWindow.buildScreenCapturerWindow;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.ScreenCapturerWindow.buildScreenCapturerWindow;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.gui.jkavafx.screencapturer;
+package diarsid.beam.core.application.gui.javafx.screencapturer;
 
 import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
@@ -11,12 +11,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.BorderDragType.LEFT_DRAG;
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.BorderDragType.TOP_DRAG;
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.BorderDragType.defineBorderDragType;
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ResizeMode.DECREASE;
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ResizeMode.INCREASE;
-import static diarsid.beam.core.application.gui.jkavafx.screencapturer.ResizeMode.defineResizeMode;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.BorderDragType.LEFT_DRAG;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.BorderDragType.TOP_DRAG;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.BorderDragType.defineBorderDragType;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.ResizeMode.DECREASE;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.ResizeMode.INCREASE;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.ResizeMode.defineResizeMode;
 
 /**
  *
