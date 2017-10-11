@@ -13,12 +13,14 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.decomposePath;
 import static diarsid.beam.core.base.util.PathUtils.indexOfNextPathSeparatorAfter;
 import static diarsid.beam.core.base.util.PathUtils.subpathToPattern;
+import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
 
 /**
  *
@@ -202,4 +204,11 @@ public class PathUtilsTest {
         assertEquals(expectedDecomposedPaths, decomposePath(path));
     }
 
+    @Test
+    public void testToSubpathAndTarget() {
+        String path = "some/path/to/target";
+        Pair<String, String> subpathTarget = toSubpathAndTarget(path);
+        assertThat(subpathTarget.first(), equalTo("some/path/to"));
+        assertThat(subpathTarget.second(), equalTo("target"));
+    }
 }

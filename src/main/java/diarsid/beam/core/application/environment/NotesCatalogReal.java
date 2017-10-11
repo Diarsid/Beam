@@ -19,7 +19,7 @@ import static java.nio.file.Files.exists;
 import static java.util.Collections.emptyList;
 
 
-public class NotesCatalogReal 
+class NotesCatalogReal 
         extends SearcheableCatalog 
         implements NotesCatalog {
 

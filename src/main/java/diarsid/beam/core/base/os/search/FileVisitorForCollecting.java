@@ -87,6 +87,7 @@ class FileVisitorForCollecting extends SimpleFileVisitor<Path> {
     
     @Override
     public FileVisitResult visitFileFailed(Path dir, IOException e) {
+        // TODO MEDIUM
         System.out.println(e.getMessage());
         e.printStackTrace();
         return CONTINUE;

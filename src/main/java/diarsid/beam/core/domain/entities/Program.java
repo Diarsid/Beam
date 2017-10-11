@@ -26,6 +26,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.indexOfLastPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 
 /**
@@ -38,26 +39,28 @@ public class Program
                 ConvertableToMessage {
     
     private final ProgramsCatalog programsCatalog;
-    private final String fullName;
+    private final String fileName;
+    private final String name;
     
-    public Program(ProgramsCatalog programsCatalog, String fullName) {
+    public Program(String name, String fileName, ProgramsCatalog programsCatalog) {
+        this.name = name;
+        this.fileName = fileName;
         this.programsCatalog = programsCatalog;
-        this.fullName = fullName;
     }
     
     public String simpleName() {
-        if ( containsPathSeparator(this.fullName) ) {
-            return this.fullName.substring(
-                    indexOfLastPathSeparator(this.fullName) + 1, 
-                    this.fullName.length());
+        if ( containsPathSeparator(this.name) ) {
+            return this.name.substring(
+                    indexOfLastPathSeparator(this.name) + 1, 
+                    this.name.length());
         } else {
-            return this.fullName;
+            return this.name;
         }        
     }
     
     public String subPath() {
-        if ( containsPathSeparator(this.fullName) ) {
-            return this.fullName.substring(0, indexOfLastPathSeparator(this.fullName));
+        if ( containsPathSeparator(this.name) ) {
+            return this.name.substring(0, indexOfLastPathSeparator(this.name));
         } else {
             return "";
         }
@@ -65,12 +68,12 @@ public class Program
 
     @Override
     public String name() {
-        return this.fullName;
+        return this.name;
     }
     
     public void runAsync(CallbackEmpty successCallback, CallbackEvent failCallback) {
         asyncDo(() -> {
-            File program = this.programsCatalog.asFile(this);
+            File program = this.programsCatalog.path().resolve(this.fileName).toFile();
             if ( program.exists() && program.isFile() ) {
                 try {
                     Desktop.getDesktop().open(program);  
@@ -80,20 +83,24 @@ public class Program
                     logError(this.getClass(), e);
                 }
             } else {
-                failCallback.onEvent("...program " + this.fullName + " not found in programs.");
+                failCallback.onEvent(
+                        format("...program '%s' not found in programs.", this.fileName));
             }            
         });
     }
 
     @Override
     public Message toMessage() {
-        return new TextMessage(INFO, this.toString());
+        return new TextMessage(INFO, 
+                this.toString(), 
+                "  file: " + this.fileName, 
+                "  path: " + normalizeSeparators(this.programsCatalog.path().toString()));
     }   
 
     @Override
     public Variant toVariant(int variantIndex) {
         return new Variant(
-                this.fullName, format("%s (%s)", this.fullName, "Program"), variantIndex);
+                this.name, format("%s (%s)", this.name, "Program"), variantIndex);
     }
 
     @Override
@@ -105,7 +112,7 @@ public class Program
     public int hashCode() {
         int hash = 7;
         hash = 71 * hash + Objects.hashCode(this.programsCatalog);
-        hash = 71 * hash + Objects.hashCode(this.fullName);
+        hash = 71 * hash + Objects.hashCode(this.fileName);
         return hash;
     }
 
@@ -121,7 +128,7 @@ public class Program
             return false;
         }
         final Program other = ( Program ) obj;
-        if ( !Objects.equals(this.fullName, other.fullName) ) {
+        if ( !Objects.equals(this.fileName, other.fileName) ) {
             return false;
         }
         if ( !Objects.equals(this.programsCatalog, other.programsCatalog) ) {
@@ -132,6 +139,6 @@ public class Program
     
     @Override
     public String toString() {
-        return format("%s (%s)", this.fullName, this.type().displayName());
+        return format("%s (%s)", this.name, this.type().displayName());
     } 
 }

@@ -42,6 +42,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIRECTORY;
 import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
@@ -307,6 +308,9 @@ public class Interpreter {
                                         "com", 
                                         "comm", 
                                         "command").and(argumentsFor(FIND_MEM)),
+                                controlWords(
+                                        "program", 
+                                        "prog").and(argumentsFor(FIND_PROGRAM)),                                
                                 controlWords(
                                         "bat", 
                                         "batch", 

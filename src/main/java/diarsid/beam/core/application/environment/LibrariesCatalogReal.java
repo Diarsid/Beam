@@ -23,7 +23,7 @@ import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 
-public class LibrariesCatalogReal 
+class LibrariesCatalogReal 
         implements LibrariesCatalog {
     
     private final Path applicationPath;

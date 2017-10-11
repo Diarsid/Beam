@@ -11,6 +11,7 @@ import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -21,6 +22,10 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Program;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
@@ -29,16 +34,6 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-
-import diarsid.beam.core.base.control.flow.ValueFlow;
-
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 
 
 class ProgramsKeeperWorker 
@@ -104,18 +99,24 @@ class ProgramsKeeperWorker
     public ValueFlow<Program> findByNamePattern(Initiator initiator, String pattern) {
         List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
         if ( nonEmpty(foundPrograms) ) {
-            return this.chooseOneFromMany(initiator, pattern, foundPrograms);
-        } else {
-            foundPrograms = this.programsCatalog.findProgramsByPatternSimilarity(pattern);
-            if ( nonEmpty(foundPrograms) ) {
-                return this.chooseOneFromMany(initiator, pattern, foundPrograms);
+            ValueFlow<Program> flow = this.chooseOneProgram(initiator, pattern, foundPrograms);
+            if ( flow.completedEmpty() ) {
+                foundPrograms = this.programsCatalog.findProgramsByPatternSimilarity(pattern);
             } else {
-                return valueFlowCompletedEmpty();
+                return flow;
             }
+        } else {
+            foundPrograms = this.programsCatalog.findProgramsByPatternSimilarity(pattern);            
+        }
+        
+        if ( nonEmpty(foundPrograms) ) {
+            return this.chooseOneProgram(initiator, pattern, foundPrograms);
+        } else {
+            return valueFlowCompletedEmpty();
         }
     }
     
-    private ValueFlow<Program> chooseOneFromMany(
+    private ValueFlow<Program> chooseOneProgram(
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
             return valueFlowCompletedWith(getOne(programs));

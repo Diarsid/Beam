@@ -61,6 +61,11 @@ public class Flows {
             public ValueFlowCompleted asComplete() {
                 throw new IllegalStateException("This is Stop operation");
             }
+            
+            @Override
+            public boolean completedEmpty() {
+                return false;
+            }
 
             @Override
             public ValueFlowFail asFail() {
@@ -125,6 +130,11 @@ public class Flows {
             public boolean hasValue() {
                 return true;
             }
+            
+            @Override
+            public boolean completedEmpty() {
+                return false;
+            }
 
             @Override
             public T getOrThrow() {
@@ -168,6 +178,11 @@ public class Flows {
             @Override
             public boolean hasValue() {
                 return false;
+            }
+                        
+            @Override
+            public boolean completedEmpty() {
+                return true;
             }
 
             @Override
@@ -239,6 +254,11 @@ public class Flows {
             @Override
             public String reason() {
                 return failMessage;
+            }
+            
+            @Override
+            public boolean completedEmpty() {
+                return false;
             }
 
             @Override

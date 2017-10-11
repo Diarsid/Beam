@@ -29,7 +29,7 @@ import static diarsid.beam.core.base.util.PathUtils.asName;
  *
  * @author Diarsid
  */
-public class ScriptsCatalogReal implements ScriptsCatalog {
+class ScriptsCatalogReal implements ScriptsCatalog {
     
     private final Path catalogPath;
     private final LibrariesCatalog librariesCatalog;

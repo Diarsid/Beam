@@ -14,6 +14,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.base.util.Pair;
+
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.os.search.ItemType.typeOf;
 import static diarsid.beam.core.base.os.search.result.FileSearchResult.failWithInvalidLocationFailure;
@@ -22,8 +25,10 @@ import static diarsid.beam.core.base.os.search.result.FileSearchResult.failWithT
 import static diarsid.beam.core.base.os.search.result.FileSearchResult.successWithFile;
 import static diarsid.beam.core.base.os.search.result.FileSearchResult.successWithFiles;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
+import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
 import static diarsid.beam.core.base.util.PathUtils.trimSeparators;
 
 /**
@@ -87,8 +92,20 @@ class FileSearcherService implements FileSearcher {
             if ( this.isAppropriatePath(dir, strictTarget, mode) ) {
                 return successWithFile(strictTarget);
             } else {
-                List<String> foundItems = 
-                        this.filesCollector.collectByStrictName(dir, strictTarget, mode);
+                List<String> foundItems;
+                if ( containsPathSeparator(strictTarget) ) {
+                    Pair<String, String> subpathTarget = toSubpathAndTarget(strictTarget);
+                    dir = dir.resolve(subpathTarget.first());
+                    strictTarget = subpathTarget.second();
+                    foundItems = this.filesCollector.collectByStrictName(dir, strictTarget, mode);
+                    foundItems = foundItems
+                            .stream()
+                            .map(foundItem -> combineAsPathFrom(subpathTarget.first(), foundItem))
+                            .collect(toList());
+                } else {
+                    foundItems = this.filesCollector.collectByStrictName(dir, strictTarget, mode);
+                }
+                
                 if ( foundItems.isEmpty() ) {
                     return failWithTargetNotFoundFailure();
                 } else {

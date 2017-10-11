@@ -5,7 +5,6 @@
  */
 package diarsid.beam.core.application.environment;
 
-import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +23,4 @@ public interface ProgramsCatalog extends Catalog {
     List<Program> findProgramsByWholePattern(String pattern);
     
     List<Program> findProgramsByStrictName(String strictName);
-    
-    File asFile(Program program);
 }

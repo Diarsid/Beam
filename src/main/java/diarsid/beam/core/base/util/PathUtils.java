@@ -63,6 +63,10 @@ public class PathUtils {
         return Paths.get(normalizeSeparators(join("/", fragments)));
     }
     
+    public static String combineAsPathFrom(String... fragments) {
+        return normalizeSeparators(join("/", fragments));
+    }
+    
     public static int indexOfNextPathSeparatorAfter(String target, String pattern) {
         int indexOfNextSlash = target.indexOf("/", target.indexOf(pattern));
         int indexOfNextBackSlash = target.indexOf("\\", target.indexOf(pattern));
@@ -92,6 +96,13 @@ public class PathUtils {
         } else {
             return ( indexOfSlash > indexOfBackSlash) ? indexOfSlash : indexOfBackSlash; 
         }
+    }
+    
+    public static Pair<String, String> toSubpathAndTarget(String path) {
+        int lastSeparatorIndex = indexOfLastPathSeparator(path);
+        String target = path.substring(lastSeparatorIndex + 1, path.length());
+        String subpath = path.substring(0, lastSeparatorIndex);
+        return new Pair(subpath, target);
     }
     
     public static boolean containsPathSeparator(String target) {

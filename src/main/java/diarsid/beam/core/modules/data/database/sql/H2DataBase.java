@@ -23,7 +23,7 @@ public class H2DataBase implements DataBase {
                 "jdbc:h2:" + configuration.asString("data.store") + "/BeamData", 
                 configuration.asString("data.user"), 
                 configuration.asString("data.pass"));
-        JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(1);
+        JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(100500);
         JdbcPreparedStatementSetter paramsSetter = new JdbcPreparedStatementSetter();
         this.transactionFactory = new JdbcTransactionFactory(
                 source, transactionGuard, paramsSetter);

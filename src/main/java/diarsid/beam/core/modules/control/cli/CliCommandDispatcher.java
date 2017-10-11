@@ -177,7 +177,8 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .locationsAdapter()
                             .createLocationAndReport(initiator, (ArgumentsCommand) command);
                     break;
-                } case EDIT_LOCATION : {
+                } 
+                case EDIT_LOCATION : {
                     this.domainModuleAdapter
                             .locationsAdapter()
                             .editLocationAndReport(initiator, (ArgumentsCommand) command);
@@ -237,6 +238,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                     this.domainModuleAdapter
                             .programsAdapter()
                             .findProgramAndReport(initiator, (ArgumentsCommand) command);
+                    break;
                 }
                 case FIND_TASK : {
                     this.domainModuleAdapter

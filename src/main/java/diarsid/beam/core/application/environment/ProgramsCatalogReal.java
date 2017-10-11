@@ -6,7 +6,6 @@
 
 package diarsid.beam.core.application.environment;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -21,11 +20,17 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
-public class ProgramsCatalogReal 
+class ProgramsCatalogReal 
         extends SearcheableCatalog
         implements ProgramsCatalog {
+    
+    private static final List<String> PROGRAM_EXTENSIONS;
+    static {
+        PROGRAM_EXTENSIONS = asList(".exe", ".lnk", ".bat", ".sh");
+    }
     
     private final Path catalogPath;
     
@@ -34,8 +39,17 @@ public class ProgramsCatalogReal
         this.catalogPath = Paths.get(catalogPath).toAbsolutePath().normalize();
     }
     
+    private static String removeProgramExtensionFrom(String fileName) {
+        for (String extension : PROGRAM_EXTENSIONS) {
+            if ( lower(fileName).endsWith(extension) ) {
+                return fileName.substring(0, fileName.length() - extension.length());
+            }
+        }
+        return fileName;
+    }
+    
     private Program fileNameToProgram(String fileName) {
-        return new Program(this, fileName);
+        return new Program(removeProgramExtensionFrom(fileName), fileName, this);
     }
 
     private List<Program> toPrograms(FileSearchResult result) {
@@ -66,9 +80,42 @@ public class ProgramsCatalogReal
     @Override
     public Optional<Program> findProgramByDirectName(String name) {
         debug("[PROR CATALOG] [by direct] " + name);
-        Optional<Program> program = this.toProgram(super.findFileInCatalogByDirectName(name));
+        FileSearchResult result = super.findFileInCatalogByStrictName(name);
+        Optional<Program> program = Optional.empty();
+        if ( result.isOk() ) {
+            if ( result.success().hasSingleFoundFile() ) {
+                String foundFile = result.success().foundFile();
+                if ( this.isNameMatchesFoundFile(name, foundFile) ) {
+                    program = Optional.of(this.fileNameToProgram(foundFile));
+                } else {
+                    program = Optional.empty();
+                }               
+            } else {
+                for (String foundFile : result.success().foundFiles()) {
+                    if ( this.isNameMatchesFoundFile(name, foundFile) ) {
+                        program = Optional.of(this.fileNameToProgram(foundFile));
+                        break;
+                    }
+                    program = Optional.empty();
+                }
+            }
+        } else {
+            program = Optional.empty();
+        }
         debug("[PROR CATALOG] [by direct] found : " + program.isPresent());
         return program;
+    }
+    
+    private boolean isNameMatchesFoundFile(String name, String foundFile) {
+        if ( lower(foundFile).endsWith(lower(name)) ) {
+            return true;
+        }
+        for (String extension : PROGRAM_EXTENSIONS) {
+            if ( lower(foundFile).endsWith(lower(name.concat(extension))) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -93,11 +140,6 @@ public class ProgramsCatalogReal
         List<Program> programs = this.toPrograms(super.findFileInCatalogByPatternSimilarity(pattern));
         debug("[PROR CATALOG] [by similarity] " + programs);
         return programs;
-    }
-
-    @Override
-    public File asFile(Program program) {
-        return super.getPath().resolve(program.name()).toFile();
     }
 
     @Override
