@@ -61,6 +61,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.HIDE_VARIANT_TYPE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
@@ -448,8 +449,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         debug("[EXECUTOR] try to proceed as OpenLocationTarget... ");
         ValueFlow<InvocationCommand> commandFlow = this.domain
                 .commandsMemory()
-                .findStoredCommandByPatternAndType(
-                        initiator, command.originalArgument(), OPEN_LOCATION_TARGET);
+                .findStoredCommandByPatternAndType(initiator, 
+                        command.originalArgument(), 
+                        OPEN_LOCATION_TARGET, 
+                        HIDE_VARIANT_TYPE);
         switch ( commandFlow.result() ) {
             case COMPLETE : {
                 if ( this.isOpenLocationTargetCommand(commandFlow) ) {
@@ -1028,7 +1031,6 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    // TODO LOW asks when nebetnpors -> open Projects/NetBeans? open!!!
     @Override
     public void listLocation(Initiator initiator, ArgumentsCommand command) {
         this.checkExpectedTypeOf(initiator, command.type(), LIST_LOCATION);
@@ -1070,8 +1072,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void doWhenListedLocationNotFound(Initiator initiator, String pattern) {
         ValueFlow<InvocationCommand> commandFlow = this.domain
                 .commandsMemory()
-                .findStoredCommandByPatternAndType(
-                        initiator, pattern, OPEN_LOCATION_TARGET);
+                .findStoredCommandByPatternAndType(initiator, pattern, OPEN_LOCATION_TARGET, HIDE_VARIANT_TYPE);
         switch ( commandFlow.result() ) {
             case COMPLETE : {
                 if ( commandFlow.asComplete().hasValue() ) {

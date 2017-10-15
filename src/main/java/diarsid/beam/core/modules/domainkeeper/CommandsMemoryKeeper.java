@@ -7,12 +7,13 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Variants.View;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -24,7 +25,7 @@ public interface CommandsMemoryKeeper {
             Initiator initiator, String original); 
     
     ValueFlow<InvocationCommand> findStoredCommandByPatternAndType(
-            Initiator initiator, String pattern, CommandType type);
+            Initiator initiator, String pattern, CommandType type, View view);
     
     ValueFlow<List<InvocationCommand>> findMems(
             Initiator initiator, ArgumentsCommand command);

@@ -56,6 +56,10 @@ public abstract class InvocationCommand implements ExecutorCommand {
         return new Variant(this.bestArgument(), this.stringify(), variantIndex);
     }
     
+    public Variant toVariantHidingCommandWord(int variantIndex) {
+        return new Variant(this.bestArgument(), this.bestArgument(), variantIndex);
+    }
+    
     @Override
     public final Message toMessage() {
         return new TextMessage(INFO, this.toMessageString());

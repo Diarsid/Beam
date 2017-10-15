@@ -13,11 +13,18 @@ import diarsid.beam.core.domain.entities.NamedEntity;
 
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.SHOW_VARIANT_TYPE;
+
 /**
  *
  * @author Diarsid
  */
 public class Variants {
+    
+    public static enum View {
+        SHOW_VARIANT_TYPE,
+        HIDE_VARIANT_TYPE
+    }
     
     private Variants() {        
     }
@@ -28,6 +35,19 @@ public class Variants {
                 .stream()
                 .map(command -> command.toVariant(counter.getAndIncrement()))
                 .collect(toList());
+    }
+    
+    public static List<Variant> commandsToVariants(
+            List<InvocationCommand> commands, View conversion) {
+        if ( conversion.equals(SHOW_VARIANT_TYPE) ) {
+            return commandsToVariants(commands);
+        } else {            
+            AtomicInteger counter = new AtomicInteger(0);
+            return commands
+                    .stream()
+                    .map(command -> command.toVariantHidingCommandWord(counter.getAndIncrement()))
+                    .collect(toList());
+        }
     }
     
     public static List<Variant> stringsToVariants(List<String> variantStrings) {

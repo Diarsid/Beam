@@ -17,6 +17,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.Variants.View;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -36,6 +37,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.SHOW_VARIANT_TYPE;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
@@ -431,13 +433,12 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         List<InvocationCommand> foundCommands = 
                 this.daoCommands.getByExactOriginalOfAnyType(initiator, original);
         if ( hasOne(foundCommands) ) {
-            return this.doWhenOneFoundByExactAndType(
-                    initiator, original, getOne(foundCommands), Optional.empty());
+            return this.doWhenOneFoundByExactAndType(initiator, original, getOne(foundCommands), Optional.empty(), SHOW_VARIANT_TYPE);
         } else if ( hasMany(foundCommands) ) {
             debug("[COMMANDS MEMORY] many found by exact: " + foundCommands);
             return this.chooseOneCommandAndSaveChoice(initiator, original, foundCommands);
         } else {
-            return this.doWhenNoOneFoundByExactAndType(initiator, original, Optional.empty());
+            return this.doWhenNoOneFoundByExactAndType(initiator, original, Optional.empty(), SHOW_VARIANT_TYPE);
         }
     }
     
@@ -445,7 +446,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String original, 
             InvocationCommand foundCommand, 
-            Optional<CommandType> type) {
+            Optional<CommandType> type, 
+            View view) {
         debug("[COMMANDS MEMORY] found one stored by exact : " + foundCommand.stringify());
         InvocationCommand exactMatch = foundCommand;
         if ( exactMatch.extendedArgument().equalsIgnoreCase(original) ) {
@@ -462,7 +464,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
                 
         matchingCommands.add(exactMatch);
-        WeightedVariants variants = weightVariants(original, commandsToVariants(matchingCommands));
+        WeightedVariants variants = 
+                weightVariants(original, commandsToVariants(matchingCommands, view));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
@@ -520,7 +523,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
     
     private ValueFlow<InvocationCommand> doWhenNoOneFoundByExactAndType(
-            Initiator initiator, String original, Optional<CommandType> type) {
+            Initiator initiator, String original, Optional<CommandType> type, View view) {
         debug("[COMMANDS MEMORY] not found by exact original: " + original);
         List<InvocationCommand> foundCommands;
         if ( type.isPresent() ) {
@@ -557,7 +560,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             }
         } else if ( hasMany(foundCommands) ) {
             debug("[COMMANDS MEMORY] found many by original in extended: " + original + " -> " + foundCommands);
-            WeightedVariants variants = weightVariants(original, commandsToVariants(foundCommands));
+            WeightedVariants variants = 
+                    weightVariants(original, commandsToVariants(foundCommands, view));
             if ( variants.isEmpty() ) {
                 return valueFlowCompletedEmpty();
             }
@@ -660,15 +664,15 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
 
     @Override
     public ValueFlow<InvocationCommand> findStoredCommandByPatternAndType(
-            Initiator initiator, String pattern, CommandType type) {
+            Initiator initiator, String pattern, CommandType type, View view) {
         Optional<InvocationCommand> found = 
                 this.daoCommands.getByExactOriginalAndType(initiator, pattern, type);
         if ( found.isPresent() ) {
             return this.doWhenOneFoundByExactAndType(
-                    initiator, pattern, found.get(), Optional.of(type));
+                    initiator, pattern, found.get(), Optional.of(type), view);
         } else {
             return this.doWhenNoOneFoundByExactAndType(
-                    initiator, pattern, Optional.of(type));
+                    initiator, pattern, Optional.of(type), view);
         }
     }
 
