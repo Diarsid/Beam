@@ -48,7 +48,6 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringHolder.empty;
 import static diarsid.beam.core.base.util.StringHolder.hold;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
@@ -283,10 +282,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     public VoidFlow tryToExtendCommand(
             Initiator initiator, InvocationCommand command) {
         Optional<InvocationCommand> exactMatch = this.daoCommands.getByExactOriginalAndType(
-                initiator, command.originalArgument(), command.type());        
-        debug("[COMMANDS MEMORY] [find by exact match] " + command.originalArgument());
+                initiator, command.originalArgument(), command.type());
         if ( exactMatch.isPresent() ) {
-            debug("[COMMANDS MEMORY] [find by exact match] found " + command.extendedArgument());
             List<InvocationCommand> matchingCommands = 
                     this.daoCommands.searchInExtendedByPatternAndType(
                             initiator, command.originalArgument(), command.type());
@@ -320,7 +317,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return voidFlowCompleted();
         } else {
             if ( this.daoCommandsChoices.isChoiceDoneFor(command.originalArgument(), variants) ) {
-                debug("[COMMANDS MEMORY] choice is done for original: " + command.originalArgument() + ", return " + exactMatch.stringify());
                 command.setStored();
                 command.argument().setExtended(exactMatch.extendedArgument());
                 asyncDo(() -> {
@@ -429,16 +425,16 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     @Override
     public ValueFlow<InvocationCommand> findStoredCommandOfAnyType(
             Initiator initiator, String original) {
-        debug("[COMMANDS MEMORY] find stored by : " + original);
         List<InvocationCommand> foundCommands = 
                 this.daoCommands.getByExactOriginalOfAnyType(initiator, original);
         if ( hasOne(foundCommands) ) {
-            return this.doWhenOneFoundByExactAndType(initiator, original, getOne(foundCommands), Optional.empty(), SHOW_VARIANT_TYPE);
+            return this.doWhenOneFoundByExactAndType(
+                    initiator, original, getOne(foundCommands), Optional.empty(), SHOW_VARIANT_TYPE);
         } else if ( hasMany(foundCommands) ) {
-            debug("[COMMANDS MEMORY] many found by exact: " + foundCommands);
             return this.chooseOneCommandAndSaveChoice(initiator, original, foundCommands);
         } else {
-            return this.doWhenNoOneFoundByExactAndType(initiator, original, Optional.empty(), SHOW_VARIANT_TYPE);
+            return this.doWhenNoOneFoundByExactAndType(
+                    initiator, original, Optional.empty(), SHOW_VARIANT_TYPE);
         }
     }
     
@@ -448,10 +444,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             InvocationCommand foundCommand, 
             Optional<CommandType> type, 
             View view) {
-        debug("[COMMANDS MEMORY] found one stored by exact : " + foundCommand.stringify());
         InvocationCommand exactMatch = foundCommand;
         if ( exactMatch.extendedArgument().equalsIgnoreCase(original) ) {
-            debug("[COMMANDS MEMORY] exact match! " + original + " -> " + foundCommand.stringify());
             return valueFlowCompletedWith(exactMatch);
         }
         
@@ -486,7 +480,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return valueFlowCompletedWith(newCommand);
         } else {
             if ( this.daoCommandsChoices.isChoiceDoneFor(original, variants) ) {
-                debug("[COMMANDS MEMORY] choice is done for original: " + original + ", return " + exactMatch.stringify());
                 return valueFlowCompletedWith(exactMatch);
             }
             Answer answer = this.ioEngine.chooseInWeightedVariants(
@@ -524,7 +517,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     
     private ValueFlow<InvocationCommand> doWhenNoOneFoundByExactAndType(
             Initiator initiator, String original, Optional<CommandType> type, View view) {
-        debug("[COMMANDS MEMORY] not found by exact original: " + original);
         List<InvocationCommand> foundCommands;
         if ( type.isPresent() ) {
             foundCommands = this.daoCommands.searchInExtendedByPatternAndType(
@@ -534,7 +526,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
                 
         if ( hasOne(foundCommands) ) {
-            debug("[COMMANDS MEMORY] found one by original in extended: " + original + " -> " + getOne(foundCommands).extendedArgument() );
             Choice choice = this.ioEngine.ask(
                     initiator, getOne(foundCommands).stringify(), this.isOneCommandRelevantHelp);
             switch ( choice ) {
@@ -559,7 +550,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 }
             }
         } else if ( hasMany(foundCommands) ) {
-            debug("[COMMANDS MEMORY] found many by original in extended: " + original + " -> " + foundCommands);
             WeightedVariants variants = 
                     weightVariants(original, commandsToVariants(foundCommands, view));
             if ( variants.isEmpty() ) {
@@ -598,25 +588,20 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
-        debug("[COMMANDS MEMORY] [chosing one] variants qty: " + variants.size() );
         if ( variants.best().text().equalsIgnoreCase(pattern) ) {
             return valueFlowCompletedWith(commands.get(variants.best().index()));
         }
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, variants, this.chooseOneCommandHelp);
         if ( answer.isGiven() ) {
-            debug("[COMMANDS MEMORY] [choosen one] " + commands.get(answer.index()).stringify() );
             return valueFlowCompletedWith(commands.get(answer.index()));
+        } else if ( answer.isRejection() ) {
+            return valueFlowStopped();
+        } else if ( answer.variantsAreNotSatisfactory() ) {
+            return valueFlowCompletedEmpty();
         } else {
-            debug("[COMMANDS MEMORY] [chosing one] answer not given");
-            if ( answer.isRejection() ) {
-                return valueFlowStopped();
-            } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueFlowCompletedEmpty();
-            } else {
-                return valueFlowCompletedEmpty();
-            }            
-        }
+            return valueFlowCompletedEmpty();
+        } 
     }
     
     private ValueFlow<InvocationCommand> chooseOneCommandAndSaveChoice(
@@ -627,14 +612,12 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
-        debug("[COMMANDS MEMORY] [chosing one] variants qty: " + variants.size() );
         if ( variants.best().text().equalsIgnoreCase(pattern) ) {
             return valueFlowCompletedWith(commands.get(variants.best().index()));
         }
         Optional<CommandType> chosenType = 
                 this.daoCommandsChoices.isTypeChoiceDoneFor(pattern, variants);
         if ( chosenType.isPresent() ) {
-            debug("[COMMANDS MEMORY] [chosing one] choice " + chosenType.get() + " found for stamp:" + variants.stamp());
             return valueFlowCompletedWith(commands
                     .stream()
                     .filter(command -> command.type().is(chosenType.get()))
@@ -644,14 +627,12 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 initiator, variants, this.chooseOneCommandHelp);
         if ( answer.isGiven() ) {
             InvocationCommand chosen = commands.get(answer.index());
-            debug("[COMMANDS MEMORY] [choosen one] " + chosen.stringify());
             asyncDo(() -> {
 //                variants.removeWorseThan(chosen.extendedArgument());
                 this.daoCommandsChoices.save(chosen, variants);
             });
             return valueFlowCompletedWith(commands.get(answer.index()));
         } else {
-            debug("[COMMANDS MEMORY] [chosing one] answer not given");
             if ( answer.isRejection() ) {
                 return valueFlowStopped();
             } else if ( answer.variantsAreNotSatisfactory() ) {
