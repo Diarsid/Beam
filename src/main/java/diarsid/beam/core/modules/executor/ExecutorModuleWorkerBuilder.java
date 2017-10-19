@@ -12,8 +12,8 @@ import diarsid.beam.core.modules.PluginsLoaderModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.base.os.listing.FileLister.getLister;
-import static diarsid.beam.core.base.os.search.FileSearcher.searcherWithDepthsOf;
+import static diarsid.beam.core.base.os.treewalking.listing.FileLister.getLister;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
 
 /**
  *

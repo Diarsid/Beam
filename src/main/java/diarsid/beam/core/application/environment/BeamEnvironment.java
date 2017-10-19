@@ -8,7 +8,7 @@ package diarsid.beam.core.application.environment;
 
 import static diarsid.beam.core.application.environment.ConfigurationReading.CONFIGURATION;
 import static diarsid.beam.core.application.environment.ScriptSyntax.scriptSyntax;
-import static diarsid.beam.core.base.os.search.FileSearcher.searcherWithDepthsOf;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
 
 /**
  *

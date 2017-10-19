@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import diarsid.beam.core.base.os.search.FileSearcher;
-import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
+import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 
 import static java.awt.Desktop.getDesktop;
 import static java.nio.file.Files.createFile;

@@ -9,17 +9,17 @@ package diarsid.beam.core.application.environment;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import diarsid.beam.core.base.os.search.FileSearcher;
-import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
+import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 
 import static java.lang.String.format;
 import static java.nio.file.Files.isDirectory;
 
-import static diarsid.beam.core.base.os.search.FileSearchMatching.DIRECT_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMatching.PATTERN_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMatching.SIMILAR_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMatching.STRICT_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMode.FILES_ONLY;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.DIRECT_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.PATTERN_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.SIMILAR_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.STRICT_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.FILES_ONLY;
 
 /**
  *

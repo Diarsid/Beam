@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.base.os.search;
 
+import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,20 +22,20 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import diarsid.beam.core.base.os.search.result.FileSearchResult;
+import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static diarsid.beam.core.base.os.search.FileSearchMatching.DIRECT_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMatching.PATTERN_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMatching.SIMILAR_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMatching.STRICT_MATCH;
-import static diarsid.beam.core.base.os.search.FileSearchMode.ALL;
-import static diarsid.beam.core.base.os.search.FileSearchMode.FILES_ONLY;
-import static diarsid.beam.core.base.os.search.FileSearcher.searcherWithDepthsOf;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.DIRECT_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.PATTERN_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.SIMILAR_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.STRICT_MATCH;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.ALL;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.FILES_ONLY;
+import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
 
 
 /**
