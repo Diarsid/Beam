@@ -12,6 +12,7 @@ import java.util.List;
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Locale.ENGLISH;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -49,12 +50,12 @@ public class StringUtils {
         return target.toUpperCase(ENGLISH);
     }
     
-    public static boolean nonNullNonEmpty(String s) {
+    public static boolean nonEmpty(String s) {
         return nonNull(s) && ! s.isEmpty();
     }
     
-    public static boolean nonEmpty(String s) {
-        return ! s.isEmpty();
+    public static boolean isEmpty(String s) {
+        return isNull(s) || s.isEmpty();
     }
     
     public static String normalizeSpaces(String target) {

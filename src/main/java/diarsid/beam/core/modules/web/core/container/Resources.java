@@ -14,6 +14,8 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.util.StringUtils.isEmpty;
+
 /**
  *
  * @author Diarsid
@@ -35,6 +37,9 @@ public class Resources {
     }
     
     Optional<Resource> getMatchingResourceFor(String url, String method) {
+        if ( isEmpty(url) ) {
+            return Optional.empty();
+        }
         return this.resources
                 .stream()
                 .filter(resource -> resource.matchesTo(url, method))
