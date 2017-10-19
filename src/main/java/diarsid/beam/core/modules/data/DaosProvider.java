@@ -31,4 +31,8 @@ public interface DaosProvider {
 
     DaoPictures createDaoImages();
     
+    DaoLocationSubPaths createDaoLocationSubPaths();
+    
+    DaoLocationSubPathChoices createDaoLocationSubPathChoices();
+    
 }

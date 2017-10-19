@@ -200,19 +200,34 @@ class H2DaoLocations
     @Override
     public boolean removeLocation(
             Initiator initiator, String locationName) {
-        try {
-            int removed = super.openDisposableTransaction()
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            String lowerLocationName = lower(locationName);
+            this.removeLocationSubPathChoicesUsing(transact, lowerLocationName);
+            
+            int removed = transact
                     .doUpdateVarargParams(
                             "DELETE FROM locations " +
                             "WHERE LOWER(loc_name) IS ? ", 
-                            lower(locationName));
-            return ( removed > 0 );
+                            lowerLocationName);
+            
+            return ( removed > 0 );            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);
             super.ioEngine().report(
                     initiator, format("Location removing by '%s' failed.", locationName));
             return false;
         }
+    }
+    
+    private void removeLocationSubPathChoicesUsing(
+            JdbcTransaction transact, String lowerLocationName) 
+            throws TransactionHandledException, TransactionHandledSQLException {
+        transact
+                .doUpdateVarargParams(
+                        "DELETE FROM subpath_choices " +
+                        "WHERE ( LOWER(loc_name) IS ? )", 
+                        lowerLocationName);
     }
 
     @Override
@@ -250,24 +265,31 @@ class H2DaoLocations
             Initiator initiator, String locationName, String newName) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
-            boolean nameIsFree = ! transact
+            boolean nameIsNotFree = transact
                     .doesQueryHaveResultsVarargParams(
                             "SELECT loc_name " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) IS ? ", 
                             lower(newName));
             
+            if ( nameIsNotFree ) {
+                return false;
+            } 
+            
+            String lowerLocationName = lower(locationName);
+            this.removeLocationSubPathChoicesUsing(transact, lowerLocationName);
+            
             int modified = transact
-                    .ifTrue( nameIsFree )
                     .doUpdateVarargParams(
                             "UPDATE locations " +
                             "SET loc_name = ? " +
                             "WHERE LOWER(loc_name) IS ? ", 
-                            newName, lower(locationName));
+                            newName, lowerLocationName);
             
-            transact
-                    .ifTrue( modified != 1 )
+            if ( modified != 1 ) {
+                transact
                     .rollbackAndProceed();
+            }    
             
             return ( modified == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {

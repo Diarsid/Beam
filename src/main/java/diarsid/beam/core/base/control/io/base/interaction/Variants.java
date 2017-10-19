@@ -65,4 +65,12 @@ public class Variants {
                 .map(entity -> entity.toVariant(counter.getAndIncrement()))
                 .collect(toList());
     }
+    
+    public static List<Variant> toVariants(List<? extends ConvertableToVariant> convertables) {
+        AtomicInteger counter = new AtomicInteger(0);
+        return convertables
+                .stream()
+                .map(convertable -> convertable.toVariant(counter.getAndIncrement()))
+                .collect(toList());
+    }
 }

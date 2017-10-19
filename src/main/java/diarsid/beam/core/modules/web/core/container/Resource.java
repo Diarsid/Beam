@@ -23,8 +23,11 @@ import static diarsid.beam.core.modules.web.core.container.RestUrlParametersUtil
 
 
 public abstract class Resource 
-        extends HttpServlet 
-        implements ResourceData, Comparable<Resource> {
+        extends 
+                HttpServlet 
+        implements 
+                ResourceData, 
+                Comparable<Resource> {
     
     private static final String PARAMETER_REGEXP;
     static {        

@@ -7,10 +7,10 @@ package diarsid.beam.core.modules.data.daos.sql;
 
 import java.util.Optional;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
@@ -79,7 +79,9 @@ class H2DaoCommandsChoices
                 modified = transact
                         .doUpdateVarargParams(
                                 "UPDATE commands_choices " +
-                                "SET com_variants_stamp = ?, com_type = ? " +
+                                "SET " +
+                                "   com_variants_stamp = ?, " +
+                                "   com_type = ? " +
                                 "WHERE com_original IS ? ", 
                                 variants.stamp(), command.type(), lower(command.originalArgument()));
             } else {

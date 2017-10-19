@@ -8,6 +8,8 @@ package diarsid.beam.core.modules.data.database.sql;
 
 import java.util.Objects;
 
+import static diarsid.beam.core.modules.data.database.sql.SqlObjectType.TABLE;
+
 
 public class H2SqlTable implements SqlTable {
     
@@ -27,13 +29,18 @@ public class H2SqlTable implements SqlTable {
     }
 
     @Override
-    public String sqlCreationScript() {
+    public String creationScript() {
         return this.sql;
     }
 
     @Override
     public int columnsQty() {
         return this.columnsQty;
+    }
+    
+    @Override
+    public SqlObjectType type() {
+        return TABLE;
     }
 
     @Override

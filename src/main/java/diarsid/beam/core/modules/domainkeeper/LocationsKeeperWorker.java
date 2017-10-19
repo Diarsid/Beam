@@ -68,7 +68,7 @@ class LocationsKeeperWorker
                 LocationsKeeper, 
                 NamedEntitiesKeeper {
     
-    private final DaoLocations dao;
+    private final DaoLocations daoLocations;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
@@ -80,13 +80,13 @@ class LocationsKeeperWorker
     private final Help enterLocationPathHelp;
     
     LocationsKeeperWorker(
-            DaoLocations dao, 
+            DaoLocations daoLocations, 
             CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper consistencyChecker,
             LocationsInputParser parser,
             PropertyAndTextParser propertyTextParser) {
-        this.dao = dao;
+        this.daoLocations = daoLocations;
         this.commandsMemory = commandsMemoryKeeper;
         this.ioEngine = ioEngine;
         this.helper = consistencyChecker;
@@ -150,7 +150,7 @@ class LocationsKeeperWorker
                 return valueFlowStopped();
             }
 
-            foundLocations = this.dao.getLocationsByNamePattern(initiator, name);
+            foundLocations = this.daoLocations.getLocationsByNamePattern(initiator, name);
             if ( hasOne(foundLocations) ) {
                 this.ioEngine.report(
                         initiator, format("'%s' found.", getOne(foundLocations).name()));
@@ -191,20 +191,22 @@ class LocationsKeeperWorker
     @Override
     public ValueFlow<Location> findByExactName(
             Initiator initiator, String exactName) {
-        return valueFlowCompletedWith(this.dao.getLocationByExactName(initiator, exactName));
+        return valueFlowCompletedWith(this.daoLocations.getLocationByExactName(initiator, exactName));
     }
     
     @Override
     public List<Location> getLocationsByNamePattern(
             Initiator initiator, String namePattern) {
-        return this.dao.getLocationsByNamePattern(initiator, namePattern);
+        return this.daoLocations.getLocationsByNamePattern(initiator, namePattern);
     }
     
     @Override
     public ValueFlow<Location> findByNamePattern(
             Initiator initiator, String namePattern) {
-        List<Location> locations = this.dao.getLocationsByNamePattern(initiator, namePattern);
+        List<Location> locations = this.daoLocations.getLocationsByNamePattern(
+                initiator, namePattern);
         if ( hasOne(locations) ) {
+            // TODO HIGH weight/isSimilar investigate the most efficient way
             return valueFlowCompletedWith(getOne(locations));
         } else if ( hasMany(locations) ) {
             return this.manageWithManyLocations(initiator, namePattern, locations);
@@ -244,7 +246,7 @@ class LocationsKeeperWorker
         } else {
             return valueFlowCompletedEmpty();
         }
-    }
+    }    
 
     @Override
     public VoidFlow createLocation(Initiator initiator, ArgumentsCommand command) {
@@ -273,7 +275,7 @@ class LocationsKeeperWorker
             return voidFlowStopped();
         }    
         nameDefining: while ( true ) {
-            if ( this.dao.isNameFree(initiator, name) ) {
+            if ( this.daoLocations.isNameFree(initiator, name) ) {
                 break nameDefining;
             } else {
                 this.ioEngine.report(initiator, "this name is not free!");
@@ -288,7 +290,7 @@ class LocationsKeeperWorker
             }
         }
 
-        if ( this.dao.saveNewLocation(initiator, new Location(name, path)) ) {
+        if ( this.daoLocations.saveNewLocation(initiator, new Location(name, path)) ) {
             this.asyncAddCommand(initiator, name);
             return voidFlowCompleted();
         } else {
@@ -314,33 +316,33 @@ class LocationsKeeperWorker
             return voidFlowStopped();
         }
         
-        List<Location> locationsToRemove = this.dao.getLocationsByNamePattern(initiator, name);
+        List<Location> locationsToRemove = this.daoLocations.getLocationsByNamePattern(
+                initiator, name);
         if ( hasOne(locationsToRemove) ) {
             String locationName = getOne(locationsToRemove).name();
             this.ioEngine.report(initiator, format("'%s' found.", locationName));
-            if ( this.dao.removeLocation(initiator, locationName) ) {
-                this.asyncCleanCommandsMemory(initiator, locationName);
-                return voidFlowCompleted();
-            } else {
-                return voidFlowFail("DAO failed to remove location.");
-            }
+            return this.removeLocationByName(initiator, locationName);
         } else if ( locationsToRemove.isEmpty() ) {
             return voidFlowFail("no such location.");
         } else {
             VariantsQuestion question = question("choose").withAnswerEntities(locationsToRemove);
             Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneLocationHelp);
             if ( answer.isGiven() ) {
-                String locationName = locationsToRemove.get(answer.index()).name();
-                if ( this.dao.removeLocation(initiator, locationName) ) {
-                    this.asyncCleanCommandsMemory(initiator, locationName);
-                    return voidFlowCompleted();
-                } else {
-                    return voidFlowFail("DAO failed to remove location.");
-                }                    
+                return this.removeLocationByName(
+                        initiator, locationsToRemove.get(answer.index()).name());                    
             } else {
                 return voidFlowStopped();
             }
         }        
+    }
+
+    private VoidFlow removeLocationByName(Initiator initiator, String locationName) {
+        if ( this.daoLocations.removeLocation(initiator, locationName) ) {
+            this.asyncCleanCommandsMemory(initiator, locationName);
+            return voidFlowCompleted();
+        } else {
+            return voidFlowFail("DAO failed to remove location.");
+        }
     }
 
     @Override
@@ -404,7 +406,7 @@ class LocationsKeeperWorker
                 if ( newName.isEmpty() ) {
                     return voidFlowStopped();
                 }
-                if ( this.dao.editLocationName(initiator, location.name(), newName) ) {
+                if ( this.daoLocations.editLocationName(initiator, location.name(), newName) ) {
                     this.asyncChangeCommandsMemory(initiator, location.name(), newName);
                     return voidFlowCompleted();
                 } else {
@@ -422,7 +424,7 @@ class LocationsKeeperWorker
                 if ( newPath.isEmpty() ) {
                     return voidFlowStopped();
                 }
-                if ( this.dao.editLocationPath(initiator, location.name(), newPath) ) {
+                if ( this.daoLocations.editLocationPath(initiator, location.name(), newPath) ) {
                     return voidFlowCompleted();
                 } else {
                     return voidFlowFail("DAO failed to edit path.");
@@ -437,7 +439,7 @@ class LocationsKeeperWorker
     @Override
     public VoidFlow replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
-        if ( this.dao.replaceInPaths(initiator, replaceable, replacement) ) {
+        if ( this.daoLocations.replaceInPaths(initiator, replaceable, replacement) ) {
             return voidFlowCompleted();
         } else {
             return voidFlowFail("DAO failed to replace path fragment.");
@@ -446,6 +448,6 @@ class LocationsKeeperWorker
 
     @Override
     public List<Location> getAllLocations(Initiator initiator) {
-        return this.dao.getAllLocations(initiator);
+        return this.daoLocations.getAllLocations(initiator);
     }
 }

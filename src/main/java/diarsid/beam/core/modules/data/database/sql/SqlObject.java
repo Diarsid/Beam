@@ -5,20 +5,16 @@
  */
 package diarsid.beam.core.modules.data.database.sql;
 
-import java.util.List;
-import java.util.Optional;
-
-import diarsid.beam.core.modules.data.DataBaseModel;
-
 /**
  *
  * @author Diarsid
  */
-public interface SqlDataBaseModel extends DataBaseModel {
+public interface SqlObject {
     
-    List<SqlTable> tables();
+    String name();
     
-    List<SqlConstraint> constraints();
+    String creationScript();
     
-    Optional<SqlTable> table(String name);
+    SqlObjectType type();
+    
 }

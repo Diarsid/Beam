@@ -22,6 +22,8 @@ class DataModuleWorker implements DataModule {
     private final DaoWebPages daoWebPages;
     private final DaoWebDirectories daoWebDirectories;
     private final DaoPictures daoImages;
+    private final DaoLocationSubPaths daoLocationSubPaths;
+    private final DaoLocationSubPathChoices daoLocationSubPathChoices;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
@@ -35,6 +37,8 @@ class DataModuleWorker implements DataModule {
         this.daoWebPages = daosProvider.createDaoWebPages();
         this.daoWebDirectories = daosProvider.createDaoWebDirectories();
         this.daoImages = daosProvider.createDaoImages();
+        this.daoLocationSubPaths = daosProvider.createDaoLocationSubPaths();
+        this.daoLocationSubPathChoices = daosProvider.createDaoLocationSubPathChoices();
     }
 
     @Override
@@ -90,5 +94,15 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoWebDirectories webDirectories() {
         return this.daoWebDirectories;
+    }
+    
+    @Override
+    public DaoLocationSubPaths locationSubPaths() {
+        return this.daoLocationSubPaths;
+    }    
+    
+    @Override
+    public DaoLocationSubPathChoices locationSubPathChoices() {
+        return this.daoLocationSubPathChoices;
     }
 }

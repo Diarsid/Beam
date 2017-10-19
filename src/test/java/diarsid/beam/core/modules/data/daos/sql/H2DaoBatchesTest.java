@@ -73,8 +73,8 @@ public class H2DaoBatchesTest {
         testDataBase = new H2TestDataBase("testBase");
         daoBatches = new H2DaoBatches(testDataBase, ioEngine);
         SqlDataBaseModel dataBaseModel = new H2DataBaseModel();
-        testDataBase.setupRequiredTable(dataBaseModel.getByName("batches").get().sqlCreationScript());
-        testDataBase.setupRequiredTable(dataBaseModel.getByName("batch_commands").get().sqlCreationScript());        
+        testDataBase.setupRequiredTable(dataBaseModel.table("batches").get().creationScript());
+        testDataBase.setupRequiredTable(dataBaseModel.table("batch_commands").get().creationScript());        
     }
     
     private static void setupTestData() 

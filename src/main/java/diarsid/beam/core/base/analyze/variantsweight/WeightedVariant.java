@@ -15,8 +15,11 @@ import diarsid.beam.core.base.control.io.base.interaction.Variant;
  * @author Diarsid
  */
 public class WeightedVariant 
-        extends Variant 
-        implements Comparable<Variant>, Serializable {
+        extends 
+                Variant 
+        implements 
+                Comparable<Variant>, 
+                Serializable {
     
     private double weight;
 

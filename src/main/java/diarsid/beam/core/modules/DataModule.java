@@ -10,12 +10,14 @@ import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
+import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
+import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
+import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
-import diarsid.beam.core.modules.data.DaoPictures;
 
 /**
  *
@@ -42,4 +44,9 @@ public interface DataModule extends StoppableBeamModule  {
     DaoPictures images();
     
     DaoWebDirectories webDirectories();
+    
+    DaoLocationSubPaths locationSubPaths();
+    
+    DaoLocationSubPathChoices locationSubPathChoices();
+    
 }

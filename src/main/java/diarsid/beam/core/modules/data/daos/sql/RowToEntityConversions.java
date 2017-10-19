@@ -12,8 +12,9 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Attribute;
-import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.domain.entities.LocationSubPath;
+import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
 import diarsid.beam.core.domain.entities.WebDirectory;
@@ -37,6 +38,13 @@ class RowToEntityConversions {
         return new Location(
                 (String) row.get("loc_name"),
                 (String) row.get("loc_path"));
+    };
+    
+    static final RowConversion<LocationSubPath> ROW_TO_SUBPATH = (row) -> {
+        return new LocationSubPath(
+                row.get("loc_name", String.class),
+                row.get("loc_path", String.class),
+                row.get("subpath", String.class));
     };
     
     static final RowConversion<ExecutorCommand> ROW_TO_EXECUTOR_COMMAND = (row) -> {

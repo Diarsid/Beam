@@ -25,6 +25,8 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
+import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
+import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -57,10 +59,9 @@ public class H2DaoLocationsTest {
         initiator = new Initiator(76);
         testDataBase = new H2TestDataBase("locations_test");
         daoLocations = new H2DaoLocations(testDataBase, ioEngine);
-        testDataBase.setupRequiredTable(
-                "CREATE TABLE locations (" +
-                "loc_name   VARCHAR(300)    NOT NULL PRIMARY KEY," +
-                "loc_path   VARCHAR(300)    NOT NULL)");
+        SqlDataBaseModel model = new H2DataBaseModel();
+        testDataBase.setupRequiredTable(model.table("locations").get().creationScript());
+        testDataBase.setupRequiredTable(model.table("subpath_choices").get().creationScript());
     }
     
     @AfterClass

@@ -13,6 +13,8 @@ import java.util.Set;
 
 import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -48,6 +50,13 @@ import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
@@ -93,23 +102,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
 
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
-
 
 public class WebPagesKeeperWorker 
         extends 
@@ -120,7 +112,7 @@ public class WebPagesKeeperWorker
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
-    private final DaoPictures daoImages;
+    private final DaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final Gui gui;
@@ -140,7 +132,7 @@ public class WebPagesKeeperWorker
     public WebPagesKeeperWorker(
             DaoWebPages dao, 
             DaoWebDirectories daoDirectories,
-            DaoPictures daoImages,
+            DaoPictures daoPictures,
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
             Gui gui,
@@ -152,7 +144,7 @@ public class WebPagesKeeperWorker
         this.daoPages = dao;
         this.commandsMemory = commandsMemory;
         this.daoDirectories = daoDirectories;
-        this.daoImages = daoImages;
+        this.daoPictures = daoPictures;
         this.ioEngine = ioEngine;
         this.gui = gui;
         this.systemInitiator = systemInitiator;
@@ -459,7 +451,8 @@ public class WebPagesKeeperWorker
         String name;
         String url;
         if ( command.hasArguments() ) {
-            WebPageNameUrlAndPlace data = this.webObjectsParser.parseNameUrlAndPlace(command.arguments());
+            WebPageNameUrlAndPlace data = this.webObjectsParser
+                    .parseNameUrlAndPlace(command.arguments());
             place = data.place();
             name = data.name();
             url = data.url();
@@ -474,7 +467,7 @@ public class WebPagesKeeperWorker
             return voidFlowStopped();
         }
         Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
-        if ( ! freeNameIndex.isPresent() ) {
+        if ( isNotPresent(freeNameIndex) ) {
             return voidFlowFail("DAO failed to get free name index.");
         }
         if ( freeNameIndex.get() > 0 ) {
@@ -716,7 +709,7 @@ public class WebPagesKeeperWorker
         
         Picture picture = pictureFlow.asComplete().getOrThrow();
         
-        boolean saved = this.daoImages.save(initiator, picture);
+        boolean saved = this.daoPictures.save(initiator, picture);
         if ( saved ) {
             fireAsync("image_saved", picture.name());
             return voidFlowCompleted("captured!");
@@ -926,7 +919,7 @@ public class WebPagesKeeperWorker
                 .anyMatch(webPage -> webPage.name().equalsIgnoreCase(pageName));
         
         if ( pageExists ) {
-            return optionalOkWithBinary(this.daoImages.getByName(this.systemInitiator, pageName));
+            return optionalOkWithBinary(this.daoPictures.getByName(this.systemInitiator, pageName));
         } else {
             return notFoundWithJson(format(
                     "Page '%s' not found in %s!", pageName, directoryName));

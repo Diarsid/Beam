@@ -71,6 +71,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         WebDirectoriesKeeper directoriesKeeper;
         NotesKeeper notesKeeper;
         CommandsMemoryKeeper commandsMemoryKeeper;
+        LocationSubPathKeeper locationSubPathKeeper;
         NamedEntitiesKeeper defaultKeeper;
         AllKeeper allKeeper;
         
@@ -124,6 +125,10 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         defaultKeeper = new NamedEntitiesKeeperWorker(
                 ioEngine, 
                 this.dataModule.namedEntities());
+        locationSubPathKeeper = new LocationSubPathKeeperWorker(
+                this.dataModule.locationSubPaths(), 
+                this.dataModule.locationSubPathChoices(),
+                ioEngine);
         notesKeeper = new NotesKeeperWorker(
                 ioEngine,
                 this.appComponentsHolderModule.notesCatalog(), 
@@ -141,6 +146,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 notesKeeper,
                 commandsMemoryKeeper, 
                 defaultKeeper, 
+                locationSubPathKeeper,
                 allKeeper);
     }
 }

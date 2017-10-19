@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.data.database.sql;
  *
  * @author Diarsid
  */
-public interface SqlTable extends SqlObject {
-    
-    int columnsQty();
+public enum SqlObjectType {
+    TABLE,
+    CONSTRAINT
 }

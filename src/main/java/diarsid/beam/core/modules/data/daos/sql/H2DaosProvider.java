@@ -12,14 +12,16 @@ import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
+import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
+import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
+import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DaosProvider;
 import diarsid.beam.core.modules.data.DataBase;
-import diarsid.beam.core.modules.data.DaoPictures;
 
 /**
  *
@@ -90,4 +92,14 @@ public class H2DaosProvider implements DaosProvider {
     public DaoPictures createDaoImages() {
         return new H2DaoPictures(this.dataBase, this.ioModule.getInnerIoEngine());
     }
+    
+    @Override
+    public DaoLocationSubPaths createDaoLocationSubPaths() {
+        return new H2DaoLocationSubPaths(this.dataBase, this.ioModule.getInnerIoEngine());
+    }
+
+    @Override
+    public DaoLocationSubPathChoices createDaoLocationSubPathChoices() {
+        return new H2DaoLocationSubPathChoices(this.dataBase, this.ioModule.getInnerIoEngine());
+    }    
 }

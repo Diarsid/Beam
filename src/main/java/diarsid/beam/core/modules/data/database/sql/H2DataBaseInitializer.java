@@ -79,7 +79,7 @@ public class H2DataBaseInitializer implements SqlDataBaseInitializer {
             this.dataBase
                     .transactionFactory()
                     .createDisposableTransaction()
-                    .doUpdate(table.sqlCreationScript()); 
+                    .doUpdate(table.creationScript()); 
             
             return format("SQL table '%s' has been created.", table.name());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {

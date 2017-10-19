@@ -89,6 +89,13 @@ public class Analyze {
         );        
     }
     
+    private static List<String> diarsidProjectsCase() {
+        return asList(
+                "projects/diarsid",
+                "projects/diarsid/netbeans"
+        );
+    }
+    
     private static List<String> ukrPostApiCase() {
         return asList(            
                 "Projects/UkrPoshta",
@@ -154,9 +161,9 @@ public class Analyze {
     }
 
     private static void weightAnalyzeCases() {
-        List<String> variantsStrings = tmmCase();
+        List<String> variantsStrings = diarsidProjectsCase();
         
-        String pattern = "doma/tmm";
+        String pattern = "diarsidprojecs";
 //        variantsStrings.add(pattern);
         
         System.out.println("variants: " + variantsStrings.size());

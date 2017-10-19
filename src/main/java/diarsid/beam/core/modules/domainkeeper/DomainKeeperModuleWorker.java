@@ -26,6 +26,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     private final WebPagesKeeper webPagesKeeper;
     private final WebDirectoriesKeeper webDirectoriesKeeper;
     private final CommandsMemoryKeeper commandsMemoryKeeper;
+    private final LocationSubPathKeeper locationSubPathKeeper;
     private final NotesKeeper notesKeeper;
     private final AllKeeper allKeeper;
     
@@ -42,6 +43,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
             NotesKeeper notesKeeper,
             CommandsMemoryKeeper commandsMemoryKeeper,
             NamedEntitiesKeeper namedEntitiesKeeper, 
+            LocationSubPathKeeper locationSubPathKeeper,
             AllKeeper allKeeper) {
         this.locationsKeeper = locationsKeeper;
         this.batchesKeeper = batchesKeeper;
@@ -52,6 +54,7 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
         this.commandsMemoryKeeper = commandsMemoryKeeper;
         this.notesKeeper = notesKeeper;
         this.defaultNamedEntitiesKeeper = namedEntitiesKeeper;
+        this.locationSubPathKeeper = locationSubPathKeeper;
         this.allKeeper = allKeeper;
         this.allDedicatedNamedEntitiesKeepers = toSet(
                 locationsKeeper, 
@@ -117,6 +120,11 @@ public class DomainKeeperModuleWorker implements DomainKeeperModule {
     @Override
     public NamedEntitiesKeeper allEntities() {
         return this.defaultNamedEntitiesKeeper;
+    }
+
+    @Override
+    public LocationSubPathKeeper locationSubPaths() {
+        return this.locationSubPathKeeper;
     }
     
     @Override

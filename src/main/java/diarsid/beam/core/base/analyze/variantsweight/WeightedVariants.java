@@ -132,12 +132,12 @@ public class WeightedVariants implements Serializable {
         return ( this.variants.size() == 1 );
     }
     
-    public Answer singleAnswer() {
-        return answerOfVariant(getOne(this.variants));
+    public boolean hasMany() {
+        return ( this.variants.size() > 1 );
     }
     
-    boolean hasMany() {
-        return ( this.variants.size() > 1 );
+    public Answer singleAnswer() {
+        return answerOfVariant(getOne(this.variants));
     }
     
     public boolean next() {

@@ -10,6 +10,7 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.modules.domainkeeper.AllKeeper;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
 import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
+import diarsid.beam.core.modules.domainkeeper.LocationSubPathKeeper;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
 import diarsid.beam.core.modules.domainkeeper.NamedEntitiesKeeper;
 import diarsid.beam.core.modules.domainkeeper.NotesKeeper;
@@ -43,6 +44,8 @@ public interface DomainKeeperModule extends StoppableBeamModule  {
     NotesKeeper notes();
     
     CommandsMemoryKeeper commandsMemory();
+    
+    LocationSubPathKeeper locationSubPaths();
     
     AllKeeper all();
 }
