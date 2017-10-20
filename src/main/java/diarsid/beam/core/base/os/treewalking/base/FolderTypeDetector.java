@@ -64,7 +64,7 @@ public class FolderTypeDetector {
                 programSpecificFoldersCount++;
             }
         }
-        if ( programSpecificFoldersCount > 1 ) {
+        if ( programSpecificFoldersCount > 2 ) {
             return PROGRAM_FOLDER;
         } else if ( programSpecificFoldersCount == 0 ) {
             if ( programSpecificFilesCount > 0 ) {
@@ -72,8 +72,8 @@ public class FolderTypeDetector {
             } else {
                 return USUAL_FOLDER;
             }
-        } else if ( programSpecificFoldersCount == 1 ) {
-            if ( programSpecificFilesCount > 0 ) {
+        } else if ( programSpecificFoldersCount <= 2 ) {
+            if ( programSpecificFilesCount > 1 ) {
                 return PROGRAM_FOLDER;
             } else {
                 return USUAL_FOLDER;

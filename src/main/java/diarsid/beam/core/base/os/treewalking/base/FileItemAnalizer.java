@@ -31,13 +31,13 @@ class FileItemAnalizer {
         this.programSpecificFileSigns = asList(new String[] {
             ".bat", ".sh", ".exe", ".bash", ".dll", 
             "conf", ".cfg", ".hbm", ".db", ".dat", 
-            "license", "readme", ".log", ".git", 
-            ".gitignore", ".gitattributes", "pom.xml", });
+            "readme", ".log", ".git", ".gitattributes",
+            ".gitignore", "pom.xml", });
         this.projectSpecificFiles = asList(new String[] {
             ".project", ".pom", "pom.xml", "node_modules", 
             ".idea", "package.json", ".gitignore", ".gitattributes"});
         this.programSpecificFolders = asList(new String[] {
-            "bin", "lib", "log", "conf", "config", "temp", "docs"});
+            "bin", "lib", "log", "conf", "config", "temp"});
         this.restrictedSpecificFolder = asList(new String[] {
             "nbproject", ".git", ".sonar", ".settings", 
             "src", "$RECYCLE.BIN"});

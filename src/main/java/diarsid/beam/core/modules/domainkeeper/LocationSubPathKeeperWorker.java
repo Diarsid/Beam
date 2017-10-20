@@ -129,10 +129,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         if ( answer.isGiven() ) {
             LocationSubPath subPath = subPaths.get(answer.index());
             asyncDo(() -> {
-                boolean saved = this.daoSubPathChoices.save(initiator, subPath, pattern, variants);
-                if ( saved ) {
-                    int a = 5;
-                }
+                this.daoSubPathChoices.save(initiator, subPath, pattern, variants);
             });
             return valueFlowCompletedWith(subPath);
         } else if ( answer.isRejection() ) {

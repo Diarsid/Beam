@@ -709,7 +709,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 if ( answer.isGiven() ) {
                     target = answer.text();
                     this.openTargetAndExtendCommand(initiator, location, target, command);
-                } else {
+                } else if ( answer.variantsAreNotSatisfactory() ) { 
                     this.ioEngine.report(
                             initiator, format("'%s' not found in %s", target, location.name()));
                 }
