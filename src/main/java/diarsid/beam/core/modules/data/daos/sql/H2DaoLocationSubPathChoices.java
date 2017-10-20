@@ -82,10 +82,10 @@ class H2DaoLocationSubPathChoices
             return true;
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            // TODO HIGH
+            // TODO LOW
             return false;
         } catch (TransactionTerminationException e) {
-            // TODO HIGH
+            // TODO LOW
             return false;
         }
     }
@@ -108,7 +108,7 @@ class H2DaoLocationSubPathChoices
                             ROW_TO_SUBPATH, 
                             lower(pattern), variants.stamp());
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
-            // TODO HIGH
+            // TODO LOW
             return Optional.empty();
         }
     }

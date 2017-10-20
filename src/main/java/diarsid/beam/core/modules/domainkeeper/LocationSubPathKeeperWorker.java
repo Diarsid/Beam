@@ -20,6 +20,7 @@ import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.variantIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -55,10 +56,15 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         );
     }    
     
-    private ValueFlow<LocationSubPath> getOneSubPathIfPointsToDirectory(List<LocationSubPath> subPaths) {
+    private ValueFlow<LocationSubPath> getOneSubPathIfPointsToDirectoryAndSatisfiable(
+            String pattern, List<LocationSubPath> subPaths) {
         LocationSubPath subPath = getOne(subPaths);
         if ( subPath.pointsToDirectory() ) {
-            return valueFlowCompletedWith(subPath);
+            if ( variantIsSatisfiable(pattern, subPath.toSingleVariant()) ) {
+                return valueFlowCompletedWith(subPath);
+            } else {
+                return valueFlowCompletedEmpty();
+            }
         } else {
             return valueFlowCompletedEmpty();
         }
@@ -69,8 +75,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             Initiator initiator, String pattern) {
         List<LocationSubPath> subPaths = this.daoSubPaths.getSubPathesByPattern(initiator, pattern);
         if ( hasOne(subPaths) ) {
-            // TODO HIGH weight single variant or test for similarity
-            return this.getOneSubPathIfPointsToDirectory(subPaths);
+            return this.getOneSubPathIfPointsToDirectoryAndSatisfiable(pattern, subPaths);
         } else if ( hasMany(subPaths) ) {
             return this.chooseOneSubPathsFromMany(initiator, pattern, subPaths);
         } else {
@@ -85,7 +90,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
                 .filter(subPath -> subPath.pointsToDirectory())
                 .collect(toList());
         if ( hasOne(subPaths) ) {
-            return this.getOneSubPathIfPointsToDirectory(subPaths);
+            return this.getOneSubPathIfPointsToDirectoryAndSatisfiable(pattern, subPaths);
         } else if ( hasMany(subPaths) ) {
             return this.resolveManySubPaths(initiator, pattern, subPaths);
         } else {

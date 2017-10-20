@@ -201,6 +201,10 @@ public class Analyze {
         return weightVariant(pattern, new Variant(name, 0)).isPresent();
     }
     
+    public static boolean variantIsSatisfiable(String pattern, Variant variant) {
+        return weightVariant(pattern, variant).isPresent();
+    }
+    
     public static boolean entityIsSatisfiable(String pattern, NamedEntity entity) {
         return weightVariant(pattern, entity.toSingleVariant()).isPresent();
     }
