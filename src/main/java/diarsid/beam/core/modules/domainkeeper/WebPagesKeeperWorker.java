@@ -49,6 +49,7 @@ import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -281,7 +282,12 @@ public class WebPagesKeeperWorker
             Initiator initiator, String namePattern) {
         List<WebPage> foundPages = this.daoPages.findByPattern(initiator, namePattern);
         if ( hasOne(foundPages) ) {
-            return valueFlowCompletedWith(getOne(foundPages));
+            WebPage page = getOne(foundPages);
+            if ( entityIsSatisfiable(namePattern, page) ) {
+                return valueFlowCompletedWith(page);
+            } else {
+                return valueFlowCompletedEmpty();
+            }
         } else if ( hasMany(foundPages) ) {
             return this.manageWithManyPages(initiator, namePattern, foundPages);
         } else {

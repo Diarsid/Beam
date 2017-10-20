@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -19,23 +20,17 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.base.util.Logs.debug;
-
-import diarsid.beam.core.base.control.flow.ValueFlow;
-
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 
 /**
  *
@@ -70,21 +65,22 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
     @Override
     public ValueFlow<? extends NamedEntity> findByExactName(
             Initiator initiator, String name) {
-        debug("[ALL ENTITIES KEEPER] [by exact name] " + name);
         return valueFlowCompletedWith(this.namedEntitiesDao.getByExactName(initiator, name));
     }
 
     @Override
     public ValueFlow<? extends NamedEntity> findByNamePattern(
             Initiator initiator, String pattern) {
-        debug("[ALL ENTITIES KEEPER] [by name pattern] " + pattern);
         List<NamedEntity> entities = 
                 this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);        
         if ( hasOne(entities) ) {
-            debug("[ALL ENTITIES KEEPER] [by name pattern] one : " + getOne(entities).name());
-            return valueFlowCompletedWith(getOne(entities));
+            NamedEntity entity = getOne(entities);
+            if ( entityIsSatisfiable(pattern, entity) ) {
+                return valueFlowCompletedWith(entity);
+            } else {
+                return valueFlowCompletedEmpty();
+            }            
         } else if ( hasMany(entities) ) {
-            debug("[ALL ENTITIES KEEPER] [by name pattern] many : " + entities.size());
             return this.manageWithMultipleEntities(initiator, pattern, entities);
         } else {
             return valueFlowCompletedEmpty();

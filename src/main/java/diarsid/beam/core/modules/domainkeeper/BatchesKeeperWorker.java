@@ -34,6 +34,7 @@ import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.nameIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -231,7 +232,12 @@ class BatchesKeeperWorker
         List<String> foundBatchNames = 
                 this.dao.getBatchNamesByNamePattern(initiator, batchNamePattern);
         if ( hasOne(foundBatchNames) ) {
-            return this.findByExactName(initiator, getOne(foundBatchNames));        
+            String batchName = getOne(foundBatchNames);
+            if ( nameIsSatisfiable(batchNamePattern, batchName) ) {
+                return this.findByExactName(initiator, batchName); 
+            } else {
+                return valueFlowCompletedEmpty();
+            }  
         } else if ( hasMany(foundBatchNames) ) {
             return this.manageWithManyBatchNames(initiator, foundBatchNames);
         } else {

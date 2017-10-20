@@ -21,6 +21,7 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Program;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -119,7 +120,12 @@ class ProgramsKeeperWorker
     private ValueFlow<Program> chooseOneProgram(
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
-            return valueFlowCompletedWith(getOne(programs));
+            Program program = getOne(programs);
+            if ( entityIsSatisfiable(pattern, program) ) {
+                return valueFlowCompletedWith(program);
+            } else {
+                return valueFlowCompletedEmpty();
+            }            
         } else if ( hasMany(programs) ) {
             WeightedVariants variants = weightVariants(pattern, entitiesToVariants(programs));
             if ( variants.isEmpty() ) {

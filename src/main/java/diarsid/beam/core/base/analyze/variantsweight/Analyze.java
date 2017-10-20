@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
-import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 
 import static java.lang.Double.MAX_VALUE;
@@ -142,7 +141,7 @@ public class Analyze {
     }
 
     public static void doAll() {
-        weightAnalyzeCases();
+        weightAnalyzeCase();
 
 //        analyzeImportance();
     }
@@ -158,6 +157,18 @@ public class Analyze {
 //        System.out.println(clustersImportanceDependingOn(2, 9, 2));
 //        System.out.println(clustersImportanceDependingOn(1, 9, 2));
 //        System.out.println(clustersImportanceDependingOn(1, 8, 3));
+    }
+    
+    private static void weightAnalyzeCase() {
+        Variant variant = new Variant("Programs", 0);
+        String pattern = "diarsid";
+        
+        Optional<WeightedVariant> result = weightVariant(pattern, variant);
+        if ( result.isPresent() ) {
+            System.out.println("OK");
+        } else {
+            System.out.println("FAIL");
+        }
     }
 
     private static void weightAnalyzeCases() {
@@ -186,81 +197,12 @@ public class Analyze {
         System.out.println("printed: " + printed.get());
     }
     
-//    private static boolean patternAdvancedSearch(String pattern, String analyzed) {
-//        int patternLength = pattern.length();
-//        List<Integer> positions = new ArrayList<>();
-//        char currentChar;
-//        int currentCharPosition;
-//        int maxClusterLength = Integer.MIN_VALUE;
-//        for (int currentCharIndex = 0; currentCharIndex < patternLength; currentCharIndex++) {
-//            currentChar = pattern.charAt(currentCharIndex);
-//            currentCharPosition = analyzed.indexOf(currentChar);
-//            positions.add(currentCharPosition);
-//            while ( currentCharPosition > 0 ) {
-//                currentCharPosition = analyzed.indexOf(currentChar, currentCharPosition + 1);
-//                if ( currentCharPosition > 0 ) {
-//                    positions.add(currentCharPosition);
-//                }
-//            }
-//        }
-//        sort(positions);
-//        int previousPosition = Integer.MIN_VALUE;
-//        int foundClusterLength = 0;
-//        for (Integer position : positions) {
-//            System.out.print(position + " ");
-//            if ( position == previousPosition + 1 ) {
-//                if ( foundClusterLength == 0 ) {
-//                    foundClusterLength = 2;
-//                } else {
-//                    foundClusterLength++;
-//                }                
-//            } else {
-//                if ( foundClusterLength > maxClusterLength ) {
-//                    maxClusterLength = foundClusterLength;
-//                    foundClusterLength = 0;
-//                }
-//            }
-//            previousPosition = position;
-//        }
-//        if ( foundClusterLength > maxClusterLength ) {
-//            maxClusterLength = foundClusterLength;
-//        }
-//        System.out.println("cluster length: " + maxClusterLength);
-//        return maxClusterLength >= patternLength;
-//    }
-//    
-//    private static int countWords(String variant) {
-//        char[] chars = variant.toCharArray();
-//        char current;
-//        int wordsCount = 1;
-//        boolean previousCharIsNotSeparator = true;
-//        for (int currentIndex = 0; currentIndex < chars.length; currentIndex++) {
-//            current = chars[currentIndex];
-//            if ( isWordsSeparator(current) ) {
-//                if ( currentIndex > 0 ) {
-//                    if ( previousCharIsNotSeparator ) {
-//                        wordsCount++;
-//                        previousCharIsNotSeparator = false;
-//                    }
-//                } else {
-//                    previousCharIsNotSeparator = false;
-//                }
-//            } else {
-//                previousCharIsNotSeparator = true;
-//            }
-//        }
-//        if ( isWordsSeparator(lastCharOf(variant)) ) {
-//            wordsCount--;
-//        }
-//        return wordsCount;
-//    }
-//
-//    private static char lastCharOf(String variant) {
-//        return variant.charAt(variant.length() - 1);
-//    }
+    public static boolean nameIsSatisfiable(String pattern, String name) {
+        return weightVariant(pattern, new Variant(name, 0)).isPresent();
+    }
     
-    public static boolean entityIsSatisfiable(InvocationCommand command, NamedEntity entity) {
-        return weightVariant(command.originalArgument(), entity.toSingleVariant()).isPresent();
+    public static boolean entityIsSatisfiable(String pattern, NamedEntity entity) {
+        return weightVariant(pattern, entity.toSingleVariant()).isPresent();
     }
     
     public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {

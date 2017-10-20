@@ -32,6 +32,7 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -206,8 +207,12 @@ class LocationsKeeperWorker
         List<Location> locations = this.daoLocations.getLocationsByNamePattern(
                 initiator, namePattern);
         if ( hasOne(locations) ) {
-            // TODO HIGH weight/isSimilar investigate the most efficient way
-            return valueFlowCompletedWith(getOne(locations));
+            Location location = getOne(locations);
+            if ( entityIsSatisfiable(namePattern, location) ) {
+                return valueFlowCompletedWith(location);
+            } else {
+                return valueFlowCompletedEmpty();
+            }            
         } else if ( hasMany(locations) ) {
             return this.manageWithManyLocations(initiator, namePattern, locations);
         } else {

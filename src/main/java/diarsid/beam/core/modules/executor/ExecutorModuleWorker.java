@@ -51,7 +51,6 @@ import diarsid.beam.core.modules.ExecutorModule;
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
@@ -408,7 +407,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 if ( entityFlow.asComplete().hasValue() ) {
                     NamedEntity entity = entityFlow.asComplete().getOrThrow();
                     if ( entity.is(LOCATION) ) {
-                        this.doWhenLocationFound(initiator, command, entity);                        
+                        this.openFoundLocation(initiator, command, asLocation(entity));                        
                     } else {
                         this.doWhenLocationNotFound(initiator, command);
                     }
@@ -431,17 +430,12 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private void doWhenLocationFound(
-            Initiator initiator, OpenLocationCommand command, NamedEntity entity) {
-        if ( entityIsSatisfiable(command, entity) ) {
-            this.ioEngine.report(initiator, "...opening " + asLocation(entity).name());
-            asLocation(entity).openAsync(
-                    this.thenDoOnSuccess(initiator, command),
-                    this.thenDoOnFail(initiator, command));
-        } else {
-            debug(format("[EXECUTOR] entity %s is not satisfiable! ", entity.toString()));
-            this.doWhenLocationNotFound(initiator, command);
-        }
+    private void openFoundLocation(
+            Initiator initiator, OpenLocationCommand command, Location location) {
+        this.ioEngine.report(initiator, "...opening " + location.name());
+        location.openAsync(
+                this.thenDoOnSuccess(initiator, command),
+                this.thenDoOnFail(initiator, command));
     }
     
     private void doWhenLocationNotFound(
