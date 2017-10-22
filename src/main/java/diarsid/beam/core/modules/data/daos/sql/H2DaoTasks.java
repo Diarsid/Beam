@@ -19,7 +19,7 @@ import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
 import diarsid.beam.core.modules.data.DaoTasks;
-import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.core.Params;

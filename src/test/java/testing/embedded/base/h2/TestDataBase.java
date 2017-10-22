@@ -5,7 +5,7 @@
  */
 package testing.embedded.base.h2;
 
-import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.base.data.DataBase;
 
 /**
  *

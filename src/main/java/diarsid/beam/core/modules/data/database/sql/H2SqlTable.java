@@ -6,9 +6,12 @@
 
 package diarsid.beam.core.modules.data.database.sql;
 
+import diarsid.beam.core.base.data.SqlObjectType;
+import diarsid.beam.core.base.data.SqlTable;
+
 import java.util.Objects;
 
-import static diarsid.beam.core.modules.data.database.sql.SqlObjectType.TABLE;
+import static diarsid.beam.core.base.data.SqlObjectType.TABLE;
 
 
 public class H2SqlTable implements SqlTable {

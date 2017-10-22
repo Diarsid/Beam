@@ -21,7 +21,7 @@ import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DaosProvider;
-import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.base.data.DataBase;
 
 /**
  *

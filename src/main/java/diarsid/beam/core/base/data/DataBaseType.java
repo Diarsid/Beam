@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data;
+package diarsid.beam.core.base.data;
 
 /**
  *
  * @author Diarsid
  */
-public interface DataBaseModel {
-    
+public enum DataBaseType {
+    SQL, 
+    OTHER
 }

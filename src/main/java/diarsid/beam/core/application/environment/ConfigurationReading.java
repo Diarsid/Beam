@@ -36,6 +36,7 @@ class ConfigurationReading {
         Path configFile = Paths.get("../config/beam.config");
         Configuration defaultConfig = parse(
                 "data.store = ../res/data",
+                "data.driver = org.h2.Driver",
                 "data.user = root",
                 "data.pass = root",
                 "data.log = true",

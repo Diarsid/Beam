@@ -23,15 +23,13 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataBaseActuator;
+import diarsid.beam.core.base.data.DataBaseModel;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.data.DaoWebPages;
-import diarsid.beam.core.modules.data.DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 import diarsid.jdbc.transactions.JdbcTransaction;
 
 import static java.util.stream.Collectors.toList;
@@ -41,6 +39,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
@@ -69,17 +68,19 @@ public class H2DaoWebPagesTest {
     }
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         initiator = new Initiator(12);
         dataBase = new H2TestDataBase("web_pages_test");
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoWebPages(dataBase, ioEngine);
         
-        SqlDataBaseModel model = new H2DataBaseModel();
-        SqlDataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);
-        DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
-        List<String> reports = verifier.verify(dataBase, model); 
+        DataBaseModel dataBaseModel = new H2DataBaseModel();
+        
+        DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
+        
+        List<String> reports = actuator.actuateAndGetReport();
         reports.stream().forEach(report -> logger.info(report));
+        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).objects().size());
     }
     
     @AfterClass

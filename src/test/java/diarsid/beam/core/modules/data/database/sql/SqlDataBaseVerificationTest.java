@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.data.database.sql;
 
+
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -18,10 +19,14 @@ import testing.embedded.base.h2.H2TestDataBase;
 import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.modules.data.DataBaseVerifier;
+import diarsid.beam.core.base.data.DataBaseActuator;
+import diarsid.beam.core.base.data.DataBaseModel;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+
+import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 
 /**
  *
@@ -38,16 +43,17 @@ public class SqlDataBaseVerificationTest {
     }
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         dataBase = new H2TestDataBase("data_verification");
         ioEngine = mock(InnerIoEngine.class);
         
-        SqlDataBaseModel model = new H2DataBaseModel();
-        SqlDataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);
-        DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
-        List<String> reports = verifier.verify(dataBase, model);   
+        DataBaseModel dataBaseModel = new H2DataBaseModel();
+        
+        DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
+        
+        List<String> reports = actuator.actuateAndGetReport();
         reports.stream().forEach(report -> logger.info(report));
-        assertEquals(reports.size(), model.tables().size());
+        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).tables().size());
     }
     
     @AfterClass

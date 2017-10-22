@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.data;
 
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.DataModule;
 
 

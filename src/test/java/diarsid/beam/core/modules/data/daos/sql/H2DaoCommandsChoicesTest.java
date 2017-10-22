@@ -18,28 +18,27 @@ import org.slf4j.LoggerFactory;
 import testing.embedded.base.h2.H2TestDataBase;
 import testing.embedded.base.h2.TestDataBase;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.data.DataBaseActuator;
+import diarsid.beam.core.base.data.DataBaseModel;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
-import diarsid.beam.core.modules.data.DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
+import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
@@ -53,7 +52,7 @@ public class H2DaoCommandsChoicesTest {
     
     static DaoCommandsChoices dao;
     static Initiator initiator;
-    static TestDataBase base;
+    static TestDataBase dataBase;
     static InnerIoEngine ioEngine;
     
     WeightedVariants variants;
@@ -62,22 +61,24 @@ public class H2DaoCommandsChoicesTest {
     }
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         initiator = new Initiator(41);
-        base = new H2TestDataBase("commands-choices-test");
+        dataBase = new H2TestDataBase("commands-choices-test");
         ioEngine = mock(InnerIoEngine.class);
         
-        dao = new H2DaoCommandsChoices(base, ioEngine);
-        SqlDataBaseModel model = new H2DataBaseModel();
-        SqlDataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, base);
-        DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
-        List<String> reports = verifier.verify(base, model); 
+        dao = new H2DaoCommandsChoices(dataBase, ioEngine);
+        DataBaseModel dataBaseModel = new H2DataBaseModel();
+        
+        DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
+        
+        List<String> reports = actuator.actuateAndGetReport();
         reports.stream().forEach(report -> logger.info(report));
+        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).objects().size());
     }
     
     @Before 
     public void setUpCase() throws Exception {
-        base.transactionFactory()
+        dataBase.transactionFactory()
                 .createDisposableTransaction()
                 .doBatchUpdateVarargParams(
                         "INSERT INTO commands_choices ( com_original, com_type, com_variants_stamp ) " +
@@ -93,7 +94,7 @@ public class H2DaoCommandsChoicesTest {
     
     @After
     public void teatDownCase() throws Exception {
-        base.transactionFactory()
+        dataBase.transactionFactory()
                 .createDisposableTransaction()
                 .doUpdate("DELETE FROM commands_choices");
     }
@@ -141,38 +142,38 @@ public class H2DaoCommandsChoicesTest {
     
     @Test
     public void testSaveRewrite() {
-        int countBefore = base.countRowsInTable("commands_choices");
+        int countBefore = dataBase.countRowsInTable("commands_choices");
         
         InvocationCommand command = createInvocationCommandFrom(
                 OPEN_LOCATION_TARGET, "beaproj", "C:/Projects/NetBeans/Beam");
         boolean rewrited = dao.save(command, variants);
         assertEquals(true, rewrited);
         
-        int countAfter = base.countRowsInTable("commands_choices");
+        int countAfter = dataBase.countRowsInTable("commands_choices");
         assertEquals(countBefore, countAfter);
     }
     
     @Test
     public void testSave() {
-        int countBefore = base.countRowsInTable("commands_choices");
+        int countBefore = dataBase.countRowsInTable("commands_choices");
         
         InvocationCommand command = createInvocationCommandFrom(
                 OPEN_LOCATION_TARGET, "nebeaproj", "C:/Projects/NetBeans");
         boolean saved = dao.save(command, variants);
         assertEquals(true, saved);
         
-        int countAfter = base.countRowsInTable("commands_choices");
+        int countAfter = dataBase.countRowsInTable("commands_choices");
         assertEquals(countBefore + 1, countAfter);
     }
     
     @Test
     public void testDelete() {
-        int countBefore = base.countRowsInTable("commands_choices");
+        int countBefore = dataBase.countRowsInTable("commands_choices");
         
         boolean deleted = dao.delete("beaproj");
         assertEquals(true, deleted);
         
-        int countAfter = base.countRowsInTable("commands_choices");
+        int countAfter = dataBase.countRowsInTable("commands_choices");
         assertEquals(countBefore - 1, countAfter);
     }
     

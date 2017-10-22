@@ -7,11 +7,14 @@
 package diarsid.beam.core.modules.data.database.sql;
 
 import diarsid.beam.core.application.environment.Configuration;
-import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataBaseType;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;
 import diarsid.jdbc.transactions.core.JdbcPreparedStatementSetter;
 import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
 import diarsid.jdbc.transactions.core.JdbcTransactionGuard;
+
+import static diarsid.beam.core.base.data.DataBaseType.SQL;
 
 
 public class H2DataBase implements DataBase {
@@ -38,5 +41,10 @@ public class H2DataBase implements DataBase {
     @Override
     public void disconnect() {
         this.transactionFactory.close();
+    }
+    
+    @Override
+    public DataBaseType type() {
+        return SQL;
     }
 }

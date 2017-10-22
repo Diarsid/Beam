@@ -9,21 +9,25 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.Configuration;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataBaseActuationException;
+import diarsid.beam.core.base.data.DataBaseActuator;
+import diarsid.beam.core.base.data.DataBaseModel;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.daos.sql.H2DaosProvider;
 import diarsid.beam.core.modules.data.database.sql.H2DataBase;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
+import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 
@@ -46,34 +50,48 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
 
     @Override
     public DataModule buildModule() {
-        this.loadDriver();
-        InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
         Configuration config = this.applicationComponentsHolderModule.configuration();
+        this.loadDriver(config.asString("data.driver"));
+        
         DataBase dataBase = new H2DataBase(config);
+        DataBaseModel dataBaseModel = new H2DataBaseModel();
         
-        DataBaseModel model = new H2DataBaseModel();
-        DataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);
-        DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
-        List<String> reports = verifier.verify(dataBase, model);        
-        
-        if ( nonEmpty(reports) ) {
-            ioEngine.reportMessage(systemInitiator(), linesToMessage(reports));
-        }
+        this.actuateDataBase(dataBase, dataBaseModel);
         
         DaosProvider daosProvider = new H2DaosProvider(
                 dataBase, this.ioModule, this.applicationComponentsHolderModule);
         return new DataModuleWorker(dataBase, daosProvider);
     }
     
-    private void loadDriver() {
+    private void loadDriver(String driverClassName) {
         try {
-            Class.forName("org.h2.Driver");
+            Class.forName(driverClassName);
         } catch (Exception e) {
             logError(DataModuleWorkerBuilder.class, e);
             this.ioModule
                     .getInnerIoEngine()
-                    .reportAndExitLater(systemInitiator(), 
-                            "Data base driver class loading failure.");
+                    .reportAndExitLater(
+                            systemInitiator(), 
+                            format("Cannot load %s JDBC driver.", driverClassName));
+            throw new ModuleInitializationException();
+        }
+    }
+    
+    private void actuateDataBase(DataBase dataBase, DataBaseModel dataBaseModel) {
+        try {
+            DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
+            List<String> reports = actuator.actuateAndGetReport();
+            
+            if ( nonEmpty(reports) ) {
+                this.ioModule
+                        .getInnerIoEngine()
+                        .reportMessage(systemInitiator(), linesToMessage(reports));
+            }
+        } catch (DataBaseActuationException ex) {
+            this.ioModule
+                    .getInnerIoEngine()
+                    .reportAndExitLater(
+                            systemInitiator(), ex.getMessage());
             throw new ModuleInitializationException();
         }
     }

@@ -19,7 +19,7 @@ import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
-import diarsid.beam.core.modules.data.DataBase;
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;

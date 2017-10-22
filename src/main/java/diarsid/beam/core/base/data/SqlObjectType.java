@@ -3,15 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data;
-
-import java.util.List;
+package diarsid.beam.core.base.data;
 
 /**
  *
  * @author Diarsid
  */
-public interface DataBaseVerifier {
-    
-    List<String> verify(DataBase dataBase, DataBaseModel dataBaseModel);
+public enum SqlObjectType {
+    TABLE,
+    CONSTRAINT
 }

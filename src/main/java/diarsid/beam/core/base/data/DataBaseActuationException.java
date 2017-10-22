@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data.database.sql;
+package diarsid.beam.core.base.data;
 
 /**
  *
  * @author Diarsid
  */
-public interface SqlTable extends SqlObject {
+public class DataBaseActuationException extends Exception {
     
-    int columnsQty();
+    public DataBaseActuationException(String msg) {
+        super(msg);
+    }
 }

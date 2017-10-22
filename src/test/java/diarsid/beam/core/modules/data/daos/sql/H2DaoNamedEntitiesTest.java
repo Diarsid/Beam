@@ -20,14 +20,12 @@ import testing.embedded.base.h2.TestDataBase;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataBaseActuator;
+import diarsid.beam.core.base.data.DataBaseModel;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
-import diarsid.beam.core.modules.data.DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -38,13 +36,14 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.jdbc.transactions.core.Params.params;
-import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 
 /**
  *
@@ -64,18 +63,20 @@ public class H2DaoNamedEntitiesTest {
     }
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         prepareComponents();        
         prepareDataBase();
         setupTestData();
     }
 
-    private static void prepareDataBase() {
-        SqlDataBaseModel model = new H2DataBaseModel();
-        SqlDataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, dataBase);
-        DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
-        List<String> reports = verifier.verify(dataBase, model); 
+    private static void prepareDataBase() throws Exception {
+        DataBaseModel dataBaseModel = new H2DataBaseModel();
+        
+        DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
+        
+        List<String> reports = actuator.actuateAndGetReport();
         reports.stream().forEach(report -> logger.info(report));
+        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).objects().size());
     }
 
     private static void prepareComponents() {

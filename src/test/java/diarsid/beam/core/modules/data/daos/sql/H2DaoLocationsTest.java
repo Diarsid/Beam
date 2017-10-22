@@ -26,7 +26,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 

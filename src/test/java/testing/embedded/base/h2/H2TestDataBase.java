@@ -15,12 +15,15 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import diarsid.beam.core.base.data.DataBaseType;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;
 import diarsid.jdbc.transactions.core.JdbcPreparedStatementSetter;
 import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
 import diarsid.jdbc.transactions.core.JdbcTransactionGuard;
 
 import static java.lang.String.format;
+
+import static diarsid.beam.core.base.data.DataBaseType.SQL;
 
 
 /**
@@ -103,5 +106,10 @@ public class H2TestDataBase implements TestDataBase {
     @Override
     public void disconnect() {
         this.jdbcTransactionFactory.close();
+    }
+
+    @Override
+    public DataBaseType type() {
+        return SQL;
     }
 }

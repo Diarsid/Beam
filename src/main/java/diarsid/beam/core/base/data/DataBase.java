@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.modules.data;
+package diarsid.beam.core.base.data;
 
 import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
 
@@ -16,5 +16,7 @@ public interface DataBase {
     JdbcTransactionFactory transactionFactory();
     
     void disconnect();
+    
+    DataBaseType type();
     
 }

@@ -5,9 +5,12 @@
  */
 package diarsid.beam.core.modules.data.database.sql;
 
+import diarsid.beam.core.base.data.SqlObjectType;
+import diarsid.beam.core.base.data.SqlConstraint;
+
 import java.util.Objects;
 
-import static diarsid.beam.core.modules.data.database.sql.SqlObjectType.CONSTRAINT;
+import static diarsid.beam.core.base.data.SqlObjectType.CONSTRAINT;
 
 /**
  *

@@ -23,13 +23,11 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
+import diarsid.beam.core.base.data.DataBaseActuator;
+import diarsid.beam.core.base.data.DataBaseModel;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.modules.data.DaoCommands;
-import diarsid.beam.core.modules.data.DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseInitializer;
 import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseVerifier;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseInitializer;
-import diarsid.beam.core.modules.data.database.sql.SqlDataBaseModel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,6 +40,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
+import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -55,7 +54,7 @@ public class H2DaoCommandsTest {
     
     static DaoCommands dao;
     static Initiator initiator;
-    static TestDataBase base;
+    static TestDataBase dataBase;
     static InnerIoEngine ioEngine;
     
 
@@ -63,22 +62,24 @@ public class H2DaoCommandsTest {
     }
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         initiator = new Initiator(41);
-        base = new H2TestDataBase("commands-test");
+        dataBase = new H2TestDataBase("commands-test");
         ioEngine = mock(InnerIoEngine.class);
         
-        dao = new H2DaoCommands(base, ioEngine);
-        SqlDataBaseModel model = new H2DataBaseModel();
-        SqlDataBaseInitializer initializer = new H2DataBaseInitializer(ioEngine, base);
-        DataBaseVerifier verifier = new H2DataBaseVerifier(initializer);
-        List<String> reports = verifier.verify(base, model); 
+        dao = new H2DaoCommands(dataBase, ioEngine);
+        DataBaseModel dataBaseModel = new H2DataBaseModel();
+        
+        DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
+        
+        List<String> reports = actuator.actuateAndGetReport();
         reports.stream().forEach(report -> logger.info(report));
+        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).objects().size());
     }
     
     @Before
     public void setupCase() throws Exception {
-        base.transactionFactory()
+        dataBase.transactionFactory()
                 .createDisposableTransaction()
                 .doBatchUpdateVarargParams(
                         "INSERT INTO commands ( com_type, com_original, com_extended ) " +
@@ -115,7 +116,7 @@ public class H2DaoCommandsTest {
     
     @After
     public void clearCase() throws Exception {
-        base.transactionFactory()
+        dataBase.transactionFactory()
                 .createDisposableTransaction()
                 .doUpdate("DELETE FROM commands");
     }
@@ -269,9 +270,9 @@ public class H2DaoCommandsTest {
     public void testSave() {
         RunProgramCommand command = new RunProgramCommand("exc", "Util/Excel", NEW, TARGET_FOUND);
         
-        int before = base.countRowsInTable("commands");
+        int before = dataBase.countRowsInTable("commands");
         boolean saved = dao.save(initiator, command);
-        int after = base.countRowsInTable("commands");
+        int after = dataBase.countRowsInTable("commands");
         
         assertTrue(saved);
         assertEquals(before + 2, after); // commands save its both versions original:extended and extended:extended
@@ -284,16 +285,16 @@ public class H2DaoCommandsTest {
     public void testDelete() {
         RunProgramCommand command = new RunProgramCommand("exc", "Util/Excel", NEW, TARGET_FOUND);
         
-        int before = base.countRowsInTable("commands");
+        int before = dataBase.countRowsInTable("commands");
         boolean saved = dao.save(initiator, command);
-        int after = base.countRowsInTable("commands");
+        int after = dataBase.countRowsInTable("commands");
         
         assertTrue(saved);
         assertEquals(before + 2, after); // commands save its both versions original:extended and extended:extended
         
-        int beforeRemoving = base.countRowsInTable("commands");
+        int beforeRemoving = dataBase.countRowsInTable("commands");
         boolean removed = dao.delete(initiator, command);
-        int afterRemoving = base.countRowsInTable("commands");
+        int afterRemoving = dataBase.countRowsInTable("commands");
         
         assertTrue(removed);
         assertEquals(beforeRemoving - 2, afterRemoving); // commands save its both versions original:extended and extended:extended
@@ -304,9 +305,9 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testDeleteByExactOriginalOfAllTypes() {
-        int before = base.countRowsInTable("commands");
+        int before = dataBase.countRowsInTable("commands");
         boolean removed = dao.deleteByExactOriginalOfAllTypes(initiator, "netb");
-        int after = base.countRowsInTable("commands");
+        int after = dataBase.countRowsInTable("commands");
         
         assertTrue(removed);
         assertEquals(before - 2, after);
@@ -317,9 +318,9 @@ public class H2DaoCommandsTest {
      */
     @Test
     public void testDeleteByExactOriginalOfType() {
-        int before = base.countRowsInTable("commands");
+        int before = dataBase.countRowsInTable("commands");
         boolean removed = dao.deleteByExactOriginalOfType(initiator, "netb", RUN_PROGRAM);
-        int after = base.countRowsInTable("commands");
+        int after = dataBase.countRowsInTable("commands");
         
         assertTrue(removed);
         assertEquals(before - 1, after);

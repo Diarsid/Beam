@@ -10,6 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.data.DataBaseType;
+import diarsid.beam.core.base.data.SqlConstraint;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
+import diarsid.beam.core.base.data.SqlObject;
+import diarsid.beam.core.base.data.SqlTable;
+
+import static diarsid.beam.core.base.data.DataBaseType.SQL;
+
 
 public class H2DataBaseModel implements SqlDataBaseModel {
     
@@ -159,6 +167,14 @@ public class H2DataBaseModel implements SqlDataBaseModel {
     public List<SqlConstraint> constraints() {
         return this.constraints;
     }
+    
+    @Override
+    public List<SqlObject> objects() {
+        ArrayList<SqlObject> objects = new ArrayList<>();
+        objects.addAll(this.tables);
+        objects.addAll(this.constraints);
+        return objects;
+    }
 
     @Override
     public Optional<SqlTable> table(String name) {
@@ -166,5 +182,10 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 .stream()
                 .filter(table -> table.name().equalsIgnoreCase(name))
                 .findFirst();
+    }
+    
+    @Override
+    public DataBaseType type() {
+        return SQL;
     }
 }
