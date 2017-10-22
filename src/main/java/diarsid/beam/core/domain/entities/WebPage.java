@@ -15,9 +15,11 @@ import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.data.Loadable;
 
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
@@ -53,7 +55,8 @@ public class WebPage
     private int pageOrder;
     
     // directory info page belongs to
-    private final int directoryId;   
+    private final int directoryId;      
+    private transient Loadable<WebDirectory> loadableDirectory;
         
     WebPage(
             String name, 
@@ -93,6 +96,10 @@ public class WebPage
     @Override
     public int order() {
         return this.pageOrder;
+    }
+    
+    public void setLoadableDirectory(Loadable<WebDirectory> loadableDirectory) {
+        this.loadableDirectory = loadableDirectory;
     }
     
     public void browseAsync(
@@ -140,11 +147,21 @@ public class WebPage
     public Message toMessage() {
         List<String> message = new ArrayList<>();
         message.add(this.name);
-        message.add("  url:   " + this.url);
+        message.add("  url       " + this.url);
         if ( nonEmpty(this.shortcuts) ) {
-            message.add("  alias: " + this.shortcuts);            
+            message.add("  alias     " + this.shortcuts);            
         }
-        message.add("  order: " + this.pageOrder);
+        if ( nonNull(this.loadableDirectory) ) {
+            this.loadableDirectory
+                    .load()
+                    .ifPresent(directory -> {
+                        message.add(format(
+                                "  directory %s > %s", 
+                                directory.place().displayName(), 
+                                directory.name()));
+                    });
+        }
+        message.add("  order     " + this.pageOrder);
         return new TextMessage(message);
     } 
     

@@ -11,9 +11,10 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.data.DaoWebPages;
-import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.daos.BeamCommonDao;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
@@ -26,12 +27,14 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
 import static diarsid.beam.core.modules.data.daos.sql.RowToEntityConversions.ROW_TO_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -43,6 +46,32 @@ class H2DaoWebPages
     
     H2DaoWebPages(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
+    }
+    
+    private void setLoadableDirectoryFor(Initiator initiator, WebPage webPage) {
+        webPage.setLoadableDirectory(()-> {
+            try {
+                return super.openDisposableTransaction()
+                        .doQueryAndConvertFirstRowVarargParams(
+                                WebDirectory.class, 
+                                "SELECT id, name, place, ordering " +
+                                "FROM web_directories " +
+                                "WHERE ( id IS ? ) ", 
+                                ROW_TO_WEBDIRECTORY,
+                                webPage.directoryId());
+            } catch (TransactionHandledSQLException|TransactionHandledException e) {
+                logError(H2DaoWebPages.class, e);
+                super.ioEngine().report(
+                        initiator, "Cannot find WebDirectory by id " + webPage.directoryId());
+                return Optional.empty();
+            }
+        });
+    }
+    
+    private void setLoadableDirectoryFor(Initiator initiator, Optional<WebPage> webPage) {
+        if ( webPage.isPresent() ) {
+            this.setLoadableDirectoryFor(initiator, webPage.get());
+        }
     }
 
     @Override
@@ -92,13 +121,15 @@ class H2DaoWebPages
     public Optional<WebPage> getByExactName(
             Initiator initiator, String name) {
         try {
-            return super.openDisposableTransaction()
+            Optional<WebPage> page = super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
                             ROW_TO_WEBPAGE,
                             lower(name));
+            this.setLoadableDirectoryFor(initiator, page);
+            return page;
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return Optional.empty();
@@ -121,6 +152,7 @@ class H2DaoWebPages
                             ROW_TO_WEBPAGE, 
                             lowerWildcardPattern, lowerWildcardPattern)
                     .sorted()
+                    .peek(page -> this.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             
             if ( nonEmpty(pages) ) {
@@ -137,7 +169,8 @@ class H2DaoWebPages
                                     " OR " + 
                                     multipleLowerLikeAnd("shortcuts", criterias.size()), 
                             ROW_TO_WEBPAGE, 
-                            criterias, criterias)
+                            criterias, criterias)                    
+                    .peek(page -> this.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             
             if ( nonEmpty(pages) ) {
@@ -158,7 +191,8 @@ class H2DaoWebPages
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
                             ROW_TO_WEBPAGE, 
-                            criterias, criterias)
+                            criterias, criterias)                    
+                    .peek(page -> this.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             
             shift(criterias);
@@ -172,7 +206,8 @@ class H2DaoWebPages
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
                             ROW_TO_WEBPAGE, 
-                            criterias, criterias)
+                            criterias, criterias)                    
+                    .peek(page -> this.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             
             shiftedPages.retainAll(pages);
@@ -198,6 +233,7 @@ class H2DaoWebPages
                             ROW_TO_WEBPAGE,
                             directoryId)
                     .sorted()
+                    .peek(page -> this.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

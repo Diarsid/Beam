@@ -93,8 +93,8 @@ public class Program
     public Message toMessage() {
         return new TextMessage(INFO, 
                 this.toString(), 
-                "  file: " + this.fileName, 
-                "  path: " + normalizeSeparators(this.programsCatalog.path().toString()));
+                "  file " + this.fileName, 
+                "  path " + normalizeSeparators(this.programsCatalog.path().toString()));
     }   
 
     @Override
