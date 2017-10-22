@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -18,19 +19,15 @@ import diarsid.beam.core.modules.DataModule;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.nameIsSatisfiable;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-
-import diarsid.beam.core.base.control.flow.ValueFlow;
-
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 
 
 class AllKeeperWorker implements AllKeeper {
@@ -84,6 +81,7 @@ class AllKeeperWorker implements AllKeeper {
         }        
         return linesToOptionalMessageWithHeader("Commands:", commands
                 .stream()
+                .filter(command -> nameIsSatisfiable(argument, command.bestArgument()))
                 .map(command -> command.toMessageString())
                 .collect(toList()));
     }
@@ -93,6 +91,7 @@ class AllKeeperWorker implements AllKeeper {
                 .locations()
                 .getLocationsByNamePattern(initiator, argument)
                 .stream()
+                .filter(location -> entityIsSatisfiable(argument, location))
                 .map(location -> location.name())
                 .collect(toList()));
     }
@@ -100,7 +99,10 @@ class AllKeeperWorker implements AllKeeper {
     private Optional<Message> collectBatches(Initiator initiator, String argument) {
         return linesToOptionalMessageWithHeader("Batches:", this.data
                 .batches()
-                .getBatchNamesByNamePattern(initiator, argument));
+                .getBatchNamesByNamePattern(initiator, argument)
+                .stream()
+                .filter(batchName -> nameIsSatisfiable(argument, batchName))
+                .collect(toList()));
     }
     
     private Optional<Message> collectWebPages(Initiator initiator, String argument) {
@@ -108,6 +110,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webPages()
                 .findByPattern(initiator, argument)
                 .stream()
+                .filter(page -> entityIsSatisfiable(argument, page))
                 .map(page -> page.name())
                 .collect(toList()));
     }
@@ -117,6 +120,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webDirectories()
                 .findDirectoriesByPatternInAnyPlace(initiator, argument)
                 .stream()
+                .filter(webDir -> nameIsSatisfiable(argument, webDir.name()))
                 .map(webDir -> format("%s (%s)", webDir.name(), lower(webDir.place().name())))
                 .collect(toList()));
     }
@@ -125,6 +129,7 @@ class AllKeeperWorker implements AllKeeper {
         return linesToOptionalMessageWithHeader("Programs:", this.programs
                 .getProgramsByPattern(initiator, argument)
                 .stream()
+                .filter(program -> entityIsSatisfiable(argument, program))
                 .map(program -> program.name())
                 .collect(toList()));
     }
