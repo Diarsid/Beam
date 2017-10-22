@@ -17,9 +17,9 @@ import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.modules.data.daos.sql.H2DaosProvider;
-import diarsid.beam.core.modules.data.database.sql.H2DataBase;
-import diarsid.beam.core.modules.data.database.sql.H2DataBaseModel;
+import diarsid.beam.core.modules.data.sql.daos.H2DaosProvider;
+import diarsid.beam.core.modules.data.sql.database.H2DataBase;
+import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
