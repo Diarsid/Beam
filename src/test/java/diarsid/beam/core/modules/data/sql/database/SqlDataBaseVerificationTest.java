@@ -7,8 +7,6 @@
 package diarsid.beam.core.modules.data.sql.database;
 
 
-import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
-
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -55,7 +53,7 @@ public class SqlDataBaseVerificationTest {
         
         List<String> reports = actuator.actuateAndGetReport();
         reports.stream().forEach(report -> logger.info(report));
-        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).tables().size());
+        assertEquals(reports.size(), ((SqlDataBaseModel) dataBaseModel).objects().size());
     }
     
     @AfterClass

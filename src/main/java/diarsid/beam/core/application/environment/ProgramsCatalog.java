@@ -23,4 +23,6 @@ public interface ProgramsCatalog extends Catalog {
     List<Program> findProgramsByWholePattern(String pattern);
     
     List<Program> findProgramsByStrictName(String strictName);
+    
+    List<Program> getAll();
 }

@@ -18,6 +18,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
@@ -43,6 +44,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
@@ -60,10 +62,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 
-class BatchesKeeperWorker 
-        implements 
-                BatchesKeeper, 
-                NamedEntitiesKeeper {
+class BatchesKeeperWorker implements BatchesKeeper {
     
     private final DaoBatches dao;
     private final CommandsMemoryKeeper commandsMemory;
@@ -579,5 +578,11 @@ class BatchesKeeperWorker
         } else {
             return voidFlowFail("DAO failed to remove batch");
         }      
+    }
+
+    @Override
+    public ValueFlow<Message> showAll(Initiator initiator) {
+        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+                    "all Batches:", this.dao.getAllBatches(initiator)));       
     }
 }

@@ -14,6 +14,9 @@ import java.util.List;
  * @author Diarsid
  */
 interface FilesCollector {
+    
+    List<String> collectAll(
+            Path root, FileSearchMode mode) throws IOException;
 
     List<String> collectByNamePatternSimilarity(
             Path root, String nameToFind, FileSearchMode mode) throws IOException;

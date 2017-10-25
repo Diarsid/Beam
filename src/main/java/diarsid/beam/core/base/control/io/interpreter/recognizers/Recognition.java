@@ -79,6 +79,11 @@ public class Recognition {
         return new DomainWordRecognizer();
     }
     
+    public static WordRecognizer mediatoryControlWord(String controlWord) {
+        CONTEXT.add(controlWord);
+        return new WordRecognizer(NOT_TOLERATE_EMPTY_ARGS, EXPECTS_MORE_ARGS, controlWord);
+    }
+    
     public static WordRecognizer controlWord(String controlWord) {        
         CONTEXT.add(controlWord);
         return new WordRecognizer(TOLERATE_EMPTY_ARGS, EXPECTS_MORE_ARGS, controlWord);

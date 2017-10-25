@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -27,6 +28,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
@@ -37,10 +39,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 
-class ProgramsKeeperWorker 
-        implements 
-                ProgramsKeeper, 
-                NamedEntitiesKeeper {
+class ProgramsKeeperWorker implements ProgramsKeeper {
     
     private final InnerIoEngine ioEngine;
     private final ProgramsCatalog programsCatalog;
@@ -157,5 +156,11 @@ class ProgramsKeeperWorker
         } else {
             return this.programsCatalog.findProgramsByPatternSimilarity(pattern);
         }
+    }
+
+    @Override
+    public ValueFlow<Message> showAll(Initiator initiator) {
+        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+                    "all Programs:", this.programsCatalog.getAll()));
     }
 }

@@ -55,6 +55,10 @@ abstract class SearcheableCatalog {
         return this.fileSearcher.find(pattern, this.catalogPath, SIMILAR_MATCH, FILES_ONLY);
     }
     
+    protected FileSearchResult findAllFilesInCatalog() {
+        return this.fileSearcher.findAll(this.catalogPath, FILES_ONLY);
+    }
+    
     protected Path getPath() {
         return this.catalogPath;
     }

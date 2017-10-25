@@ -7,17 +7,17 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
  * @author Diarsid
  */
-public interface LocationsKeeper extends NamedEntitiesKeeper {
+public interface LocationsKeeper extends NamedEntitiesKeeper<Location> {
     
     @Override
     ValueFlow<Location> findByExactName(
@@ -44,7 +44,4 @@ public interface LocationsKeeper extends NamedEntitiesKeeper {
     
     VoidFlow replaceInPaths(
             Initiator initiator, String replaceable, String replacement);
-            
-    List<Location> getAllLocations(
-            Initiator initiator);
 }

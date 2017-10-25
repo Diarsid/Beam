@@ -181,7 +181,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
     
-    private ValueFlow<? extends NamedEntity> findNamedEntity(
+    private ValueFlow<NamedEntity> findNamedEntity(
             Initiator initiator, InvocationCommand command) {
         if ( command.argument().isNotExtended() ) {
             VoidFlow flow = this.domain
@@ -199,7 +199,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }
         if ( command.argument().isExtended() ) {
-            ValueFlow<? extends NamedEntity> entityFlow = this.domain
+            ValueFlow<NamedEntity> entityFlow = this.domain
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
             switch ( entityFlow.result() ) {
@@ -232,10 +232,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private ValueFlow<? extends NamedEntity> findNamedEntityByNamePattern(
+    private ValueFlow<NamedEntity> findNamedEntityByNamePattern(
             Initiator initiator, InvocationCommand command) {
         command.setNew();
-        ValueFlow<? extends NamedEntity> entityFlow = this.domain
+        ValueFlow<NamedEntity> entityFlow = this.domain
                 .entitiesOperatedBy(command)
                 .findByNamePattern(initiator, command.argument().original());
         switch ( entityFlow.result() ) {
@@ -260,7 +260,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
 
-    private ValueFlow<? extends NamedEntity> tryToFindEntityInExtendedCommands(
+    private ValueFlow<NamedEntity> tryToFindEntityInExtendedCommands(
             Initiator initiator, InvocationCommand command) {
         VoidFlow flow = this.domain.commandsMemory()
                 .tryToExtendCommandByPattern(initiator, command);
@@ -275,7 +275,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }
         if ( command.argument().isExtended() ) {
-            ValueFlow<? extends NamedEntity> entityFlow = this.domain
+            ValueFlow<NamedEntity> entityFlow = this.domain
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
             switch ( entityFlow.result() ) {
@@ -401,7 +401,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     @Override
     public void openLocation(
             Initiator initiator, OpenLocationCommand command) {
-        ValueFlow<? extends NamedEntity> entityFlow = this.findNamedEntity(initiator, command);
+        ValueFlow<NamedEntity> entityFlow = this.findNamedEntity(initiator, command);
         switch ( entityFlow.result() ) {
             case COMPLETE : {
                 if ( entityFlow.asComplete().hasValue() ) {
@@ -736,7 +736,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void runProgram(Initiator initiator, RunProgramCommand command) {
-        ValueFlow<? extends NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
+        ValueFlow<NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
         switch ( valueFlow.result() ) {
             case COMPLETE : {
                 if ( valueFlow.asComplete().hasValue() ) {
@@ -783,7 +783,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void callBatch(Initiator initiator, CallBatchCommand command) {
-        ValueFlow<? extends NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
+        ValueFlow<NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
         switch ( valueFlow.result() ) {
             case COMPLETE : {
                 if ( valueFlow.asComplete().hasValue() ) {
@@ -816,7 +816,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void browsePage(Initiator initiator, BrowsePageCommand command) {
-        ValueFlow<? extends NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
+        ValueFlow<NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
         switch ( valueFlow.result() ) {
             case COMPLETE : {
                 if ( valueFlow.asComplete().hasValue() ) {
@@ -880,7 +880,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void executeDefault(Initiator initiator, ExecutorDefaultCommand command) {
         debug("[EXECUTOR] [executeDefault] : " + command.argument());
         debug("[EXECUTOR] [executeDefault] find entity by exact name: " + command.argument());
-        ValueFlow<? extends NamedEntity> entityFlow = this.domain
+        ValueFlow<NamedEntity> entityFlow = this.domain
                 .allEntities()
                 .findByExactName(initiator, command.argument());
         switch ( entityFlow.result() ) {
@@ -950,7 +950,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void findAndInvokeAnyNamedEntity(
             Initiator initiator, ExecutorDefaultCommand command) {
         debug("[EXECUTOR] [executeDefault] [find and invoke any entity by] : " + command.argument());
-        ValueFlow<? extends NamedEntity> entityFlow = 
+        ValueFlow<NamedEntity> entityFlow = 
                 this.findNamedEntityByArgument(initiator, command.argument());
         switch ( entityFlow.result() ) {
             case COMPLETE : {
@@ -989,9 +989,9 @@ class ExecutorModuleWorker implements ExecutorModule {
         }
     }
     
-    private ValueFlow<? extends NamedEntity> findNamedEntityByArgument(
+    private ValueFlow<NamedEntity> findNamedEntityByArgument(
             Initiator initiator, String argument) {
-        ValueFlow<? extends NamedEntity> valueFlow = this.domain
+        ValueFlow<NamedEntity> valueFlow = this.domain
                 .allEntities()
                 .findByExactName(initiator, argument);
         switch ( valueFlow.result() ) {

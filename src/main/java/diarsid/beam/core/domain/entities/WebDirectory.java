@@ -120,7 +120,7 @@ public class WebDirectory
     @Override
     public Message toMessage() {
         return new TextMessage(format(
-                "%s (%s, %d) ", this.name, lower(this.place.name()), this.order));
+                "%s > %s (order: %d)", this.place.displayName(), this.name, this.order));
     }
     
     public boolean isNew() {

@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.sql.daos;
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoNamedEntities;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +27,6 @@ import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
 import diarsid.jdbc.transactions.JdbcTransaction;
-import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
-import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,6 +41,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
+import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**
@@ -89,7 +86,7 @@ public class H2DaoNamedEntitiesTest {
         dao = new H2DaoNamedEntities(dataBase, ioEngine, programsCatalog);
     }
     
-    private static void setupTestData() {
+    private static void setupTestData() throws Exception {
         try (JdbcTransaction transact = dataBase.transactionFactory().createTransaction()) {
             
             transact
@@ -103,10 +100,26 @@ public class H2DaoNamedEntitiesTest {
                             params("paint_workspace", "D:/hobby/painting/workspace"));
             
             transact
+                    .doUpdate(
+                            "INSERT INTO web_directories ( name, ordering, place ) " +
+                            "VALUES ( ?, ?, ? ) ", 
+                            params("Common", 0, WEBPANEL));
+            
+            int dirId = transact
+                    .doQueryAndConvertFirstRowVarargParams(
+                            Integer.class, 
+                            "SELECT id FROM web_directories WHERE name IS ? ", 
+                            (row) -> {
+                                return (Integer) row.get("id");
+                            }, 
+                            "Common")
+                    .get();
+            
+            transact
                     .doBatchUpdateVarargParams(
                             "INSERT INTO web_pages (name, url, shortcuts, ordering, dir_id) " +
                             "VALUES ( ?, ?, ?, ?, ? )", 
-                            params("tomcat_deploy", "http://some/fake/url", "tomcat server apps", 0, 1343));
+                            params("tomcat_deploy", "http://some/fake/url", "tomcat server apps", 0, dirId));
             
             transact
                     .doBatchUpdateVarargParams(
@@ -117,7 +130,8 @@ public class H2DaoNamedEntitiesTest {
                             params("open_space"));
             
             int[] modified = transact
-                    .doBatchUpdateVarargParams("INSERT INTO batch_commands (" +
+                    .doBatchUpdateVarargParams(
+                            "INSERT INTO batch_commands (" +
                             "       bat_name, " +
                             "       bat_command_type, " +
                             "       bat_command_order, " +
@@ -139,11 +153,7 @@ public class H2DaoNamedEntitiesTest {
                 throw new IllegalArgumentException();
             }
             
-            
-            
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-        }        
+        }       
     }
 
     /**

@@ -15,12 +15,13 @@ import java.util.function.Function;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchedCommand;
-import diarsid.beam.core.modules.data.DaoBatches;
-import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -39,11 +40,8 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.jdbc.transactions.core.Params.params;
-
-import diarsid.jdbc.transactions.RowConversion;
-
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
+import static diarsid.jdbc.transactions.core.Params.params;
 
 
 class H2DaoBatches 
@@ -247,25 +245,38 @@ class H2DaoBatches
     public boolean removeBatch(Initiator initiator, String batchName) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
-            boolean nameRemoved = transact
+            boolean batchExists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT bat_name " +
+                            "FROM batches " + 
+                            "WHERE LOWER(bat_name) IS ? ",
+                            lower(batchName));
+            
+            if ( !batchExists ) {                
+                return false;
+            }
+            
+            boolean commandsRemoved = transact
+                    .doUpdateVarargParams(
+                            "DELETE FROM batch_commands " +
+                            "WHERE bat_name IS ? ",
+                            batchName)
+                    > 0; 
+            
+            boolean nameRemoved = transact                    
+                    .ifTrue( commandsRemoved )
                     .doUpdateVarargParams(
                             "DELETE FROM batches " +
                             "WHERE bat_name IS ? ",
                             batchName) 
                     == 1;
             
-            int commandsRemoved = transact
-                    .ifTrue( nameRemoved )
-                    .doUpdateVarargParams(
-                            "DELETE FROM batch_commands " +
-                            "WHERE bat_name IS ? ",
-                            batchName); 
-            
-            transact
-                    .ifTrue( commandsRemoved < 1 )
-                    .rollbackAndProceed();
-            
-            return ( nameRemoved && commandsRemoved > 0 );
+            if ( nameRemoved && commandsRemoved ) {
+                return true;
+            } else {
+                transact.rollbackAndProceed();
+                return false;
+            }
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoBatches.class, ex);
             super.ioEngine().report(initiator, "batch removing failed.");

@@ -26,8 +26,11 @@ public interface DaoWebPages {
     List<WebPage> findByPattern(
             Initiator initiator, String pattern);
     
-    List<WebPage> allFromDirectory(
+    List<WebPage> getAllFromDirectory(
             Initiator initiator, int directoryId);
+    
+    List<WebPage> getAll(
+            Initiator initiator);
     
     boolean save(
             Initiator initiator, WebPage page);

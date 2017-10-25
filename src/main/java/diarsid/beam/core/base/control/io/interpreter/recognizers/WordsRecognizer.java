@@ -17,6 +17,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.hasStrictSimilar;
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectCommand;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.EXPECTS_MORE_ARGS;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.EmptyArgsTolerance.TOLERATE_EMPTY_ARGS;
@@ -59,7 +60,11 @@ public class WordsRecognizer extends NodeRecognizer {
                             return undefinedCommand();
                         }
                     } else {
-                        return undefinedCommand();
+                        if ( this.currentArgIsControlWord(input) ) {
+                            return incorrectCommand();
+                        } else {
+                            return undefinedCommand();
+                        }
                     }
                 }
             } else {

@@ -5,20 +5,23 @@
  */
 package diarsid.beam.core.modules.domainkeeper;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
  * @author Diarsid
  */
-public interface NamedEntitiesKeeper {
+public interface NamedEntitiesKeeper <T extends NamedEntity> {
     
-    ValueFlow<? extends NamedEntity> findByExactName(Initiator initiator, String name);
+    ValueFlow<T> findByExactName(Initiator initiator, String name);
     
-    ValueFlow<? extends NamedEntity> findByNamePattern(Initiator initiator, String pattern);
+    ValueFlow<T> findByNamePattern(Initiator initiator, String pattern);
+    
+    ValueFlow<Message> showAll(Initiator initiator);
     
     boolean isSubjectedTo(InvocationCommand command);
     

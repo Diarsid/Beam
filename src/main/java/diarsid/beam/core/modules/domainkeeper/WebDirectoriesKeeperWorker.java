@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -32,6 +33,7 @@ import diarsid.beam.core.modules.data.DaoWebDirectories;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -39,6 +41,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.notFoundWithJson;
@@ -411,6 +414,18 @@ class WebDirectoriesKeeperWorker
         }
     }    
 
+    @Override
+    public ValueFlow<Message> showAll(Initiator initiator) {
+        List<String> dirs = this.daoDirectories
+                .getAllDirectories(initiator)
+                .stream()
+                .sorted()
+                .map(webDir -> format("%s > %s", webDir.place().displayName(), webDir.name()))
+                .collect(toList());
+        return valueFlowCompletedWith(linesToOptionalMessageWithHeader(
+                "all WebDirectories:", dirs));
+    }
+            
     @Override
     public WebResponse createWebDirectory(WebPlace place, String name) {
         ValidationResult nameValidity = ENTITY_NAME_RULE.applyTo(name);

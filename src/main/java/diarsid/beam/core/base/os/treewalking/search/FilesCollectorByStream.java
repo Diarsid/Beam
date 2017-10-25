@@ -87,6 +87,13 @@ class FilesCollectorByStream implements FilesCollector {
                 .peek(path -> System.out.println(path.toString()))
                 .filter(path -> this.filterSystemFiles(path));
     }
+
+    @Override
+    public List<String> collectAll(Path root, FileSearchMode mode) throws IOException {
+        return this.prepareCollectingPathStream(root, mode)
+                .map(path -> normalizeSeparators(path.toString()))
+                .collect(toList());
+    }
     
     @Override
     public List<String> collectByStrictName(

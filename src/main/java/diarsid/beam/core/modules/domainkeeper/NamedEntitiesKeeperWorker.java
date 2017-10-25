@@ -15,6 +15,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
@@ -25,6 +26,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVarian
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EXECUTOR_DEFAULT;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -36,7 +38,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
  *
  * @author Diarsid
  */
-class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
+class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
     
     private final InnerIoEngine ioEngine;
     private final DaoNamedEntities namedEntitiesDao;
@@ -63,13 +65,13 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
     }
 
     @Override
-    public ValueFlow<? extends NamedEntity> findByExactName(
+    public ValueFlow<NamedEntity> findByExactName(
             Initiator initiator, String name) {
         return valueFlowCompletedWith(this.namedEntitiesDao.getByExactName(initiator, name));
     }
 
     @Override
-    public ValueFlow<? extends NamedEntity> findByNamePattern(
+    public ValueFlow<NamedEntity> findByNamePattern(
             Initiator initiator, String pattern) {
         List<NamedEntity> entities = 
                 this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);        
@@ -87,7 +89,7 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
         }
     }
     
-    private ValueFlow<? extends NamedEntity> manageWithMultipleEntities(
+    private ValueFlow<NamedEntity> manageWithMultipleEntities(
             Initiator initiator, String pattern, List<NamedEntity> entities) {
         WeightedVariants variants = weightVariants(pattern, entitiesToVariants(entities));
         if ( variants.isEmpty() ) {
@@ -106,5 +108,11 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper {
                 return valueFlowCompletedEmpty();
             }
         }
-    }   
+    } 
+
+    @Override
+    public ValueFlow<Message> showAll(Initiator initiator) {
+        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+                    "all named entities:", this.namedEntitiesDao.getAll(initiator)));
+    }
 }

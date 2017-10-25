@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.domain.entities.Task;
 
 import static java.util.stream.Collectors.toList;
@@ -75,6 +76,16 @@ public class Messages {
         } else {
             return Optional.of(new TextMessage(INFO, lines).addHeader(header));
         }
+    }
+    
+    public static Optional<Message> entitiesToOptionalMessageWithHeader(
+            String header, List<? extends NamedEntity> entities) {
+        return linesToOptionalMessageWithHeader(
+                    header, 
+                    entities
+                            .stream()
+                            .map(entity -> entity.name())
+                            .collect(toList()));    
     }
     
     public static Message fromException(Exception e) {

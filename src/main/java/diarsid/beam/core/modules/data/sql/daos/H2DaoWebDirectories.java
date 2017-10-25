@@ -14,13 +14,13 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
-import diarsid.beam.core.modules.data.DaoWebDirectories;
-import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -676,22 +676,23 @@ class H2DaoWebDirectories
                 return false;
             }
             
-            int deleted = transact
-                    .doUpdateVarargParams(
-                            "DELETE FROM web_directories " +
-                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            lower(name), place);
-            
-            if ( deleted != 1 ) {
-                transact.rollbackAndProceed();
-                return false;
-            }
-            
             transact
                     .doUpdateVarargParams(
                             "DELETE FROM web_pages " +
                             "WHERE dir_id IS ? ", 
                             optDirectory.get().id());
+            
+            boolean deleted = transact
+                    .doUpdateVarargParams(
+                            "DELETE FROM web_directories " +
+                            "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
+                            lower(name), place)
+                    == 1;
+            
+            if ( !deleted ) {
+                transact.rollbackAndProceed();
+                return false;
+            }
             
             transact
                     .doUpdateVarargParams(

@@ -14,8 +14,8 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -122,7 +122,8 @@ class H2DaoWebPages
             Initiator initiator, String name) {
         try {
             Optional<WebPage> page = super.openDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(WebPage.class,
+                    .doQueryAndConvertFirstRowVarargParams(
+                            WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
@@ -145,7 +146,8 @@ class H2DaoWebPages
             
             String lowerWildcardPattern = lowerWildcard(pattern);
             List<WebPage> pages = transact
-                    .doQueryAndStreamVarargParams(WebPage.class, 
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
@@ -161,7 +163,8 @@ class H2DaoWebPages
             
             List<String> criterias = patternToCharCriterias(pattern);
             pages = transact
-                    .doQueryAndStreamVarargParams(WebPage.class, 
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " +
@@ -183,7 +186,8 @@ class H2DaoWebPages
                     multipleLowerGroupedLikesOr("shortcuts", criterias.size());
             
             pages = transact
-                    .doQueryAndStreamVarargParams(WebPage.class, 
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " + 
@@ -198,7 +202,8 @@ class H2DaoWebPages
             shift(criterias);
             
             List<WebPage> shiftedPages = transact
-                    .doQueryAndStreamVarargParams(WebPage.class, 
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " + 
@@ -222,11 +227,12 @@ class H2DaoWebPages
     }
 
     @Override
-    public List<WebPage> allFromDirectory(
+    public List<WebPage> getAllFromDirectory(
             Initiator initiator, int directoryId) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndStreamVarargParams(WebPage.class,
+                    .doQueryAndStreamVarargParams(
+                            WebPage.class,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ",
@@ -518,6 +524,22 @@ class H2DaoWebPages
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;
+        }
+    }
+
+    @Override
+    public List<WebPage> getAll(Initiator initiator) {
+        try {
+            return super.openDisposableTransaction()
+                    .doQueryAndStream(
+                            WebPage.class, 
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages ", 
+                            ROW_TO_WEBPAGE)
+                    .collect(toList());
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            
+            return emptyList();
         }
     }
     

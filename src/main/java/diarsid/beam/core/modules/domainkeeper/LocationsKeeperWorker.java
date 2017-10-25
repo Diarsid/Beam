@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
@@ -41,6 +42,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
@@ -64,10 +66,7 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_
 
 
 
-class LocationsKeeperWorker 
-        implements 
-                LocationsKeeper, 
-                NamedEntitiesKeeper {
+class LocationsKeeperWorker implements LocationsKeeper {
     
     private final DaoLocations daoLocations;
     private final CommandsMemoryKeeper commandsMemory;
@@ -452,7 +451,8 @@ class LocationsKeeperWorker
     }
 
     @Override
-    public List<Location> getAllLocations(Initiator initiator) {
-        return this.daoLocations.getAllLocations(initiator);
+    public ValueFlow<Message> showAll(Initiator initiator) {
+        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+                    "all Locations:", this.daoLocations.getAllLocations(initiator)));
     }
 }

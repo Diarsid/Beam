@@ -54,6 +54,30 @@ class FileSearcherService implements FileSearcher {
             String target, Path location, FileSearchMatching matching, FileSearchMode mode) {
         return this.doSearch(target, location, matching, mode);
     }
+
+    @Override
+    public FileSearchResult findAll(Path location, FileSearchMode mode) {
+        try {
+            if ( pathIsDirectory(location) ) {
+                List<String> foundItems = this.filesCollector.collectAll(location, mode);
+                if ( foundItems.isEmpty() ) {
+                    return failWithTargetNotFoundFailure();
+                } else {
+                    return successWithFiles(foundItems);
+                }            
+            } else {
+                return failWithInvalidLocationFailure();
+            }
+        } catch (AccessDeniedException e) {
+            String message = this.accessDeniedMessageFor(location);
+            logError(this.getClass(), message, e);
+            return failWithTargetInvalidMessage(message);
+        } catch (IOException e) {
+            String message = this.ioExceptionMessageFor(location);
+            logError(this.getClass(), message, e);
+            return failWithTargetInvalidMessage(message);
+        }        
+    }
     
     private FileSearchResult doSearch(
             String target, Path location, FileSearchMatching matching, FileSearchMode mode) {
@@ -206,8 +230,16 @@ class FileSearcherService implements FileSearcher {
         return "java.nio.file.Files.walkFileTree() -> Unknown IOExceoption with " + 
                 nameToFind + " in " + root.toString();
     }
+    
+    private String ioExceptionMessageFor(Path root) {
+        return "java.nio.file.Files.walkFileTree() -> Unknown IOExceoption with " + root.toString();
+    }
 
     private String accessDeniedMessageFor(String nameToFind, Path root) {
         return "Access denied to " + nameToFind + " in " + root.toString();
+    }
+    
+    private String accessDeniedMessageFor(Path root) {
+        return "Access denied to " + root.toString();
     }
 }

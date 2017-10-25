@@ -14,14 +14,14 @@ import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.domain.entities.Program;
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.modules.data.DaoNamedEntities;
-import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
@@ -72,32 +72,42 @@ class H2DaoNamedEntities
         this.namedEntityComparator = new NamedEntityComparator();
     }
     
-    private Optional<? extends NamedEntity> findRealEntityUsing(
+    private Optional<NamedEntity> findRealEntityUsing(
             NamedEntity mockedEntity, JdbcTransaction transact)
             throws TransactionHandledSQLException, TransactionHandledException {
         String name = mockedEntity.name();
+        NamedEntity entity;
+        
         switch ( mockedEntity.type() ) {
             case LOCATION : {
-                return transact.doQueryAndConvertFirstRowVarargParams(
-                        Location.class, 
-                        "SELECT loc_name, loc_path " +
-                        "FROM locations " +
-                        "WHERE ( LOWER(loc_name) IS ? ) ",
-                        ROW_TO_LOCATION, 
-                        lower(name));
+                entity = transact
+                        .doQueryAndConvertFirstRowVarargParams(
+                                Location.class, 
+                                "SELECT loc_name, loc_path " +
+                                "FROM locations " +
+                                "WHERE ( LOWER(loc_name) IS ? ) ",
+                                ROW_TO_LOCATION, 
+                                lower(name))
+                        .orElse(null);
+                break;
             }        
             case WEBPAGE : {
-                return transact.doQueryAndConvertFirstRowVarargParams(
-                        WebPage.class,
-                        "SELECT name, shortcuts, url, ordering, dir_id " +
-                        "FROM web_pages " +
-                        "WHERE ( LOWER(name) IS ? )", 
-                        ROW_TO_WEBPAGE,
-                        lower(name));
+                entity = transact
+                        .doQueryAndConvertFirstRowVarargParams(
+                                WebPage.class,
+                                "SELECT name, shortcuts, url, ordering, dir_id " +
+                                "FROM web_pages " +
+                                "WHERE ( LOWER(name) IS ? )", 
+                                ROW_TO_WEBPAGE,
+                                lower(name))
+                        .orElse(null);
+                break;
             }        
             case PROGRAM : {
-                debug("[ALL ENTITIES DAO] [find real program] " + name);
-                return this.programsCatalog.findProgramByDirectName(name);
+                entity = this.programsCatalog
+                        .findProgramByDirectName(name)
+                        .orElse(null);
+                break;
             }        
             case BATCH : {
                 String lowerName = lower(name);
@@ -121,15 +131,19 @@ class H2DaoNamedEntities
                         .collect(toList());
 
                 if ( batchExists && nonEmpty(commands) ) {
-                    return Optional.of(new Batch(name, commands));
+                    entity = new Batch(name, commands);
                 } else {
-                    return Optional.empty();
+                    entity = null;
                 }
+                break;
             }        
             default : {
-                return Optional.empty();
+                entity = null;
+                break;
             }            
         }
+        
+        return Optional.of(entity);
     }
     
     private List<NamedEntity> collectRealEntitiesUsing(
@@ -145,7 +159,7 @@ class H2DaoNamedEntities
     }
 
     @Override
-    public Optional<? extends NamedEntity> getByExactName(
+    public Optional<NamedEntity> getByExactName(
             Initiator initiator, String exactName) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
@@ -346,6 +360,41 @@ class H2DaoNamedEntities
             logError(H2DaoNamedEntities.class, ex);
             super.ioEngine().report(
                     initiator, "named entities obtaining by name pattern failed.");
+            return emptyList();
+        }
+    }
+
+    @Override
+    public List<NamedEntity> getAll(Initiator initiator) {
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            List<NamedEntity> entityMasks;
+            
+            entityMasks = transact
+                    .doQueryAndStream(
+                            NamedEntity.class,
+                            "SELECT loc_name AS entity_name, 'location' AS entity_type " +
+                            "FROM locations " +
+                            "WHERE LOWER(loc_name) LIKE ? " +
+                            "       UNION ALL " +
+                            "SELECT bat_name, 'batch' " +
+                            "FROM batches " +
+                            "WHERE LOWER(bat_name) LIKE ? " +
+                            "       UNION ALL " +
+                            "SELECT name, 'webpage' " +
+                            "FROM web_pages " +
+                            "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? )", 
+                            this.rowToNamedEntityMask)
+                    .collect(toList());
+            
+            entityMasks.addAll(this.programsCatalog.getAll());
+            
+            return entityMasks;
+            
+        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+            logError(H2DaoNamedEntities.class, ex);
+            super.ioEngine().report(
+                    initiator, "cannot get all named entities.");
             return emptyList();
         }
     }

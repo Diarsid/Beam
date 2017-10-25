@@ -17,9 +17,11 @@ import diarsid.beam.core.domain.entities.NamedEntity;
  */
 public interface DaoNamedEntities {
     
-    Optional<? extends NamedEntity> getByExactName(
+    Optional<NamedEntity> getByExactName(
             Initiator initiator, String exactName);
     
     List<NamedEntity> getEntitiesByNamePattern(
             Initiator initiator, String namePattern);
+    
+    List<NamedEntity> getAll(Initiator initiator);
 }

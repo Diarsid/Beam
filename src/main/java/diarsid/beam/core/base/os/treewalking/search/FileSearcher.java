@@ -27,4 +27,7 @@ public interface FileSearcher {
     
     FileSearchResult find(
             String target, Path location, FileSearchMatching matching, FileSearchMode mode);
+    
+    FileSearchResult findAll(
+            Path location, FileSearchMode mode);
 }

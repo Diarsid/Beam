@@ -41,12 +41,10 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
-import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIRECTORY;
-import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
-import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
@@ -56,6 +54,13 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_ALL_BATCHES;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_ALL_LOCATIONS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_ALL_PROGRAMS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_ALL_WEBDIRECTORIES;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_ALL_WEBPAGES;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_BOOKMARKS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectCommand;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGH;
 import static diarsid.beam.core.base.control.io.interpreter.RecognizerPriority.HIGHER;
@@ -77,6 +82,7 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognit
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.independentWords;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.justControlWord;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.justControlWords;
+import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.mediatoryControlWord;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.mediatoryControlWords;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.multipleArgs;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.only;
@@ -227,7 +233,8 @@ public class Interpreter {
                                         "page", 
                                         "webpage", 
                                         "webp", 
-                                        "web").andAny(controlWords(
+                                        "web").andAny(
+                                                controlWords(
                                                         "image", 
                                                         "img", 
                                                         "picture", 
@@ -252,7 +259,8 @@ public class Interpreter {
                         "-", 
                         "del", 
                         "delete", 
-                        "remove").andAny(controlWords(
+                        "remove").andAny(
+                                controlWords(
                                         "loc", 
                                         "location").and(argumentsFor(DELETE_LOCATION)),
                                 controlWord("task").and(argumentsFor(DELETE_TASK)),
@@ -281,10 +289,49 @@ public class Interpreter {
                                         "bat", 
                                         "batch", 
                                         "exe").and(argumentsFor(DELETE_BATCH))),
+                mediatoryControlWord("all").priority(HIGHER).andAny(
+                        justControlWords(
+                                "locs", 
+                                "locations").and(only(SHOW_ALL_LOCATIONS)),
+                        justControlWords(
+                                "programs", 
+                                "progs").and(only(SHOW_ALL_PROGRAMS)),
+                        justControlWords(
+                                "bats", 
+                                "batches", 
+                                "exes").and(only(SHOW_ALL_BATCHES)),
+                        justControlWords(
+                                "pages", 
+                                "webpages", 
+                                "webps").and(only(SHOW_ALL_WEBPAGES)),
+                        justControlWords(
+                                "dirs", 
+                                "directs", 
+                                "directories").and(only(SHOW_ALL_WEBDIRECTORIES))),
                 mediatoryControlWords(
                         "?", 
                         "get", 
-                        "find").andAny(controlWord("task").and(argumentsFor(FIND_TASK)), 
+                        "find").andAny(
+                                mediatoryControlWord("all").priority(HIGHER).andAny(
+                                        justControlWords(
+                                                "locs", 
+                                                "locations").and(only(SHOW_ALL_LOCATIONS)),
+                                        justControlWords(
+                                                "programs", 
+                                                "progs").and(only(SHOW_ALL_PROGRAMS)),
+                                        justControlWords(
+                                                "bats", 
+                                                "batches", 
+                                                "exes").and(only(SHOW_ALL_BATCHES)),
+                                        justControlWords(
+                                                "pages", 
+                                                "webpages", 
+                                                "webps").and(only(SHOW_ALL_WEBPAGES)),
+                                        justControlWords(
+                                                "dirs", 
+                                                "directs", 
+                                                "directories").and(only(SHOW_ALL_WEBDIRECTORIES))),
+                                controlWord("task").and(argumentsFor(FIND_TASK)), 
                                 controlWords(
                                         "reminder", 
                                         "rem", 
@@ -297,7 +344,7 @@ public class Interpreter {
                                         "page", 
                                         "webpage", 
                                         "webp", 
-                                        "web").and(argumentsFor(FIND_PAGE)),
+                                        "web").and(argumentsFor(FIND_WEBPAGE)),
                                 controlWords(
                                         "dir", 
                                         "direct", 
@@ -318,11 +365,11 @@ public class Interpreter {
                                 justControlWords(independentWords(
                                         "webpanel",
                                         "wpanel",
-                                        "panel")).and(only(GET_WEBPANEL)),
+                                        "panel")).and(only(SHOW_WEBPANEL)),
                                 justControlWords(
                                         "bookmarks", 
                                         "bmarks", 
-                                        "marks").and(only(GET_BOOKMARKS)),
+                                        "marks").and(only(SHOW_BOOKMARKS)),
                                 domainWord().priority(LOWER).and(argumentsFor(FIND_ALL))),
                 controlWord("list").andAny(
                         domainWord().and(argumentsFor(LIST_LOCATION)), 

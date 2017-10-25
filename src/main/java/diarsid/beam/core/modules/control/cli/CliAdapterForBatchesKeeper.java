@@ -8,15 +8,15 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.modules.domainkeeper.BatchesKeeper;
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -52,5 +52,13 @@ class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
     void removeBatchAndReport(Initiator initiator, ArgumentsCommand command) {
         VoidFlow flow = this.batchesKeeper.removeBatch(initiator, command);
         super.reportVoidFlow(initiator, flow, "removed.");
+    }
+    
+    void showAllBatches(Initiator initiator) {
+        ValueFlow<Message> flow = this.batchesKeeper.showAll(initiator);
+        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
+            return (Message) success.getOrThrow();
+        }; 
+        super.reportValueFlow(initiator, flow, onSuccess, "cannot get all Batches.");
     }
 }

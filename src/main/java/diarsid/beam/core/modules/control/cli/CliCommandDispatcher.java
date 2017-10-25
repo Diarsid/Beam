@@ -246,7 +246,7 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .findTasksAndReport(initiator, (ArgumentsCommand) command);
                     break;
                 }                
-                case FIND_PAGE : {
+                case FIND_WEBPAGE : {
                     this.domainModuleAdapter
                             .webPagesAdapter()
                             .findWebPageAndReport(initiator, (ArgumentsCommand) command);
@@ -276,8 +276,8 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .findAll(initiator, (ArgumentsCommand) command);
                     break;
                 }
-                case GET_WEBPANEL : 
-                case GET_BOOKMARKS : {
+                case SHOW_WEBPANEL : 
+                case SHOW_BOOKMARKS : {
                     this.domainModuleAdapter
                             .webPagesAdapter()
                             .showWebPlace(initiator, (EmptyCommand) command);
@@ -307,6 +307,40 @@ class CliCommandDispatcher implements CommandDispatcher {
                             .captureWebPageImage(initiator, (ArgumentsCommand) command);
                     break;
                 }
+                case SHOW_ALL_LOCATIONS : {
+                    this.domainModuleAdapter
+                            .locationsAdapter()
+                            .showAllLocations(initiator);
+                    break;
+                }
+                case SHOW_ALL_PROGRAMS : {
+                    this.domainModuleAdapter
+                            .programsAdapter()
+                            .showAllPrograms(initiator);
+                    break;
+                }
+                case SHOW_ALL_TASKS : {
+                    break;
+                }
+                case SHOW_ALL_WEBPAGES : {
+                    this.domainModuleAdapter
+                            .webPagesAdapter()
+                            .showAllWebPages(initiator);
+                    break;
+                }
+                case SHOW_ALL_WEBDIRECTORIES : {
+                    this.domainModuleAdapter
+                            .webDirectoriesAdapter()
+                            .showAllWebDirectories(initiator);
+                    break;
+                }
+                case SHOW_ALL_BATCHES : {
+                    this.domainModuleAdapter
+                            .batchesAdapter()
+                            .showAllBatches(initiator);
+                    break;
+                }
+                case MULTICOMMAND :
                 case INCORRECT : 
                 case UNDEFINED : {
                     break;

@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.sql.daos;
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoWebDirectories;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -510,16 +508,8 @@ public class H2DaoWebDirectoriesTest {
     @Test
     public void testMoveDirectoryToPlace_move_sole_dir_from_place() throws Exception {
         
-        dataBase.transactionFactory()
-                .createDisposableTransaction()
-                .doUpdate(
-                        "DELETE FROM web_directories " +
-                        "WHERE ( name IS NOT 'Common' ) AND ( place IS 'WEBPANEL' )");
-        
         List<WebDirectory> panelDirsBefore = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
         List<WebDirectory> bookDirsBefore = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
-        
-        assertEquals(1, panelDirsBefore.size());
         
         boolean moved = dao.moveDirectoryToPlace(initiator, "Common", WEBPANEL, BOOKMARKS);
         assertTrue(moved);
@@ -527,7 +517,7 @@ public class H2DaoWebDirectoriesTest {
         List<WebDirectory> panelDirsAfter = dao.getAllDirectoriesInPlace(initiator, WEBPANEL);
         List<WebDirectory> bookDirsAfter = dao.getAllDirectoriesInPlace(initiator, BOOKMARKS);
         
-        assertEquals(0, panelDirsAfter.size());
+        assertEquals(panelDirsBefore.size(), panelDirsAfter.size() + 1);
         assertEquals(bookDirsAfter.size(), bookDirsBefore.size() + 1);
         
         for (int i = 0; i < bookDirsAfter.size(); i++) {

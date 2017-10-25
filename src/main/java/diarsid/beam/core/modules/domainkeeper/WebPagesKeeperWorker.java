@@ -58,6 +58,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
@@ -71,9 +72,9 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CAPTURE_PAG
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_PAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PAGE;
-import static diarsid.beam.core.base.control.io.commands.CommandType.GET_BOOKMARKS;
-import static diarsid.beam.core.base.control.io.commands.CommandType.GET_WEBPANEL;
+import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBPAGE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_BOOKMARKS;
+import static diarsid.beam.core.base.control.io.commands.CommandType.SHOW_WEBPANEL;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_DOMAIN_CHARS;
@@ -108,8 +109,7 @@ public class WebPagesKeeperWorker
         extends 
                 WebObjectsCommonKeeper 
         implements 
-                WebPagesKeeper, 
-                NamedEntitiesKeeper {
+                WebPagesKeeper {
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
@@ -605,7 +605,7 @@ public class WebPagesKeeperWorker
     
     private VoidFlow editPageOrder(Initiator initiator, WebPage page) {
         List<WebPage> pagesInDirectory = this.daoPages
-                .allFromDirectory(initiator, page.directoryId());
+                .getAllFromDirectory(initiator, page.directoryId());
         if ( pagesInDirectory.isEmpty() ) {
             return voidFlowFail("cannot find all pages from directory.");
         }
@@ -727,7 +727,7 @@ public class WebPagesKeeperWorker
     @Override
     public ValueFlow<WebPage> findWebPageByPattern(
             Initiator initiator, ArgumentsCommand command) {
-        if ( command.type().isNot(FIND_PAGE) ) {
+        if ( command.type().isNot(FIND_WEBPAGE) ) {
             return valueFlowFail("wrong command type!");
         }
         
@@ -755,7 +755,7 @@ public class WebPagesKeeperWorker
     @Override
     public ValueFlow<Message> getWebPlace(
             Initiator initiator, EmptyCommand command) {
-        if ( command.type().isNot(GET_WEBPANEL) && command.type().isNot(GET_BOOKMARKS) ) {
+        if ( command.type().isNot(SHOW_WEBPANEL) && command.type().isNot(SHOW_BOOKMARKS) ) {
             return valueFlowFail("wrong command type!");
         }
         
@@ -782,10 +782,10 @@ public class WebPagesKeeperWorker
     }
     
     private WebPlace commandTypeToPlace(CommandType type) {
-        if ( type.is(GET_WEBPANEL) ) {
+        if ( type.is(SHOW_WEBPANEL) ) {
             return WEBPANEL;
         }
-        if ( type.is(GET_BOOKMARKS) ) {
+        if ( type.is(SHOW_BOOKMARKS) ) {
             return BOOKMARKS;
         }
         return UNDEFINED_PLACE;
@@ -1071,5 +1071,11 @@ public class WebPagesKeeperWorker
             return badRequestWithJson(format(
                     "Page '%s' order is not changed.", page.get().name()));
         }
+    }
+
+    @Override
+    public ValueFlow<Message> showAll(Initiator initiator) {
+        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+                    "all WebPages:", this.daoPages.getAll(initiator)));
     }
 }

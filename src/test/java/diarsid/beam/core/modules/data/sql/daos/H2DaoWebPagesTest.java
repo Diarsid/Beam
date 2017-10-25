@@ -183,7 +183,7 @@ public class H2DaoWebPagesTest {
 
     @Test
     public void testAllFromDirectory() {
-        List<WebPage> all = dao.allFromDirectory(initiator, dirs.get("Common").id());
+        List<WebPage> all = dao.getAllFromDirectory(initiator, dirs.get("Common").id());
         assertEquals(4, all.size());
     }
 
@@ -196,7 +196,7 @@ public class H2DaoWebPagesTest {
         int qtyAfter = dataBase.countRowsInTable("web_pages");
         assertEquals(qtyBefore + 1, qtyAfter);
         
-        List<WebPage> all = dao.allFromDirectory(initiator, dirs.get("Common").id());
+        List<WebPage> all = dao.getAllFromDirectory(initiator, dirs.get("Common").id());
         int index = 0;
         for (WebPage wpage : all) {
             assertEquals(index, wpage.order());
@@ -214,7 +214,7 @@ public class H2DaoWebPagesTest {
         int qtyAfter = dataBase.countRowsInTable("web_pages");
         assertEquals(qtyBefore - 1, qtyAfter);
         
-        List<WebPage> all = dao.allFromDirectory(initiator, dirs.get("Common").id());
+        List<WebPage> all = dao.getAllFromDirectory(initiator, dirs.get("Common").id());
         int index = 0;
         for (WebPage wpage : all) {
             assertEquals(index, wpage.order());
@@ -270,30 +270,30 @@ public class H2DaoWebPagesTest {
 
     @Test
     public void testMovePageFromDirToDir() {
-        int oldDirSizeBefore = dao.allFromDirectory(initiator, dirs.get("Common").id()).size();
-        int newDirSizeBefore = dao.allFromDirectory(initiator, dirs.get("Media").id()).size();
+        int oldDirSizeBefore = dao.getAllFromDirectory(initiator, dirs.get("Common").id()).size();
+        int newDirSizeBefore = dao.getAllFromDirectory(initiator, dirs.get("Media").id()).size();
         
         Optional<WebPage> movedPageBefore = dao.getByExactName(initiator, "Gmail");
         assertEquals(movedPageBefore.get().directoryId(), dirs.get("Common").id());
         boolean moved = dao.movePageFromDirToDir(initiator, movedPageBefore.get(), dirs.get("Media").id());
         assertTrue(moved);
         
-        int oldDirSizeAfter = dao.allFromDirectory(initiator, dirs.get("Common").id()).size();
-        int newDirSizeAfter = dao.allFromDirectory(initiator, dirs.get("Media").id()).size();
+        int oldDirSizeAfter = dao.getAllFromDirectory(initiator, dirs.get("Common").id()).size();
+        int newDirSizeAfter = dao.getAllFromDirectory(initiator, dirs.get("Media").id()).size();
         assertEquals(oldDirSizeBefore - 1, oldDirSizeAfter);
         assertEquals(newDirSizeBefore + 1, newDirSizeAfter);
         
         Optional<WebPage> movedPageAfter = dao.getByExactName(initiator, "Gmail");
         assertEquals(movedPageAfter.get().directoryId(), dirs.get("Media").id());
         
-        List<WebPage> allFromOld = dao.allFromDirectory(initiator, dirs.get("Common").id());
+        List<WebPage> allFromOld = dao.getAllFromDirectory(initiator, dirs.get("Common").id());
         int indexOldDir = 0;
         for (WebPage wpage : allFromOld) {
             assertEquals(indexOldDir, wpage.order());
             indexOldDir++;
         }
         
-        List<WebPage> allFromNew = dao.allFromDirectory(initiator, dirs.get("Media").id());
+        List<WebPage> allFromNew = dao.getAllFromDirectory(initiator, dirs.get("Media").id());
         int indexNewDir = 0;
         for (WebPage wpage : allFromNew) {
             assertEquals(indexNewDir, wpage.order());
@@ -303,7 +303,7 @@ public class H2DaoWebPagesTest {
 
     @Test
     public void testUpdatePageOrdersInDir() {
-        List<WebPage> pagesBefore = dao.allFromDirectory(initiator, dirs.get("Common").id());
+        List<WebPage> pagesBefore = dao.getAllFromDirectory(initiator, dirs.get("Common").id());
         int oldOrder = 0;
         int newOrder = 2;
         WebPage movedPage = pagesBefore.get(oldOrder);
@@ -311,7 +311,7 @@ public class H2DaoWebPagesTest {
         boolean reordered = dao.updatePageOrdersInDir(initiator, pagesBefore);
         assertTrue(reordered);
         
-        List<WebPage> pagesAfter = dao.allFromDirectory(initiator, dirs.get("Common").id());
+        List<WebPage> pagesAfter = dao.getAllFromDirectory(initiator, dirs.get("Common").id());
         int index = 0;
         for (WebPage wpage : pagesAfter) {
             assertEquals(index, wpage.order());            

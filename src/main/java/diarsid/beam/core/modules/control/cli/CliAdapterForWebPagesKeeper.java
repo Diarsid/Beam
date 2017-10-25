@@ -8,6 +8,9 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -15,9 +18,6 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.domainkeeper.WebPagesKeeper;
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -61,6 +61,14 @@ class CliAdapterForWebPagesKeeper extends AbstractCliAdapter {
             return (Message) success.getOrThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "Panel not available.");
+    }
+    
+    void showAllWebPages(Initiator initiator) {
+        ValueFlow<Message> flow = this.pagesKeeper.showAll(initiator);
+        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
+            return (Message) success.getOrThrow();
+        }; 
+        super.reportValueFlow(initiator, flow, onSuccess, "cannot get all WebPages.");
     }
     
     void captureWebPageImage(Initiator initiator, ArgumentsCommand command) {

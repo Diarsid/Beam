@@ -7,16 +7,16 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Program;
-import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
  * @author Diarsid
  */
-public interface ProgramsKeeper extends NamedEntitiesKeeper {
+public interface ProgramsKeeper extends NamedEntitiesKeeper<Program> {
     
     ValueFlow<Program> findProgram(
             Initiator initiator, ArgumentsCommand command);

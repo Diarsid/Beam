@@ -146,4 +146,9 @@ class ProgramsCatalogReal
     public Path path() {
         return this.catalogPath;
     }
+
+    @Override
+    public List<Program> getAll() {
+        return this.toPrograms(super.findAllFilesInCatalog());
+    }
 }

@@ -33,17 +33,32 @@ class FilesCollectorByVisitor implements FilesCollector {
 
     private final int searchDepth;
     private final FolderTypeDetector folderTypeDetector;
+    private final NameDetector nameDetectorStub;
 
     FilesCollectorByVisitor(int searchDepth, FolderTypeDetector folderTypeDetector) {          
         debug("[FILE SEARCH] by visitor");    
         this.searchDepth = searchDepth;
         this.folderTypeDetector = folderTypeDetector;
+        this.nameDetectorStub = new NameDetector(null) {
+            @Override
+            boolean isMatch(Path testedPath) {
+                return true;
+            }
+        };
     }
     
     private List<String> collectWith(Path root, FileSearchMode mode, NameDetector detector) 
             throws IOException{
-        FileVisitorForCollecting visitor = 
-                new FileVisitorForCollecting(mode, root, detector, this.folderTypeDetector);
+        FileVisitorForCollecting visitor = new FileVisitorForCollecting(
+                mode, root, detector, this.folderTypeDetector);
+        walkFileTree(root, FILE_VISIT_OPTIONS, this.searchDepth, visitor);
+        return visitor.collected();
+    }
+
+    @Override
+    public List<String> collectAll(Path root, FileSearchMode mode) throws IOException {
+        FileVisitorForCollecting visitor = new FileVisitorForCollecting(
+                mode, root, this.nameDetectorStub, this.folderTypeDetector);
         walkFileTree(root, FILE_VISIT_OPTIONS, this.searchDepth, visitor);
         return visitor.collected();
     }
