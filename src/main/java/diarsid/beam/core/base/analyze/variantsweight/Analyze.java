@@ -18,18 +18,22 @@ import diarsid.beam.core.domain.entities.NamedEntity;
 
 import static java.lang.Double.MAX_VALUE;
 import static java.lang.Double.MIN_VALUE;
+import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.similarity.Similarity.isStrictSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOk;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
+import static diarsid.beam.core.base.util.DecimalUtil.absDiff;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -197,16 +201,49 @@ public class Analyze {
         System.out.println("printed: " + printed.get());
     }
     
+    private static boolean canBeEvaluatedByStrictSimilarity(String pattern, String target) {
+        if ( containsWordsSeparator(target) ) {
+            return false;
+        }
+        if ( pattern.length() == target.length() ) {
+            return pattern.length() < 10;
+        } else {
+            int min = min(pattern.length(), target.length());
+            if ( min > 9 ) {
+                return false;
+            } else {
+                int diff = absDiff(pattern.length(), target.length());
+                if ( diff > (min / 3) ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+    }
+    
     public static boolean nameIsSatisfiable(String pattern, String name) {
-        return weightVariant(pattern, new Variant(name, 0)).isPresent();
+        if ( canBeEvaluatedByStrictSimilarity(pattern, name) ) {
+            return isStrictSimilar(name, pattern);
+        } else {
+            return weightVariant(pattern, new Variant(name, 0)).isPresent();
+        }        
     }
     
     public static boolean variantIsSatisfiable(String pattern, Variant variant) {
-        return weightVariant(pattern, variant).isPresent();
+        if ( canBeEvaluatedByStrictSimilarity(pattern, variant.text()) ) {
+            return isStrictSimilar(variant.text(), pattern);
+        } else {
+            return weightVariant(pattern, variant).isPresent();
+        }        
     }
     
     public static boolean entityIsSatisfiable(String pattern, NamedEntity entity) {
-        return weightVariant(pattern, entity.toSingleVariant()).isPresent();
+        if ( canBeEvaluatedByStrictSimilarity(pattern, entity.name()) ) {
+            return isStrictSimilar(entity.name(), pattern);
+        } else {
+            return weightVariant(pattern, entity.toSingleVariant()).isPresent();
+        }        
     }
     
     public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {

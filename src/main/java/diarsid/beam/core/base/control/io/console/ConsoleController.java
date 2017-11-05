@@ -121,11 +121,7 @@ public class ConsoleController
     }
 
     @Override
-    public Answer resolve(WeightedVariants variants) {
-        if ( variants.hasOne() ) {
-            return variants.singleAnswer();
-        }
-        
+    public Answer resolve(WeightedVariants variants) {        
         String line;
         Answer answer = variantsDontContainSatisfiableAnswer();
         Choice choice;

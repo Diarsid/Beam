@@ -83,4 +83,26 @@ public class StringUtils {
     public static String joinFromIndex(int start, List<String> list) {
         return join(" ", list.subList(start, list.size()));
     }
+    
+    public static boolean isWordsSeparator(char c) {
+        return 
+                c == '.' ||
+                c == ',' ||
+                c == ';' ||
+                c == ':' ||
+                c == ' ' || 
+                c == '_' || 
+                c == '-' || 
+                c == '/' || 
+                c == '\\';
+    }
+    
+    public static boolean containsWordsSeparator(String target) {
+        for (int i = 0; i < target.length(); i++) {
+            if ( isWordsSeparator(target.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

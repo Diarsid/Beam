@@ -45,12 +45,21 @@ class FilesCollectorByStream implements FilesCollector {
         return ! containsIgnoreCase(asName(path), "desktop.ini");
     }
     
-    private boolean filterByNamePatternSimilarity(String nameToFind, String nameFromPath) {
-        nameFromPath = removeSeparators(nameFromPath);
-        if ( containsIgnoreCase(nameFromPath, nameToFind) ) {
+    private boolean filterByNamePatternSimilarity(String nameToFind, Path path) {
+        String name = asName(path);
+        if ( containsIgnoreCase(name, nameToFind) ) {
             return true;
         } else {
-            return isSimilar(nameFromPath, nameToFind);
+            if ( isSimilar(name, nameToFind) ) {
+                return true;
+            } else {
+                String testedPathString = removeSeparators(path.toString());
+                if ( containsIgnoreCase(testedPathString, nameToFind) ) {
+                    return true;
+                } else {
+                    return isSimilar(testedPathString, nameToFind);
+                }
+            }
         }
     }
     
@@ -106,22 +115,12 @@ class FilesCollectorByStream implements FilesCollector {
     }
 
     @Override
-    public List<String> collectByNamePatternSimilarity(
+    public List<String> collectByNameOrSubpathPatternSimilarity(
             Path root, String nameToFind, FileSearchMode mode)
             throws IOException {        
         return this.prepareCollectingPathStream(root, mode)
-                .filter(path -> this.filterByNamePatternSimilarity(nameToFind, asName(path)))
+                .filter(path -> this.filterByNamePatternSimilarity(nameToFind, path))
                 .map(path -> normalizeSeparators(path.toString()))
-                .collect(toList());
-    }
-    
-    @Override
-    public List<String> collectBySubpathPatternSimilarityIgnoreSeparators(
-            Path root, String nameToFind, FileSearchMode mode)
-            throws IOException {        
-        return this.prepareCollectingPathStream(root, mode)
-                .map(path -> path.toString())
-                .filter(fileName -> this.filterByNamePatternSimilarity(nameToFind, fileName))
                 .collect(toList());
     }
     

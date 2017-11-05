@@ -64,9 +64,9 @@ class FilesCollectorByVisitor implements FilesCollector {
     }
 
     @Override
-    public List<String> collectByNamePatternSimilarity(
+    public List<String> collectByNameOrSubpathPatternSimilarity(
             Path root, String nameToFind, FileSearchMode mode) throws IOException {
-        NameDetector detector = new DetectorForNameSimilarity(nameToFind);
+        NameDetector detector = new DetectorForNameOrSubpathSimilarity(nameToFind);
         return this.collectWith(root, mode, detector);
     }
 
@@ -81,13 +81,6 @@ class FilesCollectorByVisitor implements FilesCollector {
     public List<String> collectByStrictName(
             Path root, String nameToFind, FileSearchMode mode) throws IOException {
         NameDetector detector = new DetectorForStrictNameMatch(nameToFind);
-        return this.collectWith(root, mode, detector);
-    }
-
-    @Override
-    public List<String> collectBySubpathPatternSimilarityIgnoreSeparators(
-            Path root, String nameToFind, FileSearchMode mode) throws IOException {
-        NameDetector detector = new DetectorForSubpathSimilarity(nameToFind);
         return this.collectWith(root, mode, detector);
     }
 

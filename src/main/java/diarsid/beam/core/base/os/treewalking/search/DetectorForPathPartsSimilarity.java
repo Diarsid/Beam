@@ -7,6 +7,9 @@ package diarsid.beam.core.base.os.treewalking.search;
 
 import java.nio.file.Path;
 
+import static java.lang.System.arraycopy;
+import static java.util.Objects.nonNull;
+
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
@@ -16,38 +19,51 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
  * @author Diarsid
  */
 class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
+    
+    private final String[] searchedPathPartsCopy;
 
-    public DetectorForPathPartsSimilarity(String[] pathPartsToFind) {
-        super(pathPartsToFind);
+    public DetectorForPathPartsSimilarity(String[] searchedPthParts) {
+        super(searchedPthParts);
+        this.searchedPathPartsCopy = new String[searchedPthParts.length];
     }
 
     @Override
     boolean isMatch(Path testedPath) {
-        return this.filterByPathPartsSimilarity(splitToParts(testedPath), super.itemToFind);
+        return this.filterByPathPartsSimilarity(splitToParts(testedPath));
     }
     
-    private boolean filterByPathPartsSimilarity(
-            String[] realPathParts, String[] searchedPathParts) {
-        int counter = 0;
-        String searchedPart;
+    private void fillSearchedPathPartsLocal() {
+        arraycopy(super.itemToFind, 0, this.searchedPathPartsCopy, 0, super.itemToFind.length);
+    }
+    
+    private boolean filterByPathPartsSimilarity(String[] realPathParts) {
         if ( realPathParts.length == 0 ) {
             return false;
         }
-        if ( realPathParts.length < searchedPathParts.length ) {
+        if ( realPathParts.length < this.searchedPathPartsCopy.length ) {
             return false;
         }
         
+        this.fillSearchedPathPartsLocal();        
+        String searchedPart;
+        int counter = 0;
+        
         for (String realPart : realPathParts) {
-            if ( counter == searchedPathParts.length ) {
+            if ( counter == this.searchedPathPartsCopy.length ) {
                 break;
             }
-            searchedPart = searchedPathParts[counter];
-            if ( containsIgnoreCase(realPart, searchedPart) || 
-                 isSimilar(realPart, searchedPart) ) {
-                counter++;
-            } 
+            for (int i = 0; i < this.searchedPathPartsCopy.length; i++) {
+                searchedPart = this.searchedPathPartsCopy[i];
+                if ( nonNull(searchedPart) ) {
+                    if ( containsIgnoreCase(realPart, searchedPart) || 
+                            isSimilar(realPart, searchedPart) ) {
+                        counter++;
+                        this.searchedPathPartsCopy[i] = null;
+                    }  
+                }                                
+            }            
         }
         
-        return ( counter == searchedPathParts.length );
+        return ( counter == this.searchedPathPartsCopy.length );
     }
 }

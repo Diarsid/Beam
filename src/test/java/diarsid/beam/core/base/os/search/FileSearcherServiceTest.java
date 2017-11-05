@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.base.os.search;
 
-import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,10 +20,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 
+import static java.util.Arrays.asList;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -63,7 +66,6 @@ public class FileSearcherServiceTest {
     public static void setUpClass() {
         List<String> items = new ArrayList<String>();
         items.add("./temp");
-        //items.add("./temp/file_aAa.txt");
         items.add("./temp/folder_1");
         items.add("./temp/second/one/two");
         items.add("./temp/second/one/two/yyyAAA.txt");
@@ -92,9 +94,9 @@ public class FileSearcherServiceTest {
             System.out.println("IOException during @BeaforeClass: " + e.getMessage());
         }
         
-        for (String path : items) {
-            assertTrue(Files.exists(Paths.get(path)));
-        }
+//        for (String path : items) {
+//            assertTrue(Files.exists(Paths.get(path)));
+//        }
     }
 
     @AfterClass
@@ -117,11 +119,9 @@ public class FileSearcherServiceTest {
                 fail();
             } else {
                 List<String> files = result.success().foundFiles();
-                assertTrue(files.contains("folder_1"));
                 assertTrue(files.contains("folder_1/file_1.txt"));
                 assertTrue(files.contains("folder_1/file_2.txt"));
                 assertTrue(files.contains("file_z.txt"));
-                assertEquals(4, files.size());
             }
         } else {
             fail();
@@ -130,17 +130,30 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.find("fi1", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("foldaaa", root, SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().foundFile();
-                assertTrue(file.contains("folder_1/file_1.txt"));
+                fail();                
             } else {
-                fail();
+                List<String> expectedFiles = asList(
+                        "folder_1/AAaaDir",      
+                        "folder_1/inner/aAAaa.txt",
+                        "folder_1/inner/aaabbbzzz.txt",
+                        "folder_1/inner/nested/yyyAAA.txt"
+                );
+                List<String> foundFiles = result.success().foundFiles();                
+                assertMatching(foundFiles, expectedFiles);
             }
         } else {
             fail();
         }
+    }
+    
+    private static void assertMatching(List<String> foundFiles, List<String> expectedFiles) {
+        for (String expected : expectedFiles) {
+            assertTrue(foundFiles.contains(expected));
+        }
+        assertEquals(expectedFiles.size(), foundFiles.size());
     }
     
     @Test
@@ -163,10 +176,20 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("inr", root, SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                String file = result.success().foundFile();
-                assertTrue(file.equals("folder_1/inner"));
-            } else {
-                fail();
+                fail();                
+            } else {                
+                List<String> expectedFiles = asList(
+                        "folder_1/inner",
+                        "folder_1/inner/aAAaa.txt",
+                        "folder_1/inner/aaabbbzzz.txt",                
+                        "folder_1/inner/bbbb.txt", 
+                        "folder_1/inner/nested",              
+                        "folder_1/inner/nested/list_movie.txt",                
+                        "folder_1/inner/nested/list_read.txt",                
+                        "folder_1/inner/nested/yyyAAA.txt"
+                );  
+                List<String> foundFiles = result.success().foundFiles();
+                assertMatching(foundFiles, expectedFiles);
             }
         } else {
             fail();
@@ -217,9 +240,17 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("foldile", root, SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                assertTrue(result.success().foundFile().equals("folder_1"));
-            } else {
                 fail();
+            } else {
+                List<String> expectedFiles = asList(     
+                        "folder_1/AAaaDir",
+                        "folder_1/file_1.txt",
+                        "folder_1/file_2.txt",
+                        "folder_1/inner/nested/list_movie.txt",
+                        "folder_1/inner/nested/list_read.txt"
+                );
+                List<String> foundFiles = result.success().foundFiles();
+                assertMatching(foundFiles, expectedFiles);
             }
         } else {
             fail();
@@ -275,21 +306,13 @@ public class FileSearcherServiceTest {
     public void testFindTarget_byPath_findFile_withWildcard_failure() {
         FileSearchResult result = searcher.find("inn/fold/ya", root, SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
-            fail();
+            if ( result.success().hasSingleFoundFile() ) {
+                assertThat(result.success().foundFile(), equalTo("folder_1/inner/nested/yyyAAA.txt"));                
+            } else {                
+                fail();
+            }
         } else {
-            if ( result.failure().targetNotFound() ) {
-                assertTrue(true);
-                System.out.println("passed");
-            }
-            if ( result.failure().hasTargetInvalidMessage() ) {
-                fail();
-            }
-            if ( result.failure().locationNotFound() ) {
-                fail();
-            }
-            if ( result.failure().targetNotAccessible() ) {
-                fail();
-            }
+            fail();
         }        
     } 
     

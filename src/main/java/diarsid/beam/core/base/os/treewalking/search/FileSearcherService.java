@@ -28,6 +28,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
+import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
 import static diarsid.beam.core.base.util.PathUtils.trimSeparators;
 
@@ -206,13 +207,13 @@ class FileSearcherService implements FileSearcher {
         if ( containsPathSeparators ) {
             foundItems = this.filesCollector.collectByPathPartsSimilarity(root, target, mode);
         } else {
-            foundItems = this.filesCollector.collectByNamePatternSimilarity(root, target, mode);
+            foundItems = this.filesCollector.collectByNameOrSubpathPatternSimilarity(root, target, mode);
         }            
 
         if ( foundItems.isEmpty() ) {
-            if ( ! containsPathSeparators ) {
-                foundItems = this.filesCollector
-                        .collectBySubpathPatternSimilarityIgnoreSeparators(root, target, mode);
+            if ( containsPathSeparators ) {
+                foundItems = this.filesCollector.collectByNameOrSubpathPatternSimilarity(
+                        root, removeSeparators(target), mode);
                 if ( foundItems.isEmpty() ) {
                     return failWithTargetNotFoundFailure();
                 } else {

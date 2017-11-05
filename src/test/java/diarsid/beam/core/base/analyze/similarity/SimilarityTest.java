@@ -6,6 +6,7 @@
 package diarsid.beam.core.base.analyze.similarity;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -43,53 +44,75 @@ public class SimilarityTest {
         assertTrue(isSimilar("webpage", "wepaeg"));
     }
     
+    // TODO MIDDLE
+    @Ignore
     @Test
-    public void test_isSimilarStrong_page_paeg() {
+    public void test_isStrictSimilar_webpage_wepaeg() {
+        assertTrue(isStrictSimilar("webpage", "wepaeg"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_webpage_wepaeg_false() {
+        assertFalse(isStrictSimilar("webpage", "egpawe"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_page_paeg() {
         assertTrue(isStrictSimilar("page", "paeg"));
     }
     
     @Test
-    public void test_isSimilarStrong_webpanel_paeg() {
-        assertTrue(isStrictSimilar("page", "paeg"));
+    public void testr_webpanel_paeg() {
+        assertFalse(isStrictSimilar("webpanel", "paeg"));
     }
     
     @Test
-    public void test_isSimilarStrong_webpanel_webpnel() {
+    public void test_isStrictSimilar_webpanel_webpnel() {
         assertTrue(isStrictSimilar("webpanel", "webpnel"));
     }
     
     @Test
-    public void test_isSimilarStrong_directory_dierctry() {
+    public void test_isStrictSimilar_directory_dierctry() {
         assertTrue(isStrictSimilar("directory", "dierctry"));
     }
     
     @Test
-    public void test_isSimilarStrong_webpanel_peabwlne() {
+    public void test_isStrictSimilar_engines_eninges() {
+        assertTrue(isStrictSimilar("engines", "eninges"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_design_engines() {
+        assertFalse(isStrictSimilar("design", "engines"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_webpanel_peabwlne() {
         assertFalse(isStrictSimilar("webpanel", "peabwlne"));
     }
     
     @Test
-    public void test_isSimilarStrong_directory_yretdoicr() {
+    public void test_isStrictSimilar_directory_yretdoicr() {
         assertFalse(isStrictSimilar("directory", "yretdoicr"));
     }
     
     @Test
-    public void test_isSimilarStrong_panel_page() {
+    public void test_isStrictSimilar_panel_page() {
         assertFalse(isStrictSimilar("panel", "page"));
     }
     
     @Test
-    public void test_isSimilarStrong_edit_delet() {
+    public void test_isStrictSimilar_edit_delet() {
         assertFalse(isStrictSimilar("edit", "delet"));
     }
     
     @Test
-    public void test_isSimilarStrong_delete_delet() {
+    public void test_isStrictSimilar_delete_delet() {
         assertTrue(isStrictSimilar("delete", "delete"));
     }
     
     @Test
-    public void test_isSimilarStrong_get_gte() {
+    public void test_isStrictSimilar_get_gte() {
         assertTrue(isStrictSimilar("get", "gte"));
     }
     
@@ -116,13 +139,13 @@ public class SimilarityTest {
     }
     
     @Test
-    public void test_isSimilar_page_get() {
-        assertFalse(isSimilar("page", "get"));
+    public void test_isStrictSimilar_page_get() {
+        assertFalse(isStrictSimilar("page", "get"));
     }
     
     @Test
-    public void test_isSimilar_page_image() {
-        assertFalse(isSimilar("page", "image"));
+    public void test_isStrictSimilar_page_image() {
+        assertFalse(isStrictSimilar("page", "image"));
     }    
     
     @Test

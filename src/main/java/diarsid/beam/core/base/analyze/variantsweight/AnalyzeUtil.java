@@ -195,17 +195,6 @@ class AnalyzeUtil {
         System.out.println("unsorted: " + countUsorted(a));
     }
     
-    static boolean isWordsSeparator(char c) {
-        return 
-                c == '.' ||
-                c == ',' ||
-                c == ' ' || 
-                c == '_' || 
-                c == '-' || 
-                c == '/' || 
-                c == '\\';
-    }
-    
     static boolean isVariantOk(WeightedVariant variant) {
         return variant.weight() <= WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
     }

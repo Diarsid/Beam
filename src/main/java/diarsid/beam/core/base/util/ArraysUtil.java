@@ -18,4 +18,8 @@ public class ArraysUtil {
     public static boolean isEmpty(Object[] arr) {
         return arr.length == 0 ;
     }
+    
+    public static char[] array(char... chars) {
+        return chars;
+    } 
 }

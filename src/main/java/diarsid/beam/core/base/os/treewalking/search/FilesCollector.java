@@ -18,16 +18,13 @@ interface FilesCollector {
     List<String> collectAll(
             Path root, FileSearchMode mode) throws IOException;
 
-    List<String> collectByNamePatternSimilarity(
+    List<String> collectByNameOrSubpathPatternSimilarity(
             Path root, String nameToFind, FileSearchMode mode) throws IOException;
 
     List<String> collectByPathPartsSimilarity(
             Path root, String nameToFind, FileSearchMode mode) throws IOException;
 
     List<String> collectByStrictName(
-            Path root, String nameToFind, FileSearchMode mode) throws IOException;
-
-    List<String> collectBySubpathPatternSimilarityIgnoreSeparators(
             Path root, String nameToFind, FileSearchMode mode) throws IOException;
 
     List<String> collectByWholeNamePattern(

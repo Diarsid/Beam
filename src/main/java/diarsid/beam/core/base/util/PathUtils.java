@@ -105,6 +105,11 @@ public class PathUtils {
         return new Pair(subpath, target);
     }
     
+    public static String extractLastElementFromPath(String path) {
+        int lastSeparatorIndex = indexOfLastPathSeparator(path);
+        return path.substring(lastSeparatorIndex + 1, path.length());
+    }
+    
     public static boolean containsPathSeparator(String target) {
         return target.contains("/") || target.contains("\\");
     }

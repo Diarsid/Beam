@@ -375,15 +375,12 @@ class H2DaoNamedEntities
                             NamedEntity.class,
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
-                            "WHERE LOWER(loc_name) LIKE ? " +
                             "       UNION ALL " +
                             "SELECT bat_name, 'batch' " +
                             "FROM batches " +
-                            "WHERE LOWER(bat_name) LIKE ? " +
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
-                            "FROM web_pages " +
-                            "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? )", 
+                            "FROM web_pages ", 
                             this.rowToNamedEntityMask)
                     .collect(toList());
             

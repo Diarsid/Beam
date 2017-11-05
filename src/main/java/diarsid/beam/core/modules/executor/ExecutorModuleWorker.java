@@ -80,9 +80,11 @@ import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.domain.entities.Entities.asBatch;
 import static diarsid.beam.core.domain.entities.Entities.asLocation;
 import static diarsid.beam.core.domain.entities.Entities.asProgram;
@@ -479,19 +481,46 @@ class ExecutorModuleWorker implements ExecutorModule {
                 commandFlow.asComplete().getOrThrow().type().equals(OPEN_LOCATION_TARGET);
     }
     
+    private String notFoundReportFrom(InvocationCommand command) {
+        switch ( command.type() ) {
+            case OPEN_LOCATION_TARGET : {
+                return format("Path '%s' not found", command.argument().get());
+            }
+            case RUN_PROGRAM : {
+                String argument = command.argument().get();
+                if ( containsPathSeparator(argument) ) {
+                    String programName = extractLastElementFromPath(argument);
+                    if ( containsIgnoreCase(programName, "start")) {
+                        return format("startable Program '%s' not found", 
+                                programName.replace("start", ""));
+                    } else {
+                        return format("Program '%s' not found", programName);
+                    }
+                } else {
+                    if ( containsIgnoreCase(argument, "start")) {
+                        return format("startable Program '%s' not found", 
+                                argument.replace("start", ""));
+                    } else {
+                        return format("Program '%s' not found", argument);
+                    }
+                }                    
+            }
+            default : {
+                return format("%s '%s' not found", 
+                        command.subjectedEntityType().displayName(),
+                        command.argument().get());
+            }
+        }
+    }
+    
     private void reportEntityNotFound(
             Initiator initiator, InvocationCommand command) {
-        this.ioEngine.report(
-                initiator,
-                format("cannot find %s by name '%s'", 
-                        command.subjectedEntityType().displayName(), 
-                        command.argument().get()));
+        this.ioEngine.report(initiator, this.notFoundReportFrom(command));
     }
 
     private void reportEntityNotFound(
             Initiator initiator, InvocationCommand command, ValueFlowFail valueFail) {
-        this.ioEngine.report(
-                initiator,
+        this.ioEngine.report(initiator,
                 format("cannot find %s by name '%s': %s", 
                         command.subjectedEntityType().displayName(), 
                         command.argument().get(), 

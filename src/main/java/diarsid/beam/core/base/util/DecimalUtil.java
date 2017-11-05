@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.util;
 
+import static java.lang.Math.abs;
+
 /**
  *
  * @author Diarsid
@@ -19,5 +21,13 @@ public class DecimalUtil {
     
     public static double onePointRatio(int less, int more) {
         return 1.0 + ( (double) less / (double) more );
+    }
+    
+    public static int absDiff(int one, int two) {
+        if ( one == two ) {
+            return 0;
+        } else {
+            return abs(one - two);
+        }
     }
 }

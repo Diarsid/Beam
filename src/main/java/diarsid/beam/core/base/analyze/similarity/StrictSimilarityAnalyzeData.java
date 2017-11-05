@@ -19,8 +19,8 @@ class StrictSimilarityAnalyzeData {
     String reverseChain;
     String prevChain;
     String nextChain;
-    int chainOrder;
-    int reverseChainOrder;        
+    int chainIndexTarget;
+    int reverseChainIndexTarget;        
     int inconsistency;
     int fixer;
 
@@ -33,8 +33,8 @@ class StrictSimilarityAnalyzeData {
         this.reverseChain = null;
         this.prevChain = null;
         this.nextChain = null;
-        this.chainOrder = 0;
-        this.reverseChainOrder = 0;        
+        this.chainIndexTarget = 0;
+        this.reverseChainIndexTarget = 0;        
         this.inconsistency = 0;
         this.fixer = 0;
     }
@@ -48,8 +48,8 @@ class StrictSimilarityAnalyzeData {
         this.reverseChain = null;
         this.prevChain = null;
         this.nextChain = null;
-        this.chainOrder = 0;
-        this.reverseChainOrder = 0;        
+        this.chainIndexTarget = 0;
+        this.reverseChainIndexTarget = 0;        
         this.inconsistency = 0;
         this.fixer = 0;
     }

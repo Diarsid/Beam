@@ -28,8 +28,8 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 class AnalyzeData {
     
-    final AnalyzePositionsData forward = new AnalyzePositionsData(this, FORWARD);
-    final AnalyzePositionsData reverse = new AnalyzePositionsData(this, REVERSE);
+    final AnalyzePositionsData forwardAnalyze = new AnalyzePositionsData(this, FORWARD);
+    final AnalyzePositionsData reverseAnalyze = new AnalyzePositionsData(this, REVERSE);
     
     AnalyzePositionsData best;
             
@@ -72,14 +72,14 @@ class AnalyzeData {
     }
 
     void calculateClustersImportance() {
-        this.forward.calculateImportance();
-        this.reverse.calculateImportance();
+        this.forwardAnalyze.calculateImportance();
+        this.reverseAnalyze.calculateImportance();
     }
     
     AnalyzePositionsData bestPositions() {
-        return this.forward.clustersImportance + ( this.forward.positionsWeight * -1.0d ) - this.forward.unsorted
-                > this.reverse.clustersImportance + ( this.reverse.positionsWeight * -1.0d ) - this.reverse.unsorted ? 
-                this.forward : this.reverse;
+        return this.forwardAnalyze.clustersImportance + ( this.forwardAnalyze.positionsWeight * -1.0d ) - this.forwardAnalyze.unsorted
+                > this.reverseAnalyze.clustersImportance + ( this.reverseAnalyze.positionsWeight * -1.0d ) - this.reverseAnalyze.unsorted ? 
+                this.forwardAnalyze : this.reverseAnalyze;
     }
 
     boolean isVariantTooBad() {
@@ -108,21 +108,21 @@ class AnalyzeData {
     }
 
     boolean areTooMuchPositionsMissed() {
-        boolean tooMuchMissed = missedTooMuch(this.forward.missed, this.variantText.length());
+        boolean tooMuchMissed = missedTooMuch(this.forwardAnalyze.missed, this.variantText.length());
         if ( tooMuchMissed ) {
-            System.out.println(this.variantText + ", missed: " + this.forward.missed + " to much, skip variant!");
+            System.out.println(this.variantText + ", missed: " + this.forwardAnalyze.missed + " to much, skip variant!");
         }
         return tooMuchMissed;
     }
 
     void sortPositions() {
-        this.forward.sortPositions();
-        this.reverse.sortPositions();
+        this.forwardAnalyze.sortPositions();
+        this.reverseAnalyze.sortPositions();
     }
 
     void countUnsortedPositions() {
-        this.forward.countUnsortedPositions();
-        this.reverse.countUnsortedPositions();
+        this.forwardAnalyze.countUnsortedPositions();
+        this.reverseAnalyze.countUnsortedPositions();
     }
 
     void setVariantText(Variant variant) {
@@ -130,8 +130,8 @@ class AnalyzeData {
     }
     
     void findPositionsClusters() {
-        this.forward.findPositionsClusters();
-        this.reverse.findPositionsClusters();
+        this.forwardAnalyze.findPositionsClusters();
+        this.reverseAnalyze.findPositionsClusters();
     }
 
     void checkIfVariantTextContainsPatternDirectly(String pattern) {
@@ -143,10 +143,10 @@ class AnalyzeData {
 
     void setPatternCharsAndPositions(String pattern) {
         this.patternChars = pattern.toCharArray();
-        this.forward.positions = new int[this.patternChars.length];
-        fill(this.forward.positions, UNINITIALIZED);
-        this.reverse.positions = new int[this.patternChars.length];
-        fill(this.reverse.positions, UNINITIALIZED);
+        this.forwardAnalyze.positions = new int[this.patternChars.length];
+        fill(this.forwardAnalyze.positions, UNINITIALIZED);
+        this.reverseAnalyze.positions = new int[this.patternChars.length];
+        fill(this.reverseAnalyze.positions, UNINITIALIZED);
     }
     
     private static double patternLengthRatio(String pattern) {
@@ -154,13 +154,13 @@ class AnalyzeData {
     }
 
     void findPatternCharsPositions() {
-        this.forward.findPatternCharsPositions();
-        this.reverse.findPatternCharsPositions();
+        this.forwardAnalyze.findPatternCharsPositions();
+        this.reverseAnalyze.findPatternCharsPositions();
     }
 
     void logUnsortedPositions() {
-        this.logUnsortedPositionsOf(this.forward);
-        this.logUnsortedPositionsOf(this.reverse);
+        this.logUnsortedPositionsOf(this.forwardAnalyze);
+        this.logUnsortedPositionsOf(this.reverseAnalyze);
     }
 
     private void logUnsortedPositionsOf(AnalyzePositionsData data) {
@@ -171,8 +171,8 @@ class AnalyzeData {
     }
     
     void clearAnalyze() {
-        this.forward.clearPositionsAnalyze();
-        this.reverse.clearPositionsAnalyze();
+        this.forwardAnalyze.clearPositionsAnalyze();
+        this.reverseAnalyze.clearPositionsAnalyze();
         this.best = null;
         this.variantText = "";
         this.variantWeight = 0;
@@ -181,7 +181,7 @@ class AnalyzeData {
     }
     
     void strangeConditionOnUnsorted() {
-        this.forward.strangeConditionOnUnsorted();
-        this.reverse.strangeConditionOnUnsorted();
+        this.forwardAnalyze.strangeConditionOnUnsorted();
+        this.reverseAnalyze.strangeConditionOnUnsorted();
     }
 }
