@@ -242,8 +242,7 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> expectedFiles = asList(     
-                        "folder_1/AAaaDir",
+                List<String> expectedFiles = asList(   
                         "folder_1/file_1.txt",
                         "folder_1/file_2.txt",
                         "folder_1/inner/nested/list_movie.txt",
@@ -278,9 +277,14 @@ public class FileSearcherServiceTest {
         FileSearchResult result = searcher.find("inn/yatx", root, SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
-                assertTrue(result.success().foundFile().equals("folder_1/inner/nested/yyyAAA.txt"));
-            } else {
                 fail();
+            } else {      
+                List<String> expectedFiles = asList(   
+                        "folder_1/inner/aAAaa.txt",
+                        "folder_1/inner/nested/yyyAAA.txt"
+                );
+                List<String> foundFiles = result.success().foundFiles();
+                assertMatching(foundFiles, expectedFiles);
             }
         } else {
             fail();

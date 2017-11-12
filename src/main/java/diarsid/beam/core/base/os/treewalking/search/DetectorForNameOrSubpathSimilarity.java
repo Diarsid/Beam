@@ -7,6 +7,8 @@ package diarsid.beam.core.base.os.treewalking.search;
 
 import java.nio.file.Path;
 
+import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
+
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
@@ -18,8 +20,11 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
  */
 class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
 
+    private final SimilarityCheckSession session;
+    
     public DetectorForNameOrSubpathSimilarity(String nameToFind) {
         super(nameToFind);
+        this.session = new SimilarityCheckSession();
     }
 
     @Override

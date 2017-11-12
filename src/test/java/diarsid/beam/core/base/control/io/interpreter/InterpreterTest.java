@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.CallBatchCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorDefaultCommand;
@@ -19,8 +20,11 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
@@ -68,6 +72,57 @@ public class InterpreterTest {
         interpreter = new Interpreter();
     }
     
+    private void assertThatInputInterpretedAsCommandType(String input, CommandType expectedType) {
+        Command command = interpreter.interprete(input);
+        assertThat(command.type(), equalTo(expectedType));
+    }
+    
+    private void assertThatInputNotInterpretedAsCommandType(String input, CommandType expectedType) {
+        Command command = interpreter.interprete(input);
+        assertThat(command.type(), not(equalTo(expectedType)));
+    }
+    
+    @Test
+    public void testInterprete_inconsistent_() {
+        
+    }
+    
+    @Test
+    public void testInterprete_inconsistent_exit() {
+        assertThatInputInterpretedAsCommandType("exit", EXIT);
+        assertThatInputInterpretedAsCommandType("ext", EXIT);
+        assertThatInputInterpretedAsCommandType("eixt", EXIT);
+        assertThatInputInterpretedAsCommandType("exut", EXIT);
+        assertThatInputInterpretedAsCommandType("exite", EXIT);
+        assertThatInputNotInterpretedAsCommandType("exxite", EXIT);
+        assertThatInputNotInterpretedAsCommandType("ietx", EXIT);
+        assertThatInputNotInterpretedAsCommandType("ex", EXIT);
+    }
+    
+//    @Test
+//    public void testInterprete_inconsistent_() {
+//        
+//    }
+//    
+//    @Test
+//    public void testInterprete_inconsistent_() {
+//        
+//    }
+//    
+//    @Test
+//    public void testInterprete_inconsistent_() {
+//        
+//    }
+//    
+//    @Test
+//    public void testInterprete_inconsistent_() {
+//        
+//    }
+//    
+//    @Test
+//    public void testInterprete_inconsistent_() {
+//        
+//    }
     
     @Test
     public void testInterprete_pause_number_seconds() {

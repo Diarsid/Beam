@@ -24,7 +24,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isStrictSimilar;
+import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOk;
@@ -224,7 +224,7 @@ public class Analyze {
     
     public static boolean nameIsSatisfiable(String pattern, String name) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, name) ) {
-            return isStrictSimilar(name, pattern);
+            return isSimilar(name, pattern);
         } else {
             return weightVariant(pattern, new Variant(name, 0)).isPresent();
         }        
@@ -232,7 +232,7 @@ public class Analyze {
     
     public static boolean variantIsSatisfiable(String pattern, Variant variant) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, variant.text()) ) {
-            return isStrictSimilar(variant.text(), pattern);
+            return isSimilar(variant.text(), pattern);
         } else {
             return weightVariant(pattern, variant).isPresent();
         }        
@@ -240,7 +240,7 @@ public class Analyze {
     
     public static boolean entityIsSatisfiable(String pattern, NamedEntity entity) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, entity.name()) ) {
-            return isStrictSimilar(entity.name(), pattern);
+            return isSimilar(entity.name(), pattern);
         } else {
             return weightVariant(pattern, entity.toSingleVariant()).isPresent();
         }        

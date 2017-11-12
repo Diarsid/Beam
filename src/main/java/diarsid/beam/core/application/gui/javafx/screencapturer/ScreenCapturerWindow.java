@@ -186,10 +186,11 @@ public class ScreenCapturerWindow implements Runnable {
         
         hBox.setSpacing(4);
         DropShadow sh = new DropShadow();
-        sh.setHeight(sh.getHeight() * 1.4);
-        sh.setWidth(sh.getWidth() * 1.4);
-        sh.setSpread(sh.getSpread() * 1.4);
-        sh.setColor(Color.BLACK);
+        sh.setHeight(sh.getHeight() * 1.35);
+        sh.setWidth(sh.getWidth() * 1.35);
+        sh.setSpread(sh.getSpread() * 1.35);
+        Color opacityBlack = new Color(0, 0, 0, 0.4);
+        sh.setColor(opacityBlack);
         hBox.setEffect(sh);
         hBox.setId("screen-capture-control-pane");
         hBox.setPadding(new Insets(3));

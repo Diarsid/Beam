@@ -93,10 +93,11 @@ abstract class BeamWindow implements Comparable<BeamWindow> {
     
     final void setContent(Pane contentPane) {
         DropShadow sh = new DropShadow();
-        sh.setHeight(sh.getHeight() * 1.4);
-        sh.setWidth(sh.getWidth() * 1.4);
-        sh.setSpread(sh.getSpread() * 1.4);
-        sh.setColor(Color.BLACK);
+        sh.setHeight(sh.getHeight() * 1.35);
+        sh.setWidth(sh.getWidth() * 1.35);
+        sh.setSpread(sh.getSpread() * 1.35);
+        Color opacityBlack = new Color(0, 0, 0, 0.4);
+        sh.setColor(opacityBlack);
         VBox mainVBox = new VBox();
         mainVBox.setEffect(sh);
         mainVBox.setId("main");

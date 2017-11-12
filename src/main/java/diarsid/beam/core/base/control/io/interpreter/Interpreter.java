@@ -143,8 +143,8 @@ public class Interpreter {
                         "b/", 
                         "e/", 
                         "c/").priority(HIGH).and(domainWord().and(executable(CALL_BATCH))),
-                justControlWord(independentWord("exit")).priority(HIGH).and(only(EXIT)),
-                justControlWord(independentWord("close")).priority(HIGH).and(only(CLOSE_CONSOLE)),
+                justControlWord(independentWord("exit")).priority(higherThan(HIGH)).and(only(EXIT)),
+                justControlWord(independentWord("close")).priority(higherThan(HIGH)).and(only(CLOSE_CONSOLE)),
                 controlWords(independentWords(
                         "n", 
                         "note", 

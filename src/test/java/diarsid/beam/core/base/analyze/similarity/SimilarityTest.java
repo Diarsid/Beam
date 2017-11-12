@@ -6,7 +6,6 @@
 package diarsid.beam.core.base.analyze.similarity;
 
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -44,16 +43,39 @@ public class SimilarityTest {
         assertTrue(isSimilar("webpage", "wepaeg"));
     }
     
-    // TODO MIDDLE
-    @Ignore
+    @Test
+    public void test_isSimilar_open_opn() {
+        assertTrue(isSimilar("open", "opn"));
+    }
+    
+    @Test
+    public void test_isSimilar_SoulWindows7_win7() {
+        assertTrue(isSimilar("SoulWindows7upd12fw446fngg67jf.exe", "win7"));
+    }
+    
     @Test
     public void test_isStrictSimilar_webpage_wepaeg() {
         assertTrue(isStrictSimilar("webpage", "wepaeg"));
     }
     
     @Test
-    public void test_isStrictSimilar_webpage_wepaeg_false() {
+    public void test_isStrictSimilar_exit_ext() {
+        assertTrue(isStrictSimilar("exit", "ext"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_locations_locastion() {
+        assertTrue(isStrictSimilar("locations", "locastion"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_webpage_egpawe_false() {
         assertFalse(isStrictSimilar("webpage", "egpawe"));
+    }
+    
+    @Test
+    public void test_isSimilar_projects_programs_false() {
+        assertFalse(isSimilar("projects", "programs"));
     }
     
     @Test
@@ -62,7 +84,7 @@ public class SimilarityTest {
     }
     
     @Test
-    public void testr_webpanel_paeg() {
+    public void test_webpanel_paeg() {
         assertFalse(isStrictSimilar("webpanel", "paeg"));
     }
     
@@ -187,5 +209,22 @@ public class SimilarityTest {
                                             "call", 
                                             "exe", 
                                             "exec"), "exit"));
+    }
+    
+    @Test
+    public void test_hasStrictSimilar_loc() {
+        assertTrue(hasStrictSimilar(toSet(
+                                            "loc", 
+                                            "location"), "loc"));
+    }
+    
+    @Test
+    public void test_hasStrictSimilar_loc_false() {
+        assertFalse(hasStrictSimilar(toSet(
+                                            "mem", 
+                                            "memory", 
+                                            "com", 
+                                            "comm", 
+                                            "command"), "loc"));
     }
 }
