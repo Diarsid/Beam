@@ -30,7 +30,7 @@ class IoModuleWorkerBuilder implements GemModuleBuilder<IoModule> {
     @Override
     public IoModule buildModule() {
         Gui gui = this.applicationComponentsHolderModule.gui();
-        OuterIoEnginesManager enginesManager = new OuterIoEnginesManager();
+        LimitedOuterIoEnginesManager enginesManager = new LimitedOuterIoEnginesManager();
         OuterIoEnginesHolder ioEnginesHolder = new OuterIoEnginesHolder(enginesManager);
         HelpContext helpContext = new HelpContext();
         MainInnerIoEngine mainIo = new MainInnerIoEngine(ioEnginesHolder, gui, helpContext);

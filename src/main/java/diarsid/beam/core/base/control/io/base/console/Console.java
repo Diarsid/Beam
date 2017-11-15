@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.base.control.io.console;
+package diarsid.beam.core.base.control.io.base.console;
 
 import java.util.List;
 
@@ -12,6 +12,7 @@ import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
@@ -42,15 +43,26 @@ import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
  *
  * @author Diarsid
  */
-public class ConsoleController 
+public class Console 
         implements 
                 OuterIoEngine, 
                 Runnable { 
 
     private final ConsoleEngine engine;
     
-    ConsoleController(ConsoleEngine engine) {
+    Console(ConsoleEngine engine) {
         this.engine = engine;        
+    }
+    
+    public static Console buildConsoleUsing(ConsolePlatform consolePlatform) {
+        ConsoleEngine consoleEngine = new ConsoleEngine(consolePlatform);
+        Console consoleController = new Console(consoleEngine);
+        return consoleController;
+    }
+
+    @Override
+    public OuterIoEngineType type() {
+        return this.engine.type();
     }
     
     @Override
@@ -61,7 +73,7 @@ public class ConsoleController
             this.engine.interactionBegins();
             if ( command.isNotEmpty() ) {
                 awaitDo(() -> {
-                    this.engine.execute(command.get());
+                    this.engine.blockingExecute(command.get());
                 });                        
             }                    
             this.engine.interactionEnds();

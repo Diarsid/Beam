@@ -14,6 +14,8 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.modules.IoModule;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError; 
 
@@ -42,21 +44,22 @@ public class IoModuleWorker implements IoModule {
     @Override
     public boolean registerOuterIoEngine(OuterIoEngine ioEngine) {
         try {
-            debug("register ioEngine: " + ioEngine.name());
+            debug(format("register ioEngine name:%s, type:%s", ioEngine.name(), ioEngine.type()));
+            return this.ioEnginesHolder.acceptNewIoEngine(ioEngine);
         } catch (IOException ex) {
             logError(this.getClass(), ex);
-        }
-        return this.ioEnginesHolder.acceptNewIoEngine(ioEngine);
+            return false;
+        }        
     }
 
     @Override
     public boolean unregisterIoEngine(Initiator initiator) {
-        return this.ioEnginesHolder.deleteEngine(initiator);
+        return this.ioEnginesHolder.deleteEngineBy(initiator);
     }
 
     @Override
     public boolean isInitiatorLegal(Initiator initiator) {
-        return this.ioEnginesHolder.hasEngine(initiator);
+        return this.ioEnginesHolder.hasEngineBy(initiator);
     }
 
     @Override

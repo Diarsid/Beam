@@ -10,13 +10,16 @@ import java.rmi.RemoteException;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
+import diarsid.beam.core.base.control.io.base.console.Console;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.control.io.console.ConsoleController;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
+
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.REMOTE;
 
 /**
  *
@@ -24,15 +27,15 @@ import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
  */
 public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
         
-    private final ConsoleController console;
+    private final Console console;
     
-    public RemoteConsoleAdpater(ConsoleController console) {
+    public RemoteConsoleAdpater(Console console) {
         this.console = console;
     }
 
     @Override
     public void close() throws RemoteException {        
-            this.console.close();
+        this.console.close();
     }
     
     @Override
@@ -78,6 +81,11 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     @Override
     public String name() throws RemoteException {
         return this.console.name();
+    }
+
+    @Override
+    public OuterIoEngineType type() {
+        return REMOTE;
     }
    
 }

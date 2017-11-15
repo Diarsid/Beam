@@ -13,7 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 
 import diarsid.beam.core.application.environment.Configuration;
-import diarsid.beam.core.base.control.io.console.ConsoleController;
+import diarsid.beam.core.base.control.io.base.console.Console;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
 
@@ -52,7 +52,7 @@ public class ConsoleRemoteManager {
         this.coreRegistryHost = config.asString("rmi.core.host");        
     }
     
-    void export(ConsoleController console) {
+    void export(Console console) {
         try {     
             Registry registry = null;
             boolean registryNotCreated = true;

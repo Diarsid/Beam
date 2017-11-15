@@ -62,10 +62,10 @@ public class MainInnerIoEngine
 
     @Override
     public Choice ask(Initiator initiator, String yesOrNoQuestion, Help help) {
-        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+        if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             return awaitGet(() -> {
                 try {
-                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     Choice choice = ioEngine.resolve(yesOrNoQuestion);
                     while ( choice.isHelpRequest() ) {
                         if ( help.isKey() ) {
@@ -78,7 +78,7 @@ public class MainInnerIoEngine
                     return choice;
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngine(initiator);
+                    this.ioEnginesHolder.deleteEngineBy(initiator);
                     return NOT_MADE;
                 }
             }).orElse(NOT_MADE);            
@@ -89,10 +89,10 @@ public class MainInnerIoEngine
 
     @Override
     public Answer ask(Initiator initiator, VariantsQuestion question, Help help) {
-        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+        if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             return awaitGet(() -> {
                 try {
-                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     Answer answer = ioEngine.resolve(question);
                     while ( answer.isHelpRequest() ) {
                         if ( help.isKey() ) {
@@ -105,7 +105,7 @@ public class MainInnerIoEngine
                     return answer; 
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngine(initiator);
+                    this.ioEnginesHolder.deleteEngineBy(initiator);
                     return rejectedAnswer();
                 }
             }).orElse(rejectedAnswer());            
@@ -117,10 +117,10 @@ public class MainInnerIoEngine
     @Override
     public Answer chooseInWeightedVariants(
             Initiator initiator, WeightedVariants variants, Help help) {
-        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+        if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             return awaitGet(() -> {
                 try {
-                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     Answer answer = ioEngine.resolve(variants);
                     while ( answer.isHelpRequest() ) {
                         if ( help.isKey() ) {
@@ -133,7 +133,7 @@ public class MainInnerIoEngine
                     return answer;        
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngine(initiator);
+                    this.ioEnginesHolder.deleteEngineBy(initiator);
                     return rejectedAnswer();
                 }
             }).orElse(rejectedAnswer());      
@@ -144,10 +144,10 @@ public class MainInnerIoEngine
     
     @Override
     public String askInput(Initiator initiator, String inputQuestion, Help help) {
-        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+        if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             return awaitGet(() -> {
                 try {
-                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngine(initiator);
+                    OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     String input = ioEngine.askForInput(inputQuestion); 
                     while ( isHelpRequest(input) ) {
                         if ( help.isKey() ) {
@@ -160,7 +160,7 @@ public class MainInnerIoEngine
                     return input;
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngine(initiator);
+                    this.ioEnginesHolder.deleteEngineBy(initiator);
                     return "";
                 }
             }).orElse("");
@@ -181,15 +181,15 @@ public class MainInnerIoEngine
 
     @Override
     public void report(Initiator initiator, String string) {
-        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+        if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             awaitDo(() -> {
                 try {
                     this.ioEnginesHolder
-                            .getEngine(initiator)
+                            .getEngineBy(initiator)
                             .report(string);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngine(initiator);
+                    this.ioEnginesHolder.deleteEngineBy(initiator);
                 }
             });            
         } else if ( initiator.equals(this.systemInitiator) ) {
@@ -216,15 +216,15 @@ public class MainInnerIoEngine
 
     @Override
     public void reportMessage(Initiator initiator, Message message) {
-        if ( this.ioEnginesHolder.hasEngine(initiator) ) {
+        if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             awaitDo(() -> {
                 try {
                     this.ioEnginesHolder
-                            .getEngine(initiator)
+                            .getEngineBy(initiator)
                             .report(message);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngine(initiator);
+                    this.ioEnginesHolder.deleteEngineBy(initiator);
                 }
             });            
         } else if ( initiator.equals(this.systemInitiator) ) {

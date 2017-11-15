@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.control.io.console;
+package diarsid.beam.core.base.control.io.base.console;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
@@ -32,6 +32,10 @@ class ConsoleEngine {
         this.isWorking = new AtomicBoolean(true);
     }
     
+    OuterIoEngineType type() {
+        return this.consolePlatform.type();
+    }
+    
     String name() {
         return this.consolePlatform.name();
     }
@@ -39,7 +43,7 @@ class ConsoleEngine {
     String read() {
         try {
             return this.reader.readLine();
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
             return "";
         }
@@ -49,7 +53,7 @@ class ConsoleEngine {
         try {
             this.printer.printReadyForNewCommandLine();
             return this.reader.readLine();
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
             return "";
         }
@@ -62,7 +66,7 @@ class ConsoleEngine {
             } else {
                 this.printer.printNonDuringInteraction(report);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
@@ -74,7 +78,7 @@ class ConsoleEngine {
             } else {
                 this.printer.printNonDuringInteraction(message);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
@@ -86,7 +90,7 @@ class ConsoleEngine {
             } else {
                 this.printer.printNonDuringInteraction(help);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
@@ -94,7 +98,7 @@ class ConsoleEngine {
     void print(VariantsQuestion question) {
         try {
             this.printer.print(question);
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
@@ -102,7 +106,7 @@ class ConsoleEngine {
     void print(List<WeightedVariant> weightedVariants) {
         try {
             this.printer.print(weightedVariants);
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
@@ -110,7 +114,7 @@ class ConsoleEngine {
     void printYesNoQuestion(String question) {
         try {
             this.printer.printYesNoQuestion(question);
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }    
     }
@@ -118,7 +122,7 @@ class ConsoleEngine {
     void printInvite(String inviteMessage) {
         try {
             this.printer.printInDialogInviteLine(inviteMessage);
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
@@ -135,8 +139,12 @@ class ConsoleEngine {
         this.isInteractionLasts.set(false);
     }
     
-    void execute(String commandLine) {
-        this.consolePlatform.executeCommand(commandLine);
+    void blockingExecute(String commandLine) {
+        try {
+            this.consolePlatform.blockingExecuteCommand(commandLine);
+        } catch (Exception e) {
+            this.consolePlatform.reportException(e);
+        }
     }
     
     void acceptInitiator(Initiator initiator) {

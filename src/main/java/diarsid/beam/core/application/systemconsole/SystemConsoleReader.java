@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.application.systemconsole;
 
-import diarsid.beam.core.base.control.io.console.ConsoleReader;
+import diarsid.beam.core.base.control.io.base.console.ConsoleReader;
 
 import java.io.BufferedReader;
 import java.io.IOException;

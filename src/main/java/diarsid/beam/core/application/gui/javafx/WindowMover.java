@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.gui.javafx.screencapturer;
+package diarsid.beam.core.application.gui.javafx;
 
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
@@ -21,16 +21,16 @@ public class WindowMover {
     public WindowMover() {
     }
     
-    void acceptStage(Stage stage) {
+    public void acceptStage(Stage stage) {
         this.stage = stage;
     }
     
-    void onMousePressed(MouseEvent mouseEvent) {
+    public void onMousePressed(MouseEvent mouseEvent) {
         this.x = this.stage.getX() - mouseEvent.getScreenX();
         this.y = this.stage.getY() - mouseEvent.getScreenY();
     }
     
-    void onMouseDragged(MouseEvent mouseEvent) {
+    public void onMouseDragged(MouseEvent mouseEvent) {
         this.stage.setX(mouseEvent.getScreenX() + this.x);
         this.stage.setY(mouseEvent.getScreenY() + this.y);
     }

@@ -19,10 +19,17 @@ public final class Initiator implements Serializable {
     
     private final String id;
     private final int engineNumber;
+    private final OuterIoEngineType outerIoEngineType;
     
-    public Initiator(int engineNumber) {
+    public Initiator(int engineNumber, OuterIoEngineType outerIoEngineType) {
         this.id = randomString(7);
+        if ( outerIoEngineType.isLimitedBySlots() 
         this.engineNumber = engineNumber;
+        this.outerIoEngineType = outerIoEngineType;
+    }
+    
+    public OuterIoEngineType outerIoEngineType() {
+        return this.outerIoEngineType;
     }
     
     public int engineNumber() {

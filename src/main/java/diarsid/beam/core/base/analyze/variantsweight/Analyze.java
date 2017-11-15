@@ -164,15 +164,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        Variant variant = new Variant("Programs", 0);
-        String pattern = "diarsid";
-        
-        Optional<WeightedVariant> result = weightVariant(pattern, variant);
-        if ( result.isPresent() ) {
-            System.out.println("OK");
-        } else {
-            System.out.println("FAIL");
-        }
+        weightStrings("projse", asList("Projects/Diarsid","Projects/Diarsid/NetBeans"));
     }
 
     private static void weightAnalyzeCases() {

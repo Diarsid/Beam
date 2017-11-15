@@ -11,10 +11,10 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.control.io.base.console.ConsolePrinter;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.control.io.console.ConsolePrinter;
 
 import static java.lang.String.format;
 
@@ -134,7 +134,7 @@ class SystemConsolePrinter implements ConsolePrinter {
     }
     
     @Override
-    public void print(IOException e) {
+    public void print(Exception e) {
         try {
             this.writer.newLine();
             this.writer.write(e.getMessage());

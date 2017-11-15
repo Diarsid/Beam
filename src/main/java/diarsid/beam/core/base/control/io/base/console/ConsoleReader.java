@@ -3,16 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-package diarsid.beam.core.modules.control.cli.nativeconsole;
+package diarsid.beam.core.base.control.io.base.console;
 
 /**
  *
  * @author Diarsid
  */
-interface InputSource {
+public interface ConsoleReader {
+
+    String readLine() throws Exception;
     
-    String waitForCommand() throws InterruptedException;
-    
-    String waitForResponse() throws InterruptedException;
 }
