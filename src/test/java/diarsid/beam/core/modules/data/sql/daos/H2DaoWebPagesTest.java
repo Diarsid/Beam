@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.modules.data.sql.daos;
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoWebPages;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +39,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
@@ -71,7 +70,7 @@ public class H2DaoWebPagesTest {
     
     @BeforeClass
     public static void setUpClass() throws Exception {
-        initiator = new Initiator(12);
+        initiator = new Initiator(12, IN_MACHINE);
         dataBase = new H2TestDataBase("web_pages_test");
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoWebPages(dataBase, ioEngine);

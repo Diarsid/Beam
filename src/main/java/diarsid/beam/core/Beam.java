@@ -18,6 +18,7 @@ import com.drs.gem.injector.core.GemInjector;
 
 import static java.lang.Integer.MAX_VALUE;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
 
@@ -28,7 +29,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
 
 public class Beam {
     
-    private static final Initiator SYSTEM_INITIATOR = new Initiator(MAX_VALUE);
+    private static final Initiator SYSTEM_INITIATOR = new Initiator(MAX_VALUE, IN_MACHINE);
     
     public final static String CORE_CONTAINER = "Beam.core";        
     

@@ -23,7 +23,6 @@ public final class Initiator implements Serializable {
     
     public Initiator(int engineNumber, OuterIoEngineType outerIoEngineType) {
         this.id = randomString(7);
-        if ( outerIoEngineType.isLimitedBySlots() 
         this.engineNumber = engineNumber;
         this.outerIoEngineType = outerIoEngineType;
     }

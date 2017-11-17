@@ -20,7 +20,7 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
  */
 public interface OuterIoEngine {
     
-    OuterIoEngineType type();
+    OuterIoEngineType type() throws IOException;
     
     String name() throws IOException;
     

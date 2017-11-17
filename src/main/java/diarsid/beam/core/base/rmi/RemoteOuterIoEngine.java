@@ -8,19 +8,23 @@ package diarsid.beam.core.base.rmi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
+import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 
 /**
  *
  * @author Diarsid
  */
 public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
+    
+    @Override
+    OuterIoEngineType type() throws RemoteException;
     
     @Override
     void close() throws RemoteException;

@@ -7,8 +7,6 @@
 package diarsid.beam.core.modules.data.sql.daos;
 
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoLocations;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -25,10 +23,10 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
-import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -37,6 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.jdbc.transactions.core.Params.params;
@@ -58,7 +57,7 @@ public class H2DaoLocationsTest {
     @BeforeClass
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
-        initiator = new Initiator(76);
+        initiator = new Initiator(76, IN_MACHINE);
         testDataBase = new H2TestDataBase("locations_test");
         daoLocations = new H2DaoLocations(testDataBase, ioEngine);
         SqlDataBaseModel model = new H2DataBaseModel();

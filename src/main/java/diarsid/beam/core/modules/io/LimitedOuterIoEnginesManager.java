@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.modules.io;
 
+import java.io.IOException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -27,7 +28,7 @@ import static diarsid.beam.core.base.util.Requirements.requireNull;
  *
  * @author Diarsid
  */
-class LimitedOuterIoEnginesManager {
+class LimitedOuterIoEnginesManager implements OuterIoEnginesManager {
     
     private static final int ENGINES_SLOTS_QTY;    
     private static final SortedSet<Integer> FREE_ENGINES_SLOTS;  
@@ -281,8 +282,10 @@ class LimitedOuterIoEnginesManager {
         }        
     }
     
-    boolean removeEngineBy(Initiator initiator) {
+    @Override
+    public boolean closeAndRemoveEngineBy(Initiator initiator) throws IOException {
         int engineNumber = adjustBetween(initiator.engineNumber(), 1, ENGINES_SLOTS_QTY);
+        getEngineByNumber(engineNumber).close();
         synchronized ( ENGINES_LOCK ) {
             try {
                 nullifyEngineByNumber(engineNumber);
@@ -295,13 +298,15 @@ class LimitedOuterIoEnginesManager {
         }
     }
     
-    OuterIoEngine getEngineBy(Initiator initiator) {
+    @Override
+    public OuterIoEngine getEngineBy(Initiator initiator) {
         synchronized ( ENGINES_LOCK ) {
             return getEngineByNumber(initiator.engineNumber());
         }        
     }
     
-    boolean hasEngineBy(Initiator initiator) {
+    @Override
+    public boolean hasEngineBy(Initiator initiator) {
         synchronized ( ENGINES_LOCK ) {
             return nonNull(getEngineByNumber(initiator.engineNumber()));
         }

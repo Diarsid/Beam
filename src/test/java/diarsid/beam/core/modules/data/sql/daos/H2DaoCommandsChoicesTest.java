@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.modules.data.sql.daos;
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoCommandsChoices;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
@@ -64,7 +63,7 @@ public class H2DaoCommandsChoicesTest {
     
     @BeforeClass
     public static void setUpClass() throws Exception {
-        initiator = new Initiator(41);
+        initiator = new Initiator(41, IN_MACHINE);
         dataBase = new H2TestDataBase("commands-choices-test");
         ioEngine = mock(InnerIoEngine.class);
         

@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.sql.daos;
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoBatches;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,15 +22,15 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
+import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
-import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -45,14 +43,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
+import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.jdbc.transactions.core.Params.params;
-import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 
 /**
  *
@@ -71,7 +70,7 @@ public class H2DaoBatchesTest {
     @BeforeClass
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
-        initiator = new Initiator(13);
+        initiator = new Initiator(13, IN_MACHINE);
         testDataBase = new H2TestDataBase("testBase");
         daoBatches = new H2DaoBatches(testDataBase, ioEngine);
         SqlDataBaseModel dataBaseModel = new H2DataBaseModel();

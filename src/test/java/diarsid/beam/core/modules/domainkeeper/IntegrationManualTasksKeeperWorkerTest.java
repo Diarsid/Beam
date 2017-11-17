@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 
 import mocks.InnerIoEngineForManualTests;
 
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -26,11 +27,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
-
-import diarsid.beam.core.base.control.flow.VoidFlow;
 
 /**
  *
@@ -46,7 +46,7 @@ public class IntegrationManualTasksKeeperWorkerTest {
     public static void main(String[] args) throws Exception {
         InnerIoEngine ioEngine = new InnerIoEngineForManualTests(reader);
         KeeperDialogHelper helper = new KeeperDialogHelper(ioEngine);
-        Initiator initiator = new Initiator(56);
+        Initiator initiator = new Initiator(56, IN_MACHINE);
         DaoTasks dao = mock(DaoTasks.class);
         when(dao.saveTask(any(Initiator.class), anyObject())).thenReturn(true);
         

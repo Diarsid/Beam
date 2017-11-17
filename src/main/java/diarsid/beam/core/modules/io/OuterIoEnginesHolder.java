@@ -7,9 +7,7 @@
 package diarsid.beam.core.modules.io;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -18,7 +16,6 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
 
@@ -33,13 +30,23 @@ public class OuterIoEnginesHolder {
     private final Set<Initiator> initiators;    
     private final Object enginesLock;
     private final LimitedOuterIoEnginesManager limitedEnginesManager;
-    private final Map<Initiator, OuterIoEngine> unlimitedEngines;
+    private final UnlimitedOuterIoEnginesManager unlimitedEnginesManager;
     
-    public OuterIoEnginesHolder(LimitedOuterIoEnginesManager enginesManager) {
+    public OuterIoEnginesHolder(
+            LimitedOuterIoEnginesManager limitedEnginesManager,
+            UnlimitedOuterIoEnginesManager unlimitedEnginesManager) {
         this.enginesLock = new Object();
-        this.limitedEnginesManager = enginesManager;
-        this.unlimitedEngines = new HashMap<>();
+        this.limitedEnginesManager = limitedEnginesManager;
+        this.unlimitedEnginesManager = unlimitedEnginesManager;
         this.initiators = new HashSet<>();
+    }
+    
+    private OuterIoEnginesManager enginesManagerFor(Initiator initiator) {
+        if ( initiator.outerIoEngineType().isLimitedBySlots() ) {
+            return this.limitedEnginesManager;
+        } else {
+            return this.unlimitedEnginesManager;
+        }
     }
     
     boolean acceptNewIoEngine(OuterIoEngine ioEngine) throws IOException {
@@ -75,22 +82,29 @@ public class OuterIoEnginesHolder {
         } 
     }
     
-    private boolean acceptAsUnlimited(OuterIoEngine ioEngine) {
+    private boolean acceptAsUnlimited(OuterIoEngine ioEngine) throws IOException {
         synchronized ( this.enginesLock ) {
-            
+            Initiator initiator = new Initiator(UNLIMITED_ENGINES_SLOT_NUMBER, ioEngine.type());
+            ioEngine.accept(initiator);
+            this.initiators.add(initiator);
+            log(this.getClass(), format("%s %s set with initiator: %s, into slot %d", 
+                    ioEngine.name(), 
+                    ioEngine.type(),
+                    initiator.identity(), 
+                    initiator.engineNumber()));
+            return true;
         }
     }
     
     OuterIoEngine getEngineBy(Initiator initiator) {
-        return this.limitedEnginesManager.getEngineBy(initiator);
-    }
+        return this.enginesManagerFor(initiator).getEngineBy(initiator);
+    }        
     
     boolean deleteEngineBy(Initiator initiator) {
         synchronized ( this.enginesLock ) {
             try {
-                this.limitedEnginesManager.getEngineBy(initiator).close();
                 this.initiators.remove(initiator);
-                boolean removed = this.limitedEnginesManager.removeEngineBy(initiator);
+                boolean removed = this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator);
                 if ( removed ) {
                     log(this.getClass(), "engine has been removed.");
                     return true;
@@ -101,31 +115,26 @@ public class OuterIoEnginesHolder {
             } catch (IOException e) {
                 logError(this.getClass(), "exception during ioEngine closing attempt.", e);
                 return false;
-            }           
+            }                      
         }    
     }
     
     boolean hasEngineBy(Initiator initiator) {
         return 
                 this.initiators.contains(initiator) && 
-                this.limitedEnginesManager.hasEngineBy(initiator);
+                this.enginesManagerFor(initiator).hasEngineBy(initiator);
     }
     
     void closeAllEngines() {
         synchronized ( this.enginesLock ) {
-            this.initiators
-                    .forEach(initiator -> {
-                        try {
-                            OuterIoEngine engine = this.limitedEnginesManager.getEngineBy(initiator);
-                            String engineName = engine.name();
-                            engine.close();
-                            this.limitedEnginesManager.removeEngineBy(initiator);
-                            debug("closing engine: " + engineName);
-                        } catch (IOException ex) {
-                            logError(this.getClass(), 
-                                    "exception during ioEngine closing attempt.", ex);
-                        }
-                    });
+            this.initiators.forEach(initiator -> {
+                try {
+                    this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator);
+                } catch (IOException ex) {
+                    logError(this.getClass(), 
+                            "exception during ioEngine closing attempt.", ex);
+                }
+            });
             this.initiators.clear();
         }
     }
@@ -133,6 +142,6 @@ public class OuterIoEnginesHolder {
     Stream<OuterIoEngine> all() {
         return this.initiators
                 .stream()
-                .map(initiator -> this.limitedEnginesManager.getEngineBy(initiator));
+                .map(initiator -> this.enginesManagerFor(initiator).getEngineBy(initiator));
     }
 }

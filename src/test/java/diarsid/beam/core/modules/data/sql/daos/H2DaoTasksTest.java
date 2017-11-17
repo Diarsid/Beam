@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.modules.data.sql.daos;
 
-import diarsid.beam.core.modules.data.sql.daos.H2DaoTasks;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.NO_REPEAT;
@@ -69,7 +68,7 @@ public class H2DaoTasksTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        initiator = new Initiator(23);
+        initiator = new Initiator(23, IN_MACHINE);
         dataBase = new H2TestDataBase("tasks_test");
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoTasks(dataBase, ioEngine);

@@ -33,6 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
@@ -79,7 +80,7 @@ public class H2DaoNamedEntitiesTest {
     }
 
     private static void prepareComponents() {
-        initiator = new Initiator(36);
+        initiator = new Initiator(36, IN_MACHINE);
         dataBase = new H2TestDataBase("testBase-gsdfjsqw");
         ioEngine = mock(InnerIoEngine.class);
         programsCatalog = mock(ProgramsCatalog.class);

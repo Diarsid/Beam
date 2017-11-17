@@ -38,6 +38,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
@@ -66,7 +67,7 @@ public class H2DaoWebDirectoriesTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        initiator = new Initiator(12);
+        initiator = new Initiator(12, IN_MACHINE);
         dataBase = new H2TestDataBase("web_dirs_test");
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoWebDirectories(dataBase, ioEngine);
