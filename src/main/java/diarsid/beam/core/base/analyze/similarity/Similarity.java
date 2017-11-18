@@ -40,7 +40,8 @@ public class Similarity {
 //        String target = "engines";
 //        String pattern = "eninges";
 
-        System.out.println(calculateSimilarityPercent("exit", "ietx"));
+        System.out.println(calculateSimilarityPercent("jshell", "shall"));
+        System.out.println(calculateSimilarityPercent("Programs", "proagm"));
 //        System.out.println(calculateSimilarityPercent("webpage", "egpawe"));
 //        System.out.println(calculateSimilarity("folder_1/file_1.txt", "foldaaa"));
 //        System.out.println(calculateSimilarity("AAaaDir", "foldile"));
@@ -256,7 +257,7 @@ public class Similarity {
             similarityLog("pattern is longer than target!", 1);
             session.similarityPercentSum = session.similarityPercentSum - session.similarityPercent;
         }
-        similarityLog(format("max inconsistency : %s", session.maxInconsistency));        
+        similarityLog(format("max inconsistency : %s", session.maxInconsistency), 1);        
         
         for (int chainIndexPattern = 0; chainIndexPattern < pattern.length() - 1; chainIndexPattern++) {
             session.chain1 = pattern.charAt(chainIndexPattern);
@@ -421,7 +422,7 @@ public class Similarity {
             similarityLog("pattern is longer than target!", 1);
             similarityPercentSum = similarityPercentSum - similarityPercent;
         }
-        similarityLog(format("max inconsistency : %s", maxInconsistency));        
+        similarityLog(format("max inconsistency : %s", maxInconsistency), 1);        
         
         for (int chainIndexPattern = 0; chainIndexPattern < pattern.length() - 1; chainIndexPattern++) {
             chain1 = pattern.charAt(chainIndexPattern);
@@ -526,8 +527,8 @@ public class Similarity {
         } else {
             consistencyPercent = 0;
         }
-        similarityLog(format("consistency : %s%%", consistencyPercent), 0);
-        similarityLog(format("similarity  : %s%%", similarityPercentSum), 0);
+        similarityLog(format("consistency : %s%%", consistencyPercent));
+        similarityLog(format("similarity  : %s%%", similarityPercentSum));
         
         similarityResult = ( similarityPercentSum * consistencyPercent / 100 );
         similarityLog(format("result : %s%%", similarityResult));

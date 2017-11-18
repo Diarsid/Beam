@@ -10,17 +10,16 @@ import java.util.Optional;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.LocationSubPath;
-import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_SUBPATH;
 
 
 class H2DaoLocationSubPathChoices 
@@ -91,7 +90,8 @@ class H2DaoLocationSubPathChoices
     }
 
     @Override
-    public Optional<LocationSubPath> getChoiceFor(Initiator initiator, String pattern, WeightedVariants variants) {
+    public Optional<LocationSubPath> getChoiceFor(
+            Initiator initiator, String pattern, WeightedVariants variants) {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
@@ -105,7 +105,13 @@ class H2DaoLocationSubPathChoices
                             "WHERE " +
                             "   ( LOWER(pattern) IS ? ) AND " +
                             "   ( LOWER(variants_stamp) IS ? ) ", 
-                            ROW_TO_SUBPATH, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             lower(pattern), variants.stamp());
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
             // TODO LOW

@@ -24,11 +24,14 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class LocationSubPath implements ConvertableToVariant {
     
+    private final String pattern;
     private final String locationName;
     private final String locationPath;
     private final String subPath;
 
-    public LocationSubPath(String locationName, String locationPath, String subPath) {
+    public LocationSubPath(
+            String pattern, String locationName, String locationPath, String subPath) {
+        this.pattern = pattern;
         this.locationName = locationName;
         this.locationPath = locationPath;
         if ( lower(subPath).startsWith(lower(locationName)) ) {
@@ -48,13 +51,30 @@ public class LocationSubPath implements ConvertableToVariant {
     public String locationPath() {
         return this.locationPath;
     }
+    
+    public String variantDisplayName() {
+        return format("'%s' is %s/%s", 
+                this.pattern, this.locationName, this.subPath);
+    }
 
     public String subPath() {
         return this.subPath;
     }
     
+    public String fullName() {
+        return combineAsPathFrom(this.locationName, this.subPath);
+    }
+    
+    public String fullPath() {
+        return combineAsPathFrom(this.locationPath, this.subPath);
+    }
+    
     public boolean pointsToDirectory() {
         return pathIsDirectory(combinePathFrom(this.locationPath, this.subPath));
+    }
+
+    public boolean notPointsToDirectory() {
+        return ! pathIsDirectory(combinePathFrom(this.locationPath, this.subPath));
     }    
     
     @Override
@@ -62,7 +82,7 @@ public class LocationSubPath implements ConvertableToVariant {
         String combinedPath = combineAsPathFrom(this.locationName, this.subPath);
         return new Variant(
                 combinedPath, 
-                format("%s (Location subpath)", combinedPath), 
+                this.variantDisplayName(), 
                 variantIndex);
     }
 

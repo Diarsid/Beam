@@ -13,6 +13,7 @@ import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
@@ -37,6 +38,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
     private final DaoLocationSubPaths daoSubPaths;
     private final DaoLocationSubPathChoices daoSubPathChoices;
     private final InnerIoEngine ioEngine;
+    private final Help getOneSubPathHelp;
     private final Help chooseOneSubPathHelp;
     
     LocationSubPathKeeperWorker(
@@ -46,6 +48,13 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         this.daoSubPaths = daoSubPaths;
         this.daoSubPathChoices = daoSubPathChoices;
         this.ioEngine = ioEngine;
+        this.getOneSubPathHelp = this.ioEngine.addToHelpContext(
+                "Choose if use this supbath to find specified target.",
+                "Use: ",
+                "   - n/no to reject",
+                "   - y/yes to submit",
+                "   - dot to break"
+        );
         this.chooseOneSubPathHelp = this.ioEngine.addToHelpContext(
                 "Choose one Location subpath from given variants.",
                 "Use:",
@@ -56,12 +65,25 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         );
     }    
     
-    private ValueFlow<LocationSubPath> getOneSubPathIfPointsToDirectoryAndSatisfiable(
-            String pattern, List<LocationSubPath> subPaths) {
+    private ValueFlow<LocationSubPath> askAboutSubPath(
+            Initiator initiator, LocationSubPath subPath) {
+        Choice choice = this.ioEngine.ask(
+                initiator, subPath.variantDisplayName(), this.getOneSubPathHelp);
+        if ( choice.isPositive() ) {
+            return valueFlowCompletedWith(subPath);
+        } else if ( choice.isRejected() ) {
+            return valueFlowStopped();
+        } else {
+            return valueFlowCompletedEmpty();
+        }
+    }
+    
+    private ValueFlow<LocationSubPath> getOneSubPathFrom(
+            Initiator initiator, String pattern, List<LocationSubPath> subPaths) {
         LocationSubPath subPath = getOne(subPaths);
         if ( subPath.pointsToDirectory() ) {
             if ( variantIsSatisfiable(pattern, subPath.toSingleVariant()) ) {
-                return valueFlowCompletedWith(subPath);
+                return this.askAboutSubPath(initiator, subPath);
             } else {
                 return valueFlowCompletedEmpty();
             }
@@ -75,7 +97,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             Initiator initiator, String pattern) {
         List<LocationSubPath> subPaths = this.daoSubPaths.getSubPathesByPattern(initiator, pattern);
         if ( hasOne(subPaths) ) {
-            return this.getOneSubPathIfPointsToDirectoryAndSatisfiable(pattern, subPaths);
+            return this.getOneSubPathFrom(initiator, pattern, subPaths);
         } else if ( hasMany(subPaths) ) {
             return this.chooseOneSubPathsFromMany(initiator, pattern, subPaths);
         } else {
@@ -90,7 +112,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
                 .filter(subPath -> subPath.pointsToDirectory())
                 .collect(toList());
         if ( hasOne(subPaths) ) {
-            return this.getOneSubPathIfPointsToDirectoryAndSatisfiable(pattern, subPaths);
+            return this.getOneSubPathFrom(initiator, pattern, subPaths);
         } else if ( hasMany(subPaths) ) {
             return this.resolveManySubPaths(initiator, pattern, subPaths);
         } else {
@@ -102,7 +124,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             Initiator initiator, String pattern, List<LocationSubPath> subPaths) {
         WeightedVariants variants = weightVariants(pattern, toVariants(subPaths));
         if ( variants.hasOne() ) {
-            return valueFlowCompletedWith(subPaths.get(variants.best().index()));
+            return this.askAboutSubPath(initiator, subPaths.get(variants.best().index()));
         } else if ( variants.hasMany() ) {
             return this.resolveManySubPathsVariants(initiator, pattern, subPaths, variants);
         } else {
@@ -118,7 +140,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         Optional<LocationSubPath> chosenSubPath = this.daoSubPathChoices
                 .getChoiceFor(initiator, pattern, variants);
         if ( chosenSubPath.isPresent() ) {
-            return valueFlowCompletedWith(chosenSubPath.get());
+            return this.askAboutSubPath(initiator, chosenSubPath.get());
         } else {
             return this.askToChooseOneSubPathAndSaveChoice(initiator, pattern, subPaths, variants);
         }     

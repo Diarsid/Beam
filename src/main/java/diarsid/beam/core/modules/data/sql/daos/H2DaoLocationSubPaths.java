@@ -9,10 +9,10 @@ import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.LocationSubPath;
-import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -27,7 +27,6 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_SUBPATH;
 
 /**
  *
@@ -59,7 +58,13 @@ class H2DaoLocationSubPaths
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( LOWER(com_original) IS ? )", 
-                            ROW_TO_SUBPATH, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             OPEN_LOCATION_TARGET, lower(pattern))
                     .collect(toList());
             
@@ -81,7 +86,13 @@ class H2DaoLocationSubPaths
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + multipleLowerLikeAnd("com_extended", criterias.size()) + " )", 
-                            ROW_TO_SUBPATH, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             OPEN_LOCATION_TARGET, criterias)
                     .collect(toList());
             
@@ -103,7 +114,13 @@ class H2DaoLocationSubPaths
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 
-                            ROW_TO_SUBPATH, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             OPEN_LOCATION_TARGET, criterias)
                     .collect(toList());            
             
@@ -122,7 +139,13 @@ class H2DaoLocationSubPaths
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 
-                            ROW_TO_SUBPATH, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             OPEN_LOCATION_TARGET, criterias)
                     .collect(toList());
             

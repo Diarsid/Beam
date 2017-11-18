@@ -576,14 +576,14 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }    
         if ( command.argument().isExtended() ) {
-            this.openLocationTargetUsingExtendedArgument(command, initiator);
+            this.openLocationTargetUsingExtendedArgument(initiator, command);
         } else {
-            this.openLocationTargetUsingOriginalArgument(command, initiator);
+            this.openLocationTargetUsingOriginalArgument(initiator, command);
         }
     }
 
     private void openLocationTargetUsingOriginalArgument(
-            OpenLocationTargetCommand command, Initiator initiator) {
+            Initiator initiator, OpenLocationTargetCommand command) {
         ValueFlow<Location> locationFlow;        
         debug("[open trarget, NOT extended] " + command.stringifyOriginal());
         command.setNew();
@@ -628,13 +628,20 @@ class ExecutorModuleWorker implements ExecutorModule {
         switch ( subPathFlow.result() ) {
             case COMPLETE : {
                 if ( subPathFlow.asComplete().hasValue() ) {
-                    LocationSubPath subPath = subPathFlow.asComplete().getOrThrow();          
+                    LocationSubPath subPath = subPathFlow.asComplete().getOrThrow();   
+                    if ( subPath.notPointsToDirectory() ) {
+                        this.doWhenNotFound(initiator, command);
+                        return;
+                    }
                     Location location = subPath.location();
-                    String target = combineAsPathFrom(subPath.subPath(), command.originalTarget());
-                    if ( location.has(target) ) {
-                        this.openTargetAndExtendCommand(initiator, location, target, command);
+                    String subPathAndTarget = 
+                            combineAsPathFrom(subPath.subPath(), command.originalTarget());
+                    if ( location.has(subPathAndTarget) ) {
+                        this.openTargetAndExtendCommand(
+                                initiator, location, subPathAndTarget, command);
                     } else {
-                        this.doWhenTargetNotFoundDirectly(initiator, location, target, command);
+                        this.useSubPathToFindTarget(
+                                initiator, location, subPath, command.originalTarget(), command);
                     }
                 } else {
                     this.doWhenNotFound(initiator, command);
@@ -653,9 +660,46 @@ class ExecutorModuleWorker implements ExecutorModule {
             }    
         }
     }    
+    
+    private void useSubPathToFindTarget(
+            Initiator initiator, 
+            Location location,
+            LocationSubPath subPath, 
+            String target, 
+            OpenLocationTargetCommand command) {
+        command.setNew();
+        FileSearchResult result = 
+                this.fileSearcher.find(target, subPath.fullPath(), SIMILAR_MATCH, ALL);
+        if ( result.isOk() ) {
+            if ( result.success().hasSingleFoundFile() ) {
+                target = combineAsPathFrom(subPath.subPath(), result.success().foundFile());
+                this.openTargetAndExtendCommand(initiator, location, target, command);
+            } else {
+                WeightedVariants weightedStrings = 
+                        weightStrings(target, result.success().foundFiles());
+                if ( weightedStrings.isEmpty() ) {
+                    this.ioEngine.report(
+                            initiator, format("'%s' not found in %s", target, subPath.fullName()));
+                    return;
+                }
+                Answer answer = this.ioEngine.chooseInWeightedVariants(
+                        initiator, weightedStrings, this.chooseTargetToOpenHelp);
+                if ( answer.isGiven() ) {
+                    target = combineAsPathFrom(subPath.subPath(), answer.text());
+                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                } else if ( answer.variantsAreNotSatisfactory() ) { 
+                    this.ioEngine.report(
+                            initiator, format("'%s' not found in %s", target, subPath.fullName()));
+                }
+            }
+        } else {
+            this.ioEngine.report(
+                    initiator, format("'%s' not found in %s", target, subPath.fullName()));
+        }
+    }
 
     private void openLocationTargetUsingExtendedArgument(
-            OpenLocationTargetCommand command, Initiator initiator) {
+            Initiator initiator, OpenLocationTargetCommand command) {
         ValueFlow<Location> valueFlow;
         debug("[open trarget, extended] " + command.stringifyOriginal() + " -> " + command.stringify());
         valueFlow = this.domain
