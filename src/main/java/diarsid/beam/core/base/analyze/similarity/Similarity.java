@@ -40,9 +40,9 @@ public class Similarity {
 //        String target = "engines";
 //        String pattern = "eninges";
 
-        System.out.println(calculateSimilarityPercent("jshell", "shall"));
-        System.out.println(calculateSimilarityPercent("Programs", "proagm"));
-//        System.out.println(calculateSimilarityPercent("webpage", "egpawe"));
+//        System.out.println(calculateSimilarityPercent("jshell", "shall"));
+//        System.out.println(calculateSimilarityPercent("Programs", "proagm"));
+        System.out.println(calculateSimilarityPercent("folder_1", "foldilg"));
 //        System.out.println(calculateSimilarity("folder_1/file_1.txt", "foldaaa"));
 //        System.out.println(calculateSimilarity("AAaaDir", "foldile"));
 //        System.out.println(calculateSimilarity("folder_1/inner/nested/aaa.txt", "foldaaa"));
@@ -168,6 +168,9 @@ public class Similarity {
     
     private static int indexOfChain(String target, char chain1, char chain2) {
         int indexOfChain1 = target.indexOf(chain1);
+        if ( indexOfChain1 < 0 ) {
+            return -2;
+        }
         while ( indexOfChain1 > -1 && indexOfChain1 < target.length() - 1 ) {            
             if ( target.charAt(indexOfChain1 + 1) == chain2 ) {
                 return indexOfChain1;
@@ -401,9 +404,12 @@ public class Similarity {
         int chainIndexTargetPrev = -1;
         int similarityPercentSum = 0;
         int similarityPercent = 100 / (pattern.length() - 1);
+        int patternCharPercent = 100 / pattern.length();
         int similarityFound = 0;
         int similarityResult;
         int indexDiff = 0;
+        int indexDiffAbs = 0;
+        int patternCharsNotFoundPercentSum = 0;
         boolean previousChainFoundAsReverse = false;
         boolean previousChainFoundAsWeak = false;
         char weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
@@ -430,14 +436,27 @@ public class Similarity {
             similarityLog(format("chain '%s%s'", chain1, chain2), 1);
             
             chainIndexTarget = indexOfChain(target, chain1, chain2);
+            if ( chainIndexTarget == -2 ) {
+                patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
+                similarityLog(format("char '%s' not found", chain1), 2);
+                if ( patternCharsNotFoundPercentSum > 50 ) {
+                    similarityLog("too much chars missed!");
+                    return 0;
+                }
+            }
             if ( chainIndexTarget > -1 ) {
                 similarityLog("found", 2);
                 similarityPercentSum = similarityPercentSum + similarityPercent;
                 similarityFound++;
                 if ( chainIndexTargetPrev > -1 ) {
-                    indexDiff = abs(chainIndexTarget - chainIndexTargetPrev) - 1;
-                    inconsistencySum = inconsistencySum + indexDiff;
-                    similarityLog(format("chain inconsistency : %s", indexDiff), 2);
+                    indexDiff = chainIndexTarget - chainIndexTargetPrev;
+                    if ( indexDiff < 0 ) {
+                        similarityLog("chain has reverse consistency!", 2);
+                        indexDiff--;
+                    }
+                    indexDiffAbs = abs(indexDiff) - 1;
+                    inconsistencySum = inconsistencySum + indexDiffAbs;
+                    similarityLog(format("chain inconsistency : %s", indexDiffAbs), 2);
                 }     
                 if ( previousChainFoundAsWeak ) {
                     if ( weakChainLastChar == chain1 ) {
@@ -461,9 +480,14 @@ public class Similarity {
                     similarityFound++;
                     inconsistencySum++;
                     if ( chainIndexTargetPrev > -1 ) {
-                        indexDiff = abs(reverseChainIndexTarget - chainIndexTargetPrev) - 1;
-                        inconsistencySum = inconsistencySum + indexDiff;
-                        similarityLog(format("chain inconsistency : %s", indexDiff), 2);                        
+                        indexDiff = reverseChainIndexTarget - chainIndexTargetPrev;
+                        if ( indexDiff < 0 ) {
+                            similarityLog("chain has reverse consistency!", 2);
+                            indexDiff--;
+                        }
+                        indexDiffAbs = abs(indexDiff) - 1;
+                        inconsistencySum = inconsistencySum + indexDiffAbs;
+                        similarityLog(format("chain inconsistency : %s", indexDiffAbs), 2);                        
                     }
                     if ( previousChainFoundAsWeak ) {
                         similarityLog("previous chain found as weak <- join!", 2);
@@ -498,7 +522,7 @@ public class Similarity {
                         weakChainLastChar = chain2;
                     } else {
                         if ( chainIndexTargetPrev > -1 ) {
-                            char prevChain1 = target.charAt(chainIndexTargetPrev);
+//                            char prevChain1 = target.charAt(chainIndexTargetPrev);
                             char prevChain2 = target.charAt(chainIndexTargetPrev + 1);
                             if ( prevChain2 == chain1 || prevChain2 == chain2 ) {
                                 similarityLog("found partially", 2);
@@ -520,17 +544,36 @@ public class Similarity {
                     }            
                 }
             }
-        }         
+        }
+        if ( target.indexOf(pattern.charAt(pattern.length() - 1)) < 0 ) {
+            patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
+            similarityLog(format("char '%s' not found", pattern.charAt(pattern.length() - 1)), 2);
+            if ( patternCharsNotFoundPercentSum > 50 ) {
+                similarityLog("too much chars missed!");
+                return 0;
+            }
+        }
+        if ( similarityPercentSum < 50 ) {
+            similarityLog("similarity is too low!");
+            return 0;
+        }
         
         if ( similarityFound > 0 ) {
             consistencyPercent = 100 - ( ( inconsistencySum * 100 / similarityFound ) ) / maxInconsistency;
         } else {
             consistencyPercent = 0;
         }
-        similarityLog(format("consistency : %s%%", consistencyPercent));
-        similarityLog(format("similarity  : %s%%", similarityPercentSum));
+        similarityLog(format("consistency     : %s%%", consistencyPercent));
+        similarityLog(format("chars not found : %s%%", patternCharsNotFoundPercentSum));
+        similarityLog(format("similarity      : %s%%", similarityPercentSum));
         
-        similarityResult = ( similarityPercentSum * consistencyPercent / 100 );
+        if ( ( pattern.length() * 100 / target.length() ) > 74 && 
+                patternCharsNotFoundPercentSum < 27 ) {
+            similarityResult = ( (similarityPercentSum + ((100 - patternCharsNotFoundPercentSum) / 10)) * consistencyPercent / 100 );
+        } else {
+            similarityResult = ( similarityPercentSum * consistencyPercent / 100 );
+        }
+        
         similarityLog(format("result : %s%%", similarityResult));
         return similarityResult;
     }

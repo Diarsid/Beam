@@ -243,6 +243,7 @@ public class FileSearcherServiceTest {
                 fail();
             } else {
                 List<String> expectedFiles = asList(   
+                        "folder_1",
                         "folder_1/file_1.txt",
                         "folder_1/file_2.txt",
                         "folder_1/inner/nested/list_movie.txt",

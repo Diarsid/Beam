@@ -79,6 +79,16 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_programs_proagm() {
+        assertTrue(isSimilar("programs", "proagm"));
+    }
+    
+    @Test
+    public void test_isSimilar_jshell_shall() {
+        assertTrue(isSimilar("jshell", "shall"));
+    }
+    
+    @Test
     public void test_isStrictSimilar_page_paeg() {
         assertTrue(isStrictSimilar("page", "paeg"));
     }
