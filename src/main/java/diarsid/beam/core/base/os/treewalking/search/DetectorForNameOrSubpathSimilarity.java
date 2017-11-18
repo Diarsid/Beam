@@ -9,7 +9,6 @@ import java.nio.file.Path;
 
 import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
@@ -22,7 +21,7 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
 
     private final SimilarityCheckSession session;
     
-    public DetectorForNameOrSubpathSimilarity(String nameToFind) {
+    DetectorForNameOrSubpathSimilarity(String nameToFind) {
         super(nameToFind);
         this.session = new SimilarityCheckSession();
     }
@@ -33,16 +32,21 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
         if ( containsIgnoreCase(testedName, super.itemToFind) ) {
             return true;
         } else {
-            if ( isSimilar(testedName, super.itemToFind) ) {
+            if ( this.session.isSimilar(testedName, super.itemToFind) ) {
                 return true;
             } else {
                 String testedPathString = removeSeparators(testedPath.toString());
                 if ( containsIgnoreCase(testedPathString, super.itemToFind) ) {
                     return true;
                 } else {
-                    return isSimilar(testedPathString, super.itemToFind);
+                    return this.session.isSimilar(testedPathString, super.itemToFind);
                 }
             }
         }
+    }
+    
+    @Override
+    void close() {
+        this.session.close();
     }
 }

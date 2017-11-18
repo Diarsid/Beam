@@ -20,4 +20,8 @@ abstract class NameDetector <TYPE_TO_FIND> {
     }
     
     abstract boolean isMatch(Path testedPath);
+    
+    void close() {
+        // can be overriden if particular NameDetector subclass needs to close resouces.
+    }
 }

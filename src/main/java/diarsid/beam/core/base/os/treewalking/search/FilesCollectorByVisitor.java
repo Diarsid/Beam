@@ -52,6 +52,7 @@ class FilesCollectorByVisitor implements FilesCollector {
         FileVisitorForCollecting visitor = new FileVisitorForCollecting(
                 mode, root, detector, this.folderTypeDetector);
         walkFileTree(root, FILE_VISIT_OPTIONS, this.searchDepth, visitor);
+        detector.close();
         return visitor.collected();
     }
 

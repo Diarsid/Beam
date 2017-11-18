@@ -12,7 +12,6 @@ import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 import static java.lang.System.arraycopy;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 
@@ -25,7 +24,7 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     private final String[] searchedPathPartsCopy;
     private final SimilarityCheckSession session;
 
-    public DetectorForPathPartsSimilarity(String[] searchedPthParts) {
+    DetectorForPathPartsSimilarity(String[] searchedPthParts) {
         super(searchedPthParts);
         this.searchedPathPartsCopy = new String[searchedPthParts.length];
         this.session = new SimilarityCheckSession();
@@ -34,6 +33,11 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     @Override
     boolean isMatch(Path testedPath) {
         return this.filterByPathPartsSimilarity(splitToParts(testedPath));
+    }
+    
+    @Override
+    void close() {
+        this.session.close();
     }
     
     private void fillSearchedPathPartsLocal() {
@@ -60,7 +64,7 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
                 searchedPart = this.searchedPathPartsCopy[i];
                 if ( nonNull(searchedPart) ) {
                     if ( containsIgnoreCase(realPart, searchedPart) || 
-                            isSimilar(realPart, searchedPart) ) {
+                            this.session.isSimilar(realPart, searchedPart) ) {
                         counter++;
                         this.searchedPathPartsCopy[i] = null;
                     }  
