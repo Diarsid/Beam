@@ -9,6 +9,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
@@ -43,6 +44,10 @@ public class WeightedVariants implements Serializable {
         this.currentVariantIndex = -1;
         this.isDiversityAcceptable = isDiversityAcceptable;
         this.currentSimilarVariants = null;
+    }
+    
+    public IntStream indexes() {
+        return this.variants.stream().mapToInt(variant -> variant.index());
     }
     
     public void resetTraversing() {

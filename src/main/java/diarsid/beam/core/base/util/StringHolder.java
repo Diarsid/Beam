@@ -24,7 +24,7 @@ public class StringHolder {
         this.string = s;
     }
     
-    public static StringHolder empty() {
+    public static StringHolder holdEmpty() {
         return new StringHolder();
     }
     

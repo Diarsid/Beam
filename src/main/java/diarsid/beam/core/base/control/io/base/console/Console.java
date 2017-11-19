@@ -35,9 +35,9 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnac
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
-import static diarsid.beam.core.base.util.StringHolder.empty;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.beam.core.base.util.StringHolder.holdEmpty;
 
 /**
  *
@@ -67,7 +67,7 @@ public class Console
     
     @Override
     public void run() {
-        StringHolder command = empty();   
+        StringHolder command = holdEmpty();   
         while ( this.engine.isWorking() ) {
             command.set(this.engine.readyAndWaitForLine()); 
             this.engine.interactionBegins();

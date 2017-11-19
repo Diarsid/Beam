@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -48,8 +49,8 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.StringHolder.empty;
 import static diarsid.beam.core.base.util.StringHolder.hold;
+import static diarsid.beam.core.base.util.StringHolder.holdEmpty;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
 
 /**
@@ -123,7 +124,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( command.hasArguments() ) {
             memPattern = hold(command.joinedArguments());
         } else {
-            memPattern = empty();
+            memPattern = holdEmpty();
         }
         
         return this.findCommands(initiator, memPattern);
@@ -172,13 +173,29 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             }
             
             if ( foundCommands.isEmpty() ) {
-                this.ioEngine.report(initiator, format("not found by '%s'", memPattern.get()));
+                this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
                 memPattern.setEmpty();
                 continue searching;
             } else {
-                return valueFlowCompletedWith(foundCommands);
+                WeightedVariants variants = weightVariants(
+                        memPattern.get(), commandsToVariants(foundCommands));
+                if ( variants.isNotEmpty() ) {
+                   return this.getAllFoundUsingVariantsIndexes(foundCommands, variants.indexes());
+                } else {
+                    this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
+                    memPattern.setEmpty();
+                    continue searching;
+                }                
             }
         } 
+    }
+    
+    private ValueFlow<List<InvocationCommand>> getAllFoundUsingVariantsIndexes(
+            List<InvocationCommand> foundCommands, IntStream indexes) {
+        List<InvocationCommand> commands = indexes                
+                .mapToObj(index -> foundCommands.get(index))
+                .collect(toList());
+        return valueFlowCompletedWith(commands);
     }
 
     @Override
@@ -191,7 +208,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( command.hasArguments() ) {
             memPattern = hold(command.joinedArguments());
         } else {
-            memPattern = empty();
+            memPattern = holdEmpty();
         }
         
         ValueFlow<List<InvocationCommand>> commandsFlow = 
@@ -263,7 +280,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 if ( removedFlow.asComplete().hasValue() ) {
                     return this.removeCommand(initiator, removedFlow.asComplete().getOrThrow());
                 } else {
-                    return voidFlowStopped();
+                    return voidFlowCompleted(format("'%s' not found", memPattern));
                 }
             }
             case FAIL : {
