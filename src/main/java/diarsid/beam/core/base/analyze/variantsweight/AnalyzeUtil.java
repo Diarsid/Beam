@@ -9,8 +9,8 @@ import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.DecimalUtil.onePointRatio;
-import static diarsid.beam.core.base.util.DecimalUtil.ratio;
+import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
+import static diarsid.beam.core.base.util.MathUtil.ratio;
 
 /**
  *

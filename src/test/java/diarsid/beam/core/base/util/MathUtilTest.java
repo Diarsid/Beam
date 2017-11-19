@@ -11,15 +11,15 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import static diarsid.beam.core.base.util.IntUtil.adjustBetween;
+import static diarsid.beam.core.base.util.MathUtil.adjustBetween;
 
 /**
  *
  * @author Diarsid
  */
-public class IntUtilTest {
+public class MathUtilTest {
 
-    public IntUtilTest() {
+    public MathUtilTest() {
     }
 
     @BeforeClass

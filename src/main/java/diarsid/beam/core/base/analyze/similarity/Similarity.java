@@ -42,7 +42,7 @@ public class Similarity {
 
 //        System.out.println(calculateSimilarityPercent("jshell", "shall"));
 //        System.out.println(calculateSimilarityPercent("Programs", "proagm"));
-        System.out.println(calculateSimilarityPercent("2011 - Stand Up And Fight", "fithg"));
+        System.out.println(calculateSimilarityPercent("bin", "lib"));
 //        System.out.println(calculateSimilarity("folder_1/file_1.txt", "foldaaa"));
 //        System.out.println(calculateSimilarity("AAaaDir", "foldile"));
 //        System.out.println(calculateSimilarity("folder_1/inner/nested/aaa.txt", "foldaaa"));

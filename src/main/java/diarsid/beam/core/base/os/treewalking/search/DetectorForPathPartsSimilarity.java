@@ -10,10 +10,12 @@ import java.nio.file.Path;
 import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 
 import static java.lang.System.arraycopy;
-import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.base.util.MathUtil.halfRoundUp;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.util.StringUtils.joining;
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 
 /**
  *
@@ -40,11 +42,14 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
         this.session.close();
     }
     
-    private void fillSearchedPathPartsLocal() {
+    private void fillSearchedPathPartsCopy() {
         arraycopy(super.itemToFind, 0, this.searchedPathPartsCopy, 0, super.itemToFind.length);
     }
     
     private boolean filterByPathPartsSimilarity(String[] realPathParts) {
+        if ( realPathParts[realPathParts.length-1].contains("movie") ) {
+            int a = 5;
+        }
         if ( realPathParts.length == 0 ) {
             return false;
         }
@@ -52,26 +57,38 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
             return false;
         }
         
-        this.fillSearchedPathPartsLocal();        
+        this.fillSearchedPathPartsCopy();
+        String realPart;
         String searchedPart;
-        int counter = 0;
+        int foundQty = 0;
         
-        for (String realPart : realPathParts) {
-            if ( counter == this.searchedPathPartsCopy.length ) {
+        for (int realIndex = 0; realIndex < realPathParts.length; realIndex++) {
+            realPart = realPathParts[realIndex];
+            if ( foundQty == this.searchedPathPartsCopy.length ) {
                 break;
             }
-            for (int i = 0; i < this.searchedPathPartsCopy.length; i++) {
-                searchedPart = this.searchedPathPartsCopy[i];
-                if ( nonNull(searchedPart) ) {
+            for (int searchedIndex = 0; searchedIndex < this.searchedPathPartsCopy.length; searchedIndex++) {
+                searchedPart = this.searchedPathPartsCopy[searchedIndex];
+                if ( nonEmpty(searchedPart) ) {
                     if ( containsIgnoreCase(realPart, searchedPart) || 
                             this.session.isSimilar(realPart, searchedPart) ) {
-                        counter++;
-                        this.searchedPathPartsCopy[i] = null;
+                        foundQty++;
+                        realPathParts[realIndex] = "";
+                        this.searchedPathPartsCopy[searchedIndex] = "";
                     }  
                 }                                
             }            
         }
         
-        return ( counter == this.searchedPathPartsCopy.length );
+        if ( foundQty == this.searchedPathPartsCopy.length ) {
+            return true;
+        }
+        if (    (this.searchedPathPartsCopy.length - foundQty) <= 
+                halfRoundUp(this.searchedPathPartsCopy.length) ) {
+            boolean similar = this.session.isSimilar(
+                    joining(realPathParts), joining(this.searchedPathPartsCopy));
+            return similar;            
+        }
+        return false;
     }
 }

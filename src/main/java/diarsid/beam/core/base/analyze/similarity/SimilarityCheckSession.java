@@ -5,8 +5,8 @@
  */
 package diarsid.beam.core.base.analyze.similarity;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -19,8 +19,7 @@ import static diarsid.beam.core.base.util.Logs.debug;
  */
 public class SimilarityCheckSession {
     
-    private Set<Integer> pairHashes;
-    private Integer currentPairHash;
+    private Map<Integer, Boolean> cachedSimilarResults;
     private int freshCount;
     private int usedCount;
     
@@ -46,34 +45,29 @@ public class SimilarityCheckSession {
 //    boolean isCurrentsSimilar;
 
     public SimilarityCheckSession() {
-        this.pairHashes = new HashSet<>();
+        this.cachedSimilarResults = new HashMap<>();
         debug("[SIMILARITY SESSION] [START]");
     }
     
     public boolean isSimilar(String target, String pattern) {
-        if ( this.notUsedBefore(target, pattern) ) {
-            this.freshCount++;
-            return Similarity.isSimilar(target, pattern);
-        } else {
+        Integer pairHash = pairHash(target, pattern);
+        if ( this.cachedSimilarResults.containsKey(pairHash) ) {
             this.usedCount++;
-            return false;
+            return this.cachedSimilarResults.get(pairHash);
+        } else {
+            this.freshCount++;
+            boolean similar = Similarity.isSimilar(target, pattern);
+            this.cachedSimilarResults.put(pairHash, similar);
+            return similar;
         }        
 //        this.clearSessionVairables();
 //        return this.isCurrentsSimilar;
     }
     
     public void close() {
-        this.currentPairHash = null;
-        this.pairHashes.clear();
-        this.pairHashes = null;
+        this.cachedSimilarResults.clear();
+        this.cachedSimilarResults = null;
         debug(format("[SIMILARITY SESSION] [END] fresh: %s, duplicates: %s", this.freshCount, this.usedCount));
-    }
-    
-    private boolean notUsedBefore(String target, String pattern) {
-        this.currentPairHash = pairHash(target, pattern);
-        boolean usedBefore = this.pairHashes.contains(this.currentPairHash);
-        this.pairHashes.add(this.currentPairHash);
-        return ! usedBefore;
     }
     
     private static int pairHash(String s1, String s2) {

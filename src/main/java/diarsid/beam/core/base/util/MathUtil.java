@@ -11,9 +11,13 @@ import static java.lang.Math.abs;
  *
  * @author Diarsid
  */
-public class DecimalUtil {
+public class MathUtil {
     
-    private DecimalUtil() {}
+    private MathUtil() {}
+    
+    public static int halfRoundUp(int num) {
+        return (num / 2) + (num % 2);
+    }
     
     public static double ratio(int less, int more) {
         return (double) less / (double) more;
@@ -28,6 +32,16 @@ public class DecimalUtil {
             return 0;
         } else {
             return abs(one - two);
+        }
+    }
+    
+    public static int adjustBetween(int valueToAdjust, int fromInclusive, int toInclusive) {
+        if ( valueToAdjust > toInclusive ) {
+            return toInclusive;
+        } else if ( valueToAdjust < fromInclusive ) {
+            return fromInclusive;
+        } else {
+            return valueToAdjust;
         }
     }
 }

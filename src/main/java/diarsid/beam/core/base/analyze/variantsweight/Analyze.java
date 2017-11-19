@@ -31,7 +31,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVarian
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
-import static diarsid.beam.core.base.util.DecimalUtil.absDiff;
+import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;

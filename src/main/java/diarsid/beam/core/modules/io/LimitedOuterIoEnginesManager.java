@@ -18,9 +18,9 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.util.IntUtil.adjustBetween;
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.MathUtil.adjustBetween;
 import static diarsid.beam.core.base.util.Requirements.requireNotNull;
 import static diarsid.beam.core.base.util.Requirements.requireNull;
 

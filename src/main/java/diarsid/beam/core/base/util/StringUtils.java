@@ -105,4 +105,8 @@ public class StringUtils {
         }
         return false;
     }
+    
+    public static String joining(String... strings) {
+        return join("", strings);
+    }
 }
