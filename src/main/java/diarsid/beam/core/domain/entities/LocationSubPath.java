@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.domain.entities;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
@@ -67,6 +68,10 @@ public class LocationSubPath implements ConvertableToVariant {
     
     public String fullPath() {
         return combineAsPathFrom(this.locationPath, this.subPath);
+    }
+    
+    public Path realPath() {
+        return combinePathFrom(this.locationPath, this.subPath);
     }
     
     public boolean pointsToDirectory() {

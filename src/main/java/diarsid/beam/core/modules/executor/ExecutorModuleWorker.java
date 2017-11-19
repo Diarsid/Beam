@@ -1153,12 +1153,12 @@ class ExecutorModuleWorker implements ExecutorModule {
                     Location location = locationFlow.asComplete().getOrThrow();
                     Optional<List<String>> listing = this.fileLister.listContentOf(location, 5);
                     if ( listing.isPresent() && nonEmpty(listing.get()) ) {
-                        listing.get().add(0, format("'%s' content: ", location.name()));
+                        listing.get().add(0, format("%s content: ", location.name()));
                         this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
                     } else {
                         this.ioEngine.report(
                                 initiator, 
-                                format("cannot list '%s' content.", location.name()));
+                                format("cannot list %s content.", location.name()));
                     }
                 } else {
                     this.doWhenListedLocationNotFound(initiator, command.joinedArguments());                    
@@ -1180,14 +1180,16 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     private void doWhenListedLocationNotFound(Initiator initiator, String pattern) {
-        ValueFlow<InvocationCommand> commandFlow = this.domain
-                .commandsMemory()
-                .findStoredCommandByPatternAndType(initiator, pattern, OPEN_LOCATION_TARGET, HIDE_VARIANT_TYPE);
-        switch ( commandFlow.result() ) {
+//        ValueFlow<InvocationCommand> commandFlow = this.domain
+//                .commandsMemory()
+//                .findStoredCommandByPatternAndType(initiator, pattern, OPEN_LOCATION_TARGET, HIDE_VARIANT_TYPE);
+        ValueFlow<LocationSubPath> subPathFlow = this.domain
+                .locationSubPaths()
+                .findLocationSubPath(initiator, pattern);
+        switch ( subPathFlow.result() ) {
             case COMPLETE : {
-                if ( commandFlow.asComplete().hasValue() ) {
-                    this.listPathString(
-                            initiator, commandFlow.asComplete().getOrThrow().extendedArgument());
+                if ( subPathFlow.asComplete().hasValue() ) {
+                    this.listSubPath(initiator, subPathFlow.asComplete().getOrThrow());
                 } else {
                     this.ioEngine.report(
                         initiator, format("cannot find '%s'", pattern));
@@ -1295,19 +1297,32 @@ class ExecutorModuleWorker implements ExecutorModule {
             }    
         }
     }    
-        
+    
+    private void listSubPath(Initiator initiator, LocationSubPath subPath) {
+        Path realPath = subPath.realPath();
+        if ( pathIsDirectory(realPath) ) {
+            Optional<List<String>> listing = this.fileLister.listContentOf(realPath, 5);
+            if ( listing.isPresent() ) {
+                listing.get().add(0, subPath.fullName() + " content:");
+                this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
+            } else {
+                this.ioEngine.report(initiator, format(
+                        "cannot list %s content.", subPath.fullName()));
+            }
+        }
+    }    
     
     private void listPathInLocation(Initiator initiator, Location location, String subpath) {
         if ( StringUtils.nonEmpty(subpath) ) {
             Path finalListingRoot = combinePathFrom(location.path(), subpath);
             if ( pathIsDirectory(finalListingRoot) ) {
-                this.doListing(initiator, location.path(), subpath);                    
+                this.doListing(initiator, location, subpath);                    
             } else {
                 FileSearchResult result = this.fileSearcher.find(
                         subpath, location.path(), SIMILAR_MATCH, FOLDERS_ONLY);
                 if ( result.isOk() ) {
                     if ( result.success().hasSingleFoundFile() ) {
-                        this.doListing(initiator, location.path(), result.success().foundFile());
+                        this.doListing(initiator, location, result.success().foundFile());
                     } else {
                         this.resolveMultipleFoldersAndDoListing(
                                 initiator, location, subpath, result.success().foundFiles());
@@ -1332,18 +1347,20 @@ class ExecutorModuleWorker implements ExecutorModule {
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, variants, this.chooseMultipleFoldersHelp);
         if ( answer.isGiven() ) {
-            this.doListing(initiator, location.path(), answer.text());
+            this.doListing(initiator, location, answer.text());
         }
     }
-
-    private void doListing(Initiator initiator, String location, String subpath) {
+    
+    private void doListing(Initiator initiator, Location location, String subpath) {
         Optional<List<String>> listing =
-                this.fileLister.listContentOf(combinePathFrom(location, subpath), 5);
+                this.fileLister.listContentOf(combinePathFrom(location.path(), subpath), 5);
+        String listingPath = combineAsPathFrom(location.name(), subpath);
         if ( listing.isPresent() ) {
+            listing.get().add(0, listingPath + " content:");
             this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
         } else {
             this.ioEngine.report(
-                    initiator, format("cannot list '%s/%s' content.", location, subpath));
+                    initiator, format("cannot list %s content.", listingPath));
         }
     }
 
