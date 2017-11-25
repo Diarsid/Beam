@@ -35,6 +35,7 @@ public class WebDirectoryPages extends WebDirectory {
     public Message toMessage() {
         List<String> lines = this.pages
                 .stream()
+                .sorted()
                 .map(page -> format("  %d) %s ", page.order(), page.name()))
                 .collect(toList());
         if ( lines.isEmpty() ) {

@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.io;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -24,8 +25,6 @@ import static diarsid.beam.core.base.util.Logs.logError;
  * @author Diarsid
  */
 public class OuterIoEnginesHolder {
-        
-    private final static int UNLIMITED_ENGINES_SLOT_NUMBER = 0;
             
     private final Set<Initiator> initiators;    
     private final Object enginesLock;
@@ -49,51 +48,31 @@ public class OuterIoEnginesHolder {
         }
     }
     
-    boolean acceptNewIoEngine(OuterIoEngine ioEngine) throws IOException {
+    private OuterIoEnginesManager enginesManagerFor(OuterIoEngine ioEngine) throws IOException {
         if ( ioEngine.type().isLimitedBySlots() ) {
-            return this.acceptAsLimited(ioEngine);
+            return this.limitedEnginesManager;
         } else {
-            return this.acceptAsUnlimited(ioEngine);
-        }   
+            return this.unlimitedEnginesManager;
+        }
     }
     
-    private boolean acceptAsLimited(OuterIoEngine ioEngine) throws IOException {
+    boolean acceptNewIoEngine(OuterIoEngine ioEngine) throws IOException {
         synchronized ( this.enginesLock ) {
-            if ( this.limitedEnginesManager.hasSlots() ) {
-                int slotNumber = this.limitedEnginesManager.addEngine(ioEngine);
-                if ( slotNumber < 0 ) {
-                    log(this.getClass(), "cannot accept new engine.");
-                    return false;
-                }
-                Initiator initiator = new Initiator(slotNumber, ioEngine.type());
-                ioEngine.accept(initiator);
-                this.initiators.add(initiator);
+            Optional<Initiator> initiator = this
+                    .enginesManagerFor(ioEngine)
+                    .registerEngine(ioEngine);
+            if ( initiator.isPresent() ) {
+                this.initiators.add(initiator.get());
                 log(this.getClass(), format("%s %s set with initiator: %s, into slot %d", 
                         ioEngine.name(), 
                         ioEngine.type(),
-                        initiator.identity(), 
-                        initiator.engineNumber()));
+                        initiator.get().identity(), 
+                        initiator.get().engineNumber()));
                 return true;
             } else {
-                log(this.getClass(), "there are no free slots for new engine.");
-                ioEngine.report("cannot be accepted - not enough slots.");
                 return false;
             }
-        } 
-    }
-    
-    private boolean acceptAsUnlimited(OuterIoEngine ioEngine) throws IOException {
-        synchronized ( this.enginesLock ) {
-            Initiator initiator = new Initiator(UNLIMITED_ENGINES_SLOT_NUMBER, ioEngine.type());
-            ioEngine.accept(initiator);
-            this.initiators.add(initiator);
-            log(this.getClass(), format("%s %s set with initiator: %s, into slot %d", 
-                    ioEngine.name(), 
-                    ioEngine.type(),
-                    initiator.identity(), 
-                    initiator.engineNumber()));
-            return true;
-        }
+        }   
     }
     
     OuterIoEngine getEngineBy(Initiator initiator) {
@@ -104,8 +83,7 @@ public class OuterIoEnginesHolder {
         synchronized ( this.enginesLock ) {
             try {
                 this.initiators.remove(initiator);
-                boolean removed = this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator);
-                if ( removed ) {
+                if ( this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator) ) {
                     log(this.getClass(), "engine has been removed.");
                     return true;
                 } else {

@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules.io;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
@@ -15,6 +16,8 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
  * @author Diarsid
  */
 interface OuterIoEnginesManager {
+    
+    Optional<Initiator> registerEngine(OuterIoEngine engine) throws IOException;
 
     OuterIoEngine getEngineBy(Initiator initiator);
 

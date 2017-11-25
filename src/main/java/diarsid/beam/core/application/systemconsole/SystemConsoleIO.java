@@ -6,12 +6,13 @@
 
 package diarsid.beam.core.application.systemconsole;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.control.io.base.console.ConsolePrinter;
+import diarsid.beam.core.base.control.io.base.console.ConsoleIO;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
@@ -24,12 +25,19 @@ import static diarsid.beam.core.base.util.Logs.logError;
  *
  * @author Diarsid
  */
-class SystemConsolePrinter implements ConsolePrinter {
+class SystemConsoleIO implements ConsoleIO {
     
+    private final BufferedReader reader;  
     private final BufferedWriter writer;     
     
-    SystemConsolePrinter(BufferedWriter writer) {
+    SystemConsoleIO(BufferedWriter writer, BufferedReader reader) {
         this.writer = writer;
+        this.reader = reader;
+    }
+    
+    @Override
+    public String readLine() throws IOException {
+        return this.reader.readLine().trim();
     }
     
     @Override

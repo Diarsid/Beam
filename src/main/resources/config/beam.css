@@ -3,6 +3,18 @@
     Author     : Diarsid
 */
 
+.text-area{
+    -fx-background-color: #fff, #fff;
+}
+
+.text-area .content {
+    -fx-background-color: #fff;
+}
+
+.text-area:focused .content {
+    -fx-background-color: #fff;
+}
+
 #main {
     -fx-border-insets: 10px;
     -fx-background-insets: 10px;

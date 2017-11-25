@@ -6,9 +6,8 @@
 package diarsid.beam.core.application.systemconsole;
 
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
+import diarsid.beam.core.base.control.io.base.console.ConsoleIO;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
-import diarsid.beam.core.base.control.io.base.console.ConsolePrinter;
-import diarsid.beam.core.base.control.io.base.console.ConsoleReader;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.exitSystemConsole;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
@@ -18,10 +17,9 @@ import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.RE
 class SystemConsolePlatform extends ConsolePlatform {
 
     public SystemConsolePlatform(
-            ConsolePrinter printer, 
-            ConsoleReader reader, 
+            ConsoleIO consoleIo, 
             ConsoleBlockingExecutor blockingExecutor) {
-        super(printer, reader, blockingExecutor, REMOTE);
+        super(consoleIo, blockingExecutor, REMOTE);
     }
     
     @Override
@@ -30,7 +28,7 @@ class SystemConsolePlatform extends ConsolePlatform {
     }
 
     @Override
-    public void stop() { 
+    public void whenStopped() { 
         exitSystemConsole();
     }
 

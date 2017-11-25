@@ -44,6 +44,7 @@ class ConfigurationReading {
                 "catalogs.notes = ../env/notes",
                 "ui.images.resources = ../res/images/",
                 "ui.images.capture.webpages.resize = true",
+                "ui.console.runOnStart = true",
                 "web.local.host = 127.0.0.1",
                 "web.local.port = 32001",
                 "web.local.path = /beam/core",

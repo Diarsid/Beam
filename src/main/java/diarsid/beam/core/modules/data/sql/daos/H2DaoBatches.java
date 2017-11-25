@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -333,6 +334,7 @@ class H2DaoBatches
                             batchName) 
                     > 0;
             
+            AtomicInteger newCommandIndex = new AtomicInteger();
             int modified = stream(transact
                     .ifTrue( oldCommandsRemoved )
                     .doBatchUpdate(
@@ -347,7 +349,7 @@ class H2DaoBatches
                                     .map(command -> params(
                                             batchName,
                                             command.type().name(),
-                                            newCommands.indexOf(command),
+                                            newCommandIndex.getAndIncrement(),
                                             command.originalArgument()))
                                     .collect(toSet()))
             ).sum();

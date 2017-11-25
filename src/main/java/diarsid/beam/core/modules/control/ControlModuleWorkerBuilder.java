@@ -6,15 +6,22 @@
 
 package diarsid.beam.core.modules.control;
 
-import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
+import diarsid.beam.core.application.gui.javafx.GuiJavaFX;
+import diarsid.beam.core.base.control.io.base.console.Console;
+import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
+import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
-import diarsid.beam.core.modules.control.cli.CommandLineProcessorBuilder;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import static diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatform.createAndLaunchJavaFXConsolePlatform;
+import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
+import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCommandLineProcessor;
 
 /**
  *
@@ -40,15 +47,27 @@ public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModul
 
     @Override
     public ControlModule buildModule() {
-        CommandLineProcessorBuilder cliBuilder = new CommandLineProcessorBuilder();
-        CommandLineProcessor cli = cliBuilder.build(
+        ConsoleCommandRealProcessor consoleProcessor = buildCommandLineProcessor(
                 this.ioModule, 
                 this.appComponentsHolderModule,
                 this.executorModule,
                 this.domainModule);
-//        OuterIoEngine nativeConsole = new NativeConsoleBuilder().build(cli);
-//        this.ioModule.registerOuterIoEngine(nativeConsole);
-        ControlModule coreControlModule = new ControlModuleWorker(this.ioModule, cli);
+        
+        if ( this.appComponentsHolderModule.configuration().asBoolean("ui.console.runOnStart") ) {
+            this.startJavaFxConsoleUsing(consoleProcessor);
+        }       
+        
+        ControlModule coreControlModule = new ControlModuleWorker(this.ioModule, consoleProcessor);
         return coreControlModule;
+    }
+    
+    private void startJavaFxConsoleUsing(ConsoleCommandRealProcessor consoleProcessor) {
+        ConsolePlatform javaFxConsolePlatform = createAndLaunchJavaFXConsolePlatform(
+                (GuiJavaFX) this.appComponentsHolderModule.gui(), consoleProcessor);
+        Console javaFxConsole = buildConsoleUsing(javaFxConsolePlatform);
+        
+        this.ioModule.registerOuterIoEngine(javaFxConsole);
+        
+        asyncDoIndependently(javaFxConsole);
     }
 }

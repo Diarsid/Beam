@@ -7,9 +7,9 @@
 package diarsid.beam.core.modules.control;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
-import diarsid.beam.core.base.control.io.interpreter.CommandLineProcessor;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.IoModule;
 
@@ -24,10 +24,10 @@ import static diarsid.beam.core.base.util.Logs.debug;
 public class ControlModuleWorker implements ControlModule {
     
     private final IoModule ioModule;
-    private final CommandLineProcessor cliProcessor;
+    private final ConsoleCommandRealProcessor cliProcessor;
     private final HelpKey exitHelp;
     
-    public ControlModuleWorker(IoModule ioModule, CommandLineProcessor cliProcessor) {
+    public ControlModuleWorker(IoModule ioModule, ConsoleCommandRealProcessor cliProcessor) {
         this.ioModule = ioModule;
         this.cliProcessor = cliProcessor;
         this.exitHelp = this.ioModule.getInnerIoEngine().addToHelpContext(
@@ -51,10 +51,10 @@ public class ControlModuleWorker implements ControlModule {
     }
 
     @Override
-    public void executeCommand(Initiator initiator, String commandLine) {
+    public void blockingExecuteCommand(Initiator initiator, String commandLine) {
         debug("initiator:" + initiator.identity() + " command: " + commandLine );
         if ( this.ioModule.isInitiatorLegal(initiator) ) {
-            this.cliProcessor.process(initiator, commandLine);
+            this.cliProcessor.processCommand(initiator, commandLine);
         }
         debug("executed...");
     }

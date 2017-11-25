@@ -35,9 +35,9 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnac
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
+import static diarsid.beam.core.base.util.StringHolder.holdEmpty;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
-import static diarsid.beam.core.base.util.StringHolder.holdEmpty;
 
 /**
  *
@@ -48,47 +48,45 @@ public class Console
                 OuterIoEngine, 
                 Runnable { 
 
-    private final ConsoleEngine engine;
+    private final ConsolePlatformOperator consoleOperator;
     
-    Console(ConsoleEngine engine) {
-        this.engine = engine;        
+    Console(ConsolePlatformOperator engine) {
+        this.consoleOperator = engine;        
     }
     
     public static Console buildConsoleUsing(ConsolePlatform consolePlatform) {
-        ConsoleEngine consoleEngine = new ConsoleEngine(consolePlatform);
-        Console consoleController = new Console(consoleEngine);
-        return consoleController;
+        return new Console(new ConsolePlatformOperator(consolePlatform));
     }
 
     @Override
     public OuterIoEngineType type() {
-        return this.engine.type();
+        return this.consoleOperator.type();
     }
     
     @Override
     public void run() {
         StringHolder command = holdEmpty();   
-        while ( this.engine.isWorking() ) {
-            command.set(this.engine.readyAndWaitForLine()); 
-            this.engine.interactionBegins();
+        while ( this.consoleOperator.isWorking() ) {
+            command.set(this.consoleOperator.readyAndWaitForLine()); 
+            this.consoleOperator.interactionBegins();
             if ( command.isNotEmpty() ) {
                 awaitDo(() -> {
-                    this.engine.blockingExecute(command.get());
+                    this.consoleOperator.blockingExecute(command.get());
                 });                        
             }                    
-            this.engine.interactionEnds();
+            this.consoleOperator.interactionEnds();
         }
     }
     
     @Override
     public Choice resolve(String yesOrNoQuestion)  {
-        this.engine.printYesNoQuestion(yesOrNoQuestion);
-        return choiceOfPattern(this.engine.read());
+        this.consoleOperator.printYesNoQuestion(yesOrNoQuestion);
+        return choiceOfPattern(this.consoleOperator.read());
     }
 
     @Override
     public Answer resolve(VariantsQuestion question) {
-        this.engine.print(question);
+        this.consoleOperator.print(question);
         return this.askForAnswer(question);
     }
 
@@ -98,15 +96,15 @@ public class Console
         int chosenVariantIndex;
         Answer answer = variantsDontContainSatisfiableAnswer();
         while ( notResolved ) {
-            line = this.engine.read();            
+            line = this.consoleOperator.read();            
             if ( isNumeric(line) ) {
                 chosenVariantIndex = parseInt(line);
                 if ( question.isChoiceInVariantsNaturalRange(chosenVariantIndex) ) {
                     notResolved = false;
                     answer = question.answerWith(chosenVariantIndex);
                 } else {
-                    this.engine.print("not in variants range.");
-                    this.engine.printInvite("choose");
+                    this.consoleOperator.print("not in variants range.");
+                    this.consoleOperator.printInvite("choose");
                 }
             } else {
                 if ( isRejection(line) ) {
@@ -123,8 +121,8 @@ public class Console
                     if ( answer.isGiven() ) {
                         notResolved = false;
                     } else {
-                        this.engine.print(format("cannot choose by '%s'.", line));
-                        this.engine.printInvite("choose");
+                        this.consoleOperator.print(format("cannot choose by '%s'.", line));
+                        this.consoleOperator.printInvite("choose");
                     }                    
                 }
             }
@@ -143,8 +141,8 @@ public class Console
         variantsChoosing: while ( variants.next() ) {         
             answer = variantsDontContainSatisfiableAnswer();   
             if ( variants.currentIsMuchBetterThanNext() ) {
-                this.engine.printYesNoQuestion(variants.current().bestText());
-                choice = choiceOfPattern(this.engine.read());
+                this.consoleOperator.printYesNoQuestion(variants.current().bestText());
+                choice = choiceOfPattern(this.consoleOperator.read());
                 switch ( choice ) {
                     case POSITIVE : {
                         return answerOfVariant(variants.current());
@@ -167,16 +165,16 @@ public class Console
                 }
             } else {
                 similarVariants = variants.nextSimilarVariants();
-                this.engine.print(similarVariants);
+                this.consoleOperator.print(similarVariants);
                 similarVariantsChoosing: while ( true ) {
-                    line = this.engine.read();
+                    line = this.consoleOperator.read();
                     if ( isNumeric(line) ) {
                         chosenVariantIndex = parseInt(line);
                         if ( variants.isChoiceInSimilarVariantsNaturalRange(chosenVariantIndex) ) {
                             return variants.answerWith(chosenVariantIndex);
                         } else {
-                            this.engine.print("not in variants range.");
-                            this.engine.printInvite("choose");
+                            this.consoleOperator.print("not in variants range.");
+                            this.consoleOperator.printInvite("choose");
                             continue similarVariantsChoosing;
                         }
                     } else if ( isHelpRequest(line) ) {
@@ -191,8 +189,8 @@ public class Console
                             if ( answer.isGiven() ) {
                                 return answer;
                             } else {
-                                this.engine.print(format("cannot choose by '%s'.", line));
-                                this.engine.printInvite("choose");
+                                this.consoleOperator.print(format("cannot choose by '%s'.", line));
+                                this.consoleOperator.printInvite("choose");
                                 continue similarVariantsChoosing;
                             }                            
                         }
@@ -208,13 +206,13 @@ public class Console
         String input = "";
         boolean answerIsNotGiven = true;
         while ( answerIsNotGiven ) {
-            this.engine.printInvite(inputRequest);
-            input = normalizeSpaces(this.engine.read());
+            this.consoleOperator.printInvite(inputRequest);
+            input = normalizeSpaces(this.consoleOperator.read());
             if ( isRejection(input) ) {
                 input = "";
                 answerIsNotGiven = false;
             } else if ( textIsNotAcceptable(input) ) {
-                this.engine.print(
+                this.consoleOperator.print(
                         format("character %s is not allowed.", findUnacceptableInText(input)));
             } else {
                 answerIsNotGiven = false;
@@ -225,32 +223,32 @@ public class Console
 
     @Override
     public void report(String report) {        
-        this.engine.print(report);
+        this.consoleOperator.print(report);
     }
 
     @Override
     public void report(Message message) {
-        this.engine.print(message);
+        this.consoleOperator.print(message);
     }
 
     @Override
     public void report(HelpInfo help) {
-        this.engine.print(help);
+        this.consoleOperator.print(help);
     }
 
     @Override
     public void close() {
-        this.engine.print("closing...");        
-        asyncDo(() -> this.engine.stop());
+        this.consoleOperator.print("closing...");        
+        asyncDo(() -> this.consoleOperator.stop());
     }
 
     @Override
     public void accept(Initiator initiator) {
-        this.engine.acceptInitiator(initiator);
+        this.consoleOperator.acceptInitiator(initiator);
     }
 
     @Override
     public String name() {
-        return this.engine.name();
+        return this.consoleOperator.name();
     }
 }

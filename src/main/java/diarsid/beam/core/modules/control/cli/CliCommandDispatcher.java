@@ -19,7 +19,10 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.interpreter.CommandDispatcher;
+import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
+import diarsid.beam.core.base.control.io.interpreter.Interpreter;
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 
@@ -28,11 +31,13 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 
+import diarsid.beam.core.base.control.io.base.console.ConsoleCommandDispatcher;
+
 /**
  *
  * @author Diarsid
  */
-class CliCommandDispatcher implements CommandDispatcher {
+public class CliCommandDispatcher implements ConsoleCommandDispatcher {
     
     private final IoModule ioModule;
     private final ExecutorModule executorModule;
@@ -52,6 +57,21 @@ class CliCommandDispatcher implements CommandDispatcher {
                 "   - y/yes/+ to confirm exiting",
                 "   - n/no or any other key to break"
         );
+    }
+    
+    public static ConsoleCommandRealProcessor buildCommandLineProcessor(
+            IoModule ioModule, 
+            ApplicationComponentsHolderModule appComponentsHolderModule, 
+            ExecutorModule executorModule,
+            DomainKeeperModule domainModule) {
+        Interpreter interpreter = appComponentsHolderModule.interpreter();
+        DomainModuleToCliAdapter domainToCliAdapter = 
+                new DomainModuleToCliAdapter(domainModule, ioModule.getInnerIoEngine());
+        CliCommandDispatcher commandDispatcher = 
+                new CliCommandDispatcher(
+                        ioModule, executorModule, domainToCliAdapter);
+        ConsoleCommandRealProcessor clp = new ConsoleCommandRealProcessor(interpreter, commandDispatcher);
+        return clp;
     }
     
     @Override

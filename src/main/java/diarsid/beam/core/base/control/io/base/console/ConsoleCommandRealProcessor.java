@@ -4,12 +4,13 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.base.control.io.interpreter;
+package diarsid.beam.core.base.control.io.base.console;
 
 import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.Command;
+import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.INCORRECT;
 import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
@@ -21,17 +22,18 @@ import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
  *
  * @author Diarsid
  */
-public class CommandLineProcessor {
+public class ConsoleCommandRealProcessor implements ConsoleBlockingExecutor {
     
     private final Interpreter interpreter;
-    private final CommandDispatcher dispatcher;
+    private final ConsoleCommandDispatcher dispatcher;
     
-    public CommandLineProcessor(Interpreter interpreter, CommandDispatcher dispatcher) {
+    public ConsoleCommandRealProcessor(
+            Interpreter interpreter, ConsoleCommandDispatcher dispatcher) {
         this.interpreter = interpreter;
         this.dispatcher = dispatcher;
     }
     
-    public void process(Initiator initiator, String commandLine) {
+    public void processCommand(Initiator initiator, String commandLine) {
         Command command = this.interpreter.interprete(commandLine);
         if ( command.type().is(INCORRECT) || command.type().isUndefined() ) {
             debug("initiator:" + initiator.identity() + " commandType: " + command.type());
@@ -47,6 +49,11 @@ public class CommandLineProcessor {
 //                    .map(newCommandLine -> this.interpreter.interprete(newCommandLine))
 //                    .forEach(newCommand -> this.dispatcher.dispatch(initiator, newCommand));            
         }        
+    }
+    
+    @Override
+    public void blockingExecuteCommand(Initiator initiator, String commandLine) {
+        this.processCommand(initiator, commandLine);
     }
     
     private void tryToInterpreteAsSentencesFromLeftToRight(

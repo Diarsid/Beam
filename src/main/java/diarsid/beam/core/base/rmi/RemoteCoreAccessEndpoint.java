@@ -25,5 +25,5 @@ public interface RemoteCoreAccessEndpoint extends Remote {
     
     void exitBeam(Initiator initiator) throws RemoteException;    
     
-    void executeCommand(Initiator initiator, String commandLine) throws RemoteException;
+    void blockingExecuteCommand(Initiator initiator, String commandLine) throws RemoteException;
 }

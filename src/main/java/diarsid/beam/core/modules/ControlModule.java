@@ -16,5 +16,5 @@ public interface ControlModule extends BeamModule {
     
     void exitBeam(Initiator initiator);    
     
-    void executeCommand(Initiator initiator, String commandLine);
+    void blockingExecuteCommand(Initiator initiator, String commandLine);
 }

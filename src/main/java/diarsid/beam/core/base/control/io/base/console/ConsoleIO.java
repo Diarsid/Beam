@@ -16,7 +16,9 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
  *
  * @author Diarsid
  */
-public interface ConsolePrinter {
+public interface ConsoleIO {
+    
+    String readLine() throws Exception;
 
     void print(VariantsQuestion question) throws Exception;
 

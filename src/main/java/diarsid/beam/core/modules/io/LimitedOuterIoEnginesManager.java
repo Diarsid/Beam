@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.io;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -257,27 +258,29 @@ class LimitedOuterIoEnginesManager implements OuterIoEnginesManager {
         return FREE_ENGINES_SLOTS.size() > 0;
     } 
     
-    boolean hasSlots() {
-        synchronized ( ENGINES_LOCK ) {
-            return hasFreeSlots();
-        }
-    }
-    
-    int addEngine(OuterIoEngine engine) {
+    @Override
+    public Optional<Initiator> registerEngine(OuterIoEngine engine) throws IOException {
         synchronized ( ENGINES_LOCK ) {
             if ( hasFreeSlots() ) {
                 int slotNumber = FREE_ENGINES_SLOTS.first();
                 FREE_ENGINES_SLOTS.remove(slotNumber);
+                
+                Initiator initiator = new Initiator(slotNumber, engine.type());
+                engine.accept(initiator);
+                
                 try {
                     setEngineByNumber(slotNumber, engine);
-                    return slotNumber;
+                    return Optional.of(initiator);
                 } catch (RequirementException e) {
                     logError(this.getClass(), e);
-                    return -1;
+                    log(this.getClass(), "cannot accept new engine.");
+                    engine.report("cannot accept new engine.");
+                    return Optional.empty();
                 }                
             } else {
                 log(this.getClass(), "there are no free slots.");
-                return -1;
+                engine.report("there are no free slots.");
+                return Optional.empty();
             }
         }        
     }

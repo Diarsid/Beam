@@ -5,12 +5,14 @@
  */
 package diarsid.beam.core.base.control.io.base.console;
 
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.commands.Command;
+
 /**
  *
  * @author Diarsid
  */
-public interface ConsoleReader {
+public interface ConsoleCommandDispatcher {
 
-    String readLine() throws Exception;
-    
+    void dispatch(Initiator initiator, Command command);    
 }

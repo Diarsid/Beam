@@ -6,7 +6,6 @@
 package diarsid.beam.core.base.control.io.base.console;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -16,20 +15,14 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 
-class ConsoleEngine {
+class ConsolePlatformOperator {
         
     private final ConsolePlatform consolePlatform;
-    private final ConsolePrinter printer;         
-    private final ConsoleReader reader;           
-    private final AtomicBoolean isInteractionLasts;   
-    private final AtomicBoolean isWorking;  
+    private final ConsoleIO io;     
 
-    ConsoleEngine(ConsolePlatform consolePlatform) {
+    ConsolePlatformOperator(ConsolePlatform consolePlatform) {
         this.consolePlatform = consolePlatform;
-        this.reader = consolePlatform.reader();
-        this.printer = consolePlatform.printer();        
-        this.isInteractionLasts = new AtomicBoolean(false);
-        this.isWorking = new AtomicBoolean(true);
+        this.io = consolePlatform.io();
     }
     
     OuterIoEngineType type() {
@@ -42,7 +35,7 @@ class ConsoleEngine {
     
     String read() {
         try {
-            return this.reader.readLine();
+            return this.io.readLine();
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
             return "";
@@ -51,8 +44,8 @@ class ConsoleEngine {
     
     String readyAndWaitForLine() {
         try {
-            this.printer.printReadyForNewCommandLine();
-            return this.reader.readLine();
+            this.io.printReadyForNewCommandLine();
+            return this.io.readLine();
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
             return "";
@@ -61,10 +54,10 @@ class ConsoleEngine {
     
     void print(String report) {
         try {
-            if ( this.isInteractionLasts.get() ) {
-                this.printer.printDuringInteraction(report);
+            if ( this.consolePlatform.isInteractionLasts() ) {
+                this.io.printDuringInteraction(report);
             } else {
-                this.printer.printNonDuringInteraction(report);
+                this.io.printNonDuringInteraction(report);
             }
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
@@ -73,10 +66,10 @@ class ConsoleEngine {
     
     void print(Message message) {
         try {
-            if ( this.isInteractionLasts.get() ) {
-                this.printer.printDuringInteraction(message);
+            if ( this.consolePlatform.isInteractionLasts() ) {
+                this.io.printDuringInteraction(message);
             } else {
-                this.printer.printNonDuringInteraction(message);
+                this.io.printNonDuringInteraction(message);
             }
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
@@ -85,10 +78,10 @@ class ConsoleEngine {
     
     void print(HelpInfo help) {
         try {
-            if ( this.isInteractionLasts.get() ) {
-                this.printer.printDuringInteraction(help);
+            if ( this.consolePlatform.isInteractionLasts() ) {
+                this.io.printDuringInteraction(help);
             } else {
-                this.printer.printNonDuringInteraction(help);
+                this.io.printNonDuringInteraction(help);
             }
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
@@ -97,7 +90,7 @@ class ConsoleEngine {
     
     void print(VariantsQuestion question) {
         try {
-            this.printer.print(question);
+            this.io.print(question);
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
@@ -105,7 +98,7 @@ class ConsoleEngine {
     
     void print(List<WeightedVariant> weightedVariants) {
         try {
-            this.printer.print(weightedVariants);
+            this.io.print(weightedVariants);
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
@@ -113,7 +106,7 @@ class ConsoleEngine {
     
     void printYesNoQuestion(String question) {
         try {
-            this.printer.printYesNoQuestion(question);
+            this.io.printYesNoQuestion(question);
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }    
@@ -121,22 +114,22 @@ class ConsoleEngine {
     
     void printInvite(String inviteMessage) {
         try {
-            this.printer.printInDialogInviteLine(inviteMessage);
+            this.io.printInDialogInviteLine(inviteMessage);
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }
     }
     
     boolean isWorking() {
-        return this.isWorking.get();
+        return this.consolePlatform.isWorking();
     }
     
     void interactionBegins() {
-        this.isInteractionLasts.set(true);
+        this.consolePlatform.interactionBegins();
     }
     
     void interactionEnds() {
-        this.isInteractionLasts.set(false);
+        this.consolePlatform.interactionEnds();
     }
     
     void blockingExecute(String commandLine) {
@@ -152,7 +145,6 @@ class ConsoleEngine {
     }
     
     void stop() {
-        this.isWorking.set(false);
         this.consolePlatform.stop();
     }    
 }

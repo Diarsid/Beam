@@ -50,7 +50,8 @@ public class RemoteCoreAccessEndpointHolder implements RemoteCoreAccessEndpoint 
     }
 
     @Override
-    public void executeCommand(Initiator initiator, String commandLine) throws RemoteException {
-        this.coreControlModule.executeCommand(initiator, commandLine);
+    public void blockingExecuteCommand(Initiator initiator, String commandLine) 
+            throws RemoteException {
+        this.coreControlModule.blockingExecuteCommand(initiator, commandLine);
     }
 }

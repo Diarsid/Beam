@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.control.io.base.console;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
 
@@ -14,33 +16,46 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
  */
 public abstract class ConsolePlatform {
     
-    protected final ConsolePrinter printer;
-    protected final ConsoleReader reader;
+    protected final ConsoleIO io;
     protected final ConsoleBlockingExecutor blockingExecutor;
-    protected final OuterIoEngineType platformOuterIoEngineType;
+    protected final OuterIoEngineType platformOuterIoEngineType;           
+    protected final AtomicBoolean isInteractionLasts;   
+    protected final AtomicBoolean isWorking;
     protected Initiator initiator;
     
     public ConsolePlatform(
-            ConsolePrinter printer, 
-            ConsoleReader reader, 
+            ConsoleIO consoleIo, 
             ConsoleBlockingExecutor blockingExecutor,
             OuterIoEngineType platformOuterIoEngineType) {
-        this.printer = printer;
-        this.reader = reader;
+        this.io = consoleIo;
         this.blockingExecutor = blockingExecutor;
-        this.platformOuterIoEngineType = platformOuterIoEngineType;
+        this.platformOuterIoEngineType = platformOuterIoEngineType;        
+        this.isInteractionLasts = new AtomicBoolean(false);
+        this.isWorking = new AtomicBoolean(true);
     }
     
     public OuterIoEngineType type() {
         return this.platformOuterIoEngineType;
     }
     
-    public final ConsolePrinter printer() {
-        return this.printer;
+    public final ConsoleIO io() {
+        return this.io;
     }
     
-    public final ConsoleReader reader() {
-        return this.reader;
+    final boolean isInteractionLasts() {
+        return this.isInteractionLasts.get();
+    }
+    
+    boolean isWorking() {
+        return this.isWorking.get();
+    }
+    
+    void interactionBegins() {
+        this.isInteractionLasts.set(true);
+    }
+    
+    void interactionEnds() {
+        this.isInteractionLasts.set(false);
     }
     
     public final void blockingExecuteCommand(String commandLine) throws Exception {
@@ -54,14 +69,22 @@ public abstract class ConsolePlatform {
     
     public void whenInitiatorAccepted() {
         // intended to be overriden to act as a kind of optional 
-        // callback when Initiator is accepted by this ConsolePlatform/
+        // callback when Initiator is accepted by this ConsolePlatform
     }
     
     public final void reportException(Exception e) {
-        this.printer.print(e);
+        this.io.print(e);
     }
     
     public abstract String name();    
     
-    public abstract void stop();
+    public final void stop() {        
+        this.isWorking.set(false);
+        this.whenStopped();
+    }
+    
+    public void whenStopped() {
+        // intended to be overriden to act as a kind of optional 
+        // callback when this ConsolePlatform is being stopped
+    }
 }
