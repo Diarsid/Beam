@@ -4,6 +4,7 @@
  */
 package diarsid.beam.core;
 
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.util.Logs;
 import diarsid.beam.core.modules.DataModule;
@@ -18,6 +19,7 @@ import com.drs.gem.injector.core.GemInjector;
 
 import static java.lang.Integer.MAX_VALUE;
 
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -39,8 +41,9 @@ public class Beam {
     public static void main(String... args) {
         try {
             log(Beam.class, "start Beam.core");
-            initApplication();
-            setJVMShutdownHook();
+            Configuration configuration = configuration();
+            initApplication(configuration);
+            setJVMShutdownHook(configuration);
             log(Beam.class, "Beam.core started successfully");
         } catch (Exception e) {
             logError(Beam.class, e);
@@ -48,17 +51,19 @@ public class Beam {
         }
     }
     
-    private static void initApplication() {
+    private static void initApplication(Configuration configuration) {
         GemInjector
-                .buildContainer(CORE_CONTAINER, new BeamModulesDeclaration())
+                .buildContainer(CORE_CONTAINER, new BeamModulesDeclaration(configuration))
                 .init();
     }
     
-    private static void setJVMShutdownHook() {
+    private static void setJVMShutdownHook(Configuration configuration) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             Container container = GemInjector.getContainer(CORE_CONTAINER);
             container.getModule(IoModule.class).stopModule();
-            container.getModule(RemoteManagerModule.class).stopModule();
+            if ( configuration.asBoolean("rmi.core.active") ) {
+                container.getModule(RemoteManagerModule.class).stopModule();
+            }
             container.getModule(TasksWatcherModule.class).stopModule();
             container.getModule(ExecutorModule.class).stopModule();
             container.getModule(DataModule.class).stopModule();
