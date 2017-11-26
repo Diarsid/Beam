@@ -7,6 +7,8 @@
 package diarsid.beam.core.modules.control.cli;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.control.io.base.console.ConsoleCommandDispatcher;
+import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -19,7 +21,6 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
-import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
@@ -30,8 +31,6 @@ import static diarsid.beam.core.Beam.exitBeamCoreNow;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
-
-import diarsid.beam.core.base.control.io.base.console.ConsoleCommandDispatcher;
 
 /**
  *
@@ -309,7 +308,7 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
                             .ask(initiator, "are you sure", this.exitHelp);
                     if ( choice.isPositive() ) {
                         this.ioModule.unregisterIoEngine(initiator);
-                        asyncDoIndependently(() -> exitBeamCoreNow());
+                        asyncDoIndependently("Beam exit Thread", () -> exitBeamCoreNow());
                     }                    
                     break;
                 }

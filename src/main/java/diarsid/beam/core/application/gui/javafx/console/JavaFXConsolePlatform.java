@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,6 +18,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -29,8 +31,9 @@ import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 
-import static javafx.css.PseudoClass.getPseudoClass;
 import static javafx.geometry.Pos.BOTTOM_RIGHT;
+import static javafx.scene.input.KeyCode.ENTER;
+import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
@@ -128,7 +131,7 @@ public class JavaFXConsolePlatform
         visibleBox.setAlignment(BOTTOM_RIGHT);
         
         visibleBox.getChildren().addAll(this.bar, this.mainArea);
-        visibleBox.setStyle("-fx-padding: 3px;");
+        visibleBox.setStyle("-fx-padding: 4px;");
         mainVBox.getChildren().addAll(visibleBox);
         
         Scene scene = new Scene(mainVBox);
@@ -178,15 +181,16 @@ public class JavaFXConsolePlatform
         VBox mainAreaVBox = new VBox();
         mainAreaVBox.setStyle(
                 "-fx-background-color: white; " +
-                "-fx-background-radius: 10px; " + 
+                "-fx-background-radius: 11px; " + 
                 "-fx-border-color: #FFDE00; " + 
                 "-fx-border-width: 4px; " + 
                 "-fx-border-radius: 10px;" +
-                "-fx-padding: 10px;" 
+                "-fx-padding: 5px;" 
         );        
         
         TextArea textArea = new TextArea();
         textArea.setTextFormatter(this.createTextFormatter());
+        textArea.addEventFilter(KEY_PRESSED, this.createEnterKeyInterceptor());
         textArea.setMinHeight(100);
         textArea.setMinWidth(400);
         textArea.setStyle(
@@ -194,12 +198,8 @@ public class JavaFXConsolePlatform
                 "-fx-focus-color: transparent; " +
                 "-fx-text-box-border: transparent; " + 
                 "-fx-faint-focus-color: transparent; " + 
-                "-fx-font: 12px \"Consolas\"; "
+                "-fx-font: 13px \"Consolas\"; "
         );
-        
-        textArea.pseudoClassStateChanged(getPseudoClass("focused"), false);
-        textArea.getChildrenUnmodifiable().forEach(node -> System.out.println(node.getStyle()));
-//        textArea.lookup(":focused .content").setStyle("-fx-background-color: #fff;");
                 
         mainAreaVBox.getChildren().add(textArea);
         
@@ -207,8 +207,29 @@ public class JavaFXConsolePlatform
         this.mainArea = mainAreaVBox;
     }
     
+    private EventHandler<KeyEvent> createEnterKeyInterceptor() {
+        return (keyEvent) -> {
+            if ( keyEvent.getCode().equals(ENTER) ) {
+                if ( this.consoleTextArea.getCaretPosition() == 
+                        this.consoleTextArea.getText().length() ) {
+                    return;
+                }
+                int caretPosition = this.consoleTextArea.getCaretPosition();
+                int rawInputTextLength = this.consoleTextArea.getText().length();
+                int commitedTextLength = this.consoleCommitedLength.get();
+                if (    caretPosition >= commitedTextLength &&
+                        caretPosition < rawInputTextLength ) {
+                    this.consoleTextArea.deleteText(caretPosition, rawInputTextLength);                    
+                } else if ( caretPosition < rawInputTextLength ) {
+                    this.consoleTextArea.deleteText(commitedTextLength, rawInputTextLength);
+                    keyEvent.consume();
+                }
+            }
+        };
+    }
+    
     private void startListenBlockingConsoleIncome() {
-        asyncDoIndependently(()-> {
+        asyncDoIndependently("JavaFX Console internal output listener Thread", ()-> {
             while ( true ) {                
                 try {
                     String newLineIntoConsole = this.blockingIo.blockingGetPrintedString();

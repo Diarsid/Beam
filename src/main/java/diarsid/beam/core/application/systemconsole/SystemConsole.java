@@ -50,7 +50,7 @@ public class SystemConsole {
             remoteAccess = remoteManager.importRemoteAccess();
             Console console = createConsole();            
             remoteManager.export(console);
-            asyncDoIndependently(console);
+            asyncDoIndependently("System Console Thread", console);
         } catch (StartupFailedException|WorkflowBrokenException e) {
             logError(SystemConsole.class, e.getCause());
             delayedShutdown();

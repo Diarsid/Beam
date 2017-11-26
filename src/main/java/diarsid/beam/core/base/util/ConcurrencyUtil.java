@@ -11,14 +11,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+
 import static java.lang.Runtime.getRuntime;
 import static java.util.Optional.empty;
 
-import static diarsid.beam.core.base.util.Logs.logError;
-
-import diarsid.beam.core.base.control.flow.ValueFlow;
-
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
  *
@@ -67,7 +66,7 @@ public class ConcurrencyUtil {
         EXECUTOR.submit(runnable);
     }
     
-    public static void asyncDoIndependently(Runnable runnable) {
-        new Thread(runnable).start();
+    public static void asyncDoIndependently(String threadName, Runnable runnable) {
+        new Thread(runnable, threadName).start();
     }
 }

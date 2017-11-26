@@ -5,6 +5,7 @@
 
 .text-area{
     -fx-background-color: #fff, #fff;
+    -fx-text-fill: #4CBF13;
 }
 
 .text-area .content {
@@ -14,6 +15,57 @@
 .text-area:focused .content {
     -fx-background-color: #fff;
 }
+
+/* The main scrollbar **track** CSS class  */
+.text-area .scroll-pane .scroll-bar:horizontal .track,
+.text-area .scroll-pane .scroll-bar:vertical .track{
+	-fx-background-color: white;
+	-fx-border-color: white; 
+	-fx-background-radius: 0em;
+	-fx-border-radius:2em;
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+.text-area .scroll-pane .scroll-bar:horizontal .increment-button ,
+.text-area .scroll-pane .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: white;
+	-fx-background-radius: 0em;
+	-fx-padding:0 0 15 0;
+
+}
+
+/* The increment and decrement button CSS class of scrollbar */
+
+.text-area .scroll-pane .scroll-bar:vertical .increment-button ,
+.text-area .scroll-pane .scroll-bar:vertical .decrement-button {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-padding:0 15 0 0;
+}
+
+.text-area .scroll-pane .scroll-bar .increment-arrow,
+.text-area .scroll-pane .scroll-bar .decrement-arrow {
+	-fx-background-color: white;
+	-fx-border-color: white;
+	-fx-shape: " ";	
+	-fx-padding: 0px;
+}
+
+/* The main scrollbar **thumb** CSS class which we drag every time (movable) */
+.text-area .scroll-pane .scroll-bar:horizontal .thumb,
+.text-area .scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-color: #FFDE00;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1.5px;
+}
+
+.text-area .scroll-pane .corner {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent; 
+}
+
 
 #main {
     -fx-border-insets: 10px;

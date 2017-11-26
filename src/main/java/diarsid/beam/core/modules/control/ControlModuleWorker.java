@@ -45,7 +45,7 @@ public class ControlModuleWorker implements ControlModule {
                     .getInnerIoEngine()
                     .ask(initiator, "are you sure?", this.exitHelp);
             if ( choice.isPositive() ) {
-                asyncDoIndependently(() -> exitBeamCoreNow());
+                asyncDoIndependently("Beam exit Thread", () -> exitBeamCoreNow());
             }
         }
     }

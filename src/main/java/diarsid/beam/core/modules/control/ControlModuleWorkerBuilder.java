@@ -68,6 +68,6 @@ public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModul
         
         this.ioModule.registerOuterIoEngine(javaFxConsole);
         
-        asyncDoIndependently(javaFxConsole);
+        asyncDoIndependently("JavaFX Console Thread", javaFxConsole);
     }
 }
