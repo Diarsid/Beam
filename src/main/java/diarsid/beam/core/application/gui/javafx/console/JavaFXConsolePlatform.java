@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.application.gui.javafx.console;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
@@ -13,11 +14,14 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -30,9 +34,15 @@ import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
+import diarsid.beam.core.base.util.PointableCollection;
 
 import static javafx.geometry.Pos.BOTTOM_RIGHT;
+import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
+import static javafx.scene.input.KeyCode.UP;
+import static javafx.scene.input.KeyCode.Y;
+import static javafx.scene.input.KeyCode.Z;
+import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
@@ -54,7 +64,10 @@ public class JavaFXConsolePlatform
     private final ConsoleWindowBlockingIO blockingIo;
     private final AtomicInteger consoleCommitedLength;
     private final AtomicInteger consoleTextAreaInternalInputCounter;
+    private final AtomicBoolean deleteCommitedTextAllowed;
     private final Object consoleTextAreaLock;
+    private final PointableCollection<String> consoleInputBuffer;
+    private final AtomicInteger consoleInputBufferCapacity;
     private Stage stage;
     private Pane bar;
     private Pane mainArea;
@@ -71,7 +84,11 @@ public class JavaFXConsolePlatform
         this.blockingIo = consoleBlockingIo;
         this.consoleCommitedLength = new AtomicInteger();
         this.consoleTextAreaInternalInputCounter = new AtomicInteger();
+        this.deleteCommitedTextAllowed = new AtomicBoolean();
         this.consoleTextAreaLock = new Object();
+        this.consoleInputBufferCapacity = new AtomicInteger(50);
+        this.consoleInputBuffer = new PointableCollection<>(
+                this.consoleInputBufferCapacity.get(), "");
         this.ready = false;
     }
     
@@ -191,6 +208,8 @@ public class JavaFXConsolePlatform
         TextArea textArea = new TextArea();
         textArea.setTextFormatter(this.createTextFormatter());
         textArea.addEventFilter(KEY_PRESSED, this.createEnterKeyInterceptor());
+        textArea.addEventFilter(KEY_PRESSED, this.createCtrlZYKeyCombinationInterceptor());
+        textArea.addEventFilter(KEY_PRESSED, this.createUpDownArrowsInterceptor());
         textArea.setMinHeight(100);
         textArea.setMinWidth(400);
         textArea.setStyle(
@@ -200,6 +219,9 @@ public class JavaFXConsolePlatform
                 "-fx-faint-focus-color: transparent; " + 
                 "-fx-font: 13px \"Consolas\"; "
         );
+        
+       
+        textArea.setContextMenu(this.createContextMenu());
                 
         mainAreaVBox.getChildren().add(textArea);
         
@@ -207,23 +229,103 @@ public class JavaFXConsolePlatform
         this.mainArea = mainAreaVBox;
     }
     
+    private ContextMenu createContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+        contextMenu.getItems().addAll(
+                this.createClearMenuItem(), 
+                this.createCloseMenuItem(), 
+                this.createSettingsMenuItem());
+        return contextMenu;
+    }
+    
+    private MenuItem createClearMenuItem() {
+        MenuItem clear = new MenuItem("clear");
+        clear.setOnAction(event -> {
+            synchronized ( this.consoleTextAreaLock ) {
+                this.deleteCommitedTextAllowed.set(true);
+                this.consoleTextArea.setText("Beam > ");
+                this.consoleTextArea.commitValue();
+                this.deleteCommitedTextAllowed.set(false);
+                this.consoleCommitedLength.set("Beam > ".length());
+                this.consoleTextArea.positionCaret("Beam > ".length());
+            }    
+        });
+        return clear;
+    }
+    
+    private MenuItem createCloseMenuItem() {
+        MenuItem clear = new MenuItem("close");
+        clear.setOnAction(event -> {
+            // TODO
+        });
+        return clear;
+    }
+    
+    private MenuItem createSettingsMenuItem() {
+        MenuItem close = new MenuItem("settings");
+        close.setOnAction(event -> {
+            // TODO
+        });
+        return close;
+    }
+    
+    private EventHandler<KeyEvent> createUpDownArrowsInterceptor() {
+        return (keyEvent) -> {            
+            if ( keyEvent.getCode().equals(UP) ) {
+                synchronized ( this.consoleTextAreaLock ) {
+                    this.changeUncommitedTextTo(this.consoleInputBuffer.toLastAndGet());
+                }    
+                keyEvent.consume();
+            } else if ( keyEvent.getCode().equals(DOWN) ) {
+                synchronized ( this.consoleTextAreaLock ) {
+                    this.changeUncommitedTextTo(this.consoleInputBuffer.toFirstAndGet());
+                }    
+                keyEvent.consume();
+            }
+        };
+    }
+    
+    private void changeUncommitedTextTo(String bufferedInput) {
+        if ( bufferedInput.isEmpty() ) {
+            return;
+        }
+        this.consoleTextArea.replaceText(
+                this.consoleCommitedLength.get(), 
+                this.consoleTextArea.getText().length(), 
+                bufferedInput);
+        this.consoleTextArea.commitValue();
+        this.consoleTextArea.positionCaret(this.consoleTextArea.getText().length());
+    }
+    
+    private EventHandler<KeyEvent> createCtrlZYKeyCombinationInterceptor() {
+        KeyCodeCombination ctrlZ = new KeyCodeCombination(Z, SHORTCUT_DOWN);
+        KeyCodeCombination ctrlY = new KeyCodeCombination(Y, SHORTCUT_DOWN);
+        return (keyEvent) -> {
+            if ( ctrlZ.match(keyEvent) || ctrlY.match(keyEvent) ) {
+                keyEvent.consume();
+            }
+        };
+    }
+    
     private EventHandler<KeyEvent> createEnterKeyInterceptor() {
         return (keyEvent) -> {
             if ( keyEvent.getCode().equals(ENTER) ) {
-                if ( this.consoleTextArea.getCaretPosition() == 
-                        this.consoleTextArea.getText().length() ) {
-                    return;
-                }
-                int caretPosition = this.consoleTextArea.getCaretPosition();
-                int rawInputTextLength = this.consoleTextArea.getText().length();
-                int commitedTextLength = this.consoleCommitedLength.get();
-                if (    caretPosition >= commitedTextLength &&
-                        caretPosition < rawInputTextLength ) {
-                    this.consoleTextArea.deleteText(caretPosition, rawInputTextLength);                    
-                } else if ( caretPosition < rawInputTextLength ) {
-                    this.consoleTextArea.deleteText(commitedTextLength, rawInputTextLength);
-                    keyEvent.consume();
-                }
+                synchronized ( this.consoleTextAreaLock ) {
+                    if ( this.consoleTextArea.getCaretPosition() == 
+                            this.consoleTextArea.getText().length() ) {
+                        return;
+                    }
+                    int caretPosition = this.consoleTextArea.getCaretPosition();
+                    int rawInputTextLength = this.consoleTextArea.getText().length();
+                    int commitedTextLength = this.consoleCommitedLength.get();
+                    if (    caretPosition >= commitedTextLength &&
+                            caretPosition < rawInputTextLength ) {
+                        this.consoleTextArea.deleteText(caretPosition, rawInputTextLength);                    
+                    } else if ( caretPosition < rawInputTextLength ) {
+                        this.consoleTextArea.deleteText(commitedTextLength, rawInputTextLength);
+                        keyEvent.consume();
+                    }
+                }    
             }
         };
     }
@@ -258,9 +360,6 @@ public class JavaFXConsolePlatform
                 } else {
                     this.interceptOnOther(change);
                 }
-//                if ( this.consoleTextArea.getScrollTop() < MAX_VALUE ) {
-//                    this.consoleTextArea.setScrollTop(MAX_VALUE);
-//                }
                 return change;
             }
         };
@@ -283,22 +382,14 @@ public class JavaFXConsolePlatform
             int start = this.consoleCommitedLength.get();
             int end = text.length();
             String newInput = text.substring(start, end);
-            try {
-                this.blockingIo.blockingSetString(newInput);
-            } catch (InterruptedException e) {
-                //
-            }
+            this.acceptInput(newInput);
             int newTextLength = change.getControlNewText().length();
             this.consoleCommitedLength.set(newTextLength);
             this.setCaretCorrectPosition(change, newTextLength);
-//            if ( this.consoleTextArea.getScrollTop() < MAX_VALUE ) {
-//                this.consoleTextArea.setScrollTop(MAX_VALUE);
-//            }
         } else if ( this.consoleTextAreaInternalInputCounter.get() > 0 ) {
             // case: something printed to console as a response, 
             // commited to console, cannot be deleted
             boolean editable = changeText.endsWith(" > ") || changeText.endsWith(" : ");
-//                        this.consoleTextAreaInternalInputCounter.get() == 1;
             this.consoleTextArea.setEditable(editable);
             int newTextLength = change.getControlNewText().length();
             this.consoleCommitedLength.set(newTextLength);
@@ -307,13 +398,26 @@ public class JavaFXConsolePlatform
         } else {
             // case: usual input, not commited to console, can be deleted.
             this.adjustChangeIfAppliedToCommited(change);
-//            if ( this.consoleTextArea.getScrollTop() < MAX_VALUE ) {
-//                this.consoleTextArea.setScrollTop(MAX_VALUE);
-//            }
         }            
+    }
+    
+    private void acceptInput(String input) {
+        try {
+            this.blockingIo.blockingSetString(input);
+            if ( input.length() > 1 ) {
+                this.consoleInputBuffer.add(input);
+            }
+        } catch (InterruptedException e) {
+            // TODO ?
+        }
     }
 
     private void interceptOnDeleted(Change change) {
+        if ( this.deleteCommitedTextAllowed.get() ) {
+            System.out.println("[ON DELETION] ALLOWED");
+            return;
+        }
+        System.out.println("[ON DELETION]");
         int commitedTextLength = this.consoleCommitedLength.get();
         if ( change.getRangeStart() < commitedTextLength ) {
             change.setRange(commitedTextLength, commitedTextLength);

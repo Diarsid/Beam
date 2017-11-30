@@ -173,7 +173,8 @@ class H2DaoBatches
             
             List<ExecutorCommand> commands = transact
                     .ifTrue( batchExists )
-                    .doQueryAndStreamVarargParams(ExecutorCommand.class,
+                    .doQueryAndStreamVarargParams(
+                            ExecutorCommand.class,
                             "SELECT bat_command_type, " +
                             "       bat_command_original " +
                             "FROM batch_commands " +
@@ -402,7 +403,8 @@ class H2DaoBatches
             Map<String, List<ExecutorCommand>> collectedBatches = new HashMap<>();
             
             super.openDisposableTransaction()
-                    .doQuery("SELECT bat_name, " + 
+                    .doQuery(
+                            "SELECT bat_name, " + 
                             "       bat_command_type, " +
                             "       bat_command_original " +
                             "FROM batch_commands " +

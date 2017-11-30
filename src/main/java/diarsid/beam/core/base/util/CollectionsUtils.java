@@ -126,4 +126,8 @@ public class CollectionsUtils {
     public static int last(int[] ints) {
         return ints[ints.length - 1];
     }
+    
+    public static boolean indexInRange(int index, Collection collection) {
+        return ( index > -1 ) && ( index < collection.size() );
+    }
 }
