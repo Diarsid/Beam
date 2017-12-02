@@ -37,6 +37,7 @@ import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.util.PointableCollection;
 
 import static javafx.geometry.Pos.BOTTOM_RIGHT;
+import static javafx.geometry.Pos.CENTER_LEFT;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.UP;
@@ -124,34 +125,26 @@ public class JavaFXConsolePlatform
         this.createMainArea();
         this.startListenBlockingConsoleIncome();
         
-        VBox mainVBox = new VBox();
-        mainVBox.setStyle(
-                "-fx-border-insets: 10px; " +
-                "-fx-background-insets: 10px; " +
-                "-fx-background-color: #FF9F00; " +
-                "-fx-background-radius: 12px; " +
-                "-fx-padding: 10px;"        
-//                "-fx-border-color: #ffbf00; " +
-//                "-fx-border-width: 4px; " +
-//                "-fx-border-radius: 10px; "
-        );
-        mainVBox.setAlignment(Pos.BOTTOM_RIGHT);
+        VBox consoleOuterBox = new VBox();
+        consoleOuterBox.getStyleClass().add("console-outer-box");
+        
+        consoleOuterBox.setAlignment(Pos.BOTTOM_RIGHT);
         DropShadow sh = new DropShadow();
         sh.setHeight(sh.getHeight() * 1.35);
         sh.setWidth(sh.getWidth() * 1.35);
         sh.setSpread(sh.getSpread() * 1.35);
         Color opacityBlack = new Color(0, 0, 0, 0.4);
         sh.setColor(opacityBlack);
-        mainVBox.setEffect(sh);
+        consoleOuterBox.setEffect(sh);
         
-        VBox visibleBox = new VBox();
-        visibleBox.setAlignment(BOTTOM_RIGHT);
+        VBox consoleInnerBox = new VBox();
+        consoleInnerBox.setAlignment(BOTTOM_RIGHT);        
+        consoleInnerBox.getChildren().addAll(this.bar, this.mainArea);
+        consoleInnerBox.getStyleClass().add("console-inner-box");
         
-        visibleBox.getChildren().addAll(this.bar, this.mainArea);
-        visibleBox.setStyle("-fx-padding: 4px;");
-        mainVBox.getChildren().addAll(visibleBox);
+        consoleOuterBox.getChildren().addAll(consoleInnerBox);
         
-        Scene scene = new Scene(mainVBox);
+        Scene scene = new Scene(consoleOuterBox);
         scene.setFill(Color.TRANSPARENT);
         scene.getStylesheets().add(this.windowResources.getPathToCssFile());
         this.stage.setScene(scene);
@@ -172,38 +165,43 @@ public class JavaFXConsolePlatform
     }
     
     private void createBar() {
-        HBox barHBox = new HBox();
+        HBox bar = new HBox(5);
+        bar.getStyleClass().add("console-bar");
+        bar.setAlignment(CENTER_LEFT);
         
-        Label label = new Label("Beam > Console");
-        label.setStyle(
-                "-fx-font: 14px \"Consolas\"; " +
-                "-fx-text-fill: white; " +
-                "-fx-font-weight: bold; "        
-        );
-        barHBox.getChildren().add(label);
-        barHBox.setPadding(new Insets(3));
+        Label point = new Label();
         
-        barHBox.setOnMousePressed((mouseEvent) -> {
+        point.setMaxHeight(14);
+        point.setMinHeight(14);
+        point.setMaxWidth(14);
+        point.setMinWidth(14);
+        point.setStyle(
+                "-fx-background-color: white; " +
+                "-fx-background-radius: 14px; " +
+                "-fx-border-color: #FFDE00; " + 
+                "-fx-border-width: 4px; " +
+                "-fx-border-radius: 14px; ");
+        
+        Label barHeader = new Label("Beam > Console");
+        barHeader.getStyleClass().add("console-bar-header");
+        
+        bar.getChildren().addAll(point, barHeader);
+        bar.setPadding(new Insets(0, 3, 3, 0));
+        
+        bar.setOnMousePressed((mouseEvent) -> {
             this.windowMover.onMousePressed(mouseEvent);
         });
         
-        barHBox.setOnMouseDragged((mouseEvent) -> {
+        bar.setOnMouseDragged((mouseEvent) -> {
             this.windowMover.onMouseDragged(mouseEvent);
         });
         
-        this.bar = barHBox;
+        this.bar = bar;
     }
     
     private void createMainArea() {
         VBox mainAreaVBox = new VBox();
-        mainAreaVBox.setStyle(
-                "-fx-background-color: white; " +
-                "-fx-background-radius: 11px; " + 
-                "-fx-border-color: #FFDE00; " + 
-                "-fx-border-width: 4px; " + 
-                "-fx-border-radius: 10px;" +
-                "-fx-padding: 5px;" 
-        );        
+        mainAreaVBox.getStyleClass().add("console-main-area");
         
         TextArea textArea = new TextArea();
         textArea.setTextFormatter(this.createTextFormatter());
@@ -212,14 +210,8 @@ public class JavaFXConsolePlatform
         textArea.addEventFilter(KEY_PRESSED, this.createUpDownArrowsInterceptor());
         textArea.setMinHeight(100);
         textArea.setMinWidth(400);
-        textArea.setStyle(
-                "-fx-background-color: white; " +
-                "-fx-focus-color: transparent; " +
-                "-fx-text-box-border: transparent; " + 
-                "-fx-faint-focus-color: transparent; " + 
-                "-fx-font: 13px \"Consolas\"; "
-        );
-        
+        textArea.getStyleClass().add("console-text-area");
+               
        
         textArea.setContextMenu(this.createContextMenu());
                 
@@ -235,7 +227,19 @@ public class JavaFXConsolePlatform
                 this.createClearMenuItem(), 
                 this.createCloseMenuItem(), 
                 this.createSettingsMenuItem());
+        contextMenu.getItems()
+                .stream()
+                .forEach(menuItem -> {
+                    menuItem.getStyleClass().add("console-menu-item");
+                    menuItem.setGraphic(this.createMenuItemPoint());
+                });
         return contextMenu;
+    }
+    
+    private Label createMenuItemPoint() {        
+        Label point = new Label();
+        point.getStyleClass().add("console-menu-item-point");
+        return point;
     }
     
     private MenuItem createClearMenuItem() {
@@ -254,19 +258,19 @@ public class JavaFXConsolePlatform
     }
     
     private MenuItem createCloseMenuItem() {
-        MenuItem clear = new MenuItem("close");
-        clear.setOnAction(event -> {
-            // TODO
+        MenuItem close = new MenuItem("close");
+        close.setOnAction(event -> {
+            this.hide();
         });
-        return clear;
+        return close;
     }
     
     private MenuItem createSettingsMenuItem() {
-        MenuItem close = new MenuItem("settings");
-        close.setOnAction(event -> {
-            // TODO
+        MenuItem settings = new MenuItem("settings");
+        settings.setOnAction(event -> {
+            // TODO MIDDLE
         });
-        return close;
+        return settings;
     }
     
     private EventHandler<KeyEvent> createUpDownArrowsInterceptor() {
@@ -414,10 +418,8 @@ public class JavaFXConsolePlatform
 
     private void interceptOnDeleted(Change change) {
         if ( this.deleteCommitedTextAllowed.get() ) {
-            System.out.println("[ON DELETION] ALLOWED");
             return;
         }
-        System.out.println("[ON DELETION]");
         int commitedTextLength = this.consoleCommitedLength.get();
         if ( change.getRangeStart() < commitedTextLength ) {
             change.setRange(commitedTextLength, commitedTextLength);
