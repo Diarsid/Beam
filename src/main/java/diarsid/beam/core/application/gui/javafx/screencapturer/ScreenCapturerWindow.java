@@ -177,13 +177,7 @@ public class ScreenCapturerWindow implements Runnable {
     private Pane createControlPane(Label controlPaneLabel) {
         HBox hBox = new HBox(15); 
         
-        hBox.setOnMousePressed((mouseEvent) -> {
-            this.windowMover.onMousePressed(mouseEvent);
-        });
-        
-        hBox.setOnMouseDragged((mouseEvent) -> {
-            this.windowMover.onMouseDragged(mouseEvent);
-        });
+        this.windowMover.boundTo(hBox);
         
         hBox.setSpacing(4);
         DropShadow sh = new DropShadow();

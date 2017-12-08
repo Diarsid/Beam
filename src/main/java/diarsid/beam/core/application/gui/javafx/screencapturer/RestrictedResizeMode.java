@@ -11,7 +11,7 @@ import static java.lang.Math.abs;
  *
  * @author Diarsid
  */
-public enum ResizeMode {
+enum RestrictedResizeMode {
     INCREASE,
     DECREASE,
     INCREASE_BY_X,
@@ -19,7 +19,7 @@ public enum ResizeMode {
     DECREASE_BY_X,
     DECREASE_BY_Y;
     
-    public static ResizeMode defineResizeMode(double deltaX, double deltaY) {        
+    static RestrictedResizeMode defineResizeMode(double deltaX, double deltaY) {        
         if ( deltaX > 0 && deltaY > 0 ) {
             return INCREASE;
         } else if ( deltaX < 0 && deltaY < 0 ) {

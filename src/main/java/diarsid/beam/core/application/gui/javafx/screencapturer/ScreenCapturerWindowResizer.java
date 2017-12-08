@@ -11,12 +11,17 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import static diarsid.beam.core.application.gui.javafx.screencapturer.BorderDragType.LEFT_DRAG;
-import static diarsid.beam.core.application.gui.javafx.screencapturer.BorderDragType.TOP_DRAG;
-import static diarsid.beam.core.application.gui.javafx.screencapturer.BorderDragType.defineBorderDragType;
-import static diarsid.beam.core.application.gui.javafx.screencapturer.ResizeMode.DECREASE;
-import static diarsid.beam.core.application.gui.javafx.screencapturer.ResizeMode.INCREASE;
-import static diarsid.beam.core.application.gui.javafx.screencapturer.ResizeMode.defineResizeMode;
+import diarsid.beam.core.application.gui.javafx.BorderDragType;
+
+import static diarsid.beam.core.application.gui.javafx.BorderDragType.BOTTOM;
+import static diarsid.beam.core.application.gui.javafx.BorderDragType.BOTTOM_LEFT;
+import static diarsid.beam.core.application.gui.javafx.BorderDragType.BOTTOM_RIGHT;
+import static diarsid.beam.core.application.gui.javafx.BorderDragType.RIGHT;
+import static diarsid.beam.core.application.gui.javafx.BorderDragType.TOP_RIGHT;
+import static diarsid.beam.core.application.gui.javafx.BorderDragType.defineBorderDragType;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.RestrictedResizeMode.DECREASE;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.RestrictedResizeMode.INCREASE;
+import static diarsid.beam.core.application.gui.javafx.screencapturer.RestrictedResizeMode.defineResizeMode;
 
 /**
  *
@@ -84,18 +89,19 @@ public class ScreenCapturerWindowResizer {
         this.drag = defineBorderDragType(
                 this.initialMouseX, this.initialMouseY, 
                 this.initialPaneX, this.initialPaneY, 
-                this.initialPaneWidth, this.initialPaneHeight);
+                this.initialPaneWidth, this.initialPaneHeight,
+                15.0, 15.0);
     }
     
     void mouseDragged(MouseEvent mouseEvent) {
-        if ( this.drag.equals(LEFT_DRAG) || this.drag.equals(TOP_DRAG) ) {
+        if ( this.drag.isNotOneOf(RIGHT, BOTTOM, BOTTOM_LEFT, BOTTOM_RIGHT, TOP_RIGHT) ) {
             return;
         }
         
         double deltaX = mouseEvent.getScreenX() - this.initialMouseX;
         double deltaY = mouseEvent.getScreenY() - this.initialMouseY;
         
-        ResizeMode resize = defineResizeMode(deltaX, deltaY);
+        RestrictedResizeMode resize = defineResizeMode(deltaX, deltaY);
         
         double newWidth;
         double newHeight;

@@ -35,6 +35,12 @@ public class MathUtil {
         }
     }
     
+    public static boolean isBetween(double from, double mid, double to) {
+        return 
+                mid > from &&
+                mid < to;
+    }
+    
     public static int adjustBetween(int valueToAdjust, int fromInclusive, int toInclusive) {
         if ( valueToAdjust > toInclusive ) {
             return toInclusive;

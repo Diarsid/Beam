@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.application.gui.javafx;
 
-import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -25,13 +25,18 @@ public class WindowMover {
         this.stage = stage;
     }
     
-    public void onMousePressed(MouseEvent mouseEvent) {
-        this.x = this.stage.getX() - mouseEvent.getScreenX();
-        this.y = this.stage.getY() - mouseEvent.getScreenY();
-    }
-    
-    public void onMouseDragged(MouseEvent mouseEvent) {
-        this.stage.setX(mouseEvent.getScreenX() + this.x);
-        this.stage.setY(mouseEvent.getScreenY() + this.y);
+    public void boundTo(Pane pane) {        
+        
+        pane.setOnMousePressed((mouseEvent) -> {
+            this.x = this.stage.getX() - mouseEvent.getScreenX();
+            this.y = this.stage.getY() - mouseEvent.getScreenY();
+            mouseEvent.consume();
+        });
+        
+        pane.setOnMouseDragged((mouseEvent) -> {
+            this.stage.setX(mouseEvent.getScreenX() + this.x);
+            this.stage.setY(mouseEvent.getScreenY() + this.y);
+            mouseEvent.consume();
+        });
     }
 }

@@ -12,7 +12,6 @@ import java.util.function.UnaryOperator;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -36,8 +35,8 @@ import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.util.PointableCollection;
 
-import static javafx.geometry.Pos.BOTTOM_RIGHT;
 import static javafx.geometry.Pos.CENTER_LEFT;
+import static javafx.geometry.Pos.TOP_CENTER;
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.UP;
@@ -62,6 +61,7 @@ public class JavaFXConsolePlatform
     
     private final WindowResources windowResources;
     private final WindowMover windowMover;
+    private final ConsoleWindowResizer windowResizer;
     private final ConsoleWindowBlockingIO blockingIo;
     private final AtomicInteger consoleCommitedLength;
     private final AtomicInteger consoleTextAreaInternalInputCounter;
@@ -82,6 +82,7 @@ public class JavaFXConsolePlatform
         super(consoleBlockingIo, blockingExecutor, IN_MACHINE);
         this.windowResources = windowResources;
         this.windowMover = new WindowMover();
+        this.windowResizer = new ConsoleWindowResizer();
         this.blockingIo = consoleBlockingIo;
         this.consoleCommitedLength = new AtomicInteger();
         this.consoleTextAreaInternalInputCounter = new AtomicInteger();
@@ -127,8 +128,11 @@ public class JavaFXConsolePlatform
         
         VBox consoleOuterBox = new VBox();
         consoleOuterBox.getStyleClass().add("console-outer-box");
+        consoleOuterBox.setOnMousePressed(event -> {
+            System.out.println("[OUTER PRESSED]");
+        });
         
-        consoleOuterBox.setAlignment(Pos.BOTTOM_RIGHT);
+        consoleOuterBox.setAlignment(TOP_CENTER);
         DropShadow sh = new DropShadow();
         sh.setHeight(sh.getHeight() * 1.35);
         sh.setWidth(sh.getWidth() * 1.35);
@@ -138,9 +142,10 @@ public class JavaFXConsolePlatform
         consoleOuterBox.setEffect(sh);
         
         VBox consoleInnerBox = new VBox();
-        consoleInnerBox.setAlignment(BOTTOM_RIGHT);        
+        consoleInnerBox.setAlignment(TOP_CENTER);        
         consoleInnerBox.getChildren().addAll(this.bar, this.mainArea);
         consoleInnerBox.getStyleClass().add("console-inner-box");
+        this.windowResizer.listen(consoleInnerBox);              
         
         consoleOuterBox.getChildren().addAll(consoleInnerBox);
         
@@ -157,11 +162,10 @@ public class JavaFXConsolePlatform
     private void createStage() {
         this.stage = new Stage();
         this.stage.initStyle(StageStyle.TRANSPARENT);
-        this.stage.setMinWidth(800);
-        this.stage.setMinHeight(100);
         this.stage.setResizable(true);
         this.stage.centerOnScreen();
         this.windowMover.acceptStage(this.stage);
+        this.windowResizer.acceptStage(this.stage);
     }
     
     private void createBar() {
@@ -187,14 +191,7 @@ public class JavaFXConsolePlatform
         
         bar.getChildren().addAll(point, barHeader);
         bar.setPadding(new Insets(0, 3, 3, 0));
-        
-        bar.setOnMousePressed((mouseEvent) -> {
-            this.windowMover.onMousePressed(mouseEvent);
-        });
-        
-        bar.setOnMouseDragged((mouseEvent) -> {
-            this.windowMover.onMouseDragged(mouseEvent);
-        });
+        this.windowMover.boundTo(bar);
         
         this.bar = bar;
     }
@@ -208,10 +205,10 @@ public class JavaFXConsolePlatform
         textArea.addEventFilter(KEY_PRESSED, this.createEnterKeyInterceptor());
         textArea.addEventFilter(KEY_PRESSED, this.createCtrlZYKeyCombinationInterceptor());
         textArea.addEventFilter(KEY_PRESSED, this.createUpDownArrowsInterceptor());
-        textArea.setMinHeight(100);
-        textArea.setMinWidth(400);
+        textArea.setMinHeight(200);
+        textArea.setMinWidth(500);
         textArea.getStyleClass().add("console-text-area");
-               
+        this.windowResizer.affect(textArea);               
        
         textArea.setContextMenu(this.createContextMenu());
                 
@@ -226,6 +223,7 @@ public class JavaFXConsolePlatform
         contextMenu.getItems().addAll(
                 this.createClearMenuItem(), 
                 this.createCloseMenuItem(), 
+                this.createDefualtSizeMenuItem(),
                 this.createSettingsMenuItem());
         contextMenu.getItems()
                 .stream()
@@ -263,6 +261,14 @@ public class JavaFXConsolePlatform
             this.hide();
         });
         return close;
+    }
+    
+    private MenuItem createDefualtSizeMenuItem() {
+        MenuItem defualtSize = new MenuItem("default size");
+        defualtSize.setOnAction(event -> {
+            this.windowResizer.affectableToDefaultSize();
+        });
+        return defualtSize;
     }
     
     private MenuItem createSettingsMenuItem() {
