@@ -20,6 +20,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -33,6 +34,7 @@ import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
+import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.base.util.PointableCollection;
 
 import static javafx.geometry.Pos.CENTER_LEFT;
@@ -47,6 +49,7 @@ import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
+import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 
 /**
  *
@@ -108,7 +111,8 @@ public class JavaFXConsolePlatform
         if ( this.ready ) {
             this.show();
         } else {
-            this.initAndShow();
+            this.init();
+            this.show();
         }
     }
     
@@ -120,43 +124,50 @@ public class JavaFXConsolePlatform
         this.stage.hide();
     }
     
-    private void initAndShow() {
+    private void init() {
         this.createStage();
         this.createBar();
         this.createMainArea();
         this.startListenBlockingConsoleIncome();
-        
-        VBox consoleOuterBox = new VBox();
-        consoleOuterBox.getStyleClass().add("console-outer-box");
-        consoleOuterBox.setOnMousePressed(event -> {
-            System.out.println("[OUTER PRESSED]");
-        });
-        
-        consoleOuterBox.setAlignment(TOP_CENTER);
-        DropShadow sh = new DropShadow();
-        sh.setHeight(sh.getHeight() * 1.35);
-        sh.setWidth(sh.getWidth() * 1.35);
-        sh.setSpread(sh.getSpread() * 1.35);
-        Color opacityBlack = new Color(0, 0, 0, 0.4);
-        sh.setColor(opacityBlack);
-        consoleOuterBox.setEffect(sh);
-        
+        this.fillStageWithScene();
+        this.show();
+    }
+    
+    private void fillStageWithScene() {
+        this.stage.setScene(this.createConsoleWindowScene());
+        this.stage.sizeToScene();
+        this.ready = true;
+    }
+    
+    private Scene createConsoleWindowScene() {      
         VBox consoleInnerBox = new VBox();
         consoleInnerBox.setAlignment(TOP_CENTER);        
         consoleInnerBox.getChildren().addAll(this.bar, this.mainArea);
         consoleInnerBox.getStyleClass().add("console-inner-box");
-        this.windowResizer.listen(consoleInnerBox);              
+        this.windowResizer.listen(consoleInnerBox);     
+        
+        VBox consoleOuterBox = new VBox();
+        consoleOuterBox.getStyleClass().add("console-outer-box");        
+        consoleOuterBox.setAlignment(TOP_CENTER);        
+        consoleOuterBox.setEffect(this.opacityBlackShadow());
         
         consoleOuterBox.getChildren().addAll(consoleInnerBox);
         
         Scene scene = new Scene(consoleOuterBox);
         scene.setFill(Color.TRANSPARENT);
         scene.getStylesheets().add(this.windowResources.getPathToCssFile());
-        this.stage.setScene(scene);
-        this.stage.sizeToScene();
-        this.ready = true;
         
-        this.show();
+        return scene;
+    }
+    
+    private Effect opacityBlackShadow() {
+        DropShadow sh = new DropShadow();
+        sh.setHeight(sh.getHeight() * 1.35);
+        sh.setWidth(sh.getWidth() * 1.35);
+        sh.setSpread(sh.getSpread() * 1.35);
+        Color opacityBlack = new Color(0, 0, 0, 0.4);
+        sh.setColor(opacityBlack);
+        return sh;
     }
     
     private void createStage() {
@@ -169,10 +180,22 @@ public class JavaFXConsolePlatform
     }
     
     private void createBar() {
-        HBox bar = new HBox(5);
-        bar.getStyleClass().add("console-bar");
-        bar.setAlignment(CENTER_LEFT);
-        
+        HBox barBox = new HBox(5);
+        barBox.getStyleClass().add("console-bar");
+        barBox.setAlignment(CENTER_LEFT);
+        barBox.getChildren().addAll(this.createBarPoint(), this.createBarLabel());
+        barBox.setPadding(new Insets(0, 3, 3, 0));
+        this.windowMover.boundTo(barBox);        
+        this.bar = barBox;
+    }
+    
+    private Label createBarLabel() {
+        Label barHeader = new Label("Beam > Console");
+        barHeader.getStyleClass().add("console-bar-header");
+        return barHeader;
+    }
+    
+    private Label createBarPoint() {
         Label point = new Label();
         
         point.setMaxHeight(14);
@@ -186,20 +209,18 @@ public class JavaFXConsolePlatform
                 "-fx-border-width: 4px; " +
                 "-fx-border-radius: 14px; ");
         
-        Label barHeader = new Label("Beam > Console");
-        barHeader.getStyleClass().add("console-bar-header");
-        
-        bar.getChildren().addAll(point, barHeader);
-        bar.setPadding(new Insets(0, 3, 3, 0));
-        this.windowMover.boundTo(bar);
-        
-        this.bar = bar;
+        return point;
     }
     
     private void createMainArea() {
         VBox mainAreaVBox = new VBox();
         mainAreaVBox.getStyleClass().add("console-main-area");
-        
+        this.createConsoleTextArea();
+        mainAreaVBox.getChildren().add(this.consoleTextArea);
+        this.mainArea = mainAreaVBox;
+    }
+    
+    private void createConsoleTextArea() {
         TextArea textArea = new TextArea();
         textArea.setTextFormatter(this.createTextFormatter());
         textArea.addEventFilter(KEY_PRESSED, this.createEnterKeyInterceptor());
@@ -208,14 +229,9 @@ public class JavaFXConsolePlatform
         textArea.setMinHeight(200);
         textArea.setMinWidth(500);
         textArea.getStyleClass().add("console-text-area");
-        this.windowResizer.affect(textArea);               
-       
+        this.windowResizer.affect(textArea); 
         textArea.setContextMenu(this.createContextMenu());
-                
-        mainAreaVBox.getChildren().add(textArea);
-        
-        this.consoleTextArea = textArea;    
-        this.mainArea = mainAreaVBox;
+        this.consoleTextArea = textArea;
     }
     
     private ContextMenu createContextMenu() {
@@ -340,21 +356,36 @@ public class JavaFXConsolePlatform
         };
     }
     
-    private void startListenBlockingConsoleIncome() {
-        asyncDoIndependently("JavaFX Console internal output listener Thread", ()-> {
+    private void startListenBlockingConsoleIncome() {        
+        // mutableChangeProcess Lock is a lock shared only between two threads:
+        //  - JavaFX Application Thread can only .notify
+        //  - JavaFX Console Listener Thread can only .wait
+        // There are no any other threads accessing this lock.
+        Object mutableChangeProcess = new Object();
+        MutableString mutableNewLine = emptyMutableString();
+        Runnable consoleTextAreaMutableChange = () -> {
+            synchronized ( this.consoleTextAreaLock ) {
+                this.consoleTextAreaInternalInputCounter.incrementAndGet();
+                this.consoleTextArea.setEditable(false);
+                this.consoleTextArea.appendText(mutableNewLine.getAndEmpty());
+                this.consoleTextArea.commitValue();
+                synchronized ( mutableChangeProcess ) {
+                    mutableChangeProcess.notify();
+                }
+            }
+        };
+        
+        asyncDoIndependently("JavaFX Console Listener Thread", ()-> {
             while ( true ) {                
                 try {
                     String newLineIntoConsole = this.blockingIo.blockingGetPrintedString();
-                    Platform.runLater(() -> {
-                        synchronized ( this.consoleTextAreaLock ) {
-                            this.consoleTextAreaInternalInputCounter.incrementAndGet();
-                            this.consoleTextArea.setEditable(false);
-                            this.consoleTextArea.appendText(newLineIntoConsole);
-                            this.consoleTextArea.commitValue();
-                        } 
-                    });                       
-                } catch (InterruptedException e) {
-                    // nothing
+                    mutableNewLine.muteTo(newLineIntoConsole);
+                    Platform.runLater(consoleTextAreaMutableChange);
+                    synchronized ( mutableChangeProcess ) {
+                        mutableChangeProcess.wait();
+                    }
+                } catch (InterruptedException ignore) {
+                    // do nothing
                 }
             }
         });

@@ -23,7 +23,7 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
-import diarsid.beam.core.base.util.StringHolder;
+import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoCommandsChoices;
 
@@ -49,9 +49,9 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.StringHolder.hold;
-import static diarsid.beam.core.base.util.StringHolder.holdEmpty;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
+import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
+import static diarsid.beam.core.base.util.MutableString.mutableString;
 
 /**
  *
@@ -120,20 +120,20 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return valueFlowFail("wrong command type!");
         }
         
-        StringHolder memPattern;
+        MutableString memPattern;
         if ( command.hasArguments() ) {
-            memPattern = hold(command.joinedArguments());
+            memPattern = mutableString(command.joinedArguments());
         } else {
-            memPattern = holdEmpty();
+            memPattern = emptyMutableString();
         }
         
         return this.findCommands(initiator, memPattern);
     }
 
     private ValueFlow<List<InvocationCommand>> findCommands(
-            Initiator initiator, StringHolder memPattern) {       
+            Initiator initiator, MutableString memPattern) {       
         
-        memPattern.set(helper.validateInteractively(initiator, memPattern.get(), "mem", TEXT_RULE));
+        memPattern.muteTo(helper.validateInteractively(initiator, memPattern.get(), "mem", TEXT_RULE));
         
         if ( memPattern.isEmpty() ) {
             return valueFlowStopped();
@@ -154,7 +154,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             } 
             
             if ( memPattern.isEmpty() ) {
-                memPattern.set(helper.validateInteractively(
+                memPattern.muteTo(helper.validateInteractively(
                         initiator, memPattern.get(), "mem", TEXT_RULE));
                 if ( memPattern.isEmpty() ) {
                     return valueFlowStopped();
@@ -174,7 +174,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             
             if ( foundCommands.isEmpty() ) {
                 this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
-                memPattern.setEmpty();
+                memPattern.empty();
                 continue searching;
             } else {
                 WeightedVariants variants = weightVariants(
@@ -183,7 +183,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                    return this.getAllFoundUsingVariantsIndexes(foundCommands, variants.indexes());
                 } else {
                     this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
-                    memPattern.setEmpty();
+                    memPattern.empty();
                     continue searching;
                 }                
             }
@@ -204,11 +204,11 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return voidFlowFail("wrong command type!");
         }
         
-        StringHolder memPattern;
+        MutableString memPattern;
         if ( command.hasArguments() ) {
-            memPattern = hold(command.joinedArguments());
+            memPattern = mutableString(command.joinedArguments());
         } else {
-            memPattern = holdEmpty();
+            memPattern = emptyMutableString();
         }
         
         ValueFlow<List<InvocationCommand>> commandsFlow = 

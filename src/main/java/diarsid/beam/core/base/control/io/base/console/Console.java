@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
-import diarsid.beam.core.base.util.StringHolder;
+import diarsid.beam.core.base.util.MutableString;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -35,7 +35,7 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnac
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
-import static diarsid.beam.core.base.util.StringHolder.holdEmpty;
+import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
@@ -65,16 +65,18 @@ public class Console
     
     @Override
     public void run() {
-        StringHolder command = holdEmpty();   
+        MutableString mutableCommand = emptyMutableString();   
+        Runnable mutableConsoleExecution = () -> {
+            this.consoleOperator.blockingExecute(mutableCommand.get());
+        };
+        
         while ( this.consoleOperator.isWorking() ) {
-            command.set(this.consoleOperator.readyAndWaitForLine()); 
-            this.consoleOperator.interactionBegins();
-            if ( command.isNotEmpty() ) {
-                awaitDo(() -> {
-                    this.consoleOperator.blockingExecute(command.get());
-                });                        
-            }                    
-            this.consoleOperator.interactionEnds();
+            mutableCommand.muteTo(this.consoleOperator.readyAndWaitForLine());             
+            if ( mutableCommand.isNotEmpty() ) {
+                this.consoleOperator.interactionBegins();
+                awaitDo(mutableConsoleExecution);       
+                this.consoleOperator.interactionEnds();
+            }  
         }
     }
     

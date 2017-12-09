@@ -12,35 +12,43 @@ import java.util.Objects;
  *
  * @author Diarsid
  */
-public class StringHolder {
+public class MutableString {
     
     private String string;
     
-    private StringHolder() {
+    private MutableString() {
         this.string = "";
     }
     
-    private StringHolder(String s) {
+    private MutableString(String s) {
         this.string = s;
     }
     
-    public static StringHolder holdEmpty() {
-        return new StringHolder();
+    public static MutableString emptyMutableString() {
+        return new MutableString();
     }
     
-    public static StringHolder hold(String s) {
-        return new StringHolder(s);
+    public static MutableString mutableString(String s) {
+        return new MutableString(s);
     }
 
     public String get() {
         return this.string;
     }
+    
+    public String getAndEmpty() {
+        try {
+            return this.string;
+        } finally {
+            this.string = "";
+        }
+    }
 
-    public void set(String string) {
+    public void muteTo(String string) {
         this.string = string;
     }
     
-    public void setEmpty() {
+    public void empty() {
         this.string = "";
     }
     
@@ -68,7 +76,7 @@ public class StringHolder {
         if ( getClass() != obj.getClass() ) {
             return false;
         }
-        final StringHolder other = ( StringHolder ) obj;
+        final MutableString other = ( MutableString ) obj;
         if ( !Objects.equals(this.string, other.string) ) {
             return false;
         }
