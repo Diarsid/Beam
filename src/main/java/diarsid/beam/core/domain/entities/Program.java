@@ -16,12 +16,11 @@ import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
@@ -91,10 +90,10 @@ public class Program
 
     @Override
     public Message toMessage() {
-        return new TextMessage(INFO, 
+        return infoWithHeader(
                 this.toString(), 
-                "  file " + this.fileName, 
-                "  path " + normalizeSeparators(this.programsCatalog.path().toString()));
+                "file " + this.fileName, 
+                "path " + normalizeSeparators(this.programsCatalog.path().toString()));
     }   
 
     @Override

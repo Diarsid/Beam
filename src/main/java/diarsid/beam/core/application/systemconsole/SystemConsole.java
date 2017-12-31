@@ -24,7 +24,6 @@ import static java.lang.Thread.sleep;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.Logs.logError;
 
 /**
@@ -50,7 +49,7 @@ public class SystemConsole {
             remoteAccess = remoteManager.importRemoteAccess();
             Console console = createConsole();            
             remoteManager.export(console);
-            asyncDoIndependently("System Console Thread", console);
+            console.launch();
         } catch (StartupFailedException|WorkflowBrokenException e) {
             logError(SystemConsole.class, e.getCause());
             delayedShutdown();

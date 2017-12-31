@@ -60,7 +60,6 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.HIDE_VARIANT_TYPE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
@@ -93,6 +92,8 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 
 /**
  *
@@ -1154,7 +1155,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     Optional<List<String>> listing = this.fileLister.listContentOf(location, 5);
                     if ( listing.isPresent() && nonEmpty(listing.get()) ) {
                         listing.get().add(0, format("%s content: ", location.name()));
-                        this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
+                        this.ioEngine.reportMessage(initiator, info(listing.get()));
                     } else {
                         this.ioEngine.report(
                                 initiator, 
@@ -1304,7 +1305,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             Optional<List<String>> listing = this.fileLister.listContentOf(realPath, 5);
             if ( listing.isPresent() ) {
                 listing.get().add(0, subPath.fullName() + " content:");
-                this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
+                this.ioEngine.reportMessage(initiator, info(listing.get()));
             } else {
                 this.ioEngine.report(initiator, format(
                         "cannot list %s content.", subPath.fullName()));
@@ -1357,7 +1358,7 @@ class ExecutorModuleWorker implements ExecutorModule {
         String listingPath = combineAsPathFrom(location.name(), subpath);
         if ( listing.isPresent() ) {
             listing.get().add(0, listingPath + " content:");
-            this.ioEngine.reportMessage(initiator, linesToMessage(listing.get()));
+            this.ioEngine.reportMessage(initiator, info(listing.get()));
         } else {
             this.ioEngine.report(
                     initiator, format("cannot list %s content.", listingPath));

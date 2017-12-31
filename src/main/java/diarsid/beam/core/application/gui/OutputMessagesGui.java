@@ -3,15 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.gui.javafx;
+package diarsid.beam.core.application.gui;
 
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 
 /**
  *
  * @author Diarsid
  */
-public interface ReusableTaskWindow extends Runnable  {
+public interface OutputMessagesGui {
     
-    void reuseWithNewTask(TaskMessage task);
+    void show(Message task);
+    
 }

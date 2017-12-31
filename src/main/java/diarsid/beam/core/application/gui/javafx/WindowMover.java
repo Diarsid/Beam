@@ -5,8 +5,11 @@
  */
 package diarsid.beam.core.application.gui.javafx;
 
-import javafx.scene.layout.Pane;
+import javafx.scene.Node;
 import javafx.stage.Stage;
+
+import static javafx.scene.input.MouseEvent.MOUSE_DRAGGED;
+import static javafx.scene.input.MouseEvent.MOUSE_PRESSED;
 
 /**
  *
@@ -25,15 +28,15 @@ public class WindowMover {
         this.stage = stage;
     }
     
-    public void boundTo(Pane pane) {        
+    public void boundTo(Node node) {
         
-        pane.setOnMousePressed((mouseEvent) -> {
+        node.addEventHandler(MOUSE_PRESSED, (mouseEvent) -> {
             this.x = this.stage.getX() - mouseEvent.getScreenX();
             this.y = this.stage.getY() - mouseEvent.getScreenY();
             mouseEvent.consume();
         });
         
-        pane.setOnMouseDragged((mouseEvent) -> {
+        node.addEventHandler(MOUSE_DRAGGED, (mouseEvent) -> {
             this.stage.setX(mouseEvent.getScreenX() + this.x);
             this.stage.setY(mouseEvent.getScreenY() + this.y);
             mouseEvent.consume();

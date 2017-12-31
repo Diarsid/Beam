@@ -136,14 +136,14 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
 
     @Override
     public void reportMessage(Initiator initiator, Message message) {
-        for (String s : message.toText()) {
+        for (String s : message.allLines()) {
             System.out.println("fake io > " + s);
         }
     }
 
     @Override
     public void reportMessageAndExitLater(Initiator initiator, Message message) {
-        for (String s : message.toText()) {
+        for (String s : message.allLines()) {
             System.out.println("fake io > " + s);
         }
         System.out.println("[exit]");

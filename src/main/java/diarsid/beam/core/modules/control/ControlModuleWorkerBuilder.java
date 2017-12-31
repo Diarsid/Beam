@@ -6,7 +6,6 @@
 
 package diarsid.beam.core.modules.control;
 
-import diarsid.beam.core.application.gui.javafx.GuiJavaFX;
 import diarsid.beam.core.base.control.io.base.console.Console;
 import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
@@ -20,7 +19,6 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatform.createAndLaunchJavaFXConsolePlatform;
 import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCommandLineProcessor;
 
 /**
@@ -63,11 +61,11 @@ public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModul
     
     private void startJavaFxConsoleUsing(ConsoleCommandRealProcessor consoleProcessor) {
         ConsolePlatform javaFxConsolePlatform = createAndLaunchJavaFXConsolePlatform(
-                (GuiJavaFX) this.appComponentsHolderModule.gui(), consoleProcessor);
+                this.appComponentsHolderModule.gui(), consoleProcessor);
         Console javaFxConsole = buildConsoleUsing(javaFxConsolePlatform);
         
         this.ioModule.registerOuterIoEngine(javaFxConsole);
         
-        asyncDoIndependently("JavaFX Console Thread", javaFxConsole);
+        javaFxConsole.launch();
     }
 }

@@ -107,7 +107,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
     @Override
     public void printNonDuringInteraction(Message message) throws Exception {
         StringBuilder sb = new StringBuilder();
-        for (String s : message.toText()) {
+        for (String s : message.allLines()) {
             sb.append(format("       %s\n", s));
         }
         sb.append("Beam > ");
@@ -127,7 +127,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
     @Override
     public void printDuringInteraction(Message message) throws Exception {
         StringBuilder sb = new StringBuilder();
-        for (String s : message.toText()) {
+        for (String s : message.allLines()) {
             sb.append(format("       %s\n", s));
         }
         this.intoConsole.put(sb.toString());

@@ -6,57 +6,38 @@
 
 package diarsid.beam.core.application.gui.javafx;
 
-import java.util.Deque;
-import java.util.LinkedList;
-
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
-
-import diarsid.beam.core.Beam;
 
 /**
  *
  * @author Diarsid
  */
-public class WindowController {    
+class WindowPositionManager {    
    
-    private final double xCenter;
-    private final double yCenter;
     private final double xShift;
     private final double yShift;
     private final double xLimit;
     private final double yLimit;
     
     private final Object windowCounterLock;
-    
-    private final Deque<WindowPosition> positionStack;
-    
-    private boolean exitAfterAllWindowsClosed;
     private int activeWindowsCounter;
     
     private double lastWindowX;
     private double lastWindowY;
     
-    WindowController() {
-        this.exitAfterAllWindowsClosed = false;
-        this.activeWindowsCounter = 0;
-        this.positionStack = new LinkedList<>();        
+    WindowPositionManager() {
+        this.activeWindowsCounter = 0;  
         this.windowCounterLock = new Object();
         Rectangle2D screen = Screen.getPrimary().getVisualBounds();
-        this.xCenter = screen.getWidth() / 2;
-        this.yCenter = screen.getHeight() / 2;
         this.xShift = screen.getWidth() / 36;
         this.yShift = screen.getHeight() / 36;
         this.xLimit = screen.getWidth() * 0.8;
         this.yLimit = screen.getHeight() * 0.8;
     }
-
-    void setExitAfterAllWindowsClosed() {
-        this.exitAfterAllWindowsClosed = true;
-    }
     
     public WindowPosition getNewWindowPosition() {
-        synchronized (windowCounterLock) {
+        synchronized ( this.windowCounterLock ) {
             this.activeWindowsCounter++;
             return this.determineNewWindowPosition();
         }
@@ -82,18 +63,23 @@ public class WindowController {
         }
     }
     
-    public void windowClosed() {
-        synchronized (windowCounterLock) {
-            this.activeWindowsCounter--;
-            this.checkForExit();
-            this.checkIfClearLastPosition();
+    boolean hasNoActiveWindows() {
+        synchronized ( this.windowCounterLock ) {
+            return this.activeWindowsCounter == 0;
         }
     }
     
-    private void checkForExit() {
-        if ( this.exitAfterAllWindowsClosed == true 
-                && this.activeWindowsCounter == 0 ) {
-            Beam.exitBeamCoreNow();
+    public void reportLastWindowPosition(double x, double y){
+        synchronized ( this.windowCounterLock ) {
+            this.lastWindowX = x;
+            this.lastWindowY = y;
+        }        
+    }
+    
+    public void notifyWindowClosed() {
+        synchronized ( this.windowCounterLock ) {
+            this.activeWindowsCounter--;
+            this.checkIfClearLastPosition();
         }
     }
     
@@ -102,12 +88,5 @@ public class WindowController {
             this.lastWindowX = 0;
             this.lastWindowY = 0;
         } 
-    }
-    
-    public void reportLastWindowPosition(double x, double y){
-        synchronized (windowCounterLock) {
-            this.lastWindowX = x;
-            this.lastWindowY = y;
-        }        
     }
 }

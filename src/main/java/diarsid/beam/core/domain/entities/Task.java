@@ -9,12 +9,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.time.LocalDateTime.now;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.task;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.domain.entities.Tasks.NEW_TASK_ID;
 import static diarsid.beam.core.domain.entities.Tasks.TIME_PRINT_FORMAT;
@@ -36,6 +38,7 @@ import static diarsid.beam.core.domain.entities.Tasks.stringifyTaskText;
 public abstract class Task    
         implements 
                 ConvertableToVariant, 
+                ConvertableToMessage, 
                 Comparable<Task>, 
                 Serializable {
     
@@ -84,8 +87,9 @@ public abstract class Task
         return this.id != NEW_TASK_ID;
     }
     
-    public final TaskMessage toTimeMessage() {
-        return new TaskMessage(this.stringifyTime(), this.text);
+    @Override
+    public final Message toMessage() {
+        return task(this.stringifyTime(), this.text);
     }
     
     public final String stringifyText() {

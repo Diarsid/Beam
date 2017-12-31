@@ -26,10 +26,11 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.Beam.systemInitiator;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 
 
 /**
@@ -85,7 +86,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
             if ( nonEmpty(reports) ) {
                 this.ioModule
                         .getInnerIoEngine()
-                        .reportMessage(systemInitiator(), linesToMessage(reports));
+                        .reportMessage(systemInitiator(), info(reports));
             }
         } catch (DataBaseActuationException ex) {
             this.ioModule

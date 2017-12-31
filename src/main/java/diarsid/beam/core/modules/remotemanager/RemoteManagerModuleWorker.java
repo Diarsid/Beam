@@ -14,7 +14,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import diarsid.beam.core.application.environment.Configuration;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
@@ -25,12 +24,12 @@ import diarsid.beam.core.modules.remotemanager.endpointholders.RemoteCoreAccessE
 
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
+import static diarsid.beam.core.Beam.systemInitiator;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRegistry;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRemoteAccessEndpoint;
-import static diarsid.beam.core.Beam.systemInitiator;
 
 
 public class RemoteManagerModuleWorker implements RemoteManagerModule {
@@ -63,10 +62,9 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
             holdedRemoteAccessEndpoint = access;
             debug("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
-            this.io.getInnerIoEngine().reportMessageAndExitLater(systemInitiator(), 
-                    new TextMessage(ERROR, 
-                            "Export Beam.Server modules failure.",
-                            "Program will be closed.")
+            this.io.getInnerIoEngine().reportMessageAndExitLater(
+                    systemInitiator(), 
+                    error("Export Beam.Server modules failure.", "Program will be closed.")
             );
             throw new ModuleInitializationException();
         }
@@ -84,8 +82,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
 //            registry.unbind(config.get(LOCATIONS_HANDLER_NAME));
 //            registry.unbind(config.get(WEB_PAGES_HANDLER_NAME));
         } catch (NotBoundException|RemoteException e) {            
-            this.io.getInnerIoEngine()
-                    .reportMessage(systemInitiator(), new TextMessage(e));
+            this.io.getInnerIoEngine().reportMessage(systemInitiator(), error(e));
         }        
     }
 

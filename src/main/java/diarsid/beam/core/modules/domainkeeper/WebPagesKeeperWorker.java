@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.application.gui.Gui;
+import diarsid.beam.core.application.gui.InteractionGui;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -20,7 +20,6 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
@@ -59,7 +58,7 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
@@ -116,7 +115,7 @@ public class WebPagesKeeperWorker
     private final DaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
-    private final Gui gui;
+    private final InteractionGui interactionGui;
     private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
     private final PropertyAndTextParser propetyTextParser;
@@ -136,7 +135,7 @@ public class WebPagesKeeperWorker
             DaoPictures daoPictures,
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
-            Gui gui,
+            InteractionGui interactionGui,
             Initiator systemInitiator,
             KeeperDialogHelper helper,
             PropertyAndTextParser propetyTextParser,
@@ -147,7 +146,7 @@ public class WebPagesKeeperWorker
         this.daoDirectories = daoDirectories;
         this.daoPictures = daoPictures;
         this.ioEngine = ioEngine;
-        this.gui = gui;
+        this.interactionGui = interactionGui;
         this.systemInitiator = systemInitiator;
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
@@ -692,7 +691,7 @@ public class WebPagesKeeperWorker
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
         ValueFlow<Picture> pictureFlow = awaitGetValue(() -> {     
-            return this.gui.capturePictureOnScreen(page.name());
+            return this.interactionGui.capturePictureOnScreen(page.name());
         });
         
         switch ( pictureFlow.result() ) {
@@ -768,13 +767,13 @@ public class WebPagesKeeperWorker
                 .getAllDirectoriesPagesInPlace(initiator, place);
         
         if ( directories.isEmpty() ) {
-            return valueFlowCompletedWith(new TextMessage(place.displayName() + " is empty."));
+            return valueFlowCompletedWith(info(place.displayName() + " is empty."));
         }
         
-        Message message = linesToMessage(directories
+        Message message = info(directories
                 .stream()
                 .sorted()
-                .flatMap(directory -> directory.toMessage().toText().stream())                
+                .flatMap(directory -> directory.toMessage().allLines().stream())                
                 .collect(toList()));
         message.addHeader(place.displayName());
         

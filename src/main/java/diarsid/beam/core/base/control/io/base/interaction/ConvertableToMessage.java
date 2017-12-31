@@ -10,5 +10,6 @@ package diarsid.beam.core.base.control.io.base.interaction;
  * @author Diarsid
  */
 public interface ConvertableToMessage {
+    
     Message toMessage();
 }

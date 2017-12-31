@@ -110,7 +110,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.dataModule.images(),
                 commandsMemoryKeeper,
                 ioEngine, 
-                this.appComponentsHolderModule.gui(),
+                this.appComponentsHolderModule.gui().interactionGui(),
                 systemInitiator,
                 dialogHelper, 
                 propertyAndTextParser, 

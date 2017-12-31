@@ -12,11 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Task;
@@ -32,8 +33,14 @@ import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
-import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_TASK;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_TASK;
@@ -57,23 +64,6 @@ import static diarsid.beam.core.domain.entities.TaskRepeat.repeatsDescription;
 import static diarsid.beam.core.domain.entities.Tasks.newEventTask;
 import static diarsid.beam.core.domain.entities.Tasks.newInstantTask;
 import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
-
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 
 
 public class TasksKeeperWorker implements TasksKeeper {
@@ -197,27 +187,21 @@ public class TasksKeeperWorker implements TasksKeeper {
     }
 
     @Override
-    public List<TaskMessage> getCalendarTasksForNextMonth(
+    public List<Task> getCalendarTasksForNextMonth(
             Initiator initiator, LocalDateTime nextMonthBeginning) {
         return this.dao.getActiveTasksOfTypeBetweenDates(initiator,
                 nextMonthBeginning, 
                 nextMonthBeginning.plusMonths(1), 
-                NO_REPEAT, MONTHLY_REPEAT, YEARLY_REPEAT)
-                        .stream()
-                        .map(Task::toTimeMessage)
-                        .collect(toList());
+                NO_REPEAT, MONTHLY_REPEAT, YEARLY_REPEAT);
     }
 
     @Override
-    public List<TaskMessage> getCalendarTasksForNextWeek(
+    public List<Task> getCalendarTasksForNextWeek(
             Initiator initiator, LocalDateTime nextWeekBeginning) {
         return this.dao.getActiveTasksOfTypeBetweenDates(initiator,
                 nextWeekBeginning, 
                 nextWeekBeginning.plusWeeks(1), 
-                NO_REPEAT, MONTHLY_REPEAT, YEARLY_REPEAT)
-                        .stream()
-                        .map(Task::toTimeMessage)
-                        .collect(toList());
+                NO_REPEAT, MONTHLY_REPEAT, YEARLY_REPEAT);
     }
 
     @Override

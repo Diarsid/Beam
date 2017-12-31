@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
 import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.TASK;
 
 /**
  *
@@ -27,25 +28,45 @@ public class Messages {
     private Messages() {
     }
     
-    public static Message error(String line, String... lines) {
-        return new TextMessage(ERROR, line, lines);
+    static String inline(String line) {
+        return "   " + line;
     }
     
-    public static Message text(String line, String... lines) {
-        return new TextMessage(INFO, line, lines);
+    public static Message task(String header, List<String> lines) {
+        return new SingleMessage(TASK, header, lines);
     }
     
-    public static Message linesToMessage(List<String> lines) {
-        return new TextMessage(INFO, lines);
+    public static Message error(String... lines) {
+        return new SingleMessage(ERROR, "", lines);
+    }
+    
+    public static Message error(Exception e) {
+        return new SingleMessage(ERROR, "", e.getMessage());
+    }
+    
+    public static Message info(String... lines) {
+        return new SingleMessage(INFO, "", lines);
+    }
+    
+    public static Message info(List<String> lines) {
+        return new SingleMessage(INFO, "", lines);
+    }
+    
+    public static Message infoWithHeader(String header, String... lines) {
+        return new SingleMessage(INFO, header, lines);
+    }
+    
+    public static Message infoWithHeader(String header, List<String> lines) {
+        return new SingleMessage(INFO, header, lines);
     }
     
     public static Optional<Message> joinToOptionalMessage(List<Message> messages) {
         if ( messages.isEmpty() ) {
             return Optional.empty();
         } else {
-            return Optional.of(new TextMessage(messages
+            return Optional.of(new SingleMessage(INFO, "", messages
                     .stream()
-                    .flatMap(message -> message.toText().stream())
+                    .flatMap(message -> message.allLines().stream())
                     .collect(toList())));
         }
     }
@@ -57,7 +78,7 @@ public class Messages {
             lines.addAll(task.text());
             lines.add(" ");
         });
-        return new TextMessage(INFO, lines);
+        return new SingleMessage(INFO, "", lines);
     }
     
     public static Optional<Message> tasksToOptionalMessageWithHeader(
@@ -74,7 +95,7 @@ public class Messages {
         if ( lines.isEmpty() ) {
             return Optional.empty();
         } else {
-            return Optional.of(new TextMessage(INFO, lines).addHeader(header));
+            return Optional.of(new SingleMessage(INFO, "", lines).addHeader(header));
         }
     }
     
@@ -86,9 +107,5 @@ public class Messages {
                             .stream()
                             .map(entity -> entity.name())
                             .collect(toList()));    
-    }
-    
-    public static Message fromException(Exception e) {
-        return new TextMessage(e);
     }
 }

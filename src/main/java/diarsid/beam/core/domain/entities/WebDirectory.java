@@ -14,12 +14,12 @@ import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
@@ -119,7 +119,7 @@ public class WebDirectory
 
     @Override
     public Message toMessage() {
-        return new TextMessage(format(
+        return info(format(
                 "%s > %s (order: %d)", this.place.displayName(), this.name, this.order));
     }
     

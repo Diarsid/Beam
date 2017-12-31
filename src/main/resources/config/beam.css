@@ -1,25 +1,51 @@
-/* 
-    Created on : Feb 16, 2016, 12:05:42 AM
-    Author     : Diarsid
-*/
 
+/* === MESSAGE WINDOW STYLES === */
+	.message-outer-box {
+		-fx-border-insets: 10px; 
+		-fx-background-insets: 10px; 
+		-fx-background-color: #FF9F00; 
+		-fx-background-radius: 12px; 
+		-fx-padding: 10px;
+	}
+	.message-inner-box {
+		-fx-padding: 4px;
+	}
+	.message-main-area {
+		-fx-background-color: white; 
+		-fx-background-radius: 11px; 
+		-fx-border-color: #FFDE00; 
+		-fx-border-width: 4px; 
+		-fx-border-radius: 10px;
+		-fx-padding: 5px;
+		-fx-font: 13px "Consolas"; 
+		-fx-text-fill: #4CBF13;
+	}
+	.message-inner-area {
+		-fx-padding: 10px;
+	}
+	.message-bar .message-bar-header {
+		-fx-font: 14px "Consolas"; 
+		-fx-text-fill: white; 
+		-fx-font-weight: bold;
+	}
 
-.console-outer-box {
-	-fx-border-insets: 10px; 
-    -fx-background-insets: 10px; 
-    -fx-background-color: #FF9F00; 
-    -fx-background-radius: 12px; 
-    -fx-padding: 10px;
-}
-.console-inner-box {
-	-fx-padding: 4px;
-}
+/* === CONSOLE WINDOW STYLES === */
+	.console-outer-box {
+		-fx-border-insets: 10px; 
+		-fx-background-insets: 10px; 
+		-fx-background-color: #FF9F00; 
+		-fx-background-radius: 12px; 
+		-fx-padding: 10px;
+	}
+	.console-inner-box {
+		-fx-padding: 4px;
+	}
 
-.console-bar .console-bar-header {
-	-fx-font: 14px "Consolas"; 
-    -fx-text-fill: white; 
-    -fx-font-weight: bold;
-}
+	.console-bar .console-bar-header {
+		-fx-font: 14px "Consolas"; 
+		-fx-text-fill: white; 
+		-fx-font-weight: bold;
+	}
 
 .context-menu {
 	-fx-background-radius: 10px; 

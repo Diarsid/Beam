@@ -12,14 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 
@@ -67,8 +66,7 @@ public class Batch
                 .stream()
                 .map(command -> format(" %d) %s", counter.getAndIncrement(), command))
                 .collect(toList());
-        batchText.add(0, this.name);
-        return new TextMessage(INFO, batchText);
+        return infoWithHeader(this.name, batchText);
     }
     
     public int getCommandsQty() {

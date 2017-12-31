@@ -27,7 +27,6 @@ import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
-import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.domain.entities.Picture;
 
@@ -37,6 +36,8 @@ import static javafx.scene.control.OverrunStyle.ELLIPSIS;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 
+import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
+
 
 /**
  *
@@ -44,7 +45,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
  */
 public class ScreenCapturerWindow implements Runnable {
 
-    private final WindowResources windowResources;
+    private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
     private final ScreenCapturerWindowResizer windowResizer;
     private final ScreenCapturer screenCapturer;    
@@ -59,7 +60,7 @@ public class ScreenCapturerWindow implements Runnable {
     private boolean ready;
     private boolean hasAwaiter;
 
-    ScreenCapturerWindow(ScreenCapturer screenCapturer, WindowResources windowResources) {
+    ScreenCapturerWindow(ScreenCapturer screenCapturer, GuiJavaFXResources windowResources) {
         this.windowResources = windowResources;
         this.windowMover = new WindowMover();
         this.windowResizer = new ScreenCapturerWindowResizer(142, 90);
@@ -73,7 +74,7 @@ public class ScreenCapturerWindow implements Runnable {
     }
     
     public static ScreenCapturerWindow buildScreenCapturerWindow(
-            Configuration configuration, Robot robot, WindowResources windowResources) {
+            Configuration configuration, Robot robot, GuiJavaFXResources windowResources) {
         ScreenCapturer screenCapturer = new ScreenCapturer(
                 robot, configuration.asBoolean("ui.images.capture.webpages.resize"));
         return new ScreenCapturerWindow(screenCapturer, windowResources);
@@ -133,7 +134,7 @@ public class ScreenCapturerWindow implements Runnable {
         
         Scene scene = new Scene(mainVBox);
         scene.setFill(Color.TRANSPARENT);
-        scene.getStylesheets().add(this.windowResources.getPathToCssFile());
+        scene.getStylesheets().add(this.windowResources.cssFilePath());
         this.stage.setScene(scene);
         this.stage.sizeToScene();
         this.ready = true;

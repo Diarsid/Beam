@@ -9,13 +9,12 @@ package diarsid.beam.core.base.control.io.commands.executor;
 import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.STORED;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
@@ -62,7 +61,7 @@ public abstract class InvocationCommand implements ExecutorCommand {
     
     @Override
     public final Message toMessage() {
-        return new TextMessage(INFO, this.toMessageString());
+        return info(this.toMessageString());
     }
     
     public final String toMessageString() {

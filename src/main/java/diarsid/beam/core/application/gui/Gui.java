@@ -4,22 +4,17 @@
  */
 package diarsid.beam.core.application.gui;
 
-import java.util.List;
-
-import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.domain.entities.Picture;
+import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 
 public interface Gui {
     
-    void showTask(TaskMessage task);
+    OutputMessagesGui messagesGui();
     
-    void showTasks(String description, List<TaskMessage> tasks);
+    OutputTasksGui tasksGui();
     
-    void showMessage(Message message); 
+    InteractionGui interactionGui();
+    
+    GuiJavaFXResources resources();
         
     void exitAfterAllWindowsClosed();
-    
-    ValueFlow<Picture> capturePictureOnScreen(String imageName);
 }

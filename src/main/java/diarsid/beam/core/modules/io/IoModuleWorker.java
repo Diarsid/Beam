@@ -11,13 +11,13 @@ import java.io.IOException;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
-import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.modules.IoModule;
 
 import static java.lang.String.format;
 
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError; 
+
 
 
 public class IoModuleWorker implements IoModule {
@@ -33,11 +33,6 @@ public class IoModuleWorker implements IoModule {
 
     @Override
     public InnerIoEngine getInnerIoEngine() {
-        return this.mainIo;
-    }
-    
-    @Override
-    public TimeMessagesIo getTimeScheduledIo() {
         return this.mainIo;
     }
 

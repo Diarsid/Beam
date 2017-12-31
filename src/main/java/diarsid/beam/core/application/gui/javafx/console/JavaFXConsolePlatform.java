@@ -19,8 +19,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Effect;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -30,8 +28,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import diarsid.beam.core.application.gui.Gui;
+import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
-import diarsid.beam.core.application.gui.javafx.WindowResources;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.util.MutableString;
@@ -56,13 +55,9 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
  * @author Diarsid
  */
 // TODO HIGH do not public
-public class JavaFXConsolePlatform 
-        extends 
-                ConsolePlatform
-        implements 
-                Runnable {
+public class JavaFXConsolePlatform extends ConsolePlatform {
     
-    private final WindowResources windowResources;
+    private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
     private final ConsoleWindowResizer windowResizer;
     private final ConsoleWindowBlockingIO blockingIo;
@@ -72,6 +67,7 @@ public class JavaFXConsolePlatform
     private final Object consoleTextAreaLock;
     private final PointableCollection<String> consoleInputBuffer;
     private final AtomicInteger consoleInputBufferCapacity;
+    private final Runnable runnableLaunch;
     private Stage stage;
     private Pane bar;
     private Pane mainArea;
@@ -79,11 +75,11 @@ public class JavaFXConsolePlatform
     private boolean ready;
 
     JavaFXConsolePlatform(
-            WindowResources windowResources, 
+            GuiJavaFXResources javaFxResources, 
             ConsoleWindowBlockingIO consoleBlockingIo,
             ConsoleBlockingExecutor blockingExecutor) {
         super(consoleBlockingIo, blockingExecutor, IN_MACHINE);
-        this.windowResources = windowResources;
+        this.windowResources = javaFxResources;
         this.windowMover = new WindowMover();
         this.windowResizer = new ConsoleWindowResizer();
         this.blockingIo = consoleBlockingIo;
@@ -95,33 +91,31 @@ public class JavaFXConsolePlatform
         this.consoleInputBuffer = new PointableCollection<>(
                 this.consoleInputBufferCapacity.get(), "");
         this.ready = false;
+        this.runnableLaunch = () -> {
+            if ( this.ready ) {
+                this.show();
+            } else {
+                this.init();
+                this.show();
+            }
+        };
     }
     
     public static ConsolePlatform createAndLaunchJavaFXConsolePlatform(
-            WindowResources windowResources, ConsoleBlockingExecutor blockingExecutor) {
+            Gui gui, ConsoleBlockingExecutor blockingExecutor) {
         ConsoleWindowBlockingIO consoleIo = new ConsoleWindowBlockingIO();
         JavaFXConsolePlatform consoleWindow = new JavaFXConsolePlatform(
-                windowResources, consoleIo, blockingExecutor);
-        Platform.runLater(consoleWindow);
+                gui.resources(), consoleIo, blockingExecutor);
+        consoleWindow.launch();
         return consoleWindow;
     }
     
-    @Override
-    public void run() {
-        if ( this.ready ) {
-            this.show();
-        } else {
-            this.init();
-            this.show();
-        }
+    private void launch() {
+        Platform.runLater(this.runnableLaunch);
     }
     
     private void show() {
         this.stage.show();
-    }
-    
-    private void hide() {
-        this.stage.hide();
     }
     
     private void init() {
@@ -130,7 +124,10 @@ public class JavaFXConsolePlatform
         this.createMainArea();
         this.startListenBlockingConsoleIncome();
         this.fillStageWithScene();
-        this.show();
+    }
+    
+    private void hide() {
+        this.stage.hide();
     }
     
     private void fillStageWithScene() {
@@ -149,25 +146,15 @@ public class JavaFXConsolePlatform
         VBox consoleOuterBox = new VBox();
         consoleOuterBox.getStyleClass().add("console-outer-box");        
         consoleOuterBox.setAlignment(TOP_CENTER);        
-        consoleOuterBox.setEffect(this.opacityBlackShadow());
+        consoleOuterBox.setEffect(this.windowResources.opacityBlackShadow());
         
         consoleOuterBox.getChildren().addAll(consoleInnerBox);
         
         Scene scene = new Scene(consoleOuterBox);
         scene.setFill(Color.TRANSPARENT);
-        scene.getStylesheets().add(this.windowResources.getPathToCssFile());
+        scene.getStylesheets().add(this.windowResources.cssFilePath());
         
         return scene;
-    }
-    
-    private Effect opacityBlackShadow() {
-        DropShadow sh = new DropShadow();
-        sh.setHeight(sh.getHeight() * 1.35);
-        sh.setWidth(sh.getWidth() * 1.35);
-        sh.setSpread(sh.getSpread() * 1.35);
-        Color opacityBlack = new Color(0, 0, 0, 0.4);
-        sh.setColor(opacityBlack);
-        return sh;
     }
     
     private void createStage() {
@@ -175,6 +162,9 @@ public class JavaFXConsolePlatform
         this.stage.initStyle(StageStyle.TRANSPARENT);
         this.stage.setResizable(true);
         this.stage.centerOnScreen();
+        this.stage.setOnCloseRequest((windowEvent) -> {
+            this.hide();
+        });
         this.windowMover.acceptStage(this.stage);
         this.windowResizer.acceptStage(this.stage);
     }
@@ -357,7 +347,7 @@ public class JavaFXConsolePlatform
     }
     
     private void startListenBlockingConsoleIncome() {        
-        // mutableChangeProcess Lock is a lock shared only between two threads:
+        // mutableChangeProcess is a lock shared only between two threads:
         //  - JavaFX Application Thread can only .notify
         //  - JavaFX Console Listener Thread can only .wait
         // There are no any other threads accessing this lock.
@@ -480,7 +470,7 @@ public class JavaFXConsolePlatform
 
     @Override
     public String name() {
-        return "Native JavaFX Console Platform";
+        return "JavaFX Console";
     }
 
     @Override

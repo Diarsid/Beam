@@ -16,12 +16,19 @@ public interface Message extends Serializable {
     
     public static enum MessageType implements Serializable {
         INFO,
-        ERROR
+        ERROR,
+        TASK
     }
     
     Message addHeader(String header);
     
-    List<String> toText();
+    String header();
     
-    MessageType getType();
+    boolean hasHeader();
+    
+    List<String> allLines();
+    
+    List<String> lines();
+    
+    MessageType type();
 }

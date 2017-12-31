@@ -8,10 +8,10 @@ package diarsid.beam.core.modules.taskswatcher;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
+import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
-import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
@@ -25,13 +25,13 @@ import static diarsid.beam.core.Beam.systemInitiator;
  */
 class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherModule>{
     
-    private final IoModule ioModule;
+    private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
     private final DomainKeeperModule domainKeeperModule;
 
     TasksWatcherModuleWorkerBuilder(
-            IoModule ioModule, 
+            ApplicationComponentsHolderModule applicationComponentsHolderModule, 
             DomainKeeperModule domainKeeperModule) {
-        this.ioModule = ioModule;
+        this.applicationComponentsHolderModule = applicationComponentsHolderModule;
         this.domainKeeperModule = domainKeeperModule;
     }
     
@@ -40,18 +40,18 @@ class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherMo
         TasksExecutionScheduler tasksExecutionScheduler;
         TasksNotificationScheduler tasksNotificationScheduler;
         ScheduledThreadPoolExecutor scheduler;        
-        TimeMessagesIo tasksIo;
+        OutputTasksGui tasksGui;
         TasksKeeper tasksKeeper;
         Initiator watcherPrivateInitiator = systemInitiator();
         
-        tasksIo = this.ioModule.getTimeScheduledIo();
+        tasksGui = this.applicationComponentsHolderModule.gui().tasksGui();
         tasksKeeper = this.domainKeeperModule.tasks();
         scheduler = new ScheduledThreadPoolExecutor(2);
         scheduler.setMaximumPoolSize(2);        
         tasksExecutionScheduler = new TasksExecutionScheduler(
-                tasksIo, tasksKeeper, scheduler, watcherPrivateInitiator);
+                tasksGui, tasksKeeper, scheduler, watcherPrivateInitiator);
         tasksNotificationScheduler = new TasksNotificationScheduler(
-                tasksIo, tasksKeeper, scheduler, watcherPrivateInitiator);
+                tasksGui, tasksKeeper, scheduler, watcherPrivateInitiator);
         
         TasksWatcherModuleWorker taskWatcher = new TasksWatcherModuleWorker(
                 tasksNotificationScheduler, tasksExecutionScheduler, tasksKeeper, scheduler);        

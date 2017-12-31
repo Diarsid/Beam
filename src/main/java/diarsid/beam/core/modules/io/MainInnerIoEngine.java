@@ -14,15 +14,12 @@ import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
-import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.HelpContext;
 import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 import static java.util.Arrays.asList;
@@ -31,8 +28,8 @@ import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.isHelpRequest;
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.ERROR;
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
@@ -42,10 +39,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
  *
  * @author Diarsid
  */
-public class MainInnerIoEngine 
-        implements 
-                InnerIoEngine,
-                TimeMessagesIo {
+public class MainInnerIoEngine implements InnerIoEngine {
     
     private final OuterIoEnginesHolder ioEnginesHolder;
     private final Gui gui;
@@ -193,7 +187,7 @@ public class MainInnerIoEngine
                 }
             });            
         } else if ( initiator.equals(this.systemInitiator) ) {
-            this.gui.showMessage(new TextMessage(INFO, string));
+            this.gui.messagesGui().show(info(string));
         }    
     }
     
@@ -210,7 +204,7 @@ public class MainInnerIoEngine
                         }
                     });                  
                 });
-        this.gui.showMessage(new TextMessage(ERROR, string));
+        this.gui.messagesGui().show(error(string));
         this.gui.exitAfterAllWindowsClosed();
     }
 
@@ -228,7 +222,7 @@ public class MainInnerIoEngine
                 }
             });            
         } else if ( initiator.equals(this.systemInitiator) ) {
-            this.gui.showMessage(message);
+            this.gui.messagesGui().show(message);
         }
     }
 
@@ -245,22 +239,22 @@ public class MainInnerIoEngine
                         }
                     });                    
                 });
-        this.gui.showMessage(message);
+        this.gui.messagesGui().show(message);
         this.gui.exitAfterAllWindowsClosed();
     }
 
-    @Override
-    public void show(TaskMessage task) {
-        this.gui.showTask(task);
-    }
-
-    @Override
-    public void showAll(List<TaskMessage> tasks) {
-        tasks.stream().forEach(task -> this.gui.showTask(task));
-    }
-
-    @Override
-    public void showTasksNotification(String periodOfNotification, List<TaskMessage> tasks) {
-        this.gui.showTasks(periodOfNotification, tasks);
-    }
+//    @Override
+//    public void show(Message task) {
+//        this.gui.show(task);
+//    }
+//
+//    @Override
+//    public void showAll(List<Message> messages) {
+//        messages.stream().forEach(message -> this.gui.show(message));
+//    }
+//
+//    @Override
+//    public void showAllAsOne(String header, List<Message> messages) {
+//        this.gui.showAsOne(header, messages);
+//    }
 }

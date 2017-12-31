@@ -101,7 +101,7 @@ class SystemConsoleIO implements ConsoleIO {
     
     @Override
     public void printNonDuringInteraction(Message message) throws IOException {
-        for (String s : message.toText()) {
+        for (String s : message.allLines()) {
             this.writer.write(format("       %s", s));
             this.writer.newLine();
         }
@@ -123,7 +123,7 @@ class SystemConsoleIO implements ConsoleIO {
 
     @Override
     public void printDuringInteraction(Message message) throws IOException {
-        for (String s : message.toText()) {
+        for (String s : message.allLines()) {
             this.writer.write(format("       %s", s));
             this.writer.newLine();
         }

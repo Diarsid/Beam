@@ -9,12 +9,12 @@ package diarsid.beam.core.domain.entities;
 import java.util.List;
 
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 
 import static java.lang.String.format;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
 import static diarsid.beam.core.base.util.JsonUtil.convertablesAsJsonArray;
 
@@ -36,14 +36,14 @@ public class WebDirectoryPages extends WebDirectory {
         List<String> lines = this.pages
                 .stream()
                 .sorted()
-                .map(page -> format("  %d) %s ", page.order(), page.name()))
+                .map(page -> format("%d) %s ", page.order(), page.name()))
                 .collect(toList());
         if ( lines.isEmpty() ) {
-            lines.add("  (empty)");
+            lines.add("(empty)");
         }
-        lines.add(0, format(
-                "%s > %s (order: %d)", this.place().displayName(), this.name(), this.order()));
-        return new TextMessage(lines);
+        String header = format(
+                "%s > %s (order: %d)", this.place().displayName(), this.name(), this.order());
+        return infoWithHeader(header, lines);
     }
 
     @Override

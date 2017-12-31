@@ -34,6 +34,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.is
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.findUnacceptableInText;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNotAcceptable;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
@@ -43,10 +44,7 @@ import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
  *
  * @author Diarsid
  */
-public class Console 
-        implements 
-                OuterIoEngine, 
-                Runnable { 
+public class Console implements OuterIoEngine { 
 
     private final ConsolePlatformOperator consoleOperator;
     
@@ -63,8 +61,13 @@ public class Console
         return this.consoleOperator.type();
     }
     
-    @Override
-    public void run() {
+    public void launch() {
+        asyncDoIndependently(
+                this.consoleOperator.name(), 
+                () -> this.go());
+    }
+    
+    private void go() {
         MutableString mutableCommand = emptyMutableString();   
         Runnable mutableConsoleExecution = () -> {
             this.consoleOperator.blockingExecute(mutableCommand.get());

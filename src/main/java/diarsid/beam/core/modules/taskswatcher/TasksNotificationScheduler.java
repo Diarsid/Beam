@@ -11,18 +11,19 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.interaction.TaskMessage;
-import diarsid.beam.core.base.control.io.base.actors.TimeMessagesIo;
+import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextMonthBeginning;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextWeekBeginning;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getThisWeekBeginning;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 
 /**
  *
@@ -30,7 +31,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
  */
 class TasksNotificationScheduler {
     
-    private final TimeMessagesIo tasksIo;
+    private final OutputTasksGui tasksGui;
     private final TasksKeeper tasksKeeper;
     private final Initiator ownInitiator;
     private final ScheduledThreadPoolExecutor scheduler;
@@ -44,11 +45,11 @@ class TasksNotificationScheduler {
     private ScheduledFuture currentNotification;
 
     public TasksNotificationScheduler(
-            TimeMessagesIo tasksIo, 
+            OutputTasksGui tasksGui, 
             TasksKeeper tasksKeeper, 
             ScheduledThreadPoolExecutor scheduler,
             Initiator ownInitiator) {
-        this.tasksIo = tasksIo;
+        this.tasksGui = tasksGui;
         this.tasksKeeper = tasksKeeper;
         this.scheduler = scheduler;
         this.notificationLock = new Object();
@@ -56,7 +57,7 @@ class TasksNotificationScheduler {
     }
 
     void beginNotificationsProcessing() {
-        synchronized (this.notificationLock) {
+        synchronized ( this.notificationLock ) {
             this.scheduleNextRegularTasksSurvey();
             LocalDateTime thisWeekBeginning = getThisWeekBeginning();
             this.notifyUserAboutTasksInWeek(thisWeekBeginning);
@@ -126,22 +127,42 @@ class TasksNotificationScheduler {
     
     private void notifyUserAboutTasksInMonth(LocalDateTime monthBeginning) {
         synchronized (this.notificationLock) {
-            List<TaskMessage> tasks = this.tasksKeeper
+            List<Task> tasks = this.tasksKeeper
                     .getCalendarTasksForNextMonth(this.ownInitiator, monthBeginning);
-            asyncDo(() -> {
-                this.tasksIo.showTasksNotification("month", tasks);
-            });
+            
+            Runnable notification;
+            if ( tasks.isEmpty() ) {
+                notification = () -> {
+                    this.tasksGui.show(info("There are no any tasks scheduled in this month."));
+                };
+            } else {
+                notification = () -> {
+                    this.tasksGui.showAllJointly("Tasks scheduled in this month", tasks);
+                };
+            }
+            
+            asyncDo(notification);
             this.scheduleNextRegularTasksSurvey();
         }
     }
     
     private void notifyUserAboutTasksInWeek(LocalDateTime weekBeginning) {
         synchronized (this.notificationLock) {
-            List<TaskMessage> tasks = this.tasksKeeper
+            List<Task> tasks = this.tasksKeeper
                     .getCalendarTasksForNextWeek(this.ownInitiator, weekBeginning);
-            asyncDo(() -> {
-                this.tasksIo.showTasksNotification("week", tasks);
-            });
+            
+            Runnable notification;
+            if ( tasks.isEmpty() ) {
+                notification = () -> {
+                    this.tasksGui.show(info("There are no any tasks scheduled in this week."));
+                };
+            } else {
+                notification = () -> {
+                    this.tasksGui.showAllJointly("Tasks scheduled in this week", tasks);
+                };
+            }
+            
+            asyncDo(notification);
             this.scheduleNextRegularTasksSurvey();
         }
     }

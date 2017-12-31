@@ -65,7 +65,7 @@ public class Tasks {
     }
     
     static List<String> collectTaskText(String textString) {
-        return asList(textString.split(" \\ "));
+        return asList(textString.split(" \\\\ "));
     }
     
     public static Task newInstantTask(

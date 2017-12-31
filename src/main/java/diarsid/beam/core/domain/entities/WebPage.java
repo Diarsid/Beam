@@ -13,7 +13,6 @@ import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.TextMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.data.Loadable;
 
@@ -21,6 +20,7 @@ import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
@@ -146,23 +146,22 @@ public class WebPage
     @Override
     public Message toMessage() {
         List<String> message = new ArrayList<>();
-        message.add(this.name);
-        message.add("  url       " + this.url);
+        message.add("url       " + this.url);
         if ( nonEmpty(this.shortcuts) ) {
-            message.add("  alias     " + this.shortcuts);            
+            message.add("alias     " + this.shortcuts);            
         }
         if ( nonNull(this.loadableDirectory) ) {
             this.loadableDirectory
                     .load()
                     .ifPresent(directory -> {
                         message.add(format(
-                                "  directory %s > %s", 
+                                "directory %s > %s", 
                                 directory.place().displayName(), 
                                 directory.name()));
                     });
         }
-        message.add("  order     " + this.pageOrder);
-        return new TextMessage(message);
+        message.add("order     " + this.pageOrder);
+        return infoWithHeader(this.name, message);
     } 
     
     @Override

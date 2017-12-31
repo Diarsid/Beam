@@ -17,11 +17,12 @@ import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToMessage;
-
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
+
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 
 /**
  *
@@ -42,7 +43,7 @@ class CliAdapterForCommandsMemoryKeeper extends AbstractCliAdapter {
                 this.commandsMemoryKeeper.findMems(initiator, command);
         Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
             List<InvocationCommand> foundCommands = (List<InvocationCommand>) success.getOrThrow();
-            return linesToMessage(foundCommands
+            return info(foundCommands
                     .stream()
                     .map(foundCommand -> foundCommand.toMessageString())
                     .collect(toList()));
