@@ -48,8 +48,8 @@ public class IoModuleWorker implements IoModule {
     }
 
     @Override
-    public boolean unregisterIoEngine(Initiator initiator) {
-        return this.ioEnginesHolder.deleteEngineBy(initiator);
+    public boolean onIoEngineClosingRequest(Initiator initiator) {        
+        return this.ioEnginesHolder.processCloseRequestBy(initiator);
     }
 
     @Override

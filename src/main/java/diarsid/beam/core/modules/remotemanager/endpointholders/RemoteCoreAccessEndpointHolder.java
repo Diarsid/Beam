@@ -41,7 +41,7 @@ public class RemoteCoreAccessEndpointHolder implements RemoteCoreAccessEndpoint 
 
     @Override
     public boolean unregisterIoEngine(Initiator initiator) throws RemoteException {
-        return this.ioModule.unregisterIoEngine(initiator);
+        return this.ioModule.onIoEngineClosingRequest(initiator);
     }
 
     @Override

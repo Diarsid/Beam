@@ -41,4 +41,6 @@ public interface OuterIoEngine {
     void close() throws IOException;
     
     void accept(Initiator initiator) throws IOException;
+    
+    boolean isActiveWhenClosed() throws IOException;
 }

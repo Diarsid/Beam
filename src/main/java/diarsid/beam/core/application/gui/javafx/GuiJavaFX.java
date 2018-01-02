@@ -12,13 +12,19 @@ import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.application.gui.InteractionGui;
 import diarsid.beam.core.application.gui.OutputMessagesGui;
 import diarsid.beam.core.application.gui.OutputTasksGui;
+import diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatformWindow;
 import diarsid.beam.core.application.gui.javafx.screencapturer.ScreenCapturerWindow;
 import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
+import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.Task;
 
+import static java.util.Objects.nonNull;
+
+import static diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatformWindow.createAndLaunchJavaFXConsolePlatform;
 import static diarsid.beam.core.application.gui.javafx.screencapturer.ScreenCapturerWindow.buildScreenCapturerWindow;
 
 public class GuiJavaFX 
@@ -35,28 +41,34 @@ public class GuiJavaFX
         Platform.setImplicitExit(false);
     }    
     
+    private final BeamHiddenRoot beamHiddenRoot;
+    private final BeamControlWindow beamControlWindow;
     private final WindowManager windowManager;  
     private final ScreenCapturerWindow screenCapturerWindow;
     private final GuiJavaFXResources guiResources;
     
-    public GuiJavaFX(Configuration configuration) {        
+    private JavaFXConsolePlatformWindow consoleWindow;
+    
+    public GuiJavaFX(Configuration configuration) {
+        this.beamHiddenRoot = new BeamHiddenRoot();
         this.guiResources = new GuiJavaFXResources(configuration);
-        WindowPositionManager windowPositionManager = new WindowPositionManager();
-        this.windowManager = new WindowManager(windowPositionManager, this.guiResources);        
+        this.beamControlWindow = new BeamControlWindow(
+                this.beamHiddenRoot, this.guiResources);
         
+        WindowPositionManager windowPositionManager = new WindowPositionManager();
+        this.windowManager = new WindowManager(
+                this.beamHiddenRoot, 
+                windowPositionManager, 
+                this.guiResources);
+                
         try {
             Robot robot = new Robot();
             this.screenCapturerWindow = buildScreenCapturerWindow(
                     configuration, robot, this.guiResources);
             Platform.runLater(screenCapturerWindow);
-        } catch (AWTException aWTException) {
-            throw new WorkflowBrokenException(aWTException);
+        } catch (AWTException awtException) {
+            throw new WorkflowBrokenException(awtException);
         }
-    }
-    
-    @Override
-    public GuiJavaFXResources resources() {
-        return this.guiResources;
     }
 
     @Override
@@ -108,5 +120,19 @@ public class GuiJavaFX
     @Override
     public ValueFlow<Picture> capturePictureOnScreen(String imageName) {        
         return this.screenCapturerWindow.blockingGetCaptureFor(imageName);
+    }
+
+    @Override
+    public ConsolePlatform guiConsolePlatformFor(ConsoleBlockingExecutor blockingExecutor) {
+        synchronized ( this ) {
+            if ( nonNull(this.consoleWindow) ) {
+                return this.consoleWindow;
+            } else {
+                this.consoleWindow = createAndLaunchJavaFXConsolePlatform(
+                        this.guiResources, blockingExecutor);
+                this.beamControlWindow.setConsoleWindow(this.consoleWindow);
+                return this.consoleWindow;
+            }
+        }
     }
 }

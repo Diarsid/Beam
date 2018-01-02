@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.application.systemconsole;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
@@ -86,6 +87,11 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     @Override
     public OuterIoEngineType type() {
         return REMOTE;
+    }
+
+    @Override
+    public boolean isActiveWhenClosed() throws IOException {
+        return this.console.isActiveWhenClosed();
     }
    
 }

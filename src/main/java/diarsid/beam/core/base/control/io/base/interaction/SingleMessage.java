@@ -11,7 +11,6 @@ import java.util.List;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Message.MessageType.INFO;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.inline;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 
@@ -26,12 +25,14 @@ class SingleMessage implements Message {
     private String header;
     
     SingleMessage(MessageType type, String header, String... text) {
-        this.type = INFO;
+        this.type = type;
+        this.header = header;
         this.text = arrayListOf(text);
     }
     
     SingleMessage(MessageType type, String header, List<String> text) {
-        this.type = INFO;
+        this.type = type;
+        this.header = header;
         this.text = text;
     }
     
@@ -58,12 +59,17 @@ class SingleMessage implements Message {
 
     @Override
     public List<String> allLines() {
-        List<String> allLines = this.text
-                .stream()
-                .map(line -> inline(line))
-                .collect(toList());
-        allLines.add(this.header);
-        return allLines;
+        if ( this.hasHeader() ) {
+            List<String> allLines = this.text
+                    .stream()
+                    .map(line -> inline(line))
+                    .collect(toList());
+
+            allLines.add(0, this.header);
+            return allLines;
+        } else {
+            return this.text;
+        }        
     }
 
     @Override

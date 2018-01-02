@@ -86,7 +86,7 @@ class BeamPopupWindow extends BeamMessageWindow {
         
     private String getTextFromMessage() {        
         StringJoiner joiner = new StringJoiner("\n");
-        if ( message.hasHeader() ) {
+        if ( this.message.hasHeader() ) {
             joiner.add(this.message.header());
             joiner.add("");
         }

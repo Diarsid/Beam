@@ -28,7 +28,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
@@ -45,9 +44,12 @@ import static javafx.scene.input.KeyCode.Y;
 import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
+import static javafx.stage.WindowEvent.WINDOW_HIDDEN;
+import static javafx.stage.WindowEvent.WINDOW_SHOWN;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
+import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 
 /**
@@ -55,7 +57,7 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
  * @author Diarsid
  */
 // TODO HIGH do not public
-public class JavaFXConsolePlatform extends ConsolePlatform {
+public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     
     private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
@@ -68,13 +70,14 @@ public class JavaFXConsolePlatform extends ConsolePlatform {
     private final PointableCollection<String> consoleInputBuffer;
     private final AtomicInteger consoleInputBufferCapacity;
     private final Runnable runnableLaunch;
+    private final AtomicBoolean isShown;
     private Stage stage;
     private Pane bar;
     private Pane mainArea;
     private TextArea consoleTextArea;
     private boolean ready;
 
-    JavaFXConsolePlatform(
+    JavaFXConsolePlatformWindow(
             GuiJavaFXResources javaFxResources, 
             ConsoleWindowBlockingIO consoleBlockingIo,
             ConsoleBlockingExecutor blockingExecutor) {
@@ -91,6 +94,7 @@ public class JavaFXConsolePlatform extends ConsolePlatform {
         this.consoleInputBuffer = new PointableCollection<>(
                 this.consoleInputBufferCapacity.get(), "");
         this.ready = false;
+        this.isShown = new AtomicBoolean(false);
         this.runnableLaunch = () -> {
             if ( this.ready ) {
                 this.show();
@@ -101,11 +105,25 @@ public class JavaFXConsolePlatform extends ConsolePlatform {
         };
     }
     
-    public static ConsolePlatform createAndLaunchJavaFXConsolePlatform(
-            Gui gui, ConsoleBlockingExecutor blockingExecutor) {
+    public void openOrOnTop() {
+        if ( this.isShown.get() ) {
+            this.throwOnTop();
+        } else {
+            this.show();
+        }
+    }
+    
+    private void throwOnTop() {
+        this.stage.setAlwaysOnTop(true);
+        this.stage.setAlwaysOnTop(false);
+        this.consoleTextArea.requestFocus();
+    }
+    
+    public static JavaFXConsolePlatformWindow createAndLaunchJavaFXConsolePlatform(
+            GuiJavaFXResources resources, ConsoleBlockingExecutor blockingExecutor) {
         ConsoleWindowBlockingIO consoleIo = new ConsoleWindowBlockingIO();
-        JavaFXConsolePlatform consoleWindow = new JavaFXConsolePlatform(
-                gui.resources(), consoleIo, blockingExecutor);
+        JavaFXConsolePlatformWindow consoleWindow = new JavaFXConsolePlatformWindow(
+                resources, consoleIo, blockingExecutor);
         consoleWindow.launch();
         return consoleWindow;
     }
@@ -116,6 +134,8 @@ public class JavaFXConsolePlatform extends ConsolePlatform {
     
     private void show() {
         this.stage.show();
+        this.consoleTextArea.requestFocus();
+        debug("[CONSOLE WINDOW] editable: " + this.consoleTextArea.isEditable());
     }
     
     private void init() {
@@ -167,6 +187,14 @@ public class JavaFXConsolePlatform extends ConsolePlatform {
         });
         this.windowMover.acceptStage(this.stage);
         this.windowResizer.acceptStage(this.stage);
+        
+        this.stage.addEventHandler(WINDOW_HIDDEN, (windowEvent) -> {
+            this.isShown.set(false);
+        });
+        
+        this.stage.addEventHandler(WINDOW_SHOWN, (windowEvent) -> {            
+            this.isShown.set(true);
+        });
     }
     
     private void createBar() {
@@ -481,5 +509,10 @@ public class JavaFXConsolePlatform extends ConsolePlatform {
     @Override
     public void whenInitiatorAccepted() {
         // TODO ?
+    }
+
+    @Override
+    public boolean isActiveWhenClosed() {
+        return true;
     }
 }

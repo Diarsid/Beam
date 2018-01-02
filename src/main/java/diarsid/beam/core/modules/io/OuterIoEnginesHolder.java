@@ -16,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.base.util.Logs.log;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -79,22 +80,36 @@ public class OuterIoEnginesHolder {
         return this.enginesManagerFor(initiator).getEngineBy(initiator);
     }        
     
-    boolean deleteEngineBy(Initiator initiator) {
-        synchronized ( this.enginesLock ) {
-            try {
-                this.initiators.remove(initiator);
-                if ( this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator) ) {
-                    log(this.getClass(), "engine has been removed.");
+    boolean processCloseRequestBy(Initiator initiator) {
+        try {
+            OuterIoEngine ioEngine = this.getEngineBy(initiator);
+            if ( nonNull(ioEngine) ) {
+                if ( ioEngine.isActiveWhenClosed() ) {
+                    ioEngine.close();
                     return true;
                 } else {
-                    log(this.getClass(), "engine has not been removed.");
-                    return false;
+                    return this.closeEngineAndRemoveBy(initiator);                    
                 }
-            } catch (IOException e) {
-                logError(this.getClass(), "exception during ioEngine closing attempt.", e);
+            } else {
                 return false;
-            }                      
-        }    
+            }
+        } catch (IOException e) {
+            logError(this.getClass(), "exception during ioEngine closing attempt.", e);
+            return false;
+        } 
+    }
+    
+    private boolean closeEngineAndRemoveBy(Initiator initiator) throws IOException {
+        synchronized ( this.enginesLock ) {
+            this.initiators.remove(initiator);
+            if ( this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator) ) {
+                log(this.getClass(), "engine has been removed.");
+                return true;
+            } else {
+                log(this.getClass(), "engine has not been removed.");
+                return false;
+            }
+        }
     }
     
     boolean hasEngineBy(Initiator initiator) {

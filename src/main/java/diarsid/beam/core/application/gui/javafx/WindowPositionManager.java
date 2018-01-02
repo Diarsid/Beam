@@ -6,8 +6,8 @@
 
 package diarsid.beam.core.application.gui.javafx;
 
-import javafx.geometry.Rectangle2D;
-import javafx.stage.Screen;
+import static diarsid.beam.core.base.util.JavaFXUtil.screenHeight;
+import static diarsid.beam.core.base.util.JavaFXUtil.screenWidth;
 
 /**
  *
@@ -29,11 +29,12 @@ class WindowPositionManager {
     WindowPositionManager() {
         this.activeWindowsCounter = 0;  
         this.windowCounterLock = new Object();
-        Rectangle2D screen = Screen.getPrimary().getVisualBounds();
-        this.xShift = screen.getWidth() / 36;
-        this.yShift = screen.getHeight() / 36;
-        this.xLimit = screen.getWidth() * 0.8;
-        this.yLimit = screen.getHeight() * 0.8;
+        double screenHeight = screenHeight();
+        double screenWidth = screenWidth();
+        this.xShift = screenWidth / 36;
+        this.yShift = screenHeight / 36;
+        this.xLimit = screenWidth * 0.8;
+        this.yLimit = screenHeight * 0.8;
     }
     
     public WindowPosition getNewWindowPosition() {

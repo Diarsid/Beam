@@ -36,5 +36,10 @@ class SystemConsolePlatform extends ConsolePlatform {
     public void whenInitiatorAccepted() {
         getPassport().setInitiatorId(super.initiator.identity());   
     }
+
+    @Override
+    public boolean isActiveWhenClosed() {
+        return false;
+    }
     
 }

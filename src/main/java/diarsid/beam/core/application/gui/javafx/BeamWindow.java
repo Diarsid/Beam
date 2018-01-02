@@ -24,7 +24,7 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
     private final GuiJavaFXResources resources;  
     private final Runnable runnableLaunch;
     
-    private String barTitle;
+    private Label barHeader;
     private boolean ready;
     private Stage stage;
     
@@ -33,7 +33,6 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
         this.windowManager = windowManager;
         
         this.ready = false;
-        this.barTitle = "";
         
         this.runnableLaunch = () -> {
             if ( ! this.ready ) {
@@ -48,12 +47,12 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
         Platform.runLater(this.runnableLaunch);
     }
     
-    protected Stage parentStage() {
+    protected final Stage parentStage() {
         return this.stage;
     }
     
-    protected void setBarTitle(String barTitle) {
-        this.barTitle = barTitle;
+    protected final void setBarTitle(String barTitle) {
+        this.barHeader.setText("Beam > " + barTitle);
     }
     
     protected abstract Pane createBeamWindowContentPane();
@@ -106,7 +105,7 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
     } 
     
     private Pane createBar() {
-        Label barHeader = new Label("Beam > " + this.barTitle);
+        Label barHeader = new Label("Beam > ");
         barHeader.getStyleClass().add("message-bar-header");        
         
         HBox barBox = new HBox(5);
@@ -114,6 +113,8 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
         barBox.setAlignment(CENTER_LEFT);
         barBox.getChildren().addAll(barHeader);
         barBox.setPadding(new Insets(0, 3, 3, 0));
+        
+        this.barHeader = barHeader;
         return barBox;
     }
     
@@ -144,7 +145,7 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
         scene.getStylesheets().add(this.resources.cssFilePath());
         
         this.stage.setScene(scene);
-        this.stage.initOwner(this.windowManager.hiddenRootWindow().hiddenStage());
+        this.stage.initOwner(this.windowManager.hiddenRoot().hiddenStageForManageableWindows());
     }
     
     @Override

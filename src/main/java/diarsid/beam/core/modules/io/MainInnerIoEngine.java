@@ -72,7 +72,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     return choice;
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngineBy(initiator);
+                    this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return NOT_MADE;
                 }
             }).orElse(NOT_MADE);            
@@ -99,7 +99,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     return answer; 
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngineBy(initiator);
+                    this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return rejectedAnswer();
                 }
             }).orElse(rejectedAnswer());            
@@ -127,7 +127,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     return answer;        
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngineBy(initiator);
+                    this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return rejectedAnswer();
                 }
             }).orElse(rejectedAnswer());      
@@ -154,7 +154,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     return input;
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngineBy(initiator);
+                    this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return "";
                 }
             }).orElse("");
@@ -183,7 +183,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                             .report(string);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngineBy(initiator);
+                    this.ioEnginesHolder.processCloseRequestBy(initiator);
                 }
             });            
         } else if ( initiator.equals(this.systemInitiator) ) {
@@ -218,7 +218,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                             .report(message);
                 } catch (IOException ex) {
                     logError(this.getClass(), ex);
-                    this.ioEnginesHolder.deleteEngineBy(initiator);
+                    this.ioEnginesHolder.processCloseRequestBy(initiator);
                 }
             });            
         } else if ( initiator.equals(this.systemInitiator) ) {

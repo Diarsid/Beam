@@ -17,7 +17,6 @@ import diarsid.beam.core.modules.IoModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
-import static diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatform.createAndLaunchJavaFXConsolePlatform;
 import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
 import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCommandLineProcessor;
 
@@ -60,8 +59,11 @@ public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModul
     }
     
     private void startJavaFxConsoleUsing(ConsoleCommandRealProcessor consoleProcessor) {
-        ConsolePlatform javaFxConsolePlatform = createAndLaunchJavaFXConsolePlatform(
-                this.appComponentsHolderModule.gui(), consoleProcessor);
+        ConsolePlatform javaFxConsolePlatform = this.appComponentsHolderModule
+                .gui()
+                .interactionGui()
+                .guiConsolePlatformFor(consoleProcessor);
+        
         Console javaFxConsole = buildConsoleUsing(javaFxConsolePlatform);
         
         this.ioModule.registerOuterIoEngine(javaFxConsole);

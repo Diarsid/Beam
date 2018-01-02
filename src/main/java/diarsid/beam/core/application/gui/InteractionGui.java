@@ -6,6 +6,8 @@
 package diarsid.beam.core.application.gui;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
+import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.domain.entities.Picture;
 
 /**
@@ -15,5 +17,7 @@ import diarsid.beam.core.domain.entities.Picture;
 public interface InteractionGui {
     
     ValueFlow<Picture> capturePictureOnScreen(String imageName);
+    
+    ConsolePlatform guiConsolePlatformFor(ConsoleBlockingExecutor blockingExecutor);
     
 }

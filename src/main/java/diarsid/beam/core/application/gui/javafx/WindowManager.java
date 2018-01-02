@@ -18,8 +18,7 @@ import static diarsid.beam.core.base.util.Logs.debug;
  */
 public class WindowManager {
     
-    private final BeamHiddenRootWindow beamHiddenRootWindow;
-    private final BeamControlWindow beamControlWindow;
+    private final BeamHiddenRoot beamHiddenRootWindow;
     private final GuiJavaFXResources resources;
     private final WindowPositionManager windowPositionManager;
     private final Queue<BeamPopupWindow> popupWindows;
@@ -28,9 +27,11 @@ public class WindowManager {
     
     private boolean exitAfterAllWindowsClosed;
 
-    WindowManager(WindowPositionManager windowPositionManager, GuiJavaFXResources resources) {
-        this.beamHiddenRootWindow = new BeamHiddenRootWindow();
-        this.beamControlWindow = new BeamControlWindow(this.beamHiddenRootWindow, resources);
+    WindowManager(
+            BeamHiddenRoot beamHiddenRootWindow,
+            WindowPositionManager windowPositionManager, 
+            GuiJavaFXResources resources) {
+        this.beamHiddenRootWindow = beamHiddenRootWindow;
         this.windowPositionManager = windowPositionManager;
         this.resources = resources;
         this.exitAfterAllWindowsClosed = false;
@@ -39,7 +40,7 @@ public class WindowManager {
         this.taskListWindows = new PriorityQueue<>();
     }
     
-    BeamHiddenRootWindow hiddenRootWindow() {
+    BeamHiddenRoot hiddenRoot() {
         return this.beamHiddenRootWindow;
     }
     

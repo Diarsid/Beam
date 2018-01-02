@@ -34,7 +34,11 @@ public abstract class ConsolePlatform {
         this.isWorking = new AtomicBoolean(true);
     }
     
-    public OuterIoEngineType type() {
+    public abstract String name(); 
+    
+    public abstract boolean isActiveWhenClosed();
+    
+    public final OuterIoEngineType type() {
         return this.platformOuterIoEngineType;
     }
     
@@ -46,15 +50,15 @@ public abstract class ConsolePlatform {
         return this.isInteractionLasts.get();
     }
     
-    boolean isWorking() {
+    final boolean isWorking() {
         return this.isWorking.get();
     }
     
-    void interactionBegins() {
+    final void interactionBegins() {
         this.isInteractionLasts.set(true);
     }
     
-    void interactionEnds() {
+    final void interactionEnds() {
         this.isInteractionLasts.set(false);
     }
     
@@ -76,10 +80,8 @@ public abstract class ConsolePlatform {
         this.io.print(e);
     }
     
-    public abstract String name();    
-    
-    public final void stop() {        
-        this.isWorking.set(false);
+    public final void stop() { 
+        this.isWorking.set(this.isActiveWhenClosed());
         this.whenStopped();
     }
     

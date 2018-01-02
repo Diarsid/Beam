@@ -4,8 +4,6 @@
  */
 package diarsid.beam.core.application.gui;
 
-import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
-
 public interface Gui {
     
     OutputMessagesGui messagesGui();
@@ -13,8 +11,6 @@ public interface Gui {
     OutputTasksGui tasksGui();
     
     InteractionGui interactionGui();
-    
-    GuiJavaFXResources resources();
         
     void exitAfterAllWindowsClosed();
 }

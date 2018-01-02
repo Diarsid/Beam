@@ -33,6 +33,10 @@ class ConsolePlatformOperator {
         return this.consolePlatform.name();
     }
     
+    boolean isActiveWhenClosed() {
+        return this.consolePlatform.isActiveWhenClosed();
+    }
+    
     String read() {
         try {
             return this.io.readLine();

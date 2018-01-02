@@ -60,7 +60,7 @@ class TasksNotificationScheduler {
         synchronized ( this.notificationLock ) {
             this.scheduleNextRegularTasksSurvey();
             LocalDateTime thisWeekBeginning = getThisWeekBeginning();
-            this.notifyUserAboutTasksInWeek(thisWeekBeginning);
+//            this.notifyUserAboutTasksInWeek(thisWeekBeginning);
         }        
     }
     

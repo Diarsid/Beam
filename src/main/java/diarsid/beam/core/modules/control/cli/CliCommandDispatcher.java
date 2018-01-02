@@ -307,13 +307,13 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
                             .getInnerIoEngine()
                             .ask(initiator, "are you sure", this.exitHelp);
                     if ( choice.isPositive() ) {
-                        this.ioModule.unregisterIoEngine(initiator);
+                        this.ioModule.onIoEngineClosingRequest(initiator);
                         asyncDoIndependently("Beam exit Thread", () -> exitBeamCoreNow());
                     }                    
                     break;
                 }
                 case CLOSE_CONSOLE : {
-                    this.ioModule.unregisterIoEngine(initiator);
+                    this.ioModule.onIoEngineClosingRequest(initiator);
                     break;
                 }
                 case BROWSE_WEBPANEL : {

@@ -20,7 +20,7 @@ public interface IoModule extends StoppableBeamModule {
     
     boolean registerOuterIoEngine(OuterIoEngine ioEngine);
     
-    boolean unregisterIoEngine(Initiator initiator);
+    boolean onIoEngineClosingRequest(Initiator initiator);
     
     boolean isInitiatorLegal(Initiator initiator);
     

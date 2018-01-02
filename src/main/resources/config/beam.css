@@ -156,6 +156,20 @@
     -fx-border-color: transparent; 
 }
 
+/* === CONTROL WINDOW STYLES === */
+	.control-window-outer-box {
+		-fx-background-insets: 10px; 
+		-fx-background-color: rgba(76, 191, 19);
+		-fx-background-radius: 10px; 
+		-fx-padding: 10px;
+		-fx-effect: dropshadow(one-pass-box, rgba(76, 191, 19), 10, 0.3, 0, 0);
+	}	
+	.control-window-inner-box {
+		-fx-padding: 10px;
+		-fx-background-color: transparent;
+		-fx-border-color: transparent;
+	}
+
 #main {
     -fx-border-insets: 10px;
     -fx-background-insets: 10px;

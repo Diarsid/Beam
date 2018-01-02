@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.base.control.io.base.console;
 
+import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
@@ -255,5 +256,10 @@ public class Console implements OuterIoEngine {
     @Override
     public String name() {
         return this.consoleOperator.name();
+    }
+
+    @Override
+    public boolean isActiveWhenClosed() throws IOException {
+        return this.consoleOperator.isActiveWhenClosed();
     }
 }
