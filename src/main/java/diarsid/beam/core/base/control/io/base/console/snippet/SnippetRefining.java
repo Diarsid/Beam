@@ -32,7 +32,7 @@ interface SnippetRefining {
         };
     }
     
-    static SnippetRefining refiningBeRemoveAllBefore(String part) {
+    static SnippetRefining refiningByRemoveAllBefore(String part) {
         return (line) -> {
             String lineTrim = line.trim();
             return lineTrim.substring(
@@ -40,7 +40,7 @@ interface SnippetRefining {
         };
     }
     
-    static SnippetRefining refiningBeRemoveAllBeforeAndAfter(String partBefore, String partAfter) {
+    static SnippetRefining refiningByRemoveAllBeforeAndAfter(String partBefore, String partAfter) {
         return (line) -> {
             String lineTrim = line.trim();
             String lowerLine = lower(lineTrim);
@@ -52,7 +52,7 @@ interface SnippetRefining {
         };
     }
     
-    static SnippetRefining refiningBeRemoveStartingDigitsAnd(String part) {
+    static SnippetRefining refiningByRemoveStartingDigitsAnd(String part) {
         return (line) -> {            
             return removeLeadingDigitsFrom(line.trim()).substring(part.length());
         };

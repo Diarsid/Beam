@@ -15,11 +15,11 @@ import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatc
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithDigitAndContains;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.noMatching;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.noRefining;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveAllBefore;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveAllBeforeAndAfter;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveStartingDigitsAnd;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBefore;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBeforeAndAfter;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStart;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartAndEndIfPresent;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartingDigitsAnd;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetReinvocationTextFormat.noFormat;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetReinvocationTextFormat.reinvocationTextFormat;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.Reinvokability.NON_REINVOKABLE;
@@ -44,7 +44,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByContaining(" -> "), 
-            refiningBeRemoveAllBefore(" -> "),
+            refiningByRemoveAllBefore(" -> "),
             reinvocationTextFormat("call '%s'")),
     
     OPENING (
@@ -88,7 +88,7 @@ public enum SnippetType {
             REINVOKABLE,
             NO_TRAVERSE,
             matchesByStartingWithDigitAndContains(") "),
-            refiningBeRemoveStartingDigitsAnd(") "),
+            refiningByRemoveStartingDigitsAnd(") "),
             reinvocationTextFormat("browse %s")
             ),
     SINGLE_VARIANT (
@@ -96,27 +96,27 @@ public enum SnippetType {
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
                     .andNotContaining(" is one of ", "are you sure"),
-            refiningBeRemoveAllBeforeAndAfter("> ", " ?"),
+            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             reinvocationTextFormat("open '%s'")), 
     NUMBERED_VARIANT (
             REINVOKABLE, 
             TRAVERSE_TO_ROOT_DIRECTLY, 
             matchesByStartingWithDigitAndContains(" : "),
-            refiningBeRemoveStartingDigitsAnd(" : "),
+            refiningByRemoveStartingDigitsAnd(" : "),
             reinvocationTextFormat("open '%s'")),
     ARGUMENT_CLARIFY (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingContainingEndingWith("> ", " is ", " ?")
                     .andNotContaining(" is one of ", "are you sure"),
-            refiningBeRemoveAllBeforeAndAfter(" is ", " ?"),
+            refiningByRemoveAllBeforeAndAfter(" is ", " ?"),
             reinvocationTextFormat("call '%s'")),
     
     TARGET_NOT_FOUND_IN (
             REINVOKABLE,
             NO_TRAVERSE,
             matchesByContaining(" not found in "),
-            refiningBeRemoveAllBefore(" not found in "),
+            refiningByRemoveAllBefore(" not found in "),
             reinvocationTextFormat("open %s")),
     
     QUESTION_FOR_YES_OR_NO (
