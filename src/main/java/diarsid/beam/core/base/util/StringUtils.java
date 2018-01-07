@@ -11,6 +11,7 @@ import java.util.List;
 
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Locale.ENGLISH;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -80,8 +81,20 @@ public class StringUtils {
         return new ArrayList<>(asList(target.split("\\s+")));
     }
     
+    public static List<String> splitToLines(String multilines) {
+        return new ArrayList<>(asList(multilines.split("\\r?\\n")));
+    }
+    
     public static String joinFromIndex(int start, List<String> list) {
         return join(" ", list.subList(start, list.size()));
+    }
+    
+    public static int indexOfAny(String whereToSearch, String... any) {
+        return stream(any)
+                .mapToInt(oneOfAny -> whereToSearch.indexOf(oneOfAny))
+                .filter(index -> index > -1)
+                .findFirst()
+                .orElse(-1);
     }
     
     public static boolean isWordsSeparator(char c) {

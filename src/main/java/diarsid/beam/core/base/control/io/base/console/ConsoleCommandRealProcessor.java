@@ -6,17 +6,12 @@
 
 package diarsid.beam.core.base.control.io.base.console;
 
-import java.util.List;
-
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.INCORRECT;
-import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
 import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.StringUtils.joinFromIndex;
-import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
 
 /**
  *
@@ -39,16 +34,13 @@ public class ConsoleCommandRealProcessor implements ConsoleBlockingExecutor {
             debug("initiator:" + initiator.identity() + " commandType: " + command.type());
             return;
         }
-        if ( command.type().isNot(MULTICOMMAND) && command.type().isDefined() ) {
-            this.dispatcher.dispatch(initiator, command);
-        } else {
-            this.tryToInterpreteAsSentencesFromLeftToRight(
-                    initiator, splitBySpacesToList(commandLine));
-//            splitBySpacesToList(commandLine)
-//                    .stream()
-//                    .map(newCommandLine -> this.interpreter.interprete(newCommandLine))
-//                    .forEach(newCommand -> this.dispatcher.dispatch(initiator, newCommand));            
-        }        
+        this.dispatcher.dispatch(initiator, command);
+//        if ( command.type().isNot(MULTICOMMAND) && command.type().isDefined() ) {
+//            this.dispatcher.dispatch(initiator, command);
+//        } else {
+//            this.tryToInterpreteAsSentencesFromLeftToRight(
+//                    initiator, splitBySpacesToList(commandLine));       
+//        }        
     }
     
     @Override
@@ -56,21 +48,21 @@ public class ConsoleCommandRealProcessor implements ConsoleBlockingExecutor {
         this.processCommand(initiator, commandLine);
     }
     
-    private void tryToInterpreteAsSentencesFromLeftToRight(
-            Initiator initiator, List<String> fragments) {
-        Command command = this.interpreter.interprete(fragments.get(0));
-        this.dispatcher.dispatch(initiator, command);
-        for (int i = 1; i < fragments.size(); i++) {
-            command = this.interpreter.interprete(joinFromIndex(i, fragments));
-            if ( command.type().isDefined() && command.type().isNot(MULTICOMMAND) ) {
-                this.dispatcher.dispatch(initiator, command);
-                return;
-            } else {
-                command = this.interpreter.interprete(fragments.get(i));
-                if ( command.type().isDefined() ) {
-                    this.dispatcher.dispatch(initiator, command);
-                }                
-            }
-        }
-    }
+//    private void tryToInterpreteAsSentencesFromLeftToRight(
+//            Initiator initiator, List<String> fragments) {
+//        Command command = this.interpreter.interprete(fragments.get(0));
+//        this.dispatcher.dispatch(initiator, command);
+//        for (int i = 1; i < fragments.size(); i++) {
+//            command = this.interpreter.interprete(joinFromIndex(i, fragments));
+//            if ( command.type().isDefined() && command.type().isNot(MULTICOMMAND) ) {
+//                this.dispatcher.dispatch(initiator, command);
+//                return;
+//            } else {
+//                command = this.interpreter.interprete(fragments.get(i));
+//                if ( command.type().isDefined() ) {
+//                    this.dispatcher.dispatch(initiator, command);
+//                }                
+//            }
+//        }
+//    }
 }

@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.base.util;
 
+import static java.lang.Character.isDigit;
 import static java.lang.Integer.parseInt;
 
 /**
@@ -35,5 +36,13 @@ public class StringNumberUtils {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+    
+    public static String removeLeadingDigitsFrom(String s) {
+        int offset = 0;
+        while ( isDigit(s.charAt(offset))) {            
+            offset++;
+        }
+        return s.substring(offset);
     }
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -30,6 +31,8 @@ import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
+import diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinder;
+import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.util.MutableString;
@@ -45,6 +48,7 @@ import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 import static javafx.stage.WindowEvent.WINDOW_HIDDEN;
+import static javafx.stage.WindowEvent.WINDOW_SHOWING;
 import static javafx.stage.WindowEvent.WINDOW_SHOWN;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
@@ -71,10 +75,20 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     private final AtomicInteger consoleInputBufferCapacity;
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
+    private final ConsoleSnippetFinder consoleSnippetFinder;
+    private final Runnable findSnippetInConsole;
+    private final Runnable addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable;
+    private final Runnable removeSnippetMenuItemFromConsole;
+            
     private Stage stage;
     private Pane bar;
     private Pane mainArea;
     private TextArea consoleTextArea;
+    
+    private ObservableList<MenuItem> consoleTextAreaContextMenuItems;
+    private MenuItem snippetMenuItem;
+    private Snippet snippet;
+    
     private boolean ready;
 
     JavaFXConsolePlatformWindow(
@@ -95,6 +109,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
                 this.consoleInputBufferCapacity.get(), "");
         this.ready = false;
         this.isShown = new AtomicBoolean(false);
+        
         this.runnableLaunch = () -> {
             if ( this.ready ) {
                 this.show();
@@ -103,6 +118,44 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
                 this.show();
             }
         };
+        
+        this.consoleSnippetFinder = new ConsoleSnippetFinder();
+        
+        this.snippetMenuItem = new MenuItem("do this!");   
+        char star = 9733;
+        Label starLabel = new Label(Character.toString(star));
+        
+        this.snippetMenuItem.setGraphic(starLabel);
+        this.snippetMenuItem.setOnAction((event) -> {
+            synchronized ( this.consoleTextAreaLock ) {
+                this.consoleTextArea.appendText(this.snippet.line());
+                this.imitiateEnterPressed();
+            }
+        });        
+        
+        this.findSnippetInConsole = () -> {
+            this.snippet = this.consoleSnippetFinder
+                    .in(this.consoleTextArea.getText())
+                    .goToLineAt(this.consoleTextArea.getCaretPosition())
+                    .defineLineSnippetType()
+                    .composeSnippet()
+                    .getSnippetAndReset();
+        };
+        this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable = () -> {
+            if ( this.snippet.type().isReinvokable() ) {
+                this.snippetMenuItem.setText(this.snippet.reinvokationTextWithLengthLimit(25));
+                this.consoleTextAreaContextMenuItems.add(0, this.snippetMenuItem);
+            }
+        };
+        this.removeSnippetMenuItemFromConsole = () -> {
+            if ( this.consoleTextAreaContextMenuItems.get(0) == this.snippetMenuItem ) {
+                this.consoleTextAreaContextMenuItems.remove(0);
+            }
+        };
+    }
+
+    private void imitiateEnterPressed() {
+        this.consoleTextArea.appendText("\n");
     }
     
     public void openOrOnTop() {
@@ -254,11 +307,24 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     
     private ContextMenu createContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
+        
+        contextMenu.addEventHandler(WINDOW_SHOWING, (windowEvent) -> {            
+            this.findSnippetInConsole.run();
+            this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable.run();        
+        });
+        
+        contextMenu.addEventHandler(WINDOW_HIDDEN, (windowEvent) -> {
+            this.removeSnippetMenuItemFromConsole.run();
+        });
+        
         contextMenu.getItems().addAll(
                 this.createClearMenuItem(), 
                 this.createCloseMenuItem(), 
                 this.createDefualtSizeMenuItem(),
                 this.createSettingsMenuItem());
+        
+        this.consoleTextAreaContextMenuItems = contextMenu.getItems();
+        
         contextMenu.getItems()
                 .stream()
                 .forEach(menuItem -> {
@@ -353,23 +419,29 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     
     private EventHandler<KeyEvent> createEnterKeyInterceptor() {
         return (keyEvent) -> {
-            if ( keyEvent.getCode().equals(ENTER) ) {
-                synchronized ( this.consoleTextAreaLock ) {
-                    if ( this.consoleTextArea.getCaretPosition() == 
-                            this.consoleTextArea.getText().length() ) {
-                        return;
-                    }
-                    int caretPosition = this.consoleTextArea.getCaretPosition();
-                    int rawInputTextLength = this.consoleTextArea.getText().length();
-                    int commitedTextLength = this.consoleCommitedLength.get();
-                    if (    caretPosition >= commitedTextLength &&
-                            caretPosition < rawInputTextLength ) {
-                        this.consoleTextArea.deleteText(caretPosition, rawInputTextLength);                    
-                    } else if ( caretPosition < rawInputTextLength ) {
+            if ( ! keyEvent.getCode().equals(ENTER) ) {
+                return;
+            }
+            
+            synchronized ( this.consoleTextAreaLock ) {
+                if ( this.consoleTextArea.getCaretPosition() == 
+                        this.consoleTextArea.getText().length() ) {
+                    return;
+                }
+
+                int caretPosition = this.consoleTextArea.getCaretPosition();
+                int rawInputTextLength = this.consoleTextArea.getText().length();
+                int commitedTextLength = this.consoleCommitedLength.get();
+
+                if ( caretPosition < rawInputTextLength ) {
+                    if ( caretPosition >= commitedTextLength ) {
+                        keyEvent.consume();
+                        this.imitiateEnterPressed();
+                    } else {
                         this.consoleTextArea.deleteText(commitedTextLength, rawInputTextLength);
                         keyEvent.consume();
                     }
-                }    
+                }
             }
         };
     }
@@ -477,6 +549,10 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
         }
         int commitedTextLength = this.consoleCommitedLength.get();
         if ( change.getRangeStart() < commitedTextLength ) {
+            if ( change.getRangeEnd() > commitedTextLength ) {
+                this.consoleTextArea.deleteText(
+                        commitedTextLength, this.consoleTextArea.getText().length());
+            }
             change.setRange(commitedTextLength, commitedTextLength);
             this.setCaretCorrectPosition(change, commitedTextLength);
         }

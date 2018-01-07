@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -105,6 +106,14 @@ public class StringIgnoreCaseUtil {
                     .findFirst()
                     .isPresent();
         }        
+    }
+    
+    public static boolean containsIgnoreCaseAnyFragment(
+            String whereToSearch, String... searchedSnippets) {
+        return stream(searchedSnippets)
+                .filter(snippet -> containsIgnoreCase(whereToSearch, snippet))
+                .findFirst()
+                .isPresent();
     }
     
     public static boolean containsIgnoreCaseAnyFragment(

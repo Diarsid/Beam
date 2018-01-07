@@ -145,7 +145,7 @@ public abstract class BeamWindow implements Comparable<BeamWindow> {
         scene.getStylesheets().add(this.resources.cssFilePath());
         
         this.stage.setScene(scene);
-        this.stage.initOwner(this.windowManager.hiddenRoot().hiddenStageForManageableWindows());
+        this.stage.initOwner(this.windowManager.hiddenRoot().newHiddenStage());
     }
     
     @Override

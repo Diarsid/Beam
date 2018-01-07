@@ -359,7 +359,7 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
                             .showAllBatches(initiator);
                     break;
                 }
-                case MULTICOMMAND :
+//                case MULTICOMMAND :
                 case INCORRECT : 
                 case UNDEFINED : {
                     break;

@@ -108,7 +108,7 @@ class BeamControlWindow {
         this.stage = new Stage();
         this.stage.initStyle(StageStyle.TRANSPARENT);
         this.stage.setAlwaysOnTop(true);
-        this.stage.initOwner(beamHiddenRoot.hiddenStageForIndependentWindows());
+        this.stage.initOwner(beamHiddenRoot.newHiddenStage());
     }
 
     private void setSizeAndPosition() {

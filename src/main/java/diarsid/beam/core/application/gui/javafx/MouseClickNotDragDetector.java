@@ -16,15 +16,11 @@ import static javafx.scene.input.MouseEvent.MOUSE_DRAGGED;
 import static javafx.scene.input.MouseEvent.MOUSE_PRESSED;
 import static javafx.scene.input.MouseEvent.MOUSE_RELEASED;
 
-import static diarsid.beam.core.base.util.Logs.debug;
-
 /**
  *
  * @author Diarsid
  */
 class MouseClickNotDragDetector {
-    
-    private final Node node;
     
     private Consumer<MouseEvent> onClickedNotDragged;
     private boolean wasDragged;
@@ -32,8 +28,10 @@ class MouseClickNotDragDetector {
     private long timeReleased;
     private long pressedDurationTreshold;
 
+    MouseClickNotDragDetector() {
+    }
+
     private MouseClickNotDragDetector(Node node) {
-        this.node = node;
         
         node.addEventHandler(MOUSE_PRESSED, (mouseEvent) -> {
             this.timePressed = currentTimeMillis();
@@ -74,14 +72,11 @@ class MouseClickNotDragDetector {
     
     private void fireEventIfWasClickedNotDragged(MouseEvent mouseEvent) {
         if ( this.wasDragged ) {
-            debug("[CLICK-NOT-DRAG] dragged!");
             return;
         }
         if ( this.mousePressedDuration() > this.pressedDurationTreshold ) {
-            debug("[CLICK-NOT-DRAG] pressed too long, not a click!");
             return;
         }
-        debug("[CLICK-NOT-DRAG] click!");
         this.onClickedNotDragged.accept(mouseEvent);
     }
     

@@ -36,6 +36,10 @@ public class CollectionsUtils {
         return ( ! c.isEmpty() );
     }
     
+    public static boolean hasAny(Collection c) {
+        return ( ! c.isEmpty() );
+    }
+    
     public static boolean nonNullNonEmpty(Collection c) {
         return ( 
                 nonNull(c) && 
@@ -129,5 +133,12 @@ public class CollectionsUtils {
     
     public static boolean indexInRange(int index, Collection collection) {
         return ( index > -1 ) && ( index < collection.size() );
+    }
+    
+    public static void removeLastFrom(List list) {
+        if ( list.isEmpty() ) {
+            return;
+        }
+        list.remove(list.size() - 1);
     }
 }

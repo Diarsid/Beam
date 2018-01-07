@@ -64,6 +64,16 @@ public class PathUtils {
     }
     
     public static String combineAsPathFrom(String... fragments) {
+        if ( fragments.length == 0 ) {
+            return "";
+        }
+        return normalizeSeparators(join("/", fragments));
+    }
+    
+    public static String combineAsPathFrom(List<String> fragments) {
+        if ( fragments.isEmpty() ) {
+            return "";
+        }
         return normalizeSeparators(join("/", fragments));
     }
     

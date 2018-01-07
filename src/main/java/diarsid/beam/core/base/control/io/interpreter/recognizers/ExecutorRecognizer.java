@@ -10,8 +10,8 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.PrioritizedRecognizer;
 
-import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.commands.Commands.createExecutorOrUndefinedCommandFrom;
+import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 
 /**
  *
@@ -35,8 +35,11 @@ public class ExecutorRecognizer extends PrioritizedRecognizer {
     @Override
     public Command assess(Input input) {
         if ( input.currentArgIsMeaningfull() ) {
+            // WARN!!! unsafe behaviour changing: currentArg() -> allRemainingArgsString()
+//            return createExecutorOrUndefinedCommandFrom(
+//                    this.commandType, input.currentArg() + this.additionToCommand);
             return createExecutorOrUndefinedCommandFrom(
-                    this.commandType, input.currentArg() + this.additionToCommand);
+                    this.commandType, input.allRemainingArgsString() + this.additionToCommand);
         } else {
             return undefinedCommand();
         }

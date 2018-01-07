@@ -5,6 +5,9 @@
  */
 package diarsid.beam.core.application.gui.javafx;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -12,20 +15,18 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import static java.lang.Double.MAX_VALUE;
+
 /**
  *
  * @author Diarsid
  */
 class BeamHiddenRoot {
     
-    private Stage manageableWindowsStage;
-    private Stage independentWindowsStage;
+    private final List<Stage> hiddenStages;
 
     BeamHiddenRoot() {
-        Platform.runLater(() -> {
-            this.manageableWindowsStage = this.createHiddenStage();
-            this.independentWindowsStage = this.createHiddenStage();
-        });
+        this.hiddenStages = new ArrayList<>();
     }
 
     private Stage createHiddenStage() {
@@ -35,8 +36,8 @@ class BeamHiddenRoot {
         stage.setMinHeight(0);
         stage.setMaxWidth(0);
         stage.setMaxHeight(0);
-        stage.setX(0);
-        stage.setY(0);
+        stage.setX(MAX_VALUE);
+        stage.setY(MAX_VALUE);
         
         Scene scene = new Scene(new Label());
         scene.setFill(Color.TRANSPARENT);
@@ -47,12 +48,16 @@ class BeamHiddenRoot {
         return stage;
     }
     
-    Stage hiddenStageForIndependentWindows() {
-        return this.independentWindowsStage;
+    Stage newHiddenStage() {
+        synchronized ( this.hiddenStages ) {
+            Stage newHiddenStage = this.createHiddenStage();
+            this.hiddenStages.add(newHiddenStage);
+            return newHiddenStage;
+        }        
     }
     
-    Stage hiddenStageForManageableWindows() {
-        return this.manageableWindowsStage;
+    void closeAllHiddenStages() {
+        Platform.runLater(() -> this.hiddenStages.forEach(stage -> stage.close()));
     }
     
 }

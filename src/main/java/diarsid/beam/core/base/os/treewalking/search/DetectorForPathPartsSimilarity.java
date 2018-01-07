@@ -47,9 +47,6 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     }
     
     private boolean filterByPathPartsSimilarity(String[] realPathParts) {
-        if ( realPathParts[realPathParts.length-1].contains("movie") ) {
-            int a = 5;
-        }
         if ( realPathParts.length == 0 ) {
             return false;
         }

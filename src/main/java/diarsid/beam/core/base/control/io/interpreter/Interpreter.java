@@ -47,7 +47,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBDIR
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
-import static diarsid.beam.core.base.control.io.commands.CommandType.MULTICOMMAND;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
@@ -375,8 +374,9 @@ public class Interpreter {
                         domainWord().and(argumentsFor(LIST_LOCATION)), 
                         relativePath().and(argumentsFor(LIST_PATH))),
                 relativePath().priority(LOW).and(executable(OPEN_LOCATION_TARGET)),
-                singleArg().priority(LOWER).and(domainWord().and(executable(EXECUTOR_DEFAULT))), 
-                multipleArgs().priority(lowerThan(LOWEST)).and(argumentsFor(MULTICOMMAND))                
+                singleArg().priority(LOWER).and(domainWord().and(executable(EXECUTOR_DEFAULT))),
+                multipleArgs().priority(LOWER).and(domainWord().and(executable(EXECUTOR_DEFAULT)))
+//                , multipleArgs().priority(lowerThan(LOWEST)).and(argumentsFor(MULTICOMMAND))                
         );
     }
     

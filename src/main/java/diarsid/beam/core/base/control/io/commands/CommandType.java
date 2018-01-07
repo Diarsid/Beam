@@ -81,7 +81,7 @@ public enum CommandType {
     EXIT (CORE_OPERATION),
     CLOSE_CONSOLE (CORE_OPERATION),
     
-    MULTICOMMAND (OTHER),
+//    MULTICOMMAND (OTHER),
     
     INCORRECT (OTHER),
     UNDEFINED (OTHER);

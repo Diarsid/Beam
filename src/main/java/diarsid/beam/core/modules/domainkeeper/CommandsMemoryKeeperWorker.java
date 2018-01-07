@@ -49,9 +49,10 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
 import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.MutableString.mutableString;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
 
 /**
  *
@@ -320,8 +321,14 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             InvocationCommand command, 
             InvocationCommand exactMatch, 
-            List<InvocationCommand> matchingCommands) {
-        matchingCommands.add(exactMatch);
+            List<InvocationCommand> matchingCommands) {        
+        filterMatchingCommandsOnLongerDuplicatesOfExactInExtended(exactMatch, matchingCommands);
+        if ( matchingCommands.isEmpty() ) {
+            command.setStored();
+            command.argument().setExtended(exactMatch.extendedArgument());
+            return voidFlowCompleted();
+        }
+        matchingCommands.add(0, exactMatch);
         WeightedVariants variants = weightVariants(
                 command.originalArgument(), commandsToVariants(matchingCommands));
         if ( variants.isEmpty() ) {
@@ -360,6 +367,26 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 }
             }            
         }
+    }
+    
+    private void filterMatchingCommandsOnLongerDuplicatesOfExactInExtended(
+            InvocationCommand exactMatch, List<InvocationCommand> matchingCommands) {
+        InvocationCommand matchingCommand;
+        for (int i = 0; i < matchingCommands.size(); i++) {
+            matchingCommand = matchingCommands.get(i);
+            if ( this.matchingCommandIsLongerDuplicateOfExact(
+                    exactMatch.extendedArgument(), matchingCommand.extendedArgument()) ) {
+                matchingCommands.remove(i);
+                i--;
+            }            
+        }
+    }
+    
+    private boolean matchingCommandIsLongerDuplicateOfExact(
+            String exact, String matching) {
+        return 
+                exact.equalsIgnoreCase(matching) ||
+                ( containsIgnoreCase(matching, exact) &&  matching.length() > exact.length() );
     }
     
     @Override
@@ -473,8 +500,12 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         } else {
             matchingCommands = this.daoCommands.searchInExtendedByPattern(initiator, original);
         }
-                
-        matchingCommands.add(exactMatch);
+        
+        filterMatchingCommandsOnLongerDuplicatesOfExactInExtended(exactMatch, matchingCommands);
+        if ( matchingCommands.isEmpty() ) {
+            return valueFlowCompletedWith(exactMatch);
+        }
+        matchingCommands.add(0, exactMatch);
         WeightedVariants variants = 
                 weightVariants(original, commandsToVariants(matchingCommands, view));
         if ( variants.isEmpty() ) {

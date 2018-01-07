@@ -6,9 +6,6 @@
 
 package diarsid.beam.core.base.os.treewalking.listing;
 
-import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
-import diarsid.beam.core.base.os.treewalking.base.FolderType;
-
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -16,9 +13,13 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
+import diarsid.beam.core.base.os.treewalking.base.FolderType;
+import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
+
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 
+import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LARGE;
 import static diarsid.beam.core.base.os.treewalking.listing.FileItemsFormatter.INLINE_SKIPPED;
 import static diarsid.beam.core.base.os.treewalking.listing.FileItemsFormatter.NEW_LINE_SKIPPED;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -80,7 +81,7 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
             }
         }
         if ( ! dir.equals(this.root) && this.largeFolderDetector.examine(dir) ) {
-            this.formatter.skipFolderWithMessage(dir, " ...too large", NEW_LINE_SKIPPED);
+            this.formatter.skipFolderWithMessage(dir, SIGN_OF_TOO_LARGE, NEW_LINE_SKIPPED);
             return SKIP_SUBTREE;
         }
         this.formatter.includeItem(dir);

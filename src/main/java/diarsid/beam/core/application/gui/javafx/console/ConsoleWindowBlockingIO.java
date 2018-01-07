@@ -120,7 +120,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
         for (String helpLine : help.getLines()) {
             sb.append(format("\n  %s", helpLine));
         }
-        sb.append("\nBeam > ");
+        sb.append("\n\nBeam > ");
         this.intoConsole.put(sb.toString());
     }
 
@@ -139,7 +139,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
         for (String helpLine : help.getLines()) {
             sb.append(format("\n  %s", helpLine));
         }
-        sb.append("\n ");
+        sb.append("\n\n");
         this.intoConsole.put(sb.toString());
     }
     
