@@ -21,7 +21,7 @@ import static java.lang.Double.MAX_VALUE;
  *
  * @author Diarsid
  */
-class BeamHiddenRoot {
+public class BeamHiddenRoot {
     
     private final List<Stage> hiddenStages;
 
@@ -48,7 +48,7 @@ class BeamHiddenRoot {
         return stage;
     }
     
-    Stage newHiddenStage() {
+    public Stage newHiddenStage() {
         synchronized ( this.hiddenStages ) {
             Stage newHiddenStage = this.createHiddenStage();
             this.hiddenStages.add(newHiddenStage);

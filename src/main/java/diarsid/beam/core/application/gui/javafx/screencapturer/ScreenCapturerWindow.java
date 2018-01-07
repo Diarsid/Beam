@@ -26,6 +26,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.environment.Configuration;
+import diarsid.beam.core.application.gui.javafx.BeamHiddenRoot;
+import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.domain.entities.Picture;
@@ -36,8 +38,6 @@ import static javafx.scene.control.OverrunStyle.ELLIPSIS;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 
-import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
-
 
 /**
  *
@@ -46,6 +46,7 @@ import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 public class ScreenCapturerWindow implements Runnable {
 
     private final GuiJavaFXResources windowResources;
+    private final BeamHiddenRoot beamHiddenRoot;
     private final WindowMover windowMover;
     private final ScreenCapturerWindowResizer windowResizer;
     private final ScreenCapturer screenCapturer;    
@@ -60,8 +61,10 @@ public class ScreenCapturerWindow implements Runnable {
     private boolean ready;
     private boolean hasAwaiter;
 
-    ScreenCapturerWindow(ScreenCapturer screenCapturer, GuiJavaFXResources windowResources) {
+    ScreenCapturerWindow(
+            ScreenCapturer screenCapturer, GuiJavaFXResources windowResources, BeamHiddenRoot beamHiddenRoot) {
         this.windowResources = windowResources;
+        this.beamHiddenRoot = beamHiddenRoot;
         this.windowMover = new WindowMover();
         this.windowResizer = new ScreenCapturerWindowResizer(142, 90);
         this.screenCapturer = screenCapturer;
@@ -74,10 +77,13 @@ public class ScreenCapturerWindow implements Runnable {
     }
     
     public static ScreenCapturerWindow buildScreenCapturerWindow(
-            Configuration configuration, Robot robot, GuiJavaFXResources windowResources) {
+            Configuration configuration, 
+            Robot robot, 
+            GuiJavaFXResources windowResources,
+            BeamHiddenRoot beamHiddenRoot) {
         ScreenCapturer screenCapturer = new ScreenCapturer(
                 robot, configuration.asBoolean("ui.images.capture.webpages.resize"));
-        return new ScreenCapturerWindow(screenCapturer, windowResources);
+        return new ScreenCapturerWindow(screenCapturer, windowResources, beamHiddenRoot);
     }
     
     @Override
@@ -110,6 +116,7 @@ public class ScreenCapturerWindow implements Runnable {
         this.stage.setMinHeight(90);
         this.stage.setResizable(true);
         this.stage.centerOnScreen();
+        this.stage.initOwner(this.beamHiddenRoot.newHiddenStage());
         this.stage.setOnCloseRequest((windowEvent) -> {
             try {
                 this.blockingValueFlowQueue.put(valueFlowStopped());

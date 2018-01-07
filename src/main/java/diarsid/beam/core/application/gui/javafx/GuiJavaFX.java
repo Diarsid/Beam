@@ -64,7 +64,7 @@ public class GuiJavaFX
         try {
             Robot robot = new Robot();
             this.screenCapturerWindow = buildScreenCapturerWindow(
-                    configuration, robot, this.guiResources);
+                    configuration, robot, this.guiResources, this.beamHiddenRoot);
             Platform.runLater(screenCapturerWindow);
         } catch (AWTException awtException) {
             throw new WorkflowBrokenException(awtException);
