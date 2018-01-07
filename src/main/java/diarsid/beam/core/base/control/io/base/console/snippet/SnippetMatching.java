@@ -47,12 +47,12 @@ interface SnippetMatching {
         };
     }
     
-    static SnippetMatching matchesByStartingWithDigitAndColon() {
+    static SnippetMatching matchesByStartingWithDigitAndContains(String part) {
         return (line) -> {
             String lowerLine = lower(line).trim();
             return 
                     isDigit(lowerLine.charAt(0)) &&
-                    lowerLine.contains(" : ");
+                    lowerLine.contains(part);
         };
     }
     

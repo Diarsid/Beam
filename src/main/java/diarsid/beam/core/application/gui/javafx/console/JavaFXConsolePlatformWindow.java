@@ -31,10 +31,10 @@ import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
-import diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinder;
-import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
+import diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinder;
+import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.base.util.PointableCollection;
 
@@ -121,7 +121,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
         
         this.consoleSnippetFinder = new ConsoleSnippetFinder();
         
-        this.snippetMenuItem = new MenuItem("do this!");   
+        this.snippetMenuItem = new MenuItem();   
         char star = 9733;
         Label starLabel = new Label(Character.toString(star));
         

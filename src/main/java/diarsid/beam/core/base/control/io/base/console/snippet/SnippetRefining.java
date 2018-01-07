@@ -14,7 +14,7 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 interface SnippetRefining {
     
-    String refineFromLine(String line);
+    String applyTo(String line);
     
     static SnippetRefining refiningByRemoveStart(String start) {
         return (line) -> {
@@ -52,9 +52,9 @@ interface SnippetRefining {
         };
     }
     
-    static SnippetRefining refiningBeRemoveStartingDigitsAndColon() {
+    static SnippetRefining refiningBeRemoveStartingDigitsAnd(String part) {
         return (line) -> {            
-            return removeLeadingDigitsFrom(line.trim()).substring(" : ".length());
+            return removeLeadingDigitsFrom(line.trim()).substring(part.length());
         };
     }
     

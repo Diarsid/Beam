@@ -7,24 +7,26 @@ package diarsid.beam.core.base.control.io.base.console.snippet;
 
 import static java.util.Arrays.stream;
 
+import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByContaining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingContainingEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWith;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithDigitAndColon;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithDigitAndContains;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.noMatching;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.noRefining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveAllBefore;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveAllBeforeAndAfter;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveStartingDigitsAndColon;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningBeRemoveStartingDigitsAnd;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStart;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartAndEndIfPresent;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetReinvocationTextFormat.noFormat;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetReinvocationTextFormat.reinvocationTextFormat;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.Reinvokability.NON_REINVOKABLE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.Reinvokability.REINVOKABLE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.NO_TRAVERSE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_ROOT_DIRECTLY;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_ROOT_HIERARCHICALLY;
-import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
 
 /**
  *
@@ -37,104 +39,106 @@ public enum SnippetType {
             NO_TRAVERSE, 
             matchesByStartingWith("Beam > "),
             refiningByRemoveStart("Beam > "),
-            "call"),
+            reinvocationTextFormat("call '%s'")),
     LISTED_COMMAND (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByContaining(" -> "), 
             refiningBeRemoveAllBefore(" -> "),
-            "call"),
+            reinvocationTextFormat("call '%s'")),
     
     OPENING (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingWith("> ...opening "),
             refiningByRemoveStart("> ...opening "),
-            "open"),
+            reinvocationTextFormat("open %s")),
     RUNNING (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingWith("> ...running "),
             refiningByRemoveStart("> ...running "),
-            "run"),
+            reinvocationTextFormat("run %s")),
     EXECUTING (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingWith("> ...executing "),
             refiningByRemoveStart("> ...executing "),
-            "execute"),
+            reinvocationTextFormat("execute %s")),
     BROWSING (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingWith("> ...browsing "),
             refiningByRemoveStart("> ...browsing "),
-            "browse"),
+            reinvocationTextFormat("browse %s")),
     
     LISTED_FILE (
             REINVOKABLE, 
             TRAVERSE_TO_ROOT_HIERARCHICALLY, 
             matchesByStartingWith("-  "),
             refiningByRemoveStartAndEndIfPresent("-  ", SIGN_OF_TOO_LONG),
-            "open"),
+            reinvocationTextFormat("open %s")),
     LISTED_FOLDER (
             REINVOKABLE, 
             TRAVERSE_TO_ROOT_HIERARCHICALLY, 
             matchesByStartingWith("[_] "),
             refiningByRemoveStartAndEndIfPresent("[_] ", SIGN_OF_TOO_LONG),
-            "open"),
+            reinvocationTextFormat("open %s")),
+    LISTED_WEBPAGE (
+            REINVOKABLE,
+            NO_TRAVERSE,
+            matchesByStartingWithDigitAndContains(") "),
+            refiningBeRemoveStartingDigitsAnd(") "),
+            reinvocationTextFormat("browse %s")
+            ),
     SINGLE_VARIANT (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
                     .andNotContaining(" is one of ", "are you sure"),
             refiningBeRemoveAllBeforeAndAfter("> ", " ?"),
-            "open"), 
+            reinvocationTextFormat("open '%s'")), 
     NUMBERED_VARIANT (
             REINVOKABLE, 
             TRAVERSE_TO_ROOT_DIRECTLY, 
-            matchesByStartingWithDigitAndColon(),
-            refiningBeRemoveStartingDigitsAndColon(),
-            "open"),
+            matchesByStartingWithDigitAndContains(" : "),
+            refiningBeRemoveStartingDigitsAnd(" : "),
+            reinvocationTextFormat("open '%s'")),
     ARGUMENT_CLARIFY (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingContainingEndingWith("> ", " is ", " ?")
                     .andNotContaining(" is one of ", "are you sure"),
             refiningBeRemoveAllBeforeAndAfter(" is ", " ?"),
-            "call"),
+            reinvocationTextFormat("call '%s'")),
     
     TARGET_NOT_FOUND_IN (
             REINVOKABLE,
             NO_TRAVERSE,
             matchesByContaining(" not found in "),
             refiningBeRemoveAllBefore(" not found in "),
-            ""),
+            reinvocationTextFormat("open %s")),
     
     QUESTION_FOR_YES_OR_NO (
             NON_REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingWith("> yes/no :"),
-            noRefining()),
+            matchesByStartingWith("> yes/no :")),
     QUESTION_FOR_VARIANTS (
             NON_REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingWith("> is one of ?"),
-            noRefining()),
+            matchesByStartingWith("> is one of ?")),
     QUESTION_FOR_VARIANTS_CHOICE (
             NON_REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingWith("> choose :"),
-            noRefining()),
+            matchesByStartingWith("> choose :")),
     QUESTION_FOR_SURE(
             NON_REINVOKABLE,
             NO_TRAVERSE,
-            matchesByContaining("are you sure"),
-            noRefining()),
+            matchesByContaining("are you sure")),
     UNKNOWN (
             NON_REINVOKABLE, 
             NO_TRAVERSE, 
-            noMatching(),
-            noRefining());
+            noMatching());
     
     static enum Reinvokability {
         REINVOKABLE,
@@ -151,31 +155,30 @@ public enum SnippetType {
     private final TraverseMode traverseMode;
     private final SnippetMatching matching;
     private final SnippetRefining refining;
-    private final String reinvokationMark;
+    private final SnippetReinvocationTextFormat reinvokationTextFormat;
     
     private SnippetType(
             Reinvokability reinvokability, 
             TraverseMode traverseMode,
             SnippetMatching matching,
             SnippetRefining refining,
-            String reinvokationMark) {
+            SnippetReinvocationTextFormat reinvokationTextFormat) {
         this.reinvokability = reinvokability;
         this.traverseMode = traverseMode;
         this.matching = matching;
         this.refining = refining;
-        this.reinvokationMark = reinvokationMark;
+        this.reinvokationTextFormat = reinvokationTextFormat;
     }
     
     private SnippetType(
             Reinvokability reinvokability, 
             TraverseMode traverseMode,
-            SnippetMatching matching,
-            SnippetRefining refining) {
+            SnippetMatching matching) {
         this.reinvokability = reinvokability;
         this.traverseMode = traverseMode;
         this.matching = matching;
-        this.refining = refining;
-        this.reinvokationMark = "";
+        this.refining = noRefining();
+        this.reinvokationTextFormat = noFormat();
     }
     
     public boolean isReinvokable() {
@@ -190,12 +193,12 @@ public enum SnippetType {
         return this.traverseMode;
     }
     
-    public String reinvokationMark() {
-        return this.reinvokationMark;
+    public SnippetReinvocationTextFormat reinvokationTextFormat() {
+        return this.reinvokationTextFormat;
     }
     
     public String lineToSnippet(String line) {
-        return this.refining.refineFromLine(line);
+        return this.refining.applyTo(line);
     }
     
     public static SnippetType defineSnippetTypeOf(String line) {        

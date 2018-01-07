@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.base.control.io.base.console.snippet;
 
-import static java.lang.String.format;
-
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.UNKNOWN;
 import static diarsid.beam.core.base.util.TextUtil.shrinkIfTooLong;
 
@@ -43,12 +41,11 @@ public class Snippet {
     }
     
     public String reinvokationText() {
-        return format("%s '%s'", this.type.reinvokationMark(), this.line);
+        return this.type.reinvokationTextFormat().applyTo(this.line);
     }
     
     public String reinvokationTextWithLengthLimit(int lengthLimit) {
-        return format("%s '%s'", 
-                this.type.reinvokationMark(), shrinkIfTooLong(this.line, lengthLimit));
+        return this.type.reinvokationTextFormat().applyTo(shrinkIfTooLong(this.line, lengthLimit));
     }
     
 }
