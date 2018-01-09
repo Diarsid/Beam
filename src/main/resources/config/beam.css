@@ -1,9 +1,17 @@
+/* === COLOR CONSTANTS === */
+	.root {
+		beam-orange: rgb(255, 159, 0);
+		beam-yellow: rgb(255, 222, 0);
+		beam-white:  rgb(250, 250, 250);
+		beam-green: rgb(76, 191, 19);
+		beam-green-fluo: rgb(198, 255, 166);
+	}
 
 /* === MESSAGE WINDOW STYLES === */
 	.message-outer-box {
 		-fx-border-insets: 10px; 
 		-fx-background-insets: 10px; 
-		-fx-background-color: #FF9F00; 
+		-fx-background-color: beam-orange; 
 		-fx-background-radius: 12px; 
 		-fx-padding: 10px;
 	}
@@ -11,21 +19,21 @@
 		-fx-padding: 4px;
 	}
 	.message-main-area {
-		-fx-background-color: white; 
+		-fx-background-color: beam-white; 
 		-fx-background-radius: 11px; 
-		-fx-border-color: #FFDE00; 
+		-fx-border-color: beam-yellow; 
 		-fx-border-width: 4px; 
 		-fx-border-radius: 10px;
 		-fx-padding: 5px;
 		-fx-font: 13px "Consolas"; 
-		-fx-text-fill: #4CBF13;
+		-fx-text-fill: beam-green;
 	}
 	.message-inner-area {
 		-fx-padding: 10px;
 	}
 	.message-bar .message-bar-header {
 		-fx-font: 14px "Consolas"; 
-		-fx-text-fill: white; 
+		-fx-text-fill: beam-white; 
 		-fx-font-weight: bold;
 	}
 
@@ -33,7 +41,7 @@
 	.console-outer-box {
 		-fx-border-insets: 10px; 
 		-fx-background-insets: 10px; 
-		-fx-background-color: #FF9F00; 
+		-fx-background-color: beam-orange; 
 		-fx-background-radius: 12px; 
 		-fx-padding: 10px;
 	}
@@ -43,31 +51,31 @@
 
 	.console-bar .console-bar-header {
 		-fx-font: 14px "Consolas"; 
-		-fx-text-fill: white; 
+		-fx-text-fill: beam-white; 
 		-fx-font-weight: bold;
 	}
 
 .context-menu {
 	-fx-background-radius: 10px; 
-	-fx-background-color: white;
-	-fx-border-color: #FFDE00;
+	-fx-background-color: beam-white;
+	-fx-border-color: beam-yellow;
 	-fx-border-width: 3px; 
     -fx-border-radius: 0px 9px 9px 9px;
 }
 
 .menu-item {
 	-fx-padding: 2px 2px 2px 3px;
-	-fx-background-color: white;
+	-fx-background-color: beam-white;
 }
 
 .menu-item .label {
 	-fx-font: 13px "Consolas"; 
-	-fx-text-fill: #4CBF13;
-	-fx-background-color: white;
+	-fx-text-fill: beam-green;
+	-fx-background-color: beam-white;
 }
 
 .menu-item:focused .label {
-	-fx-background-color: white;
+	-fx-background-color: beam-white;
 }
 
 .console-menu-item .console-menu-item-point {
@@ -83,8 +91,8 @@
 }
 
 .console-main-area {
-    -fx-background-color: white; 
-    -fx-background-radius: 11px; 
+    -fx-background-color: beam-white; 
+    -fx-background-radius: 15px; 
     -fx-border-color: #FFDE00; 
     -fx-border-width: 4px; 
     -fx-border-radius: 10px;
@@ -92,18 +100,23 @@
 }
 
 .text-area{
-    -fx-background-color: #fff, #fff;
-    -fx-text-fill: #4CBF13;
+    -fx-background-radius: 0; 
+    -fx-background-color: beam-white;
+    -fx-text-fill: beam-green;
 }
 .text-area .content {
-    -fx-background-color: #fff;
+    -fx-background-radius: 0; 
+    -fx-background-color: beam-white;
 }
 .text-area:focused .content {
-    -fx-background-color: #fff;
+    -fx-background-radius: 0; 
+    -fx-background-color: beam-white;
 }
 
 .console-text-area {
-	-fx-background-color: white; 
+	-fx-background-color: beam-white;
+    -fx-background-radius: 0; 
+	-fx-border-radius: 0px;
     -fx-focus-color: transparent; 
     -fx-text-box-border: transparent; 
     -fx-faint-focus-color: transparent; 
@@ -112,15 +125,15 @@
 
 .text-area .scroll-pane .scroll-bar:horizontal .track,
 .text-area .scroll-pane .scroll-bar:vertical .track{
-	-fx-background-color: white;
-	-fx-border-color: white; 
+	-fx-background-color: beam-white;
+	-fx-border-color: beam-white; 
 	-fx-background-radius: 0em;
 	-fx-border-radius:2em;
 }
 
 .text-area .scroll-pane .scroll-bar:horizontal .increment-button ,
 .text-area .scroll-pane .scroll-bar:horizontal .decrement-button {
-    -fx-background-color: white;
+    -fx-background-color: beam-white;
 	-fx-background-radius: 0em;
 	-fx-padding:0 0 15 0;
 
@@ -128,15 +141,15 @@
 
 .text-area .scroll-pane .scroll-bar:vertical .increment-button ,
 .text-area .scroll-pane .scroll-bar:vertical .decrement-button {
-    -fx-background-color: white;
+    -fx-background-color: beam-white;
     -fx-background-radius: 10px;
     -fx-padding:0 15 0 0;
 }
 
 .text-area .scroll-pane .scroll-bar .increment-arrow,
 .text-area .scroll-pane .scroll-bar .decrement-arrow {
-	-fx-background-color: white;
-	-fx-border-color: white;
+	-fx-background-color: beam-white;
+	-fx-border-color: beam-white;
 	-fx-shape: " ";	
 	-fx-padding: 0px;
 }
@@ -144,9 +157,9 @@
 /* The main scrollbar **thumb** CSS class which we drag every time (movable) */
 .text-area .scroll-pane .scroll-bar:horizontal .thumb,
 .text-area .scroll-pane .scroll-bar:vertical .thumb {
-    -fx-background-color: white;
+    -fx-background-color: beam-white;
     -fx-background-radius: 10px;
-    -fx-border-color: #FFDE00;
+    -fx-border-color: beam-yellow;
     -fx-border-radius: 10px;
     -fx-border-width: 1.5px;
 }
@@ -159,10 +172,10 @@
 /* === CONTROL WINDOW STYLES === */
 	.control-window-outer-box {
 		-fx-background-insets: 10px; 
-		-fx-background-color: rgba(76, 191, 19);
+		-fx-background-color: beam-green;
 		-fx-background-radius: 10px; 
 		-fx-padding: 10px;
-		-fx-effect: dropshadow(one-pass-box, rgba(76, 191, 19), 10, 0.3, 0, 0);
+		-fx-effect: dropshadow(one-pass-box, beam-green, 10, 0.3, 0, 0);
 	}	
 	.control-window-inner-box {
 		-fx-padding: 10px;
@@ -173,9 +186,9 @@
 /* === BEAM BUTTON STYLES === */
 	.beam-button {
 		-fx-background-color: transparent;
-		-fx-text-fill: #4CBF13;
-		-fx-border-color: #FFDE00;
-		-fx-border-width: 2px;
+		-fx-text-fill: beam-green;
+		-fx-border-color: beam-yellow;
+		-fx-border-width: 3px;
 	}
 	.beam-ok-button {
 		-fx-background-radius: 11px; 
@@ -190,7 +203,7 @@
 		-fx-border-radius: 7px;
 	}
 	.beam-on-top-toggle-button-on {
-		-fx-background-color: #BEFFA6;
+		-fx-background-color: beam-green-fluo;
 	}	
 	.beam-on-top-toggle-button-off {
 		-fx-background-color: transparent
@@ -207,7 +220,7 @@
 }
 
 #screen-capture-control-pane {
-    -fx-background-color: white;
+    -fx-background-color: beam-white;
     -fx-border-insets: 10px;
     -fx-background-insets: 10px;
     -fx-background-radius: 12px;
@@ -224,26 +237,9 @@
     -fx-border-width: 4px;
 }
 
-/* #on-top-toggle-button-off {
-    -fx-background-color: transparent;
-    -fx-background-radius: 5px; 
-    -fx-border-radius: 7px;
-    -fx-border-color: #FFD500;
-    -fx-border-width: 2px;
-}
-
-#on-top-toggle-button-on {
-    -fx-background-color: #BEFFA6;
-    -fx-background-radius: 7px; 
-    -fx-background-insets: 2px;
-    -fx-border-radius: 7px;
-    -fx-border-color: #FFD500;
-    -fx-border-width: 2px;
-} */
-
 .label {
-    -fx-text-fill: #3D990F; 
-    -fx-font: 14px arial;
+    -fx-text-fill: beam-green; 
+    -fx-font: 14px "Consolas";
 }
 
 .list-view {
