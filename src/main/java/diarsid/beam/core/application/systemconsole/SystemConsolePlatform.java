@@ -34,7 +34,7 @@ class SystemConsolePlatform extends ConsolePlatform {
 
     @Override
     public void whenInitiatorAccepted() {
-        getPassport().setInitiatorId(super.initiator.identity());   
+        getPassport().setInitiatorId(super.initiator().identity());   
     }
 
     @Override

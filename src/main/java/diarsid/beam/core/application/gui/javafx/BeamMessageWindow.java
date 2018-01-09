@@ -87,8 +87,7 @@ public abstract class BeamMessageWindow extends BeamWindow {
     
     private void createOkButton(String text) {
         Button button = new Button(text);    
-        button.setId("ok-button");
-        button.getStyleClass().add("button");
+        button.getStyleClass().addAll("beam-button", "beam-ok-button");
         button.setMinWidth(100);
         button.setMinHeight(30);
         button.setOnMouseClicked((mouseEvent) -> {
@@ -112,17 +111,21 @@ public abstract class BeamMessageWindow extends BeamWindow {
         button.setMinSize(14, 14);
         button.setMaxSize(14, 14);
         button.setAlignment(Pos.CENTER_RIGHT);
+        button.getStyleClass().addAll(
+                "beam-button", "beam-on-top-toggle-button", "beam-on-top-toggle-button-on");
         
         button.setOnMouseClicked((mouseEvent) -> {
             Stage parentStage = this.parentStage();
             if ( parentStage.isAlwaysOnTop() ) {
                 parentStage.setAlwaysOnTop(false);
                 parentStage.toBack();
-                this.onTopToggleButton.setId("on-top-toggle-button-off");
+                button.getStyleClass().remove("beam-on-top-toggle-button-on");
+                button.getStyleClass().add("beam-on-top-toggle-button-off");
                 throwWindowOnTopAndBackPeriodicallyWithSecondsLatency(300);
             } else {
                 parentStage.setAlwaysOnTop(true);
-                this.onTopToggleButton.setId("on-top-toggle-button-on");
+                button.getStyleClass().remove("beam-on-top-toggle-button-off");
+                button.getStyleClass().add("beam-on-top-toggle-button-on");
                 stopWindowOnTopThrowing();                               
             }
         }); 

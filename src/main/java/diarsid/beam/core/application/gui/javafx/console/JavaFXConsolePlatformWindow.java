@@ -76,7 +76,6 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
     private final ConsoleSnippetFinder consoleSnippetFinder;
-    private final Runnable findSnippetInConsole;
     private final Runnable addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable;
     private final Runnable removeSnippetMenuItemFromConsole;
             
@@ -133,15 +132,18 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
             }
         });        
         
-        this.findSnippetInConsole = () -> {
+        this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable = () -> {
+            if ( super.isInteractionLasts() ) {
+                return;
+            }
+            
             this.snippet = this.consoleSnippetFinder
                     .in(this.consoleTextArea.getText())
                     .goToLineAt(this.consoleTextArea.getCaretPosition())
                     .defineLineSnippetType()
                     .composeSnippet()
                     .getSnippetAndReset();
-        };
-        this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable = () -> {
+
             if ( this.snippet.type().isReinvokable() ) {
                 this.snippetMenuItem.setText(this.snippet.reinvokationTextWithLengthLimit(25));
                 this.consoleTextAreaContextMenuItems.add(0, this.snippetMenuItem);
@@ -308,8 +310,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     private ContextMenu createContextMenu() {
         ContextMenu contextMenu = new ContextMenu();
         
-        contextMenu.addEventHandler(WINDOW_SHOWING, (windowEvent) -> {            
-            this.findSnippetInConsole.run();
+        contextMenu.addEventHandler(WINDOW_SHOWING, (windowEvent) -> {
             this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable.run();        
         });
         

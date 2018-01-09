@@ -16,12 +16,12 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
  */
 public abstract class ConsolePlatform {
     
-    protected final ConsoleIO io;
-    protected final ConsoleBlockingExecutor blockingExecutor;
-    protected final OuterIoEngineType platformOuterIoEngineType;           
-    protected final AtomicBoolean isInteractionLasts;   
-    protected final AtomicBoolean isWorking;
-    protected Initiator initiator;
+    private final ConsoleIO io;
+    private final ConsoleBlockingExecutor blockingExecutor;
+    private final OuterIoEngineType platformOuterIoEngineType;           
+    private final AtomicBoolean isInteractionLasts;   
+    private final AtomicBoolean isWorking;
+    private Initiator initiator;
     
     public ConsolePlatform(
             ConsoleIO consoleIo, 
@@ -46,8 +46,12 @@ public abstract class ConsolePlatform {
         return this.io;
     }
     
-    final boolean isInteractionLasts() {
+    protected final boolean isInteractionLasts() {
         return this.isInteractionLasts.get();
+    }
+    
+    protected Initiator initiator() {
+        return this.initiator;
     }
     
     final boolean isWorking() {
