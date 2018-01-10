@@ -13,7 +13,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
 
-import static java.lang.Runtime.getRuntime;
 import static java.util.Optional.empty;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -30,7 +29,6 @@ public class ConcurrencyUtil {
         EXECUTOR = new ScheduledThreadPoolExecutor(10);
         EXECUTOR.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         EXECUTOR.setRemoveOnCancelPolicy(false);
-        getRuntime().addShutdownHook(new Thread(() -> EXECUTOR.shutdown()));
     }
     
     private ConcurrencyUtil() {

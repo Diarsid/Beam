@@ -12,12 +12,10 @@ import java.util.concurrent.BlockingQueue;
 
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -32,7 +30,6 @@ import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.domain.entities.Picture;
 
-import static javafx.geometry.Insets.EMPTY;
 import static javafx.scene.control.OverrunStyle.ELLIPSIS;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -62,7 +59,9 @@ public class ScreenCapturerWindow implements Runnable {
     private boolean hasAwaiter;
 
     ScreenCapturerWindow(
-            ScreenCapturer screenCapturer, GuiJavaFXResources windowResources, BeamHiddenRoot beamHiddenRoot) {
+            ScreenCapturer screenCapturer, 
+            GuiJavaFXResources windowResources, 
+            BeamHiddenRoot beamHiddenRoot) {
         this.windowResources = windowResources;
         this.beamHiddenRoot = beamHiddenRoot;
         this.windowMover = new WindowMover();
@@ -109,6 +108,28 @@ public class ScreenCapturerWindow implements Runnable {
     }
     
     private void init() {        
+        this.createStage();        
+        this.createControlPaneLabel();        
+        this.createControlPane();
+        this.createScreenCapturePane();        
+        this.createManePaneAndScene();
+    }
+
+    private void createManePaneAndScene() {
+        VBox mainVBox = new VBox();
+        mainVBox.setStyle("-fx-background-color: transparent; ");
+        mainVBox.setAlignment(Pos.BOTTOM_RIGHT);
+        mainVBox.getChildren().addAll(this.controlPane, this.screenCapturePane);
+        
+        Scene scene = new Scene(mainVBox);
+        scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().add(this.windowResources.cssFilePath());
+        this.stage.setScene(scene);
+        this.stage.sizeToScene();
+        this.ready = true;
+    }
+
+    private void createStage() {
         this.stage = new Stage();
         this.stage.initStyle(StageStyle.TRANSPARENT);
         this.stage.setAlwaysOnTop(true);
@@ -127,24 +148,13 @@ public class ScreenCapturerWindow implements Runnable {
         
         this.windowMover.acceptStage(this.stage);
         this.windowResizer.acceptStage(this.stage);
-        
+    }
+
+    private void createControlPaneLabel() {
         this.controlPaneLabel = new Label();
         this.controlPaneLabel.setTextOverrun(ELLIPSIS);
+        this.controlPaneLabel.getStyleClass().add("screen-capture-control-pane-label");
         this.windowResizer.acceptLabel(this.controlPaneLabel);
-        this.controlPane = createControlPane(this.controlPaneLabel);
-        this.screenCapturePane = createScreenCapturePane();
-        
-        VBox mainVBox = new VBox();
-        mainVBox.setStyle("-fx-background-color: transparent; ");
-        mainVBox.setAlignment(Pos.BOTTOM_RIGHT);
-        mainVBox.getChildren().addAll(this.controlPane, this.screenCapturePane);
-        
-        Scene scene = new Scene(mainVBox);
-        scene.setFill(Color.TRANSPARENT);
-        scene.getStylesheets().add(this.windowResources.cssFilePath());
-        this.stage.setScene(scene);
-        this.stage.sizeToScene();
-        this.ready = true;
     }
     
     public ValueFlow<Picture> blockingGetCaptureFor(String pageName) {
@@ -182,57 +192,65 @@ public class ScreenCapturerWindow implements Runnable {
         }
     }
     
-    private Pane createControlPane(Label controlPaneLabel) {
-        HBox hBox = new HBox(15); 
+    private void createControlPane() {
+        HBox innerBox = new HBox(); 
         
-        this.windowMover.boundTo(hBox);
+        this.windowMover.boundTo(innerBox);
         
-        hBox.setSpacing(4);
-        DropShadow sh = new DropShadow();
-        sh.setHeight(sh.getHeight() * 1.35);
-        sh.setWidth(sh.getWidth() * 1.35);
-        sh.setSpread(sh.getSpread() * 1.35);
-        Color opacityBlack = new Color(0, 0, 0, 0.4);
-        sh.setColor(opacityBlack);
-        hBox.setEffect(sh);
-        hBox.setId("screen-capture-control-pane");
-        hBox.setPadding(new Insets(3));
+        innerBox.setSpacing(5);        
+        innerBox.getStyleClass().add("screen-capture-control-pane-inner-box");
+        
+        innerBox.getChildren().addAll(
+                this.createCaptureButton(), 
+                this.createCancelButton(), 
+                this.controlPaneLabel);
+        innerBox.setAlignment(Pos.CENTER_LEFT);
+        
+        VBox outerBox = new VBox();
+        outerBox.getStyleClass().add("screen-capture-control-pane-outer-box");        
+        outerBox.setEffect(this.windowResources.opacityBlackShadow());
+        outerBox.getChildren().add(innerBox);
+        
+        this.controlPane = outerBox;
+    }
 
-        Button captureButton = new Button();    
-        captureButton.setId("ok-button");
-        captureButton.getStyleClass().add("button");        
-        captureButton.setPadding(EMPTY);
-        captureButton.setMinWidth(20);
-        captureButton.setMinHeight(20);
-        captureButton.setMaxWidth(20);
-        captureButton.setMaxHeight(20);
-        captureButton.setOnAction((actionEvent) -> {
-            this.makeScreenCapture();
-        });
-        captureButton.setOnMouseExited((actionEvent) -> {
-            
-        });
-        captureButton.setOnMouseEntered((actionEvent) -> {
-            
-        });
+    private Button createCancelButton() {
+        Button cancelButton = new Button();
+        this.shapeScreenCapturePaneButton(cancelButton);
         
-        Button cancelButton = new Button();    
-        cancelButton.setId("ok-button");
-        cancelButton.getStyleClass().add("button");
-        cancelButton.setPadding(EMPTY);
-        cancelButton.setMinWidth(20);
-        cancelButton.setMinHeight(20);
-        cancelButton.setMaxWidth(20);
-        cancelButton.setMaxHeight(20);
         cancelButton.setOnAction((actionEvent) -> {
             this.cancelScreenCapture();
             this.close();
         });
         
-        hBox.getChildren().addAll(captureButton, cancelButton, controlPaneLabel);
-        hBox.setAlignment(Pos.CENTER_LEFT);
+        return cancelButton;
+    }
+
+    private Button createCaptureButton() {
+        Button captureButton = new Button();
+        this.shapeScreenCapturePaneButton(captureButton);
         
-        return hBox;
+        captureButton.setOnAction((actionEvent) -> {
+            this.makeScreenCapture();
+        });
+        
+        captureButton.setOnMouseExited((actionEvent) -> {
+            
+        });
+        
+        captureButton.setOnMouseEntered((actionEvent) -> {
+            
+        });
+        
+        return captureButton;
+    }
+    
+    private void shapeScreenCapturePaneButton(Button button) {
+        button.getStyleClass().addAll("beam-button", "screen-capture-control-pane-button");
+        button.setMinWidth(22);
+        button.setMinHeight(22);
+        button.setMaxWidth(22);
+        button.setMaxHeight(22);
     }
 
     private void cancelScreenCapture() {
@@ -268,12 +286,14 @@ public class ScreenCapturerWindow implements Runnable {
         return this.screenCapturer.captureRectangle(screen);
     }
     
-    private Pane createScreenCapturePane() {
+    private void createScreenCapturePane() {
         VBox screenCaptureBox = new VBox(15);
+        
         screenCaptureBox.setMinWidth(142);
         screenCaptureBox.setMinHeight(90);
         screenCaptureBox.setAlignment(Pos.TOP_CENTER);
         screenCaptureBox.setId("screen-capture-capture-pane");
+        
         this.windowResizer.acceptPane(screenCaptureBox);
         
         screenCaptureBox.setOnMousePressed((mouseEvent) -> {
@@ -284,7 +304,7 @@ public class ScreenCapturerWindow implements Runnable {
             this.windowResizer.mouseDragged(mouseEvent);
         });
         
-        return screenCaptureBox;
+        this.screenCapturePane = screenCaptureBox;
     }
     
 }

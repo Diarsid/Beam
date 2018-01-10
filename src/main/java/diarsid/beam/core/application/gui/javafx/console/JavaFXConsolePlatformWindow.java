@@ -38,6 +38,8 @@ import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.base.util.PointableCollection;
 
+import static java.lang.Runtime.getRuntime;
+
 import static javafx.geometry.Pos.CENTER_LEFT;
 import static javafx.geometry.Pos.TOP_CENTER;
 import static javafx.scene.input.KeyCode.DOWN;
@@ -62,6 +64,17 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
  */
 // TODO HIGH do not public
 public class JavaFXConsolePlatformWindow extends ConsolePlatform {
+    
+    private final static AtomicBoolean IS_APPLICATION_WORKING;
+    
+    static {
+        IS_APPLICATION_WORKING = new AtomicBoolean(true);
+        getRuntime().addShutdownHook(new Thread(() -> {
+            synchronized ( IS_APPLICATION_WORKING ) {
+                IS_APPLICATION_WORKING.set(false);
+            }
+        }));
+    }
     
     private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
@@ -580,7 +593,13 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
 
     @Override
     public void whenStopped() {
-        Platform.runLater(() -> this.hide());
+        Platform.runLater(() -> {
+            synchronized ( IS_APPLICATION_WORKING ) {
+                if ( IS_APPLICATION_WORKING.get() ) {
+                    this.hide();
+                } 
+            }    
+        });
     }
 
     @Override

@@ -30,13 +30,13 @@ import static diarsid.beam.core.application.gui.javafx.screencapturer.Restricted
 public class ScreenCapturerWindowResizer {
     
     private final int defaultWidth;
-    private final int defaultHeight;
+    private final int defaultHeight;    
+    private final double widthToHeightRatio;
+    private final double labelDefaultWidth;
     
     private Stage stage;
     private Pane pane;
     private Label label;
-    
-    private double widthToHeightRatio;
     private double initialMouseX;
     private double initialMouseY;
     private double initialPaneX;
@@ -51,6 +51,7 @@ public class ScreenCapturerWindowResizer {
         this.defaultWidth = defaultWidth;
         this.defaultHeight = defaultHeight;
         this.widthToHeightRatio = 110.0d / 80.0d;
+        this.labelDefaultWidth = 45.0;
     }
     
     void acceptStage(Stage stage) {
@@ -66,11 +67,11 @@ public class ScreenCapturerWindowResizer {
     
     void acceptLabel(Label label) {
         this.label = label;
-        this.label.setMinWidth(60);
+        this.label.setMinWidth(this.labelDefaultWidth);
     }
     
     void toDefaultSize() {
-        this.label.setPrefWidth(60);
+        this.label.setPrefWidth(this.labelDefaultWidth);
         this.pane.setPrefWidth(this.defaultWidth);
         this.pane.setPrefHeight(this.defaultHeight);        
         this.stage.sizeToScene();        
@@ -113,41 +114,41 @@ public class ScreenCapturerWindowResizer {
             case INCREASE : {
                 if ( deltaX > deltaY ) {
                     newWidth = virtualPaneWidth + deltaX;
-                    newHeight = newWidth * ( 1.0 / widthToHeightRatio );
+                    newHeight = newWidth * ( 1.0 / this.widthToHeightRatio );
                 } else {
                     newHeight = virtualPaneHeight + deltaY;
-                    newWidth = newHeight * widthToHeightRatio;
+                    newWidth = newHeight * this.widthToHeightRatio;
                 }   
                 break;
             }    
             case DECREASE : {
                 if ( deltaX < deltaY ) {
                     newWidth = virtualPaneWidth + deltaX;
-                    newHeight = newWidth * ( 1.0 / widthToHeightRatio );
+                    newHeight = newWidth * ( 1.0 / this.widthToHeightRatio );
                 } else {
                     newHeight = virtualPaneHeight + deltaY;
-                    newWidth = newHeight * widthToHeightRatio;
+                    newWidth = newHeight * this.widthToHeightRatio;
                 }   
                 break;
             }    
             case INCREASE_BY_X : {
                 newWidth = virtualPaneWidth + deltaX;
-                newHeight = newWidth * ( 1.0 / widthToHeightRatio );
+                newHeight = newWidth * ( 1.0 / this.widthToHeightRatio );
                 break;
             }    
             case INCREASE_BY_Y : {
                 newHeight = virtualPaneHeight + deltaY;
-                newWidth = newHeight * widthToHeightRatio;
+                newWidth = newHeight * this.widthToHeightRatio;
                 break;
             }    
             case DECREASE_BY_X : {
                 newWidth = virtualPaneWidth + deltaX;
-                newHeight = newWidth * ( 1.0 / widthToHeightRatio );
+                newHeight = newWidth * ( 1.0 / this.widthToHeightRatio );
                 break;
             }    
             case DECREASE_BY_Y : {
                 newHeight = virtualPaneHeight + deltaY;
-                newWidth = newHeight * widthToHeightRatio;
+                newWidth = newHeight * this.widthToHeightRatio;
                 break;
             }    
             default : {
@@ -161,8 +162,8 @@ public class ScreenCapturerWindowResizer {
         this.pane.setPrefWidth(newWidth + 32.0d);
         this.pane.setPrefHeight(newHeight + 10.0d);
         
-        if ( labelNewWidth < 60.0d ) {
-            labelNewWidth = 60.0d;
+        if ( labelNewWidth < this.labelDefaultWidth ) {
+            labelNewWidth = this.labelDefaultWidth;
         } 
         this.label.setPrefWidth(labelNewWidth);     
         this.label.autosize();

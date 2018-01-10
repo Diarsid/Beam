@@ -245,7 +245,13 @@ public class Console implements OuterIoEngine {
     @Override
     public void close() {
         this.consoleOperator.print("closing...");        
-        asyncDo(() -> this.consoleOperator.stop());
+        asyncDo(() -> {
+            try {
+                this.consoleOperator.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
