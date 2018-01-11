@@ -14,6 +14,7 @@ import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatc
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithDigitAndContains;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.noMatching;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.notContaining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.noRefining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBefore;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBeforeAndAfter;
@@ -95,7 +96,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
-                    .andNotContaining(" is one of ", "are you sure"),
+                    .and(notContaining(" is one of ", "are you sure")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             reinvocationTextFormat("open '%s'")), 
     NUMBERED_VARIANT (
@@ -108,7 +109,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingContainingEndingWith("> ", " is ", " ?")
-                    .andNotContaining(" is one of ", "are you sure"),
+                    .and(notContaining(" is one of ", "are you sure")),
             refiningByRemoveAllBeforeAndAfter(" is ", " ?"),
             reinvocationTextFormat("call '%s'")),
     

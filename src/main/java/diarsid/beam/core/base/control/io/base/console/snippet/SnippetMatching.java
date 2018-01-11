@@ -19,15 +19,21 @@ interface SnippetMatching {
     
     boolean matches(String line);
     
-    default SnippetMatching andNotContaining(String part) {
+    default SnippetMatching and(SnippetMatching other) {
         return (line) -> {
-            return ! containsIgnoreCase(line, part) && this.matches(line);
+            return this.matches(line) && other.matches(line);
         };
     }
     
-    default SnippetMatching andNotContaining(String... parts) {
+    static SnippetMatching notContaining(String part) {
         return (line) -> {
-            return ! containsIgnoreCaseAnyFragment(line, parts) && this.matches(line);
+            return ! containsIgnoreCase(line, part);
+        };
+    }
+    
+    static SnippetMatching notContaining(String... parts) {
+        return (line) -> {
+            return ! containsIgnoreCaseAnyFragment(line, parts);
         };
     }
     
