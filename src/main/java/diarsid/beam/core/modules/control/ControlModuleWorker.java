@@ -13,7 +13,7 @@ import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.IoModule;
 
-import static diarsid.beam.core.Beam.exitBeamCoreNow;
+import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.Logs.debug;
 
@@ -45,7 +45,7 @@ public class ControlModuleWorker implements ControlModule {
                     .getInnerIoEngine()
                     .ask(initiator, "are you sure?", this.exitHelp);
             if ( choice.isPositive() ) {
-                asyncDoIndependently("Beam exit Thread", () -> exitBeamCoreNow());
+                asyncDoIndependently("Beam exit Thread", () -> beamRuntime().exitBeamCoreNow());
             }
         }
     }

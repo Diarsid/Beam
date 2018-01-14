@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
 
@@ -29,6 +30,7 @@ public class ConcurrencyUtil {
         EXECUTOR = new ScheduledThreadPoolExecutor(10);
         EXECUTOR.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         EXECUTOR.setRemoveOnCancelPolicy(false);
+        EXECUTOR.setMaximumPoolSize(EXECUTOR.getCorePoolSize());
     }
     
     private ConcurrencyUtil() {
@@ -66,5 +68,12 @@ public class ConcurrencyUtil {
     
     public static void asyncDoIndependently(String threadName, Runnable runnable) {
         new Thread(runnable, threadName).start();
+    }
+    
+    public static void asyncDoPeriodically(
+            String name, Runnable runnable, int period, TimeUnit timeUnit) {
+        EXECUTOR.setCorePoolSize(EXECUTOR.getCorePoolSize() + 1);
+        EXECUTOR.setMaximumPoolSize(EXECUTOR.getMaximumPoolSize() + 1);
+        EXECUTOR.scheduleAtFixedRate(runnable, period, period, timeUnit);
     }
 }

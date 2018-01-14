@@ -27,7 +27,7 @@ import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 
-import static diarsid.beam.core.Beam.exitBeamCoreNow;
+import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
@@ -307,8 +307,9 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
                             .getInnerIoEngine()
                             .ask(initiator, "are you sure", this.exitHelp);
                     if ( choice.isPositive() ) {
-                        this.ioModule.onIoEngineClosingRequest(initiator);
-                        asyncDoIndependently("Beam exit Thread", () -> exitBeamCoreNow());
+                        asyncDoIndependently(
+                                "Beam exit Thread", 
+                                () -> beamRuntime().exitBeamCoreNow());
                     }                    
                     break;
                 }

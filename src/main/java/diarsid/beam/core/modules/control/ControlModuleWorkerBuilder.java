@@ -11,6 +11,7 @@ import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcesso
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
+import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -27,16 +28,19 @@ import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCo
 public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModule> {
     
     private final IoModule ioModule;
+    private final DataModule dataModule;
     private final ApplicationComponentsHolderModule appComponentsHolderModule;
     private final DomainKeeperModule domainModule;
     private final ExecutorModule executorModule;
     
     public ControlModuleWorkerBuilder(
             IoModule ioModule, 
+            DataModule dataModule,
             ApplicationComponentsHolderModule appComponentsHolderModule,
             DomainKeeperModule domainModule,
             ExecutorModule executorModule) {
         this.ioModule = ioModule;
+        this.dataModule = dataModule;
         this.appComponentsHolderModule = appComponentsHolderModule;
         this.domainModule = domainModule;
         this.executorModule = executorModule;
@@ -62,7 +66,7 @@ public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModul
         ConsolePlatform javaFxConsolePlatform = this.appComponentsHolderModule
                 .gui()
                 .interactionGui()
-                .guiConsolePlatformFor(consoleProcessor);
+                .guiConsolePlatformFor(this.dataModule, consoleProcessor);
         
         Console javaFxConsole = buildConsoleUsing(javaFxConsolePlatform);
         

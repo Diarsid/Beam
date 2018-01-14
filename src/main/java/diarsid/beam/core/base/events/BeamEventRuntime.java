@@ -17,7 +17,6 @@ import diarsid.beam.core.base.control.io.base.interaction.Callback;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEventPayload;
 
-import static java.lang.Thread.sleep;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
@@ -228,21 +227,5 @@ public class BeamEventRuntime {
         } finally {
             EVENT_AWAITS_LOCK.unlock();
         }        
-    }
-    
-    public static void main(String[] args) {
-        
-        subscribe(onEvent("some").withCallback((event) -> System.out.println(event + " subscription works")));
-        
-        asyncDo(() -> {
-            try {
-                sleep(3000);
-                fireAsync("some");
-            } catch (InterruptedException ex) {
-               
-            }
-        });
-        
-        awaitFor("some").thenDo(() -> System.out.println("event comes!"));
     }
 }

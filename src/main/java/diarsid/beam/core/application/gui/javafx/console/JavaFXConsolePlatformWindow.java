@@ -36,9 +36,7 @@ import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinder;
 import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 import diarsid.beam.core.base.util.MutableString;
-import diarsid.beam.core.base.util.PointableCollection;
-
-import static java.lang.Runtime.getRuntime;
+import diarsid.beam.core.modules.DataModule;
 
 import static javafx.geometry.Pos.CENTER_LEFT;
 import static javafx.geometry.Pos.TOP_CENTER;
@@ -65,17 +63,6 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 // TODO HIGH do not public
 public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     
-    private final static AtomicBoolean IS_APPLICATION_WORKING;
-    
-    static {
-        IS_APPLICATION_WORKING = new AtomicBoolean(true);
-        getRuntime().addShutdownHook(new Thread(() -> {
-            synchronized ( IS_APPLICATION_WORKING ) {
-                IS_APPLICATION_WORKING.set(false);
-            }
-        }));
-    }
-    
     private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
     private final ConsoleWindowResizer windowResizer;
@@ -84,8 +71,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     private final AtomicInteger consoleTextAreaInternalInputCounter;
     private final AtomicBoolean deleteCommitedTextAllowed;
     private final Object consoleTextAreaLock;
-    private final PointableCollection<String> consoleInputBuffer;
-    private final AtomicInteger consoleInputBufferCapacity;
+    private final ConsoleInputPersistentBuffer consoleInputBuffer;
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
     private final ConsoleSnippetFinder consoleSnippetFinder;
@@ -106,7 +92,8 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     JavaFXConsolePlatformWindow(
             GuiJavaFXResources javaFxResources, 
             ConsoleWindowBlockingIO consoleBlockingIo,
-            ConsoleBlockingExecutor blockingExecutor) {
+            ConsoleBlockingExecutor blockingExecutor,
+            ConsoleInputPersistentBuffer consoleInputPersistentBuffer) {
         super(consoleBlockingIo, blockingExecutor, IN_MACHINE);
         this.windowResources = javaFxResources;
         this.windowMover = new WindowMover();
@@ -116,9 +103,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
         this.consoleTextAreaInternalInputCounter = new AtomicInteger();
         this.deleteCommitedTextAllowed = new AtomicBoolean();
         this.consoleTextAreaLock = new Object();
-        this.consoleInputBufferCapacity = new AtomicInteger(50);
-        this.consoleInputBuffer = new PointableCollection<>(
-                this.consoleInputBufferCapacity.get(), "");
+        this.consoleInputBuffer = consoleInputPersistentBuffer;
         this.ready = false;
         this.isShown = new AtomicBoolean(false);
         
@@ -188,10 +173,14 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     }
     
     public static JavaFXConsolePlatformWindow createAndLaunchJavaFXConsolePlatform(
-            GuiJavaFXResources resources, ConsoleBlockingExecutor blockingExecutor) {
+            DataModule dataModule, 
+            GuiJavaFXResources resources, 
+            ConsoleBlockingExecutor blockingExecutor) {
         ConsoleWindowBlockingIO consoleIo = new ConsoleWindowBlockingIO();
+        ConsoleInputPersistentBuffer consoleInputPersistentBuffer = 
+                new ConsoleInputPersistentBuffer(50, dataModule.keyValues());
         JavaFXConsolePlatformWindow consoleWindow = new JavaFXConsolePlatformWindow(
-                resources, consoleIo, blockingExecutor);
+                resources, consoleIo, blockingExecutor, consoleInputPersistentBuffer);
         consoleWindow.launch();
         return consoleWindow;
     }
@@ -594,11 +583,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     @Override
     public void whenStopped() {
         Platform.runLater(() -> {
-            synchronized ( IS_APPLICATION_WORKING ) {
-                if ( IS_APPLICATION_WORKING.get() ) {
-                    this.hide();
-                } 
-            }    
+            this.hide(); 
         });
     }
 

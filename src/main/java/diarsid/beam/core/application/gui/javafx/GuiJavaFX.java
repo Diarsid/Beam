@@ -21,6 +21,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.domain.entities.Task;
+import diarsid.beam.core.modules.DataModule;
 
 import static java.util.Objects.nonNull;
 
@@ -123,13 +124,14 @@ public class GuiJavaFX
     }
 
     @Override
-    public ConsolePlatform guiConsolePlatformFor(ConsoleBlockingExecutor blockingExecutor) {
+    public ConsolePlatform guiConsolePlatformFor(
+            DataModule dataModule, ConsoleBlockingExecutor blockingExecutor) {
         synchronized ( this ) {
             if ( nonNull(this.consoleWindow) ) {
                 return this.consoleWindow;
             } else {
                 this.consoleWindow = createAndLaunchJavaFXConsolePlatform(
-                        this.guiResources, blockingExecutor);
+                        dataModule, this.guiResources, blockingExecutor);
                 this.beamControlWindow.setConsoleWindow(this.consoleWindow);
                 return this.consoleWindow;
             }

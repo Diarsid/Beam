@@ -8,11 +8,18 @@ package diarsid.beam.core.base.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
+
+import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
+
 /**
  *
  * @author Diarsid
  */
 public class PointableCollection <T> {
+    
+    private final static String SEPARATOR = "::";
     
     private final int capacity;
     private final T defaultIfEmpty;
@@ -26,8 +33,26 @@ public class PointableCollection <T> {
         this.pointer = -1;
     }
     
+    public PointableCollection(int capacity, T defaultIfEmpty, List<T> initial) {
+        this.capacity = capacity;
+        this.defaultIfEmpty = defaultIfEmpty;
+        this.list = new ArrayList<>(initial);
+        if ( this.capacity < initial.size() ) {
+            shrink(this.list, this.capacity);
+        }
+        this.pointer = -1;
+    }
+    
+    public static List<String> parseListFromStringifiedPointableCollection(String stringified) {
+        return asList(stringified.split("::"));
+    }
+    
     public boolean contains(T t) {
         return this.list.contains(t);
+    }
+    
+    public int capacity() {
+        return this.capacity;
     }
     
     public int size() {
@@ -84,5 +109,16 @@ public class PointableCollection <T> {
             this.list.add(0, t);
             this.pointer = -1;            
         }
+    }
+    
+    public void addAll(List<T> listT) {
+        this.list.addAll(listT);
+    }
+    
+    public String stringify() {
+        return this.list
+                .stream()
+                .map(obj -> obj.toString())
+                .collect(joining(SEPARATOR));
     }
 }

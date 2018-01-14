@@ -6,7 +6,6 @@ package diarsid.beam.core;
 
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.util.Logs;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -31,9 +30,15 @@ import static diarsid.beam.core.base.util.Logs.logError;
 
 public class Beam {
     
-    private static final Initiator SYSTEM_INITIATOR = new Initiator(MAX_VALUE, IN_MACHINE);
+    private final static String CORE_CONTAINER; 
+    private final static Initiator SYSTEM_INITIATOR;
+    private final static BeamRuntime BEAM_RUNTIME;
     
-    public final static String CORE_CONTAINER = "Beam.core";        
+    static {
+        CORE_CONTAINER = "Beam.core"; 
+        SYSTEM_INITIATOR = new Initiator(MAX_VALUE, IN_MACHINE);
+        BEAM_RUNTIME = new BeamRuntime();
+    }
     
     private Beam() {
     }    
@@ -43,11 +48,10 @@ public class Beam {
             log(Beam.class, "start Beam.core");
             Configuration configuration = configuration();
             initApplication(configuration);
-            setJVMShutdownHook(configuration);
+            stopModulesBeforeExit(configuration);
             log(Beam.class, "Beam.core started successfully");
         } catch (Exception e) {
             logError(Beam.class, e);
-            exitBeamCoreNow();
         }
     }
     
@@ -57,8 +61,8 @@ public class Beam {
                 .init();
     }
     
-    private static void setJVMShutdownHook(Configuration configuration) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+    private static void stopModulesBeforeExit(Configuration configuration) {
+        BEAM_RUNTIME.doBeforeExit(() -> {
             Container container = GemInjector.getContainer(CORE_CONTAINER);
             container.getModule(IoModule.class).stopModule();
             if ( configuration.asBoolean("rmi.core.active") ) {
@@ -69,15 +73,14 @@ public class Beam {
             container.getModule(DataModule.class).stopModule();
             container.getModule(WebModule.class).stopModule();
             log(Beam.class, "JVM shutdown: Beam.core modules stopped");
-        }));        
+        });
     }
     
     public static Initiator systemInitiator() {
         return SYSTEM_INITIATOR;
     }
     
-    public static void exitBeamCoreNow() {
-        Logs.log(Beam.class, "stop Beam.core");
-        System.exit(0);
+    public static BeamRuntime beamRuntime() {
+        return BEAM_RUNTIME;
     }
 }

@@ -9,7 +9,7 @@ package diarsid.beam.core.application.gui.javafx;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import static diarsid.beam.core.Beam.exitBeamCoreNow;
+import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
@@ -64,7 +64,7 @@ public class WindowManager {
     
     private void checkForExit() {
         if ( this.exitAfterAllWindowsClosed && this.windowPositionManager.hasNoActiveWindows() ) {
-            exitBeamCoreNow();
+            beamRuntime().exitBeamCoreNow();
         }
     }
     
