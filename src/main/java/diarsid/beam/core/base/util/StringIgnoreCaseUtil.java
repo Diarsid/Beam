@@ -77,11 +77,19 @@ public class StringIgnoreCaseUtil {
     }
     
     public static boolean containsIgnoreCase(String whereToSearch, String searched) {
-        if ( isNull(searched) || isNull(whereToSearch) ) {
+        if ( isNull(searched) || isNull(whereToSearch) || searched.isEmpty() ) {
             return false;
         } else {
             return lower(whereToSearch).contains(lower(searched));
         }        
+    }
+    
+    public static boolean startsIngoreCase(String whereToSearch, String start) {
+        if ( isNull(whereToSearch) || isNull(start) || start.isEmpty() ) {
+            return false;
+        } else {
+            return lower(whereToSearch).startsWith(lower(start));
+        }
     }
     
     public static boolean containsWordInIgnoreCase(
@@ -121,6 +129,14 @@ public class StringIgnoreCaseUtil {
         return searchedSnippets
                 .stream()
                 .filter(snippet -> containsIgnoreCase(whereToSearch, snippet))
+                .findFirst()
+                .isPresent();
+    }
+    
+    public static boolean startsWithIgnoreCaseAnyFragment(
+            String whereToSearch, String... searchedStarts) {
+        return stream(searchedStarts)
+                .filter(starting -> startsIngoreCase(whereToSearch, starting))
                 .findFirst()
                 .isPresent();
     }

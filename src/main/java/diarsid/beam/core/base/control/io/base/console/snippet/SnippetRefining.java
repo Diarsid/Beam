@@ -16,9 +16,34 @@ interface SnippetRefining {
     
     String applyTo(String line);
     
+    default SnippetRefining and(SnippetRefining other) {
+        return (line) -> {
+            return other.applyTo(this.applyTo(line));
+        };
+    }
+    
     static SnippetRefining refiningByRemoveStart(String start) {
         return (line) -> {
             return line.trim().substring(start.length());
+        };
+    }
+    
+    static SnippetRefining refiningByRemoveAnyStarts(String... starts) {
+        return (line) -> {
+            line = line.trim();
+            for (String start : starts) {
+                if ( line.startsWith(start) ) {
+                    line = line.substring(start.length());
+                    break;
+                }
+            }
+            return line;
+        };
+    }
+    
+    static SnippetRefining refiningByTrim() {
+        return (line) -> {
+            return line.trim();
         };
     }
     

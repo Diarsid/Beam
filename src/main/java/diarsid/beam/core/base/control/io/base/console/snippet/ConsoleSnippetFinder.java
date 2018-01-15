@@ -6,11 +6,19 @@
 package diarsid.beam.core.base.control.io.base.console.snippet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Collections.unmodifiableMap;
 
+import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_FILE;
+import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_FOLDER;
+import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LARGE;
+import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.removeFolderSign;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.EMPTY;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.LINE_FOUND;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.LINE_NOT_FOUND;
@@ -19,10 +27,6 @@ import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnip
 import static diarsid.beam.core.base.control.io.base.console.snippet.Snippet.unknownSnippet;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.UNKNOWN;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.defineSnippetTypeOf;
-import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_FILE;
-import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_FOLDER;
-import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LARGE;
-import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.removeFolderSign;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isYes;
 import static diarsid.beam.core.base.util.CollectionsUtils.removeLastFrom;
 import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
@@ -32,6 +36,7 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
 import static diarsid.beam.core.base.util.StringUtils.indexOfAny;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringUtils.splitToLines;
+import static diarsid.beam.core.base.util.TextUtil.indexOfFirstNonSpaceIn;
 import static diarsid.beam.core.base.util.TextUtil.lineAtCaret;
 
 /**
@@ -39,6 +44,19 @@ import static diarsid.beam.core.base.util.TextUtil.lineAtCaret;
  * @author Diarsid
  */
 public class ConsoleSnippetFinder {
+    
+    private final static Map<String, String> ACTIONS_BY_ENTITY_CHAPTER_HEADERS;
+    
+    static {
+        Map<String, String> map  = new HashMap<>();
+        map.put("Locations:", "open");
+        map.put("Batches:", "call");
+        map.put("WebPages:", "browse");
+        map.put("Programs:", "run");
+        
+        ACTIONS_BY_ENTITY_CHAPTER_HEADERS = unmodifiableMap(map);
+        
+    }
         
     private ConsoleSnippetFinderState state;
     private String text;
@@ -48,6 +66,15 @@ public class ConsoleSnippetFinder {
     private Snippet snippet;
 
     public ConsoleSnippetFinder() {
+    }
+    
+    private static Optional<String> getActionByHeader(String entityChapterHeader) {
+        return ACTIONS_BY_ENTITY_CHAPTER_HEADERS
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().contains(entityChapterHeader))
+                .findFirst()
+                .map(entry -> entry.getValue());
     }
     
     public ConsoleSnippetFinder in(String text) {
@@ -89,6 +116,10 @@ public class ConsoleSnippetFinder {
                 this.composeSnippetWithoutTraverse();
                 break;
             }    
+            case TRAVERSE_TO_FIRST_NODE : {
+                this.composeSnipperWithTraverstToFirstNode();
+                break;
+            }
             case TRAVERSE_TO_ROOT_DIRECTLY : {
                 this.composeSnippetWithTraversingDirectly();
                 break;
@@ -111,6 +142,45 @@ public class ConsoleSnippetFinder {
     private void composeSnippetSimply() {
         this.snippet = new Snippet(
                 this.snippetType, this.snippetType.lineToSnippet(this.lineAtCaret));
+    }
+    
+    private void composeSnipperWithTraverstToFirstNode() {
+        int commandStart = this.text.lastIndexOf("Beam > ", this.caret) + "Beam > ".length();
+        int commandEnd = this.text.indexOf('\n', commandStart);
+        
+        String snippetLine = this.snippetType.lineToSnippet(this.lineAtCaret); 
+        
+        String commandSpan = this.text.substring(commandEnd, this.caret);
+        String entityChapterHeader = "";
+        int initialIndentLevel = indexOfFirstNonSpaceIn(this.lineAtCaret);
+        ListIterator<String> linesIterator = this.linesIteratorFor(commandSpan);
+        
+        String line;
+        int lineIndentLevel;
+        
+        listedEntitiesWalking: while ( linesIterator.hasPrevious() ) {            
+            line = linesIterator.previous();
+            
+            lineIndentLevel = indexOfFirstNonSpaceIn(line);
+            if ( lineIndentLevel == -1 ) {
+                this.snippetType = UNKNOWN;
+                break listedEntitiesWalking;
+            } 
+            
+            if ( lineIndentLevel < initialIndentLevel ) {
+                entityChapterHeader = line.trim();
+                break listedEntitiesWalking;
+            }
+        }    
+        
+        if ( nonEmpty(entityChapterHeader) ) {
+            Optional<String> action = getActionByHeader(entityChapterHeader);
+            if ( action.isPresent() ) {
+                snippetLine = format("%s %s", action.get(), snippetLine);
+            }
+        }
+        
+        this.snippet = new Snippet(this.snippetType, snippetLine);
     }
     
     private void composeSnippetWithTraversingDirectly() {

@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.util;
 
+import static java.util.Objects.isNull;
+
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
 
 /**
@@ -56,5 +58,18 @@ public class TextUtil {
                             target.length());
         }
         return target;
+    }
+    
+    public static int indexOfFirstNonSpaceIn(String target) {
+        if ( isNull(target) || target.isEmpty() ) {
+            return -1;
+        }
+        
+        for (int i = 0; i < target.length(); i++) {
+            if ( target.charAt(i) != ' ' ) {
+                return i;
+            }            
+        }
+        return -1;
     }
 }

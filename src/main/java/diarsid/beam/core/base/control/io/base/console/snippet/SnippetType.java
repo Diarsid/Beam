@@ -9,23 +9,29 @@ import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByContaining;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotContaining;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotEndingWith;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotStartingWith;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotStartingWithDigit;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingContainingEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithDigitAndContains;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.noMatching;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.notContaining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.noRefining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBefore;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBeforeAndAfter;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAnyStarts;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStart;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartAndEndIfPresent;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartingDigitsAnd;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByTrim;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetReinvocationTextFormat.noFormat;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetReinvocationTextFormat.reinvocationTextFormat;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.Reinvokability.NON_REINVOKABLE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.Reinvokability.REINVOKABLE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.NO_TRAVERSE;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_FIRST_NODE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_ROOT_DIRECTLY;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_ROOT_HIERARCHICALLY;
 
@@ -90,14 +96,23 @@ public enum SnippetType {
             NO_TRAVERSE,
             matchesByStartingWithDigitAndContains(") "),
             refiningByRemoveStartingDigitsAnd(") "),
-            reinvocationTextFormat("browse %s")
-            ),
+            reinvocationTextFormat("browse %s")),
+    LISTED_ENTITY (
+            REINVOKABLE,
+            TRAVERSE_TO_FIRST_NODE,
+            matchesByNotStartingWith("> ", "- ", "[_] ", "Beam > ")
+                    .and(matchesByNotContaining(" -> ", " is one of ", "are you sure"))
+                    .and(matchesByNotEndingWith(" ?"))
+                    .and(matchesByNotStartingWithDigit()),
+            refiningByTrim(),
+            noFormat()),
     SINGLE_VARIANT (
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
-                    .and(notContaining(" is one of ", "are you sure")),
-            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
+                    .and(matchesByNotContaining(" is one of ", "are you sure")),
+            refiningByRemoveAllBeforeAndAfter("> ", " ?")
+                    .and(refiningByRemoveAnyStarts("open ", "call ", "browse ", "run ")),
             reinvocationTextFormat("open '%s'")), 
     NUMBERED_VARIANT (
             REINVOKABLE, 
@@ -109,7 +124,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingContainingEndingWith("> ", " is ", " ?")
-                    .and(notContaining(" is one of ", "are you sure")),
+                    .and(matchesByNotContaining(" is one of ", "are you sure")),
             refiningByRemoveAllBeforeAndAfter(" is ", " ?"),
             reinvocationTextFormat("call '%s'")),
     
@@ -146,8 +161,9 @@ public enum SnippetType {
         NON_REINVOKABLE
     }
     
-    public static enum TraverseMode {
+    static enum TraverseMode {
         NO_TRAVERSE,
+        TRAVERSE_TO_FIRST_NODE,
         TRAVERSE_TO_ROOT_DIRECTLY,
         TRAVERSE_TO_ROOT_HIERARCHICALLY
     }
@@ -190,19 +206,19 @@ public enum SnippetType {
         return this.reinvokability.equals(NON_REINVOKABLE);
     }
     
-    public TraverseMode traverseMode() {
+    TraverseMode traverseMode() {
         return this.traverseMode;
     }
     
-    public SnippetReinvocationTextFormat reinvokationTextFormat() {
+    SnippetReinvocationTextFormat reinvokationTextFormat() {
         return this.reinvokationTextFormat;
     }
     
-    public String lineToSnippet(String line) {
+    String lineToSnippet(String line) {
         return this.refining.applyTo(line);
     }
     
-    public static SnippetType defineSnippetTypeOf(String line) {        
+    static SnippetType defineSnippetTypeOf(String line) {        
         return stream(values())
                 .filter(type -> type.matching.matches(line))
                 .findFirst()

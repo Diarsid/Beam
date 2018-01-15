@@ -9,6 +9,8 @@ import static java.lang.Character.isDigit;
 
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsIngoreCase;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsWithIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -25,13 +27,13 @@ interface SnippetMatching {
         };
     }
     
-    static SnippetMatching notContaining(String part) {
+    static SnippetMatching matchesByNotContaining(String part) {
         return (line) -> {
             return ! containsIgnoreCase(line, part);
         };
     }
     
-    static SnippetMatching notContaining(String... parts) {
+    static SnippetMatching matchesByNotContaining(String... parts) {
         return (line) -> {
             return ! containsIgnoreCaseAnyFragment(line, parts);
         };
@@ -43,7 +45,19 @@ interface SnippetMatching {
     
     static SnippetMatching matchesByStartingWith(String start) {
         return (line) -> {
-            return lower(line).trim().startsWith(lower(start));
+            return startsIngoreCase(line.trim(), start);
+        };
+    }
+    
+    static SnippetMatching matchesByNotStartingWith(String... starts) {
+        return (line) -> {
+            return ! startsWithIgnoreCaseAnyFragment(line.trim(), starts);
+        };
+    }
+    
+    static SnippetMatching matchesByNotEndingWith(String end) {
+        return (line) -> {
+            return ! lower(line.trim()).endsWith(lower(end));
         };
     }
     
@@ -59,6 +73,12 @@ interface SnippetMatching {
             return 
                     isDigit(lowerLine.charAt(0)) &&
                     lowerLine.contains(part);
+        };
+    }
+    
+    static SnippetMatching matchesByNotStartingWithDigit() {
+        return (line) -> {
+            return ! isDigit(line.trim().charAt(0));
         };
     }
     
