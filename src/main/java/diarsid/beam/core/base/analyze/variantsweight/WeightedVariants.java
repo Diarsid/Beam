@@ -57,6 +57,20 @@ public class WeightedVariants implements Serializable {
         }
     }
     
+    public void setTraversingToPositionBefore(int variantIndex) {
+        if ( variantIndex > -1 ) {
+            variantIndex--; // adjust for subsequent .next() call
+        }
+        this.currentVariantIndex = variantIndex;
+        if ( nonNull(this.currentSimilarVariants) ) {
+            this.currentSimilarVariants.clear();
+        }
+    } 
+    
+    public int currentTraverseIndex() {
+        return this.currentVariantIndex;
+    }
+    
     public boolean isEmpty() {
         return this.variants.isEmpty();
     }

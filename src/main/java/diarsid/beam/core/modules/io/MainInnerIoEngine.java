@@ -122,6 +122,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                         } else {
                             ioEngine.report(help.asInfo());
                         }
+                        variants.setTraversingToPositionBefore(answer.index());
                         answer = ioEngine.resolve(variants);
                     }
                     return answer;        

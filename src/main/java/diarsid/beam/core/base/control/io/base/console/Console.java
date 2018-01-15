@@ -26,6 +26,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.helpRequestAnswer;
+import static diarsid.beam.core.base.control.io.base.interaction.Answers.helpRequestAnswerFor;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
@@ -163,7 +164,7 @@ public class Console implements OuterIoEngine {
                         return variantsDontContainSatisfiableAnswer();
                     }
                     case HELP_REQUEST : {
-                        return helpRequestAnswer();
+                        return helpRequestAnswerFor(variants.currentTraverseIndex());
                     }
                     default : {
                         continue variantsChoosing;
@@ -184,7 +185,7 @@ public class Console implements OuterIoEngine {
                             continue similarVariantsChoosing;
                         }
                     } else if ( isHelpRequest(line) ) {
-                        return helpRequestAnswer();
+                        return helpRequestAnswerFor(variants.current().index());
                     } else {
                         if ( isNo(line) ) {
                             continue variantsChoosing;

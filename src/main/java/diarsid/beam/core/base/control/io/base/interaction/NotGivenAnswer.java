@@ -10,7 +10,7 @@ abstract class NotGivenAnswer implements Answer {
     
     static final NotGivenAnswer UNSATISFIED_ANSWER;
     static final NotGivenAnswer REJECTED_ANSWER;
-    static final NotGivenAnswer HELP_REQUEST_ANSWER;
+    static final NotGivenAnswer HELP_REQUEST_ANSWER_WITHOU_INDEX;
     
     static {
         UNSATISFIED_ANSWER = new NotGivenAnswer() {
@@ -27,7 +27,7 @@ abstract class NotGivenAnswer implements Answer {
             }
         };
         
-        HELP_REQUEST_ANSWER = new NotGivenAnswer() {
+        HELP_REQUEST_ANSWER_WITHOU_INDEX = new NotGivenAnswer() {
             @Override
             public boolean isHelpRequest() {
                 return true;
