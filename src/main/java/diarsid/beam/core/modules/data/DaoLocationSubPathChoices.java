@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.data;
 import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 
@@ -27,4 +28,8 @@ public interface DaoLocationSubPathChoices {
             Initiator initiator, 
             String pattern, 
             WeightedVariants variants);
+    
+    VoidFlow remove(
+            Initiator initiator, 
+            LocationSubPath subPath);
 }

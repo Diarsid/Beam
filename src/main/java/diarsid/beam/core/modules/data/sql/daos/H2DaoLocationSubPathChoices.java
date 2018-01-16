@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
@@ -19,6 +20,8 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
@@ -116,6 +119,41 @@ class H2DaoLocationSubPathChoices
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
             // TODO LOW
             return Optional.empty();
+        }
+    }
+    
+    @Override
+    public VoidFlow remove(Initiator initiator, LocationSubPath subPath) {
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            boolean exist = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT pattern " +
+                            "FROM subpath_choices " +
+                            "WHERE ( LOWER(pattern) IS ? )", 
+                            lower(subPath.pattern()));
+            
+            if ( ! exist ) {
+                return voidFlowCompleted();
+            }
+            
+            int modified = transact
+                    .doUpdateVarargParams(
+                            "DELETE " +
+                            "FROM subpath_choices " +
+                            "WHERE ( LOWER(pattern) IS ? )", 
+                            lower(subPath.pattern()));
+            
+            if ( modified == 1 ) {
+                return voidFlowCompleted();
+            } else {
+                transact.rollbackAndProceed();
+                return voidFlowFail("sub_path removing error: " + modified + " rows modified!");
+            }
+            
+        } catch (TransactionHandledException|TransactionHandledSQLException e) {
+            // TODO LOW
+            return voidFlowFail(e.getMessage());
         }
     }
     

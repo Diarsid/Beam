@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -23,8 +24,10 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.variantIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.toVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -71,6 +74,13 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
                 initiator, subPath.variantDisplayName(), this.getOneSubPathHelp);
         if ( choice.isPositive() ) {
             return valueFlowCompletedWith(subPath);
+        } else if ( choice.isNegative() ) {
+            VoidFlow removeFlow = this.daoSubPathChoices.remove(initiator, subPath);
+            if ( removeFlow.result().is(COMPLETE) ) {
+                return this.findLocationSubPath(initiator, subPath.pattern());
+            } else {
+                return valueFlowFail(removeFlow.message());
+            }            
         } else if ( choice.isRejected() ) {
             return valueFlowStopped();
         } else {

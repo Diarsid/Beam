@@ -41,6 +41,10 @@ public class LocationSubPath implements ConvertableToVariant {
         this.subPath = subPath;
     }    
     
+    public String pattern() {
+        return this.pattern;
+    }
+    
     public Location location() {
         return new Location(this.locationName, this.locationPath);
     }    

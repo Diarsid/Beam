@@ -110,7 +110,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
-                    .and(matchesByNotContaining(" is one of ", "are you sure")),
+                    .and(matchesByNotContaining(" is one of ", "are you sure", " is ")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?")
                     .and(refiningByRemoveAnyStarts("open ", "call ", "browse ", "run ")),
             reinvocationTextFormat("open '%s'")), 

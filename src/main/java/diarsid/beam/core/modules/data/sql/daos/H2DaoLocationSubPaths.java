@@ -49,6 +49,30 @@ class H2DaoLocationSubPaths
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
                             LocationSubPath.class, 
+                            "SELECT loc.loc_path, loc.loc_name, sub.subpath " +
+                            "FROM " +
+                            "   locations AS loc " +
+                            "   JOIN " +
+                            "   subpath_choices sub " +
+                            "   ON sub.loc_name = loc.loc_name " +
+                            "WHERE ( LOWER(sub.pattern) IS ? )", 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
+                            lower(pattern))
+                    .collect(toList());
+            
+            if ( nonEmpty(foundSubPaths) ) {
+                return foundSubPaths;
+            }
+            
+            foundSubPaths = transact
+                    .doQueryAndStreamVarargParams(
+                            LocationSubPath.class, 
                             "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
                             "FROM " +
                             "   commands AS com " +
@@ -73,6 +97,31 @@ class H2DaoLocationSubPaths
             }    
             
             List<String> criterias = patternToCharCriterias(pattern);
+            
+            foundSubPaths = transact
+                    .doQueryAndStreamVarargParams(
+                            LocationSubPath.class, 
+                            "SELECT loc.loc_path, loc.loc_name, sub.subpath " +
+                            "FROM " +
+                            "   locations AS loc " +
+                            "   JOIN " +
+                            "   subpath_choices sub " +
+                            "   ON sub.loc_name = loc.loc_name " +
+                            "WHERE " +
+                            "   ( " + multipleLowerLikeAnd("sub.pattern", criterias.size()) + " )", 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
+                            criterias)
+                    .collect(toList());
+            
+            if ( nonEmpty(foundSubPaths) ) {
+                return foundSubPaths;
+            }
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
