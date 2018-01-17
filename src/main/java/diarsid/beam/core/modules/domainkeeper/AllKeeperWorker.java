@@ -25,9 +25,10 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
+import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.TextUtil.shorterStringsFirstNotCountingSpaces;
 
 
 class AllKeeperWorker implements AllKeeper {
@@ -52,13 +53,13 @@ class AllKeeperWorker implements AllKeeper {
     private Optional<Message> collectAll(Initiator initiator, String argument) {
         List<Optional<Message>> messages = new ArrayList<>();
         
-        messages.add(this.collectTasks(initiator, argument));
-        messages.add(this.collectCommands(initiator, argument));
         messages.add(this.collectLocations(initiator, argument));
         messages.add(this.collectBatches(initiator, argument));
         messages.add(this.collectWebPages(initiator, argument));
         messages.add(this.collectPrograms(initiator, argument));
         messages.add(this.collectWebDirectories(initiator, argument));
+        messages.add(this.collectTasks(initiator, argument));
+        messages.add(this.collectCommands(initiator, argument));
         
         return joinToOptionalMessage(messages
                 .stream()
@@ -68,9 +69,44 @@ class AllKeeperWorker implements AllKeeper {
     }
     
     private Optional<Message> collectTasks(Initiator initiator, String argument) {
-        return tasksToOptionalMessageWithHeader("Tasks", this.data
+        List<Message> tasks = this.data
                 .tasks()
-                .findTasksByTextPattern(initiator, argument));
+                .findTasksByTextPattern(initiator, argument)
+                .stream()
+                .map(task -> task.toMessage())
+                .collect(toList());
+        
+        boolean shrinked = false;
+        int shrinkedQty = 0;
+        if ( tasks.size() > 4 ) {
+            shrinked = true;
+            int previousSize = tasks.size();
+            shrink(tasks, 4);
+            shrinkedQty = previousSize - tasks.size();
+        }
+        
+        List<String> tasksMessages = tasks
+                .stream()
+                .map(task -> task.allLines())
+                .peek(allLines -> allLines.add(allLines.size(), ""))
+                .flatMap(allLines -> allLines.stream())
+                .collect(toList());
+        
+        if ( shrinked ) {
+            tasksMessages.add(tasksMessages.size(), format("...%s more", shrinkedQty));
+        }
+        
+        return linesToOptionalMessageWithHeader("Tasks:", tasksMessages);
+    }
+    
+    private Optional<Message> stringifiedResultsToMessage(String header, List<String> messages) {
+        if ( messages.size() > 7 ) {
+            int previousSize = messages.size();
+            shrink(messages, 7);
+            messages.add(7, format("...%s more", previousSize - messages.size()));
+        } 
+        
+        return linesToOptionalMessageWithHeader(header, messages);
     }
     
     private Optional<Message> collectCommands(Initiator initiator, String argument) {
@@ -78,59 +114,65 @@ class AllKeeperWorker implements AllKeeper {
         commands.addAll(this.data.commands().searchInOriginalByPattern(initiator, argument));
         if ( commands.isEmpty() ) {
             commands.addAll(this.data.commands().searchInExtendedByPattern(initiator, argument));
-        }        
-        return linesToOptionalMessageWithHeader("Commands:", commands
+        }
+        return stringifiedResultsToMessage("Commands:", commands
                 .stream()
                 .filter(command -> nameIsSatisfiable(argument, command.bestArgument()))
                 .map(command -> command.toMessageString())
+                .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
     
     private Optional<Message> collectLocations(Initiator initiator, String argument) {
-        return linesToOptionalMessageWithHeader("Locations:", this.data
+        return stringifiedResultsToMessage("Locations:", this.data
                 .locations()
                 .getLocationsByNamePattern(initiator, argument)
                 .stream()
                 .filter(location -> entityIsSatisfiable(argument, location))
                 .map(location -> location.name())
+                .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
     
     private Optional<Message> collectBatches(Initiator initiator, String argument) {
-        return linesToOptionalMessageWithHeader("Batches:", this.data
+        return stringifiedResultsToMessage("Batches:", this.data
                 .batches()
                 .getBatchNamesByNamePattern(initiator, argument)
                 .stream()
                 .filter(batchName -> nameIsSatisfiable(argument, batchName))
+                .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
     
     private Optional<Message> collectWebPages(Initiator initiator, String argument) {
-        return linesToOptionalMessageWithHeader("WebPages:", this.data
+        return stringifiedResultsToMessage("WebPages:", this.data
                 .webPages()
                 .findByPattern(initiator, argument)
                 .stream()
                 .filter(page -> entityIsSatisfiable(argument, page))
                 .map(page -> page.name())
+                .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
     
     private Optional<Message> collectWebDirectories(Initiator initiator, String argument) {
-        return linesToOptionalMessageWithHeader("WebDirectories:", this.data
+        return stringifiedResultsToMessage("WebDirectories:", this.data
                 .webDirectories()
                 .findDirectoriesByPatternInAnyPlace(initiator, argument)
                 .stream()
                 .filter(webDir -> nameIsSatisfiable(argument, webDir.name()))
                 .map(webDir -> format("%s (%s)", webDir.name(), lower(webDir.place().name())))
+                .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
     
     private Optional<Message> collectPrograms(Initiator initiator, String argument) {
-        return linesToOptionalMessageWithHeader("Programs:", this.programs
+        return stringifiedResultsToMessage("Programs:", this.programs
                 .getProgramsByPattern(initiator, argument)
                 .stream()
                 .filter(program -> entityIsSatisfiable(argument, program))
                 .map(program -> program.name())
+                .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
 }

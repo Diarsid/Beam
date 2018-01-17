@@ -7,6 +7,8 @@ package diarsid.beam.core.base.control.io.base.console.snippet;
 
 import static java.lang.Character.isDigit;
 
+import static org.eclipse.jetty.util.StringUtil.startsWithIgnoreCase;
+
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsIngoreCase;
@@ -46,6 +48,12 @@ interface SnippetMatching {
     static SnippetMatching matchesByStartingWith(String start) {
         return (line) -> {
             return startsIngoreCase(line.trim(), start);
+        };
+    }
+    
+    static SnippetMatching matchesByNotStartingWith(String start) {
+        return (line) -> {
+            return ! startsWithIgnoreCase(line.trim(), start);
         };
     }
     

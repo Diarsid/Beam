@@ -100,7 +100,7 @@ public enum SnippetType {
     LISTED_ENTITY (
             REINVOKABLE,
             TRAVERSE_TO_FIRST_NODE,
-            matchesByNotStartingWith("> ", "- ", "[_] ", "Beam > ")
+            matchesByNotStartingWith("> ", "- ", "[_] ", "Beam > ", "...")
                     .and(matchesByNotContaining(" -> ", " is one of ", "are you sure"))
                     .and(matchesByNotEndingWith(" ?"))
                     .and(matchesByNotStartingWithDigit()),
@@ -110,7 +110,8 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
-                    .and(matchesByNotContaining(" is one of ", "are you sure", " is ")),
+                    .and(matchesByNotContaining(" is one of ", "are you sure", " is "))
+                    .and(matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?")
                     .and(refiningByRemoveAnyStarts("open ", "call ", "browse ", "run ")),
             reinvocationTextFormat("open '%s'")), 

@@ -5,15 +5,31 @@
  */
 package diarsid.beam.core.base.util;
 
+import java.util.Comparator;
+
 import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
+import static diarsid.beam.core.base.util.StringsLengthComparator.LONGER_STRINGS_FIRST;
+import static diarsid.beam.core.base.util.StringsLengthComparator.SHORTER_STRINGS_FIRST;
 
 /**
  *
  * @author Diarsid
  */
 public class TextUtil {
+    
+    private final static StringsLengthComparator SHORTER_FIRST_AND_SPACES;
+    private final static StringsLengthComparator SHORTER_FIRST;
+    private final static StringsLengthComparator LONGER_FIRST_AND_SPACES;
+    private final static StringsLengthComparator LONGER_FIRST;
+    
+    static {
+        SHORTER_FIRST_AND_SPACES = new StringsLengthComparator(SHORTER_STRINGS_FIRST, true);
+        SHORTER_FIRST = new StringsLengthComparator(SHORTER_STRINGS_FIRST, false);
+        LONGER_FIRST_AND_SPACES = new StringsLengthComparator(LONGER_STRINGS_FIRST, true);
+        LONGER_FIRST = new StringsLengthComparator(LONGER_STRINGS_FIRST, false);
+    }
     
     private TextUtil() {}
 
@@ -71,5 +87,9 @@ public class TextUtil {
             }            
         }
         return -1;
+    }
+    
+    public static Comparator<String> shorterStringsFirstNotCountingSpaces() {
+        return SHORTER_FIRST;
     }
 }
