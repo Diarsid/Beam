@@ -19,6 +19,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantTextLengthTooBad;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -66,6 +67,7 @@ class AnalyzeData {
                 ( this.best.nonClustered * 5.3 )
                 - ( this.best.clustered * 4.6 )
                 - ( this.best.clustersImportance )
+                + ( ratio(this.best.distanceBetweenClusters, this.variantText.length()) )
                 + ( this.best.missedImportance )
                 + ( lengthDelta )
                 + ( this.best.unsortedImportance ) );
@@ -78,7 +80,7 @@ class AnalyzeData {
     
     AnalyzePositionsData bestPositions() {
         return this.forwardAnalyze.clustersImportance + ( this.forwardAnalyze.positionsWeight * -1.0d ) - this.forwardAnalyze.unsorted
-                > this.reverseAnalyze.clustersImportance + ( this.reverseAnalyze.positionsWeight * -1.0d ) - this.reverseAnalyze.unsorted ? 
+                >= this.reverseAnalyze.clustersImportance + ( this.reverseAnalyze.positionsWeight * -1.0d ) - this.reverseAnalyze.unsorted ? 
                 this.forwardAnalyze : this.reverseAnalyze;
     }
 
@@ -98,6 +100,7 @@ class AnalyzeData {
         System.out.println(String.format("   %-20s %s", "direction", positions.direction));
         System.out.println(String.format("   %-20s %s", "clusters", positions.clustersQty));
         System.out.println(String.format("   %-20s %s", "clustered", positions.clustered));
+        System.out.println(String.format("   %-20s %s", "distance between clusters", positions.distanceBetweenClusters));
         System.out.println(String.format("   %-20s %s", "nonClustered", positions.nonClustered));
         System.out.println(String.format("   %-20s %s", "clustersImportance", positions.clustersImportance));
         System.out.println(String.format("   %-20s %s", "missed", positions.missed));

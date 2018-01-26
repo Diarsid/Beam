@@ -31,8 +31,8 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVarian
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
-import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -58,12 +58,6 @@ public class Analyze {
                 "Engines/java/path", 
                 "Books/Tech/Java/JavaFX", 
                 "Books/Tech/Java");
-    }
-    
-    private static List<String> toolsCase() {
-        return asList(
-                "LostFilm", 
-                "Dev/3__Tools");
     }
     
     private static List<String> facebookCase() {
@@ -106,6 +100,11 @@ public class Analyze {
                 "Projects/UkrPoshta/UkrPostAPI");
     }
     
+    private static List<String> ukrPostCase() {
+        return asList(            
+                "Projects/UkrPoshta");
+    }
+    
     private static List<String> javaSpecCase() {
         return asList(                
 //                "Projects/UkrPoshta/UkrPostAPI",
@@ -120,22 +119,12 @@ public class Analyze {
                 "Projects/Diarsid/NetBeans/Research.Java");
     }
     
-    private static List<String> beamProjectCase() {
-        return asList(
-//                "beam_project_home",
-//                "beam_project",
-//                "beam_home",
-//                "awesome java libs",
-//                "git>beam",
-//                "beam_project/src",
-//                "beam netpro",
-//                "abe_netpro",
-//                "babel_pro",
-//                "netbeans_projects", 
-                "beam_server_project"
-        );
+    private static List<String> visualCase() {
+        return asList(                
+                "JDK_public/lib/visualvm/platform/up",
+                "JDK_public/bin/jvisualvm.exe");
     }
-    
+            
     private static List<String> dailyReportsCases() {
         return arrayListOf("current_job/process/daily_reports_for_standup.txt");
     }
@@ -164,7 +153,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        weightStrings("projse", asList("Projects/Diarsid","Projects/Diarsid/NetBeans"));
+        weightStrings("pstoapi", ukrPostCase());
     }
 
     private static void weightAnalyzeCases() {
@@ -287,7 +276,7 @@ public class Analyze {
                 }
             }
             System.out.println();
-            System.out.println(" ==== ANALYZE : " + variant.text() + " ==== ");
+            System.out.println(format(" ==== ANALYZE : %s ( %s ) ==== ", variant.text(), pattern));
             variantsByText.put(lowerVariantText, variant);
             
             analyze.setVariantText(variant);

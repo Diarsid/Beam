@@ -68,12 +68,12 @@ class AnalyzeUtil {
             if ( unsorted == 0 ) {
                 return -( 
                         patternLength + 
-                        pow(unsortedRatioDependingOn(clustersImportance), 
+                        (unsortedRatioDependingOn(clustersImportance) * 
                                 onePointRatio(patternLength, patternInVariantLength)) );
             } else {
                 double ratio = ratio(patternLength, patternInVariantLength);
                 return unsorted * onePointRatio(unsorted, patternLength) *
-                        pow(unsortedRatioDependingOn(clustersImportance), 1.55 + ratio ) * 
+                        unsortedRatioDependingOn(clustersImportance) * ( 1.55 + ratio ) * 
                         (1.0 + ratio);
             } 
         } else {
@@ -143,6 +143,9 @@ class AnalyzeUtil {
     public static int countUsorted(int[] data) {
         int unsorted = 0;
         for (int i = 0; i < data.length - 1; i++) {
+            if ( data[i + 1] == -1 ) {
+                continue;
+            }
             if ( data[i] > data[i + 1] ) {
                 unsorted++;
             }

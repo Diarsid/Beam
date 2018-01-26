@@ -5,9 +5,6 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,8 +19,8 @@ import static java.util.stream.Collectors.joining;
 
 import static org.junit.Assert.fail;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 
 /**
  *
@@ -113,6 +110,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_beamProjectCase_short_beaporj() {
+        pattern = "beaporj";
+        
+        variants = asList(
+                "beam_project_home",
+                "beam_server_project");
+        
+        expected = asList(
+                "beam_project_home",
+                "beam_server_project");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_toolsCase_tols() {
         pattern = "tols";
         
@@ -121,6 +133,21 @@ public class AnalyzeTest {
                 "Dev/3__Tools");
         
         expected = asList( 
+                "Dev/3__Tools");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_TolkienCase_tol() {
+        pattern = "tol";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R", 
+                "Dev/3__Tools");
+        
+        expected = asList( 
+                "Books/Common/Tolkien_J.R.R",
                 "Dev/3__Tools");
         
         weightVariantsAndCheckMatching();
@@ -181,6 +208,53 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Common",
                 "Books/Common/Tolkien_J.R.R");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_ukrpsoapi() {
+        pattern = "ukrpsoapi";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_ukrpso() {
+        pattern = "ukrpso";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList( 
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_pstoapi() {
+        pattern = "pstoapi";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta/UkrPostAPI");
         
         weightVariantsAndCheckMatching();
     }
