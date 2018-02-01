@@ -36,6 +36,12 @@ public interface DaoCommands {
     List<InvocationCommand> searchInExtendedByPatternAndType(
             Initiator initiator, String pattern, CommandType type);
     
+    List<InvocationCommand> searchInExtendedByPatternGroupByExtended(
+            Initiator initiator, String pattern);
+    
+    List<InvocationCommand> searchInExtendedByPatternAndTypeGroupByExtended(
+            Initiator initiator, String pattern, CommandType type);
+    
     boolean save(
             Initiator initiator, InvocationCommand command);
     

@@ -20,6 +20,7 @@ import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.jdbc.transactions.RowConversion;
 
+import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.control.io.commands.Commands.restoreExecutorCommandFrom;
 import static diarsid.beam.core.base.control.io.commands.Commands.restoreInvocationCommandFrom;
 import static diarsid.beam.core.domain.entities.Tasks.restoreTask;
@@ -45,6 +46,17 @@ class RowToEntityConversions {
                 (String) row.get("bat_command_original")
         );
     };
+    
+    static final RowConversion<InvocationCommand> rowToNewInvocationCommandWithOriginal(
+            String original) {        
+        return (row) -> {
+            return createInvocationCommandFrom(
+                (String) row.get("com_type"), 
+                original,
+                (String) row.get("com_extended")
+            );
+        };    
+    }
     
     static final RowConversion<InvocationCommand> ROW_TO_INVOCATION_COMMAND = (row) -> {
         return restoreInvocationCommandFrom(

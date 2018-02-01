@@ -36,13 +36,13 @@ import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLi
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 
 class H2DaoBatches 
@@ -123,7 +123,7 @@ class H2DaoBatches
                 return found;
             }
             
-            String andOrCondition = multipleLowerGroupedLikesOr("bat_name", criterias.size());
+            String andOrCondition = multipleLowerGroupedLikesAndOr("bat_name", criterias.size());
             List<String> shuffleFound;
             
             found = transact

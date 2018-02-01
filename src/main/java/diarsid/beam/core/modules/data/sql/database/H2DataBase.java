@@ -10,11 +10,10 @@ import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataBaseType;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;
-import diarsid.jdbc.transactions.core.JdbcPreparedStatementSetter;
 import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
-import diarsid.jdbc.transactions.core.JdbcTransactionGuard;
 
 import static diarsid.beam.core.base.data.DataBaseType.SQL;
+import static diarsid.jdbc.transactions.core.JdbcTransactionFactoryBuilder.buildTransactionFactoryWith;
 
 
 public class H2DataBase implements DataBase {
@@ -26,10 +25,9 @@ public class H2DataBase implements DataBase {
                 "jdbc:h2:" + configuration.asString("data.store") + "/BeamData", 
                 configuration.asString("data.user"), 
                 configuration.asString("data.pass"));
-        JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(100500);
-        JdbcPreparedStatementSetter paramsSetter = new JdbcPreparedStatementSetter();
-        this.transactionFactory = new JdbcTransactionFactory(
-                source, transactionGuard, paramsSetter);
+        this.transactionFactory = buildTransactionFactoryWith(source)
+//                .withGuardWaitingOnSeconds(1)
+                .done();
         this.transactionFactory.logHistory(configuration.asBoolean("data.log"));
     }
 

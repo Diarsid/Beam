@@ -19,20 +19,27 @@ import diarsid.jdbc.transactions.JdbcConnectionsSource;
  */
 class H2JdbcConnectionsSource implements JdbcConnectionsSource {
     
-    private final JdbcConnectionPool conPool;
+    private final JdbcConnectionPool connectionsPool;
+    private final int connectionsQty;
     
     H2JdbcConnectionsSource(String url, String user, String pass) {
-        this.conPool = JdbcConnectionPool.create(url, user, pass);
-        this.conPool.setMaxConnections(5);
+        this.connectionsPool = JdbcConnectionPool.create(url, user, pass);
+        this.connectionsQty = 5;
+        this.connectionsPool.setMaxConnections(this.connectionsQty);
     }
 
     @Override
     public Connection getConnection() throws SQLException {
-        return this.conPool.getConnection();
+        return this.connectionsPool.getConnection();
     }
 
     @Override
     public void closeSource() {
-        this.conPool.dispose();
+        this.connectionsPool.dispose();
+    }
+
+    @Override
+    public int totalConnectionsQuantity() {
+        return this.connectionsQty;
     }
 }

@@ -19,6 +19,7 @@ public enum CommandOperationType {
     KEEPER_FIND_ENTITY,
     KEEPER_OTHER_OPERATION,
     EXECUTOR_OPERATION,
+    EXECUTOR_INVOCATION,
     CORE_OPERATION,
     OTHER;
     

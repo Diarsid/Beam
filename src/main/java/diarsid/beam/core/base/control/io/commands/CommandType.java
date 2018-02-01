@@ -6,6 +6,7 @@
 package diarsid.beam.core.base.control.io.commands;
 
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.CORE_OPERATION;
+import static diarsid.beam.core.base.control.io.commands.CommandOperationType.EXECUTOR_INVOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.EXECUTOR_OPERATION;
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_CREATE_ENTITY;
 import static diarsid.beam.core.base.control.io.commands.CommandOperationType.KEEPER_EDIT_ENTITY;
@@ -20,12 +21,13 @@ import static diarsid.beam.core.base.control.io.commands.CommandOperationType.OT
  */
 public enum CommandType {    
     
-    OPEN_LOCATION (EXECUTOR_OPERATION),
-    OPEN_LOCATION_TARGET (EXECUTOR_OPERATION),    
-    RUN_PROGRAM (EXECUTOR_OPERATION),
-    CALL_BATCH (EXECUTOR_OPERATION),
+    OPEN_LOCATION (EXECUTOR_INVOCATION),
+    OPEN_LOCATION_TARGET (EXECUTOR_INVOCATION),    
+    RUN_PROGRAM (EXECUTOR_INVOCATION),
+    CALL_BATCH (EXECUTOR_INVOCATION),
+    BROWSE_WEBPAGE (EXECUTOR_INVOCATION),
+    
     BATCH_PAUSE (EXECUTOR_OPERATION),
-    BROWSE_WEBPAGE (EXECUTOR_OPERATION),
     EXECUTOR_DEFAULT (EXECUTOR_OPERATION),
     LIST_LOCATION (EXECUTOR_OPERATION),
     LIST_PATH (EXECUTOR_OPERATION),
@@ -85,10 +87,6 @@ public enum CommandType {
     
     INCORRECT (OTHER),
     UNDEFINED (OTHER);
-
-    private CommandType() {
-        this.operationType = null;
-    }
     
     private final CommandOperationType operationType;
     
@@ -114,5 +112,13 @@ public enum CommandType {
     
     public boolean isUndefined() {
         return this.equals(UNDEFINED);
+    }
+    
+    public static CommandType commandTypeOf(String commandType) {
+        try {
+            return valueOf(commandType);
+        } catch (Exception e) {
+            return UNDEFINED;
+        }
     }
 }

@@ -17,13 +17,12 @@ import org.slf4j.LoggerFactory;
 
 import diarsid.beam.core.base.data.DataBaseType;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;
-import diarsid.jdbc.transactions.core.JdbcPreparedStatementSetter;
 import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
-import diarsid.jdbc.transactions.core.JdbcTransactionGuard;
 
 import static java.lang.String.format;
 
 import static diarsid.beam.core.base.data.DataBaseType.SQL;
+import static diarsid.jdbc.transactions.core.JdbcTransactionFactoryBuilder.buildTransactionFactoryWith;
 
 
 /**
@@ -56,10 +55,7 @@ public class H2TestDataBase implements TestDataBase {
         logger.info(format("H2 embedded test based established with URL: %s", 
                            format(H2_IN_MEMORY_TEST_BASE_URL_TEMPLATE, name)));
         JdbcConnectionsSource source = new H2TestJdbcConnectionsSource(this.conPool);
-        JdbcTransactionGuard transactionGuard = new JdbcTransactionGuard(1);
-        JdbcPreparedStatementSetter paramsSetter = new JdbcPreparedStatementSetter();
-        this.jdbcTransactionFactory = new JdbcTransactionFactory(
-                source, transactionGuard, paramsSetter);
+        this.jdbcTransactionFactory = buildTransactionFactoryWith(source).done();
     }
         
     @Override

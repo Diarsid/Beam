@@ -17,6 +17,7 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
+import static diarsid.beam.core.base.control.io.commands.CommandType.commandTypeOf;
 import static diarsid.beam.core.base.control.io.commands.CommandType.valueOf;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
@@ -63,6 +64,11 @@ public class Commands {
                 throw new UndefinedOperationTypeException();
             }
         }
+    }
+    
+    public static InvocationCommand createInvocationCommandFrom(
+            String commandType, String originalArgs, String extendedArgs) {
+        return createInvocationCommandFrom(commandTypeOf(commandType), originalArgs, extendedArgs);        
     }
     
     public static InvocationCommand createInvocationCommandFrom(

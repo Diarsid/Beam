@@ -60,6 +60,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.HIDE_VARIANT_TYPE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
@@ -92,8 +93,6 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 
 /**
  *
@@ -1065,13 +1064,13 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private ValueFlow<NamedEntity> findNamedEntityByArgument(
             Initiator initiator, String argument) {
-        ValueFlow<NamedEntity> valueFlow = this.domain
+        ValueFlow<NamedEntity> entityFlow = this.domain
                 .allEntities()
                 .findByExactName(initiator, argument);
-        switch ( valueFlow.result() ) {
+        switch ( entityFlow.result() ) {
             case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                     return valueFlow;
+                if ( entityFlow.asComplete().hasValue() ) {
+                    return entityFlow;
                 } else {
                     debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
                     return this.domain
@@ -1086,7 +1085,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                         .findByNamePattern(initiator, argument);
             }
             case STOP : {
-                return valueFlow;
+                return entityFlow;
             }
             default : {
                 return valueFlowFail("unknown ValueFlow result.");

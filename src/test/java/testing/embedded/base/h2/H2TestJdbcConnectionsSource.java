@@ -34,4 +34,9 @@ public class H2TestJdbcConnectionsSource implements JdbcConnectionsSource {
     public void closeSource() {
         this.connectionPool.dispose();
     }
+
+    @Override
+    public int totalConnectionsQuantity() {
+        return this.connectionPool.getMaxConnections();
+    }
 }

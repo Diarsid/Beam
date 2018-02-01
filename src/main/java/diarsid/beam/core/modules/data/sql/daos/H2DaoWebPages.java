@@ -29,7 +29,6 @@ import static java.util.stream.Collectors.toSet;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
@@ -37,6 +36,7 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 
 
@@ -181,9 +181,9 @@ class H2DaoWebPages
             }
             
             String multipleGroupedLikeOrNameCondition = 
-                    multipleLowerGroupedLikesOr("name", criterias.size());
+                    multipleLowerGroupedLikesAndOr("name", criterias.size());
             String multipleGroupedLikeOrShortcutsCondition = 
-                    multipleLowerGroupedLikesOr("shortcuts", criterias.size());
+                    multipleLowerGroupedLikesAndOr("shortcuts", criterias.size());
             
             pages = transact
                     .doQueryAndStreamVarargParams(

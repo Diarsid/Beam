@@ -22,11 +22,11 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 /**
  *
@@ -149,7 +149,7 @@ class H2DaoLocationSubPaths
                 return foundSubPaths;
             }
             
-            String andOrCondition = multipleLowerGroupedLikesOr("com_extended", criterias.size());
+            String andOrCondition = multipleLowerGroupedLikesAndOr("com_extended", criterias.size());
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(

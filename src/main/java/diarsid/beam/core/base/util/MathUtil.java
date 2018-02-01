@@ -15,6 +15,14 @@ public class MathUtil {
     
     private MathUtil() {}
     
+    public static boolean isOdd(int i) {
+        return i % 2 > 0;
+    }
+    
+    public static boolean isEven(int i) {
+        return i % 2 == 0;
+    }
+    
     public static int halfRoundUp(int num) {
         return (num / 2) + (num % 2);
     }

@@ -35,7 +35,6 @@ import static diarsid.beam.core.base.util.CollectionsUtils.sortAndGetFirstFrom;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
@@ -50,6 +49,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_LOCATION;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 
 class H2DaoNamedEntities 
@@ -287,13 +287,13 @@ class H2DaoNamedEntities
             }
             
             String andOrConditionLocations = 
-                    multipleLowerGroupedLikesOr("loc_name", criterias.size());
+                    multipleLowerGroupedLikesAndOr("loc_name", criterias.size());
             String andOrConditionBatces = 
-                    multipleLowerGroupedLikesOr("bat_name", criterias.size());
+                    multipleLowerGroupedLikesAndOr("bat_name", criterias.size());
             String andOrConditionPagesName = 
-                    multipleLowerGroupedLikesOr("name", criterias.size());
+                    multipleLowerGroupedLikesAndOr("name", criterias.size());
             String andOrConditionPagesShortcuts = 
-                    multipleLowerGroupedLikesOr("shortcuts", criterias.size());
+                    multipleLowerGroupedLikesAndOr("shortcuts", criterias.size());
             List<NamedEntity> shiftedMaskedEntities;
             
             entityMasks = transact

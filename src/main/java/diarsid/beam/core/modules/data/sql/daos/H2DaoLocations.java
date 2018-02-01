@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine; 
-import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.data.DaoLocations;
+import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -31,7 +31,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesOr;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
@@ -127,7 +127,7 @@ class H2DaoLocations
                 debug("[PATTERN CRITERIAS AND] not found : " + pattern);
             }
             
-            String andOrCondition = multipleLowerGroupedLikesOr("loc_name", criterias.size());
+            String andOrCondition = multipleLowerGroupedLikesAndOr("loc_name", criterias.size());
             List<Location> shiftedFound;
             
             found = transact

@@ -8,6 +8,7 @@ package diarsid.beam.core.base.util;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.generate;
 
+import static diarsid.beam.core.base.util.MathUtil.isEven;
+import static diarsid.beam.core.base.util.MathUtil.isOdd;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -98,9 +101,9 @@ public class SqlUtil {
                 .collect(joining(", ", " ( ", " ) "));
     }
     
-    public static String multipleLowerGroupedLikesOr(String column, int length) {
+    public static String multipleLowerGroupedLikesAndOr(String column, int quantity) {
         String condition = "( LOWER(" + column + ") LIKE ? )";
-        switch (length) {
+        switch ( quantity ) {
             case 1 : {
                 return "( " + condition + " )";
             }
@@ -214,15 +217,162 @@ public class SqlUtil {
             default : {                
                 return 
                         "( ( " + 
-                        multipleLowerLikeAnd(column, length - (length / 2)) + 
+                        multipleLowerLikeAnd(column, quantity - (quantity / 2)) + 
                         " ) OR ( " + 
-                        multipleLowerLikeAnd(column, (length / 2)) + 
+                        multipleLowerLikeAnd(column, (quantity / 2)) + 
                         " ) )";
             }
         }    
     }
     
-    public static String multipleLowerLIKE(
+    public static String multipleLowerGroupedLikesOrAnd(String column, int quantity) {
+        String condition = "( LOWER(" + column + ") LIKE ? )";
+        switch ( quantity ) {
+            case 1 : {
+                return condition;
+            }
+            case 2 : {
+                return 
+                        "( " + 
+                        condition + " AND " + 
+                        condition + 
+                        " )";
+            }
+            case 3 : {
+                return 
+                        "( ( " + 
+                        condition + 
+                        ") AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 4 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 5 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 6 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 7 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 8 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 9 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            case 10 : {
+                return 
+                        "( ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition  + 
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition +  
+                        " ) AND ( " + 
+                        condition + " OR " + 
+                        condition + 
+                        " ) )";
+            }
+            default : {
+                String conditionsOr = " ( " + condition + " OR " + condition + " ) ";
+                
+                String fullConditon;
+                if ( isOdd(quantity) ) {
+                    fullConditon = generate(() -> conditionsOr)
+                            .limit((quantity / 2) - 1)
+                            .collect(joining(" AND "))
+                            .concat(
+                                    " AND ( " + 
+                                    condition + " OR " + 
+                                    condition + " OR " + 
+                                    condition + 
+                                    " ) ");
+                } else {
+                    fullConditon = generate(() -> conditionsOr)
+                            .limit(quantity / 2)
+                            .collect(joining(" AND "));
+                }
+                
+                return " ( " + fullConditon + " ) ";
+            }
+        }
+    }
+    
+    public static String multipleLowerLike(
             String column, int partsSize, SqlOperator sqlOperator) {
         return generate(() -> "( LOWER(column) LIKE ? )")
                 .limit(partsSize)
@@ -318,7 +468,7 @@ public class SqlUtil {
                         condition;
             }
             default : {
-                return multipleLowerLIKE(column, length, AND);
+                return multipleLowerLike(column, length, AND);
             }
         }
     }
@@ -340,6 +490,74 @@ public class SqlUtil {
             criterias.set(reverseShifting, shifted);
         }
         return criterias;
+    }
+    
+    public static boolean isResultsQuantiyEnoughForMulticharCriteria(Collection results) {
+        return results.size() > 4;
+    }
+    
+    public static List<String> patternToMulticharCriterias(String pattern) {
+        return patternToMulticharCriteriasWithLength(pattern, criteriaLengthForPattern(pattern));
+    }
+    
+    private static int criteriaLengthForPattern(String pattern) {
+//        if ( pattern.length() < 8 ) {
+//            return 2;
+//        }
+//        return pattern.length() / 4;
+        return 2;
+    }
+    
+    private static List<String> patternToMulticharCriteriasWithLength(
+            String pattern, int criteriaLength) {
+        pattern = lower(pattern);
+        List<String> criterias = new ArrayList<>();
+        
+        collectCriterias(criterias, pattern, criteriaLength);
+        
+        return criterias;
+    }
+    
+    private static void collectCriterias(
+            List<String> criterias, String pattern, int criteriaLength) {        
+        
+        int criteriasQty = pattern.length() / criteriaLength;
+        
+        int criteriaStart = -1;
+        int criteriaEnd = -1;
+        String criteria;
+        for (int i = 0; i < criteriasQty - 1; i++) {
+            criteriaStart = i * criteriaLength;
+            criteriaEnd = criteriaStart + criteriaLength;
+            
+            criteria = pattern.substring(criteriaStart, criteriaEnd);
+            criterias.add("%" + criteria + "%");
+            
+            criteria = pattern.substring(criteriaStart + 1, criteriaEnd + 1);
+            criterias.add("%" + criteria + "%");
+        }
+        
+        criteriaStart = criteriaEnd;
+        if ( isEven(pattern.length()) ) {
+            criteria = pattern.substring(criteriaStart);
+            criterias.add("%" + criteria + "%");
+            
+            criterias.add(criterias.get(criterias.size() / 2));
+        } else {
+            criteriaEnd = criteriaStart + criteriaLength;
+            
+            criteria = pattern.substring(criteriaStart, criteriaEnd);
+            criterias.add("%" + criteria + "%");
+            
+            criteria = pattern.substring(criteriaStart + 1);
+            criterias.add("%" + criteria + "%");
+        }
+    }
+    
+    public static void main(String[] args) {
+        List<String> criterias = patternToMulticharCriterias("jspec");
+        criterias.forEach(c -> System.out.println(c));
+        System.out.println(multipleLowerGroupedLikesOrAnd("name", criterias.size()));
     }
     
     public static List<String> patternToCharCriterias(String pattern) {

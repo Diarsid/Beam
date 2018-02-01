@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLIKE;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLike;
 
 
 /**
@@ -28,7 +28,7 @@ public class SqlUtilTest {
      */
     @Test
     public void testComposeWildcarded() {
-        String result = multipleLowerLIKE("obj_name", 3, AND);
+        String result = multipleLowerLike("obj_name", 3, AND);
         
         assertEquals(" ( LOWER(obj_name) LIKE ? ) AND ( LOWER(obj_name) LIKE ? ) AND ( LOWER(obj_name) LIKE ? ) ", result);
     }

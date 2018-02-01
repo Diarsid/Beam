@@ -495,10 +495,11 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         
         List<InvocationCommand> matchingCommands;        
         if ( type.isPresent() ) {
-            matchingCommands = this.daoCommands.searchInExtendedByPatternAndType(
+            matchingCommands = this.daoCommands.searchInExtendedByPatternAndTypeGroupByExtended(
                     initiator, original, type.get());
         } else {
-            matchingCommands = this.daoCommands.searchInExtendedByPattern(initiator, original);
+            matchingCommands = this.daoCommands.searchInExtendedByPatternGroupByExtended(
+                    initiator, original);
         }
         
         filterMatchingCommandsOnLongerDuplicatesOfExactInExtended(exactMatch, matchingCommands);
@@ -567,10 +568,11 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, String original, Optional<CommandType> type, View view) {
         List<InvocationCommand> foundCommands;
         if ( type.isPresent() ) {
-            foundCommands = this.daoCommands.searchInExtendedByPatternAndType(
+            foundCommands = this.daoCommands.searchInExtendedByPatternAndTypeGroupByExtended(
                     initiator, original, type.get());
         } else {
-            foundCommands = this.daoCommands.searchInExtendedByPattern(initiator, original);
+            foundCommands = this.daoCommands.searchInExtendedByPatternGroupByExtended(
+                    initiator, original);
         }
                 
         if ( hasOne(foundCommands) ) {
