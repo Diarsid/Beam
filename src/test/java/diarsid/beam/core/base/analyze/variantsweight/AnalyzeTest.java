@@ -62,6 +62,21 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+
+    @Test
+    public void test_DiarsidProjectsCase_diarsidprojecs() {
+        pattern = "diarsidprojecs";
+        
+        variants = asList(
+                "Projects/Diarsid",                
+                "Projects/Diarsid/NetBeans");
+        
+        expected = asList(
+                "Projects/Diarsid",
+                "Projects/Diarsid/NetBeans");
+        
+        weightVariantsAndCheckMatching();
+    }
     
     @Test
     public void test_NetBeansCase_nebaen() {
@@ -245,6 +260,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_PriceAPICase_pricapi() {
+        pattern = "pricapi";
+        
+        variants = asList(            
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/PriceCalculationAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta/PriceCalculationAPI",
+                "Projects/UkrPoshta/CainiaoAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_projectsUkrPoshta_pstoapi() {
         pattern = "pstoapi";
         
@@ -255,6 +285,23 @@ public class AnalyzeTest {
         
         expected = asList(
                 "Projects/UkrPoshta/UkrPostAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_JavaPathBinCase_jbin() {
+        pattern = "jbin";
+        
+        variants = asList(            
+                "Current_Job/domain",
+                "Current_Job/domain/tmm",
+                "Current_Job/hiring",
+                "Engines/java/path/JAVA_HOME/bin");
+        
+        expected = asList(
+                "Engines/java/path/JAVA_HOME/bin",
+                "Current_Job/domain");
         
         weightVariantsAndCheckMatching();
     }

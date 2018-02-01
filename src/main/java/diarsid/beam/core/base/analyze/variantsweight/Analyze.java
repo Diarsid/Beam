@@ -105,6 +105,11 @@ public class Analyze {
                 "Projects/UkrPoshta");
     }
     
+    private static List<String> priceApiCase() {
+        return asList(            
+                "Projects/UkrPoshta/PriceCalculationAPI");
+    }
+    
     private static List<String> javaSpecCase() {
         return asList(                
 //                "Projects/UkrPoshta/UkrPostAPI",
@@ -153,7 +158,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        weightStrings("pstoapi", ukrPostCase());
+        weightStrings("pricapi", priceApiCase());
     }
 
     private static void weightAnalyzeCases() {
