@@ -45,6 +45,7 @@ class ConfigurationReading {
                 "ui.images.resources = ../res/images/",
                 "ui.images.capture.webpages.resize = true",
                 "ui.console.runOnStart = true",
+                "log.analyze = true",
                 "web.local.host = 127.0.0.1",
                 "web.local.port = 32001",
                 "web.local.path = /beam/core",
@@ -70,12 +71,13 @@ class ConfigurationReading {
                 "starter.jvm.option = -Dlog4j.configuration=file:../config/log4j.properties");
         Configuration actualConfig = parse(readConfigEntriesAsLinesFrom(configFile));
         CONFIGURATION = actualConfig.merge(defaultConfig);
+        CONFIGURATION.logAll();
     }
     
     private ConfigurationReading() {
     }
     
-    static Stream<String> readConfigEntriesAsLinesFrom(Path configFile) {
+    private static Stream<String> readConfigEntriesAsLinesFrom(Path configFile) {
         try {
         return Files
                 .lines(configFile, Charset.forName("UTF-8"))
@@ -91,11 +93,11 @@ class ConfigurationReading {
         }
     }
     
-    static Configuration parse(String... lines) {
+    private static Configuration parse(String... lines) {
         return parse(stream(lines));
     }
     
-    static Configuration parse(Stream<String> lines) {
+    private static Configuration parse(Stream<String> lines) {
         Map<String, String> singleOptions = new HashMap<>();
         Map<String, List<String>> multipleOptions = new HashMap<>();
         lines

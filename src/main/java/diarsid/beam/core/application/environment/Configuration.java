@@ -13,6 +13,9 @@ import java.util.Map;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.stream.Collectors.joining;
+
+import static diarsid.beam.core.base.util.Logs.log;
 
 /**
  *
@@ -25,6 +28,29 @@ public class Configuration {
     
     Configuration(Map<String, Object> options) {
         this.options = options;
+    }
+    
+    void logAll() {
+        options.entrySet()
+                .stream()
+                .map((entry) -> {
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+                    String valueString;
+                    
+                    if ( value instanceof String ) {
+                        valueString = (String) value;
+                    } else if ( value instanceof List ) {
+                        valueString = ((List<String>) value).stream().collect(joining(" "));
+                    } else {
+                        valueString = value.toString();
+                    }
+                    
+                    return key + " = " + valueString;
+                })
+                .sorted()
+                .forEach(line -> log(Configuration.class, line));
+                
     }
     
     Configuration merge(Configuration other) {

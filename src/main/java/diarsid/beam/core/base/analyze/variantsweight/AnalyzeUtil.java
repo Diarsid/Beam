@@ -136,7 +136,6 @@ class AnalyzeUtil {
         double result = 1.32 * ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
                 ( 1.0 + ( ( clustered * 1.0 ) / ( nonClustered * 1.0 ) ) ) * 
                 ( ( ( clustered * 1.0 ) / ( clustersQty * 1.0 ) ) * 0.8 - 0.79 ) + ( ( clustered - 2 ) * 1.0 ) ;
-        System.out.println(format("importance: %s (clastersQty: %s, clustered: %s, nonclustered: %s)", result, clustersQty, clustered, nonClustered));
         return result;
     }
     

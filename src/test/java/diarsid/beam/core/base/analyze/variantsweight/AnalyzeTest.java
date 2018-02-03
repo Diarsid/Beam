@@ -45,6 +45,23 @@ public class AnalyzeTest {
     }
 
     @Test
+    public void test_JavaTechCase_jtech() {
+        pattern = "jtech";
+        
+        variants = asList(
+                "Books/tech",
+                "Tech",
+                "Books/Tech/Design",
+                "Tech/langs",
+                "Books/Tech/Java");
+        
+        expected = asList( 
+                "Books/Tech/Java");
+        
+        weightVariantsAndCheckMatching();
+    }
+
+    @Test
     public void test_NetBeansCase_nebean() {
         pattern = "nebean";
         
@@ -268,8 +285,7 @@ public class AnalyzeTest {
                 "Projects/UkrPoshta/PriceCalculationAPI");
         
         expected = asList(
-                "Projects/UkrPoshta/PriceCalculationAPI",
-                "Projects/UkrPoshta/CainiaoAPI");
+                "Projects/UkrPoshta/PriceCalculationAPI");
         
         weightVariantsAndCheckMatching();
     }
