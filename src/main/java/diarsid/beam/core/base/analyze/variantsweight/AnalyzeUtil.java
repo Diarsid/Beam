@@ -72,8 +72,8 @@ class AnalyzeUtil {
                                 onePointRatio(patternLength, patternInVariantLength)) );
             } else {
                 double ratio = ratio(patternLength, patternInVariantLength);
-                return unsorted * onePointRatio(unsorted, patternLength) *
-                        unsortedRatioDependingOn(clustersImportance) * ( 1.55 + ratio );
+                return unsorted * (unsorted - 0.8) * onePointRatio(unsorted, patternLength) *
+                        unsortedRatioDependingOn(clustersImportance) * ( 2.45 + ratio );
             } 
         } else {
             if ( unsorted == 0 ) {

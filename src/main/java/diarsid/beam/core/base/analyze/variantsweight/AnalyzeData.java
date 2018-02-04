@@ -109,17 +109,18 @@ class AnalyzeData {
                         .collect(joining(" "));
         logAnalyze("  pattern chars : %s", patternCharsString);
         logAnalyze("  positions     : %s", positionsString);
-        logAnalyze("    %-20s %s", "direction", positions.direction);
-        logAnalyze("    %-20s %s", "clusters", positions.clustersQty);
-        logAnalyze("    %-20s %s", "clustered", positions.clustered);
-        logAnalyze("    %-20s %s", "distance between clusters", positions.distanceBetweenClusters);
-        logAnalyze("    %-20s %s", "nonClustered", positions.nonClustered);
-        logAnalyze("    %-20s %s", "clustersImportance", positions.clustersImportance);
-        logAnalyze("    %-20s %s", "missed", positions.missed);
-        logAnalyze("    %-20s %s", "missedImportance", positions.missedImportance);
-        logAnalyze("    %-20s %s", "unsorted", positions.unsorted);
-        logAnalyze("    %-20s %s", "unsortedImportance", positions.unsortedImportance);
-        logAnalyze("    %-20s %s", "total weight", this.variantWeight);
+        logAnalyze("    %-25s %s", "direction", positions.direction);
+        logAnalyze("    %-25s %s", "clusters", positions.clustersQty);
+        logAnalyze("    %-25s %s", "clustered", positions.clustered);
+        logAnalyze("    %-25s %s", "distance between clusters", positions.distanceBetweenClusters);
+        logAnalyze("    %-25s %s", "separators between clusters", positions.separatorsBetweenClusters);
+        logAnalyze("    %-25s %s", "nonClustered", positions.nonClustered);
+        logAnalyze("    %-25s %s", "clustersImportance", positions.clustersImportance);
+        logAnalyze("    %-25s %s", "missed", positions.missed);
+        logAnalyze("    %-25s %s", "missedImportance", positions.missedImportance);
+        logAnalyze("    %-25s %s", "unsorted", positions.unsorted);
+        logAnalyze("    %-25s %s", "unsortedImportance", positions.unsortedImportance);
+        logAnalyze("    %-25s %s", "total weight", this.variantWeight);
     }
 
     boolean areTooMuchPositionsMissed() {
@@ -145,8 +146,8 @@ class AnalyzeData {
     }
     
     void findPositionsClusters() {
-        this.forwardAnalyze.findPositionsClusters();
-        this.reverseAnalyze.findPositionsClusters();
+        this.forwardAnalyze.analyzePositionsClusters();
+        this.reverseAnalyze.analyzePositionsClusters();
     }
 
     void checkIfVariantTextContainsPatternDirectly(String pattern) {

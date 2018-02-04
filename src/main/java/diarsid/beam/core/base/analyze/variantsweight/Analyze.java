@@ -120,7 +120,7 @@ public class Analyze {
     
     private static List<String> priceApiCase() {
         return asList(    
-                "Tech/Books/Java");
+                "Tech");
     }
     
     private static List<String> javaSpecCase() {

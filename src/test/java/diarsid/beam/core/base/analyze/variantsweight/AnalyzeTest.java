@@ -59,8 +59,7 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech",
-                "Tech/langs",
-                "Books/tech");
+                "Tech/langs");
         
         weightVariantsAndCheckMatching();
     }
@@ -97,6 +96,36 @@ public class AnalyzeTest {
                 "Projects/Diarsid/NetBeans",
                 "Projects/Diarsid/NetBeans/Beam",
                 "Projects/Diarsid/NetBeans/Research.Java");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_NetBeansCase_nebena() {
+        pattern = "nebena";
+        
+        variants = asList(
+                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators",
+                "1__Projects/Diarsid/NetBeans");
+        
+        expected = asList( 
+                "1__Projects/Diarsid/NetBeans",
+                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_SoulProgramsCase_soulprogs() {
+        pattern = "soulprogs";
+        
+        variants = asList(
+                "Soul/programs/src",
+                "Soul/programs");
+        
+        expected = asList( 
+                "Soul/programs",
+                "Soul/programs/src");
         
         weightVariantsAndCheckMatching();
     }
@@ -338,7 +367,8 @@ public class AnalyzeTest {
         
         expected = asList(
                 "Engines/java/path/JAVA_HOME/bin",
-                "Current_Job/domain");
+                "Current_Job/domain",
+                "Current_Job/domain/tmm");
         
         weightVariantsAndCheckMatching();
     }
