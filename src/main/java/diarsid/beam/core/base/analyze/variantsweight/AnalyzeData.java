@@ -13,6 +13,7 @@ import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.UNINITIALIZED;
@@ -61,7 +62,7 @@ class AnalyzeData {
     void calculateWeight() {        
         this.best = this.bestPositions();
         this.variantWeight = this.variantWeight + this.best.positionsWeight;
-        System.out.println("weight before calculation: " + this.variantWeight);
+        logAnalyze("  weight before calculation: %s", this.variantWeight);
         double lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.8 ;
         this.variantWeight = this.variantWeight + (
                 ( this.best.nonClustered * 5.3 )
@@ -96,18 +97,29 @@ class AnalyzeData {
 
     void logState() {
         AnalyzePositionsData positions = this.bestPositions();
-        System.out.println(this.variantText + ", positions: " + stream(positions.positions).mapToObj(position -> String.valueOf(position)).collect(joining(" ")));
-        System.out.println(String.format("   %-20s %s", "direction", positions.direction));
-        System.out.println(String.format("   %-20s %s", "clusters", positions.clustersQty));
-        System.out.println(String.format("   %-20s %s", "clustered", positions.clustered));
-        System.out.println(String.format("   %-20s %s", "distance between clusters", positions.distanceBetweenClusters));
-        System.out.println(String.format("   %-20s %s", "nonClustered", positions.nonClustered));
-        System.out.println(String.format("   %-20s %s", "clustersImportance", positions.clustersImportance));
-        System.out.println(String.format("   %-20s %s", "missed", positions.missed));
-        System.out.println(String.format("   %-20s %s", "missedImportance", positions.missedImportance));
-        System.out.println(String.format("   %-20s %s", "unsorted", positions.unsorted));
-        System.out.println(String.format("   %-20s %s", "unsortedImportance", positions.unsortedImportance));
-        System.out.println(String.format("   %-20s %s", "total weight", this.variantWeight));
+        logAnalyze("  variant       : %s", this.variantText);
+        String patternCharsString = new String(patternChars)
+                    .chars()
+                    .mapToObj(i -> String.valueOf((char) i))
+                    .map(s -> " " + s)
+                    .collect(joining(" "));
+        String positionsString =  stream(positions.positions)
+                        .mapToObj(position -> String.valueOf(position))
+                        .map(s -> s.length() == 1 ? " " + s : s)
+                        .collect(joining(" "));
+        logAnalyze("  pattern chars : %s", patternCharsString);
+        logAnalyze("  positions     : %s", positionsString);
+        logAnalyze("    %-20s %s", "direction", positions.direction);
+        logAnalyze("    %-20s %s", "clusters", positions.clustersQty);
+        logAnalyze("    %-20s %s", "clustered", positions.clustered);
+        logAnalyze("    %-20s %s", "distance between clusters", positions.distanceBetweenClusters);
+        logAnalyze("    %-20s %s", "nonClustered", positions.nonClustered);
+        logAnalyze("    %-20s %s", "clustersImportance", positions.clustersImportance);
+        logAnalyze("    %-20s %s", "missed", positions.missed);
+        logAnalyze("    %-20s %s", "missedImportance", positions.missedImportance);
+        logAnalyze("    %-20s %s", "unsorted", positions.unsorted);
+        logAnalyze("    %-20s %s", "unsortedImportance", positions.unsortedImportance);
+        logAnalyze("    %-20s %s", "total weight", this.variantWeight);
     }
 
     boolean areTooMuchPositionsMissed() {
@@ -170,7 +182,7 @@ class AnalyzeData {
         String positionsS = stream(data.positions)
                 .mapToObj(position -> String.valueOf(position))
                 .collect(joining(" "));
-        System.out.println(data.direction + " positions before sorting: " + positionsS);
+        logAnalyze("  %s positions before sorting: %s", data.direction, positionsS);
     }
     
     void clearAnalyze() {

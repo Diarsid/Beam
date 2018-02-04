@@ -73,8 +73,7 @@ class AnalyzeUtil {
             } else {
                 double ratio = ratio(patternLength, patternInVariantLength);
                 return unsorted * onePointRatio(unsorted, patternLength) *
-                        unsortedRatioDependingOn(clustersImportance) * ( 1.55 + ratio ) * 
-                        (1.0 + ratio);
+                        unsortedRatioDependingOn(clustersImportance) * ( 1.55 + ratio );
             } 
         } else {
             if ( unsorted == 0 ) {
@@ -136,7 +135,6 @@ class AnalyzeUtil {
         double result = 1.32 * ( ( CLUSTER_QTY_TRESHOLD - clustersQty ) * 1.0 ) * 
                 ( 1.0 + ( ( clustered * 1.0 ) / ( nonClustered * 1.0 ) ) ) * 
                 ( ( ( clustered * 1.0 ) / ( clustersQty * 1.0 ) ) * 0.8 - 0.79 ) + ( ( clustered - 2 ) * 1.0 ) ;
-        System.out.println(format("importance: %s (clastersQty: %s, clustered: %s, nonclustered: %s)", result, clustersQty, clustered, nonClustered));
         return result;
     }
     
@@ -212,8 +210,8 @@ class AnalyzeUtil {
 
     static double missedImportanceDependingOn(int missed, double clustersImportance) {
         if ( missed == 0 ) {
-            return -3.0;
+            return -9.6;
         }
-        return ( ( missed * 1.0) - 0.8 ) * missedRatio(clustersImportance);
+        return ( ( missed * 1.0) - 0.5 ) * missedRatio(clustersImportance);
     }
 }

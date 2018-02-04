@@ -24,6 +24,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
@@ -41,9 +42,21 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  * @author Diarsid
  */
 public class Analyze {
+    
+    private static boolean isLogEnabled;
+    
+    static {
+        isLogEnabled = configuration().asBoolean("log.analyze");
+    }
         
     private Analyze() {        
-    }    
+    } 
+    
+    static void logAnalyze(String format, Object... args) {
+        if ( isLogEnabled ) {
+            System.out.println(format(format, args));
+        }
+    }
     
     public static void main(String[] args) {        
         doAll();
@@ -106,8 +119,8 @@ public class Analyze {
     }
     
     private static List<String> priceApiCase() {
-        return asList(            
-                "Projects/UkrPoshta/PriceCalculationAPI");
+        return asList(    
+                "Tech/Books/Java");
     }
     
     private static List<String> javaSpecCase() {
@@ -158,7 +171,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        weightStrings("pricapi", priceApiCase());
+        weightStrings("jtech", priceApiCase());
     }
 
     private static void weightAnalyzeCases() {
@@ -281,7 +294,7 @@ public class Analyze {
                 }
             }
             System.out.println();
-            System.out.println(format(" ==== ANALYZE : %s ( %s ) ==== ", variant.text(), pattern));
+            logAnalyze("===== ANALYZE : %s ( %s ) ===== ", variant.text(), pattern);
             variantsByText.put(lowerVariantText, variant);
             
             analyze.setVariantText(variant);
@@ -302,7 +315,7 @@ public class Analyze {
             analyze.calculateWeight();   
             analyze.logState();
             if ( analyze.isVariantTooBad() ) {
-                System.out.println(analyze.variantText + " is too bad.");
+                logAnalyze("  %s is too bad.", analyze.variantText);
                 analyze.clearAnalyze();
                 continue variantsWeighting;
             }

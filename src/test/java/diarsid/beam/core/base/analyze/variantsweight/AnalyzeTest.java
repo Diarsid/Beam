@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 
 /**
  *
@@ -42,6 +43,43 @@ public class AnalyzeTest {
     
     @Before
     public void setUp() {
+    }
+
+    @Test
+    public void test_JavaTechCase_jtech() {
+        pattern = "jtech";
+        
+        variants = asList(
+                "Books/tech",
+                "Tech",
+                "Books/Tech/Design",
+                "Tech/langs",
+                "Books/Tech/Java");
+        
+        expected = asList( 
+                "Books/Tech/Java",
+                "Tech",
+                "Tech/langs",
+                "Books/tech");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_JavaTechCase_jatech() {
+        pattern = "jatech";
+        
+        variants = asList(
+                "Books/tech",
+                "Tech",
+                "Books/Tech/Design",
+                "Tech/langs",
+                "Books/Tech/Java");
+        
+        expected = asList( 
+                "Books/Tech/Java");
+        
+        weightVariantsAndCheckMatching();
     }
 
     @Test
@@ -268,8 +306,7 @@ public class AnalyzeTest {
                 "Projects/UkrPoshta/PriceCalculationAPI");
         
         expected = asList(
-                "Projects/UkrPoshta/PriceCalculationAPI",
-                "Projects/UkrPoshta/CainiaoAPI");
+                "Projects/UkrPoshta/PriceCalculationAPI");
         
         weightVariantsAndCheckMatching();
     }
@@ -314,6 +351,7 @@ public class AnalyzeTest {
         List<WeightedVariant> nextSimilarVariants;
         
         List<String> reports = new ArrayList();        
+        List<String> presentButNotExpected = new ArrayList<>();
         reports.add("\n === Diff with expected === ");
         
         AtomicInteger counter = new AtomicInteger(0);
@@ -338,22 +376,31 @@ public class AnalyzeTest {
             } else {            
                 nextSimilarVariants = weightedVariants.nextSimilarVariants();
                 for (WeightedVariant weightedVariant : nextSimilarVariants) {
-                    
-                    expectedVariant = expected.get(counter.getAndIncrement());
                     actualVariant = weightedVariant.text();
                     
-                    if ( actualVariant.equalsIgnoreCase(expectedVariant) ) {
-                        reports.add(format("\n%s variant matches expected: %s", counter.get() - 1, expectedVariant));
+                    if ( counter.get() < expected.size() ) {
+                        expectedVariant = expected.get(counter.getAndIncrement());
+
+                        if ( actualVariant.equalsIgnoreCase(expectedVariant) ) {
+                            reports.add(format("\n%s variant matches expected: %s", counter.get() - 1, expectedVariant));
+                        } else {
+                            mismatches++;
+                            reports.add(format(
+                                "\n%s variant does not match expected: \n" +
+                                "    expected : %s\n" +
+                                "    actual   : %s", counter.get() - 1, expectedVariant, actualVariant));
+                        }
                     } else {
-                        mismatches++;
-                        reports.add(format(
-                            "\n%s variant does not match expected: \n" +
-                            "    expected : %s\n" +
-                            "    actual   : %s", counter.get() - 1, expectedVariant, actualVariant));
-                    }
+                        presentButNotExpected.add(format("\n variant present but not expected: %s\n", actualVariant));
+                    }    
                 }
             }           
         } 
+        
+        boolean hasNotExpected = nonEmpty(presentButNotExpected);
+        if ( hasNotExpected ) {
+            presentButNotExpected.add(0, "\n === Present but not expected === ");
+        }
         
         boolean hasMissed = counter.get() < expected.size();
         List<String> expectedButMissed = new ArrayList<>();
@@ -365,8 +412,13 @@ public class AnalyzeTest {
             }
         }
             
-        if ( mismatches > 0 || hasMissed ) {    
-            reports.addAll(expectedButMissed);
+        if ( mismatches > 0 || hasMissed || hasNotExpected ) {    
+            if ( hasMissed ) {
+                reports.addAll(expectedButMissed);
+            }
+            if ( hasNotExpected ) {
+                reports.addAll(presentButNotExpected);
+            }
             reports.add(0, collectVariantsToReport());
             fail(reports.stream().collect(joining()));
         }
