@@ -61,6 +61,7 @@ class AnalyzePositionsData {
     
     int currentClusterLength;
     int currentPosition;
+    int currentPositionIndex;
     int nextPosition;
     
     char currentChar;
@@ -137,14 +138,47 @@ class AnalyzePositionsData {
                     if ( this.clusterContinuation ) {
                         this.clusterEnds();
                     } else {
+                        if ( this.isPreviousCharWordSeparator() ) {                            
+                            if ( this.isNextCharWordSeparator() ) {
+                                logAnalyze("  %s -11.2 : char is one-char-word", this.direction);
+                                this.positionsWeight = this.positionsWeight - 11.2;
+                            } else {
+                                if ( this.positionBeforeWordSeparatorIsPreviousClusterEnd() ) {
+                                    logAnalyze("  %s cluster is separated by separator %s_%s", this.direction, this.previousClusterLastPosition, this.currentPosition);
+                                    this.nonClustered--;
+                                    this.clustered++;
+                                    this.previousClusterLastPosition = this.currentPosition;
+                                } else {
+                                    logAnalyze("  %s -3.1 : previous char is word separator", this.direction);
+                                    this.positionsWeight = this.positionsWeight - 3.1;
+                                }
+                            }
+                        } else if ( this.isNextCharWordSeparator() ) {
+                            logAnalyze("  %s -3.1 : next char is word separator", this.direction);
+                            this.positionsWeight = this.positionsWeight - 3.1;
+                        }                        
                         this.nonClustered++;
                     }
                 }
             } else {
                 if ( this.isCurrentPositionNotMissed() ) {
-                    if ( this.isPreviousCharWordSeparator() ) {                        
-                        logAnalyze("  %s -3.0 : previous char is word separator", this.direction);
-                        this.positionsWeight = this.positionsWeight - 3;
+                    if ( this.isPreviousCharWordSeparator() ) {                            
+                        if ( this.isNextCharWordSeparator() ) {
+                            logAnalyze("  %s -11.2 : char is one-char-word", this.direction);
+                            this.positionsWeight = this.positionsWeight - 11.2;
+                        } else {
+                            if ( this.positionBeforeWordSeparatorIsPreviousClusterEnd() ) {
+                                logAnalyze("  %s cluster is separated by separator %s_%s", this.direction, this.previousClusterLastPosition, this.currentPosition);
+                                this.nonClustered--;
+                                this.clustered++;
+                            } else {
+                                logAnalyze("  %s -3.1 : previous char is word separator", this.direction);
+                                this.positionsWeight = this.positionsWeight - 3.1;
+                            }                            
+                        }
+                    } else if ( this.isNextCharWordSeparator() ) {
+                        logAnalyze("  %s -3.1 : next char is word separator", this.direction);
+                        this.positionsWeight = this.positionsWeight - 3.1;
                     }
                 }
                 if ( this.clusterContinuation ) {
@@ -386,6 +420,7 @@ class AnalyzePositionsData {
         this.clustersQty++;
         this.clusterContinuation = true;
         this.currentClusterLength = 1;
+        this.clusterStartsWithSeparator = false;
         if ( this.isCurrentPositionNotMissed() ) {
             if ( this.currentPosition == 0 ) {
                 logAnalyze("  %s -8.6 : cluster starts with variant", this.direction);
@@ -439,6 +474,7 @@ class AnalyzePositionsData {
     }
     
     void setCurrentPosition(int i) {
+        this.currentPositionIndex = i;
         this.currentPosition = this.positions[i];
     }
     
@@ -485,7 +521,7 @@ class AnalyzePositionsData {
     }
     
     boolean isCurrentPositionNotMissed() {
-        return this.currentPosition > 0;
+        return this.currentPosition >= 0;
     }
     
     boolean isCurrentCharWordSeparator() {
@@ -493,11 +529,22 @@ class AnalyzePositionsData {
     }
 
     boolean isPreviousCharWordSeparator() {
-        return isWordsSeparator(this.data.variantText.charAt(this.currentPosition - 1));
+        return 
+                this.currentPosition == 0 || 
+                isWordsSeparator(this.data.variantText.charAt(this.currentPosition - 1));
     }
     
     boolean isNextCharWordSeparator() {
-        return isWordsSeparator(this.data.variantText.charAt(this.currentPosition + 1));
+        return 
+                this.currentPosition == this.data.variantText.length() - 1 ||
+                isWordsSeparator(this.data.variantText.charAt(this.currentPosition + 1));
+    }
+    
+    private boolean positionBeforeWordSeparatorIsPreviousClusterEnd() {
+        if ( this.currentPosition < 1 || this.currentPositionIndex == 0) {
+            return false;
+        } 
+        return this.previousClusterLastPosition == this.positions[this.currentPositionIndex - 1];
     }
     
     void countUnsortedPositions() {
@@ -516,6 +563,7 @@ class AnalyzePositionsData {
         this.clusterStartsWithSeparator = false;
         this.clusterEndsWithSeparator = false;
         this.currentPosition = UNINITIALIZED;
+        this.currentPositionIndex = UNINITIALIZED;
         this.nextPosition = UNINITIALIZED;
         this.currentPatternCharPositionInVariant = UNINITIALIZED;
         this.missedImportance = 0;

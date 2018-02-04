@@ -119,8 +119,8 @@ public class Analyze {
     }
     
     private static List<String> priceApiCase() {
-        return asList(            
-                "beam_project");
+        return asList(    
+                "Tech/Books/Java");
     }
     
     private static List<String> javaSpecCase() {
@@ -171,7 +171,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        weightStrings("beaporj", priceApiCase());
+        weightStrings("jtech", priceApiCase());
     }
 
     private static void weightAnalyzeCases() {

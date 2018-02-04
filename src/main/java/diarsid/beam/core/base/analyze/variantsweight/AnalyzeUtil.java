@@ -73,8 +73,7 @@ class AnalyzeUtil {
             } else {
                 double ratio = ratio(patternLength, patternInVariantLength);
                 return unsorted * onePointRatio(unsorted, patternLength) *
-                        unsortedRatioDependingOn(clustersImportance) * ( 1.55 + ratio ) * 
-                        (1.0 + ratio);
+                        unsortedRatioDependingOn(clustersImportance) * ( 1.55 + ratio );
             } 
         } else {
             if ( unsorted == 0 ) {
@@ -211,8 +210,8 @@ class AnalyzeUtil {
 
     static double missedImportanceDependingOn(int missed, double clustersImportance) {
         if ( missed == 0 ) {
-            return -3.0;
+            return -9.6;
         }
-        return ( ( missed * 1.0) - 0.8 ) * missedRatio(clustersImportance);
+        return ( ( missed * 1.0) - 0.5 ) * missedRatio(clustersImportance);
     }
 }
