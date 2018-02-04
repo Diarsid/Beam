@@ -21,7 +21,6 @@ import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatc
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.noRefining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBefore;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAllBeforeAndAfter;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveAnyStarts;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStart;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartAndEndIfPresent;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.refiningByRemoveStartingDigitsAnd;
@@ -110,11 +109,53 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
-                    .and(matchesByNotContaining(" is one of ", "are you sure", " is "))
+                    .and(matchesByNotContaining(
+                            " is one of ", 
+                            "are you sure", 
+                            " is ", 
+                            " open ", 
+                            " call ", 
+                            " browse ", 
+                            " run "))
                     .and(matchesByNotStartingWith("> exact match ?")),
-            refiningByRemoveAllBeforeAndAfter("> ", " ?")
-                    .and(refiningByRemoveAnyStarts("open ", "call ", "browse ", "run ")),
-            reinvocationTextFormat("open '%s'")), 
+            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
+            reinvocationTextFormat("open '%s'")),     
+    SINGLE_VARIANT_OPEN (
+            REINVOKABLE, 
+            NO_TRAVERSE, 
+            matchesByStartingEndingWith("> open ", " ?")
+                    .and(matchesByNotContaining(
+                            " is one of ", "are you sure", " is ", " call ", " browse ", " run "))
+                    .and(matchesByNotStartingWith("> exact match ?")),
+            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
+            noFormat()),     
+    SINGLE_VARIANT_RUN (
+            REINVOKABLE, 
+            NO_TRAVERSE, 
+            matchesByStartingEndingWith("> run ", " ?")
+                    .and(matchesByNotContaining(
+                            " is one of ", "are you sure", " is ", " call ", " browse ", " open "))
+                    .and(matchesByNotStartingWith("> exact match ?")),
+            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
+            noFormat()),    
+    SINGLE_VARIANT_CALL (
+            REINVOKABLE, 
+            NO_TRAVERSE, 
+            matchesByStartingEndingWith("> call ", " ?")
+                    .and(matchesByNotContaining(
+                            " is one of ", "are you sure", " is ", " run ", " browse ", " open "))
+                    .and(matchesByNotStartingWith("> exact match ?")),
+            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
+            noFormat()),    
+    SINGLE_VARIANT_BROWSE (
+            REINVOKABLE, 
+            NO_TRAVERSE, 
+            matchesByStartingEndingWith("> browse ", " ?")
+                    .and(matchesByNotContaining(
+                            " is one of ", "are you sure", " is ", " run ", " call ", " open "))
+                    .and(matchesByNotStartingWith("> exact match ?")),
+            refiningByRemoveAllBeforeAndAfter("> ", " ?"),
+            noFormat()),    
     NUMBERED_VARIANT (
             REINVOKABLE, 
             TRAVERSE_TO_ROOT_DIRECTLY, 

@@ -28,7 +28,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.SqlUtil.isResultsQuantiyEnoughForMulticharCriteria;
+import static diarsid.beam.core.base.util.SqlUtil.isResultsQuantiyEnoughForMulticharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardAfter;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
@@ -269,7 +269,7 @@ class H2DaoCommands
                     .collect(toList());    
             
             debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
-            if ( isResultsQuantiyEnoughForMulticharCriteria(found) ) {
+            if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }
 
@@ -362,7 +362,7 @@ class H2DaoCommands
                     .collect(toList());
             
             debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
-            if ( isResultsQuantiyEnoughForMulticharCriteria(found) ) {
+            if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }
             
@@ -459,7 +459,7 @@ class H2DaoCommands
                     .collect(toList());    
             
             debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
-            if ( isResultsQuantiyEnoughForMulticharCriteria(found) ) {
+            if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }
 
@@ -560,7 +560,7 @@ class H2DaoCommands
                     .collect(toList());
             
             debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
-            if ( isResultsQuantiyEnoughForMulticharCriteria(found) ) {
+            if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }
             

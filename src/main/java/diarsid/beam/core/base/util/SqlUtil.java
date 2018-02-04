@@ -492,8 +492,17 @@ public class SqlUtil {
         return criterias;
     }
     
-    public static boolean isResultsQuantiyEnoughForMulticharCriteria(Collection results) {
-        return results.size() > 4;
+    public static boolean isResultsQuantiyEnoughForMulticharCriterias(
+            Collection results, int mutlicharCriteriasSize) {
+        if ( mutlicharCriteriasSize < 5) {
+            return results.size() > 4;
+        } else if ( mutlicharCriteriasSize >= 5 && mutlicharCriteriasSize < 9 ) {
+            return results.size() > 3;
+        } else if ( mutlicharCriteriasSize >= 9 && mutlicharCriteriasSize < 13 ) {
+            return results.size() > 2;
+        } else {
+            return results.size() > 2;
+        }
     }
     
     public static List<String> patternToMulticharCriterias(String pattern) {
@@ -523,8 +532,8 @@ public class SqlUtil {
         
         int criteriasQty = pattern.length() / criteriaLength;
         
-        int criteriaStart = -1;
-        int criteriaEnd = -1;
+        int criteriaStart = 0;
+        int criteriaEnd = 0;
         String criteria;
         for (int i = 0; i < criteriasQty - 1; i++) {
             criteriaStart = i * criteriaLength;
@@ -555,7 +564,7 @@ public class SqlUtil {
     }
     
     public static void main(String[] args) {
-        List<String> criterias = patternToMulticharCriterias("jspec");
+        List<String> criterias = patternToMulticharCriterias("glg");
         criterias.forEach(c -> System.out.println(c));
         System.out.println(multipleLowerGroupedLikesOrAnd("name", criterias.size()));
     }
