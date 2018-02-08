@@ -179,8 +179,13 @@ class AnalyzePositionsData {
                                     this.nonClustered--;
                                     this.clustered++;
                                 } else {
-                                    logAnalyze("  %s -3.1 : previous char is word separator", this.direction);
-                                    this.positionsWeight = this.positionsWeight - 3.1;
+                                    if ( this.currentPositionCharIsPatternStart() ) {
+                                        logAnalyze("  %s -17.71 : previous char is word separator, current char is at pattern start!", this.direction);
+                                        this.positionsWeight = this.positionsWeight - 17.71;
+                                    } else {
+                                        logAnalyze("  %s -3.1 : previous char is word separator", this.direction);
+                                        this.positionsWeight = this.positionsWeight - 3.1;
+                                    }
                                 }                            
                             }
                         } else if ( this.isNextCharWordSeparator() ) {
@@ -467,22 +472,22 @@ class AnalyzePositionsData {
         
         if ( this.isCurrentPositionNotMissed() ) {
             if ( this.isCurrentCharVariantEnd() ) {
-                logAnalyze("  %s -8.6 : cluster ends with variant", this.direction);
-                this.positionsWeight = this.positionsWeight - 8.6;
+                logAnalyze("  %s -4.6 : cluster ends with variant", this.direction);
+                this.positionsWeight = this.positionsWeight - 4.6;
                 this.clusterEndsWithSeparator = true;
             } else if ( this.isNextCharWordSeparator() ) {
-                logAnalyze("  %s -8.6 : cluster ends, next char is word separator", this.direction);
-                this.positionsWeight = this.positionsWeight - 8.6;
+                logAnalyze("  %s -4.6 : cluster ends, next char is word separator", this.direction);
+                this.positionsWeight = this.positionsWeight - 4.6;
                 this.clusterEndsWithSeparator = true;
             } else if ( this.isCurrentCharWordSeparator() ) {
-                logAnalyze("  %s -8.6 : cluster ends, current char is word separator", this.direction);
-                this.positionsWeight = this.positionsWeight - 8.6;
+                logAnalyze("  %s -4.6 : cluster ends, current char is word separator", this.direction);
+                this.positionsWeight = this.positionsWeight - 4.6;
                 this.clusterEndsWithSeparator = true;
             }
             
             if ( this.clusterStartsWithSeparator && this.clusterEndsWithSeparator ) {
-                logAnalyze("  %s -12.6 : cluster is a word", this.direction);
-                this.positionsWeight = this.positionsWeight - 12.6;
+                logAnalyze("  %s -10.25 : cluster is a word", this.direction);
+                this.positionsWeight = this.positionsWeight - 10.25;
             }
         }
         
@@ -533,7 +538,10 @@ class AnalyzePositionsData {
         this.clustersImportance = clustersImportanceDependingOn(
                 this.clustersQty, this.clustered, this.nonClustered);
         this.missedImportance = missedImportanceDependingOn(
-                this.missed, this.clustersImportance);
+                this.missed, 
+                this.clustersImportance,
+                this.data.patternChars.length,
+                this.data.variantText.length());
         this.unsortedImportance = unsortedImportanceDependingOn(
                 this.patternInVariantLength,
                 this.data.patternChars.length,
@@ -567,6 +575,13 @@ class AnalyzePositionsData {
             return false;
         } 
         return (this.currentPosition - this.previousClusterLastPosition) == 2;
+    }
+    
+    private boolean currentPositionCharIsPatternStart() {
+        if ( this.currentPosition == 0 || this.positions[0] == 0 ) {
+            return false;
+        } 
+        return this.data.patternChars[0] == this.data.variantText.charAt(this.currentPosition);
     }
     
     void countUnsortedPositions() {

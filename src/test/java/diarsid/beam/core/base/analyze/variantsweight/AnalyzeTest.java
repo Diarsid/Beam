@@ -59,6 +59,24 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech",
+                "Tech/langs",
+                "Books/tech");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_JavaTechAnotherCase_jtech() {
+        pattern = "jtech";
+        
+        variants = asList(
+                "Tech",
+                "Tech/langs",
+                "Books/Tech/One/More/Part/Java");
+        
+        expected = asList( 
+                "Books/Tech/One/More/Part/Java",
+                "Tech",
                 "Tech/langs");
         
         weightVariantsAndCheckMatching();
@@ -368,7 +386,8 @@ public class AnalyzeTest {
         expected = asList(
                 "Engines/java/path/JAVA_HOME/bin",
                 "Current_Job/domain",
-                "Current_Job/domain/tmm");
+                "Current_Job/domain/tmm",
+                "Current_Job/hiring");
         
         weightVariantsAndCheckMatching();
     }

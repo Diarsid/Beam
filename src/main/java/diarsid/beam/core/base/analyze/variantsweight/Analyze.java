@@ -119,8 +119,9 @@ public class Analyze {
     }
     
     private static List<String> priceApiCase() {
-        return asList(    
-                "Tech");
+        return asList(  
+                "job/search",
+                "projects/diarsid");
     }
     
     private static List<String> javaSpecCase() {
@@ -171,7 +172,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        weightStrings("jtech", priceApiCase());
+        weightStrings("joserac", priceApiCase());
     }
 
     private static void weightAnalyzeCases() {
@@ -250,7 +251,7 @@ public class Analyze {
         analyze.setVariantText(variant);
         analyze.checkIfVariantTextContainsPatternDirectly(pattern);
         analyze.setPatternCharsAndPositions(pattern);
-        analyze.findPatternCharsPositions();
+        analyze.analyzePatternCharsPositions();
         analyze.logUnsortedPositions();
         analyze.countUnsortedPositions();
         analyze.sortPositions();
@@ -300,7 +301,7 @@ public class Analyze {
             analyze.setVariantText(variant);
             analyze.checkIfVariantTextContainsPatternDirectly(pattern);
             analyze.setPatternCharsAndPositions(pattern);
-            analyze.findPatternCharsPositions();
+            analyze.analyzePatternCharsPositions();
             analyze.logUnsortedPositions();
             analyze.countUnsortedPositions();
             analyze.sortPositions();

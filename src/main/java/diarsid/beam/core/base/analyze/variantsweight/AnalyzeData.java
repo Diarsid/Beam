@@ -63,15 +63,16 @@ class AnalyzeData {
         this.best = this.bestPositions();
         this.variantWeight = this.variantWeight + this.best.positionsWeight;
         logAnalyze("  weight before calculation: %s", this.variantWeight);
-        double lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.8 ;
+        double lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.4 ;
         this.variantWeight = this.variantWeight + (
-                ( this.best.nonClustered * 5.3 )
-                - ( this.best.clustered * 4.6 )
+                ( this.best.nonClustered * 2.3 )
+                - ( this.best.clustered * 1.6 )
                 - ( this.best.clustersImportance )
                 + ( ratio(this.best.distanceBetweenClusters, this.variantText.length()) )
                 + ( this.best.missedImportance )
                 + ( lengthDelta )
                 + ( this.best.unsortedImportance ) );
+        int a = 5;
     }
 
     void calculateClustersImportance() {
@@ -98,15 +99,21 @@ class AnalyzeData {
     void logState() {
         AnalyzePositionsData positions = this.bestPositions();
         logAnalyze("  variant       : %s", this.variantText);
-        String patternCharsString = new String(patternChars)
-                    .chars()
-                    .mapToObj(i -> String.valueOf((char) i))
-                    .map(s -> " " + s)
-                    .collect(joining(" "));
+                
+        String patternCharsString = stream(positions.positions)
+                .mapToObj(position -> {
+                    if ( position < 0 ) {
+                        return "*";
+                    } else {
+                        return String.valueOf(this.variantText.charAt(position));
+                    }                    
+                })
+                .map(s -> s.length() == 1 ? " " + s : s)
+                .collect(joining(" "));
         String positionsString =  stream(positions.positions)
-                        .mapToObj(position -> String.valueOf(position))
-                        .map(s -> s.length() == 1 ? " " + s : s)
-                        .collect(joining(" "));
+                .mapToObj(position -> String.valueOf(position))
+                .map(s -> s.length() == 1 ? " " + s : s)
+                .collect(joining(" "));
         logAnalyze("  pattern chars : %s", patternCharsString);
         logAnalyze("  positions     : %s", positionsString);
         logAnalyze("    %-25s %s", "direction", positions.direction);
@@ -169,7 +176,7 @@ class AnalyzeData {
         return pattern.length() * 5.5;
     }
 
-    void findPatternCharsPositions() {
+    void analyzePatternCharsPositions() {
         this.forwardAnalyze.findPatternCharsPositions();
         this.reverseAnalyze.findPatternCharsPositions();
     }

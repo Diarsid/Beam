@@ -9,6 +9,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 
@@ -72,7 +73,7 @@ class AnalyzeUtil {
                                 onePointRatio(patternLength, patternInVariantLength)) );
             } else {
                 double ratio = ratio(patternLength, patternInVariantLength);
-                return unsorted * (unsorted - 0.8) * onePointRatio(unsorted, patternLength) *
+                return unsorted * (unsorted - 0.8) * pow(onePointRatio(unsorted, patternLength), 2) *
                         unsortedRatioDependingOn(clustersImportance) * ( 2.45 + ratio );
             } 
         } else {
@@ -208,10 +209,19 @@ class AnalyzeUtil {
         return ( ( (missed * 1.0) / (variantLength * 1.0) ) > 0.34 );
     }
 
-    static double missedImportanceDependingOn(int missed, double clustersImportance) {
+    static double missedImportanceDependingOn(
+            int missed, double clustersImportance, int patternLength, int variantLength) {
         if ( missed == 0 ) {
             return -9.6;
         }
-        return ( ( missed * 1.0) - 0.5 ) * missedRatio(clustersImportance);
+        
+        double baseMissedImportance = ( ( missed * 1.0) - 0.5 ) * missedRatio(clustersImportance);
+        if ( patternLength > variantLength ) {
+            return baseMissedImportance * ( absDiff(patternLength, variantLength) + 1.5 );
+        } else if ( patternLength == variantLength ) {
+            return baseMissedImportance * 1.5;
+        } else {
+            return baseMissedImportance;
+        }
     }
 }
