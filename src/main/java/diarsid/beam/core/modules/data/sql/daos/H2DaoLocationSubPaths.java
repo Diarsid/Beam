@@ -22,11 +22,12 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 /**
  *
@@ -46,29 +47,29 @@ class H2DaoLocationSubPaths
             
             List<LocationSubPath> foundSubPaths;
             
-            foundSubPaths = transact
-                    .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
-                            "SELECT loc.loc_path, loc.loc_name, sub.subpath " +
-                            "FROM " +
-                            "   locations AS loc " +
-                            "   JOIN " +
-                            "   subpath_choices sub " +
-                            "   ON sub.loc_name = loc.loc_name " +
-                            "WHERE ( LOWER(sub.pattern) IS ? )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
-                            lower(pattern))
-                    .collect(toList());
-            
-            if ( nonEmpty(foundSubPaths) ) {
-                return foundSubPaths;
-            }
+//            foundSubPaths = transact
+//                    .doQueryAndStreamVarargParams(
+//                            LocationSubPath.class, 
+//                            "SELECT loc.loc_path, loc.loc_name, sub.subpath " +
+//                            "FROM " +
+//                            "   locations AS loc " +
+//                            "   JOIN " +
+//                            "   subpath_choices sub " +
+//                            "   ON sub.loc_name = loc.loc_name " +
+//                            "WHERE ( LOWER(sub.pattern) IS ? )", 
+//                            (row) -> {
+//                                return new LocationSubPath(
+//                                        pattern, 
+//                                        row.get("loc_name", String.class),
+//                                        row.get("loc_path", String.class),
+//                                        row.get("com_extended", String.class));
+//                            }, 
+//                            lower(pattern))
+//                    .collect(toList());
+//            
+//            if ( nonEmpty(foundSubPaths) ) {
+//                return foundSubPaths;
+//            }
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
@@ -78,10 +79,10 @@ class H2DaoLocationSubPaths
                             "   commands AS com " +
                             "   JOIN " +
                             "   locations AS loc " +
-                            "   ON com.com_extended LIKE CONCAT(loc.loc_name , '%') " +
+                            "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
-                            "   ( LOWER(com_original) IS ? )", 
+                            "   ( ( LOWER(com_original) IS ? ) OR ( LOWER(com_original) LIKE ? ) )", 
                             (row) -> {
                                 return new LocationSubPath(
                                         pattern, 
@@ -89,7 +90,7 @@ class H2DaoLocationSubPaths
                                         row.get("loc_path", String.class),
                                         row.get("subpath", String.class));
                             }, 
-                            OPEN_LOCATION_TARGET, lower(pattern))
+                            OPEN_LOCATION_TARGET, lower(pattern), lowerWildcard(pattern))
                     .collect(toList());
             
             if ( nonEmpty(foundSubPaths) ) {
@@ -98,30 +99,30 @@ class H2DaoLocationSubPaths
             
             List<String> criterias = patternToCharCriterias(pattern);
             
-            foundSubPaths = transact
-                    .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
-                            "SELECT loc.loc_path, loc.loc_name, sub.subpath " +
-                            "FROM " +
-                            "   locations AS loc " +
-                            "   JOIN " +
-                            "   subpath_choices sub " +
-                            "   ON sub.loc_name = loc.loc_name " +
-                            "WHERE " +
-                            "   ( " + multipleLowerLikeAnd("sub.pattern", criterias.size()) + " )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
-                            criterias)
-                    .collect(toList());
-            
-            if ( nonEmpty(foundSubPaths) ) {
-                return foundSubPaths;
-            }
+//            foundSubPaths = transact
+//                    .doQueryAndStreamVarargParams(
+//                            LocationSubPath.class, 
+//                            "SELECT loc.loc_path, loc.loc_name, sub.subpath " +
+//                            "FROM " +
+//                            "   locations AS loc " +
+//                            "   JOIN " +
+//                            "   subpath_choices sub " +
+//                            "   ON sub.loc_name = loc.loc_name " +
+//                            "WHERE " +
+//                            "   ( " + multipleLowerLikeAnd("sub.pattern", criterias.size()) + " )", 
+//                            (row) -> {
+//                                return new LocationSubPath(
+//                                        pattern, 
+//                                        row.get("loc_name", String.class),
+//                                        row.get("loc_path", String.class),
+//                                        row.get("subpath", String.class));
+//                            }, 
+//                            criterias)
+//                    .collect(toList());
+//            
+//            if ( nonEmpty(foundSubPaths) ) {
+//                return foundSubPaths;
+//            }
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
@@ -131,7 +132,7 @@ class H2DaoLocationSubPaths
                             "   commands AS com " +
                             "   JOIN " +
                             "   locations AS loc " +
-                            "   ON com.com_extended LIKE CONCAT(loc.loc_name , '%') " +
+                            "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + multipleLowerLikeAnd("com_extended", criterias.size()) + " )", 
@@ -159,7 +160,7 @@ class H2DaoLocationSubPaths
                             "   commands AS com " +
                             "   JOIN " +
                             "   locations AS loc " +
-                                "ON com.com_extended LIKE CONCAT(loc.loc_name , '%') " +
+                                "ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 
@@ -184,7 +185,7 @@ class H2DaoLocationSubPaths
                             "   commands AS com " +
                             "   JOIN " +
                             "   locations AS loc " +
-                            "   ON com.com_extended LIKE CONCAT(loc.loc_name , '%') " +
+                            "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 
