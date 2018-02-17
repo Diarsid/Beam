@@ -14,6 +14,7 @@ import static java.lang.Integer.min;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.util.ArraysUtil.array;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -24,9 +25,12 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class Similarity {
     
-    private static final boolean LOG_LEVEL_BASIC_ENABLED = true;
-    private static final boolean LOG_LEVEL_ADVANCED_ENABLED = true;
     static final char CHAIN_NOT_FOUND_CHAR = '*';
+    
+    private static boolean logLevelBasicEnabled = 
+            configuration().asBoolean("analyze.similarity.base");
+    private static boolean logLevelAdvancedEnabled = 
+            configuration().asBoolean("analyze.similarity.advanced");
 
     private Similarity() {        
     }
@@ -194,7 +198,7 @@ public class Similarity {
     }
     
     private static void similarityLogBreak() {
-        if ( LOG_LEVEL_BASIC_ENABLED ) {
+        if ( logLevelBasicEnabled ) {
             System.out.println();
         }
     }
@@ -203,14 +207,14 @@ public class Similarity {
         if ( indentLevel == 0 ) {
             similarityLog(s);
         } else {
-            if ( LOG_LEVEL_ADVANCED_ENABLED ) {
+            if ( logLevelBasicEnabled && logLevelAdvancedEnabled ) {
                 System.out.println(format("[SIMILARITY] %s%s", indentOf(indentLevel), s));
             } 
         }               
     }
     
     private static void similarityLog(String s) {
-        if ( LOG_LEVEL_BASIC_ENABLED ) {
+        if ( logLevelBasicEnabled ) {
             System.out.println("[SIMILARITY] " + s);
         }        
     }

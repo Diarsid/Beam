@@ -36,6 +36,7 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
 import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.plugins.Plugin;
+import diarsid.beam.core.base.os.treewalking.advanced.FileWalker;
 import diarsid.beam.core.base.os.treewalking.listing.FileLister;
 import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
@@ -50,6 +51,7 @@ import diarsid.beam.core.modules.ExecutorModule;
 
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
+import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
@@ -120,6 +122,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final DomainKeeperModule domain;
     private final InnerIoEngine ioEngine;
     private final FileSearcher fileSearcher;
+    private final FileWalker fileWalker;
     private final FileLister fileLister;    
     private final Map<String, Plugin> plugins;
     private final HelpKey chooseMultipleFoldersHelp;
@@ -130,9 +133,11 @@ class ExecutorModuleWorker implements ExecutorModule {
             DomainKeeperModule domain,
             Set<Plugin> plugins,
             FileSearcher fileSearcher,
+            FileWalker fileWalker,
             FileLister fileLister) {
         this.ioEngine = ioEngine;
         this.fileSearcher = fileSearcher;
+        this.fileWalker = fileWalker;
         this.domain = domain;
         this.fileLister = fileLister;
         this.plugins = new HashMap<>();
@@ -190,8 +195,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                     .commandsMemory()
                     .tryToExtendCommand(initiator, command);
             switch ( flow.result() ) {
-                case FAIL:
+                case FAIL : {
                     return valueFlowFail(flow.message());
+                }    
                 case STOP : {
                     return valueFlowStopped();
                 }  
@@ -668,6 +674,58 @@ class ExecutorModuleWorker implements ExecutorModule {
             String target, 
             OpenLocationTargetCommand command) {
         command.setNew();
+        
+        if ( nonNull(this.fileWalker) ) {
+            this.useSubPathToFindTargetWithFileWalker(
+                    initiator, location, subPath, target, command);
+        } else {
+            this.useSubPathToFindTargetWithFileSearcher(
+                    initiator, location, subPath, target, command);
+        }        
+    }
+    
+    private void useSubPathToFindTargetWithFileWalker(
+            Initiator initiator, 
+            Location location,
+            LocationSubPath subPath, 
+            String target, 
+            OpenLocationTargetCommand command) {
+        ValueFlow<String> targetFlow = this.fileWalker                
+                .search(target)
+                .in(subPath)
+                .by(initiator)
+                .withMaxDepthOf(5)
+                .andGetResult();
+        
+        switch ( targetFlow.result() ) {
+            case COMPLETE : {
+                if ( targetFlow.asComplete().hasValue() ) {
+                    target = combineAsPathFrom(
+                            subPath.subPath(), targetFlow.asComplete().getOrThrow());
+                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                } else {
+                    this.ioEngine.report(
+                            initiator, format("'%s' not found in %s", target, subPath.fullName()));
+                }                
+                break;
+            }    
+            case FAIL : {
+                this.ioEngine.report(initiator, targetFlow.asFail().reason());
+                break;
+            }    
+            case STOP : 
+            default : {
+                // do nothing
+            }    
+        }
+    }
+    
+    private void useSubPathToFindTargetWithFileSearcher(
+            Initiator initiator, 
+            Location location,
+            LocationSubPath subPath, 
+            String target, 
+            OpenLocationTargetCommand command) {
         FileSearchResult result = 
                 this.fileSearcher.find(target, subPath.fullPath(), SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
@@ -763,6 +821,53 @@ class ExecutorModuleWorker implements ExecutorModule {
             String target, 
             OpenLocationTargetCommand command) {
         command.setNew();
+        
+        if ( nonNull(this.fileWalker) ) {
+            this.doWhenTargetNotFoundDirectlyByFileWalker(initiator, location, target, command);
+        } else {
+            this.doWhenTargetNotFoundDirectlyByFileSearcher(initiator, location, target, command);
+        }
+    }
+    
+    private void doWhenTargetNotFoundDirectlyByFileWalker(
+            Initiator initiator, 
+            Location location, 
+            String target, 
+            OpenLocationTargetCommand command) {
+        ValueFlow<String> targetFlow = this.fileWalker                
+                .search(target)
+                .in(location)
+                .by(initiator)
+                .withMaxDepthOf(5)
+                .andGetResult();
+        
+        switch ( targetFlow.result() ) {
+            case COMPLETE : {
+                if ( targetFlow.asComplete().hasValue() ) {
+                    target = targetFlow.asComplete().getOrThrow();
+                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                } else {
+                    this.ioEngine.report(
+                            initiator, format("'%s' not found in %s", target, location.name()));
+                }                
+                break;
+            }    
+            case FAIL : {
+                this.ioEngine.report(initiator, targetFlow.asFail().reason());
+                break;
+            }    
+            case STOP :
+            default : {
+                // do nothing;
+            }
+        }
+    }
+    
+    private void doWhenTargetNotFoundDirectlyByFileSearcher(
+            Initiator initiator, 
+            Location location, 
+            String target, 
+            OpenLocationTargetCommand command) {
         FileSearchResult result = 
                 this.fileSearcher.find(target, location.path(), SIMILAR_MATCH, ALL);
         if ( result.isOk() ) {
@@ -951,15 +1056,12 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void executeDefault(Initiator initiator, ExecutorDefaultCommand command) {
-        debug("[EXECUTOR] [executeDefault] : " + command.argument());
-        debug("[EXECUTOR] [executeDefault] find entity by exact name: " + command.argument());
         ValueFlow<NamedEntity> entityFlow = this.domain
                 .allEntities()
                 .findByExactName(initiator, command.argument());
         switch ( entityFlow.result() ) {
             case COMPLETE : {
                 if ( entityFlow.asComplete().hasValue() ) {
-                    debug("[EXECUTOR] [executeDefault] entity found: " + entityFlow.asComplete().getOrThrow().toString());
                     VoidFlow invokeFLow = this.invokeFoundEntity(
                             initiator, entityFlow.asComplete().getOrThrow(), command);
                     switch ( invokeFLow.result() ) {
@@ -998,10 +1100,8 @@ class ExecutorModuleWorker implements ExecutorModule {
         switch ( flow.result() ) {
             case COMPLETE : {
                 if ( flow.asComplete().hasValue() ) {
-                    debug("[EXECUTOR] [executeDefault] execute saved command: " + flow.asComplete().getOrThrow().originalArgument() + ":" + flow.asComplete().getOrThrow().extendedArgument());
                     this.dispatchCommandInternally(initiator, flow.asComplete().getOrThrow());
                 } else {
-                    debug("[EXECUTOR] [executeDefault] stored command not found by: " + command.argument());
                     this.findAndInvokeAnyNamedEntity(initiator, command);
                 }
                 break; 
@@ -1022,7 +1122,6 @@ class ExecutorModuleWorker implements ExecutorModule {
  
     private void findAndInvokeAnyNamedEntity(
             Initiator initiator, ExecutorDefaultCommand command) {
-        debug("[EXECUTOR] [executeDefault] [find and invoke any entity by] : " + command.argument());
         ValueFlow<NamedEntity> entityFlow = 
                 this.findNamedEntityByArgument(initiator, command.argument());
         switch ( entityFlow.result() ) {
@@ -1072,14 +1171,12 @@ class ExecutorModuleWorker implements ExecutorModule {
                 if ( entityFlow.asComplete().hasValue() ) {
                     return entityFlow;
                 } else {
-                    debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
                     return this.domain
                             .allEntities()
                             .findByNamePattern(initiator, argument);
                 }
             }
             case FAIL : {
-                debug("[EXECUTOR] [executeDefault] [find by argument] not found by exact " + argument);
                 return this.domain
                         .allEntities()
                         .findByNamePattern(initiator, argument);
@@ -1096,7 +1193,6 @@ class ExecutorModuleWorker implements ExecutorModule {
     private VoidFlow invokeFoundEntity(
             Initiator initiator, NamedEntity entity, ExecutorDefaultCommand command) {
         if ( entity.type().isNotDefined() ) {
-            debug("[EXECUTOR] [executeDefault] [find any entity by] not found any : " + command.argument());
             return voidFlowFail(format("...type of '%s' is not defined.", entity.name()));
         }        
         
@@ -1318,22 +1414,62 @@ class ExecutorModuleWorker implements ExecutorModule {
             if ( pathIsDirectory(finalListingRoot) ) {
                 this.doListing(initiator, location, subpath);                    
             } else {
-                FileSearchResult result = this.fileSearcher.find(
-                        subpath, location.path(), SIMILAR_MATCH, FOLDERS_ONLY);
-                if ( result.isOk() ) {
-                    if ( result.success().hasSingleFoundFile() ) {
-                        this.doListing(initiator, location, result.success().foundFile());
-                    } else {
-                        this.resolveMultipleFoldersAndDoListing(
-                                initiator, location, subpath, result.success().foundFiles());
-                    }
+                if ( nonNull(this.fileWalker) ) {
+                    this.listPathInLocationByFileWalker(initiator, location, subpath);
                 } else {
-                    this.ioEngine.report(
-                            initiator, format("%s/%s nof found.", location.path(), subpath));
+                    this.listPathInLocationByFileSearcher(initiator, location, subpath);
                 }
             }
         } else {
             this.ioEngine.report(initiator, "subpath is empty.");
+        }
+    }
+    
+    private void listPathInLocationByFileWalker(
+            Initiator initiator, Location location, String subpath) {
+        ValueFlow<String> subpathFlow = this.fileWalker
+                .search(subpath)
+                .in(location)
+                .by(initiator)
+                .withMaxDepthOf(5)
+                .andGetResult();
+        
+        switch ( subpathFlow.result() ) {
+            case COMPLETE : {
+                if ( subpathFlow.asComplete().hasValue() ) {
+                    subpath = subpathFlow.asComplete().getOrThrow();
+                    this.doListing(initiator, location, subpath);
+                } else {
+                    this.ioEngine.report(
+                            initiator, format("%s/%s not found.", location.name(), subpath));
+                }                
+                break;
+            }    
+            case FAIL : {
+                this.ioEngine.report(initiator, subpathFlow.asFail().reason());
+                break;
+            }    
+            case STOP :
+            default : {
+                // do nothing;
+            }
+        }
+    }
+    
+    private void listPathInLocationByFileSearcher(
+            Initiator initiator, Location location, String subpath) {
+        FileSearchResult result = this.fileSearcher.find(
+                subpath, location.path(), SIMILAR_MATCH, FOLDERS_ONLY);
+        if ( result.isOk() ) {
+            if ( result.success().hasSingleFoundFile() ) {
+                this.doListing(initiator, location, result.success().foundFile());
+            } else {
+                this.resolveMultipleFoldersAndDoListing(
+                        initiator, location, subpath, result.success().foundFiles());
+            }
+        } else {
+            this.ioEngine.report(
+                    initiator, format("%s/%s nof found.", location.path(), subpath));
         }
     }
     

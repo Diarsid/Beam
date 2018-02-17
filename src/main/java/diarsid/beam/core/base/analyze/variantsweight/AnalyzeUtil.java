@@ -19,7 +19,7 @@ import static diarsid.beam.core.base.util.MathUtil.ratio;
  */
 class AnalyzeUtil {     
     
-    private static final double WEIGHT_TRESHOLD = 30;
+    private static final double ADJUSTED_WEIGHT_TRESHOLD = 30;
     
     static int lengthTolerance(int variantLength) {
         if ( variantLength < 20 ) {
@@ -197,12 +197,9 @@ class AnalyzeUtil {
         System.out.println("unsorted: " + countUsorted(a));
     }
     
-    static boolean isVariantOk(WeightedVariant variant) {
-        return variant.weight() <= WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
-    }
-
-    static boolean isVariantTextLengthTooBad(double variantWeight, int variantLength) {
-        return variantWeight > WEIGHT_TRESHOLD + lengthTolerance(variantLength);
+    static boolean isVariantOkWhenAdjusted(WeightedVariant variant) {
+        return variant.weight() <= 
+                ADJUSTED_WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
     }
     
     static boolean missedTooMuch(int missed, int variantLength) {

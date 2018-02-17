@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.base.os.treewalking.base;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -39,6 +40,14 @@ public class FolderTypeDetector {
     
     public static FolderTypeDetector getFolderTypeDetector() {
         return DETECTOR;
+    }
+    
+    public FolderType safeExamineTypeOf(File file) {
+        try {
+            return examineTypeOf(file.toPath());
+        } catch (IOException e) {
+            return RESTRICTED_FOLDER;
+        }
     }
     
     public FolderType examineTypeOf(Path folder) throws IOException {

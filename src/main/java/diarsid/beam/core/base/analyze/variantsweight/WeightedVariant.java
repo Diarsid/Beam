@@ -10,6 +10,8 @@ import java.io.Serializable;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
+import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimateWeightOf;
+
 /**
  *
  * @author Diarsid
@@ -26,6 +28,12 @@ public class WeightedVariant
     WeightedVariant(Variant parent, double weight) {
         super(parent);
         this.weight = weight;
+    }
+    
+    public boolean hasEqualOrBetterWeightThan(WeightEstimate estimate) {
+        WeightEstimate thisEstimate = estimateWeightOf(this);
+        boolean hasEqualOrBetter = thisEstimate.isEqualOrBetterThan(estimate);
+        return hasEqualOrBetter;
     }
     
     public boolean betterThan(WeightedVariant other) {
@@ -78,7 +86,7 @@ public class WeightedVariant
                 return 0;
             }
         } else {
-            return this.compareTo(other);
+            return super.compareTo(other);
         }        
     }    
 }

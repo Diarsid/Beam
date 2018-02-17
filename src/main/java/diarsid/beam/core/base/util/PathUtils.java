@@ -117,7 +117,11 @@ public class PathUtils {
     
     public static String extractLastElementFromPath(String path) {
         int lastSeparatorIndex = indexOfLastPathSeparator(path);
-        return path.substring(lastSeparatorIndex + 1, path.length());
+        if ( lastSeparatorIndex < 0 ) {
+            return path;
+        } else {
+            return path.substring(lastSeparatorIndex + 1, path.length());
+        }        
     }
     
     public static boolean containsPathSeparator(String target) {

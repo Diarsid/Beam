@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -33,17 +34,19 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class WeightedVariants implements Serializable {
     
-    private final boolean isDiversityAcceptable;
     private final List<WeightedVariant> variants;
     private List<WeightedVariant> currentSimilarVariants;
     private int currentVariantIndex;
 
-    WeightedVariants(List<WeightedVariant> variants, boolean isDiversityAcceptable) {
+    WeightedVariants(List<WeightedVariant> variants) {
         this.variants = new ArrayList<>(variants);
         sort(this.variants);
         this.currentVariantIndex = -1;
-        this.isDiversityAcceptable = isDiversityAcceptable;
         this.currentSimilarVariants = null;
+    }
+    
+    public static WeightedVariants unite(List<WeightedVariant> variants) {
+        return new WeightedVariants(variants);
     }
     
     public IntStream indexes() {
@@ -68,7 +71,12 @@ public class WeightedVariants implements Serializable {
     } 
     
     public int currentTraverseIndex() {
-        return this.currentVariantIndex;
+        if ( nonEmpty(this.currentSimilarVariants) ) {
+            // +1 is used in orded to balance subsequent index-- when .next() will be called.
+            return this.currentVariantIndex - this.currentSimilarVariants.size() + 1;
+        } else {
+            return this.currentVariantIndex;
+        }        
     }
     
     public boolean isEmpty() {
@@ -143,10 +151,6 @@ public class WeightedVariants implements Serializable {
         }
     }
     
-    public boolean hasAcceptableDiversity() {
-        return this.isDiversityAcceptable;
-    }
-    
     public boolean hasOne() {
         return ( this.variants.size() == 1 );
     }
@@ -160,7 +164,7 @@ public class WeightedVariants implements Serializable {
     }
     
     public boolean next() {
-        if ( this.currentSimilarVariants != null ) {
+        if ( nonNull(this.currentSimilarVariants) ) {
             this.currentSimilarVariants.clear();
         }
         if ( this.currentVariantIndex < this.variants.size() - 1 ) {
@@ -194,7 +198,7 @@ public class WeightedVariants implements Serializable {
     }
     
     public List<WeightedVariant> nextSimilarVariants() {
-        if ( this.currentSimilarVariants != null ) {
+        if ( nonNull(this.currentSimilarVariants) ) {
             this.currentSimilarVariants.clear();
         } else {
             this.currentSimilarVariants = new ArrayList<>();

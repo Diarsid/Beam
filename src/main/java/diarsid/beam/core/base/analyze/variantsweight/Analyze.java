@@ -22,13 +22,12 @@ import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
-import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOk;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOkWhenAdjusted;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
@@ -46,7 +45,7 @@ public class Analyze {
     private static boolean isLogEnabled;
     
     static {
-        isLogEnabled = configuration().asBoolean("log.analyze");
+        isLogEnabled = configuration().asBoolean("analyze.weight.log");
     }
         
     private Analyze() {        
@@ -120,8 +119,7 @@ public class Analyze {
     
     private static List<String> priceApiCase() {
         return asList(  
-                "job/search",
-                "projects/diarsid");
+                "images");
     }
     
     private static List<String> javaSpecCase() {
@@ -172,7 +170,7 @@ public class Analyze {
     }
     
     private static void weightAnalyzeCase() {
-        weightStrings("joserac", priceApiCase());
+        weightStrings("games", priceApiCase());
     }
 
     private static void weightAnalyzeCases() {
@@ -277,7 +275,12 @@ public class Analyze {
     }
     
     public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
-        pattern = lower(pattern);
+        List<WeightedVariant> weightedVariants = weightVariantsList(pattern, variants);
+        return new WeightedVariants(weightedVariants);
+    }
+    
+    public static List<WeightedVariant> weightVariantsList(String pattern, List<Variant> variants) {
+                pattern = lower(pattern);
         sort(variants);        
         Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
         Map<String, Variant> variantsByText = new HashMap<>();
@@ -340,26 +343,76 @@ public class Analyze {
                     } 
                 } else {
                     variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
-                    weightedVariants.add(analyze.newVariant);
+                    weightedVariants.add(analyze.newVariant);                  
                 }
             } else {
-                weightedVariants.add(analyze.newVariant);
+                weightedVariants.add(analyze.newVariant);                
             } 
             analyze.clearAnalyze();
         }
         
         double delta = minWeight;
-        weightedVariants = weightedVariants
-                .stream()
-                .peek(weightedVariant -> weightedVariant.adjustWeight(delta))
-                .filter(weightedVariant -> isVariantOk(weightedVariant))
-                .collect(toList());
+//        weightedVariants = weightedVariants
+//                .stream()
+//                .peek(weightedVariant -> weightedVariant.adjustWeight(delta))
+//                .filter(weightedVariant -> isVariantOkWhenAdjusted(weightedVariant))
+//                .collect(toList());
         sort(weightedVariants);
         shrink(weightedVariants, 11);
         debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());        
         weightedVariants
                 .stream()
                 .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
-        return new WeightedVariants(weightedVariants, isDiversitySufficient(minWeight, maxWeight));
+        isDiversitySufficient(minWeight, maxWeight);
+        return weightedVariants;
+    }
+    
+    private static double minWeightFromVariants(List<WeightedVariant> weightedVariants) {
+        if ( weightedVariants.isEmpty() ) {
+            return 0.0;
+        }
+        
+        double minWeight = MAX_VALUE;
+        double varWeight;
+        for (WeightedVariant variant : weightedVariants) {
+            varWeight = variant.weight();
+            if ( varWeight <= minWeight ) {
+                minWeight = varWeight;
+            }
+        }
+        
+        return minWeight;
+    }
+    
+    public static void adjustWeightAndSweepBad(List<WeightedVariant> weightedVariants) {
+        if ( weightedVariants.isEmpty() ) {
+            return;
+        }
+        
+        double minWeight = minWeightFromVariants(weightedVariants);        
+        WeightedVariant variant;
+        for (int i = 0; i < weightedVariants.size(); i++) {
+            variant = weightedVariants.get(i);
+            variant.adjustWeight(minWeight);
+            if ( ! isVariantOkWhenAdjusted(variant) ) {
+                weightedVariants.remove(i);
+            }
+        }
+    }
+    
+    public static void adjustWeightAndSweepBad(
+            List<WeightedVariant> weightedVariants, double minWeight) {
+        if ( weightedVariants.isEmpty() ) {
+            return;
+        }
+        
+        WeightedVariant variant;
+        for (int i = 0; i < weightedVariants.size(); i++) {
+            variant = weightedVariants.get(i);
+            variant.adjustWeight(minWeight);
+            if ( ! isVariantOkWhenAdjusted(variant) ) {
+                weightedVariants.remove(i);
+            }
+        }
     }
 }

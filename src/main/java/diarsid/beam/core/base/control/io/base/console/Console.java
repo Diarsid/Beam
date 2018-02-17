@@ -185,7 +185,7 @@ public class Console implements OuterIoEngine {
                             continue similarVariantsChoosing;
                         }
                     } else if ( isHelpRequest(line) ) {
-                        return helpRequestAnswerFor(variants.current().index());
+                        return helpRequestAnswerFor(variants.currentTraverseIndex());
                     } else {
                         if ( isNo(line) ) {
                             continue variantsChoosing;

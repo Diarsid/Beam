@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.base.os.treewalking.search;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import static java.nio.file.Files.isDirectory;
@@ -14,11 +15,20 @@ import static java.nio.file.Files.isDirectory;
  * @author Diarsid
  */
 enum ItemType {
+    
     FILE,
     FOLDER;
     
-    static ItemType typeOf(Path path) {
+    static ItemType fileItemTypeOf(Path path) {
         if ( isDirectory(path) ) {
+            return FOLDER;
+        } else {
+            return FILE;
+        }
+    }
+    
+    static ItemType fileItemTypeOf(File file) {
+        if ( file.isDirectory() ) {
             return FOLDER;
         } else {
             return FILE;

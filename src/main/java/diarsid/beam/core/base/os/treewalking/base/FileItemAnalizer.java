@@ -28,19 +28,19 @@ class FileItemAnalizer {
     private final List<String> projectSpecificFiles;
     
     FileItemAnalizer() {
-        this.programSpecificFileSigns = asList(new String[] {
+        this.programSpecificFileSigns = asList(
             ".bat", ".sh", ".exe", ".bash", ".dll", 
             "conf", ".cfg", ".hbm", ".db", ".dat", 
             "readme", ".log", ".git", ".gitattributes",
-            ".gitignore", "pom.xml", });
-        this.projectSpecificFiles = asList(new String[] {
+            ".gitignore", "pom.xml");
+        this.projectSpecificFiles = asList(
             ".project", ".pom", "pom.xml", "node_modules", 
-            ".idea", "package.json", ".gitignore", ".gitattributes"});
-        this.programSpecificFolders = asList(new String[] {
-            "bin", "lib", "log", "conf", "config", "temp"});
-        this.restrictedSpecificFolder = asList(new String[] {
+            ".idea", "package.json", ".gitignore", ".gitattributes");
+        this.programSpecificFolders = asList(
+            "bin", "lib", "log", "conf", "config", "temp");
+        this.restrictedSpecificFolder = asList(
             "nbproject", ".git", ".sonar", ".settings", 
-            "src", "$RECYCLE.BIN"});
+            "src", "$RECYCLE.BIN");
     }
     
     boolean isProjectSpecificFile(Path item) {

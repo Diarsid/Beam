@@ -14,5 +14,11 @@ public enum FolderType {
     PROJECT_FOLDER,
     RESTRICTED_FOLDER,
     LIST_OF_EXECUTABLES,
-    USUAL_FOLDER
+    USUAL_FOLDER;
+    
+    public boolean isNotRestricted() {
+        return this != PROGRAM_FOLDER 
+                && this != PROJECT_FOLDER 
+                && this != RESTRICTED_FOLDER;
+    }
 }

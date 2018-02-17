@@ -122,4 +122,8 @@ public class StringUtils {
     public static String joining(String... strings) {
         return join("", strings);
     }
+    
+    public static boolean haveEqualLength(String one, String two) {
+        return one.length() == two.length();
+    }
 }

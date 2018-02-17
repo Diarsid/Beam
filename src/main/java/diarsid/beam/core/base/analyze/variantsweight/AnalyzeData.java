@@ -17,8 +17,9 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.UNINITIALIZED;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantTextLengthTooBad;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.BAD;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimate;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
@@ -87,7 +88,7 @@ class AnalyzeData {
     }
 
     boolean isVariantTooBad() {
-        return isVariantTextLengthTooBad(this.variantWeight, this.variantText.length());
+        return estimate(this.variantWeight).equals(BAD);
     }
 
     void isFirstCharMatchInVariantAndPattern(String pattern) {
