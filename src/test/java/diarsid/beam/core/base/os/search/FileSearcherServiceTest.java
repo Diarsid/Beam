@@ -264,7 +264,6 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().foundFile();
                 assertTrue(file.equals("folder_1/inner/nested/yyyAAA.txt"));
-                System.out.println("passed");
             } else {
                 fail();
             }

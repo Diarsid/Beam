@@ -147,6 +147,21 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+    
+    @Test
+    public void test_EarthMoviesCase_soulprogs() {
+        pattern = "earhmives";
+        
+        variants = asList(
+                "Films/Movies/Middle_Earth/The_Hobbit",
+                "Films/Movies/Middle_Earth");
+        
+        expected = asList( 
+                "Films/Movies/Middle_Earth",
+                "Films/Movies/Middle_Earth/The_Hobbit");
+        
+        weightVariantsAndCheckMatching();
+    }
 
     @Test
     public void test_DiarsidProjectsCase_diarsidprojecs() {

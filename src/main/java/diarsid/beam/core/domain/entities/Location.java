@@ -6,7 +6,6 @@
 
 package diarsid.beam.core.domain.entities;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -22,14 +21,13 @@ import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.openWithDesktop;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 
 /**
  *
@@ -82,7 +80,7 @@ public class Location
                         openWithDesktop(finalTarget);   
                         successCallback.call();
                     } catch (IOException | IllegalArgumentException e) {
-                        failCallback.onEvent("cannot open target due to: " + e.getMessage());
+                        failCallback.onEvent(format("cannot open '%s' in %s", target, this.name));
                         logError(this.getClass(), e);
                     }
                 } else {
@@ -107,10 +105,10 @@ public class Location
             File location = new File(this.path);
             if ( location.exists() && location.isDirectory() ) {
                 try {
-                    Desktop.getDesktop().open(location);   
+                    openWithDesktop(location);   
                     successCallback.call();
                 } catch (IOException | IllegalArgumentException e) {
-                    failCallback.onEvent("cannot open location due to: " + e.getMessage());
+                    failCallback.onEvent(format("cannot open %s", this.name));
                     logError(this.getClass(), e);
                 }
             } else {

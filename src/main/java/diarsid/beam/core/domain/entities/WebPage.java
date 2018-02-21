@@ -111,7 +111,7 @@ public class WebPage
                 calbackOnSuccess.call();
             } catch (URISyntaxException|IOException ex) {
                 logError(this.getClass(), ex.getMessage());
-                callbackOnFail.onEvent(ex.getMessage());
+                callbackOnFail.onEvent(format("cannot browse %s", this.name));
             } 
         });
     }

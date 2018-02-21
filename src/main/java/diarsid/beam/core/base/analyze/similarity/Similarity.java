@@ -171,7 +171,12 @@ public class Similarity {
     }
     
     private static int indexOfChain(String target, char chain1, char chain2) {
-        int indexOfChain1 = target.indexOf(chain1);
+        return indexOfChainFrom(target, -1, chain1, chain2);
+    }
+    
+    private static int indexOfChainFrom(
+            String target, int fromExclusive, char chain1, char chain2) {
+        int indexOfChain1 = target.indexOf(chain1, fromExclusive + 1);
         if ( indexOfChain1 < 0 ) {
             return -2;
         }
@@ -411,9 +416,8 @@ public class Similarity {
         int patternCharPercent = 100 / pattern.length();
         int similarityFound = 0;
         int similarityResult;
-        int indexDiff = 0;
-        int indexDiffAbs = 0;
         int patternCharsNotFoundPercentSum = 0;
+        int previousChainsNotFoundQty = 0;
         boolean previousChainFoundAsReverse = false;
         boolean previousChainFoundAsWeak = false;
         char weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
@@ -421,13 +425,11 @@ public class Similarity {
         int consistencyPercent;
         int inconsistencySum = 0;
         
-        int maxInconsistency = abs(target.length() - pattern.length());
-        if ( maxInconsistency < pattern.length() ) {
-            maxInconsistency = pattern.length();
+        int maxInconsistency = pattern.length() - 1;
+        if ( pattern.length() == 3 ) {
+            maxInconsistency = 3;
         }
-        if ( maxInconsistency > pattern.length() * 3 ) {
-            maxInconsistency = pattern.length() * 3;
-        }
+        
         if ( pattern.length() > target.length() ) {
             similarityLog("pattern is longer than target!", 1);
             similarityPercentSum = similarityPercentSum - similarityPercent;
@@ -440,6 +442,10 @@ public class Similarity {
             similarityLog(format("chain '%s%s'", chain1, chain2), 1);
             
             chainIndexTarget = indexOfChain(target, chain1, chain2);
+            if ( chainIndexTarget > -1 && chainIndexTarget == chainIndexTargetPrev ) {
+                similarityLog("found, equal to previous, ignore and continue", 2);
+                chainIndexTarget = indexOfChainFrom(target, chainIndexTarget, chain1, chain2);
+            }
             if ( chainIndexTarget == -2 ) {
                 patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
                 similarityLog(format("char '%s' not found", chain1), 2);
@@ -449,103 +455,127 @@ public class Similarity {
                 }
             }
             if ( chainIndexTarget > -1 ) {
-                similarityLog("found", 2);
-                similarityPercentSum = similarityPercentSum + similarityPercent;
-                similarityFound++;
-                if ( chainIndexTargetPrev > -1 ) {
-                    indexDiff = chainIndexTarget - chainIndexTargetPrev;
-                    if ( indexDiff < 0 ) {
-                        similarityLog("chain has reverse consistency!", 2);
-                        indexDiff--;
-                    }
-                    indexDiffAbs = abs(indexDiff) - 1;
-                    inconsistencySum = inconsistencySum + indexDiffAbs;
-                    similarityLog(format("chain inconsistency : %s", indexDiffAbs), 2);
-                }     
+                similarityLog("found", 2);                
                 if ( previousChainFoundAsWeak ) {
                     if ( weakChainLastChar == chain1 ) {
                         similarityLog("previous weak chain is consistent <- join!", 2);
                         similarityPercentSum = similarityPercentSum + similarityPercent;
                         similarityFound++;
+                    }
+                } else {
+                    if ( previousChainsNotFoundQty == 1 && similarityPercentSum > 0 ) {
+                        similarityLog("previous not found chain found partially", 2);
+                        similarityPercentSum = similarityPercentSum + similarityPercent/2;
+                    }
+                }
+                if ( chainIndexTargetPrev > -1 ) {
+                    if ( chainIndexTarget < chainIndexTargetPrev ) {
                         inconsistencySum++;
                     }
                 }
+                similarityPercentSum = similarityPercentSum + similarityPercent;
+                similarityFound++;
                 chainIndexTargetPrev = chainIndexTarget;
                 previousChainFoundAsReverse = false;
                 previousChainFoundAsWeak = false;
+                previousChainsNotFoundQty = 0;
                 weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
-            } else {
-                reverseChain1 = chain2;
-                reverseChain2 = chain1;
-                reverseChainIndexTarget = indexOfChain(target, reverseChain1, reverseChain2);
-                if ( reverseChainIndexTarget > -1 ) {
-                    similarityLog("found reverse", 2);
-                    similarityPercentSum = similarityPercentSum + similarityPercent;
-                    similarityFound++;
-                    inconsistencySum++;
-                    if ( chainIndexTargetPrev > -1 ) {
-                        indexDiff = reverseChainIndexTarget - chainIndexTargetPrev;
-                        if ( indexDiff < 0 ) {
-                            similarityLog("chain has reverse consistency!", 2);
-                            indexDiff--;
+            } else {                
+                similarityLog("not found directly", 2);
+                if ( containsWeakChain(target, chain1, chain2) ) {
+                    if ( previousChainFoundAsReverse ) {
+                        similarityLog("found as weak chain after reverse <- join!", 2);
+                        similarityPercentSum = similarityPercentSum + similarityPercent;
+                        similarityFound++;
+                    } else {
+                        similarityLog("found as weak chain, not after reverse", 2);
+                        if ( chainIndexPattern == (pattern.length() - 2) && 
+                                chain2 == target.charAt(target.length() - 1)) {
+                            similarityLog("weak chain is last <- join!", 2);
+                            similarityPercentSum = similarityPercentSum + similarityPercent;
+                            similarityFound++;
                         }
-                        indexDiffAbs = abs(indexDiff) - 1;
-                        inconsistencySum = inconsistencySum + indexDiffAbs;
-                        similarityLog(format("chain inconsistency : %s", indexDiffAbs), 2);                        
                     }
-                    if ( previousChainFoundAsWeak ) {
-                        similarityLog("previous chain found as weak <- join!", 2);
+                    previousChainFoundAsReverse = false;
+                    previousChainFoundAsWeak = true;
+                    weakChainLastChar = chain2;
+                    previousChainsNotFoundQty = 0;
+                } else {
+                    reverseChain1 = chain2;
+                    reverseChain2 = chain1;
+                    reverseChainIndexTarget = indexOfChain(target, reverseChain1, reverseChain2);
+                    if ( reverseChainIndexTarget > -1 && chainIndexTargetPrev == reverseChainIndexTarget ) {
+                        similarityLog("found reverse, equal to previous, ignore and continue", 2);
+                        reverseChainIndexTarget = indexOfChainFrom(target, chainIndexTargetPrev, reverseChain1, reverseChain2);
+                    }
+                    if ( reverseChainIndexTarget > -1 ) {
+                        similarityLog("found reverse", 2);
                         similarityPercentSum = similarityPercentSum + similarityPercent;
                         similarityFound++;
                         inconsistencySum++;
-                    }
-                    chainIndexTargetPrev = reverseChainIndexTarget;
-                    previousChainFoundAsReverse = true;
-                    previousChainFoundAsWeak = false;
-                    weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
-                } else {
-                    similarityLog("not found directly", 2);
-                    if ( containsWeakChain(target, chain1, chain2) ) {
-                        if ( previousChainFoundAsReverse ) {
-                            similarityLog("found as weak chain after reverse <- join!", 2);
+                        if ( previousChainFoundAsWeak ) {
+                            similarityLog("previous chain found as weak <- join!", 2);
                             similarityPercentSum = similarityPercentSum + similarityPercent;
                             similarityFound++;
-                            inconsistencySum++;
-                        } else {
-                            similarityLog("found as weak chain, not after reverse", 2);
-                            if ( chainIndexPattern == (pattern.length() - 2) && 
-                                    chain2 == target.charAt(target.length() - 1)) {
-                                similarityLog("weak chain is last <- join!", 2);
-                                similarityPercentSum = similarityPercentSum + similarityPercent;
-                                similarityFound++;
-                                inconsistencySum++;
-                            }
                         }
-                        previousChainFoundAsReverse = false;
-                        previousChainFoundAsWeak = true;
-                        weakChainLastChar = chain2;
-                    } else {
-                        if ( chainIndexTargetPrev > -1 ) {
-//                            char prevChain1 = target.charAt(chainIndexTargetPrev);
-                            char prevChain2 = target.charAt(chainIndexTargetPrev + 1);
-                            if ( prevChain2 == chain1 || prevChain2 == chain2 ) {
-                                similarityLog("found partially", 2);
-                                similarityPercentSum = similarityPercentSum + similarityPercent/2;
-                                similarityFound++;
-                                inconsistencySum++;
-                            } 
-                        }
-                        if ( chainIndexPattern == (pattern.length() - 2) && 
-                                    chain2 == target.charAt(target.length() - 1)) {
-                                similarityLog("last chars match", 2);
-                                similarityPercentSum = similarityPercentSum + similarityPercent/2;
-                                similarityFound++;
-                                inconsistencySum++;
-                            }
-                        previousChainFoundAsReverse = false;
+                        chainIndexTargetPrev = reverseChainIndexTarget;
+                        previousChainFoundAsReverse = true;
                         previousChainFoundAsWeak = false;
                         weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
-                    }            
+                        previousChainsNotFoundQty = 0;
+                    } else {
+                        if ( containsWeakChain(target, reverseChain1, reverseChain2) && similarityPercentSum > similarityPercent ) {
+                            similarityPercentSum = similarityPercentSum + similarityPercent / 3;
+                            similarityLog("chain found as weak and reverse", 2);
+                        } else {
+                            previousChainsNotFoundQty++;
+                            if ( chainIndexTargetPrev > -1 ) {
+                                char prevChain2 = target.charAt(chainIndexTargetPrev + 1);
+                                if ( prevChain2 == chain1 || prevChain2 == chain2 ) {
+                                    similarityLog("found partially", 2);
+                                    similarityPercentSum = similarityPercentSum + (2 * similarityPercent / 3);
+                                    similarityFound++;
+                                    previousChainsNotFoundQty--;
+                                } 
+                            } else {
+                                int chain1IndexTarget = target.indexOf(chain1);
+                                int chain2IndexTarget = target.indexOf(chain2);
+                                if ( chain1IndexTarget > -1 ) {
+                                    if ( chain2IndexTarget > -1 ) {
+                                        similarityLog("found partially", 2);
+                                        similarityPercentSum = similarityPercentSum + (3 * similarityPercent / 4);
+                                        similarityFound++;
+                                        previousChainsNotFoundQty--;
+                                        if ( chain1IndexTarget > chain2IndexTarget ) {
+                                            inconsistencySum++;
+                                            chainIndexTargetPrev = chain1IndexTarget;
+                                        } else {
+                                            chainIndexTargetPrev = chain2IndexTarget;
+                                        }
+                                    } else {
+                                        similarityLog("found partially", 2);
+                                        similarityPercentSum = similarityPercentSum + (2 * similarityPercent / 3);
+                                        similarityFound++;
+                                        previousChainsNotFoundQty--;
+                                    }
+                                } else {                                    
+                                    if ( chain2IndexTarget > -1 ) {
+                                        
+                                    }
+                                }
+                            }
+                            if ( chainIndexPattern == (pattern.length() - 2) && 
+                                        chain2 == target.charAt(target.length() - 1)) {
+                                similarityLog("last chars match", 2);
+                                similarityPercentSum = similarityPercentSum + (2 * similarityPercent / 3);
+                                similarityFound++;
+                                previousChainsNotFoundQty--;
+                            }
+                            previousChainFoundAsReverse = false;
+                            previousChainFoundAsWeak = false;
+                            weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
+                        }                        
+                    }
                 }
             }
         }
@@ -562,46 +592,45 @@ public class Similarity {
             return 0;
         }
         
-        if ( similarityFound > 0 ) {
-            consistencyPercent = 100 - ( ( inconsistencySum * 100 / similarityFound ) ) / maxInconsistency;
+        if ( similarityPercentSum > 0 ) {
+            consistencyPercent = 100 - ( inconsistencySum * 100 / maxInconsistency );
         } else {
             consistencyPercent = 0;
         }
         similarityLog(format("consistency     : %s%%", consistencyPercent));
         similarityLog(format("chars not found : %s%%", patternCharsNotFoundPercentSum));
         similarityLog(format("similarity      : %s%%", similarityPercentSum));
-        
-        if ( ( pattern.length() * 100 / target.length() ) > 74 && 
-                patternCharsNotFoundPercentSum < 27 ) {
-            similarityResult = ( (similarityPercentSum + ((100 - patternCharsNotFoundPercentSum) / 10)) * consistencyPercent / 100 );
-        } else {
-            similarityResult = ( similarityPercentSum * consistencyPercent / 100 );
+
+        if ( patternCharsNotFoundPercentSum > 0 ) {
+            similarityPercentSum = similarityPercentSum * (100 - patternCharsNotFoundPercentSum) / 100;
         }
+        similarityResult = ( similarityPercentSum * consistencyPercent / 100 );
         
         similarityLog(format("result : %s%%", similarityResult));
         return similarityResult;
     }
     
     private static int requiredSimilarityPercentDependingOn(int patternLength) {
-        switch ( patternLength ) {
-            case 0 : return 49;
-            case 1 : return 49;
-            case 2 : return 49;
-            case 3 : return 49;
-            case 4 : return 49;
-            case 5 : return 51;   
-            case 6 : return 53;   
-            case 7 : return 56;    
-            case 8 : return 58;
-            case 9 : return 60;
-            case 10 : return 62;
-            case 11 : return 63;    
-            case 12 : return 64; 
-            case 13 : return 65;
-            case 14 : return 66;    
-            case 15 : return 67;
-            default : return 68;
-        }
+        return 51 + patternLength + (patternLength / 5);
+//        switch ( patternLength ) {
+//            case 0 : return 49;
+//            case 1 : return 49;
+//            case 2 : return 49;
+//            case 3 : return 49;
+//            case 4 : return 49;
+//            case 5 : return 56;   
+//            case 6 : return 53;   
+//            case 7 : return 56;    
+//            case 8 : return 58;
+//            case 9 : return 60;
+//            case 10 : return 62;
+//            case 11 : return 63;    
+//            case 12 : return 64; 
+//            case 13 : return 65;
+//            case 14 : return 66;    
+//            case 15 : return 67;
+//            default : return 68;
+//        }
     }
     
     private static int requiredStrictSimilarityPercentDependingOn(int patternLength) {

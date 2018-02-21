@@ -89,7 +89,7 @@ class AnalyzePositionsData {
     boolean skipNextPatternChar;
     int charsInClusterQty;
     int currentCharInVariantQty;
-    int savedCurrentPatternCharPositionInVariant;
+    int currentPatternCharPositionInVariantToSave;
     // --
     
     int distanceBetweenClusters;
@@ -383,7 +383,7 @@ class AnalyzePositionsData {
 
             }         
 
-            savedCurrentPatternCharPositionInVariant = currentPatternCharPositionInVariant;
+            currentPatternCharPositionInVariantToSave = currentPatternCharPositionInVariant;
             if ( direction.equals(FORWARD) ) {
                 currentPatternCharPositionInVariant = 
                         data.variantText
@@ -400,14 +400,14 @@ class AnalyzePositionsData {
         }
 
         // if current position has not been added because it does not satisfy requirements...
-        if ( ! addCurrentCharFoundPositionToPositions && ! positionAlreadyFilled ) {
+        if ( ! addCurrentCharFoundPositionToPositions ) {
             // ...but if it is STEP_1 and there are only 1 such char in the whole pattern, there is not sense
             // to do operation for this char in subsequent steps - add this char to filled positions and exclude
             // it from subsequent iterations
             if ( findPositionsStep.equals(STEP_1) && currentCharInVariantQty == 1 ) {
-                logAnalyze("        [SAVE] '%s'(%s in variant) is single char in variant", currentChar, savedCurrentPatternCharPositionInVariant);
-                positions[currentPatternCharIndex] = savedCurrentPatternCharPositionInVariant;
-                filledPositions.add(savedCurrentPatternCharPositionInVariant);
+                logAnalyze("        [SAVE] '%s'(%s in variant) is single char in variant", currentChar, currentPatternCharPositionInVariantToSave);
+                positions[currentPatternCharIndex] = currentPatternCharPositionInVariantToSave;
+                filledPositions.add(currentPatternCharPositionInVariantToSave);
             } else {
                 logAnalyze("        [info] position of '%s' is not defined", currentChar);
                 localUnclusteredPatternCharIndexes.add(currentPatternCharIndex);
@@ -415,7 +415,7 @@ class AnalyzePositionsData {
         }
 
         addCurrentCharFoundPositionToPositions = false;
-        savedCurrentPatternCharPositionInVariant = UNINITIALIZED;
+        currentPatternCharPositionInVariantToSave = UNINITIALIZED;
             
     }
     

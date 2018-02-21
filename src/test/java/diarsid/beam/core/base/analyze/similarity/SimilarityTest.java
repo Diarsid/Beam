@@ -29,13 +29,38 @@ public class SimilarityTest {
     }
     
     @Test
-    public void test_isSimilar_get() {
+    public void test_isSimilar_get_gte() {
         assertTrue(isSimilar("get", "gte"));
     }
     
     @Test
-    public void test_isSimilar_page() {
+    public void test_isSimilar_get_tge() {
+        assertFalse(isSimilar("get", "tge"));
+    }
+    
+    @Test
+    public void test_isSimilar_get_tag() {
+        assertFalse(isSimilar("get", "tag"));
+    }
+    
+    @Test
+    public void test_isSimilar_get_teg() {
+        assertFalse(isSimilar("get", "teg"));
+    }
+    
+    @Test
+    public void test_isSimilar_page_paeg() {
         assertTrue(isSimilar("page", "paeg"));
+    }
+    
+    @Test
+    public void test_isSimilar_inner_ier() {
+        assertTrue(isSimilar("inner", "ier"));
+    }
+    
+    @Test
+    public void test_isSimilar_page_apeg() {
+        assertFalse(isSimilar("page", "apeg"));
     }
     
     @Test
@@ -64,18 +89,33 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isStrictSimilar_exit_exet() {
+        assertTrue(isSimilar("exit", "exet"));
+    }
+    
+    @Test
+    public void test_isStrictSimilar_exit_exut() {
+        assertTrue(isSimilar("exit", "exut"));
+    }
+    
+    @Test
     public void test_isStrictSimilar_locations_locastion() {
         assertTrue(isStrictSimilar("locations", "locastion"));
     }
     
     @Test
     public void test_isStrictSimilar_webpage_egpawe_false() {
-        assertFalse(isStrictSimilar("webpage", "egpawe"));
+        assertFalse(isSimilar("webpage", "egpawe"));
     }
     
     @Test
     public void test_isSimilar_projects_programs_false() {
         assertFalse(isSimilar("projects", "programs"));
+    }
+    
+    @Test
+    public void test_isSimilar_images_games_false() {
+        assertFalse(isSimilar("images", "games"));
     }
     
     @Test
@@ -178,63 +218,68 @@ public class SimilarityTest {
     @Test
     public void test_isStrictSimilar_page_image() {
         assertFalse(isStrictSimilar("page", "image"));
-    }    
+    } 
+    
+    @Test
+    public void test_isSimilar_dirct_directory() {
+        assertTrue(isSimilar("directory", "dirct"));
+    } 
     
     @Test
     public void test_hasSimilarIgnoreCase_directory() {
         assertTrue(hasSimilar(toSet(
-                                    "dir", 
-                                    "direct", 
-                                    "directory"), "dirct"));
+                "dir", 
+                "direct", 
+                "directory"), "dirct"));
     }
     
     @Test
     public void test_hasSimilarIgnoreCase_get_gte() {
         assertTrue(hasSimilar(toSet(
-                                    "?", 
-                                    "find", 
-                                    "get"), "gte"));
+                "?", 
+                "find", 
+                "get"), "gte"));
     }
     
     @Test
     public void test_hasSimilarIgnoreCase_find() {
         assertTrue(hasSimilar(toSet(
-                                    "?", 
-                                    "get", 
-                                    "find"), "fnd"));
+                "?", 
+                "get", 
+                "find"), "fnd"));
     }
     
     @Test
     public void test_hasSimilarIgnoreCase_page() {
         assertTrue(hasSimilar(toSet(
-                                    "page", 
-                                    "webpage", 
-                                    "webp", 
-                                    "web"), "webpge"));
+                "page", 
+                "webpage", 
+                "webp", 
+                "web"), "webpge"));
     }
     
     @Test
     public void test_hasStrictSimilar_exit() {
         assertFalse(hasStrictSimilar(toSet(
-                                            "call", 
-                                            "exe", 
-                                            "exec"), "exit"));
+                "call", 
+                "exe", 
+                "exec"), "exit"));
     }
     
     @Test
     public void test_hasStrictSimilar_loc() {
         assertTrue(hasStrictSimilar(toSet(
-                                            "loc", 
-                                            "location"), "loc"));
+                "loc", 
+                "location"), "loc"));
     }
     
     @Test
     public void test_hasStrictSimilar_loc_false() {
-        assertFalse(hasStrictSimilar(toSet(
-                                            "mem", 
-                                            "memory", 
-                                            "com", 
-                                            "comm", 
-                                            "command"), "loc"));
+        assertFalse(hasSimilar(toSet(
+                "mem", 
+                "memory", 
+                "com", 
+                "comm", 
+                "command"), "loc"));
     }
 }
