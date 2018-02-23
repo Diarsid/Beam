@@ -334,10 +334,12 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> files = result.success().foundFiles();
-                assertTrue(files.contains("folder_1/inner/nested/list_read.txt"));
-                assertTrue(files.contains("folder_1/inner/nested/list_movie.txt"));
-                assertEquals(2, files.size());
+                List<String> expectedFiles = asList(
+                        "folder_1/inner/nested/list_read.txt",
+                        "folder_1/inner/nested/list_movie.txt"
+                );
+                List<String> foundFiles = result.success().foundFiles();
+                assertMatching(foundFiles, expectedFiles);
             }
         } else {
             fail();
@@ -351,10 +353,11 @@ public class FileSearcherServiceTest {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
             } else {
-                List<String> files = result.success().foundFiles();
-                assertTrue(files.contains("folder_1/inner/nested/list_read.txt"));
-                assertTrue(files.contains("folder_1/inner/nested/list_movie.txt"));
-                assertEquals(2, files.size());
+                List<String> expectedFiles = asList(
+                        "folder_1/inner/nested/list_read.txt",
+                        "folder_1/inner/nested/list_movie.txt");
+                List<String> foundFiles = result.success().foundFiles();
+                assertMatching(foundFiles, expectedFiles);
             }
         } else {
             fail();

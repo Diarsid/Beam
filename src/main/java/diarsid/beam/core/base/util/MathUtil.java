@@ -43,6 +43,14 @@ public class MathUtil {
         }
     }
     
+    public static int absDiffOneIfZero(int one, int two) {
+        if ( one == two || one == -two ) {
+            return 1;
+        } else {
+            return abs(one - two);
+        }
+    }
+    
     public static boolean isBetween(double from, double mid, double to) {
         return 
                 mid > from &&

@@ -17,6 +17,7 @@ import static java.lang.String.format;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.util.ArraysUtil.array;
 import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -27,10 +28,14 @@ public class Similarity {
     
     static final char CHAIN_NOT_FOUND_CHAR = '*';
     
+    private static final int CHAIN_1_NOT_FOUND = -2;
+    private static final int CHAIN_2_NOT_FOUND = -3;
+    
     private static boolean logLevelBasicEnabled = 
             configuration().asBoolean("analyze.similarity.log.base");
     private static boolean logLevelAdvancedEnabled = 
             configuration().asBoolean("analyze.similarity.log.advanced");
+    
 
     private Similarity() {        
     }
@@ -178,16 +183,16 @@ public class Similarity {
             String target, int fromExclusive, char chain1, char chain2) {
         int indexOfChain1 = target.indexOf(chain1, fromExclusive + 1);
         if ( indexOfChain1 < 0 ) {
-            return -2;
+            return CHAIN_1_NOT_FOUND;
         }
         while ( indexOfChain1 > -1 && indexOfChain1 < target.length() - 1 ) {            
             if ( target.charAt(indexOfChain1 + 1) == chain2 ) {
                 return indexOfChain1;
             } else {
-                indexOfChain1 = target.indexOf(chain1, indexOfChain1 + 1);
+                return CHAIN_2_NOT_FOUND;
             }
-        }
-        return -1;
+        }       
+        return CHAIN_2_NOT_FOUND;
     }
     
     private static boolean containsWeakChain(String target, char chain1, char chain2) {
@@ -445,7 +450,8 @@ public class Similarity {
                 similarityLog("found, equal to previous, ignore and continue", 2);
                 chainIndexTarget = indexOfChainFrom(target, chainIndexTarget, chain1, chain2);
             }
-            if ( chainIndexTarget == -2 ) {
+            
+            if ( chainIndexTarget == CHAIN_1_NOT_FOUND ) {
                 patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
                 similarityLog(format("char '%s' not found", chain1), 2);
                 if ( patternCharsNotFoundPercentSum > 50 ) {
@@ -453,6 +459,7 @@ public class Similarity {
                     return 0;
                 }
             }
+            
             if ( chainIndexTarget > -1 ) {
                 similarityLog(format("found +%s%%", similarityPercent), 2);
                 similarityPercentSum = similarityPercentSum + similarityPercent;                
@@ -529,12 +536,24 @@ public class Similarity {
                             previousChainsNotFoundQty++;
                             if ( chainIndexTargetPrev > -1 ) {
                                 char prevChain2 = target.charAt(chainIndexTargetPrev + 1);
-                                if ( prevChain2 == chain1 || prevChain2 == chain2 ) {
-                                    similarityLog(format("found partially +%s%%", (2 * similarityPercent / 3)), 2);
-                                    similarityPercentSum = similarityPercentSum + (2 * similarityPercent / 3);
-                                    previousChainsNotFoundQty--;
+                                if ( prevChain2 == chain1 ) {
+                                    int chain2IndexTarget = target.indexOf(chain2);
+                                    if ( chain2IndexTarget > -1 && chain2IndexTarget > chainIndexTarget ) {
+                                        similarityLog(format("found as long-weak chain +%s%%", (2 * similarityPercent / 3)), 2);
+                                        similarityPercentSum = similarityPercentSum + (2 * similarityPercent / 3);
+                                        previousChainsNotFoundQty--;
+                                    } else {
+                                        if ( pattern.length() > 3 ) {
+                                            similarityLog(format("found partially +%s%%", similarityPercent/2), 2);
+                                            similarityPercentSum = similarityPercentSum + similarityPercent/2;                                            
+                                        } else {
+                                            similarityLog(format("found partially +%s%%", similarityPercent/3), 2);
+                                            similarityPercentSum = similarityPercentSum + similarityPercent/3;      
+                                        }    
+                                        previousChainsNotFoundQty--;
+                                    }                                    
                                 } else {
-                                    if ( !previousChainFoundAsReverse && containsWeakChain(target, prevChain2, chain2) ) {
+                                    if ( ! previousChainFoundAsReverse && containsWeakChain(target, prevChain2, chain2) ) {
                                         similarityLog(format("found as combined weak chain +%s%%", similarityPercent/2), 2);
                                         similarityPercentSum = similarityPercentSum + similarityPercent/2;
                                     }
@@ -544,18 +563,20 @@ public class Similarity {
                                 int chain2IndexTarget = target.indexOf(chain2);
                                 if ( chain1IndexTarget > -1 ) {
                                     if ( chain2IndexTarget > -1 ) {
-                                        similarityLog(format("found partially +%s%%", (3 * similarityPercent / 4)), 2);
-                                        similarityPercentSum = similarityPercentSum + (3 * similarityPercent / 4);
+                                        int flexiblePercent = (3 * similarityPercent / 5) / 
+                                                absDiffOneIfZero(chain1IndexTarget, chain2IndexTarget) ;
+                                        similarityLog(format("found 2 chars separately +%s%%", flexiblePercent), 2);
+                                        similarityPercentSum = similarityPercentSum + flexiblePercent;
                                         previousChainsNotFoundQty--;
                                         if ( chain1IndexTarget > chain2IndexTarget ) {
                                             inconsistencySum++;
-                                            chainIndexTargetPrev = chain1IndexTarget;
-                                        } else {
                                             chainIndexTargetPrev = chain2IndexTarget;
+                                        } else {
+                                            chainIndexTargetPrev = chain1IndexTarget;
                                         }
                                     } else {
-                                        similarityLog(format("found partially +%s%%", (2 * similarityPercent / 3)), 2);
-                                        similarityPercentSum = similarityPercentSum + (2 * similarityPercent / 3);
+                                        similarityLog(format("found 1 char separately +%s%%", (1 * similarityPercent / 5)), 2);
+                                        similarityPercentSum = similarityPercentSum + (1 * similarityPercent / 5);
                                         previousChainsNotFoundQty--;
                                     }
                                 } else {                                    
@@ -580,7 +601,8 @@ public class Similarity {
         }
         if ( target.indexOf(pattern.charAt(pattern.length() - 1)) < 0 ) {
             patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
-            similarityLog(format("char '%s' not found", pattern.charAt(pattern.length() - 1)), 2);
+            inconsistencySum++;
+            similarityLog(format("char '%s' not found at end", pattern.charAt(pattern.length() - 1)), 2);
             if ( patternCharsNotFoundPercentSum > 50 ) {
                 similarityLog("too much chars missed!");
                 return 0;

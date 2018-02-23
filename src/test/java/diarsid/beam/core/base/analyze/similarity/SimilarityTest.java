@@ -12,9 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.hasSimilar;
-import static diarsid.beam.core.base.analyze.similarity.Similarity.hasStrictSimilar;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isStrictSimilar;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 /**
@@ -78,33 +76,33 @@ public class SimilarityTest {
         assertTrue(isSimilar("SoulWindows7upd12fw446fngg67jf.exe", "win7"));
     }
     
+//    @Test
+//    public void test_isSimilar_webpage_wepaeg() {
+//        assertTrue(isSimilar("webpage", "wepaeg"));
+//    }
+    
     @Test
-    public void test_isStrictSimilar_webpage_wepaeg() {
-        assertTrue(isStrictSimilar("webpage", "wepaeg"));
+    public void test_isSimilar_exit_ext() {
+        assertTrue(isSimilar("exit", "ext"));
     }
     
     @Test
-    public void test_isStrictSimilar_exit_ext() {
-        assertTrue(isStrictSimilar("exit", "ext"));
-    }
-    
-    @Test
-    public void test_isStrictSimilar_exit_exet() {
+    public void test_isSimilar_exit_exet() {
         assertTrue(isSimilar("exit", "exet"));
     }
     
     @Test
-    public void test_isStrictSimilar_exit_exut() {
+    public void test_isSimilar_exit_exut() {
         assertTrue(isSimilar("exit", "exut"));
     }
     
     @Test
-    public void test_isStrictSimilar_locations_locastion() {
-        assertTrue(isStrictSimilar("locations", "locastion"));
+    public void test_isSimilar_locations_locastion() {
+        assertTrue(isSimilar("locations", "locastion"));
     }
     
     @Test
-    public void test_isStrictSimilar_webpage_egpawe_false() {
+    public void test_isSimilar_webpage_egpawe_false() {
         assertFalse(isSimilar("webpage", "egpawe"));
     }
     
@@ -138,65 +136,65 @@ public class SimilarityTest {
         assertTrue(isSimilar("folder_1", "foldile"));
     }
     
-    @Test
-    public void test_isStrictSimilar_page_paeg() {
-        assertTrue(isStrictSimilar("page", "paeg"));
-    }
+//    @Test
+//    public void test_isSimilar_page_paeg() {
+//        assertTrue(isSimilar("page", "paeg"));
+//    }
     
     @Test
     public void test_webpanel_paeg() {
-        assertFalse(isStrictSimilar("webpanel", "paeg"));
+        assertFalse(isSimilar("webpanel", "paeg"));
     }
     
     @Test
-    public void test_isStrictSimilar_webpanel_webpnel() {
-        assertTrue(isStrictSimilar("webpanel", "webpnel"));
+    public void test_isSimilar_webpanel_webpnel() {
+        assertTrue(isSimilar("webpanel", "webpnel"));
     }
     
     @Test
-    public void test_isStrictSimilar_directory_dierctry() {
-        assertTrue(isStrictSimilar("directory", "dierctry"));
+    public void test_isSimilar_directory_dierctry() {
+        assertTrue(isSimilar("directory", "dierctry"));
     }
     
     @Test
-    public void test_isStrictSimilar_engines_eninges() {
-        assertTrue(isStrictSimilar("engines", "eninges"));
+    public void test_isSimilar_engines_eninges() {
+        assertTrue(isSimilar("engines", "eninges"));
     }
     
     @Test
-    public void test_isStrictSimilar_design_engines() {
-        assertFalse(isStrictSimilar("design", "engines"));
+    public void test_isSimilar_design_engines() {
+        assertFalse(isSimilar("design", "engines"));
     }
     
     @Test
-    public void test_isStrictSimilar_webpanel_peabwlne() {
-        assertFalse(isStrictSimilar("webpanel", "peabwlne"));
+    public void test_isSimilar_webpanel_peabwlne() {
+        assertFalse(isSimilar("webpanel", "peabwlne"));
     }
     
     @Test
-    public void test_isStrictSimilar_directory_yretdoicr() {
-        assertFalse(isStrictSimilar("directory", "yretdoicr"));
+    public void test_isSimilar_directory_yretdoicr() {
+        assertFalse(isSimilar("directory", "yretdoicr"));
     }
     
     @Test
-    public void test_isStrictSimilar_panel_page() {
-        assertFalse(isStrictSimilar("panel", "page"));
+    public void test_isSimilar_panel_page() {
+        assertFalse(isSimilar("panel", "page"));
     }
     
     @Test
-    public void test_isStrictSimilar_edit_delet() {
-        assertFalse(isStrictSimilar("edit", "delet"));
+    public void test_isSimilar_edit_delet() {
+        assertFalse(isSimilar("edit", "delet"));
     }
     
     @Test
-    public void test_isStrictSimilar_delete_delet() {
-        assertTrue(isStrictSimilar("delete", "delete"));
+    public void test_isSimilar_delete_delet() {
+        assertTrue(isSimilar("delete", "delete"));
     }
     
-    @Test
-    public void test_isStrictSimilar_get_gte() {
-        assertTrue(isStrictSimilar("get", "gte"));
-    }
+//    @Test
+//    public void test_isSimilar_get_gte() {
+//        assertTrue(isSimilar("get", "gte"));
+//    }
     
     @Test
     public void test_isSimilar_notes() {
@@ -221,13 +219,13 @@ public class SimilarityTest {
     }
     
     @Test
-    public void test_isStrictSimilar_page_get() {
-        assertFalse(isStrictSimilar("page", "get"));
+    public void test_isSimilar_page_get() {
+        assertFalse(isSimilar("page", "get"));
     }
     
     @Test
-    public void test_isStrictSimilar_page_image() {
-        assertFalse(isStrictSimilar("page", "image"));
+    public void test_isSimilar_page_image() {
+        assertFalse(isSimilar("page", "image"));
     } 
     
     @Test
@@ -269,22 +267,22 @@ public class SimilarityTest {
     }
     
     @Test
-    public void test_hasStrictSimilar_exit() {
-        assertFalse(hasStrictSimilar(toSet(
+    public void test_hasSimilar_exit() {
+        assertFalse(hasSimilar(toSet(
                 "call", 
                 "exe", 
                 "exec"), "exit"));
     }
     
     @Test
-    public void test_hasStrictSimilar_loc() {
-        assertTrue(hasStrictSimilar(toSet(
+    public void test_hasSimilar_loc() {
+        assertTrue(hasSimilar(toSet(
                 "loc", 
                 "location"), "loc"));
     }
     
     @Test
-    public void test_hasStrictSimilar_loc_false() {
+    public void test_hasSimilar_loc_false() {
         assertFalse(hasSimilar(toSet(
                 "mem", 
                 "memory", 
