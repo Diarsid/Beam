@@ -129,6 +129,16 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_folderinner_inr() {
+        assertTrue(isSimilar("folder_1/inner/bbbb.txt", "inr"));
+    }
+    
+    @Test
+    public void test_isSimilar_folder_1_foldile() {
+        assertTrue(isSimilar("folder_1", "foldile"));
+    }
+    
+    @Test
     public void test_isStrictSimilar_page_paeg() {
         assertTrue(isStrictSimilar("page", "paeg"));
     }
