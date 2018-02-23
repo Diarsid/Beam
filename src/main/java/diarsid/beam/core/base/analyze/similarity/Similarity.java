@@ -28,16 +28,16 @@ public class Similarity {
     static final char CHAIN_NOT_FOUND_CHAR = '*';
     
     private static boolean logLevelBasicEnabled = 
-            configuration().asBoolean("analyze.similarity.base");
+            configuration().asBoolean("analyze.similarity.log.base");
     private static boolean logLevelAdvancedEnabled = 
-            configuration().asBoolean("analyze.similarity.advanced");
+            configuration().asBoolean("analyze.similarity.log.advanced");
 
     private Similarity() {        
     }
     
     public static void main(String[] args) {
-        String target = "folder_1AAaaDir";
-        String pattern = "foldile";
+        String target = "folder_1aAAaa.txt";
+        String pattern = "yatx";
 //        System.out.println(containsWeakChain("alforcr", 'f', 'o'));
         
         
@@ -46,7 +46,7 @@ public class Similarity {
 
 //        System.out.println(calculateSimilarityPercent("jshell", "shall"));
 //        System.out.println(calculateSimilarityPercent("Programs", "proagm"));
-        System.out.println(calculateSimilarityPercent("bin", "lib"));
+        System.out.println(calculateSimilarityPercent(target, pattern));
 //        System.out.println(calculateSimilarity("folder_1/file_1.txt", "foldaaa"));
 //        System.out.println(calculateSimilarity("AAaaDir", "foldile"));
 //        System.out.println(calculateSimilarity("folder_1/inner/nested/aaa.txt", "foldaaa"));
@@ -491,6 +491,10 @@ public class Similarity {
                             similarityLog(format("weak chain is last +%s%%", similarityPercent/2), 2);
                             similarityPercentSum = similarityPercentSum + similarityPercent/2;
                         }
+                    }
+                    if ( previousChainsNotFoundQty > 0 ) {
+                        similarityLog(format("previous chain not found but current chain is found +%s%%", similarityPercent/5), 2);
+                        similarityPercentSum = similarityPercentSum + similarityPercent/5;
                     }
                     previousChainFoundAsReverse = false;
                     previousChainFoundAsWeak = true;

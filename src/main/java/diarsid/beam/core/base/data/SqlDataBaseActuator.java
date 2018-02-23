@@ -45,7 +45,7 @@ class SqlDataBaseActuator implements DataBaseActuator {
         this.discoverTableNames();
         this.discoverForeignKeyNames();
         this.createRequiredTablesIfMissed();
-        this.createReuiredForeignKeysIfMissed();
+        this.createRequiredForeignKeysIfMissed();
         return this.report;
     }
                 
@@ -101,7 +101,7 @@ class SqlDataBaseActuator implements DataBaseActuator {
         this.createSqlObjectsAndCollectReports(requiredMissedTables);
     }
     
-    private void createReuiredForeignKeysIfMissed() throws DataBaseActuationException {
+    private void createRequiredForeignKeysIfMissed() throws DataBaseActuationException {
         List<SqlConstraint> requiredMissedConstraints = this.dataBaseModel
                 .constraints()
                 .stream()

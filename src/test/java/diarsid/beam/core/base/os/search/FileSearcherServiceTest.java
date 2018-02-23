@@ -246,8 +246,15 @@ public class FileSearcherServiceTest {
                         "folder_1",
                         "folder_1/file_1.txt",
                         "folder_1/file_2.txt",
+                        "folder_1/AAaaDir",
+                        "folder_1/inner",
+                        "folder_1/inner/nested",
+                        "folder_1/inner/aAAaa.txt",
+                        "folder_1/inner/bbbb.txt",
+                        "folder_1/inner/aaabbbzzz.txt",
+                        "folder_1/inner/nested/list_read.txt",
                         "folder_1/inner/nested/list_movie.txt",
-                        "folder_1/inner/nested/list_read.txt"
+                        "folder_1/inner/nested/yyyAAA.txt"
                 );
                 List<String> foundFiles = result.success().foundFiles();
                 assertMatching(foundFiles, expectedFiles);
