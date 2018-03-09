@@ -123,7 +123,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private void asyncAddCommand(Initiator initiator, String locationName) {
         asyncDo(() -> {
             this.commandsMemory.save(
-                    initiator, new OpenLocationCommand(locationName, locationName, NEW, TARGET_FOUND));
+                    initiator, new OpenLocationCommand(
+                            locationName, locationName, NEW, TARGET_FOUND));
         });
     }
     

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.String.format;
@@ -44,6 +45,62 @@ public class AnalyzeTest {
     @Before
     public void setUp() {
     }
+    
+    @Test
+    public void test_EnginesCase_engns() {
+        pattern = "engns";
+        
+        variants = asList(
+                "Engines",
+                "Design");
+        
+        expected = asList( 
+                "Engines");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_EnginesCase_enges() {
+        pattern = "enges";
+        
+        variants = asList(
+                "Engines",
+                "Design");
+        
+        expected = asList( 
+                "Engines");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_EnginesCase_enins() {
+        pattern = "enins";
+        
+        variants = asList(
+                "Engines",
+                "Design");
+        
+        expected = asList( 
+                "Engines");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_EnginesCase_enings() {
+        pattern = "enings";
+        
+        variants = asList(
+                "Engines",
+                "Design");
+        
+        expected = asList( 
+                "Engines");
+        
+        weightVariantsAndCheckMatching();
+    }
 
     @Test
     public void test_JavaTechCase_jtech() {
@@ -59,25 +116,117 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech",
+                "Books/tech",
                 "Tech/langs",
-                "Books/tech");
+                "Books/Tech/Design");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+//    @Ignore
+    @Test
+    public void test_JavaTechCase_jtec() {
+        pattern = "jtec";
+        
+        variants = asList(
+                "Books/tech",
+                "Tech",
+                "Books/Tech/Design",
+                "Tech/langs",
+                "Books/Tech/Java");
+        
+        expected = asList( 
+                "Books/Tech/Java",
+                "Tech",
+                "Tech/langs",
+                "Books/tech",
+                "Books/Tech/Design");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+//    @Ignore
+    @Test
+    public void test_techAnotherCase_jtec() {
+        pattern = "jtec";
+        
+        variants = asList(
+                "Tech",
+                "Tech/langs");
+        
+        expected = asList(
+                "Tech",
+                "Tech/langs");
         
         weightVariantsAndCheckMatching();
     }
     
     @Test
-    public void test_JavaTechAnotherCase_jtech() {
-        pattern = "jtech";
+    public void test_projectsBeamCase_beaporg() {
+        pattern = "beaporg";
         
         variants = asList(
-                "Tech",
-                "Tech/langs",
-                "Books/Tech/One/More/Part/Java");
+                "Job/Search/for_sending",
+                "Projects/Diarsid/NetBeans/Beam");
         
-        expected = asList( 
-                "Books/Tech/One/More/Part/Java",
-                "Tech",
-                "Tech/langs");
+        expected = asList(
+                "Projects/Diarsid/NetBeans/Beam");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_searchSendingBeamCase_beaporg() {
+        pattern = "beaporg";
+        
+        variants = asList(
+                "Job/Search/for_sending",
+                "Job/Search/Friends");
+        
+        expected = asList();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_photosCase_phots() {
+        pattern = "Phots";
+        
+        variants = asList(
+                "Projects",
+                "Photos");
+        
+        expected = asList(
+                "Photos");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_searchSendingBeamCase_seaersengid() {
+        pattern = "seaersengid";
+        
+        variants = asList(
+                "Job/Search/for_sending",
+                "Job/Search/Friends");
+        
+        expected = asList(
+                "Job/Search/for_sending");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_javaHomeCase_homjav() {
+        pattern = "homjav";
+        
+        variants = asList(
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe",
+                "Engines/Java/Path/JAVA_HOME");
+        
+        expected = asList(
+                "Engines/Java/Path/JAVA_HOME", 
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe");
         
         weightVariantsAndCheckMatching();
     }
@@ -94,7 +243,8 @@ public class AnalyzeTest {
                 "Books/Tech/Java");
         
         expected = asList( 
-                "Books/Tech/Java");
+                "Books/Tech/Java",
+                "Tech/langs");
         
         weightVariantsAndCheckMatching();
     }
@@ -212,7 +362,8 @@ public class AnalyzeTest {
                 "abe_netpro",
                 "babel_pro",
                 "netbeans_projects", 
-                "beam_server_project");
+                "beam_server_project"
+        );
         
         expected = asList( 
                 "beam_project",
@@ -238,6 +389,45 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+
+    @Test
+    public void test_differens_tols() {
+        
+        pattern = "tols";
+        
+        variants = asList(
+                "Tools",
+                "Images/Photos",
+                "Music/2__Store",
+                "Projects",
+                "Torrents",
+                "Books/Common/Tolkien_J.R.R"
+        );
+        
+        expected = asList(
+                "Tools",
+                "Books/Common/Tolkien_J.R.R",
+                "Images/Photos",
+                "Music/2__Store");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Ignore
+    @Test
+    public void test_enginesJavaBinCase_engjbin() {
+        pattern = "engjbin";
+        
+        variants = asList(
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe",
+                "Engines/Java/Path/JAVA_HOME/bin");
+        
+        expected = asList(
+                "Engines/Java/Path/JAVA_HOME/bin",
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe");
+        
+        weightVariantsAndCheckMatching();
+    }
     
     @Test
     public void test_toolsCase_tols() {
@@ -245,10 +435,12 @@ public class AnalyzeTest {
         
         variants = asList(
                 "LostFilm", 
-                "Dev/3__Tools");
+                "Dev/3__Tools"
+        );
         
         expected = asList( 
-                "Dev/3__Tools");
+                "Dev/3__Tools"
+        );
         
         weightVariantsAndCheckMatching();
     }
@@ -337,7 +529,10 @@ public class AnalyzeTest {
                 "Projects/UkrPoshta/UkrPostAPI");
         
         expected = asList(
-                "Projects/UkrPoshta/UkrPostAPI");
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta"
+        );
         
         weightVariantsAndCheckMatching();
     }
@@ -383,7 +578,8 @@ public class AnalyzeTest {
                 "Projects/UkrPoshta/UkrPostAPI");
         
         expected = asList(
-                "Projects/UkrPoshta/UkrPostAPI");
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/CainiaoAPI");
         
         weightVariantsAndCheckMatching();
     }
@@ -399,10 +595,7 @@ public class AnalyzeTest {
                 "Engines/java/path/JAVA_HOME/bin");
         
         expected = asList(
-                "Engines/java/path/JAVA_HOME/bin",
-                "Current_Job/domain",
-                "Current_Job/domain/tmm",
-                "Current_Job/hiring");
+                "Engines/java/path/JAVA_HOME/bin");
         
         weightVariantsAndCheckMatching();
     }
@@ -420,6 +613,10 @@ public class AnalyzeTest {
         
         AtomicInteger counter = new AtomicInteger(0);
         int mismatches = 0;
+        
+        if ( expected.isEmpty() && weightedVariants.size() > 0 ) {
+            fail("No variants expected!");
+        }
         
         while ( weightedVariants.next() && ( counter.get() < expected.size() ) ) {
             
@@ -455,11 +652,20 @@ public class AnalyzeTest {
                                 "    actual   : %s", counter.get() - 1, expectedVariant, actualVariant));
                         }
                     } else {
-                        presentButNotExpected.add(format("\n variant present but not expected: %s\n", actualVariant));
+                        presentButNotExpected.add(format("\n %s\n", actualVariant));
                     }    
                 }
             }           
         } 
+        
+        if ( weightedVariants.size() > expected.size() ) {
+            int offset = expected.size();
+            String presentButNotExpectedVariant;
+            for (int i = offset; i < weightedVariants.size(); i++) {
+                presentButNotExpectedVariant = weightedVariants.getVariantAt(i);
+                presentButNotExpected.add(format("\n %s\n", presentButNotExpectedVariant));
+            }
+        }
         
         boolean hasNotExpected = nonEmpty(presentButNotExpected);
         if ( hasNotExpected ) {

@@ -112,6 +112,10 @@ public class WeightedVariants implements Serializable {
         }
     }
     
+    public String getVariantAt(int i) {
+        return this.variants.get(i).text();
+    }
+    
     public int size() {
         return this.variants.size();
     }
@@ -179,13 +183,15 @@ public class WeightedVariants implements Serializable {
         if ( this.currentVariantIndex < this.variants.size() - 1 ) {
             double currentWeight = this.current().weight();
             double nextWeight = this.variants.get(this.currentVariantIndex + 1).weight();
-            if ( currentWeight < 5.0 ) {
-                return ( nextWeight - currentWeight ) >= 1.0;
-            } else {
-                double currentDouble = currentWeight * 1.0;
-                double nextDouble = nextWeight * 0.75;
-                return currentDouble < nextDouble;
-            }
+//            return ( absDiff(currentWeight, nextWeight) < abs(currentWeight * 0.2) );
+            return ( currentWeight * 0.8 < nextWeight );
+//            if ( currentWeight < 5.0 ) {
+//                return ( nextWeight - currentWeight ) >= 1.0;
+//            } else {
+//                double currentDouble = currentWeight * 1.0;
+//                double nextDouble = nextWeight * 0.75;
+//                return currentDouble < nextDouble;
+//            }
         } else if ( this.currentVariantIndex == this.variants.size() - 1 ) {
             return true;
         } else {

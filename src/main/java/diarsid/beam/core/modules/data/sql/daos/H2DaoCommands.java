@@ -368,21 +368,21 @@ class H2DaoCommands
             
             List<String> charCriterias = patternToCharCriterias(pattern);
             
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
-                            "SELECT com_type, com_original, com_extended " +
-                            "FROM commands " +
-                            "WHERE " + 
-                                    multipleLowerLikeAnd("com_extended", charCriterias.size()) + 
-                                    " AND ( com_type IS ? ) ",
-                            ROW_TO_INVOCATION_COMMAND,
-                            charCriterias, type)
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            }
+//            found = transact
+//                    .doQueryAndStreamVarargParams(
+//                            InvocationCommand.class,
+//                            "SELECT com_type, com_original, com_extended " +
+//                            "FROM commands " +
+//                            "WHERE " + 
+//                                    multipleLowerLikeAnd("com_extended", charCriterias.size()) + 
+//                                    " AND ( com_type IS ? ) ",
+//                            ROW_TO_INVOCATION_COMMAND,
+//                            charCriterias, type)
+//                    .collect(toList());
+//            
+//            if ( nonEmpty(found) ) {
+//                return found;
+//            }
             
             String andOrCondition = multipleLowerGroupedLikesAndOr("com_extended", charCriterias.size());
             List<InvocationCommand> shuffleFound;
@@ -465,20 +465,20 @@ class H2DaoCommands
 
             List<String> charCriterias = patternToCharCriterias(pattern);
             
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
-                            "SELECT com_type, com_extended " +
-                            "FROM commands " +
-                            "WHERE " + multipleLowerLikeAnd("com_extended", charCriterias.size()) +
-                            "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
-                            charCriterias)
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            } 
+//            found = transact
+//                    .doQueryAndStreamVarargParams(
+//                            InvocationCommand.class,
+//                            "SELECT com_type, com_extended " +
+//                            "FROM commands " +
+//                            "WHERE " + multipleLowerLikeAnd("com_extended", charCriterias.size()) +
+//                            "GROUP BY com_type, com_extended",
+//                            rowToNewInvocationCommandWithPatternAsOriginal,
+//                            charCriterias)
+//                    .collect(toList());
+//            
+//            if ( nonEmpty(found) ) {
+//                return found;
+//            } 
             
             String andOrCondition = multipleLowerGroupedLikesAndOr("com_extended", charCriterias.size());
             List<InvocationCommand> shuffleFound;
@@ -566,22 +566,22 @@ class H2DaoCommands
             
             List<String> charCriterias = patternToCharCriterias(pattern);
             
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
-                            "SELECT com_type, com_extended " +
-                            "FROM commands " +
-                            "WHERE " + 
-                                    multipleLowerLikeAnd("com_extended", charCriterias.size()) + 
-                                    " AND ( com_type IS ? ) " +
-                            "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
-                            charCriterias, type)
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            } 
+//            found = transact
+//                    .doQueryAndStreamVarargParams(
+//                            InvocationCommand.class,
+//                            "SELECT com_type, com_extended " +
+//                            "FROM commands " +
+//                            "WHERE " + 
+//                                    multipleLowerLikeAnd("com_extended", charCriterias.size()) + 
+//                                    " AND ( com_type IS ? ) " +
+//                            "GROUP BY com_type, com_extended",
+//                            rowToNewInvocationCommandWithPatternAsOriginal,
+//                            charCriterias, type)
+//                    .collect(toList());
+//            
+//            if ( nonEmpty(found) ) {
+//                return found;
+//            } 
             
             String andOrCondition = multipleLowerGroupedLikesAndOr("com_extended", charCriterias.size());
             List<InvocationCommand> shuffleFound;

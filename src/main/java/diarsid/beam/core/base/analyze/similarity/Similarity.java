@@ -18,6 +18,7 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 import static diarsid.beam.core.base.util.ArraysUtil.array;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
+import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 /**
@@ -491,8 +492,8 @@ public class Similarity {
                         similarityLog(format("found as weak chain after reverse +%s%%", similarityPercent/2), 2);
                         similarityPercentSum = similarityPercentSum + similarityPercent/2;
                     } else {
-                        similarityLog(format("found as weak chain, not after reverse +%s%%", similarityPercent/2), 2);
-                        similarityPercentSum = similarityPercentSum + similarityPercent/2;
+                        similarityLog(format("found as weak chain, not after reverse +%s%%", 2*similarityPercent/3), 2);
+                        similarityPercentSum = similarityPercentSum + 2*similarityPercent/3;
                         if ( chainIndexPattern == (pattern.length() - 2) && 
                                 chain2 == target.charAt(target.length() - 1)) {
                             similarityLog(format("weak chain is last +%s%%", similarityPercent/2), 2);
@@ -710,6 +711,35 @@ public class Similarity {
                 similarityPercent, 
                 requiredPercent));
         return similar;          
+    }
+    
+    public static boolean isSimilarPath(String targetPath, String patternPath) {
+        similarityLog("[PATH] pattern : " + patternPath);
+        similarityLog("[PATH] target  : " + targetPath);
+        String[] patterns = splitPathFragmentsFrom(patternPath);
+        String[] targets = splitPathFragmentsFrom(targetPath);
+        
+        int matchesRequired = patterns.length;
+        int matchesCounter = 0;
+        
+        outer: for (String pattern : patterns) {
+            inner: for (String target : targets) {
+                if ( isSimilar(target, pattern) ) {
+                    matchesCounter++;
+                    if ( matchesCounter == matchesRequired ) {
+                        break outer;
+                    }
+                }
+            }
+        }
+        
+        boolean matches = matchesRequired == matchesCounter;
+        similarityLog("");
+        similarityLog(format("[PATH] result : %s %s mathes (%s required)", 
+                matches ? "OK" : "FAIL",
+                matchesCounter,
+                matchesRequired));
+        return matches;
     }
     
     public static boolean isSimilarUsingSession(

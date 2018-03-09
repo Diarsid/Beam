@@ -24,7 +24,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -124,31 +123,31 @@ class H2DaoLocationSubPaths
 //                return foundSubPaths;
 //            }
             
-            foundSubPaths = transact
-                    .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
-                            "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
-                            "FROM " +
-                            "   commands AS com " +
-                            "   JOIN " +
-                            "   locations AS loc " +
-                            "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
-                            "WHERE " +
-                            "   ( com_type IS ? ) AND " +
-                            "   ( " + multipleLowerLikeAnd("com_extended", criterias.size()) + " )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
-                            OPEN_LOCATION_TARGET, criterias)
-                    .collect(toList());
-            
-            if ( nonEmpty(foundSubPaths) ) {
-                return foundSubPaths;
-            }
+//            foundSubPaths = transact
+//                    .doQueryAndStreamVarargParams(
+//                            LocationSubPath.class, 
+//                            "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
+//                            "FROM " +
+//                            "   commands AS com " +
+//                            "   JOIN " +
+//                            "   locations AS loc " +
+//                            "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
+//                            "WHERE " +
+//                            "   ( com_type IS ? ) AND " +
+//                            "   ( " + multipleLowerLikeAnd("com_extended", criterias.size()) + " )", 
+//                            (row) -> {
+//                                return new LocationSubPath(
+//                                        pattern, 
+//                                        row.get("loc_name", String.class),
+//                                        row.get("loc_path", String.class),
+//                                        row.get("subpath", String.class));
+//                            }, 
+//                            OPEN_LOCATION_TARGET, criterias)
+//                    .collect(toList());
+//            
+//            if ( nonEmpty(foundSubPaths) ) {
+//                return foundSubPaths;
+//            }
             
             String andOrCondition = multipleLowerGroupedLikesAndOr("com_extended", criterias.size());
             

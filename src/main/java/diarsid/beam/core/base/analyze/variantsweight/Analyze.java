@@ -23,8 +23,8 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
 
-import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOkWhenAdjusted;
@@ -42,17 +42,11 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class Analyze {
     
-    private static boolean isLogEnabled;
-    
-    static {
-        isLogEnabled = configuration().asBoolean("analyze.weight.log");
-    }
-        
     private Analyze() {        
-    } 
+    }
     
-    static void logAnalyze(String format, Object... args) {
-        if ( isLogEnabled ) {
+    static void logAnalyze(AnalyzeLogType logType, String format, Object... args) {
+        if ( logType.isEnabled() ) {
             System.out.println(format(format, args));
         }
     }
@@ -151,22 +145,43 @@ public class Analyze {
     }
 
     public static void doAll() {
-        weightAnalyzeCase();
+//        weightAnalyzeCase();
 
-//        analyzeImportance();
+        analyzeImportance();
     }
 
     private static void analyzeImportance() {
-        System.out.println(clustersImportanceDependingOn(1, 6, 0));
-        System.out.println(clustersImportanceDependingOn(2, 6, 0));
-        System.out.println(clustersImportanceDependingOn(3, 6, 0));
-        System.out.println(clustersImportanceDependingOn(4, 6, 0));
-//        System.out.println(clustersImportanceDependingOn(1, 2, 5));
-//        System.out.println(clustersImportanceDependingOn(2, 7, 1));
-//        System.out.println(clustersImportanceDependingOn(3, 9, 2));
-//        System.out.println(clustersImportanceDependingOn(2, 9, 2));
-//        System.out.println(clustersImportanceDependingOn(1, 9, 2));
-//        System.out.println(clustersImportanceDependingOn(1, 8, 3));
+        int clustersLimit = 3;
+        int clusteredLimit = 6;
+        int nonClusteredLimit = 4;
+        
+        for (int clustersQty = 1; clustersQty <= clustersLimit; clustersQty++) {
+            System.out.println("clusters: " + clustersQty);
+            for (int clustered = 2; clustered <= clusteredLimit; clustered++) {
+                if ( clustered >= clustersQty * 2 ) {
+                    System.out.println("  clustered: " + clustered);System.out.println("    cQ cL nC");
+                    for (int nonClustered = 0; nonClustered <= nonClusteredLimit; nonClustered++) {                    
+                        analyze(clustersQty, clustered, nonClustered);
+                    }
+                }                
+            }
+        }
+        
+//        analyze(1, 2, 1);
+//        analyze(2, 6, 6);
+//        analyze(3, 6, 0);
+//        analyze(4, 6, 0);
+//        analyze(1, 2, 5));
+//        analyze(2, 7, 1));
+//        analyze(3, 9, 2));
+//        analyze(2, 9, 2));
+//        analyze(1, 9, 2));
+//        analyze(1, 8, 3));
+    }
+    
+    static void analyze(int clustersQty, int clustered, int nClustered) {
+        System.out.println(format("    %s  %s  %s  -  i: %s", 
+                clustersQty, clustered, nClustered, clustersImportanceDependingOn(clustersQty, clustered, nClustered)));
     }
     
     private static void weightAnalyzeCase() {
@@ -251,7 +266,7 @@ public class Analyze {
         analyze.setPatternCharsAndPositions(pattern);
         analyze.analyzePatternCharsPositions();
         analyze.logUnsortedPositions();
-        analyze.countUnsortedPositions();
+//        analyze.countUnsortedPositions();
         analyze.sortPositions();
         analyze.findPositionsClusters();
         if ( analyze.areTooMuchPositionsMissed() ) {
@@ -260,8 +275,8 @@ public class Analyze {
         }
         analyze.calculateClustersImportance();
         analyze.isFirstCharMatchInVariantAndPattern(pattern);
-        analyze.strangeConditionOnUnsorted();
-        analyze.calculateWeight();   
+//        analyze.strangeConditionOnUnsorted();
+        analyze.calculateWeight();  
         analyze.logState();
         if ( analyze.isVariantTooBad() ) {
             System.out.println(analyze.variantText + " is too bad.");
@@ -298,7 +313,7 @@ public class Analyze {
                 }
             }
             System.out.println();
-            logAnalyze("===== ANALYZE : %s ( %s ) ===== ", variant.text(), pattern);
+            logAnalyze(BASE, "===== ANALYZE : %s ( %s ) ===== ", variant.text(), pattern);
             variantsByText.put(lowerVariantText, variant);
             
             analyze.setVariantText(variant);
@@ -306,7 +321,7 @@ public class Analyze {
             analyze.setPatternCharsAndPositions(pattern);
             analyze.analyzePatternCharsPositions();
             analyze.logUnsortedPositions();
-            analyze.countUnsortedPositions();
+//            analyze.countUnsortedPositions();
             analyze.sortPositions();
             analyze.findPositionsClusters();
             if ( analyze.areTooMuchPositionsMissed() ) {
@@ -315,11 +330,11 @@ public class Analyze {
             }
             analyze.calculateClustersImportance();
             analyze.isFirstCharMatchInVariantAndPattern(pattern);
-            analyze.strangeConditionOnUnsorted();
-            analyze.calculateWeight();   
+//            analyze.strangeConditionOnUnsorted();
+            analyze.calculateWeight();  
             analyze.logState();
             if ( analyze.isVariantTooBad() ) {
-                logAnalyze("  %s is too bad.", analyze.variantText);
+                logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
                 analyze.clearAnalyze();
                 continue variantsWeighting;
             }

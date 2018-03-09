@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.hasSimilar;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
+import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilarPath;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 /**
@@ -289,5 +290,10 @@ public class SimilarityTest {
                 "com", 
                 "comm", 
                 "command"), "loc"));
+    }
+    
+    @Test
+    public void isSimilarPath_hiringCvs_hiringcv() {
+        assertTrue(isSimilarPath("Current/Hiring/CVs", "hirng/cv"));
     }
 }

@@ -22,7 +22,7 @@ public enum WeightEstimate {
         this.level = level;
     }
     
-    private static final double BAD_BOUND = 0;
+    private static final double BAD_BOUND = -10;
     private static final double MODERATE_BOUND = -36;
     private static final double GOOD_BOUND = -75;
     
