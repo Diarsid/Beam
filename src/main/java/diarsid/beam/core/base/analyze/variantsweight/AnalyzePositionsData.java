@@ -35,6 +35,7 @@ import static diarsid.beam.core.base.objects.Cache.backAllToCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.StringUtils.isWordsSeparator;
 
@@ -146,14 +147,7 @@ class AnalyzePositionsData {
                 this.nonClustered++;
                 continue clustersCounting;
             }
-            if ( this.isCurrentPositionAtVariantStart()  ) {
-                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -1.5 : current position is at variant start");
-                this.positionsWeight = this.positionsWeight - 1.5;
-            }
-            if ( this.isCurrentPositionAtVariantEnd() ) {
-                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -1.5 : current position is at variant end");
-                this.positionsWeight = this.positionsWeight - 1.5;
-            }
+            
             if ( this.hasNextPosition(i) ) {
                 this.setNextPosition(i);
                 if ( this.isCurrentAndNextPositionInCluster() ) {
@@ -503,8 +497,8 @@ class AnalyzePositionsData {
         this.processClusterPositionOrderStats("+- ");
         
         if ( this.currentPosition == 0 ) {
-            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -4.6 : cluster starts with variant");
-            this.positionsWeight = this.positionsWeight - 4.6;
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -8.6 : cluster starts with variant");
+            this.positionsWeight = this.positionsWeight - 8.6;
             this.clusterStartsWithSeparator = true;
         } else if ( this.isPreviousCharWordSeparator() ) {                
             logAnalyze(POSITIONS_CLUSTERS, "               [weight] -4.6 : cluster start, previous char is word separator");
@@ -539,12 +533,12 @@ class AnalyzePositionsData {
         this.accumulateClusterPositionOrdersStats();        
 
         if ( this.isCurrentCharVariantEnd() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -4.6 : cluster ends with variant");
-            this.positionsWeight = this.positionsWeight - 4.6;
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -1.6 : cluster ends with variant");
+            this.positionsWeight = this.positionsWeight - 1.6;
             this.clusterEndsWithSeparator = true;
         } else if ( this.isNextCharWordSeparator() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -4.6 : cluster ends, next char is word separator");
-            this.positionsWeight = this.positionsWeight - 4.6;
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -1.6 : cluster ends, next char is word separator");
+            this.positionsWeight = this.positionsWeight - 1.6;
             this.clusterEndsWithSeparator = true;
         } else if ( this.isCurrentCharWordSeparator() ) {
             logAnalyze(POSITIONS_CLUSTERS, "               [weight] -4.6 : cluster ends, current char is word separator");
@@ -683,17 +677,17 @@ class AnalyzePositionsData {
             logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for inconsistency", incosistency);
             this.positionsWeight = this.positionsWeight + incosistency;
         } else {
-            int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
-
             if ( cluster.hasOrdersDiffShifts() ) {
+                double shiftDeviation = cluster.ordersDiffShifts() * onePointRatio(cluster.ordersDiffShifts(), this.currentClusterLength);
                 logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster has %s shifts", cluster.ordersDiffShifts());
-                logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for shifts", cluster.ordersDiffShifts());
-                this.positionsWeight = this.positionsWeight + cluster.ordersDiffShifts();    
+                logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for shifts", shiftDeviation);
+                this.positionsWeight = this.positionsWeight + shiftDeviation;    
+            } else {
+                int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
+                logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
+                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
+                this.positionsWeight = this.positionsWeight - consistencyReward;    
             }
-
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
-            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
-            this.positionsWeight = this.positionsWeight - consistencyReward;                
         }
         
         this.currentClusterOrderDiffs.clear();  

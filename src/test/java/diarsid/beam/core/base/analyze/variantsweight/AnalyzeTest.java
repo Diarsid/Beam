@@ -115,14 +115,13 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech",
-                "Books/tech",
                 "Tech/langs",
+                "Books/tech",
                 "Books/Tech/Design");
         
         weightVariantsAndCheckMatching();
     }
     
-//    @Ignore
     @Test
     public void test_JavaTechCase_jtec() {
         pattern = "jtec";
