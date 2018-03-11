@@ -171,12 +171,9 @@ class AnalyzePositionsData {
                                 logAnalyze(POSITIONS_CLUSTERS, "               [weight] -11.2 : char is one-char-word");
                                 this.positionsWeight = this.positionsWeight - 11.2;
                             } else {
-                                if ( this.positionAfterWordSeparatorIsContinuingPreviousCluster() ) {
-                                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] cluster is separated by separator %s_%s", 
-                                            this.previousClusterLastPosition, this.currentPosition);
-                                    this.nonClustered--;
-                                    this.clustered++;
-                                    this.previousClusterLastPosition = this.currentPosition;
+                                if ( this.currentPositionCharIsPatternStart() ) {
+                                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] -17.71 : previous char is word separator, current char is at pattern start!");
+                                    this.positionsWeight = this.positionsWeight - 17.71;
                                 } else {
                                     logAnalyze(POSITIONS_CLUSTERS, "               [weight] -3.1 : previous char is word separator");
                                     this.positionsWeight = this.positionsWeight - 3.1;
@@ -199,20 +196,13 @@ class AnalyzePositionsData {
                                 logAnalyze(POSITIONS_CLUSTERS, "               [weight] -11.2 : char is one-char-word");
                                 this.positionsWeight = this.positionsWeight - 11.2;
                             } else {
-                                if ( this.positionAfterWordSeparatorIsContinuingPreviousCluster() ) {
-                                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] cluster is separated by separator %s_%s", 
-                                            this.previousClusterLastPosition, this.currentPosition);
-                                    this.nonClustered--;
-                                    this.clustered++;
+                                if ( this.currentPositionCharIsPatternStart() ) {
+                                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] -17.71 : previous char is word separator, current char is at pattern start!");
+                                    this.positionsWeight = this.positionsWeight - 17.71;
                                 } else {
-                                    if ( this.currentPositionCharIsPatternStart() ) {
-                                        logAnalyze(POSITIONS_CLUSTERS, "               [weight] -17.71 : previous char is word separator, current char is at pattern start!");
-                                        this.positionsWeight = this.positionsWeight - 17.71;
-                                    } else {
-                                        logAnalyze(POSITIONS_CLUSTERS, "               [weight] -3.1 : previous char is word separator");
-                                        this.positionsWeight = this.positionsWeight - 3.1;
-                                    }
-                                }                            
+                                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] -3.1 : previous char is word separator");
+                                    this.positionsWeight = this.positionsWeight - 3.1;
+                                }                          
                             }
                         } else if ( this.isNextCharWordSeparator() ) {
                             logAnalyze(POSITIONS_CLUSTERS, "               [weight] -3.1 : next char is word separator");

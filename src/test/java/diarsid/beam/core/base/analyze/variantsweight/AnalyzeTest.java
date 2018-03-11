@@ -414,14 +414,14 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
-//    @Ignore
     @Test
     public void test_enginesJavaBinCase_engjbin() {
         pattern = "engjbin";
         
         variants = asList(
                 "Engines/Java/Path/JAVA_HOME/bin/java.exe",
-                "Engines/Java/Path/JAVA_HOME/bin");
+                "Engines/Java/Path/JAVA_HOME/bin"
+        );
         
         expected = asList(
                 "Engines/Java/Path/JAVA_HOME/bin",
