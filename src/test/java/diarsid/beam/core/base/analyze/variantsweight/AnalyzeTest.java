@@ -88,6 +88,22 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_PhotosCase_phots() {
+        pattern = "phots";
+        
+        variants = asList(
+                "Projects",
+                "Images/Photos",
+                "Photos");
+        
+        expected = asList( 
+                "Photos",
+                "Images/Photos");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_EnginesCase_enings() {
         pattern = "enings";
         

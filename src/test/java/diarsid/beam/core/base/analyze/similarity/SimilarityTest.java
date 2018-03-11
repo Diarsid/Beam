@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.hasSimilar;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilarPath;
+import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilarPathToPath;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 /**
@@ -77,11 +77,6 @@ public class SimilarityTest {
         assertTrue(isSimilar("SoulWindows7upd12fw446fngg67jf.exe", "win7"));
     }
     
-//    @Test
-//    public void test_isSimilar_webpage_wepaeg() {
-//        assertTrue(isSimilar("webpage", "wepaeg"));
-//    }
-    
     @Test
     public void test_isSimilar_exit_ext() {
         assertTrue(isSimilar("exit", "ext"));
@@ -113,6 +108,16 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_projects_phots_false() {
+        assertFalse(isSimilar("projects", "phots"));
+    }
+    
+    @Test
+    public void test_isSimilar_projects_photos_false() {
+        assertFalse(isSimilar("projects", "photos"));
+    }
+    
+    @Test
     public void test_isSimilar_images_games_false() {
         assertFalse(isSimilar("images", "games"));
     }
@@ -136,11 +141,6 @@ public class SimilarityTest {
     public void test_isSimilar_folder_1_foldile() {
         assertTrue(isSimilar("folder_1", "foldile"));
     }
-    
-//    @Test
-//    public void test_isSimilar_page_paeg() {
-//        assertTrue(isSimilar("page", "paeg"));
-//    }
     
     @Test
     public void test_webpanel_paeg() {
@@ -191,11 +191,6 @@ public class SimilarityTest {
     public void test_isSimilar_delete_delet() {
         assertTrue(isSimilar("delete", "delete"));
     }
-    
-//    @Test
-//    public void test_isSimilar_get_gte() {
-//        assertTrue(isSimilar("get", "gte"));
-//    }
     
     @Test
     public void test_isSimilar_notes() {
@@ -293,7 +288,17 @@ public class SimilarityTest {
     }
     
     @Test
-    public void isSimilarPath_hiringCvs_hiringcv() {
-        assertTrue(isSimilarPath("Current/Hiring/CVs", "hirng/cv"));
+    public void isSimilarPathToPath_hiring_Cvs_hiring_cv() {
+        assertTrue(isSimilarPathToPath("Current/Hiring/CVs", "hirng/cv"));
+    }
+    
+    @Test
+    public void isSimilar_hiring_Cvs_hiringcv() {
+        assertTrue(isSimilar("Current/Hiring/CVs", "hirngcv"));
+    }
+    
+    @Test
+    public void isSimilar_hiring_Cvs_hiring_cv() {
+        assertTrue(isSimilar("Current/Hiring/CVs", "hirng/cv"));
     }
 }

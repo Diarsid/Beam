@@ -18,6 +18,7 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 import static diarsid.beam.core.base.util.ArraysUtil.array;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
+import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -703,6 +704,8 @@ public class Similarity {
     }
     
     public static boolean isSimilar(String target, String pattern) {
+        target = removeSeparators(target);
+        pattern = removeSeparators(pattern);
         int similarityPercent = calculateSimilarityPercent(target, pattern);
         int requiredPercent = requiredSimilarityPercentDependingOn(pattern.length());
         boolean similar = similarityPercent > requiredPercent;       
@@ -713,7 +716,7 @@ public class Similarity {
         return similar;          
     }
     
-    public static boolean isSimilarPath(String targetPath, String patternPath) {
+    public static boolean isSimilarPathToPath(String targetPath, String patternPath) {
         similarityLog("[PATH] pattern : " + patternPath);
         similarityLog("[PATH] target  : " + targetPath);
         String[] patterns = splitPathFragmentsFrom(patternPath);
