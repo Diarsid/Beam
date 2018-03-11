@@ -93,11 +93,31 @@ public class MathUtil {
         return part * 100 / whole ;
     }
     
-    public static int mean(Collection<Integer> ints) {
+    public static int meanSmartIngoringZeros(Collection<Integer> ints) {
         int sum = 0;
+        int zeros = 0;
+        
         for (Integer i : ints) {
-            sum = sum + i;
+            if ( i == 0 ) {
+                zeros++;
+            } else {
+                sum = sum + i;
+            }            
         }
-        return sum / ints.size();
+        
+        if ( sum == 0 ) {
+            return 0;
+        }
+        
+        int size = ints.size();
+        if ( zeros == 0 ) {
+            return sum / size;
+        } else {
+            if ( zeros > size / 2 ) {
+                return 0;
+            } else {
+                return sum / (size - zeros);
+            }
+        }        
     }
 }

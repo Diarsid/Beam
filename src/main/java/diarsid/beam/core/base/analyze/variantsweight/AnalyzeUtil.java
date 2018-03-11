@@ -7,16 +7,14 @@ package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.List;
 
-import static java.lang.Math.abs;
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
-import static diarsid.beam.core.base.analyze.variantsweight.OrderDiff.orderDiffResultOf;
+import static diarsid.beam.core.base.objects.Cache.getCached;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
-import static diarsid.beam.core.base.util.MathUtil.mean;
+import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 
@@ -54,15 +52,17 @@ class AnalyzeUtil {
         );
         
         for (List<Integer> list : ints) {
-            calculateOrderDiff(mean(list), list, list.size());
+            calculateCluster(list, list.size());
         }
     }
     
-    static int inconsistencyOf(int orderDiff) {
-        return (7 + orderDiff + (orderDiff/2) ) * orderDiff;
+    static int inconsistencyOf(Cluster orderDiff, int clusterLength) {
+        int percent = percentAsInt(orderDiff.ordersDiffCount(), clusterLength) / 10;
+        return (percent + orderDiff.ordersDiffSum() + (orderDiff.ordersDiffSum()/2) ) * orderDiff.ordersDiffSum();
     }
     
-    static OrderDiff calculateOrderDiff(int mean, List<Integer> ints, int clusterLength) {
+    static Cluster calculateCluster(List<Integer> ints, int clusterLength) {
+        int mean = meanSmartIngoringZeros(ints);
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs         %s", 
                     ints.stream().map(i -> i.toString()).collect(joining(" ")));
@@ -85,6 +85,10 @@ class AnalyzeUtil {
         boolean isFirstPair = true;
         
         int diffSum = absDiff(ints.get(0), mean);
+        int diffCount = 0;
+        if ( ints.get(0) != mean ) {
+            diffCount++;
+        }
         
         if ( diffSum > 0 ) {
             violatingOrder = diffSum;
@@ -95,6 +99,9 @@ class AnalyzeUtil {
             current = ints.get(i);
             next = ints.get(i + 1);
             diffSum = diffSum + absDiff(next, mean);
+            if ( next != mean ) {
+                diffCount++;
+            }
             
             if ( current == next ) { 
                 previousIsRepeat = true;
@@ -155,11 +162,14 @@ class AnalyzeUtil {
                 logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] no repeats");
             }    
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum      %s", diffSum);
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff count    %s", diffCount);
         }
-        if ( diffSum == 0 && haveCompensation && clusterLength == 2 ) {
+        if ( diffSum == 0 && haveCompensation && clusterLength == 2 ) {            
             diffSum = 1;
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
         }
-        return orderDiffResultOf(diffSum, shifts, haveCompensation);
+        return getCached(Cluster.class)
+                .set(clusterLength, mean, diffSum, diffCount, shifts, haveCompensation);
     }
     
     static int lengthTolerance(int variantLength) {
@@ -193,42 +203,6 @@ class AnalyzeUtil {
             return 0.5;
         }
     }
-    
-    /*
-     * Returns importance of unsorted characters in a pattern.
-     * Positive value means that unsorted characters makes pattern evaluation worse.
-     * Negative value means that there are not unsorted characters, and pattern becames better 
-     * depending on other conditions.
-     */
-    // DEPRECATED
-//    static double unsortedImportanceDependingOn(
-//            int patternInVariantLength, 
-//            int patternLength, 
-//            int unsorted, 
-//            int clustered, 
-//            double clustersImportance) {
-//        if ( clustered > 0 ) {
-//            if ( unsorted == 0 ) {
-//                return -( 
-//                        patternLength + 
-//                        (unsortedRatioDependingOn(clustersImportance) * 
-//                                onePointRatio(patternLength, patternInVariantLength)) );
-//            } else {
-//                double ratio = ratio(patternLength, patternInVariantLength);
-//                return unsorted * (unsorted - 0.8) * pow(onePointRatio(unsorted, patternLength), 2) *
-//                        unsortedRatioDependingOn(clustersImportance) * ( 2.45 + ratio );
-//            } 
-//        } else {
-//            if ( unsorted == 0 ) {
-//                return -pow(patternLength, onePointRatio(patternLength, patternInVariantLength));
-//            } else {
-//                double ratio = ratio(patternLength, patternInVariantLength);
-//                return unsorted * 
-//                        pow(unsortedRatioDependingOn(clustersImportance), 1.55 + ratio ) * 
-//                        (1.5 + ratio);
-//            }
-//        }               
-//    }
     
     static double unsortedRatioDependingOn(double clustersImportance) {
         if ( clustersImportance < 0 ) {
@@ -325,59 +299,6 @@ class AnalyzeUtil {
     static int nonClusteredImportanceDependingOn(int nonClustered, int missed, int patternLength) {
         int importance = (patternLength - 3 + 5);
         return importance * nonClustered;
-    }
-    
-    public static int countUsorted(int[] data) {
-        int unsorted = 0;
-        for (int i = 0; i < data.length - 1; i++) {
-            if ( data[i + 1] == -1 ) {
-                continue;
-            }
-            if ( data[i] > data[i + 1] ) {
-                unsorted++;
-            }
-        }
-        return unsorted;
-    }
-    
-    public static int sortAndCountSteps(int[] data) {
-        int steps = 0;
-        if ( data.length < 2 ) {
-            return 0;
-        } else if ( data.length == 2 ) {
-            if ( data[0] > data[1] ) {
-                int swap = data[0];
-                data[0] = data[1];
-                data[1] = swap;
-                return 1;
-            }
-            return 0;
-        }
-        
-        boolean dataIsUnsorted = true;
-        int current;
-        int next;
-        int dataLength = data.length;
-        
-        while ( dataIsUnsorted ) {
-            dataIsUnsorted = false;
-            for (int i = 0; i < dataLength - 1; i++) {
-                current = data[i];
-                next = data[i + 1];
-                if ( current > next ) {
-                    if ( abs(current - next) > 1 ) {
-                        System.out.println(format("bad current %s next %s", current, next));
-                        steps++;
-                    } 
-                    data[i] = next;
-                    data[i + 1] = current;
-                    dataIsUnsorted = true;   
-                } else {
-                    steps--;
-                }
-            }
-        }
-        return steps;
     }
     
     static boolean isVariantOkWhenAdjusted(WeightedVariant variant) {

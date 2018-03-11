@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.String.format;
@@ -222,11 +221,13 @@ public class AnalyzeTest {
         
         variants = asList(
                 "Engines/Java/Path/JAVA_HOME/bin/java.exe",
+                "Engines/Java/Path/JAVA_HOME/bin/java.spring.exe",
                 "Engines/Java/Path/JAVA_HOME");
         
         expected = asList(
                 "Engines/Java/Path/JAVA_HOME", 
-                "Engines/Java/Path/JAVA_HOME/bin/java.exe");
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe",
+                "Engines/Java/Path/JAVA_HOME/bin/java.spring.exe");
         
         weightVariantsAndCheckMatching();
     }
@@ -413,7 +414,7 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
-    @Ignore
+//    @Ignore
     @Test
     public void test_enginesJavaBinCase_engjbin() {
         pattern = "engjbin";

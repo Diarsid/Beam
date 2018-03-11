@@ -23,7 +23,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSIT
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_SEARCH;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.calculateOrderDiff;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.calculateCluster;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.inconsistencyOf;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedImportanceDependingOn;
@@ -31,13 +31,10 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.nonClust
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
-import static diarsid.beam.core.base.analyze.variantsweight.OrderDiff.back;
+import static diarsid.beam.core.base.objects.Cache.backAllToCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
-import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.MathUtil.absDiff;
-import static diarsid.beam.core.base.util.MathUtil.mean;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.StringUtils.isWordsSeparator;
 
@@ -71,7 +68,6 @@ class AnalyzePositionsData {
     int patternInVariantLength;
     
     int missed;    
-//    int unsorted;
     
     int previousClusterLength;
     int currentClusterLength;
@@ -110,6 +106,7 @@ class AnalyzePositionsData {
     // v.3
     Map<Integer, Integer> positionUnsortedOrders = new HashMap<>();
     List<Integer> currentClusterOrderDiffs = new ArrayList();
+    List<Cluster> clusters = new ArrayList<>();
     boolean currentClusterOrdersIsConsistent;
     boolean currentClusterOrdersHaveDiffCompensations;
     // --
@@ -126,7 +123,6 @@ class AnalyzePositionsData {
     int separatorsBetweenClusters;
     
     double missedImportance;
-//    double unsortedImportance;
     double clustersImportance; 
     int nonClusteredImportance;
     
@@ -230,7 +226,7 @@ class AnalyzePositionsData {
         
         this.patternInVariantLength = last(this.positions) - first(this.positions) + 1;
         
-        if ( clustersQty > 1 ) {
+        if ( this.clustersQty > 1 ) {
             if ( this.separatorsBetweenClusters > 0 ) {
                 if ( this.distanceBetweenClusters == this.separatorsBetweenClusters) {
                     logAnalyze(POSITIONS_CLUSTERS, "               [weight] all clusters are one pattern, can be regarded as one cluster!");
@@ -240,6 +236,34 @@ class AnalyzePositionsData {
                 
             }           
         }
+        
+        if ( nonEmpty(this.clusters) ) {
+            this.analyzeAllClustersOrderDiffs();
+        }
+    }
+    
+    private void analyzeAllClustersOrderDiffs() {
+        int incosistency = 0;
+        int orderMeansDifferentFromZero = 0;
+        
+        int oneClusteredCharPercent;
+        for (Cluster cluster : this.clusters) {
+            if ( cluster.ordersDiffMean() != 0 && cluster.hasOrdersDiff() ) {
+                oneClusteredCharPercent = percentAsInt(1, cluster.length());
+                incosistency = incosistency + (oneClusteredCharPercent * abs(cluster.ordersDiffMean()));
+                orderMeansDifferentFromZero++;
+            }            
+        }
+        
+        if ( orderMeansDifferentFromZero > 0 ) {
+            int clustersPercent = percentAsInt(this.clustered, this.data.patternChars.length);
+            incosistency = incosistency / orderMeansDifferentFromZero;
+            incosistency = incosistency * clustersPercent / 1000;
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : clusters order incosistency", incosistency);
+            this.positionsWeight = this.positionsWeight + incosistency;
+        }        
+        
+        backAllToCache(this.clusters);
     }
         
     void findPatternCharsPositions() {
@@ -639,9 +663,9 @@ class AnalyzePositionsData {
     void processClusterPositionOrderStats(String clusterMark) {        
         int currentPositionUnsortedOrder = this.positionUnsortedOrders.get(this.currentPosition);
         int orderDiff = currentPositionUnsortedOrder - (this.currentPositionIndex - this.missed);
-        if ( orderDiff != 0 ) {
+//        if ( orderDiff != 0 ) {
             this.currentClusterOrderDiffs.add(orderDiff);
-        }
+//        }
         logAnalyze(POSITIONS_CLUSTERS, "    %spos. %s S-Order: %s U-Order: %s orderDiff: %s", clusterMark, this.currentPosition, (this.currentPositionIndex - this.missed), currentPositionUnsortedOrder, orderDiff);
     }
     
@@ -652,57 +676,38 @@ class AnalyzePositionsData {
     void accumulateClusterPositionOrdersStats() {
         if ( this.currentClusterOrderDiffs.isEmpty() ) {
             int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
-            if ( POSITIONS_CLUSTERS.isEnabled() ) {
-                logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
-                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
-            }
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
             this.positionsWeight = this.positionsWeight - consistencyReward;
             this.currentClusterOrdersIsConsistent = true;
             this.currentClusterOrdersHaveDiffCompensations = false;
             return;
         }
-        
-        if ( hasOne(this.currentClusterOrderDiffs) ) {
-            int orderDiff = abs(this.currentClusterOrderDiffs.get(0));
-            int diffPercent = percentAsInt(orderDiff, this.currentClusterLength);
-            int incosistency = orderDiff * diffPercent / 10;
-            
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order single diff   %s", orderDiff);
+        Cluster cluster = calculateCluster(this.currentClusterOrderDiffs, this.currentClusterLength);
+
+        this.currentClusterOrdersIsConsistent = ! cluster.hasOrdersDiff();
+        this.currentClusterOrdersHaveDiffCompensations = cluster.haveOrdersDiffCompensations();
+
+        if ( cluster.hasOrdersDiff() ) {
+            int incosistency = inconsistencyOf(cluster, this.currentClusterLength);
             logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for inconsistency", incosistency);
             this.positionsWeight = this.positionsWeight + incosistency;
-            this.currentClusterOrdersIsConsistent = false;
-            this.currentClusterOrdersHaveDiffCompensations = false;   
         } else {
-            int mean = mean(this.currentClusterOrderDiffs);
-            OrderDiff orderDiff = calculateOrderDiff(mean, this.currentClusterOrderDiffs, this.currentClusterLength);
-            
-            this.currentClusterOrdersIsConsistent = ! orderDiff.hasDiff();
-            this.currentClusterOrdersHaveDiffCompensations = orderDiff.haveCompensations();
-            
-            if ( orderDiff.hasDiff() ) {
-                int incosistency = inconsistencyOf(orderDiff.diffSum());
-                if ( POSITIONS_CLUSTERS.isEnabled() ) {                
-                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for inconsistency", incosistency);
-                }
-                this.positionsWeight = this.positionsWeight + incosistency;
-            } else {
-                int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
-                
-                if ( orderDiff.hasShifts() ) {
-                    logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster has %s shifts", orderDiff.shifts());
-                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for shifts", orderDiff.shifts());
-                    this.positionsWeight = this.positionsWeight + orderDiff.shifts();    
-                }
-                
-                logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
-                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
-                this.positionsWeight = this.positionsWeight - consistencyReward;                
+            int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
+
+            if ( cluster.hasOrdersDiffShifts() ) {
+                logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster has %s shifts", cluster.ordersDiffShifts());
+                logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for shifts", cluster.ordersDiffShifts());
+                this.positionsWeight = this.positionsWeight + cluster.ordersDiffShifts();    
             }
 
-            back(orderDiff);
-        }        
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
+            this.positionsWeight = this.positionsWeight - consistencyReward;                
+        }
         
-        this.currentClusterOrderDiffs.clear();      
+        this.currentClusterOrderDiffs.clear();  
+        this.clusters.add(cluster);
     }
 
     boolean isCurrentAndNextPositionInCluster() {
@@ -739,13 +744,6 @@ class AnalyzePositionsData {
                 this.clustersImportance,
                 this.data.patternChars.length,
                 this.data.variantText.length());
-        // DEPRECATED
-//        this.unsortedImportance = unsortedImportanceDependingOn(
-//                this.patternInVariantLength,
-//                this.data.patternChars.length,
-//                this.unsorted,  
-//                this.clustered, 
-//                this.clustersImportance);
     }
     
     boolean isCurrentPositionNotMissed() {
@@ -782,17 +780,12 @@ class AnalyzePositionsData {
         return this.data.patternChars[0] == this.data.variantText.charAt(this.currentPosition);
     }
     
-//    void countUnsortedPositions() {
-//        this.unsorted = countUsorted(this.positions);
-//    }
-    
     void clearPositionsAnalyze() {
         this.positions = null;
         this.missed = 0;
         this.clustersQty = 0;
         this.clustered = 0;
         this.nonClustered = 0;
-//        this.unsorted = 0;
         this.currentClusterLength = 0;
         this.previousClusterLength = 0;
         this.clusterContinuation = false;
@@ -817,6 +810,9 @@ class AnalyzePositionsData {
         this.skipNextPatternChar = false;
         this.positionUnsortedOrders.clear();
         this.currentClusterOrderDiffs.clear();
+        if ( nonEmpty(this.clusters) ) {
+            backAllToCache(this.clusters);
+        }
         this.currentClusterOrdersIsConsistent = false;
         this.currentClusterOrdersHaveDiffCompensations = false;
     }
@@ -858,99 +854,5 @@ class AnalyzePositionsData {
         }
         Arrays.sort(this.positions);
     }
-
-//    void strangeConditionOnUnsorted() {
-//        if ( ( this.clustered < 2 ) && ( this.unsorted > 0 ) ) {            
-//            System.out.println(" *1.8 : clustered < 2 && unsorted > 0");
-//            this.data.variantWeight = this.data.variantWeight * 1.8;
-//        }
-//    }
     
-    private static int[] stringToIntArray(String s) {
-        String[] ss = s.split(" ");
-        int[] arr = new int[ss.length];
-        for (int i = 0; i < ss.length; i++) {
-            arr[i] = Integer.valueOf(ss[i]);
-        }
-        return arr;
-    }
-    
-    public static void main(String[] args) {
-        procedure("6 7 8 9 0 1 2 3 4");
-        procedure("22 24 25 23 26 27 28");
-        procedure("0 7 6 25 26 27 28");
-        procedure("0 7 16 13 17 12 -1");
-        procedure("2 5 6 -1 1 7 -1 ");
-        procedure("0 -1 2 6 7");
-        procedure("2 5 6 -1 1 7 21 ");
-        procedure("7 9 10 11");
-        procedure("3 7 0 4 5");
-        procedure("3 24 27 4 5");
-        procedure("0 1 2 12 14 13 15");
-        procedure("2 3 1 6 8 7 -1");
-        procedure("1 2 0 7 9 8 -1");
-        procedure("0 1 2 8 10 9 -1");
-        procedure("0 1 2 -1 6 -1 -1");
-        procedure("0 1 2 5 7 6 8");
-        procedure("0 1 21 19 26 27 28");
-        procedure("26 27 28 0 2 1 -1");
-        procedure("-1 0 1 2");
-        
-    }
-    
-    static void procedure(String data) {
-        System.out.println();
-        System.out.println(positionsConsistency(stringToIntArray(data)) + " : " + data);
-    }
-    
-    static int positionsConsistency(int[] positions) {
-        
-        int consistency = 0;
-        int inconsistency = 0;
-        int sum = 0;
-        int previousCons = -1;
-        
-        int current;
-        int next;
-        
-        for (int i = 0; i < positions.length - 1; i++) {
-            current = positions[i];
-            next = positions[i + 1];
-            
-            sum = sum + (next - current);
-            
-            if ( current < 0 ) {
-                if ( next >= 0 ) {
-                    inconsistency = inconsistency + absDiff(0, next);
-                } else {
-                    
-                }
-                previousCons = 0;
-                continue;
-            }
-            
-            if ( absDiff(next, current) == 1 ) {
-                consistency++;
-                if ( previousCons < 0 || previousCons == 0) {
-                    consistency++;
-                }
-                previousCons = 1;
-            } else {
-                if ( previousCons <= 0 ) {
-                    inconsistency = inconsistency + absDiff(current, next);
-                }                
-                previousCons = 0;
-            }
-            
-            if ( current > next ) {
-                
-            }
-        }
-        
-        System.out.println("  incon " + inconsistency );
-        System.out.println("  con   " + consistency );
-        System.out.println("  sum   " + sum );
-        
-        return consistency - inconsistency;
-    }
 }

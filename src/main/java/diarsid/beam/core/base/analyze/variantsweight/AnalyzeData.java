@@ -179,14 +179,6 @@ class AnalyzeData {
         this.reverseAnalyze.sortPositions();
     }
 
-//    void countUnsortedPositions() {
-//        this.forwardAnalyze.countUnsortedPositions();
-//        if ( this.forwardAndReverseEqual ) {
-//            return;
-//        }
-//        this.reverseAnalyze.countUnsortedPositions();
-//    }
-
     void setVariantText(Variant variant) {
         this.variantText = lower(variant.text());
     }
@@ -255,11 +247,4 @@ class AnalyzeData {
         this.forwardAndReverseEqual = false;
     }
     
-//    void strangeConditionOnUnsorted() {
-//        this.forwardAnalyze.strangeConditionOnUnsorted();
-//        if ( this.forwardAndReverseEqual ) {
-//            return;
-//        }
-//        this.reverseAnalyze.strangeConditionOnUnsorted();
-//    }
 }
