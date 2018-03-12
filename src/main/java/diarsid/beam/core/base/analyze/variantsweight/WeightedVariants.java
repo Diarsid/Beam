@@ -24,6 +24,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerO
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -183,8 +184,19 @@ public class WeightedVariants implements Serializable {
         if ( this.currentVariantIndex < this.variants.size() - 1 ) {
             double currentWeight = this.current().weight();
             double nextWeight = this.variants.get(this.currentVariantIndex + 1).weight();
+            
+            if ( this.currentVariantIndex < 0 ) {
+                throw new IllegalStateException(
+                        "Unexpected behavior: call .next() before accessing variants!");
+            } else if ( this.currentVariantIndex == 0 ) {
+                return absDiff(currentWeight, nextWeight) >= 1.0;
+            } else if ( this.currentVariantIndex < 4 ) {
+                return absDiff(currentWeight, nextWeight) >= 2.0;
+            } else {
+                return ( currentWeight * 0.8 < nextWeight );
+            }
+            
 //            return ( absDiff(currentWeight, nextWeight) < abs(currentWeight * 0.2) );
-            return ( currentWeight * 0.8 < nextWeight );
 //            if ( currentWeight < 5.0 ) {
 //                return ( nextWeight - currentWeight ) >= 1.0;
 //            } else {

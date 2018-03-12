@@ -50,7 +50,7 @@ public class Cache<T extends CachedReusable> {
         }        
     }
     
-    public static <T extends CachedReusable> T getCached(Class<T> type) {
+    public static <T extends CachedReusable> T takeFromCache(Class<T> type) {
         Cache<T> cache = CACHES_BY_CACHED_CLASS.get(type);
         T cached;
         if ( cache == null ) {
@@ -78,22 +78,22 @@ public class Cache<T extends CachedReusable> {
         }
     }
     
-    public static <T extends CachedReusable> void backToCache(T cached) {
-        if ( cached == null ) {
-            return;
-        }
-        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(cached.getCacheableClass());
-        cache.takeBack(cached);
-    }
-    
-    public static <T extends CachedReusable> void backAllToCache(List<T> cached) {
-        if ( cached == null || cached.isEmpty() ) {
+    public static <T extends CachedReusable> void giveBackToCache(T cacheable) {
+        if ( cacheable == null ) {
             return;
         }
         
-        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(cached.get(0).getCacheableClass());
-        cache.takeBackAll(cached);
-        cached.clear();
+        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(cacheable.getCacheableClass());
+        cache.takeBack(cacheable);
+    }
+    
+    public static <T extends CachedReusable> void giveBackAllToCache(List<T> cacheable) {
+        if ( cacheable == null || cacheable.isEmpty() ) {
+            return;
+        }
+        
+        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(cacheable.get(0).getCacheableClass());
+        cache.takeBackAll(cacheable);
     }
     
     public T give() {
@@ -120,6 +120,7 @@ public class Cache<T extends CachedReusable> {
                 t.clearForReuse();
                 this.queue.offer(t);
             }            
-        }
+        }        
+        ts.clear();
     }
 }

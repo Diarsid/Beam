@@ -31,13 +31,13 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.nonClust
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
-import static diarsid.beam.core.base.objects.Cache.backAllToCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.StringUtils.isWordsSeparator;
+import static diarsid.beam.core.base.objects.Cache.giveBackAllToCache;
 
 /**
  *
@@ -247,7 +247,7 @@ class AnalyzePositionsData {
             this.positionsWeight = this.positionsWeight + incosistency;
         }        
         
-        backAllToCache(this.clusters);
+        giveBackAllToCache(this.clusters);
     }
         
     void findPatternCharsPositions() {
@@ -795,7 +795,7 @@ class AnalyzePositionsData {
         this.positionUnsortedOrders.clear();
         this.currentClusterOrderDiffs.clear();
         if ( nonEmpty(this.clusters) ) {
-            backAllToCache(this.clusters);
+            giveBackAllToCache(this.clusters);
         }
         this.currentClusterOrdersIsConsistent = false;
         this.currentClusterOrdersHaveDiffCompensations = false;

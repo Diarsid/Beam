@@ -12,11 +12,11 @@ import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
-import static diarsid.beam.core.base.objects.Cache.getCached;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
+import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 
 /**
  *
@@ -168,7 +168,7 @@ class AnalyzeUtil {
             diffSum = 1;
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
         }
-        return getCached(Cluster.class)
+        return takeFromCache(Cluster.class)
                 .set(clusterLength, mean, diffSum, diffCount, shifts, haveCompensation);
     }
     
