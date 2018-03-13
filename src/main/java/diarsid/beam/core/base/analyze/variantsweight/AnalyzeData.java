@@ -8,6 +8,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.util.Map;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.objects.CachedReusable;
 
 import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
@@ -33,7 +34,11 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
  *
  * @author Diarsid
  */
-class AnalyzeData {
+class AnalyzeData extends CachedReusable {
+    
+    static {
+        createCacheFor(AnalyzeData.class, () -> new AnalyzeData());
+    }
     
     final AnalyzePositionsData forwardAnalyze;
     final AnalyzePositionsData reverseAnalyze;
@@ -52,9 +57,24 @@ class AnalyzeData {
     
     char[] patternChars;
 
-    AnalyzeData() {
+    private AnalyzeData() {
+        super();
         this.forwardAnalyze = new AnalyzePositionsData(this, FORWARD);
         this.reverseAnalyze = new AnalyzePositionsData(this, REVERSE);
+        this.forwardAndReverseEqual = false;
+    }
+    
+    @Override
+    public void clearForReuse() {
+        this.forwardAnalyze.clearPositionsAnalyze();
+        this.reverseAnalyze.clearPositionsAnalyze();
+        this.best = null;
+        this.variantText = "";
+        this.variantWeight = 0;
+        this.lengthDelta = 0;
+        this.distanceBetweenClustersImportance = 0;
+        this.newVariant = null;
+        this.prevVariant = null;
         this.forwardAndReverseEqual = false;
     }
 
@@ -233,18 +253,4 @@ class AnalyzeData {
                 .collect(joining(" "));
         logAnalyze(BASE, "  %s positions before sorting: %s", data.direction, positionsS);
     }
-    
-    void clearAnalyze() {
-        this.forwardAnalyze.clearPositionsAnalyze();
-        this.reverseAnalyze.clearPositionsAnalyze();
-        this.best = null;
-        this.variantText = "";
-        this.variantWeight = 0;
-        this.lengthDelta = 0;
-        this.distanceBetweenClustersImportance = 0;
-        this.newVariant = null;
-        this.prevVariant = null;
-        this.forwardAndReverseEqual = false;
-    }
-    
 }

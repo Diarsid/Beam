@@ -7,11 +7,15 @@ package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import diarsid.beam.core.base.objects.Cache;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -21,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.objects.Cache.cacheOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 
 /**
@@ -39,6 +44,15 @@ public class AnalyzeTest {
     
     @BeforeClass
     public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+        Optional<Cache<AnalyzeData>> cache = cacheOf(AnalyzeData.class);
+        if ( cache.isPresent() ) {
+            Cache<AnalyzeData> c = cache.get();
+            AnalyzeData analyzeData = c.give();
+        }
     }
     
     @Before

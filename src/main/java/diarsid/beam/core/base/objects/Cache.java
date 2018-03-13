@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Supplier;
 
@@ -36,7 +37,7 @@ public class Cache<T extends CachedReusable> {
     private final Queue<T> queue;
     private final Supplier<T> tNewObjectSupplier;
     
-    public Cache(Supplier<T> newTSupplier) {
+    Cache(Supplier<T> newTSupplier) {
         this.queue = new ArrayDeque<>();
         this.tNewObjectSupplier = newTSupplier;
     }
@@ -48,6 +49,10 @@ public class Cache<T extends CachedReusable> {
             CACHES_BY_CACHED_CLASS.put(type, newTCache);
             log(Cache.class, format("Cache for %s created.", type.getCanonicalName()));
         }        
+    }
+    
+    public static <T extends CachedReusable> Optional<Cache<T>> cacheOf(Class<T> type) {
+        return Optional.ofNullable(CACHES_BY_CACHED_CLASS.get(type));
     }
     
     public static <T extends CachedReusable> T takeFromCache(Class<T> type) {
