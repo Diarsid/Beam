@@ -33,7 +33,7 @@ public class CollectionsUtils {
     }
     
     public static boolean nonEmpty(Collection c) {
-        return ( ! c.isEmpty() );
+        return ( nonNull(c) && ! c.isEmpty() );
     }
     
     public static boolean hasAny(Collection c) {
