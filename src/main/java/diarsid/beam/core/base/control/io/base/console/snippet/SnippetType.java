@@ -116,7 +116,11 @@ public enum SnippetType {
                             " open ", 
                             " call ", 
                             " browse ", 
-                            " run "))
+                            " run ",
+                            " (Program) ",
+                            " (WebPage) ",
+                            " (Location) ",
+                            " (Batch) "))
                     .and(matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             reinvocationTextFormat("open '%s'")),     
@@ -176,6 +180,31 @@ public enum SnippetType {
             matchesByContaining(" not found in "),
             refiningByRemoveAllBefore(" not found in "),
             reinvocationTextFormat("open %s")),
+    
+    QUESTION_FOR_ENTITY_WEBPAGE (
+            REINVOKABLE,
+            NO_TRAVERSE,
+            matchesByStartingEndingWith("> ", " (WebPage) ?"),
+            refiningByRemoveStartAndEndIfPresent("> ", " (WebPage) ?"),
+            reinvocationTextFormat("browse %s")),
+    QUESTION_FOR_ENTITY_LOCATION (
+            REINVOKABLE,
+            NO_TRAVERSE,
+            matchesByStartingEndingWith("> ", " (Location) ?"),
+            refiningByRemoveStartAndEndIfPresent("> ", " (Location) ?"),
+            reinvocationTextFormat("open %s")),
+    QUESTION_FOR_ENTITY_BATCH (
+            REINVOKABLE,
+            NO_TRAVERSE,
+            matchesByStartingEndingWith("> ", " (Batch) ?"),
+            refiningByRemoveStartAndEndIfPresent("> ", " (Batch) ?"),
+            reinvocationTextFormat("call %s")),
+    QUESTION_FOR_ENTITY_PROGRAM (
+            REINVOKABLE,
+            NO_TRAVERSE,
+            matchesByStartingEndingWith("> ", " (Program) ?"),
+            refiningByRemoveStartAndEndIfPresent("> ", " (Program) ?"),
+            reinvocationTextFormat("run %s")),
     
     QUESTION_FOR_YES_OR_NO (
             NON_REINVOKABLE, 
