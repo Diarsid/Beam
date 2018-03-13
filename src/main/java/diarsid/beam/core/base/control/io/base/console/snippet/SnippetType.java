@@ -102,9 +102,17 @@ public enum SnippetType {
             matchesByNotStartingWith("> ", "- ", "[_] ", "Beam > ", "...")
                     .and(matchesByNotContaining(" -> ", " is one of ", "are you sure"))
                     .and(matchesByNotEndingWith(" ?"))
+                    .and(matchesByNotStartingWith("WebPanel > "))
                     .and(matchesByNotStartingWithDigit()),
             refiningByTrim(),
             noFormat()),
+    LISTED_WEBPANEL_DIRECTORY (
+            NON_REINVOKABLE,
+            NO_TRAVERSE,
+            matchesByStartingWith("WebPanel > "),
+            noRefining(),
+            noFormat()),
+    
     SINGLE_VARIANT (
             REINVOKABLE, 
             NO_TRAVERSE, 
