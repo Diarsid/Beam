@@ -400,7 +400,10 @@ public class AnalyzeTest {
                 "beam_project/src",
                 "beam_project_home",
                 "beam_server_project",
-                "netbeans_projects");
+                "netbeans_projects",
+                "beam netpro",
+                "babel_pro",
+                "abe_netpro");
         
         weightVariantsAndCheckMatching();
     }
@@ -593,7 +596,8 @@ public class AnalyzeTest {
                 "Projects/UkrPoshta/PriceCalculationAPI");
         
         expected = asList(
-                "Projects/UkrPoshta/PriceCalculationAPI");
+                "Projects/UkrPoshta/PriceCalculationAPI",
+                "Projects/UkrPoshta/CainiaoAPI");
         
         weightVariantsAndCheckMatching();
     }
