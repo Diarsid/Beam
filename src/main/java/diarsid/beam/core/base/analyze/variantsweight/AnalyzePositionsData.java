@@ -31,13 +31,13 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.nonClust
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
+import static diarsid.beam.core.base.objects.Cache.giveBackAllToCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.StringUtils.isWordsSeparator;
-import static diarsid.beam.core.base.objects.Cache.giveBackAllToCache;
 
 /**
  *
@@ -110,6 +110,7 @@ class AnalyzePositionsData {
     List<Cluster> clusters = new ArrayList<>();
     boolean currentClusterOrdersIsConsistent;
     boolean currentClusterOrdersHaveDiffCompensations;
+    int unsortedPositions;
     // --
     
     int distanceBetweenClusters;
@@ -799,6 +800,7 @@ class AnalyzePositionsData {
         }
         this.currentClusterOrdersIsConsistent = false;
         this.currentClusterOrdersHaveDiffCompensations = false;
+        this.unsortedPositions = 0;
     }
     
     boolean previousCharInVariantInClusterWithCurrentChar(int currentPatternCharIndex) {
@@ -827,13 +829,20 @@ class AnalyzePositionsData {
             this.positionUnsortedOrders.clear();
         }
         int position;
-        int notFountOrdetOffset = 0;
+        int previousPosition = UNINITIALIZED;
+        int notFountOrderOffset = 0;
         for (int i = 0; i < this.positions.length; i++) {
             position = this.positions[i];
             if ( position > -1 ) {
-                this.positionUnsortedOrders.put(position, i - notFountOrdetOffset);
+                this.positionUnsortedOrders.put(position, i - notFountOrderOffset);
+                if ( previousPosition != UNINITIALIZED ) {
+                    if ( previousPosition > position ) {
+                        this.unsortedPositions++;
+                    }
+                }
+                previousPosition = position;
             } else {
-                notFountOrdetOffset++;
+                notFountOrderOffset++;
             }
         }
         Arrays.sort(this.positions);

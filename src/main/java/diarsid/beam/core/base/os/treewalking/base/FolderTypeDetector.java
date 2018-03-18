@@ -8,6 +8,7 @@ package diarsid.beam.core.base.os.treewalking.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 
@@ -18,6 +19,7 @@ import static diarsid.beam.core.base.os.treewalking.base.FolderType.PROGRAM_FOLD
 import static diarsid.beam.core.base.os.treewalking.base.FolderType.PROJECT_FOLDER;
 import static diarsid.beam.core.base.os.treewalking.base.FolderType.RESTRICTED_FOLDER;
 import static diarsid.beam.core.base.os.treewalking.base.FolderType.USUAL_FOLDER;
+
 
 /**
  *
@@ -54,22 +56,24 @@ public class FolderTypeDetector {
         if ( this.analizer.isRestrictedFolder(folder) ) {
             return RESTRICTED_FOLDER;
         }
+        try (DirectoryStream<Path> dirStream = newDirectoryStream(folder)) {
+            return explorePathUsing(dirStream.iterator());
+        }
+    }
+    
+    private FolderType explorePathUsing(Iterator<Path> iterator) {
         int programSpecificFilesCount = 0;
         int programSpecificFoldersCount = 0;
-        Iterator iterator = newDirectoryStream(folder).iterator();
         Path iterated;
         for (int i = 0; i < 10 && iterator.hasNext(); i++) {
-            iterated = (Path) iterator.next();
-            //debug("[PROGRAM FOLDER DETECTOR] examine : " + iterated.toString());
+            iterated = iterator.next();
             if ( this.analizer.isProgramSpecificFile(iterated) ) {
-                //debug("[PROGRAM FOLDER DETECTOR]    - specific file!");
                 programSpecificFilesCount++;
             }
             if ( this.analizer.isProjectSpecificFile(iterated) ) {
                 return PROJECT_FOLDER;
             }
             if ( this.analizer.isProgramSpecificFolder(iterated) ) {
-                //debug("[PROGRAM FOLDER DETECTOR]    - specific folder!");
                 programSpecificFoldersCount++;
             }
         }

@@ -217,6 +217,38 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_facebookCase_fb() {
+        pattern = "fb";
+        
+        variants = asList(
+                "some_Fstring_Bwith_fb_cluster",
+                "facebook");
+        
+        expected = asList(
+                "some_Fstring_Bwith_fb_cluster",
+                "facebook"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_gmailCase_fb() {
+        pattern = "ml";
+        
+        variants = asList(
+                "some_Mstring_Lwith_ml_cluster",
+                "gmail");
+        
+        expected = asList(
+                "some_Mstring_Lwith_ml_cluster",
+                "gmail"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_photosCase_phots() {
         pattern = "Phots";
         

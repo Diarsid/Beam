@@ -29,4 +29,8 @@ enum AnalyzeLogType {
     boolean isEnabled() {
         return this.isEnabled;
     }
+    
+    boolean isDisabled() {
+        return ! this.isEnabled;
+    }
 }

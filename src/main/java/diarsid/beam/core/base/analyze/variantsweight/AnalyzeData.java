@@ -54,6 +54,7 @@ class AnalyzeData extends CachedReusable {
     double variantWeight;
     double lengthDelta;
     double distanceBetweenClustersImportance;
+    boolean calculatedAsUsualClusters;
     
     char[] patternChars;
 
@@ -76,6 +77,7 @@ class AnalyzeData extends CachedReusable {
         this.newVariant = null;
         this.prevVariant = null;
         this.forwardAndReverseEqual = false;
+        this.calculatedAsUsualClusters = true;
     }
 
     boolean isNewVariantBetterThanPrevious() {
@@ -95,15 +97,33 @@ class AnalyzeData extends CachedReusable {
         this.best = this.bestPositions();
         this.variantWeight = this.variantWeight + this.best.positionsWeight;
         logAnalyze(BASE, "  weight on step 1: %s", this.variantWeight);
+        
         if ( this.variantWeight > 0 ) {
             this.best.badReason = "preliminary position calculation is too bad";
             return;
         }
-        if ( ratio(this.best.nonClustered, this.patternChars.length) > 0.4 ) {
-            this.best.badReason = "Too much unclustered positions";
-            return;
+        if ( this.best.clustered > 0 ) {
+            if ( ratio(this.best.nonClustered, this.patternChars.length) > 0.4 ) {
+                this.best.badReason = "Too much unclustered positions";
+                return;
+            } else {
+                this.calculateAsUsualClusters();
+                this.calculatedAsUsualClusters = true;
+            }
+        } else {
+            if ( this.best.unsortedPositions == 0 && this.best.missed == 0 ) {
+                this.calculateAsSeparatedCharsWithoutClusters();
+                this.calculatedAsUsualClusters = false;
+            } else {
+                this.best.badReason = "There are no clusters, positions are unsorted";
+                return;
+            }
         }
         
+        logAnalyze(BASE, "  weight on step 2: %s", this.variantWeight);
+    }
+    
+    private void calculateAsUsualClusters() {
         double lengthImportance = lengthImportanceRatio(this.variantText.length());
         this.distanceBetweenClustersImportance = ratio(this.best.distanceBetweenClusters, this.variantText.length()) * 15 * lengthImportance;
         this.lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.4 * lengthImportance;
@@ -115,7 +135,12 @@ class AnalyzeData extends CachedReusable {
                 + ( this.best.missedImportance )
                 + ( this.lengthDelta ) 
         );
-        logAnalyze(BASE, "  weight on step 2: %s", this.variantWeight);
+    }
+    
+    private void calculateAsSeparatedCharsWithoutClusters() {
+        double bonus = this.best.positions.length * 5.1;
+        this.variantWeight = this.variantWeight - bonus;
+        logAnalyze(BASE, "               [weight] -%s : no clusters, all positions are sorted, none missed", bonus);
     }
 
     void calculateClustersImportance() {
@@ -146,10 +171,9 @@ class AnalyzeData extends CachedReusable {
     }
 
     void logState() {
-        AnalyzePositionsData positions = this.bestPositions();
         logAnalyze(BASE, "  variant       : %s", this.variantText);
-                
-        String patternCharsString = stream(positions.positions)
+        
+        String patternCharsString = stream(this.best.positions)
                 .mapToObj(position -> {
                     if ( position < 0 ) {
                         return "*";
@@ -159,13 +183,29 @@ class AnalyzeData extends CachedReusable {
                 })
                 .map(s -> s.length() == 1 ? " " + s : s)
                 .collect(joining(" "));
-        String positionsString =  stream(positions.positions)
+        String positionsString =  stream(this.best.positions)
                 .mapToObj(position -> String.valueOf(position))
                 .map(s -> s.length() == 1 ? " " + s : s)
                 .collect(joining(" "));
         logAnalyze(BASE, "  pattern chars : %s", patternCharsString);
         logAnalyze(BASE, "  positions     : %s", positionsString);
-        logAnalyze(BASE, "    %-25s %s", "direction", positions.direction);
+        logAnalyze(BASE, "    %-25s %s", "direction", this.best.direction);
+                
+        if ( nonEmpty(this.best.badReason) ) {
+            logAnalyze(BASE, "    %-25s %s", "bad reason", this.best.badReason);
+            return;
+        }
+        
+        if ( this.calculatedAsUsualClusters ) {
+            this.logClustersState();
+        } else {
+            logAnalyze(BASE, "  calculated as separated characters");
+        }
+        logAnalyze(BASE, "    %-25s %s", "total weight", this.variantWeight); 
+    }
+    
+    private void logClustersState() {
+        AnalyzePositionsData positions = this.best;
         logAnalyze(BASE, "    %-25s %s", "clusters", positions.clustersQty);
         logAnalyze(BASE, "    %-25s %s", "clustered", positions.clustered);
         logAnalyze(BASE, "    %-25s %s", "length delta", this.lengthDelta);
@@ -177,10 +217,6 @@ class AnalyzeData extends CachedReusable {
         logAnalyze(BASE, "    %-25s %s", "clustersImportance", positions.clustersImportance);
         logAnalyze(BASE, "    %-25s %s", "missed", positions.missed);
         logAnalyze(BASE, "    %-25s %s", "missedImportance", positions.missedImportance);
-        logAnalyze(BASE, "    %-25s %s", "total weight", this.variantWeight);
-        if ( nonEmpty(this.best.badReason) ) {
-            logAnalyze(BASE, "    %-25s %s", "bad reason", this.best.badReason);
-        }
     }
 
     boolean areTooMuchPositionsMissed() {

@@ -6,13 +6,14 @@
 
 package diarsid.beam.core.base.os.search;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,7 +24,9 @@ import org.slf4j.LoggerFactory;
 import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 
+import static java.nio.file.Files.walk;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -56,7 +59,7 @@ public class FileSearcherServiceTest {
         searcher = searcherWithDepthsOf(5);
         
         root = Paths.get("./temp").normalize().toAbsolutePath().toString();
-        System.out.println("[FileIntelligentSearcherTest] ROOT: " + root);
+        logger.info("ROOT: " + root);
     }
 
     public FileSearcherServiceTest() {
@@ -91,26 +94,41 @@ public class FileSearcherServiceTest {
                 }
             }
         } catch (IOException e) {
-            System.out.println("IOException during @BeaforeClass: " + e.getMessage());
+            logger.info("IOException during @BeaforeClass: " + e.getMessage());
         }
+    }
+    
+    private static void deleteAllInPath(Path rootPath) throws IOException {
+        Comparator<Path> pathNameLengthComparator = (path1, path2) -> {
+            if ( path1.getNameCount() > path2.getNameCount() ) {
+                return -1;
+            } else if ( path1.getNameCount() < path2.getNameCount() ) {
+                return 1;
+            } else {
+                return 0;
+            }
+        };
         
-//        for (String path : items) {
-//            assertTrue(Files.exists(Paths.get(path)));
-//        }
+        List<File> files = walk(rootPath)
+                .sorted(pathNameLengthComparator)
+                .map(path -> path.toFile())
+                .collect(toList());
+        
+        for (File file : files) {
+            file.delete();
+        }
     }
 
     @AfterClass
     public static void tearDownClass() {
         try {
-            FileUtils.forceDelete(Paths.get("./temp").normalize().toFile());
+            Path pathToPurge = Paths.get("./temp").normalize();
+            deleteAllInPath(pathToPurge);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            logger.info("FAILED TO CLEANUP : " + e.getMessage());
         }
     }
-
-    /**
-     * Test of find method, of class FileSearcherService.
-     */
+    
     @Test
     public void testFindTarget_findFile_withoutWildcard_success() {
         FileSearchResult result = searcher.find("file_1", root, SIMILAR_MATCH, ALL);
@@ -441,5 +459,10 @@ public class FileSearcherServiceTest {
         assertTrue(result.isOk());
         String file = result.success().foundFile();
         assertEquals("folder_1/inner/aAAaa.txt", file);
+    }
+    
+    @Test
+    public void testMock() {
+        logger.info("fake test");
     }
 }

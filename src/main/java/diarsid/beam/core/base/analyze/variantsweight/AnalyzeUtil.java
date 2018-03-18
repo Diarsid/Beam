@@ -12,11 +12,11 @@ import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
+import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
-import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 
 /**
  *

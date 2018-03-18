@@ -34,7 +34,7 @@ class FileItemAnalizer {
             "readme", ".log", ".git", ".gitattributes",
             ".gitignore", "pom.xml");
         this.projectSpecificFiles = asList(
-            ".project", ".pom", "pom.xml", "node_modules", 
+            ".project", ".pom", "pom.xml", "node_modules", ".cpp", ".py",
             ".idea", "package.json", ".gitignore", ".gitattributes");
         this.programSpecificFolders = asList(
             "bin", "lib", "log", "conf", "config", "temp");
@@ -44,29 +44,24 @@ class FileItemAnalizer {
     }
     
     boolean isProjectSpecificFile(Path item) {
-        return containsIgnoreCaseAnyFragment(
-                asName(item), this.projectSpecificFiles);
+        return containsIgnoreCaseAnyFragment(asName(item), this.projectSpecificFiles);
     }
     
     boolean isRestrictedFolder(Path folder) {
         try {
-            return containsWordInIgnoreCase(
-                    this.restrictedSpecificFolder, asName(folder));
+            return containsWordInIgnoreCase(this.restrictedSpecificFolder, asName(folder));
         } catch (NullPointerException e) {
-            return containsIgnoreCaseAnyFragment(
-                folder.toString(), this.programSpecificFileSigns);
+            return containsIgnoreCaseAnyFragment(folder.toString(), this.programSpecificFileSigns);
         }
     }
     
     boolean isProgramSpecificFile(Path item) {
-        return containsIgnoreCaseAnyFragment(
-                asName(item), this.programSpecificFileSigns);
+        return containsIgnoreCaseAnyFragment(asName(item), this.programSpecificFileSigns);
     }
     
     boolean isProgramSpecificFolder(Path item) {
         if ( isDirectory(item) ) {
-            return containsWordInIgnoreCase(
-                this.programSpecificFolders, asName(item));
+            return containsWordInIgnoreCase(this.programSpecificFolders, asName(item));
         } else {
             return false;
         }        

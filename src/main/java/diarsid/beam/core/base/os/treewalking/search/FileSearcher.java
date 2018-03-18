@@ -18,8 +18,9 @@ import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getF
 public interface FileSearcher {
     
     public static FileSearcher searcherWithDepthsOf(int depthOfSearch) {
-        return new FileSearcherService(new FilesCollectorByVisitor(
-                depthOfSearch, getFolderTypeDetector()));
+        FilesCollector collectorByVisitor = new FilesCollectorByVisitor(
+                depthOfSearch, getFolderTypeDetector());
+        return new FileSearcherService(collectorByVisitor);
     } 
     
     FileSearchResult find(
