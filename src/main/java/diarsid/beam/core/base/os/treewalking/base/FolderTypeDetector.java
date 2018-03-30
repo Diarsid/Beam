@@ -14,7 +14,7 @@ import java.util.Iterator;
 
 import static java.nio.file.Files.newDirectoryStream;
 
-import static diarsid.beam.core.base.os.treewalking.base.FolderType.LIST_OF_EXECUTABLES;
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.os.treewalking.base.FolderType.PROGRAM_FOLDER;
 import static diarsid.beam.core.base.os.treewalking.base.FolderType.PROJECT_FOLDER;
 import static diarsid.beam.core.base.os.treewalking.base.FolderType.RESTRICTED_FOLDER;
@@ -30,7 +30,7 @@ public class FolderTypeDetector {
     private static final FolderTypeDetector DETECTOR;
     
     static {
-        FileItemAnalizer analizer = new FileItemAnalizer();
+        FileItemAnalizer analizer = new FileItemAnalizer(configuration());
         DETECTOR = new FolderTypeDetector(analizer);
     }
     
@@ -62,37 +62,44 @@ public class FolderTypeDetector {
     }
     
     private FolderType explorePathUsing(Iterator<Path> iterator) {
-        int programSpecificFilesCount = 0;
-        int programSpecificFoldersCount = 0;
+        int programSpecificElements = 0;
+        int projectSpecificElements = 0;
+        
         Path iterated;
         for (int i = 0; i < 10 && iterator.hasNext(); i++) {
             iterated = iterator.next();
-            if ( this.analizer.isProgramSpecificFile(iterated) ) {
-                programSpecificFilesCount++;
-            }
-            if ( this.analizer.isProjectSpecificFile(iterated) ) {
+            
+            if ( this.analizer.isProjectDefinitiveElement(iterated) ) {
                 return PROJECT_FOLDER;
             }
-            if ( this.analizer.isProgramSpecificFolder(iterated) ) {
-                programSpecificFoldersCount++;
+            
+            if ( this.analizer.isProjectSpecificElement(iterated) ) {
+                projectSpecificElements++;
+                continue;
+            }
+            
+            if ( this.analizer.isProgramSpecificElement(iterated) ) {
+                programSpecificElements++;
+                continue;
             }
         }
-        if ( programSpecificFoldersCount > 2 ) {
-            return PROGRAM_FOLDER;
-        } else if ( programSpecificFoldersCount == 0 ) {
-            if ( programSpecificFilesCount > 0 ) {
-                return LIST_OF_EXECUTABLES;
-            } else {
-                return USUAL_FOLDER;
-            }
-        } else if ( programSpecificFoldersCount <= 2 ) {
-            if ( programSpecificFilesCount > 1 ) {
-                return PROGRAM_FOLDER;
-            } else {
-                return USUAL_FOLDER;
-            }
-        } else {
+        
+        if ( programSpecificElements == 0 && projectSpecificElements == 0 ) {
             return USUAL_FOLDER;
         }
+        
+        if ( projectSpecificElements == 0 && programSpecificElements > 0 ) {
+            if ( programSpecificElements > 1 ) {
+                return PROGRAM_FOLDER;
+            }
+        }
+        
+        if ( projectSpecificElements > 0 && programSpecificElements == 0 ) {
+            if ( projectSpecificElements > 1 ) {
+                return PROJECT_FOLDER;
+            }
+        }
+        
+        return USUAL_FOLDER;
     }
 }

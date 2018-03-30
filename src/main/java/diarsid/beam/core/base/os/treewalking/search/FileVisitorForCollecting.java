@@ -19,9 +19,6 @@ import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 
-import static diarsid.beam.core.base.os.treewalking.base.FolderType.PROGRAM_FOLDER;
-import static diarsid.beam.core.base.os.treewalking.base.FolderType.PROJECT_FOLDER;
-import static diarsid.beam.core.base.os.treewalking.base.FolderType.RESTRICTED_FOLDER;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
@@ -60,9 +57,7 @@ class FileVisitorForCollecting extends SimpleFileVisitor<Path> {
         FolderType folderType = this.folderTypeDetector.examineTypeOf(dir);
         FileVisitResult continueMode;
         
-        if (    folderType.equals(PROJECT_FOLDER) || 
-                folderType.equals(PROGRAM_FOLDER) || 
-                folderType.equals(RESTRICTED_FOLDER) ) {
+        if ( folderType.isRestricted() ) {
             continueMode = SKIP_SUBTREE;
         } else {
             continueMode = CONTINUE;
