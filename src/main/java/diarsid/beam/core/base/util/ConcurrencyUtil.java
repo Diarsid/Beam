@@ -72,8 +72,8 @@ public class ConcurrencyUtil {
     
     public static void asyncDoPeriodically(
             String name, Runnable runnable, int period, TimeUnit timeUnit) {
-        EXECUTOR.setCorePoolSize(EXECUTOR.getCorePoolSize() + 1);
         EXECUTOR.setMaximumPoolSize(EXECUTOR.getMaximumPoolSize() + 1);
+        EXECUTOR.setCorePoolSize(EXECUTOR.getCorePoolSize() + 1);
         EXECUTOR.scheduleAtFixedRate(runnable, period, period, timeUnit);
     }
 }
