@@ -147,6 +147,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
                 this.consoleTextAreaContextMenuItems.add(0, this.snippetMenuItem);
             }
         };
+        
         this.removeSnippetMenuItemFromConsole = () -> {
             if ( this.consoleTextAreaContextMenuItems.get(0) == this.snippetMenuItem ) {
                 this.consoleTextAreaContextMenuItems.remove(0);

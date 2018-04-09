@@ -230,6 +230,7 @@ public enum SnippetType {
             NON_REINVOKABLE,
             NO_TRAVERSE,
             matchesByContaining("are you sure")),
+    
     UNKNOWN (
             NON_REINVOKABLE, 
             NO_TRAVERSE, 

@@ -14,5 +14,6 @@ public enum ConsoleSnippetFinderState {
     READY,
     LINE_FOUND,
     LINE_NOT_FOUND,
+    LINE_NOT_INFORMATIVE,
     LINE_PROCESSED
 }

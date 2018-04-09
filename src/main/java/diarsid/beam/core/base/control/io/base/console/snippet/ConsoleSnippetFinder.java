@@ -22,6 +22,7 @@ import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.remove
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.EMPTY;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.LINE_FOUND;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.LINE_NOT_FOUND;
+import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.LINE_NOT_INFORMATIVE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.LINE_PROCESSED;
 import static diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinderState.READY;
 import static diarsid.beam.core.base.control.io.base.console.snippet.Snippet.unknownSnippet;
@@ -88,6 +89,8 @@ public class ConsoleSnippetFinder {
         this.lineAtCaret = lineAtCaret(this.text, this.caret);
         if ( this.lineAtCaret.isEmpty() ) {
             this.state = LINE_NOT_FOUND;
+        } else if ( this.isLineAtCaretNotInformative() ) {
+            this.state = LINE_NOT_INFORMATIVE;
         } else {
             this.state = LINE_FOUND;
         }
@@ -95,8 +98,14 @@ public class ConsoleSnippetFinder {
         return this;
     }
     
+    private boolean isLineAtCaretNotInformative() {
+        String trimmedLine = this.lineAtCaret.trim();
+        
+        return trimmedLine.isEmpty() || trimmedLine.equalsIgnoreCase("Beam >");
+    }
+    
     public ConsoleSnippetFinder defineLineSnippetType() {
-        if ( this.state.equals(LINE_NOT_FOUND) ) {
+        if ( this.state.equals(LINE_NOT_FOUND) || this.state.equals(LINE_NOT_INFORMATIVE) ) {
             this.snippetType = UNKNOWN;
         } else {
             this.snippetType = defineSnippetTypeOf(this.lineAtCaret);
@@ -113,11 +122,11 @@ public class ConsoleSnippetFinder {
         
         switch ( this.snippetType.traverseMode() ) {
             case NO_TRAVERSE : {
-                this.composeSnippetWithoutTraverse();
+                this.composeSnippetWithoutTraversing();
                 break;
             }    
             case TRAVERSE_TO_FIRST_NODE : {
-                this.composeSnipperWithTraverstToFirstNode();
+                this.composeSnippetWithTraversingToFirstNode();
                 break;
             }
             case TRAVERSE_TO_ROOT_DIRECTLY : {
@@ -135,7 +144,7 @@ public class ConsoleSnippetFinder {
         return this;
     }
     
-    private void composeSnippetWithoutTraverse() {
+    private void composeSnippetWithoutTraversing() {
         this.composeSnippetSimply();
     }
 
@@ -144,7 +153,7 @@ public class ConsoleSnippetFinder {
                 this.snippetType, this.snippetType.lineToSnippet(this.lineAtCaret));
     }
     
-    private void composeSnipperWithTraverstToFirstNode() {
+    private void composeSnippetWithTraversingToFirstNode() {
         int commandStart = this.text.lastIndexOf("Beam > ", this.caret) + "Beam > ".length();
         int commandEnd = this.text.indexOf('\n', commandStart);
         
