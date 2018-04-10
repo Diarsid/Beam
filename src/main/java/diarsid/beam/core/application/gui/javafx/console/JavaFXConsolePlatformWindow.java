@@ -6,19 +6,12 @@
 package diarsid.beam.core.application.gui.javafx.console;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.UnaryOperator;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.TextFormatter.Change;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -30,25 +23,14 @@ import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
-import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.modules.DataModule;
 
 import static javafx.geometry.Pos.CENTER_LEFT;
 import static javafx.geometry.Pos.TOP_CENTER;
-import static javafx.scene.input.KeyCode.DOWN;
-import static javafx.scene.input.KeyCode.ENTER;
-import static javafx.scene.input.KeyCode.UP;
-import static javafx.scene.input.KeyCode.Y;
-import static javafx.scene.input.KeyCode.Z;
-import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
-import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 import static javafx.stage.WindowEvent.WINDOW_HIDDEN;
 import static javafx.stage.WindowEvent.WINDOW_SHOWN;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 
 /**
  *
@@ -63,19 +45,15 @@ public class JavaFXConsolePlatformWindow
     private final WindowMover windowMover;
     private final ConsoleWindowResizer windowResizer;
     private final ConsoleWindowBlockingIO blockingIo;
-    private final AtomicInteger consoleCommitedLength;
-    private final AtomicInteger consoleTextAreaInternalInputCounter;
-    private final AtomicBoolean deleteCommitedTextAllowed;
-    private final Object consoleTextAreaLock;
     private final ConsoleInputPersistentBuffer consoleInputBuffer;
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
+    private final ConsoleTextArea consoleTextArea;
     private final ConsoleContextMenu contextMenu;
             
     private Stage stage;
     private Pane bar;
     private Pane mainArea;
-    private TextArea consoleTextArea;
     
     private boolean ready;
 
@@ -89,10 +67,6 @@ public class JavaFXConsolePlatformWindow
         this.windowMover = new WindowMover();
         this.windowResizer = new ConsoleWindowResizer();
         this.blockingIo = consoleBlockingIo;
-        this.consoleCommitedLength = new AtomicInteger();
-        this.consoleTextAreaInternalInputCounter = new AtomicInteger();
-        this.deleteCommitedTextAllowed = new AtomicBoolean();
-        this.consoleTextAreaLock = new Object();
         this.consoleInputBuffer = consoleInputPersistentBuffer;
         this.ready = false;
         this.isShown = new AtomicBoolean(false);
@@ -107,13 +81,18 @@ public class JavaFXConsolePlatformWindow
         };
         
         this.contextMenu = new ConsoleContextMenu(this);
-    }
-
-    private void imitiateEnterPressed() {
-        this.consoleTextArea.appendText("\n");
+        this.consoleTextArea = new ConsoleTextArea(this);
     }
     
-    public void openOrOnTop() {
+    final ConsoleWindowBlockingIO blockingIo() {
+        return this.blockingIo;
+    }
+    
+    final ConsoleInputPersistentBuffer inputBuffer() {
+        return this.consoleInputBuffer;
+    }
+    
+    public final void openOrOnTop() {
         if ( this.isShown.get() ) {
             this.throwOnTop();
         } else {
@@ -147,14 +126,12 @@ public class JavaFXConsolePlatformWindow
     private void show() {
         this.stage.show();
         this.consoleTextArea.requestFocus();
-        debug("[CONSOLE WINDOW] editable: " + this.consoleTextArea.isEditable());
     }
     
     private void init() {
         this.createStage();
         this.createBar();
         this.createMainArea();
-        this.startListenBlockingConsoleIncome();
         this.fillStageWithScene();
     }
     
@@ -245,216 +222,12 @@ public class JavaFXConsolePlatformWindow
     private void createMainArea() {
         VBox mainAreaVBox = new VBox();
         mainAreaVBox.getStyleClass().add("console-main-area");
-        this.createConsoleTextArea();
-        mainAreaVBox.getChildren().add(this.consoleTextArea);
-        this.mainArea = mainAreaVBox;
-    }
-    
-    private void createConsoleTextArea() {
-        TextArea textArea = new TextArea();
-        textArea.setTextFormatter(this.createTextFormatter());
-        textArea.addEventFilter(KEY_PRESSED, this.createEnterKeyInterceptor());
-        textArea.addEventFilter(KEY_PRESSED, this.createCtrlZYKeyCombinationInterceptor());
-        textArea.addEventFilter(KEY_PRESSED, this.createUpDownArrowsInterceptor());
-        textArea.setMinHeight(200);
-        textArea.setMinWidth(500);
-        textArea.getStyleClass().add("console-text-area");
+        TextArea textArea = this.consoleTextArea.jfxTextArea();                
         this.windowResizer.affect(textArea); 
         textArea.setContextMenu(this.contextMenu.javaFxContextMenu());
-        this.consoleTextArea = textArea;
-    }
-    
-    private EventHandler<KeyEvent> createUpDownArrowsInterceptor() {
-        return (keyEvent) -> {            
-            if ( keyEvent.getCode().equals(UP) ) {
-                synchronized ( this.consoleTextAreaLock ) {
-                    this.changeUncommitedTextTo(this.consoleInputBuffer.toLastAndGet());
-                }    
-                keyEvent.consume();
-            } else if ( keyEvent.getCode().equals(DOWN) ) {
-                synchronized ( this.consoleTextAreaLock ) {
-                    this.changeUncommitedTextTo(this.consoleInputBuffer.toFirstAndGet());
-                }    
-                keyEvent.consume();
-            }
-        };
-    }
-    
-    private void changeUncommitedTextTo(String bufferedInput) {
-        if ( bufferedInput.isEmpty() ) {
-            return;
-        }
-        this.consoleTextArea.replaceText(
-                this.consoleCommitedLength.get(), 
-                this.consoleTextArea.getText().length(), 
-                bufferedInput);
-        this.consoleTextArea.commitValue();
-        this.consoleTextArea.positionCaret(this.consoleTextArea.getText().length());
-    }
-    
-    private EventHandler<KeyEvent> createCtrlZYKeyCombinationInterceptor() {
-        KeyCodeCombination ctrlZ = new KeyCodeCombination(Z, SHORTCUT_DOWN);
-        KeyCodeCombination ctrlY = new KeyCodeCombination(Y, SHORTCUT_DOWN);
-        return (keyEvent) -> {
-            if ( ctrlZ.match(keyEvent) || ctrlY.match(keyEvent) ) {
-                keyEvent.consume();
-            }
-        };
-    }
-    
-    private EventHandler<KeyEvent> createEnterKeyInterceptor() {
-        return (keyEvent) -> {
-            if ( ! keyEvent.getCode().equals(ENTER) ) {
-                return;
-            }
-            
-            synchronized ( this.consoleTextAreaLock ) {
-                if ( this.consoleTextArea.getCaretPosition() == 
-                        this.consoleTextArea.getText().length() ) {
-                    return;
-                }
-
-                int caretPosition = this.consoleTextArea.getCaretPosition();
-                int rawInputTextLength = this.consoleTextArea.getText().length();
-                int commitedTextLength = this.consoleCommitedLength.get();
-
-                if ( caretPosition < rawInputTextLength ) {
-                    if ( caretPosition >= commitedTextLength ) {
-                        keyEvent.consume();
-                        this.imitiateEnterPressed();
-                    } else {
-                        this.consoleTextArea.deleteText(commitedTextLength, rawInputTextLength);
-                        keyEvent.consume();
-                    }
-                }
-            }
-        };
-    }
-    
-    private void startListenBlockingConsoleIncome() {        
-        // mutableChangeProcess is a lock shared only between two threads:
-        //  - JavaFX Application Thread can only .notify
-        //  - JavaFX Console Listener Thread can only .wait
-        // There are no any other threads accessing this lock.
-        Object mutableChangeProcess = new Object();
-        MutableString mutableNewLine = emptyMutableString();
-        Runnable consoleTextAreaMutableChange = () -> {
-            synchronized ( this.consoleTextAreaLock ) {
-                this.consoleTextAreaInternalInputCounter.incrementAndGet();
-                this.consoleTextArea.setEditable(false);
-                this.consoleTextArea.appendText(mutableNewLine.getAndEmpty());
-                this.consoleTextArea.commitValue();
-                synchronized ( mutableChangeProcess ) {
-                    mutableChangeProcess.notify();
-                }
-            }
-        };
-        
-        asyncDoIndependently("JavaFX Console Listener Thread", ()-> {
-            while ( true ) {                
-                try {
-                    String newLineIntoConsole = this.blockingIo.blockingGetPrintedString();
-                    mutableNewLine.muteTo(newLineIntoConsole);
-                    Platform.runLater(consoleTextAreaMutableChange);
-                    synchronized ( mutableChangeProcess ) {
-                        mutableChangeProcess.wait();
-                    }
-                } catch (InterruptedException ignore) {
-                    // do nothing
-                }
-            }
-        });
-    }
-    
-    private TextFormatter createTextFormatter() {        
-        UnaryOperator<Change> changeInterceptor = (change) -> {    
-            synchronized ( this.consoleTextAreaLock ) {
-                if ( change.isDeleted() ) {
-                    this.interceptOnDeleted(change);                
-                } else if ( change.isAdded()) {
-                    this.interceptOnAdded(change);
-                } else {
-                    this.interceptOnOther(change);
-                }
-                return change;
-            }
-        };
-        return new TextFormatter<>(new DefaultStringConverter(), "", changeInterceptor);
-    }
-    
-    private void interceptOnOther(Change change) {
-        int controlNewTextLength = change.getControlNewText().length();
-        if ( change.getControlNewText().length() < this.consoleCommitedLength.get() ) {
-            this.consoleCommitedLength.set(controlNewTextLength);
-        }
-    }
-
-    private void interceptOnAdded(Change change) {
-        String changeText = change.getText();
-        if ( changeText.equals("\n") ) {
-            // case: enter pressed, commited to console, cannot be deleted
-            this.consoleTextArea.setEditable(false);                
-            String text = change.getControlText();
-            int start = this.consoleCommitedLength.get();
-            int end = text.length();
-            String newInput = text.substring(start, end);
-            this.acceptInput(newInput);
-            int newTextLength = change.getControlNewText().length();
-            this.consoleCommitedLength.set(newTextLength);
-            this.setCaretCorrectPosition(change, newTextLength);
-        } else if ( this.consoleTextAreaInternalInputCounter.get() > 0 ) {
-            // case: something printed to console as a response, 
-            // commited to console, cannot be deleted
-            boolean editable = changeText.endsWith(" > ") || changeText.endsWith(" : ");
-            this.consoleTextArea.setEditable(editable);
-            int newTextLength = change.getControlNewText().length();
-            this.consoleCommitedLength.set(newTextLength);
-            this.setCaretCorrectPosition(change, newTextLength);
-            this.consoleTextAreaInternalInputCounter.decrementAndGet();
-        } else {
-            // case: usual input, not commited to console, can be deleted.
-            this.adjustChangeIfAppliedToCommited(change);
-        }            
-    }
-    
-    private void acceptInput(String input) {
-        try {
-            this.blockingIo.blockingSetString(input);
-            if ( input.length() > 1 ) {
-                this.consoleInputBuffer.add(input);
-            }
-        } catch (InterruptedException e) {
-            // TODO ?
-        }
-    }
-
-    private void interceptOnDeleted(Change change) {
-        if ( this.deleteCommitedTextAllowed.get() ) {
-            return;
-        }
-        int commitedTextLength = this.consoleCommitedLength.get();
-        if ( change.getRangeStart() < commitedTextLength ) {
-            if ( change.getRangeEnd() > commitedTextLength ) {
-                this.consoleTextArea.deleteText(
-                        commitedTextLength, this.consoleTextArea.getText().length());
-            }
-            change.setRange(commitedTextLength, commitedTextLength);
-            this.setCaretCorrectPosition(change, commitedTextLength);
-        }
-    }
-    
-    private void adjustChangeIfAppliedToCommited(Change change) {
-        if ( change.getRangeStart() < this.consoleCommitedLength.get() ) {
-            int oldTextLength = change.getControlText().length();
-            change.setRange(oldTextLength, oldTextLength);
-            this.setCaretCorrectPosition(change, change.getControlNewText().length());
-        }
-    }
-    
-    private void setCaretCorrectPosition(Change change, int position) {
-        change.setCaretPosition(position);
-        change.setAnchor(position);
-        change.selectRange(position, position);
+        mainAreaVBox.getChildren().add(textArea);
+        this.mainArea = mainAreaVBox;
+        this.consoleTextArea.startListenBlockingConsoleIncome();
     }
 
     @Override
@@ -481,20 +254,17 @@ public class JavaFXConsolePlatformWindow
 
     @Override
     public void imitateCommandInput(String command) {
-        synchronized ( this.consoleTextAreaLock ) {
-            this.consoleTextArea.appendText(command);
-            this.imitiateEnterPressed();
-        }
+        this.consoleTextArea.imitateCommandInput(command);
     }
 
     @Override
     public String text() {
-        return this.consoleTextArea.getText();
+        return this.consoleTextArea.text();
     }
 
     @Override
     public int caretPosition() {
-        return this.consoleTextArea.getCaretPosition();
+        return this.consoleTextArea.caretPosition();
     }
 
     @Override
@@ -504,14 +274,7 @@ public class JavaFXConsolePlatformWindow
 
     @Override
     public void clear() {
-        synchronized ( this.consoleTextAreaLock ) {
-            this.deleteCommitedTextAllowed.set(true);
-            this.consoleTextArea.setText("Beam > ");
-            this.consoleTextArea.commitValue();
-            this.deleteCommitedTextAllowed.set(false);
-            this.consoleCommitedLength.set("Beam > ".length());
-            this.consoleTextArea.positionCaret("Beam > ".length());
-        }   
+        this.consoleTextArea.clear();   
     }
     
     @Override
@@ -526,7 +289,7 @@ public class JavaFXConsolePlatformWindow
 
     @Override
     public boolean hasClearableContent() {
-        return this.consoleTextArea.getText().length() > "Beam > ".length();
+        return this.consoleTextArea.hasClearableContent();
     }
 
     @Override
