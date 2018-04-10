@@ -49,6 +49,13 @@ class ConsoleWindowResizer {
         this.affectableRegion = affectableRegion;
     }
     
+    boolean hasNonDefaultSize() {
+        boolean hasDefaultWidth = this.affectableRegion.getMinWidth() == this.affectableRegion.getWidth();
+        boolean hasDefaultHeight = this.affectableRegion.getMinHeight() == this.affectableRegion.getHeight();
+        
+        return ! ( hasDefaultHeight && hasDefaultWidth );                
+    }
+    
     void affectableToDefaultSize() {
         this.affectableRegion.setPrefWidth(this.affectableRegion.getMinWidth());
         this.affectableRegion.setPrefHeight(this.affectableRegion.getMinHeight());

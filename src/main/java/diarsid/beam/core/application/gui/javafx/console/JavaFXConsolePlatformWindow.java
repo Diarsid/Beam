@@ -10,13 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
@@ -33,8 +30,6 @@ import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
-import diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinder;
-import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.modules.DataModule;
 
@@ -48,7 +43,6 @@ import static javafx.scene.input.KeyCode.Z;
 import static javafx.scene.input.KeyCombination.SHORTCUT_DOWN;
 import static javafx.scene.input.KeyEvent.KEY_PRESSED;
 import static javafx.stage.WindowEvent.WINDOW_HIDDEN;
-import static javafx.stage.WindowEvent.WINDOW_SHOWING;
 import static javafx.stage.WindowEvent.WINDOW_SHOWN;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
@@ -61,7 +55,9 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
  * @author Diarsid
  */
 // TODO HIGH do not public
-public class JavaFXConsolePlatformWindow extends ConsolePlatform {
+public class JavaFXConsolePlatformWindow 
+        extends ConsolePlatform 
+        implements ContextControlableConsole {
     
     private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
@@ -74,18 +70,12 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     private final ConsoleInputPersistentBuffer consoleInputBuffer;
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
-    private final ConsoleSnippetFinder consoleSnippetFinder;
-    private final Runnable addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable;
-    private final Runnable removeSnippetMenuItemFromConsole;
+    private final ConsoleContextMenu contextMenu;
             
     private Stage stage;
     private Pane bar;
     private Pane mainArea;
     private TextArea consoleTextArea;
-    
-    private ObservableList<MenuItem> consoleTextAreaContextMenuItems;
-    private MenuItem snippetMenuItem;
-    private Snippet snippet;
     
     private boolean ready;
 
@@ -116,43 +106,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
             }
         };
         
-        this.consoleSnippetFinder = new ConsoleSnippetFinder();
-        
-        this.snippetMenuItem = new MenuItem();   
-        char star = 9733;
-        Label starLabel = new Label(Character.toString(star));
-        
-        this.snippetMenuItem.setGraphic(starLabel);
-        this.snippetMenuItem.setOnAction((event) -> {
-            synchronized ( this.consoleTextAreaLock ) {
-                this.consoleTextArea.appendText(this.snippet.line());
-                this.imitiateEnterPressed();
-            }
-        });        
-        
-        this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable = () -> {
-            if ( super.isInteractionLasts() ) {
-                return;
-            }
-            
-            this.snippet = this.consoleSnippetFinder
-                    .in(this.consoleTextArea.getText())
-                    .goToLineAt(this.consoleTextArea.getCaretPosition())
-                    .defineLineSnippetType()
-                    .composeSnippet()
-                    .getSnippetAndReset();
-
-            if ( this.snippet.type().isReinvokable() ) {
-                this.snippetMenuItem.setText(this.snippet.reinvokationTextWithLengthLimit(25));
-                this.consoleTextAreaContextMenuItems.add(0, this.snippetMenuItem);
-            }
-        };
-        
-        this.removeSnippetMenuItemFromConsole = () -> {
-            if ( this.consoleTextAreaContextMenuItems.get(0) == this.snippetMenuItem ) {
-                this.consoleTextAreaContextMenuItems.remove(0);
-            }
-        };
+        this.contextMenu = new ConsoleContextMenu(this);
     }
 
     private void imitiateEnterPressed() {
@@ -204,7 +158,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
         this.fillStageWithScene();
     }
     
-    private void hide() {
+    private void hideInternally() {
         this.stage.hide();
     }
     
@@ -241,7 +195,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
         this.stage.setResizable(true);
         this.stage.centerOnScreen();
         this.stage.setOnCloseRequest((windowEvent) -> {
-            this.hide();
+            this.hideInternally();
         });
         this.windowMover.acceptStage(this.stage);
         this.windowResizer.acceptStage(this.stage);
@@ -306,81 +260,8 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
         textArea.setMinWidth(500);
         textArea.getStyleClass().add("console-text-area");
         this.windowResizer.affect(textArea); 
-        textArea.setContextMenu(this.createContextMenu());
+        textArea.setContextMenu(this.contextMenu.javaFxContextMenu());
         this.consoleTextArea = textArea;
-    }
-    
-    private ContextMenu createContextMenu() {
-        ContextMenu contextMenu = new ContextMenu();
-        
-        contextMenu.addEventHandler(WINDOW_SHOWING, (windowEvent) -> {
-            this.addSnippetMenuItemToContextMenuIfFoundSnippetIsReinvokable.run();        
-        });
-        
-        contextMenu.addEventHandler(WINDOW_HIDDEN, (windowEvent) -> {
-            this.removeSnippetMenuItemFromConsole.run();
-        });
-        
-        contextMenu.getItems().addAll(
-                this.createClearMenuItem(), 
-                this.createCloseMenuItem(), 
-                this.createDefualtSizeMenuItem(),
-                this.createSettingsMenuItem());
-        
-        this.consoleTextAreaContextMenuItems = contextMenu.getItems();
-        
-        contextMenu.getItems()
-                .stream()
-                .forEach(menuItem -> {
-                    menuItem.getStyleClass().add("console-menu-item");
-                    menuItem.setGraphic(this.createMenuItemPoint());
-                });
-        return contextMenu;
-    }
-    
-    private Label createMenuItemPoint() {        
-        Label point = new Label();
-        point.getStyleClass().add("console-menu-item-point");
-        return point;
-    }
-    
-    private MenuItem createClearMenuItem() {
-        MenuItem clear = new MenuItem("clear");
-        clear.setOnAction(event -> {
-            synchronized ( this.consoleTextAreaLock ) {
-                this.deleteCommitedTextAllowed.set(true);
-                this.consoleTextArea.setText("Beam > ");
-                this.consoleTextArea.commitValue();
-                this.deleteCommitedTextAllowed.set(false);
-                this.consoleCommitedLength.set("Beam > ".length());
-                this.consoleTextArea.positionCaret("Beam > ".length());
-            }    
-        });
-        return clear;
-    }
-    
-    private MenuItem createCloseMenuItem() {
-        MenuItem close = new MenuItem("close");
-        close.setOnAction(event -> {
-            this.hide();
-        });
-        return close;
-    }
-    
-    private MenuItem createDefualtSizeMenuItem() {
-        MenuItem defualtSize = new MenuItem("default size");
-        defualtSize.setOnAction(event -> {
-            this.windowResizer.affectableToDefaultSize();
-        });
-        return defualtSize;
-    }
-    
-    private MenuItem createSettingsMenuItem() {
-        MenuItem settings = new MenuItem("settings");
-        settings.setOnAction(event -> {
-            // TODO MIDDLE
-        });
-        return settings;
     }
     
     private EventHandler<KeyEvent> createUpDownArrowsInterceptor() {
@@ -584,7 +465,7 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     @Override
     public void whenStopped() {
         Platform.runLater(() -> {
-            this.hide(); 
+            this.hideInternally(); 
         });
     }
 
@@ -596,5 +477,60 @@ public class JavaFXConsolePlatformWindow extends ConsolePlatform {
     @Override
     public boolean isActiveWhenClosed() {
         return true;
+    }
+
+    @Override
+    public void imitateCommandInput(String command) {
+        synchronized ( this.consoleTextAreaLock ) {
+            this.consoleTextArea.appendText(command);
+            this.imitiateEnterPressed();
+        }
+    }
+
+    @Override
+    public String text() {
+        return this.consoleTextArea.getText();
+    }
+
+    @Override
+    public int caretPosition() {
+        return this.consoleTextArea.getCaretPosition();
+    }
+
+    @Override
+    public boolean isInDialog() {
+        return super.isInteractionLasts();
+    }
+
+    @Override
+    public void clear() {
+        synchronized ( this.consoleTextAreaLock ) {
+            this.deleteCommitedTextAllowed.set(true);
+            this.consoleTextArea.setText("Beam > ");
+            this.consoleTextArea.commitValue();
+            this.deleteCommitedTextAllowed.set(false);
+            this.consoleCommitedLength.set("Beam > ".length());
+            this.consoleTextArea.positionCaret("Beam > ".length());
+        }   
+    }
+    
+    @Override
+    public void hide() {
+        this.hideInternally();
+    }
+    
+    @Override
+    public void toDefaultSize() {
+        this.windowResizer.affectableToDefaultSize();
+    }
+
+    @Override
+    public boolean hasClearableContent() {
+        return this.consoleTextArea.getText().length() > "Beam > ".length();
+    }
+
+    @Override
+    public boolean hasNonDefaultSize() {
+        return this.windowResizer.hasNonDefaultSize();
     }
 }
