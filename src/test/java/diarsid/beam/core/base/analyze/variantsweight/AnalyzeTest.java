@@ -361,6 +361,19 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_tolkienCase_tolknei() {
+        pattern = "tolknei";
+        
+        variants = asList(
+                "tolkien");
+        
+        expected = asList( 
+                "tolkien");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_EarthMoviesCase_soulprogs() {
         pattern = "earhmives";
         

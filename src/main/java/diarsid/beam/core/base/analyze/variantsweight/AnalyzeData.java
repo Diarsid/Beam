@@ -271,7 +271,7 @@ class AnalyzeData extends CachedReusable {
         this.reverseAnalyze.findPatternCharsPositions();
         this.forwardAndReverseEqual = arePositionsEquals(this.forwardAnalyze, this.reverseAnalyze);
         if ( this.forwardAndReverseEqual ) {
-            logAnalyze(BASE, "  FORWARD == REVERSE");
+            logAnalyze(BASE, "  FORWARD equals to REVERSE");
         }
     }
 
