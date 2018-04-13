@@ -7,6 +7,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.List;
 
+import static java.lang.Integer.MIN_VALUE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
@@ -25,6 +26,7 @@ import static diarsid.beam.core.base.util.MathUtil.ratio;
 class AnalyzeUtil {     
     
     private static final double ADJUSTED_WEIGHT_TRESHOLD = 30;
+    private static final int UNINITIALIZED = MIN_VALUE;
     
     public static void main(String[] args) {
         List<List<Integer>> ints = asList(
@@ -71,6 +73,7 @@ class AnalyzeUtil {
         
         int limit = ints.size() - 1;
         
+        int previous = UNINITIALIZED;
         int current;
         int next;
         
@@ -78,6 +81,7 @@ class AnalyzeUtil {
         int repeatQty = 0;
         int shifts = 0;
         boolean haveCompensation = false;
+        boolean haveCompensationInCurrentStep = false;
         boolean previousIsRepeat = false;
         int repeatCommonDelta;
         int violatingOrder = 0;
@@ -128,11 +132,23 @@ class AnalyzeUtil {
                     }
                 }                
             } else {
-                if ( absDiff(current, next) == 2 && absDiff(current, mean) == 1 ) {
-                    logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +1-1 compensation for %s_vs_%s", current, next);
-                    haveCompensation = true;
-                    diffSum = diffSum - 2;
-                } else {
+                if ( absDiff(current, next) == 2 ) {
+                    if ( absDiff(current, mean) == 1 ) {
+                        logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +1-1 compensation for %s_vs_%s", current, next);
+                        haveCompensation = true;
+                        haveCompensationInCurrentStep = true;
+                        diffSum = diffSum - 2;
+                    } else if ( absDiff(previous, next) == 4 && 
+                                absDiff(previous, current) == 2 && 
+                                absDiff(current, mean) == 0 ) {
+                        logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +2 0 -2 compensation for %s_vs_%s", previous, next);
+                        haveCompensation = true;
+                        haveCompensationInCurrentStep = true;
+                        diffSum = diffSum - 4;
+                    }                    
+                } 
+
+                if ( ! haveCompensationInCurrentStep ) {
                     if ( violatingOrder == 0 ) {
                         violatingOrder = absDiff(next, mean);
                         if ( previousIsRepeat ) {
@@ -145,13 +161,15 @@ class AnalyzeUtil {
                                 haveCompensation = true;
                             }
                         }
-                    }                    
-                }                
+                    }
+                }
+                haveCompensationInCurrentStep = false;
                 previousIsRepeat = false;
                 repeat = 0;
                 repeatQty = 0;
             }
             isFirstPair = false;
+            previous = current;
         }
         
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
