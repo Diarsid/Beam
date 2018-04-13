@@ -81,6 +81,7 @@ class AnalyzeUtil {
         int repeatQty = 0;
         int shifts = 0;
         boolean haveCompensation = false;
+        boolean haveCompensationInCurrentStep = false;
         boolean previousIsRepeat = false;
         int repeatCommonDelta;
         int violatingOrder = 0;
@@ -135,15 +136,19 @@ class AnalyzeUtil {
                     if ( absDiff(current, mean) == 1 ) {
                         logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +1-1 compensation for %s_vs_%s", current, next);
                         haveCompensation = true;
+                        haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 2;
                     } else if ( absDiff(previous, next) == 4 && 
                                 absDiff(previous, current) == 2 && 
                                 absDiff(current, mean) == 0 ) {
                         logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +2 0 -2 compensation for %s_vs_%s", previous, next);
                         haveCompensation = true;
+                        haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 4;
                     }                    
-                } else {
+                } 
+
+                if ( ! haveCompensationInCurrentStep ) {
                     if ( violatingOrder == 0 ) {
                         violatingOrder = absDiff(next, mean);
                         if ( previousIsRepeat ) {
@@ -156,8 +161,9 @@ class AnalyzeUtil {
                                 haveCompensation = true;
                             }
                         }
-                    }                    
-                }                
+                    }
+                }
+                haveCompensationInCurrentStep = false;
                 previousIsRepeat = false;
                 repeat = 0;
                 repeatQty = 0;
