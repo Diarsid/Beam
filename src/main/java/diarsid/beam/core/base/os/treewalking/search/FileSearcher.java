@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.os.treewalking.search;
 
+import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
+
 import java.nio.file.Path;
 
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;

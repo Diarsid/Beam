@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.os.treewalking.search;
+package diarsid.beam.core.base.os.treewalking.base;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -12,9 +12,9 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.base.os.treewalking.search.ItemType.FILE;
-import static diarsid.beam.core.base.os.treewalking.search.ItemType.FOLDER;
-import static diarsid.beam.core.base.os.treewalking.search.ItemType.fileItemTypeOf;
+import static diarsid.beam.core.base.os.treewalking.base.ItemType.FILE;
+import static diarsid.beam.core.base.os.treewalking.base.ItemType.FOLDER;
+import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
 
 /**
  *
@@ -25,22 +25,22 @@ public enum FileSearchMode {
     ALL (FILE, FOLDER),
     FILES_ONLY (FILE),
     FOLDERS_ONLY (FOLDER);
+    
+    private final Set<ItemType> permittedTypes;
 
     private FileSearchMode(ItemType... permittedTypes) {
         this.permittedTypes = new HashSet<>(asList(permittedTypes));
     }
     
-    private Set<ItemType> permittedTypes;
-    
-    boolean correspondsTo(ItemType type) {
+    public boolean correspondsTo(ItemType type) {
         return this.permittedTypes.contains(type);
     }
     
     public boolean correspondsTo(Path path) {
-        return this.permittedTypes.contains(fileItemTypeOf(path));
+        return this.permittedTypes.contains(itemTypeOf(path));
     }
     
     public boolean correspondsTo(File file) {
-        return this.permittedTypes.contains(fileItemTypeOf(file));
+        return this.permittedTypes.contains(itemTypeOf(file));
     }
 }

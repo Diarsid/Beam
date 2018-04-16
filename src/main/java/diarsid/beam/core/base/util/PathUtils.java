@@ -39,6 +39,14 @@ public class PathUtils {
     private PathUtils() {
     }
     
+    public static boolean existsInFileSystem(String path) {
+        return Files.exists(Paths.get(path));
+    }
+    
+    public static boolean notExistsInFileSystem(String path) {
+        return ! Files.exists(Paths.get(path));
+    }
+    
     public static boolean pathIsDirectory(String path) {
         return Files.exists(Paths.get(path)) && Files.isDirectory(Paths.get(path));
     }
@@ -61,6 +69,10 @@ public class PathUtils {
     
     public static Path combinePathFrom(String... fragments) {
         return Paths.get(normalizeSeparators(join("/", fragments)));
+    }
+    
+    public static String combineAsPath(String one, String two) {        
+        return normalizeSeparators(one + "/" + two);
     }
     
     public static String combineAsPathFrom(String... fragments) {

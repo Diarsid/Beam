@@ -100,7 +100,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
         if ( nonEmpty(foundPrograms) ) {
             ValueFlow<Program> flow = this.chooseOneProgram(initiator, pattern, foundPrograms);
-            if ( flow.completedEmpty() ) {
+            if ( flow.isCompletedEmpty() ) {
                 foundPrograms = this.programsCatalog.findProgramsByPatternSimilarity(pattern);
             } else {
                 return flow;

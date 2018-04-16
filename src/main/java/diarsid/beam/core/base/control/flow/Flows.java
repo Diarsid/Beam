@@ -9,6 +9,8 @@ package diarsid.beam.core.base.control.flow;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static java.util.Objects.nonNull;
+
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
@@ -22,9 +24,11 @@ public class Flows {
     private static final VoidFlow VOID_FLOW_COMPLETED;
     private static final VoidFlow VOID_FLOW_STOPPED;
     private static final ValueFlow VALUE_FLOW_STOPPED;
+    private static final ValueFlow<Object> VALUE_FLOW_EMPTY;
     
     static {
         VOID_FLOW_COMPLETED = new VoidFlow() {
+            
             @Override
             public boolean hasMessage() {
                 return false;
@@ -41,6 +45,7 @@ public class Flows {
             }
         };
         VOID_FLOW_STOPPED = new VoidFlow() {
+            
             @Override
             public boolean hasMessage() {
                 return false;
@@ -57,13 +62,14 @@ public class Flows {
             }
         };
         VALUE_FLOW_STOPPED = new ValueFlow() {
+            
             @Override
             public ValueFlowCompleted asComplete() {
                 throw new IllegalStateException("This is Stop operation");
             }
             
             @Override
-            public boolean completedEmpty() {
+            public boolean isCompletedEmpty() {
                 return false;
             }
 
@@ -87,6 +93,53 @@ public class Flows {
                 return this;
             }
         };
+        VALUE_FLOW_EMPTY = new ValueFlowCompleted<Object>() {
+            
+            @Override
+            public boolean hasValue() {
+                return false;
+            }
+                        
+            @Override
+            public boolean isCompletedEmpty() {
+                return true;
+            }
+
+            @Override
+            public Object getOrThrow() {
+                throw new IllegalStateException("This is empty flow.");
+            }
+
+            @Override
+            public Object getOrDefault(Object defaultT) {
+                return defaultT;
+            }
+
+            @Override
+            public FlowResult result() {
+                return COMPLETE;
+            }
+
+            @Override
+            public ValueFlowCompleted<Object> asComplete() {
+                return this;
+            }
+
+            @Override
+            public ValueFlowFail asFail() {                
+                throw new IllegalStateException("This is Completed flow.");
+            }
+            
+            @Override
+            public VoidFlow toVoid() {
+                return VOID_FLOW_COMPLETED;
+            }
+
+            @Override
+            public <R> ValueFlow<R> map(Function<Object, R> mapFunction) {
+                return (ValueFlow<R>) this;
+            }
+        };
     }
     
     private Flows() {
@@ -98,6 +151,7 @@ public class Flows {
     
     public static VoidFlow voidFlowCompleted(String message) {
         return new VoidFlow() {
+            
             @Override
             public boolean hasMessage() {
                 return true;
@@ -126,13 +180,14 @@ public class Flows {
     
     public static <T extends Object> ValueFlow<T> valueFlowCompletedWith(T t) {
         return new ValueFlowCompleted<T>() {
+            
             @Override
             public boolean hasValue() {
                 return true;
             }
             
             @Override
-            public boolean completedEmpty() {
+            public boolean isCompletedEmpty() {
                 return false;
             }
 
@@ -173,16 +228,35 @@ public class Flows {
         };
     }
     
+    public static <T extends Object> ValueFlow<T> valueFlowCompletedOrEmptyIfNull(
+            ValueFlow<T> valueFlow) {
+        if ( nonNull(valueFlow) ) {
+            return valueFlow;
+        } else {
+            return valueFlowCompletedEmpty();
+        }
+    }
+    
     public static <T extends Object> ValueFlow<T> valueFlowCompletedEmpty() {
-        return new ValueFlowCompleted<T>() {
+        return (ValueFlow<T>) VALUE_FLOW_EMPTY;
+    }
+    
+    public static <T extends Object> ValueFlow<T> valueFlowCompletedEmpty(String message) {
+        return new ValueFlowCompleted<T>() {            
+    
+            @Override
+            public boolean hasMessage() {
+                return true;
+            }
+
+            @Override
+            public String message() {
+                return message;
+            }
+    
             @Override
             public boolean hasValue() {
                 return false;
-            }
-                        
-            @Override
-            public boolean completedEmpty() {
-                return true;
             }
 
             @Override
@@ -196,8 +270,13 @@ public class Flows {
             }
 
             @Override
-            public FlowResult result() {
-                return COMPLETE;
+            public <R> ValueFlow<R> map(Function<T, R> mapFunction) {
+                return (ValueFlow<R>) this;
+            }
+
+            @Override
+            public boolean isCompletedEmpty() {
+                return true;
             }
 
             @Override
@@ -206,18 +285,18 @@ public class Flows {
             }
 
             @Override
-            public ValueFlowFail asFail() {                
+            public ValueFlowFail asFail() {
                 throw new IllegalStateException("This is Completed flow.");
             }
-            
+
             @Override
             public VoidFlow toVoid() {
                 return VOID_FLOW_COMPLETED;
             }
 
             @Override
-            public <R> ValueFlow<R> map(Function<T, R> mapFunction) {
-                return valueFlowCompletedEmpty();
+            public FlowResult result() {
+                return COMPLETE;
             }
         };
     }
@@ -257,7 +336,7 @@ public class Flows {
             }
             
             @Override
-            public boolean completedEmpty() {
+            public boolean isCompletedEmpty() {
                 return false;
             }
 

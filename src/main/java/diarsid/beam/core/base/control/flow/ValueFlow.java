@@ -15,7 +15,7 @@ public interface ValueFlow<T extends Object> extends Flow {
     
     <R> ValueFlow<R> map(Function<T, R> mapFunction);
     
-    boolean completedEmpty();
+    boolean isCompletedEmpty();
     
     ValueFlowCompleted<T> asComplete();
     

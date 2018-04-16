@@ -13,6 +13,14 @@ public interface ValueFlowCompleted<T extends Object> extends ValueFlow<T> {
     
     boolean hasValue();
     
+    default boolean hasMessage() {
+        return false;
+    }
+
+    default String message() {
+        throw new IllegalStateException("This flow does not have message.");
+    }
+    
     T getOrThrow();
     
     T getOrDefault(T defaultT);

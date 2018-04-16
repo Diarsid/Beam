@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.base.os.treewalking.advanced.FileWalker;
+import diarsid.beam.core.base.os.treewalking.advanced.FileTreeWalker;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -38,7 +38,7 @@ class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
 
     @Override
     public ExecutorModule buildModule() {
-        FileWalker fileWalker = new FileWalker(
+        FileTreeWalker fileWalker = new FileTreeWalker(
                 this.ioModule.getInnerIoEngine(), getFolderTypeDetector());
         return new ExecutorModuleWorker(
                 this.ioModule.getInnerIoEngine(), 

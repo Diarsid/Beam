@@ -203,6 +203,11 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_Live_At_Donington() {
+        assertTrue(isSimilar("1994 - Live_At_Donington_CD1", "livdeongi"));
+    }
+    
+    @Test
     public void test_isSimilar_webpanel() {
         assertTrue(isSimilar("webpanel", "wepanel"));
         assertTrue(isSimilar("webpanel", "wepanl"));

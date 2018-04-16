@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.os.treewalking.search;
+package diarsid.beam.core.base.os.treewalking.base;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -14,12 +14,12 @@ import static java.nio.file.Files.isDirectory;
  *
  * @author Diarsid
  */
-enum ItemType {
+public enum ItemType {
     
     FILE,
     FOLDER;
     
-    static ItemType fileItemTypeOf(Path path) {
+    public static ItemType itemTypeOf(Path path) {
         if ( isDirectory(path) ) {
             return FOLDER;
         } else {
@@ -27,7 +27,7 @@ enum ItemType {
         }
     }
     
-    static ItemType fileItemTypeOf(File file) {
+    public static ItemType itemTypeOf(File file) {
         if ( file.isDirectory() ) {
             return FOLDER;
         } else {

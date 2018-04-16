@@ -16,6 +16,7 @@ import java.util.Set;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.flow.ValueFlowFail;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -36,7 +37,7 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
 import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.plugins.Plugin;
-import diarsid.beam.core.base.os.treewalking.advanced.FileWalker;
+import diarsid.beam.core.base.os.treewalking.advanced.FileTreeWalker;
 import diarsid.beam.core.base.os.treewalking.listing.FileLister;
 import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
@@ -72,13 +73,14 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.ALL;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.SIMILAR_MATCH;
-import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.ALL;
-import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.PathUtils.combineAsPath;
 import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
@@ -122,7 +124,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     private final DomainKeeperModule domain;
     private final InnerIoEngine ioEngine;
     private final FileSearcher fileSearcher;
-    private final FileWalker fileWalker;
+    private final FileTreeWalker fileWalker;
     private final FileLister fileLister;    
     private final Map<String, Plugin> plugins;
     private final HelpKey chooseMultipleFoldersHelp;
@@ -133,7 +135,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             DomainKeeperModule domain,
             Set<Plugin> plugins,
             FileSearcher fileSearcher,
-            FileWalker fileWalker,
+            FileTreeWalker fileWalker,
             FileLister fileLister) {
         this.ioEngine = ioEngine;
         this.fileSearcher = fileSearcher;
@@ -699,13 +701,17 @@ class ExecutorModuleWorker implements ExecutorModule {
         
         switch ( targetFlow.result() ) {
             case COMPLETE : {
-                if ( targetFlow.asComplete().hasValue() ) {
-                    target = combineAsPathFrom(
-                            subPath.subPath(), targetFlow.asComplete().getOrThrow());
+                ValueFlowCompleted<String> completedFlow = targetFlow.asComplete();
+                if ( completedFlow.hasValue() ) {
+                    target = combineAsPath(subPath.subPath(), completedFlow.getOrThrow());
                     this.openTargetAndExtendCommand(initiator, location, target, command);
                 } else {
-                    this.ioEngine.report(
+                    if ( completedFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, completedFlow.message());
+                    } else {
+                        this.ioEngine.report(
                             initiator, format("'%s' not found in %s", target, subPath.fullName()));
+                    }                   
                 }                
                 break;
             }    
@@ -843,12 +849,17 @@ class ExecutorModuleWorker implements ExecutorModule {
         
         switch ( targetFlow.result() ) {
             case COMPLETE : {
-                if ( targetFlow.asComplete().hasValue() ) {
+                ValueFlowCompleted<String> completedFlow = targetFlow.asComplete();
+                if ( completedFlow.hasValue() ) {
                     target = targetFlow.asComplete().getOrThrow();
                     this.openTargetAndExtendCommand(initiator, location, target, command);
                 } else {
-                    this.ioEngine.report(
-                            initiator, format("'%s' not found in %s", target, location.name()));
+                    if ( completedFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, completedFlow.message());
+                    } else {
+                        this.ioEngine.report(initiator, format(
+                                "'%s' not found in %s", target, location.name()));
+                    }                    
                 }                
                 break;
             }    
@@ -1436,12 +1447,18 @@ class ExecutorModuleWorker implements ExecutorModule {
         
         switch ( subpathFlow.result() ) {
             case COMPLETE : {
-                if ( subpathFlow.asComplete().hasValue() ) {
-                    subpath = subpathFlow.asComplete().getOrThrow();
+                ValueFlowCompleted<String> completedFlow = subpathFlow.asComplete();
+                if ( completedFlow.hasValue() ) {
+                    subpath = completedFlow.getOrThrow();
                     this.doListing(initiator, location, subpath);
                 } else {
-                    this.ioEngine.report(
-                            initiator, format("%s/%s not found.", location.name(), subpath));
+                    if ( completedFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, completedFlow.message());
+                    } else {
+                        this.ioEngine.report(initiator, format(
+                                "%s/%s not found.", location.name(), subpath));
+                    }
+                    
                 }                
                 break;
             }    

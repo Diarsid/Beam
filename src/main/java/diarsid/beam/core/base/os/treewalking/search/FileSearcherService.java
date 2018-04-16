@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.base.os.treewalking.search;
 
+import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
+
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -30,7 +32,8 @@ import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
 import static diarsid.beam.core.base.util.PathUtils.trimSeparators;
-import static diarsid.beam.core.base.os.treewalking.search.ItemType.fileItemTypeOf;
+import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
+import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
 
 /**
  *
@@ -197,7 +200,7 @@ class FileSearcherService implements FileSearcher {
     
     private boolean isAppropriatePath(Path dir, String target, FileSearchMode mode) {
         Path fullPath = dir.resolve(target);
-        return ( Files.exists(fullPath) && mode.correspondsTo(fileItemTypeOf(fullPath)) );
+        return ( Files.exists(fullPath) && mode.correspondsTo(itemTypeOf(fullPath)) );
     }
     
     private FileSearchResult searchBySimilarity(Path root, String target, FileSearchMode mode) 

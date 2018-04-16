@@ -39,8 +39,8 @@ import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.DI
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.PATTERN_MATCH;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.SIMILAR_MATCH;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.STRICT_MATCH;
-import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.ALL;
-import static diarsid.beam.core.base.os.treewalking.search.FileSearchMode.FILES_ONLY;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.ALL;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_ONLY;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
 
 

@@ -131,6 +131,10 @@ public class CollectionsUtils {
         return ints[ints.length - 1];
     }
     
+    public static <T> T last(T[] ts) {
+        return ts[ts.length - 1];
+    }
+    
     public static boolean indexInRange(int index, Collection collection) {
         return ( index > -1 ) && ( index < collection.size() );
     }
