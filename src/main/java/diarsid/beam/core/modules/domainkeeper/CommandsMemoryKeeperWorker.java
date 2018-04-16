@@ -25,7 +25,7 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCommand;
 import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.modules.data.DaoCommands;
-import diarsid.beam.core.modules.data.DaoCommandsChoices;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -63,7 +63,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoCommands daoCommands;
-    private final DaoCommandsChoices daoCommandsChoices;
+    private final DaoPatternChoices daoCommandsChoices;
     private final KeeperDialogHelper helper;
     private final Help exactMatchHelp;
     private final Help removeRelatedMemsHelp;
@@ -72,7 +72,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
 
     CommandsMemoryKeeperWorker(
             DaoCommands daoCommands, 
-            DaoCommandsChoices daoChoices, 
+            DaoPatternChoices daoChoices, 
             InnerIoEngine ioEngine, 
             KeeperDialogHelper helper) {
         this.daoCommands = daoCommands;
@@ -324,9 +324,10 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             InvocationCommand exactMatch, 
             List<InvocationCommand> matchingCommands) {        
         filterMatchingCommandsOnLongerDuplicatesOfExactInExtended(exactMatch, matchingCommands);
+        String exactMatchExtended = exactMatch.extendedArgument();
         if ( matchingCommands.isEmpty() ) {
             command.setStored();
-            command.argument().setExtended(exactMatch.extendedArgument());
+            command.argument().setExtended(exactMatchExtended);
             return voidFlowCompleted();
         }
         matchingCommands.add(0, exactMatch);
@@ -335,15 +336,17 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.isEmpty() ) {
             return voidFlowCompleted();
         }
-        variants.removeWorseThan(exactMatch.extendedArgument());
+        variants.removeWorseThan(exactMatchExtended);
         if ( variants.hasOne() ) {
             command.setStored();
-            command.argument().setExtended(exactMatch.extendedArgument());
+            command.argument().setExtended(exactMatchExtended);
             return voidFlowCompleted();
         } else {
-            if ( this.daoCommandsChoices.isChoiceDoneFor(command.originalArgument(), variants) ) {
+            boolean exactMatchChoosen = this.daoCommandsChoices.isChoiceMatchTo(
+                    command.originalArgument(), exactMatchExtended, variants);
+            if ( exactMatchChoosen ) {
                 command.setStored();
-                command.argument().setExtended(exactMatch.extendedArgument());
+                command.argument().setExtended(exactMatchExtended);
                 asyncDo(() -> {
                     this.daoCommands.save(initiator, command);
                 });
@@ -529,7 +532,9 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             });
             return valueFlowCompletedWith(newCommand);
         } else {
-            if ( this.daoCommandsChoices.isChoiceDoneFor(original, variants) ) {
+            boolean exactMatchChoosen = this.daoCommandsChoices.isChoiceMatchTo(
+                    original, exactMatch.extendedArgument(), variants);
+            if ( exactMatchChoosen ) {
                 return valueFlowCompletedWith(exactMatch);
             }
             Answer answer = this.ioEngine.chooseInWeightedVariants(
@@ -669,12 +674,12 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.best().text().equalsIgnoreCase(pattern) ) {
             return valueFlowCompletedWith(commands.get(variants.best().index()));
         }
-        Optional<CommandType> chosenType = 
-                this.daoCommandsChoices.isTypeChoiceDoneFor(pattern, variants);
-        if ( chosenType.isPresent() ) {
+        Optional<String> choice = 
+                this.daoCommandsChoices.findChoiceFor(pattern, variants);
+        if ( choice.isPresent() ) {
             return valueFlowCompletedWith(commands
                     .stream()
-                    .filter(command -> command.type().is(chosenType.get()))
+                    .filter(command -> command.isExtendedArgument(choice.get()))
                     .findFirst());
         }
         Answer answer = this.ioEngine.chooseInWeightedVariants(

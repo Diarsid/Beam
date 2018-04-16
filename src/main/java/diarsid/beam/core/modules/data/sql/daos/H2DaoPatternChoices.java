@@ -9,38 +9,38 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.modules.data.DaoCommandsChoices;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_COMMAND_TYPE;
+import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXTENDED;
 
 
-class H2DaoCommandsChoices
+class H2DaoPatternChoices
         extends BeamCommonDao 
-        implements DaoCommandsChoices {
+        implements DaoPatternChoices {
 
-    H2DaoCommandsChoices(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoPatternChoices(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
     }
 
     @Override
-    public boolean isChoiceDoneFor(String original, WeightedVariants variants) {
-        debug("[DAO COMMANDS CHOICES] is done '" + original + "' for " + variants.stamp() + " ?");
+    public boolean isChoiceMatchTo(String original, String extended, WeightedVariants variants) {
         try {
             return super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
                             "SELECT * " +
-                            "FROM commands_choices " +
-                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_variants_stamp IS ? )", 
-                            lower(original), variants.stamp());
+                            "FROM pattern_choices " +
+                            "WHERE " +
+                            "   ( LOWER(original) IS ? ) AND " +
+                            "   ( LOWER(extended) IS ? ) AND " +
+                            "   ( variants_stamp IS ? )", 
+                            lower(original), lower(extended), variants.stamp());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return false;            
@@ -48,14 +48,15 @@ class H2DaoCommandsChoices
     }
 
     @Override
-    public Optional<CommandType> isTypeChoiceDoneFor(String original, WeightedVariants variants) {
+    public Optional<String> findChoiceFor(String original, WeightedVariants variants) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(CommandType.class,
+                    .doQueryAndConvertFirstRowVarargParams(
+                            String.class,
                             "SELECT * " +
-                            "FROM commands_choices " +
-                            "WHERE ( LOWER(com_original) IS ? ) AND ( com_variants_stamp IS ? )", 
-                            ROW_TO_COMMAND_TYPE,
+                            "FROM pattern_choices " +
+                            "WHERE ( LOWER(original) IS ? ) AND ( variants_stamp IS ? )", 
+                            ROW_TO_EXTENDED,
                             lower(original), variants.stamp());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
@@ -64,42 +65,44 @@ class H2DaoCommandsChoices
     }  
     @Override
     public boolean save(InvocationCommand command, WeightedVariants variants) {
-        debug("[DAO COMMANDS CHOICES] save: " + command.stringify() + ", stamp: " + variants.stamp());
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean choiceExists = transact
                     .doesQueryHaveResultsVarargParams(
                             "SELECT * " +
-                            "FROM commands_choices " +
-                            "WHERE com_original IS ? ", 
+                            "FROM pattern_choices " +
+                            "WHERE LOWER(original) IS ? ", 
                             lower(command.originalArgument()));
             
             int modified = 0;
             if ( choiceExists ) {
                 modified = transact
                         .doUpdateVarargParams(
-                                "UPDATE commands_choices " +
+                                "UPDATE pattern_choices " +
                                 "SET " +
-                                "   com_variants_stamp = ?, " +
-                                "   com_type = ? " +
-                                "WHERE com_original IS ? ", 
-                                variants.stamp(), command.type(), lower(command.originalArgument()));
+                                "   variants_stamp = ?, " +
+                                "   extended = ? " +
+                                "WHERE LOWER(original) IS ? ", 
+                                variants.stamp(), 
+                                lower(command.extendedArgument()), 
+                                lower(command.originalArgument()));
             } else {
                 modified = transact
                         .doUpdateVarargParams(
-                                "INSERT INTO commands_choices (" +
-                                "   com_original, " +
-                                "   com_type, " +
-                                "   com_variants_stamp) " +
+                                "INSERT INTO pattern_choices (" +
+                                "   original, " +
+                                "   extended, " +
+                                "   variants_stamp) " +
                                 "VALUES ( ?, ?, ? ) ", 
-                                lower(command.originalArgument()), command.type(), variants.stamp());
+                                lower(command.originalArgument()), 
+                                lower(command.extendedArgument()), 
+                                variants.stamp());
             }
             
             transact
                     .ifTrue( modified != 1 )
                     .rollbackAndProceed();
             
-            debug("[DAO COMMANDS CHOICES] saved: " + ( modified == 1 ));
             return ( modified == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
@@ -112,8 +115,8 @@ class H2DaoCommandsChoices
         try {
             return super.openDisposableTransaction()
                     .doUpdateVarargParams(
-                            "DELETE FROM commands_choices " +
-                            "WHERE LOWER(com_original) IS ? ", 
+                            "DELETE FROM pattern_choices " +
+                            "WHERE LOWER(original) IS ? ", 
                             lower(original))
                     == 1;
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {

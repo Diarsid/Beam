@@ -8,7 +8,6 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.sql.Timestamp;
 
-import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Attribute;
@@ -82,8 +81,8 @@ class RowToEntityConversions {
                 (int) row.get("ordering"));
     };
     
-    static final RowConversion<CommandType> ROW_TO_COMMAND_TYPE = (row) -> {
-        return CommandType.valueOf((String) row.get("com_type"));
+    static final RowConversion<String> ROW_TO_EXTENDED = (row) -> {
+        return (String) row.get("extended");
     };
     
     static final RowConversion<Picture> ROW_TO_IMAGE = (row) -> {

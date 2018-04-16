@@ -67,13 +67,13 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "       PRIMARY KEY (com_type, com_original) )", 
                 3);
         
-        SqlTable commandsChoices = new H2SqlTable(
-                "commands_choices", 
-                "CREATE TABLE commands_choices (" +
-                "   com_original           VARCHAR     NOT NULL," +
-                "   com_type               VARCHAR     NOT NULL, " +         
-                "   com_variants_stamp     VARCHAR     NOT NULL, " +
-                "       PRIMARY KEY (com_original) )", 
+        SqlTable patternChoices = new H2SqlTable(
+                "pattern_choices", 
+                "CREATE TABLE pattern_choices (" +
+                "   original           VARCHAR     NOT NULL," +
+                "   extended           VARCHAR     NOT NULL, " +         
+                "   variants_stamp     VARCHAR     NOT NULL, " +
+                "       PRIMARY KEY (original) )", 
                 3);
         
         SqlTable tasks = new H2SqlTable(
@@ -126,7 +126,7 @@ public class H2DataBaseModel implements SqlDataBaseModel {
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
-        this.tables.add(commandsChoices);
+        this.tables.add(patternChoices);
         this.tables.add(keyValue);
         this.tables.add(commands);
         this.tables.add(tasks);

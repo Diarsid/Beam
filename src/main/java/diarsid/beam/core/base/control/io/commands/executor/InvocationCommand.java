@@ -77,6 +77,10 @@ public abstract class InvocationCommand implements ExecutorCommand {
         return this.argument.extended();
     }
     
+    public boolean isExtendedArgument(String other) {
+        return this.argument.extended().equalsIgnoreCase(other);
+    }
+    
     public String bestArgument() {
         return this.argument.isExtended() ? this.argument.extended() : this.argument.original();
     }

@@ -21,12 +21,11 @@ import testing.embedded.base.h2.TestDataBase;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.data.DataBaseActuator;
 import diarsid.beam.core.base.data.DataBaseModel;
 import diarsid.beam.core.base.data.SqlDataBaseModel;
-import diarsid.beam.core.modules.data.DaoCommandsChoices;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
 
 import static org.junit.Assert.assertEquals;
@@ -35,7 +34,6 @@ import static org.mockito.Mockito.mock;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
@@ -47,27 +45,27 @@ import static diarsid.jdbc.transactions.core.Params.params;
  *
  * @author Diarsid
  */
-public class H2DaoCommandsChoicesTest {
+public class H2DaoPatternChoicesTest {
     
-    private static final Logger logger = LoggerFactory.getLogger(H2DaoCommandsChoicesTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(H2DaoPatternChoicesTest.class);
     
-    static DaoCommandsChoices dao;
+    static DaoPatternChoices dao;
     static Initiator initiator;
     static TestDataBase dataBase;
     static InnerIoEngine ioEngine;
     
     WeightedVariants variants;
     
-    public H2DaoCommandsChoicesTest() {
+    public H2DaoPatternChoicesTest() {
     }
     
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(41, IN_MACHINE);
-        dataBase = new H2TestDataBase("commands-choices-test");
+        dataBase = new H2TestDataBase("pattern-choices-test");
         ioEngine = mock(InnerIoEngine.class);
         
-        dao = new H2DaoCommandsChoices(dataBase, ioEngine);
+        dao = new H2DaoPatternChoices(dataBase, ioEngine);
         DataBaseModel dataBaseModel = new H2DataBaseModel();
         
         DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
@@ -82,11 +80,11 @@ public class H2DaoCommandsChoicesTest {
         dataBase.transactionFactory()
                 .createDisposableTransaction()
                 .doBatchUpdateVarargParams(
-                        "INSERT INTO commands_choices ( com_original, com_type, com_variants_stamp ) " +
+                        "INSERT INTO pattern_choices ( original, extended, variants_stamp ) " +
                         "VALUES ( ?, ?, ? )", 
-                        params("beaproj", "OPEN_LOCATION_TARGET", "c:/projects/netbeans/beam;c:/projects/netbeans"),
-                        params("beaporj", "OPEN_LOCATION_TARGET", "c:/projects/netbeans/beam;c:/projects/netbeans"),
-                        params("fb", "BROWSE_WEBPAGE", "c:/books/library/common/author/book.fb2;facebook"));
+                        params("beaproj", "c:/projects/netbeans/beam", "c:/projects/netbeans/beam;c:/projects/netbeans"),
+                        params("beaporj", "c:/projects/netbeans/beam", "c:/projects/netbeans/beam;c:/projects/netbeans"),
+                        params("fb", "facebook", "c:/books/library/common/author/book.fb2;facebook"));
         
         String pattern = "beaproj";
         List<String> variantsStrings = arrayListOf("C:/Projects/NetBeans", "C:/Projects/NetBeans/Beam");
@@ -94,10 +92,10 @@ public class H2DaoCommandsChoicesTest {
     }
     
     @After
-    public void teatDownCase() throws Exception {
+    public void tearDownCase() throws Exception {
         dataBase.transactionFactory()
                 .createDisposableTransaction()
-                .doUpdate("DELETE FROM commands_choices");
+                .doUpdate("DELETE FROM pattern_choices");
     }
 
     @Test
@@ -105,13 +103,16 @@ public class H2DaoCommandsChoicesTest {
         
         boolean isDone;
         
-        isDone = dao.isChoiceDoneFor("BeaProj", variants);        
+        isDone = dao.isChoiceMatchTo("BeaProj", "c:/projects/netbeans/beam", variants);        
         assertEquals(true, isDone);
         
-        isDone = dao.isChoiceDoneFor("BeaPorj", variants);        
+        isDone = dao.isChoiceMatchTo("BeaPorj", "c:/projects/netbeans/beam", variants);        
         assertEquals(true, isDone);
         
-        isDone = dao.isChoiceDoneFor("nebeaproj", variants);        
+        isDone = dao.isChoiceMatchTo("nebeaproj", "c:/projects/netbeans", variants);        
+        assertEquals(false, isDone);
+        
+        isDone = dao.isChoiceMatchTo("beaproj", "c:/projects/netbeans", variants);        
         assertEquals(false, isDone);
     }
     
@@ -121,9 +122,9 @@ public class H2DaoCommandsChoicesTest {
         List<String> variantsStrings = arrayListOf("c:/books/library/common/author/book.fb2", "facebook");
         WeightedVariants fbVariants = weightVariants(pattern, stringsToVariants(variantsStrings));
         
-        Optional<CommandType> type = dao.isTypeChoiceDoneFor("Fb", fbVariants);
-        assertEquals(true, type.isPresent());
-        assertEquals(BROWSE_WEBPAGE, type.get());
+        Optional<String> choice = dao.findChoiceFor("Fb", fbVariants);
+        assertEquals(true, choice.isPresent());
+        assertEquals("facebook", choice.get());
     }
     
     @Test
@@ -137,44 +138,44 @@ public class H2DaoCommandsChoicesTest {
         
         boolean isDone;
         
-        isDone = dao.isChoiceDoneFor("BeaProj", negativeVariants);        
+        isDone = dao.isChoiceMatchTo("BeaProj", "C:/Projects/NetBeans/Beam", negativeVariants);        
         assertEquals(false, isDone);
     }
     
     @Test
     public void testSaveRewrite() {
-        int countBefore = dataBase.countRowsInTable("commands_choices");
+        int countBefore = dataBase.countRowsInTable("pattern_choices");
         
         InvocationCommand command = createInvocationCommandFrom(
                 OPEN_LOCATION_TARGET, "beaproj", "C:/Projects/NetBeans/Beam");
         boolean rewrited = dao.save(command, variants);
         assertEquals(true, rewrited);
         
-        int countAfter = dataBase.countRowsInTable("commands_choices");
+        int countAfter = dataBase.countRowsInTable("pattern_choices");
         assertEquals(countBefore, countAfter);
     }
     
     @Test
     public void testSave() {
-        int countBefore = dataBase.countRowsInTable("commands_choices");
+        int countBefore = dataBase.countRowsInTable("pattern_choices");
         
         InvocationCommand command = createInvocationCommandFrom(
                 OPEN_LOCATION_TARGET, "nebeaproj", "C:/Projects/NetBeans");
         boolean saved = dao.save(command, variants);
         assertEquals(true, saved);
         
-        int countAfter = dataBase.countRowsInTable("commands_choices");
+        int countAfter = dataBase.countRowsInTable("pattern_choices");
         assertEquals(countBefore + 1, countAfter);
     }
     
     @Test
     public void testDelete() {
-        int countBefore = dataBase.countRowsInTable("commands_choices");
+        int countBefore = dataBase.countRowsInTable("pattern_choices");
         
         boolean deleted = dao.delete("beaproj");
         assertEquals(true, deleted);
         
-        int countAfter = dataBase.countRowsInTable("commands_choices");
+        int countAfter = dataBase.countRowsInTable("pattern_choices");
         assertEquals(countBefore - 1, countAfter);
     }
     

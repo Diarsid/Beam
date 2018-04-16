@@ -19,7 +19,7 @@ public interface DaosProvider {
     
     DaoCommands createDaoCommands();
     
-    DaoCommandsChoices createDaoCommandsChoices();
+    DaoPatternChoices createDaoPatternChoices();
     
     DaoKeyValueStorage createDaoKeyValueStorage();
     
