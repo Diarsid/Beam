@@ -20,6 +20,8 @@ public interface DaoPatternChoices {
     
     Optional<String> findChoiceFor(String original, WeightedVariants variants);
     
+    boolean save(String original, String extended, WeightedVariants variants);
+    
     boolean save(InvocationCommand command, WeightedVariants variants);
     
     boolean delete(String original);

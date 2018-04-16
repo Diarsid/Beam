@@ -63,8 +63,9 @@ class H2DaoPatternChoices
             return Optional.empty();            
         }
     }  
+    
     @Override
-    public boolean save(InvocationCommand command, WeightedVariants variants) {
+    public boolean save(String original, String extended, WeightedVariants variants) {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean choiceExists = transact
@@ -72,7 +73,7 @@ class H2DaoPatternChoices
                             "SELECT * " +
                             "FROM pattern_choices " +
                             "WHERE LOWER(original) IS ? ", 
-                            lower(command.originalArgument()));
+                            lower(original));
             
             int modified = 0;
             if ( choiceExists ) {
@@ -84,8 +85,8 @@ class H2DaoPatternChoices
                                 "   extended = ? " +
                                 "WHERE LOWER(original) IS ? ", 
                                 variants.stamp(), 
-                                lower(command.extendedArgument()), 
-                                lower(command.originalArgument()));
+                                lower(extended), 
+                                lower(original));
             } else {
                 modified = transact
                         .doUpdateVarargParams(
@@ -94,8 +95,8 @@ class H2DaoPatternChoices
                                 "   extended, " +
                                 "   variants_stamp) " +
                                 "VALUES ( ?, ?, ? ) ", 
-                                lower(command.originalArgument()), 
-                                lower(command.extendedArgument()), 
+                                lower(original), 
+                                lower(extended), 
                                 variants.stamp());
             }
             
@@ -108,6 +109,11 @@ class H2DaoPatternChoices
             
             return false;            
         }
+    }
+    
+    @Override
+    public boolean save(InvocationCommand command, WeightedVariants variants) {
+        return this.save(command.originalArgument(), command.extendedArgument(), variants);
     }
 
     @Override
