@@ -34,7 +34,59 @@ class H2DaoLocationSubPathChoices
     }
 
     @Override
-    public boolean save(
+    public boolean saveSingle(Initiator initiator, LocationSubPath subPath, String pattern) {
+        try (JdbcTransaction transact = super.openTransaction()) {
+            
+            boolean exists = transact
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT subpath " +
+                            "FROM subpath_choices " +
+                            "WHERE ( LOWER(pattern) IS ? )", 
+                            lower(pattern));
+            
+            int modified;
+            if ( exists ) {
+                modified = transact
+                        .doUpdateVarargParams(
+                                "UPDATE subpath_choices " +
+                                "SET " +
+                                "   loc_name = ?, " +
+                                "   subpath = ?, " +
+                                "   variants_stamp = ? " +
+                                "WHERE ( LOWER(pattern) IS ? ) ", 
+                                subPath.locationName(), 
+                                lower(subPath.subPath()), 
+                                lower(subPath.fullName()), 
+                                lower(pattern));
+            } else {
+                modified = transact
+                        .doUpdateVarargParams(
+                                "INSERT INTO subpath_choices (" +
+                                "   pattern, " +
+                                "   loc_name, " +
+                                "   subpath, " +
+                                "   variants_stamp) " +
+                                "VALUES ( ?, ?, ?, ? ) ", 
+                                lower(pattern), 
+                                subPath.locationName(), 
+                                lower(subPath.subPath()), 
+                                lower(subPath.fullName()));
+            }
+            
+            if ( modified != 1 ) {
+                transact.rollbackAndProceed();
+            }
+             
+            return true;
+            
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            // TODO LOW
+            return false;
+        }
+    }
+
+    @Override
+    public boolean saveWithVariants(
             Initiator initiator, 
             LocationSubPath subPath, 
             String pattern, 
@@ -88,6 +140,27 @@ class H2DaoLocationSubPathChoices
             return false;
         } catch (TransactionTerminationException e) {
             // TODO LOW
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isChoiceExistsForSingle(
+            Initiator initiator, LocationSubPath subPath, String pattern) {
+        try {
+            return super.openDisposableTransaction()
+                    .doesQueryHaveResultsVarargParams(
+                            "SELECT pattern " +
+                            "FROM subpath_choices " +
+                            "WHERE " +
+                            "    ( LOWER(pattern) IS ? ) AND " +
+                            "    ( LOWER(loc_name) IS ? ) AND " +
+                            "    ( LOWER(subpath) IS ? )", 
+                            lower(pattern), 
+                            lower(subPath.locationName()), 
+                            lower(subPath.subPath()));
+        } catch (TransactionHandledException|TransactionHandledSQLException e) {
+            // TODO
             return false;
         }
     }

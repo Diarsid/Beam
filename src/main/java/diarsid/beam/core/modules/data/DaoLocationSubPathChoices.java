@@ -18,11 +18,21 @@ import diarsid.beam.core.domain.entities.LocationSubPath;
  */
 public interface DaoLocationSubPathChoices {
     
-    boolean save(
+    boolean saveSingle(
+            Initiator initiator, 
+            LocationSubPath subPath, 
+            String pattern);
+    
+    boolean saveWithVariants(
             Initiator initiator, 
             LocationSubPath subPath, 
             String pattern, 
             WeightedVariants variants);
+    
+    boolean isChoiceExistsForSingle(
+            Initiator initiator, 
+            LocationSubPath subPath, 
+            String pattern);
     
     Optional<LocationSubPath> getChoiceFor(
             Initiator initiator, 
