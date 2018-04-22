@@ -245,6 +245,11 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_amibent_ambient() {
+        assertTrue(isSimilar("The Hobbit (Calm Ambient Mix by Syneptic)  Episode II.mp3", "amibent"));
+    }
+    
+    @Test
     public void test_hasSimilarIgnoreCase_directory() {
         assertTrue(hasSimilar(toSet(
                 "dir", 
