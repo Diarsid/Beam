@@ -233,7 +233,7 @@ public class AnalyzeTest {
     }
     
     @Test
-    public void test_gmailCase_fb() {
+    public void test_gmailWithOtherMLClusterCase_ml() {
         pattern = "ml";
         
         variants = asList(
@@ -243,6 +243,22 @@ public class AnalyzeTest {
         expected = asList(
                 "some_Mstring_Lwith_ml_cluster",
                 "gmail"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_gmailWithOtherMLstringCase_ml() {
+        pattern = "ml";
+        
+        variants = asList(
+                "some_stMring_wLith_cluster",
+                "gmail");
+        
+        expected = asList(
+                "gmail",                
+                "some_stMring_wLith_cluster"
         );
         
         weightVariantsAndCheckMatching();
@@ -506,8 +522,6 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
-    
-    
     
     @Test
     public void test_jobCurrentCase_jbo_cruent() {
