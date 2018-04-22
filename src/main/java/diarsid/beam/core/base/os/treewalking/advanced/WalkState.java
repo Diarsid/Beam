@@ -245,7 +245,7 @@ class WalkState extends CachedReusable {
                     where = joinToPath(where, this.relativeRoot.orThrow());
                 }                
             } else if ( this.locationSubPath.isPresent() ) {
-                where = locationSubPath.orThrow().fullPath();
+                where = locationSubPath.orThrow().fullName();
                 if ( this.relativeRoot.isPresent() ) {
                     where = joinToPath(where, this.relativeRoot.orThrow());
                 }
@@ -261,7 +261,7 @@ class WalkState extends CachedReusable {
             if ( this.location.isPresent() ) {
                 where = this.location.orThrow().name();
             } else if ( this.locationSubPath.isPresent() ) {
-                where = this.locationSubPath.orThrow().fullPath();
+                where = this.locationSubPath.orThrow().fullName();
             } else if ( this.catalog.isPresent() ) { 
                 where = this.catalog.orThrow().name();
             } else {
@@ -338,7 +338,7 @@ class WalkState extends CachedReusable {
     void resultFlowCompletedWith(String result) {
         this.resultFlow = valueFlowCompletedWith(result);
     }
-    
+        
     void resultFlowStopped() {
         this.resultFlow = valueFlowStopped();
     }

@@ -140,8 +140,8 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             if ( checkFlow.result().is(FAIL) ) {
                 return valueFlowFail(checkFlow.message());
             }
-            this.walkUsing(state);
-            state.processResultFlowAfterSearching();
+            this.walkUsing(state);            
+            this.processWalkingResultsIn(state);
             return state.resultFlow();            
         } finally {
             this.cleanThreadLocalState();
@@ -154,6 +154,24 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         } else {
             this.singleWalkIterationUsing(state);
         }
+    }
+    
+    private void processWalkingResultsIn(WalkState state) {
+        if ( state.variants().isEmpty() ) {
+            state.processResultFlowAfterSearching();
+        } else {
+            WeightedVariants weightedVariants = unite(state.variants());
+            Answer userAnswer = askUserAboutFoundVariants(state, weightedVariants);
+            if ( userAnswer.isGiven() ) {
+                state.resultFlowCompletedWith(userAnswer.text());
+                state.variants().clear();
+                this.asyncTryToSaveChoiceFrom(state.pattern(), userAnswer.text(), weightedVariants);
+            } else if ( userAnswer.variantsAreNotSatisfactory() ) {
+                state.variants().clear();
+            } else if ( userAnswer.isRejection() ) {
+                state.resultFlowStopped();
+            }
+        }                     
     }
     
     private void multipleWalkIterationsThroughPathUsing(WalkState state) {
@@ -240,17 +258,16 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             }
         }
         
-        if ( state.collectedOnCurrentLevel().isEmpty() ) {
-            return true;
+        if ( nonEmpty(state.collectedOnCurrentLevel()) ) {
+            state.weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants();
+            if ( nonEmpty(state.variants()) ) {
+                state.sortVariants();
+            }        
         }
-        
-        state.weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants();
         
         if ( state.variants().isEmpty() ) {
             return true;
         }
-        
-        state.sortVariants();
                 
         if ( state.hasFirstVariantAcceptableWeightEstimate() ) {
             List<WeightedVariant> variantsFoundOnCurrentLevel = 
@@ -267,8 +284,12 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
                 userAnswer = this.askUserAboutFoundVariants(state, weightedVariants);
                 if ( userAnswer.isGiven() ) {
                     state.resultFlowCompletedWith(userAnswer.text());
+                    state.variants().clear();
                     this.asyncTryToSaveChoiceFrom(pattern, userAnswer.text(), weightedVariants);
                     ifGoDeeper = false;
+                } else if ( userAnswer.variantsAreNotSatisfactory() ) {
+                    state.variants().clear();
+                    ifGoDeeper = true;
                 } else if ( userAnswer.isRejection() ) {
                     state.resultFlowStopped();
                     ifGoDeeper = false;
