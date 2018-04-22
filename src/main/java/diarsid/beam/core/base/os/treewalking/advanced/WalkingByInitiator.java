@@ -3,17 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.environment;
+package diarsid.beam.core.base.os.treewalking.advanced;
 
-import java.nio.file.Path;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
  * @author Diarsid
  */
-public interface Catalog {
+public interface WalkingByInitiator {
     
-    Path path();
-    
-    String name();
+    ValueFlow<String> andGetResult();
 }

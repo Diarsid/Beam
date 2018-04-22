@@ -57,7 +57,7 @@ public class PathUtilsTest {
     }
 
     /**
-     * Test of combinePathFrom method, of class PathUtils.
+     * Test of joinPathFrom method, of class PathUtils.
      */
     @Test
     public void testCombinePathFrom() {

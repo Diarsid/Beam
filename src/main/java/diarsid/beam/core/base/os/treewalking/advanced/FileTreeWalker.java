@@ -7,7 +7,9 @@ package diarsid.beam.core.base.os.treewalking.advanced;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
+import diarsid.beam.core.application.environment.Catalog;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -20,6 +22,7 @@ import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 
 import static java.util.Objects.isNull;
 
@@ -31,6 +34,8 @@ import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
 import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
@@ -43,15 +48,29 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  *
  * @author Diarsid
  */
-public class FileTreeWalker {    
+class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, WalkingToFind {    
     
     private final FolderTypeDetector folderTypeDetector;
     private final InnerIoEngine ioEngine;
+    private final Optional<DaoPatternChoices> daoPatternChoices;
     private final ThreadLocal<WalkState> localState;
     
-    public FileTreeWalker(InnerIoEngine ioEngine, FolderTypeDetector folderTypeDetector) {
+    FileTreeWalker(
+            InnerIoEngine ioEngine, 
+            FolderTypeDetector folderTypeDetector) {
         this.folderTypeDetector = folderTypeDetector;
         this.ioEngine = ioEngine;
+        this.daoPatternChoices = Optional.empty();
+        this.localState = new ThreadLocal<>();
+    }
+    
+    FileTreeWalker(
+            InnerIoEngine ioEngine, 
+            DaoPatternChoices daoPatternChoices, 
+            FolderTypeDetector folderTypeDetector) {
+        this.folderTypeDetector = folderTypeDetector;
+        this.ioEngine = ioEngine;
+        this.daoPatternChoices = Optional.of(daoPatternChoices);
         this.localState = new ThreadLocal<>();
     }
     
@@ -64,41 +83,56 @@ public class FileTreeWalker {
         return state;
     }
     
-    public FileTreeWalker in(String where) {
-        this.state().setWhereToSearch(where);
+    @Override
+    public WalkingInPlace in(String where) {
+        this.state().setWhereToSearch(normalizeSeparators(where));
+        return this;
+    }
+
+    @Override
+    public WalkingInPlace in(Catalog catalog) {
+        this.state().setWhereToSearch(normalizeSeparators(
+                catalog.path().toAbsolutePath().toString()));
         return this;
     }
     
-    public FileTreeWalker in(Location location) {
+    @Override
+    public WalkingInPlace in(Location location) {
         this.state().setWhereToSearch(location);
         return this;
     }
     
-    public FileTreeWalker in(LocationSubPath locationSubPath) {
+    @Override
+    public WalkingInPlace in(LocationSubPath locationSubPath) {
         this.state().setWhereToSearch(locationSubPath);
         return this;
     }
     
-    public FileTreeWalker by(Initiator initiator) {
+    @Override
+    public WalkingByInitiator by(Initiator initiator) {
         this.state().set(initiator);
         return this;
     }
     
-    public FileTreeWalker search(String pattern) {
-        this.state().setWhatToSearch(pattern);
-        return this;
-    }
-    
-    public FileTreeWalker withMaxDepthOf(int maxDepth) {
+    @Override
+    public WalkingToFind withMaxDepthOf(int maxDepth) {
         this.state().setHowDeepToGo(maxDepth);
         return this;
     }
     
-    public FileTreeWalker lookingFor(FileSearchMode mode) {
+    @Override
+    public WalkingToFind walkToFind(String pattern) {
+        this.state().setWhatToSearch(pattern);
+        return this;
+    }
+    
+    @Override
+    public Walker lookingFor(FileSearchMode mode) {
         this.state().set(mode);
         return this;
     }
     
+    @Override
     public ValueFlow<String> andGetResult() {        
         try {
             WalkState state = this.state();
@@ -221,25 +255,53 @@ public class FileTreeWalker {
         if ( state.hasFirstVariantAcceptableWeightEstimate() ) {
             List<WeightedVariant> variantsFoundOnCurrentLevel = 
                     state.extractVariantsAcceptableOnCurrentLevel();
-            Answer answer = this.askAboutFoundVariants(state, variantsFoundOnCurrentLevel);
-            
+            WeightedVariants weightedVariants = unite(variantsFoundOnCurrentLevel);
+                        
             boolean ifGoDeeper = true;
             
-            if ( answer.isGiven() ) {
-                state.resultFlowCompletedWithAnswer(answer);
+            Answer userAnswer;
+            if ( this.isChoiceMadeForPatternWithBestFrom(weightedVariants) ) {
+                state.resultFlowCompletedWith(weightedVariants.best().text());
                 ifGoDeeper = false;
-            } else if ( answer.isRejection() ) {
-                state.resultFlowStopped();
-                ifGoDeeper = false;
-            }             
+            } else {
+                userAnswer = this.askUserAboutFoundVariants(state, weightedVariants);
+                if ( userAnswer.isGiven() ) {
+                    state.resultFlowCompletedWith(userAnswer.text());
+                    this.asyncTryToSaveChoiceFrom(pattern, userAnswer.text(), weightedVariants);
+                    ifGoDeeper = false;
+                } else if ( userAnswer.isRejection() ) {
+                    state.resultFlowStopped();
+                    ifGoDeeper = false;
+                }
+            }            
+                         
             return ifGoDeeper;
         } 
         
         return true;
     }
+    
+    private boolean isChoiceMadeForPatternWithBestFrom(WeightedVariants weightedVariants) {
+        if ( isNotPresent(this.daoPatternChoices) ) {
+            return false;
+        }
+        
+        String bestVariant = weightedVariants.best().text();
+        return this.daoPatternChoices
+                .get()
+                .isChoiceMatchTo(this.state().pattern(), bestVariant, weightedVariants);
+    }
+    
+    private void asyncTryToSaveChoiceFrom(
+            String pattern, String choice, WeightedVariants weightedVariants) {
+        if ( this.daoPatternChoices.isPresent() ) {
+            asyncDo(() -> {
+                this.daoPatternChoices.get().save(pattern, choice, weightedVariants);
+            });
+        }
+    }
 
-    private Answer askAboutFoundVariants(WalkState state, List<WeightedVariant> chosenVariants) {
-        WeightedVariants weightedVariants = unite(chosenVariants);
+    private Answer askUserAboutFoundVariants(WalkState state, WeightedVariants weightedVariants) {        
         Help help = state.composeHelp();
         Answer answer = this.ioEngine
                 .chooseInWeightedVariants(state.initiator(), weightedVariants, help);

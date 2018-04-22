@@ -150,7 +150,11 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         Optional<LocationSubPath> chosenSubPath = this.daoSubPathChoices
                 .getChoiceFor(initiator, pattern, variants);
         if ( chosenSubPath.isPresent() ) {
-            return this.askAboutSubPath(initiator, chosenSubPath.get());
+            if ( chosenSubPath.get().fullName().equalsIgnoreCase(variants.best().text()) ) {
+                return valueFlowCompletedWith(chosenSubPath);
+            } else {
+                return this.askAboutSubPath(initiator, chosenSubPath.get());
+            }            
         } else {
             return this.askToChooseOneSubPathAndSaveChoice(initiator, pattern, subPaths, variants);
         }     

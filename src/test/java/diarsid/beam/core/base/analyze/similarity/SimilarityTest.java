@@ -232,7 +232,17 @@ public class SimilarityTest {
     @Test
     public void test_isSimilar_dirct_directory() {
         assertTrue(isSimilar("directory", "dirct"));
-    } 
+    }
+    
+    @Test
+    public void test_isSimilar_shorehowrd_2__Store_Howard_Shore() {
+        assertTrue(isSimilar("2__Store/Howard Shore", "shorehowrd"));
+    }
+    
+    @Test
+    public void test_isSimilar_ambein_ambient() {
+        assertTrue(isSimilar("The Hobbit (Calm Ambient Mix by Syneptic)  Episode II.mp3", "ambein"));
+    }
     
     @Test
     public void test_hasSimilarIgnoreCase_directory() {

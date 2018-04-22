@@ -22,6 +22,8 @@ import diarsid.beam.core.modules.IoModule;
 import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.Beam.systemInitiator;
+import static diarsid.beam.core.base.os.treewalking.advanced.Walker.newWalker;
+import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getFolderTypeDetector;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
 
@@ -96,6 +98,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 propertyAndTextParser);
         programsKeeper = new ProgramsKeeperWorker(
                 ioEngine,
+                newWalker(ioEngine, this.dataModule.patternChoices(), getFolderTypeDetector()),
                 this.appComponentsHolderModule.programsCatalog(), 
                 dialogHelper);
         tasksKeeper = new TasksKeeperWorker(

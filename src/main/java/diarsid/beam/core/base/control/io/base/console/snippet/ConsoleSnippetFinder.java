@@ -30,7 +30,6 @@ import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.defineSnippetTypeOf;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isYes;
 import static diarsid.beam.core.base.util.CollectionsUtils.removeLastFrom;
-import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
@@ -39,6 +38,8 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringUtils.splitToLines;
 import static diarsid.beam.core.base.util.TextUtil.indexOfFirstNonSpaceIn;
 import static diarsid.beam.core.base.util.TextUtil.lineAtCaret;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 
 /**
  *
@@ -200,7 +201,7 @@ public class ConsoleSnippetFinder {
         
         String subpath = this.leadingSubpathIfPresentInInitialCommand(commandStart, commandEnd);
         if ( nonEmpty(subpath) ) {
-            snippetLine = combineAsPathFrom(subpath, snippetLine);
+            snippetLine = joinToPathFrom(subpath, snippetLine);
         }
         
         this.snippet = new Snippet(this.snippetType, snippetLine);
@@ -304,7 +305,7 @@ public class ConsoleSnippetFinder {
             contentPath = contentPath.substring(0, indexOfContentSign);
         }        
         
-        snippetLine = combineAsPathFrom(contentPath, combineAsPathFrom(treePath), snippetLine);
+        snippetLine = joinToPathFrom(contentPath, joinToPathFrom(treePath), snippetLine);
         return snippetLine;
     }
     

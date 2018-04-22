@@ -9,6 +9,8 @@ import java.nio.file.Path;
 
 import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 
+import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
+import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
@@ -23,7 +25,7 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
     
     DetectorForNameOrSubpathSimilarity(String nameToFind) {
         super(nameToFind);
-        this.session = new SimilarityCheckSession();
+        this.session = takeFromCache(SimilarityCheckSession.class);
     }
 
     @Override
@@ -47,6 +49,6 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
     
     @Override
     void close() {
-        this.session.close();
+        giveBackToCache(this.session);
     }
 }

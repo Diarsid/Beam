@@ -265,7 +265,7 @@ public class ScreenCapturerWindow implements Runnable {
         try {
             this.blockingValueFlowQueue.put(
                     this.captureScreenRectangle()
-                            .map(bytes -> new Picture(this.pageName, bytes)));
+                            .toFlowWith(bytes -> new Picture(this.pageName, bytes)));
             this.close();
         } catch (InterruptedException ex) {
             // TODO MEDIUM

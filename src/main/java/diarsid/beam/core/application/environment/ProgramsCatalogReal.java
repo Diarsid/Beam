@@ -19,7 +19,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
 
@@ -68,6 +67,11 @@ class ProgramsCatalogReal
             return emptyList();
         }
     }
+
+    @Override
+    public Optional<Program> toProgram(String programFile) {
+        return Optional.of(this.fileNameToProgram(programFile));
+    }
     
     private Optional<Program> toProgram(FileSearchResult result) {
         if ( result.isOk() && result.success().hasSingleFoundFile() ) {
@@ -79,7 +83,6 @@ class ProgramsCatalogReal
 
     @Override
     public Optional<Program> findProgramByDirectName(String name) {
-        debug("[PROR CATALOG] [by direct] " + name);
         FileSearchResult result = super.findFileInCatalogByStrictName(name);
         Optional<Program> program = Optional.empty();
         if ( result.isOk() ) {
@@ -102,7 +105,6 @@ class ProgramsCatalogReal
         } else {
             program = Optional.empty();
         }
-        debug("[PROR CATALOG] [by direct] found : " + program.isPresent());
         return program;
     }
     
@@ -120,31 +122,31 @@ class ProgramsCatalogReal
 
     @Override
     public List<Program> findProgramsByStrictName(String strictName) {
-        debug("[PROR CATALOG] [by strict] " + strictName);
         List<Program> programs = this.toPrograms(super.findFileInCatalogByStrictName(strictName));
-        debug("[PROR CATALOG] [by strict] " + programs);
         return programs;
     }
 
     @Override
     public List<Program> findProgramsByWholePattern(String pattern) {
-        debug("[PROR CATALOG] [by whole pattern] " + pattern);
         List<Program> programs = this.toPrograms(super.findFileInCatalogByPattern(pattern));
-        debug("[PROR CATALOG] [by whole pattern] " + programs);
         return programs;
     }
 
     @Override
     public List<Program> findProgramsByPatternSimilarity(String pattern) {
-        debug("[PROR CATALOG] [by similarity] " + pattern);
-        List<Program> programs = this.toPrograms(super.findFileInCatalogByPatternSimilarity(pattern));
-        debug("[PROR CATALOG] [by similarity] " + programs);
+        List<Program> programs = this.toPrograms(
+                super.findFileInCatalogByPatternSimilarity(pattern));
         return programs;
     }
 
     @Override
     public Path path() {
         return this.catalogPath;
+    }
+
+    @Override
+    public String name() {
+        return "Programs catalog";
     }
 
     @Override

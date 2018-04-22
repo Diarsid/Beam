@@ -5,7 +5,8 @@
  */
 package diarsid.beam.core.modules.executor;
 
-import diarsid.beam.core.base.os.treewalking.advanced.FileTreeWalker;
+import diarsid.beam.core.base.os.treewalking.advanced.Walker;
+import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -13,6 +14,7 @@ import diarsid.beam.core.modules.PluginsLoaderModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static diarsid.beam.core.base.os.treewalking.advanced.Walker.newWalker;
 import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getFolderTypeDetector;
 import static diarsid.beam.core.base.os.treewalking.listing.FileLister.getLister;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
@@ -24,28 +26,33 @@ import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcher
 class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     private final IoModule ioModule;
+    private final DataModule dataModule;
     private final DomainKeeperModule domainKeeperModule;
     private final PluginsLoaderModule pluginsLoaderModule;
 
     public ExecutorModuleWorkerBuilder(
             IoModule ioModule, 
+            DataModule dataModule,
             DomainKeeperModule domainKeeperModule, 
             PluginsLoaderModule pluginsLoaderModule) {
         this.ioModule = ioModule;
+        this.dataModule = dataModule;
         this.domainKeeperModule = domainKeeperModule;
         this.pluginsLoaderModule = pluginsLoaderModule;
     }
 
     @Override
     public ExecutorModule buildModule() {
-        FileTreeWalker fileWalker = new FileTreeWalker(
-                this.ioModule.getInnerIoEngine(), getFolderTypeDetector());
+        Walker walker = newWalker(
+                this.ioModule.getInnerIoEngine(), 
+                this.dataModule.patternChoices(), 
+                getFolderTypeDetector());
         return new ExecutorModuleWorker(
                 this.ioModule.getInnerIoEngine(), 
                 this.domainKeeperModule, 
                 this.pluginsLoaderModule.plugins(),
                 searcherWithDepthsOf(5), 
-                fileWalker,
+                walker,
                 getLister());
     }
 }

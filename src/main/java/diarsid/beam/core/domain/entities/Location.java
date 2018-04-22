@@ -26,8 +26,8 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.openWithDesktop;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
+import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
 
 /**
  *
@@ -95,7 +95,7 @@ public class Location
     }
     
     public boolean has(String target) {
-        return Files.exists(combinePathFrom(this.path, target));
+        return Files.exists(joinPathFrom(this.path, target));
     }
     
     public void openAsync(

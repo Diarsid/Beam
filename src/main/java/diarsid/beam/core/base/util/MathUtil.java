@@ -6,10 +6,11 @@
 package diarsid.beam.core.base.util;
 
 import java.util.Collection;
+import java.util.List;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.pow;
-import static java.lang.String.format;
+import static java.lang.Math.round;
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -48,13 +49,9 @@ public class MathUtil {
     }
     
     public static void main(String... args) {
-        for (int i = 1; i < 6; i++) {
-            System.out.println("i: " + i);
-            System.out.println("   pow   i^pow");
-            for (double pow = 1.0; pow > 0; pow = pow - 0.1) {
-                System.out.println(format("   %.1f  %.2f", pow, pow(i, pow)));
-            }
-        }
+        List<Integer> poss = asList(4, 5, 5, 5);
+        System.out.println(meanSmartIngoringZeros(poss));
+        
     }
     
     public static double absDiff(double one, double two) {
@@ -111,12 +108,12 @@ public class MathUtil {
         
         int size = ints.size();
         if ( zeros == 0 ) {
-            return sum / size;
+            return round( (float) sum / size);
         } else {
             if ( zeros > size / 2 ) {
                 return 0;
             } else {
-                return sum / (size - zeros);
+                return round( (float) sum / (size - zeros) );
             }
         }        
     }

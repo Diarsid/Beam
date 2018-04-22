@@ -507,6 +507,24 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
+    
+    
+    @Test
+    public void test_jobCurrentCase_jbo_cruent() {
+        pattern = "jbo/cruent";
+        
+        variants = asList(
+//                "Job/Current",
+                "Current_Job/Hiring/CVs"
+        );
+        
+        expected = asList(
+                "Job/Current",
+                "Current_Job/Hiring/CVs");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
     @Test
     public void test_toolsCase_tols() {
         pattern = "tols";

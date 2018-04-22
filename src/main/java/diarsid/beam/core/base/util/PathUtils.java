@@ -67,22 +67,22 @@ public class PathUtils {
         }
     }
     
-    public static Path combinePathFrom(String... fragments) {
+    public static Path joinPathFrom(String... fragments) {
         return Paths.get(normalizeSeparators(join("/", fragments)));
     }
     
-    public static String combineAsPath(String one, String two) {        
+    public static String joinToPath(String one, String two) {        
         return normalizeSeparators(one + "/" + two);
     }
     
-    public static String combineAsPathFrom(String... fragments) {
+    public static String joinToPathFrom(String... fragments) {
         if ( fragments.length == 0 ) {
             return "";
         }
         return normalizeSeparators(join("/", fragments));
     }
     
-    public static String combineAsPathFrom(List<String> fragments) {
+    public static String joinToPathFrom(List<String> fragments) {
         if ( fragments.isEmpty() ) {
             return "";
         }

@@ -16,6 +16,8 @@ import diarsid.beam.core.domain.entities.Program;
  */
 public interface ProgramsCatalog extends Catalog {
     
+    Optional<Program> toProgram(String programFile);
+    
     Optional<Program> findProgramByDirectName(String name);
     
     List<Program> findProgramsByPatternSimilarity(String pattern);

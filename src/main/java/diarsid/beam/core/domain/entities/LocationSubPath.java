@@ -13,9 +13,9 @@ import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
-import static diarsid.beam.core.base.util.PathUtils.combinePathFrom;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
+import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -67,28 +67,28 @@ public class LocationSubPath implements ConvertableToVariant {
     }
     
     public String fullName() {
-        return combineAsPathFrom(this.locationName, this.subPath);
+        return joinToPathFrom(this.locationName, this.subPath);
     }
     
     public String fullPath() {
-        return combineAsPathFrom(this.locationPath, this.subPath);
+        return joinToPathFrom(this.locationPath, this.subPath);
     }
     
     public Path realPath() {
-        return combinePathFrom(this.locationPath, this.subPath);
+        return joinPathFrom(this.locationPath, this.subPath);
     }
     
     public boolean pointsToDirectory() {
-        return pathIsDirectory(combinePathFrom(this.locationPath, this.subPath));
+        return pathIsDirectory(joinPathFrom(this.locationPath, this.subPath));
     }
 
     public boolean notPointsToDirectory() {
-        return ! pathIsDirectory(combinePathFrom(this.locationPath, this.subPath));
+        return ! pathIsDirectory(joinPathFrom(this.locationPath, this.subPath));
     }    
     
     @Override
     public Variant toVariant(int variantIndex) {
-        String combinedPath = combineAsPathFrom(this.locationName, this.subPath);
+        String combinedPath = joinToPathFrom(this.locationName, this.subPath);
         return new Variant(
                 combinedPath, 
                 this.variantDisplayName(), 

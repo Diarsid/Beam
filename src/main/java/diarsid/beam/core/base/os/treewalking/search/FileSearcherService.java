@@ -26,7 +26,6 @@ import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResu
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.successWithFile;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.successWithFiles;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.PathUtils.combineAsPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
@@ -34,6 +33,8 @@ import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
 import static diarsid.beam.core.base.util.PathUtils.trimSeparators;
 import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
 import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 
 /**
  *
@@ -128,7 +129,7 @@ class FileSearcherService implements FileSearcher {
                     foundItems = this.filesCollector.collectByStrictName(dir, strictTarget, mode);
                     foundItems = foundItems
                             .stream()
-                            .map(foundItem -> combineAsPathFrom(subpathTarget.first(), foundItem))
+                            .map(foundItem -> joinToPathFrom(subpathTarget.first(), foundItem))
                             .collect(toList());
                 } else {
                     foundItems = this.filesCollector.collectByStrictName(dir, strictTarget, mode);

@@ -7,6 +7,7 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
@@ -20,7 +21,10 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.domain.entities.Program;
+
+import static java.lang.String.format;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
@@ -32,6 +36,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.entiti
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_ONLY;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -42,16 +47,20 @@ import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 class ProgramsKeeperWorker implements ProgramsKeeper {
     
     private final InnerIoEngine ioEngine;
+    private final Walker walker;
     private final ProgramsCatalog programsCatalog;
     private final KeeperDialogHelper helper;
     private final Set<CommandType> operatingCommandTypes;
     private final Help chooseOneProgramHelp;
+    private boolean useWalker;
     
     ProgramsKeeperWorker(
             InnerIoEngine ioEngine, 
+            Walker walker,
             ProgramsCatalog programsCatalog, 
             KeeperDialogHelper keeperDialogHelper) {
         this.ioEngine = ioEngine;
+        this.walker = walker;
         this.programsCatalog = programsCatalog;
         this.helper = keeperDialogHelper;
         this.operatingCommandTypes = toSet(RUN_PROGRAM);
@@ -62,6 +71,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
                 "   - Program name part to choose it",
                 "   - n/no to see more variants, if any",
                 "   - dot to break");
+        this.useWalker = true;
     }
 
     @Override
@@ -97,6 +107,49 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
 
     @Override
     public ValueFlow<Program> findByNamePattern(Initiator initiator, String pattern) {
+        if ( this.useWalker ) {
+            return this.findProgramInCatalogUsingWalker(initiator, pattern);
+        } else {
+            return this.findProgramInCatalogDirectly(initiator, pattern);
+        }
+    }
+    
+    private ValueFlow<Program> findProgramInCatalogUsingWalker(
+            Initiator initiator, String pattern) {
+        ValueFlow<String> fileFlow = this.walker
+                .lookingFor(FILES_ONLY)
+                .walkToFind(pattern)
+                .in(this.programsCatalog)
+                .by(initiator)
+                .andGetResult();
+        
+        switch ( fileFlow.result() ) {
+            case COMPLETE : {
+                if ( fileFlow.asComplete().hasValue() ) {
+                    Optional<Program> program = this.programsCatalog.toProgram(
+                            fileFlow.asComplete().getOrThrow());
+                    return valueFlowCompletedWith(program);
+                } else if ( fileFlow.asComplete().hasMessage() ) {
+                    return valueFlowCompletedEmpty(fileFlow.asComplete().message());
+                } else {
+                    return valueFlowCompletedEmpty(format(
+                            "'%s' not found in %s", pattern, this.programsCatalog.name()));
+                }
+            }    
+            case FAIL : {
+                return valueFlowFail(fileFlow.asFail().reason());
+            }    
+            case STOP : {
+                return valueFlowStopped();
+            }    
+            default : {
+                return valueFlowFail("Unknown flow result.");
+            }
+        }
+    }
+    
+    private ValueFlow<Program> findProgramInCatalogDirectly(
+            Initiator initiator, String pattern) {
         List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
         if ( nonEmpty(foundPrograms) ) {
             ValueFlow<Program> flow = this.chooseOneProgram(initiator, pattern, foundPrograms);

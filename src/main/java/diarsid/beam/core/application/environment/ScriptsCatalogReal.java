@@ -142,4 +142,9 @@ class ScriptsCatalogReal implements ScriptsCatalog {
     public Path path() {
         return this.catalogPath;
     }
+    
+    @Override
+    public String name() {
+        return "Scripts catalog";
+    }
 }

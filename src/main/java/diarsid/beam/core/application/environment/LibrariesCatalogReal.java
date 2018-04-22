@@ -65,4 +65,9 @@ class LibrariesCatalogReal
     public Path path() {
         return this.librariesPath;
     }
+    
+    @Override
+    public String name() {
+        return "Libraries catalog";
+    }
 }

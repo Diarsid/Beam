@@ -89,7 +89,7 @@ public class Flows {
             }
 
             @Override
-            public ValueFlow map(Function mapFunction) {
+            public ValueFlow toFlowWith(Function mapFunction) {
                 return this;
             }
         };
@@ -136,7 +136,7 @@ public class Flows {
             }
 
             @Override
-            public <R> ValueFlow<R> map(Function<Object, R> mapFunction) {
+            public <R> ValueFlow<R> toFlowWith(Function<Object, R> mapFunction) {
                 return (ValueFlow<R>) this;
             }
         };
@@ -222,7 +222,7 @@ public class Flows {
             }
 
             @Override
-            public <R> ValueFlow<R> map(Function<T, R> mapFunction) {
+            public <R> ValueFlow<R> toFlowWith(Function<T, R> mapFunction) {
                 return valueFlowCompletedWith(mapFunction.apply(t));
             }
         };
@@ -270,7 +270,7 @@ public class Flows {
             }
 
             @Override
-            public <R> ValueFlow<R> map(Function<T, R> mapFunction) {
+            public <R> ValueFlow<R> toFlowWith(Function<T, R> mapFunction) {
                 return (ValueFlow<R>) this;
             }
 
@@ -361,7 +361,7 @@ public class Flows {
             }
 
             @Override
-            public ValueFlow map(Function mapFunction) {
+            public ValueFlow toFlowWith(Function mapFunction) {
                 return this;
             }
         };
