@@ -514,7 +514,7 @@ public class AnalyzeTest {
         pattern = "jbo/cruent";
         
         variants = asList(
-//                "Job/Current",
+                "Job/Current",
                 "Current_Job/Hiring/CVs"
         );
         

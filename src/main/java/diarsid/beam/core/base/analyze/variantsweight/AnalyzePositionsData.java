@@ -485,9 +485,12 @@ class AnalyzePositionsData {
 
     void newClusterStarts() {
         this.currentClusterFirstPosition = this.currentPosition;
+        int distanceBetweenTwoClusters = 0;
         if ( this.clustersQty > 0 ) {            
-            this.distanceBetweenClusters = this.distanceBetweenClusters +
+            distanceBetweenTwoClusters = 
                     this.currentClusterFirstPosition - this.previousClusterLastPosition - 1;
+            this.distanceBetweenClusters = 
+                    this.distanceBetweenClusters + distanceBetweenTwoClusters;
         }
         this.clustered++;
         this.clustersQty++;
@@ -513,7 +516,7 @@ class AnalyzePositionsData {
 
         if ( this.lastClusterEndsWithSeparator ) {
             this.separatorsBetweenClusters++;
-            if ( this.clusterStartsWithSeparator && this.distanceBetweenClusters > 1 ) {
+            if ( this.clusterStartsWithSeparator && distanceBetweenTwoClusters > 1 ) {
                 this.separatorsBetweenClusters++;
             }
         } 
@@ -651,7 +654,15 @@ class AnalyzePositionsData {
 //        if ( orderDiff != 0 ) {
             this.currentClusterOrderDiffs.add(orderDiff);
 //        }
-        logAnalyze(POSITIONS_CLUSTERS, "    %spos. %s S-Order: %s U-Order: %s orderDiff: %s", clusterMark, this.currentPosition, (this.currentPositionIndex - this.missed), currentPositionUnsortedOrder, orderDiff);
+        logAnalyze(
+                POSITIONS_CLUSTERS, 
+                "    %spos. %s (char '%s') S-Order: %s U-Order: %s orderDiff: %s", 
+                clusterMark, 
+                this.currentPosition, 
+                this.data.patternChars[currentPositionUnsortedOrder],
+                (this.currentPositionIndex - this.missed), 
+                currentPositionUnsortedOrder, 
+                orderDiff);
     }
     
     private int consistencyRewardDependingOnCurrentClusterLength() {
