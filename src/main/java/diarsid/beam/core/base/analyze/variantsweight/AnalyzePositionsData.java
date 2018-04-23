@@ -256,6 +256,7 @@ class AnalyzePositionsData {
         findPositionsStep = STEP_1;
         logAnalyze(POSITIONS_SEARCH, "  %s", direction);
         logAnalyze(POSITIONS_SEARCH, "    %s", findPositionsStep);
+        
         if ( direction.equals(FORWARD) ) {
             unclusteredPatternCharIndexes = forwardUnclusteredIndexes;
             for (int currentPatternCharIndex = 0; currentPatternCharIndex < data.patternChars.length; currentPatternCharIndex++) {                
@@ -263,44 +264,42 @@ class AnalyzePositionsData {
             } 
         } else {
             unclusteredPatternCharIndexes = reverseUnclusteredIndexes;
-            for (int currentPatternCharIndex = this.data.patternChars.length - 1; currentPatternCharIndex > -1 ; currentPatternCharIndex--) {
+            for (int currentPatternCharIndex = data.patternChars.length - 1; currentPatternCharIndex > -1 ; currentPatternCharIndex--) {
                 processCurrentPatternCharOf(currentPatternCharIndex);
             }
         }
+        swapUnclusteredPatternCharIndexes();
         
+        findPositionsStep = STEP_2;
+        processAccumulatedUnclusteredPatternCharIndexes();           
+        swapUnclusteredPatternCharIndexes();
+        
+        processAccumulatedUnclusteredPatternCharIndexes();        
+        swapUnclusteredPatternCharIndexes();
+        
+        findPositionsStep = STEP_3;
+        processAccumulatedUnclusteredPatternCharIndexes();      
+        swapUnclusteredPatternCharIndexes();
+        
+        clearState();
+    }
+
+    private void processAccumulatedUnclusteredPatternCharIndexes() {
+        if ( nonEmpty(unclusteredPatternCharIndexes) ) {
+            logAnalyze(POSITIONS_SEARCH, "    %s", findPositionsStep);
+            for (Integer currentPatternCharIndex : unclusteredPatternCharIndexes) {
+                processCurrentPatternCharOf(currentPatternCharIndex);
+            }
+        }
+    }
+
+    private void swapUnclusteredPatternCharIndexes() {
+        unclusteredPatternCharIndexes.clear();
         unclusteredPatternCharIndexes.addAll(localUnclusteredPatternCharIndexes);
-        localUnclusteredPatternCharIndexes.clear(); 
-        // define if first step was good enough
-        
-        if ( nonEmpty(unclusteredPatternCharIndexes) ) {
-            findPositionsStep = STEP_2;
-            logAnalyze(POSITIONS_SEARCH, "    %s", findPositionsStep);
-            for (Integer currentPatternCharIndex : unclusteredPatternCharIndexes) {
-                processCurrentPatternCharOf(currentPatternCharIndex);
-            }
-        }           
-        this.unclusteredPatternCharIndexes.clear();
-        this.unclusteredPatternCharIndexes.addAll(localUnclusteredPatternCharIndexes);
-        this.localUnclusteredPatternCharIndexes.clear();
-//        if ( firstStepTooBad ) {
-//            runSecondStepOneMoreTime
-//            define if secont step was good enough ???
-//        }
-//        if ( secondStepWasTooBad ) {
-//            runSecondStepOneMoreTime
-//        }
-        
-        if ( nonEmpty(unclusteredPatternCharIndexes) ) {
-            findPositionsStep = STEP_3;
-            logAnalyze(POSITIONS_SEARCH, "    %s", findPositionsStep);
-            for (Integer currentPatternCharIndex : unclusteredPatternCharIndexes) {
-                processCurrentPatternCharOf(currentPatternCharIndex);
-            }
-        }      
-        this.unclusteredPatternCharIndexes.clear();
-        this.unclusteredPatternCharIndexes.addAll(this.localUnclusteredPatternCharIndexes);
-        this.localUnclusteredPatternCharIndexes.clear();
-        
+        localUnclusteredPatternCharIndexes.clear();
+    }
+
+    private void clearState() {
         this.filledPositions.clear();
         this.unclusteredPatternCharIndexes.clear();
         this.unclusteredPatternCharIndexes = null;

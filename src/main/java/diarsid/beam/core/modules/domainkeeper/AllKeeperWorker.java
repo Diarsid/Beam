@@ -19,8 +19,6 @@ import diarsid.beam.core.modules.DataModule;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.nameIsSatisfiable;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
@@ -29,6 +27,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.TextUtil.shorterStringsFirstNotCountingSpaces;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 class AllKeeperWorker implements AllKeeper {
@@ -117,7 +117,7 @@ class AllKeeperWorker implements AllKeeper {
         }
         return stringifiedResultsToMessage("Commands:", commands
                 .stream()
-                .filter(command -> nameIsSatisfiable(argument, command.bestArgument()))
+                .filter(command -> isNameSatisfiable(argument, command.bestArgument()))
                 .map(command -> command.toMessageString())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -128,7 +128,7 @@ class AllKeeperWorker implements AllKeeper {
                 .locations()
                 .getLocationsByNamePattern(initiator, argument)
                 .stream()
-                .filter(location -> entityIsSatisfiable(argument, location))
+                .filter(location -> isEntitySatisfiable(argument, location))
                 .map(location -> location.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -139,7 +139,7 @@ class AllKeeperWorker implements AllKeeper {
                 .batches()
                 .getBatchNamesByNamePattern(initiator, argument)
                 .stream()
-                .filter(batchName -> nameIsSatisfiable(argument, batchName))
+                .filter(batchName -> isNameSatisfiable(argument, batchName))
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
@@ -149,7 +149,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webPages()
                 .findByPattern(initiator, argument)
                 .stream()
-                .filter(page -> entityIsSatisfiable(argument, page))
+                .filter(page -> isEntitySatisfiable(argument, page))
                 .map(page -> page.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -160,7 +160,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webDirectories()
                 .findDirectoriesByPatternInAnyPlace(initiator, argument)
                 .stream()
-                .filter(webDir -> nameIsSatisfiable(argument, webDir.name()))
+                .filter(webDir -> isNameSatisfiable(argument, webDir.name()))
                 .map(webDir -> format("%s (%s)", webDir.name(), lower(webDir.place().name())))
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -170,7 +170,7 @@ class AllKeeperWorker implements AllKeeper {
         return stringifiedResultsToMessage("Programs:", this.programs
                 .getProgramsByPattern(initiator, argument)
                 .stream()
-                .filter(program -> entityIsSatisfiable(argument, program))
+                .filter(program -> isEntitySatisfiable(argument, program))
                 .map(program -> program.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));

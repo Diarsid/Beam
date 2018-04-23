@@ -20,6 +20,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -55,10 +56,24 @@ public class CollectionsUtils {
     }
     
     public static <T> T getOne(Collection<T> c) {
-        return c.stream()
-                .findFirst()
-                .orElseThrow(() -> new NullPointerException(
-                        "Passed collection is implied to contain exactly one element."));
+        if ( c.size() != 1 ) {
+            throw new IllegalArgumentException(
+                    "Passed collection is implied to contain exactly one element.");
+        } 
+        
+        if ( c instanceof List ) {
+            T t = ( (List<T>) c ).get(0);
+            if ( isNull(t) ) {
+                throw new IllegalArgumentException(
+                        "Passed collection is implied to contain exactly one element on index 0.");
+            } 
+            return t;
+        } else {
+            return c.stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Passed collection is implied to contain exactly one element."));
+        }
     }
     
     public static <T> T sortAndGetFirstFrom(List<T> list, Comparator<T> comparatorT) {
@@ -80,8 +95,7 @@ public class CollectionsUtils {
     
     public static <T> List<T> toUnmodifiableList(List<T> list, List<T>... lists) {
         List<T> joined = new ArrayList<>(list);
-        stream(lists)
-                .forEach(streamedList -> joined.addAll(streamedList));
+        stream(lists).forEach(streamedList -> joined.addAll(streamedList));
         return unmodifiableList(joined);
     }
 

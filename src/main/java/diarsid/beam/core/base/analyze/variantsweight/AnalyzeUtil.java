@@ -8,7 +8,6 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.util.List;
 
 import static java.lang.Integer.MIN_VALUE;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
@@ -27,36 +26,6 @@ class AnalyzeUtil {
     
     private static final double ADJUSTED_WEIGHT_TRESHOLD = 30;
     private static final int UNINITIALIZED = MIN_VALUE;
-    
-    public static void main(String[] args) {
-        List<List<Integer>> ints = asList(
-                asList(2, -1, -1),
-                asList(3, -2, 1, -3),
-                asList(3, -2, 2, -3),
-                asList(1, -1),
-                asList(-1, -2),
-                asList(-1, -1),
-                asList(3, -1),
-                asList(-1, -2),
-                asList(-2, -1),
-                asList(2, -1),
-                asList(-2, -4),
-                asList(1, -1, -5),
-                asList(-1, -1, +2),
-                asList(1, 1, 1, 1, -4),
-                asList(1, -1),
-                asList(-1, 1, 1),
-                asList(-1, -1, -1, 3, -2),
-                asList(-1, -1, -1, -1, -2),
-                asList(3, 4, 2),
-                asList(3, 1, -2, -2),
-                asList(6, 4, 5, 5)
-        );
-        
-        for (List<Integer> list : ints) {
-            calculateCluster(list, list.size());
-        }
-    }
     
     static int inconsistencyOf(Cluster orderDiff, int clusterLength) {
         int percent = percentAsInt(orderDiff.ordersDiffCount(), clusterLength) / 10;

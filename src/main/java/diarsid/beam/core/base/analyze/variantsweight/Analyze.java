@@ -237,7 +237,7 @@ public class Analyze {
         }
     }
     
-    public static boolean nameIsSatisfiable(String pattern, String name) {
+    public static boolean isNameSatisfiable(String pattern, String name) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, name) ) {
             return isSimilar(name, pattern);
         } else {
@@ -245,7 +245,7 @@ public class Analyze {
         }        
     }
     
-    public static boolean variantIsSatisfiable(String pattern, Variant variant) {
+    public static boolean isVariantSatisfiable(String pattern, Variant variant) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, variant.text()) ) {
             return isSimilar(variant.text(), pattern);
         } else {
@@ -253,7 +253,7 @@ public class Analyze {
         }        
     }
     
-    public static boolean entityIsSatisfiable(String pattern, NamedEntity entity) {
+    public static boolean isEntitySatisfiable(String pattern, NamedEntity entity) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, entity.name()) ) {
             return isSimilar(entity.name(), pattern);
         } else {

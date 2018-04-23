@@ -21,7 +21,6 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -33,6 +32,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 /**
  *
@@ -77,7 +77,7 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
                 this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);        
         if ( hasOne(entities) ) {
             NamedEntity entity = getOne(entities);
-            if ( entityIsSatisfiable(pattern, entity) ) {
+            if ( isEntitySatisfiable(pattern, entity) ) {
                 return valueFlowCompletedWith(entity);
             } else {
                 return valueFlowCompletedEmpty();

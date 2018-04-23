@@ -22,7 +22,6 @@ import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.variantIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
@@ -34,6 +33,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isVariantSatisfiable;
 
 
 class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
@@ -106,7 +106,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
 
     private ValueFlow<LocationSubPath> askAboutSubPathIfSatisfiable(
             Initiator initiator, String pattern, LocationSubPath subPath) {
-        if ( variantIsSatisfiable(pattern, subPath.toSingleVariant()) ) {
+        if ( isVariantSatisfiable(pattern, subPath.toSingleVariant()) ) {
             return this.askAboutSubPath(initiator, subPath, pattern);
         } else {
             return valueFlowCompletedEmpty();

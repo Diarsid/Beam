@@ -48,7 +48,6 @@ import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -102,6 +101,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 public class WebPagesKeeperWorker 
@@ -282,7 +282,7 @@ public class WebPagesKeeperWorker
         List<WebPage> foundPages = this.daoPages.findByPattern(initiator, namePattern);
         if ( hasOne(foundPages) ) {
             WebPage page = getOne(foundPages);
-            if ( entityIsSatisfiable(namePattern, page) ) {
+            if ( isEntitySatisfiable(namePattern, page) ) {
                 return valueFlowCompletedWith(page);
             } else {
                 return valueFlowCompletedEmpty();

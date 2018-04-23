@@ -26,7 +26,6 @@ import diarsid.beam.core.domain.entities.Program;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -42,6 +41,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 class ProgramsKeeperWorker implements ProgramsKeeper {
@@ -173,7 +173,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
             Program program = getOne(programs);
-            if ( entityIsSatisfiable(pattern, program) ) {
+            if ( isEntitySatisfiable(pattern, program) ) {
                 return valueFlowCompletedWith(program);
             } else {
                 return valueFlowCompletedEmpty();

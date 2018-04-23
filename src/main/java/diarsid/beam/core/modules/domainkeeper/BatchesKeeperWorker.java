@@ -35,7 +35,6 @@ import diarsid.beam.core.modules.data.DaoBatches;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.nameIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -61,6 +60,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 
 class BatchesKeeperWorker implements BatchesKeeper {
     
@@ -232,7 +232,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                 this.dao.getBatchNamesByNamePattern(initiator, batchNamePattern);
         if ( hasOne(foundBatchNames) ) {
             String batchName = getOne(foundBatchNames);
-            if ( nameIsSatisfiable(batchNamePattern, batchName) ) {
+            if ( isNameSatisfiable(batchNamePattern, batchName) ) {
                 return this.findByExactName(initiator, batchName); 
             } else {
                 return valueFlowCompletedEmpty();

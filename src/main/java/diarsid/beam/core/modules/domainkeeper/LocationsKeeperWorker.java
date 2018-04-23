@@ -33,7 +33,6 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.entityIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -63,6 +62,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 
@@ -208,7 +208,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 initiator, namePattern);
         if ( hasOne(locations) ) {
             Location location = getOne(locations);
-            if ( entityIsSatisfiable(namePattern, location) ) {
+            if ( isEntitySatisfiable(namePattern, location) ) {
                 return valueFlowCompletedWith(location);
             } else {
                 return valueFlowCompletedEmpty();

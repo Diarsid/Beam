@@ -30,7 +30,6 @@ import diarsid.beam.core.modules.data.DaoPatternChoices;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.nameIsSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -54,6 +53,7 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.MutableString.mutableString;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 
 /**
  *
@@ -582,7 +582,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
                 
         if ( hasOne(foundCommands) ) {
-            if ( ! nameIsSatisfiable(original, getOne(foundCommands).extendedArgument() ) ) {
+            if ( ! isNameSatisfiable(original, getOne(foundCommands).extendedArgument() ) ) {
                 return valueFlowCompletedEmpty();
             }
             Choice choice = this.ioEngine.ask(

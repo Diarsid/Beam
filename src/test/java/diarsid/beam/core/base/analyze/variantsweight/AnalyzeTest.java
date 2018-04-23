@@ -293,6 +293,20 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_ambientCase_aimbent() {
+        pattern = "aimbent";
+        
+        variants = asList(
+                "The_Hobbit_Calm_Ambient_Mix_by_Syneptic_Episode_II.mp3"
+        );
+        
+        expected = asList(
+                "The_Hobbit_Calm_Ambient_Mix_by_Syneptic_Episode_II.mp3");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_javaHomeCase_homjav() {
         pattern = "homjav";
         
