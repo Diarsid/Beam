@@ -37,18 +37,20 @@ public class Cache<T extends CachedReusable> {
     private final Queue<T> queue;
     private final Supplier<T> tNewObjectSupplier;
     
-    Cache(Supplier<T> newTSupplier) {
+    private Cache(Supplier<T> newTSupplier) {
         this.queue = new ArrayDeque<>();
         this.tNewObjectSupplier = newTSupplier;
     }
     
     static <T extends CachedReusable> void createCache(Class<T> type, Supplier<T> tSupplier) {
-        Cache<T> existedCache = CACHES_BY_CACHED_CLASS.get(type);
-        if ( existedCache == null ) {
-            Cache<T> newTCache = new Cache<>(tSupplier);
-            CACHES_BY_CACHED_CLASS.put(type, newTCache);
-            log(Cache.class, format("Cache for %s created.", type.getCanonicalName()));
-        }        
+        synchronized ( CACHES_BY_CACHED_CLASS ) {
+            Cache<T> existedCache = CACHES_BY_CACHED_CLASS.get(type);
+            if ( existedCache == null ) {
+                Cache<T> newTCache = new Cache<>(tSupplier);
+                CACHES_BY_CACHED_CLASS.put(type, newTCache);
+                log(Cache.class, format("Cache for %s created.", type.getCanonicalName()));
+            }       
+        } 
     }
     
     public static <T extends CachedReusable> Optional<Cache<T>> cacheOf(Class<T> type) {
