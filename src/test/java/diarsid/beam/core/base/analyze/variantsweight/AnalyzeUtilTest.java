@@ -59,6 +59,26 @@ public class AnalyzeUtilTest {
     }
     
     @Test
+    public void test__0_0_m1_m1_2() {
+        process(0, 0, -1, -1, 2);
+        
+        assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
+        assertThat(cluster.hasOrdersDiff(), equalTo(false));
+        assertThat(cluster.ordersDiffMean(), equalTo(0));
+        assertThat(cluster.hasOrdersDiffShifts(), equalTo(true));
+    }
+    
+    @Test
+    public void test__m1_m1_2_0_0() {
+        process(-1, -1, 2, 0, 0);
+        
+        assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
+        assertThat(cluster.hasOrdersDiff(), equalTo(false));
+        assertThat(cluster.ordersDiffMean(), equalTo(0));
+        assertThat(cluster.hasOrdersDiffShifts(), equalTo(true));
+    }
+    
+    @Test
     public void test__2_m1_m1() {
         process(2, -1, -1);
         

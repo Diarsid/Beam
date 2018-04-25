@@ -46,67 +46,65 @@ class AnalyzeUtil {
         int current;
         int next;
         
+        int lastBeforeRepeat = UNINITIALIZED;
         int repeat = 0;
         int repeatQty = 0;
         int shifts = 0;
         boolean haveCompensation = false;
         boolean haveCompensationInCurrentStep = false;
         boolean previousIsRepeat = false;
-        int repeatCommonDelta;
-        int violatingOrder = 0;
-        boolean isLastPair = false;
-        boolean isFirstPair = true;
+        int repeatAbsDiffSum;
         
+        boolean isLastPair;
+        
+        // initial analize of first element
         int diffSum = absDiff(ints.get(0), mean);
-        int diffCount = 0;
+        int diffCount = 0;        
         if ( ints.get(0) != mean ) {
             diffCount++;
-        }
-        
-        if ( diffSum > 0 ) {
-            violatingOrder = diffSum;
-        }
+        }   
         
         for (int i = 0; i < limit; i++) {            
-            isLastPair = ( i == limit );
+            isLastPair = ( i + 1 == limit );
+            
             current = ints.get(i);
             next = ints.get(i + 1);
+            
             diffSum = diffSum + absDiff(next, mean);
             if ( next != mean ) {
                 diffCount++;
             }
             
-            if ( current == next ) { 
-                previousIsRepeat = true;
-                if ( isFirstPair ) {
-                    violatingOrder = 0;
-                }
+            if ( current == next && ! isLastPair ) { 
+                previousIsRepeat = true;                
+                
                 repeat = current;
                 if ( repeatQty == 0 ) {
                     repeatQty = repeatQty + 2;
                 } else {
                     repeatQty++;
                 }
-                if ( violatingOrder > 0 ) {
-                    repeatCommonDelta = absDiff(repeat * repeatQty, mean * repeatQty); 
-                    if ( violatingOrder == repeatCommonDelta ) {
-                        logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] compensation for (%s * %s)_vs_%s", repeat, repeatQty, ints.get(0));
-                        shifts = shifts + repeatQty;
-                        diffSum = diffSum - (repeatCommonDelta * 2);
-                        previousIsRepeat = false;
-                        repeat = 0;
-                        repeatQty = 0;
-                        violatingOrder = 0;
-                        haveCompensation = true;
-                    }
-                }                
+                
             } else {
+                
+                if ( current == next && isLastPair ) {
+                    previousIsRepeat = true;                
+                
+                    repeat = current;
+                    if ( repeatQty == 0 ) {
+                        repeatQty = repeatQty + 2;
+                    } else {
+                        repeatQty++;
+                    }
+                }
+                
                 if ( absDiff(current, next) == 2 ) {
                     if ( absDiff(current, mean) == 1 ) {
                         logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +1-1 compensation for %s_vs_%s", current, next);
                         haveCompensation = true;
                         haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 2;
+                        lastBeforeRepeat = UNINITIALIZED;
                     } else if ( absDiff(previous, next) == 4 && 
                                 absDiff(previous, current) == 2 && 
                                 absDiff(current, mean) == 0 ) {
@@ -114,30 +112,40 @@ class AnalyzeUtil {
                         haveCompensation = true;
                         haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 4;
+                        lastBeforeRepeat = UNINITIALIZED;
                     }                    
-                } 
-
-                if ( ! haveCompensationInCurrentStep ) {
-                    if ( violatingOrder == 0 ) {
-                        violatingOrder = absDiff(next, mean);
-                        if ( previousIsRepeat ) {
-                            repeatCommonDelta = absDiff(repeat * repeatQty, mean * repeatQty);
-                            if ( violatingOrder == repeatCommonDelta ) {
-                                logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] compensation for (%s * %s)_vs_%s", repeat, repeatQty, next);
-                                diffSum = diffSum - (repeatCommonDelta * 2);
-                                violatingOrder = 0;
+                }
+                
+                if ( previousIsRepeat ) {
+                    if ( ! haveCompensationInCurrentStep ) {
+                        
+                        repeatAbsDiffSum = absDiff(repeat * repeatQty, mean * repeatQty);
+                        
+                        if ( repeatAbsDiffSum > 0 ) {
+                            if ( lastBeforeRepeat != UNINITIALIZED && absDiff(lastBeforeRepeat, mean) == repeatAbsDiffSum ) {
+                                logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] compensation for %s_vs_(%s * %s)", lastBeforeRepeat, repeat, repeatQty);
+                                diffSum = diffSum - (repeatAbsDiffSum * 2);
                                 shifts = shifts + repeatQty;
                                 haveCompensation = true;
+                                lastBeforeRepeat = UNINITIALIZED;
+                            } else if ( absDiff(next, mean) == repeatAbsDiffSum ) {
+                                logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] compensation for (%s * %s)_vs_%s", repeat, repeatQty, next);
+                                diffSum = diffSum - (repeatAbsDiffSum * 2);
+                                shifts = shifts + repeatQty;
+                                haveCompensation = true;
+                                lastBeforeRepeat = UNINITIALIZED;
                             }
-                        }
-                    }
-                }
+                        }                        
+                    }    
+                } else {
+                    lastBeforeRepeat = current;
+                } 
+                
                 haveCompensationInCurrentStep = false;
                 previousIsRepeat = false;
                 repeat = 0;
                 repeatQty = 0;
             }
-            isFirstPair = false;
             previous = current;
         }
         
