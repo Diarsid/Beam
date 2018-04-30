@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.application.gui.javafx.console;
+package diarsid.beam.core.application.gui.javafx.contexmenu;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,9 +19,9 @@ import static java.lang.String.format;
  *
  * @author Diarsid
  */
-abstract class ConsoleContextMenuItem 
+public abstract class BeamContextMenuItem 
         extends MenuItem 
-        implements Comparable<ConsoleContextMenuItem> {
+        implements Comparable<BeamContextMenuItem> {
     
     private static final Set<Integer> USED_POSITIONS;
     
@@ -30,15 +30,12 @@ abstract class ConsoleContextMenuItem
     }
     
     private final int position;
-    private final ContextControlableConsole console;
-    private final ConsoleContextMenu contextMenu;
+    private final BeamContextMenu contextMenu;
 
-    ConsoleContextMenuItem(
-            ContextControlableConsole console, ConsoleContextMenu contextMenu, int position) {
+    protected BeamContextMenuItem(BeamContextMenu contextMenu, int position) {
         super();
         checkIfPositionIsFree(position);
         this.position = position;
-        this.console = console;
         this.contextMenu = contextMenu;
         super.getStyleClass().add("console-menu-item");
         super.setGraphic(this.createMenuItemGraphic());
@@ -71,11 +68,7 @@ abstract class ConsoleContextMenuItem
         this.contextMenu.remove(this);
     }
     
-    protected ContextControlableConsole console() {
-        return this.console;
-    }
-    
-    protected ConsoleContextMenu menu() {
+    protected BeamContextMenu menu() {
         return this.contextMenu;
     }
     
@@ -83,12 +76,12 @@ abstract class ConsoleContextMenuItem
         return this.position;
     }
     
-    abstract void onContextMenuShow();
+    protected abstract void onContextMenuShow();
             
-    abstract void onContextMenuHide(); 
+    protected abstract void onContextMenuHide(); 
 
     @Override
-    public int compareTo(ConsoleContextMenuItem other) {
+    public int compareTo(BeamContextMenuItem other) {
         if ( this.position < other.position) {
             return -1;
         } else if ( this.position > other.position ) {

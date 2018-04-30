@@ -5,12 +5,15 @@
  */
 package diarsid.beam.core.application.gui.javafx.console;
 
+import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -49,7 +52,7 @@ public class JavaFXConsolePlatformWindow
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
     private final ConsoleTextArea consoleTextArea;
-    private final ConsoleContextMenu contextMenu;
+    private final BeamContextMenu contextMenu;
             
     private Stage stage;
     private Pane bar;
@@ -73,14 +76,25 @@ public class JavaFXConsolePlatformWindow
         
         this.runnableLaunch = () -> {
             if ( this.ready ) {
-                this.show();
+                this.showAndThrowOnTop();
             } else {
                 this.init();
-                this.show();
+                this.showAndThrowOnTop();
             }
         };
         
-        this.contextMenu = new ConsoleContextMenu(this);
+        this.contextMenu = new BeamContextMenu(); 
+        MenuItem closeMenuItem = new MenuItem("close");        
+        closeMenuItem.getStyleClass().add("console-menu-item");
+        closeMenuItem.setGraphic(this.contextMenu.createStandardMenuItemGraphic());
+        closeMenuItem.setOnAction(event -> {
+            this.hide();
+        });
+        this.contextMenu.registerJavaFxItem(closeMenuItem);
+        this.contextMenu.registerBeamItems(
+                new ConsoleContextMenuItemForSnippet(this, this.contextMenu), 
+                new ConsoleContextMenuItemForClear(this, this.contextMenu),
+                new ConsoleContextMenuItemForDefaultSize(this, this.contextMenu));
         this.consoleTextArea = new ConsoleTextArea(this);
     }
     
@@ -92,11 +106,11 @@ public class JavaFXConsolePlatformWindow
         return this.consoleInputBuffer;
     }
     
-    public final void openOrOnTop() {
+    public final void touched() {
         if ( this.isShown.get() ) {
             this.throwOnTop();
         } else {
-            this.show();
+            this.showAndThrowOnTop();
         }
     }
     
@@ -123,9 +137,9 @@ public class JavaFXConsolePlatformWindow
         Platform.runLater(this.runnableLaunch);
     }
     
-    private void show() {
+    private void showAndThrowOnTop() {
         this.stage.show();
-        this.consoleTextArea.requestFocus();
+        this.throwOnTop();
     }
     
     private void init() {

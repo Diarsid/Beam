@@ -5,14 +5,16 @@
  */
 package diarsid.beam.core.application.gui.javafx.console;
 
+import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
+
 /**
  *
  * @author Diarsid
  */
-public class ConsoleContextMenuItemForDefaultSize extends ConsoleContextMenuItem {
+class ConsoleContextMenuItemForDefaultSize extends BeamConsoleContextMenuItem {
 
-    public ConsoleContextMenuItemForDefaultSize(
-            ContextControlableConsole console, ConsoleContextMenu contextMenu) {
+    ConsoleContextMenuItemForDefaultSize(
+            ContextControlableConsole console, BeamContextMenu contextMenu) {
         super(console, contextMenu, 2);
         super.setText("default size");
         
@@ -22,14 +24,14 @@ public class ConsoleContextMenuItemForDefaultSize extends ConsoleContextMenuItem
     }
 
     @Override
-    void onContextMenuShow() {
+    protected void onContextMenuShow() {
         if ( super.console().hasNonDefaultSize() ) {
             super.addItselfToMenu();
         }
     }
 
     @Override
-    void onContextMenuHide() {
+    protected void onContextMenuHide() {
         if ( super.isPresentInMenu() ) {
             super.removeItselfFromMenu();
         }

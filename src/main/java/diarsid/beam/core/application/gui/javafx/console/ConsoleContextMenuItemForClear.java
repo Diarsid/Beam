@@ -5,14 +5,16 @@
  */
 package diarsid.beam.core.application.gui.javafx.console;
 
+import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
+
 /**
  *
  * @author Diarsid
  */
-class ConsoleContextMenuItemForClear extends ConsoleContextMenuItem {
+class ConsoleContextMenuItemForClear extends BeamConsoleContextMenuItem {
 
-    public ConsoleContextMenuItemForClear(
-            ContextControlableConsole console, ConsoleContextMenu contextMenu) {
+    ConsoleContextMenuItemForClear(
+            ContextControlableConsole console, BeamContextMenu contextMenu) {
         super(console, contextMenu, 1);
         super.setText("clear");
         
@@ -22,7 +24,7 @@ class ConsoleContextMenuItemForClear extends ConsoleContextMenuItem {
     }
 
     @Override
-    void onContextMenuShow() {
+    protected void onContextMenuShow() {
         if ( super.console().isInDialog() ) {
             return;
         }
@@ -33,7 +35,7 @@ class ConsoleContextMenuItemForClear extends ConsoleContextMenuItem {
     }
 
     @Override
-    void onContextMenuHide() {
+    protected void onContextMenuHide() {
         if ( super.isPresentInMenu() ) {
             super.removeItselfFromMenu();
         }

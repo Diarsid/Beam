@@ -8,7 +8,9 @@ package diarsid.beam.core.application.gui.javafx;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -17,10 +19,15 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatformWindow;
+import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.application.gui.javafx.MouseClickNotDragDetector.clickNotDragDetectingOn;
+import static javafx.scene.input.ContextMenuEvent.CONTEXT_MENU_REQUESTED;
+
+import static diarsid.beam.core.Beam.beamRuntime;
+import static diarsid.beam.core.application.gui.javafx.MouseClickNotDragDetector.smartClickDetectionOn;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.JavaFXUtil.screenHeight;
 
 /**
@@ -31,6 +38,7 @@ class BeamControlWindow {
     
     private final WindowMover windowMover;
     private final GuiJavaFXResources resources;
+    private BeamContextMenu beamContextMenu;
     
     private Stage stage;
     private Pane outerPane;
@@ -47,6 +55,7 @@ class BeamControlWindow {
             this.createStage(beamHiddenRootWindow);            
             this.setSizeAndPosition();
             this.createContent();
+            this.createControlContextMenu();
             this.setScene();
             this.setStageMoveable();
             this.setLifecycleCallbacks();
@@ -67,21 +76,24 @@ class BeamControlWindow {
             // do nothing
         });
         
-        clickNotDragDetectingOn(this.outerPane)
+        smartClickDetectionOn(this.outerPane)
                 .withPressedDurationTreshold(150)
-                .setOnMouseClickedNotDragged((mouseEvent) -> {
+                .setOnMouseClickNotDrag((mouseEvent) -> {
                     this.dispatchByClickedButton(mouseEvent);
+                })
+                .setOnMouseDoubleClick((mouseEvent) -> {
+                    
                 });
     }
 
     private void dispatchByClickedButton(MouseEvent mouseEvent) {
         switch ( mouseEvent.getButton() ) {
             case PRIMARY : {
-                this.onLeftMouseClicked();
+                this.onLeftMouseClicked(mouseEvent);
                 break;
             }
             case SECONDARY : {
-                this.onRightMouseClicked();
+                this.onRightMouseClicked(mouseEvent);
                 break;
             }
             case MIDDLE :
@@ -92,15 +104,18 @@ class BeamControlWindow {
         }
     }
     
-    private void onLeftMouseClicked() {
+    private void onLeftMouseClicked(MouseEvent event) {
         if ( nonNull(this.consoleWindow) ) {
-            this.consoleWindow.openOrOnTop();
-        } else {
-            
+            if ( this.beamContextMenu.javaFxContextMenu().isShowing() ) {
+                this.beamContextMenu.javaFxContextMenu().hide();
+                event.consume();
+            } else {
+                this.consoleWindow.touched();
+            }
         }
     }
     
-    private void onRightMouseClicked() {
+    private void onRightMouseClicked(MouseEvent mouseEvent) {
         
     }
 
@@ -147,6 +162,33 @@ class BeamControlWindow {
         outerBox.getChildren().add(innerBox);
         
         this.outerPane = outerBox;
+    }
+    
+    private void createControlContextMenu() {
+        this.beamContextMenu = new BeamContextMenu();
+        
+        MenuItem menuItem = new MenuItem("exit");        
+        menuItem.getStyleClass().add("console-menu-item");
+        menuItem.setOnAction((event) -> {
+            asyncDoIndependently(
+                    "Async Beam termination Thread", 
+                    () -> {
+                        beamRuntime().exitBeamCoreNow();
+                    });
+        });
+        menuItem.setGraphic(this.beamContextMenu.createStandardMenuItemGraphic());
+        this.beamContextMenu.registerJavaFxItem(menuItem);
+        
+        ContextMenu javaFxContextMenu = this.beamContextMenu.javaFxContextMenu();
+        
+        this.outerPane.addEventHandler(CONTEXT_MENU_REQUESTED, (event) -> {
+            javaFxContextMenu.hide();
+            javaFxContextMenu.show(
+                    this.outerPane, 
+                    event.getScreenX(), 
+                    event.getScreenY());
+            event.consume();
+        });        
     }
 
     private void setScene() {

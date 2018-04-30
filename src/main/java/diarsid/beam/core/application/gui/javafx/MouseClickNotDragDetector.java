@@ -10,11 +10,15 @@ import java.util.function.Consumer;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 
+import diarsid.beam.core.base.util.Possible;
+
 import static java.lang.System.currentTimeMillis;
 
 import static javafx.scene.input.MouseEvent.MOUSE_DRAGGED;
 import static javafx.scene.input.MouseEvent.MOUSE_PRESSED;
 import static javafx.scene.input.MouseEvent.MOUSE_RELEASED;
+
+import static diarsid.beam.core.base.util.Possible.possible;
 
 /**
  *
@@ -22,7 +26,8 @@ import static javafx.scene.input.MouseEvent.MOUSE_RELEASED;
  */
 class MouseClickNotDragDetector {
     
-    private Consumer<MouseEvent> onClickedNotDragged;
+    private Possible<Consumer<MouseEvent>> onClickNotDrag;
+    private Possible<Consumer<MouseEvent>> onDoubleClick;
     private boolean wasDragged;
     private long timePressed;
     private long timeReleased;
@@ -43,14 +48,14 @@ class MouseClickNotDragDetector {
         
         node.addEventHandler(MOUSE_RELEASED, (mouseEvent) -> {
             this.timeReleased = currentTimeMillis();
-            this.fireEventIfWasClickedNotDragged(mouseEvent);
+            this.testOnClickConditionsAndPropagate(mouseEvent);
             this.clear();
         });
         
         this.pressedDurationTreshold = 200;
     }
     
-    static MouseClickNotDragDetector clickNotDragDetectingOn(Node node) {
+    static MouseClickNotDragDetector smartClickDetectionOn(Node node) {
         return new MouseClickNotDragDetector(node);
     }
     
@@ -59,9 +64,26 @@ class MouseClickNotDragDetector {
         return this;
     }
     
-    MouseClickNotDragDetector setOnMouseClickedNotDragged(Consumer<MouseEvent> onClickedNotDragged) {
-        this.onClickedNotDragged = onClickedNotDragged;
+    MouseClickNotDragDetector setOnMouseClickNotDrag(
+            Consumer<MouseEvent> onClickNotDrag) {
+        this.onClickNotDrag = possible(onClickNotDrag);
         return this;
+    }
+    
+    MouseClickNotDragDetector setOnMouseDoubleClick(
+            Consumer<MouseEvent> onDoubleClick) {
+        this.onDoubleClick = possible(onDoubleClick);
+        return this;
+    }
+    
+    private void testOnClickConditionsAndPropagate(MouseEvent mouseEvent) {
+        if ( this.wasClickedNotDragged() && this.onClickNotDrag.isPresent() ) {
+            this.onClickNotDrag.orThrow().accept(mouseEvent);
+        } else if ( this.wasDoubleClicked() && this.onDoubleClick.isPresent() ) {
+            this.onDoubleClick.orThrow().accept(mouseEvent);
+        } else {
+            mouseEvent.consume();
+        }
     }
     
     private void clear() {
@@ -70,14 +92,18 @@ class MouseClickNotDragDetector {
         this.timeReleased = 0;
     }
     
-    private void fireEventIfWasClickedNotDragged(MouseEvent mouseEvent) {
+    private boolean wasClickedNotDragged() {
         if ( this.wasDragged ) {
-            return;
+            return false;
         }
         if ( this.mousePressedDuration() > this.pressedDurationTreshold ) {
-            return;
+            return false;
         }
-        this.onClickedNotDragged.accept(mouseEvent);
+        return true;
+    }
+    
+    private boolean wasDoubleClicked() {
+        return false;
     }
     
     private long mousePressedDuration() {

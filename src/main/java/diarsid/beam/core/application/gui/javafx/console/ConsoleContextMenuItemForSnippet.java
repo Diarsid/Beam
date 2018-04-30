@@ -8,6 +8,7 @@ package diarsid.beam.core.application.gui.javafx.console;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 
+import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
 import diarsid.beam.core.base.control.io.base.console.snippet.ConsoleSnippetFinder;
 import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
 
@@ -15,14 +16,14 @@ import diarsid.beam.core.base.control.io.base.console.snippet.Snippet;
  *
  * @author Diarsid
  */
-class ConsoleContextMenuItemForSnippet extends ConsoleContextMenuItem {    
+class ConsoleContextMenuItemForSnippet extends BeamConsoleContextMenuItem {    
     
     private final ConsoleSnippetFinder snippetFinder;
     
     private Snippet snippet;
 
-    public ConsoleContextMenuItemForSnippet(
-            ContextControlableConsole console, ConsoleContextMenu contextMenu) {   
+    ConsoleContextMenuItemForSnippet(
+            ContextControlableConsole console, BeamContextMenu contextMenu) {   
         super(console, contextMenu, 0);
         
         this.snippetFinder = new ConsoleSnippetFinder();
@@ -40,7 +41,7 @@ class ConsoleContextMenuItemForSnippet extends ConsoleContextMenuItem {
     }
     
     @Override
-    void onContextMenuShow() {
+    protected void onContextMenuShow() {
         if ( super.console().isInDialog() ) {
             return;
         }
@@ -59,7 +60,7 @@ class ConsoleContextMenuItemForSnippet extends ConsoleContextMenuItem {
     }
     
     @Override
-    void onContextMenuHide() {
+    protected void onContextMenuHide() {
         if ( super.isPresentInMenu() ) {
             super.removeItselfFromMenu();
         }
