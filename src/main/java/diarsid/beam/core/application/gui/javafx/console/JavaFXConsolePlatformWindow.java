@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.application.gui.javafx.console;
 
-import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.application.Platform;
@@ -24,6 +22,7 @@ import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;
+import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.modules.DataModule;
@@ -39,7 +38,6 @@ import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN
  *
  * @author Diarsid
  */
-// TODO HIGH do not public
 public class JavaFXConsolePlatformWindow 
         extends ConsolePlatform 
         implements ContextControlableConsole {
