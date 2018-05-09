@@ -18,6 +18,7 @@ import com.drs.gem.injector.core.GemInjector;
 
 import static java.lang.Integer.MAX_VALUE;
 
+import static diarsid.beam.core.JavaFXRuntime.launchJavaFXRuntimeAndWait;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.util.Logs.log;
@@ -47,6 +48,7 @@ public class Beam {
         try {
             log(Beam.class, "start Beam.core");
             Configuration configuration = configuration();
+            launchJavaFXRuntimeAndWait();
             initApplication(configuration);
             stopModulesBeforeExit(configuration);
             log(Beam.class, "Beam.core started successfully");

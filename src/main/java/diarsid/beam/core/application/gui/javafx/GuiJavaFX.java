@@ -5,7 +5,6 @@ import java.awt.Robot;
 import java.util.List;
 
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
 
 import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.application.gui.Gui;
@@ -34,13 +33,6 @@ public class GuiJavaFX
                 OutputMessagesGui, 
                 OutputTasksGui, 
                 InteractionGui {
-    
-    // static JavaFX platform initialization.
-    // new JFXPanel creation is used for JavaFX platform init.
-    static {
-        new JFXPanel();
-        Platform.setImplicitExit(false);
-    }    
     
     private final BeamHiddenRoot beamHiddenRoot;
     private final BeamControlWindow beamControlWindow;

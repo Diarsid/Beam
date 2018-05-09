@@ -16,7 +16,8 @@ abstract class BeamConsoleContextMenuItem extends BeamContextMenuItem {
     
     private final ContextControlableConsole console;
 
-    BeamConsoleContextMenuItem(ContextControlableConsole console, BeamContextMenu contextMenu, int position) {
+    BeamConsoleContextMenuItem(
+            ContextControlableConsole console, BeamContextMenu contextMenu, int position) {
         super(contextMenu, position);
         this.console = console;
     }

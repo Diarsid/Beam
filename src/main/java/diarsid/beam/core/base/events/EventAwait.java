@@ -46,6 +46,16 @@ public class EventAwait {
         return Optional.ofNullable(supplierT.get());
     }
     
+    public void thenProceed() {
+        synchronized ( this.monitor ) {
+            try {
+                this.monitor.wait();
+            } catch (InterruptedException ingore) {
+                // nothing
+            }
+        }
+    }
+    
     void notifyAwaitedOnEvent() {
         synchronized ( this.monitor ) {
             this.monitor.notifyAll();
