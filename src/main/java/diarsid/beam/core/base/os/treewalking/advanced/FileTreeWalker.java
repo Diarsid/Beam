@@ -27,6 +27,7 @@ import diarsid.beam.core.modules.data.DaoPatternChoices;
 import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.findVariantEqualToPattern;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.unite;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -272,13 +273,24 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         if ( state.hasFirstVariantAcceptableWeightEstimate() ) {
             List<WeightedVariant> variantsFoundOnCurrentLevel = 
                     state.extractVariantsAcceptableOnCurrentLevel();
-            WeightedVariants weightedVariants = unite(variantsFoundOnCurrentLevel);
-                        
+            
             boolean ifGoDeeper = true;
+            
+            Optional<WeightedVariant> variantEqualToPattern = 
+                    findVariantEqualToPattern(variantsFoundOnCurrentLevel);
+            if ( variantEqualToPattern.isPresent() ) {
+                state.resultFlowCompletedWith(variantEqualToPattern.get().text());
+                state.variants().clear();
+                ifGoDeeper = false;
+                return ifGoDeeper;
+            }
+            
+            WeightedVariants weightedVariants = unite(variantsFoundOnCurrentLevel);
             
             Answer userAnswer;
             if ( this.isChoiceMadeForPatternWithBestFrom(weightedVariants) ) {
                 state.resultFlowCompletedWith(weightedVariants.best().text());
+                state.variants().clear();
                 ifGoDeeper = false;
             } else {
                 userAnswer = this.askUserAboutFoundVariants(state, weightedVariants);
@@ -292,6 +304,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
                     ifGoDeeper = true;
                 } else if ( userAnswer.isRejection() ) {
                     state.resultFlowStopped();
+                    state.variants().clear();
                     ifGoDeeper = false;
                 }
             }            

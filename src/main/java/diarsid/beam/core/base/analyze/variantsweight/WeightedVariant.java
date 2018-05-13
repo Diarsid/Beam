@@ -23,6 +23,8 @@ public class WeightedVariant
                 Comparable<Variant>, 
                 Serializable {
     
+    static final double EQUALITY_WEIGHT = -900;
+    
     private double weight;
 
     WeightedVariant(Variant parent, double weight) {

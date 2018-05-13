@@ -27,6 +27,7 @@ import static java.util.Collections.sort;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariant;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariantsList;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.GOOD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.MODERATE;
@@ -39,9 +40,12 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringToVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.os.treewalking.advanced.WalkUtil.addListedFilesTo;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.ALL;
+import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
@@ -284,9 +288,14 @@ class WalkState extends CachedReusable {
     }
     
     void weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants() {
-        List<WeightedVariant> currentLevelVariants = 
-                weightVariantsList(this.pattern, stringsToVariants(collectedOnCurrentLevel));
-        this.variants.addAll(currentLevelVariants);
+        if ( hasOne(collectedOnCurrentLevel) ) {
+            weightVariant(this.pattern, stringToVariant(getOne(collectedOnCurrentLevel)))
+                    .ifPresent(weightedVariant -> this.variants.add(weightedVariant));
+        } else {
+            List<WeightedVariant> currentLevelVariants = 
+                    weightVariantsList(this.pattern, stringsToVariants(collectedOnCurrentLevel));
+            this.variants.addAll(currentLevelVariants);
+        }        
     }
     
     void sortVariants() {
