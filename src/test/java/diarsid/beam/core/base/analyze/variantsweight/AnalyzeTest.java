@@ -27,6 +27,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVarian
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.objects.Cache.cacheOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.beam.core.base.util.Logs.warn;
 
 /**
  *
@@ -34,6 +35,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
  */
 public class AnalyzeTest {
     
+    private boolean expectedToFail;
     private String pattern;
     private List<String> variants;
     private List<String> expected;
@@ -57,6 +59,10 @@ public class AnalyzeTest {
     
     @Before
     public void setUp() {
+    }
+    
+    private void expectedToFail() {
+        this.expectedToFail = true;
     }
     
     @Test
@@ -302,6 +308,50 @@ public class AnalyzeTest {
         
         expected = asList(
                 "The_Hobbit_Calm_Ambient_Mix_by_Syneptic_Episode_II.mp3");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_hobbitBookCase_hboitbok() {
+        pattern = "hboitbok";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2"
+        );
+        
+        expected = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2");
+        
+        expectedToFail();
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_hobbitBookCase_bokhboit() {
+        pattern = "bokhboit";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2"
+        );
+        
+        expected = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2");
+        
+        expectedToFail();
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_hobbitBookCase_hobitbok() {
+        pattern = "hobitbok";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2"
+        );
+        
+        expected = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2");
         
         weightVariantsAndCheckMatching();
     }
@@ -725,6 +775,14 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
+    private void failThis(String failMessage) {
+        if ( this.expectedToFail ) {
+            warn(this.getClass(), failMessage);
+        } else {
+            fail(failMessage);
+        }
+    }
+    
     private void weightVariantsAndCheckMatching() {
         weightedVariants = weightVariants(pattern, stringsToVariants(variants));
         
@@ -733,14 +791,13 @@ public class AnalyzeTest {
         List<WeightedVariant> nextSimilarVariants;
         
         List<String> reports = new ArrayList();        
-        List<String> presentButNotExpected = new ArrayList<>();
-        reports.add("\n === Diff with expected === ");
+        List<String> presentButNotExpected = new ArrayList<>();        
         
         AtomicInteger counter = new AtomicInteger(0);
         int mismatches = 0;
         
         if ( expected.isEmpty() && weightedVariants.size() > 0 ) {
-            fail("No variants expected!");
+            failThis("No variants expected!");
         }
         
         while ( weightedVariants.next() && ( counter.get() < expected.size() ) ) {
@@ -783,6 +840,10 @@ public class AnalyzeTest {
             }           
         } 
         
+        if ( nonEmpty(reports) ) {
+            reports.add("\n === Diff with expected === ");
+        }
+        
         if ( weightedVariants.size() > expected.size() ) {
             int offset = expected.size();
             String presentButNotExpectedVariant;
@@ -815,13 +876,12 @@ public class AnalyzeTest {
                 reports.addAll(presentButNotExpected);
             }
             reports.add(0, collectVariantsToReport());
-            fail(reports.stream().collect(joining()));
+            failThis(reports.stream().collect(joining()));
         }
     }
     
     private String collectVariantsToReport() {
         List<String> variantsWithWeight = new ArrayList<>();
-        variantsWithWeight.add("\n === Analyze result === ");
         weightedVariants.resetTraversing();
 
         while ( weightedVariants.next() ) {            
@@ -835,6 +895,9 @@ public class AnalyzeTest {
                             variantsWithWeight.add("\n  - " + candidate.text() + " : " + candidate.weight());
                         });
             }
+        }
+        if ( nonEmpty(variantsWithWeight) ) {            
+            variantsWithWeight.add(0, "\n === Analyze result === ");
         }
         variantsWithWeight.add("");
         

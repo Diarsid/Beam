@@ -237,6 +237,12 @@ class H2DaoCommands
     @Override
     public List<InvocationCommand> searchInExtendedByPattern(
             Initiator initiator, String pattern) {
+        // TODO HIGH
+        if ( pattern.length() == 2 ) {
+            
+        } else {
+            // do current actions
+        }
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<InvocationCommand> found;

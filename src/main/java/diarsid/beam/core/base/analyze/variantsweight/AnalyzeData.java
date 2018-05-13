@@ -18,7 +18,6 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.UNINITIALIZED;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.arePositionsEquals;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.lengthImportanceRatio;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
@@ -29,6 +28,7 @@ import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
 
 /**
  *
@@ -57,7 +57,8 @@ class AnalyzeData extends CachedReusable {
     boolean calculatedAsUsualClusters;
     
     char[] patternChars;
-
+    String pattern;
+        
     private AnalyzeData() {
         super();
         this.forwardAnalyze = new AnalyzePositionsData(this, FORWARD);
@@ -67,6 +68,7 @@ class AnalyzeData extends CachedReusable {
     
     @Override
     public void clearForReuse() {
+        this.pattern = null;
         this.forwardAnalyze.clearPositionsAnalyze();
         this.reverseAnalyze.clearPositionsAnalyze();
         this.best = null;
@@ -255,11 +257,12 @@ class AnalyzeData extends CachedReusable {
     }
 
     void setPatternCharsAndPositions(String pattern) {
+        this.pattern = pattern;
         this.patternChars = pattern.toCharArray();
         this.forwardAnalyze.positions = new int[this.patternChars.length];
-        fill(this.forwardAnalyze.positions, UNINITIALIZED);
+        fill(this.forwardAnalyze.positions, POS_UNINITIALIZED);
         this.reverseAnalyze.positions = new int[this.patternChars.length];
-        fill(this.reverseAnalyze.positions, UNINITIALIZED);
+        fill(this.reverseAnalyze.positions, POS_UNINITIALIZED);
     }
     
     private static double patternLengthRatio(String pattern) {
