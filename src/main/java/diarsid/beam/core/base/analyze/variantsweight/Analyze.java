@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.domain.entities.NamedEntity;
@@ -51,10 +50,6 @@ public class Analyze {
         if ( logType.isEnabled() ) {
             System.out.println(format(format, args));
         }
-    }
-    
-    public static void main(String[] args) {        
-        doAll();
     }
     
     public static WeightedVariants weightStrings(String pattern, List<String> variants) {
@@ -145,75 +140,10 @@ public class Analyze {
     private static List<String> readListCase() {
         return asList("Books/list_to_read.txt", "Tech/CS/Algorithms");
     }
-
-    public static void doAll() {
-//        weightAnalyzeCase();
-
-        analyzeImportance();
-    }
-
-    private static void analyzeImportance() {
-        int clustersLimit = 3;
-        int clusteredLimit = 6;
-        int nonClusteredLimit = 4;
-        
-        for (int clustersQty = 1; clustersQty <= clustersLimit; clustersQty++) {
-            System.out.println("clusters: " + clustersQty);
-            for (int clustered = 2; clustered <= clusteredLimit; clustered++) {
-                if ( clustered >= clustersQty * 2 ) {
-                    System.out.println("  clustered: " + clustered);System.out.println("    cQ cL nC");
-                    for (int nonClustered = 0; nonClustered <= nonClusteredLimit; nonClustered++) {                    
-                        analyze(clustersQty, clustered, nonClustered);
-                    }
-                }                
-            }
-        }
-        
-//        analyze(1, 2, 1);
-//        analyze(2, 6, 6);
-//        analyze(3, 6, 0);
-//        analyze(4, 6, 0);
-//        analyze(1, 2, 5));
-//        analyze(2, 7, 1));
-//        analyze(3, 9, 2));
-//        analyze(2, 9, 2));
-//        analyze(1, 9, 2));
-//        analyze(1, 8, 3));
-    }
     
     static void analyze(int clustersQty, int clustered, int nClustered) {
         System.out.println(format("    %s  %s  %s  -  i: %s", 
                 clustersQty, clustered, nClustered, clustersImportanceDependingOn(clustersQty, clustered, nClustered)));
-    }
-    
-    private static void weightAnalyzeCase() {
-        weightStrings("games", priceApiCase());
-    }
-
-    private static void weightAnalyzeCases() {
-        List<String> variantsStrings = diarsidProjectsCase();
-        
-        String pattern = "diarsidprojecs";
-//        variantsStrings.add(pattern);
-        
-        System.out.println("variants: " + variantsStrings.size());
-        WeightedVariants variants = weightStrings(pattern, variantsStrings);
-        AtomicInteger printed = new AtomicInteger(0);
-        while ( variants.next() ) {            
-            if ( variants.currentIsMuchBetterThanNext() ) {
-                System.out.println(variants.current().text() + " is much better than next: " + variants.current().weight());
-                printed.incrementAndGet();
-            } else {
-                System.out.println("next candidates are similar: ");                
-                variants.nextSimilarVariants()
-                        .stream()
-                        .forEach(candidate -> {
-                            System.out.println("  - " + candidate.text() + " : " + candidate.weight());
-                            printed.incrementAndGet();
-                        });
-            }
-        }
-        System.out.println("printed: " + printed.get());
     }
     
     private static boolean canBeEvaluatedByStrictSimilarity(String pattern, String target) {
@@ -264,8 +194,16 @@ public class Analyze {
     public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
         AnalyzeData analyze = takeFromCache(AnalyzeData.class);
         analyze.setVariantText(variant);
-        analyze.checkIfVariantTextContainsPatternDirectly(pattern);
-        analyze.setPatternCharsAndPositions(pattern);
+        analyze.setPattern(pattern);
+        analyze.checkIfVariantEqualsPattern();
+        if ( analyze.isVariantEqualsPattern() ) {
+            analyze.setNewVariant(variant);
+            Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
+            giveBackToCache(analyze);
+            return weightedVariant;
+        }
+        analyze.checkIfVariantTextContainsPatternDirectly();
+        analyze.setPatternCharsAndPositions();
         analyze.analyzePatternCharsPositions();
         analyze.logUnsortedPositions();
         analyze.sortPositions();
@@ -317,33 +255,35 @@ public class Analyze {
             variantsByText.put(lowerVariantText, variant);
             
             analyze.setVariantText(variant);
-            analyze.checkIfVariantTextContainsPatternDirectly(pattern);
-            analyze.setPatternCharsAndPositions(pattern);
-            analyze.analyzePatternCharsPositions();
-            analyze.logUnsortedPositions();
-//            analyze.countUnsortedPositions();
-            analyze.sortPositions();
-            analyze.findPositionsClusters();
-            if ( analyze.areTooMuchPositionsMissed() ) {
-                analyze.clearForReuse();
-                continue variantsWeighting;
-            }
-            analyze.calculateClustersImportance();
-            analyze.isFirstCharMatchInVariantAndPattern(pattern);
-//            analyze.strangeConditionOnUnsorted();
-            analyze.calculateWeight();  
-            analyze.logState();
-            if ( analyze.isVariantTooBad() ) {
-                logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
-                analyze.clearForReuse();
-                continue variantsWeighting;
-            }
-            
-            if ( analyze.variantWeight < minWeight ) {
-                minWeight = analyze.variantWeight;
-            }
-            if ( analyze.variantWeight > maxWeight ) {
-                maxWeight = analyze.variantWeight;
+            analyze.setPattern(pattern);
+            analyze.checkIfVariantEqualsPattern();
+            if ( analyze.isVariantNotEqualsPattern() ) {
+                analyze.checkIfVariantTextContainsPatternDirectly();
+                analyze.setPatternCharsAndPositions();
+                analyze.analyzePatternCharsPositions();
+                analyze.logUnsortedPositions();
+                analyze.sortPositions();
+                analyze.findPositionsClusters();
+                if ( analyze.areTooMuchPositionsMissed() ) {
+                    analyze.clearForReuse();
+                    continue variantsWeighting;
+                }
+                analyze.calculateClustersImportance();
+                analyze.isFirstCharMatchInVariantAndPattern(pattern);
+                analyze.calculateWeight();  
+                analyze.logState();
+                if ( analyze.isVariantTooBad() ) {
+                    logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
+                    analyze.clearForReuse();
+                    continue variantsWeighting;
+                }
+
+                if ( analyze.variantWeight < minWeight ) {
+                    minWeight = analyze.variantWeight;
+                }
+                if ( analyze.variantWeight > maxWeight ) {
+                    maxWeight = analyze.variantWeight;
+                }                
             }
             
             analyze.setNewVariant(variant);

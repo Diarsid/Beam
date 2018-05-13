@@ -88,6 +88,11 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_game_games() {
+        assertTrue(isSimilar("game", "games"));
+    }
+    
+    @Test
     public void test_isSimilar_exit_exut() {
         assertTrue(isSimilar("exit", "exut"));
     }

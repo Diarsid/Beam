@@ -9,6 +9,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -20,6 +21,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariant.EQUALITY_WEIGHT;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -48,6 +50,14 @@ public class WeightedVariants implements Serializable {
     
     public static WeightedVariants unite(List<WeightedVariant> variants) {
         return new WeightedVariants(variants);
+    }
+    
+    public static Optional<WeightedVariant> findVariantEqualToPattern(
+            List<WeightedVariant> variants) {
+        return variants
+                .stream()
+                .filter(weightedVariant -> weightedVariant.weight() == EQUALITY_WEIGHT)
+                .findFirst();
     }
     
     public IntStream indexes() {

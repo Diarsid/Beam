@@ -18,17 +18,17 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.arePositionsEquals;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.lengthImportanceRatio;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.BAD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimate;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariant.EQUALITY_WEIGHT;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
 
 /**
  *
@@ -248,16 +248,35 @@ class AnalyzeData extends CachedReusable {
         }
         this.reverseAnalyze.analyzePositionsClusters();
     }
+    
+    void checkIfVariantEqualsPattern() {
+        if ( this.pattern.equalsIgnoreCase(this.variantText) ) {
+            logAnalyze(BASE, "  variant is equal to pattern: weight %s", this.variantWeight);
+            this.variantWeight = EQUALITY_WEIGHT;
+        }
+    }
+    
+    boolean isVariantEqualsPattern() {
+        return this.variantWeight == EQUALITY_WEIGHT;
+    }
+    
+    boolean isVariantNotEqualsPattern() {
+        return this.variantWeight != EQUALITY_WEIGHT;
+    }
 
-    void checkIfVariantTextContainsPatternDirectly(String pattern) {
+    void checkIfVariantTextContainsPatternDirectly() {
         if ( containsIgnoreCase(this.variantText, pattern) ) {
-            debug("variant contains pattern!");
-            this.variantWeight = this.variantWeight - patternLengthRatio(pattern);
+            double lengthRatio = patternLengthRatio(pattern);
+            logAnalyze(BASE, "  variant contains pattern: weight -%s", lengthRatio);
+            this.variantWeight = this.variantWeight - lengthRatio;
         }
     }
 
-    void setPatternCharsAndPositions(String pattern) {
+    void setPattern(String pattern) {
         this.pattern = pattern;
+    }
+
+    void setPatternCharsAndPositions() {
         this.patternChars = pattern.toCharArray();
         this.forwardAnalyze.positions = new int[this.patternChars.length];
         fill(this.forwardAnalyze.positions, POS_UNINITIALIZED);

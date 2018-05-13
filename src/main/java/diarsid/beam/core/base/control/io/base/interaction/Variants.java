@@ -50,6 +50,10 @@ public class Variants {
         }
     }
     
+    public static Variant stringToVariant(String s) {
+        return new Variant(s, 0);
+    }
+    
     public static List<Variant> stringsToVariants(List<String> variantStrings) {
         AtomicInteger counter = new AtomicInteger(0);
         return variantStrings

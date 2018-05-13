@@ -297,7 +297,7 @@ public class Similarity {
         int similarityPercent = 100 / (pattern.length() - 1);
         int patternCharPercent = 100 / pattern.length();
         int similarityResult;
-        int patternCharsNotFoundPercentSum = 0;
+        int missingPatternCharsPercentSum = 0;
         int previousChainsNotFoundQty = 0;
         boolean previousChainFoundAsReverse = false;
         boolean previousChainFoundAsWeak = false;
@@ -313,7 +313,7 @@ public class Similarity {
         
         if ( pattern.length() > target.length() ) {
             similarityLog("pattern is longer than target!", 1);
-            similarityPercentSum = similarityPercentSum - similarityPercent;
+//            similarityPercentSum = similarityPercentSum - similarityPercent;
         }
         similarityLog(format("max inconsistency : %s", maxInconsistency), 1);        
         
@@ -329,9 +329,9 @@ public class Similarity {
             }
             
             if ( chainIndexTarget == CHAIN_1_NOT_FOUND ) {
-                patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
+                missingPatternCharsPercentSum = missingPatternCharsPercentSum + patternCharPercent;
                 similarityLog(format("char '%s' not found", chain1), 2);
-                if ( patternCharsNotFoundPercentSum > 50 ) {
+                if ( missingPatternCharsPercentSum > 50 ) {
                     similarityLog("too much chars missed!");
                     return 0;
                 }
@@ -490,10 +490,9 @@ public class Similarity {
             }
         }
         if ( target.indexOf(pattern.charAt(pattern.length() - 1)) < 0 ) {
-            patternCharsNotFoundPercentSum = patternCharsNotFoundPercentSum + patternCharPercent;
-            inconsistencySum++;
+            missingPatternCharsPercentSum = missingPatternCharsPercentSum + patternCharPercent;
             similarityLog(format("char '%s' not found at end", pattern.charAt(pattern.length() - 1)), 2);
-            if ( patternCharsNotFoundPercentSum > 50 ) {
+            if ( missingPatternCharsPercentSum > 50 ) {
                 similarityLog("too much chars missed!");
                 return 0;
             }
@@ -508,19 +507,23 @@ public class Similarity {
         } else {
             consistencyPercent = 0;
         }
-        int notFoundCharsSimilarityPenaltyPercent = 0;
-        if ( patternCharsNotFoundPercentSum > 0 ) {
-            notFoundCharsSimilarityPenaltyPercent = (patternCharsNotFoundPercentSum * notFoundPenalty(patternCharsNotFoundPercentSum / patternCharPercent)) / 100;
+        int missingCharsPenaltyPercent = 0;
+        if ( missingPatternCharsPercentSum > 0 ) {
+            missingCharsPenaltyPercent = calculateMissingCharsPenalty(patternCharPercent, missingPatternCharsPercentSum);
         }
         similarityLog(format("consistency     : %s%%", consistencyPercent));
-        similarityLog(format("chars not found : %s%% -> penalty : %s%%", patternCharsNotFoundPercentSum, notFoundCharsSimilarityPenaltyPercent));
+        similarityLog(format("chars not found : %s%% -> penalty : %s%%", missingPatternCharsPercentSum, missingCharsPenaltyPercent));
         similarityLog(format("similarity      : %s%%", similarityPercentSum));
 
-        if ( patternCharsNotFoundPercentSum > 0 ) {
-            similarityPercentSum = similarityPercentSum * (100 - notFoundCharsSimilarityPenaltyPercent) / 100;
+        if ( missingPatternCharsPercentSum > 0 ) {
+            similarityPercentSum = similarityPercentSum * (100 - missingCharsPenaltyPercent) / 100;
         }
         similarityResult = ( similarityPercentSum * consistencyPercent / 100 );
         return similarityResult;
+    }
+    
+    private static int calculateMissingCharsPenalty(int patternCharPercent, int missingPatternCharsPercentSum) {
+        return (missingPatternCharsPercentSum * notFoundPenalty(missingPatternCharsPercentSum / patternCharPercent)) / 100;
     }
     
     private static int notFoundPenalty(int notFoundCharsQty) {
