@@ -261,7 +261,7 @@ class AnalyzeData extends CachedReusable {
     }
     
     boolean isVariantNotEqualsPattern() {
-        return this.variantWeight == EQUALITY_WEIGHT;
+        return this.variantWeight != EQUALITY_WEIGHT;
     }
 
     void checkIfVariantTextContainsPatternDirectly() {

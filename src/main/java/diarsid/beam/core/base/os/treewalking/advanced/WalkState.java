@@ -332,6 +332,7 @@ class WalkState extends CachedReusable {
     }
     
     void addListedFilesToNextLevel(File[] listedFiles) {
+        this.nextLevel.clear();
         addListedFilesTo(this.nextLevel, listedFiles);
     }
     
