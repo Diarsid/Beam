@@ -30,7 +30,7 @@ class H2DaoPatternChoices
     }
 
     @Override
-    public boolean isChoiceMatchTo(String original, String extended, WeightedVariants variants) {
+    public boolean hasMatchOf(String original, String extended, WeightedVariants variants) {
         try {
             return super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(

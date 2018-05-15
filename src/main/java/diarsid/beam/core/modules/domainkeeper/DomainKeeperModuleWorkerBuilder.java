@@ -83,7 +83,9 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 ioEngine, 
                 dialogHelper);
         locationsKeeper = new LocationsKeeperWorker(
-                this.dataModule.locations(), 
+                this.dataModule.locations(),
+                this.dataModule.locationSubPaths(),
+                this.dataModule.patternChoices(),
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
@@ -91,6 +93,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 propertyAndTextParser);
         batchesKeeper = new BatchesKeeperWorker(
                 this.dataModule.batches(), 
+                this.dataModule.patternChoices(),
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
@@ -112,6 +115,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.dataModule.webDirectories(), 
                 this.dataModule.images(),
                 commandsMemoryKeeper,
+                this.dataModule.patternChoices(),
                 ioEngine, 
                 this.appComponentsHolderModule.gui().interactionGui(),
                 systemInitiator,

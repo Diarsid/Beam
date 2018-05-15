@@ -5,14 +5,19 @@
  */
 package diarsid.beam.core.domain.entities;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
+import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
+import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
 import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
@@ -23,43 +28,72 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  *
  * @author Diarsid
  */
-public class LocationSubPath implements ConvertableToVariant {
+public class LocationSubPath extends Location {
     
     private final String pattern;
-    private final String locationName;
-    private final String locationPath;
     private final String subPath;
 
     public LocationSubPath(
             String pattern, String locationName, String locationPath, String subPath) {
+        super(locationName, locationPath);
         this.pattern = pattern;
-        this.locationName = locationName;
-        this.locationPath = locationPath;
         if ( lower(subPath).startsWith(lower(locationName)) ) {
             subPath = extractTargetFromPath(subPath);
         }    
         this.subPath = subPath;
+    } 
+    
+    public boolean hasSubPath() {
+        return true;
     }    
+    
+    @Override
+    public String name() {
+        return joinToPathFrom(super.name(), this.subPath);
+    }
+    
+    @Override
+    public String path() {
+        return joinToPathFrom(super.path(), this.subPath);
+    }
+
+    @Override
+    public Message toMessage() {
+        return info(asList(this.name(), "  path: " + this.path()));
+    }
+    
+    @Override
+    public void openAsync(
+            String target, 
+            CallbackEmpty successCallback,
+            CallbackEvent failCallback) {
+        super.openAsync(joinToPathFrom(this.subPath, target), successCallback, failCallback);
+    }
+    
+    @Override
+    public void openAsync(
+            CallbackEmpty successCallback,
+            CallbackEvent failCallback) {
+        super.openAsync(this.subPath, successCallback, failCallback);
+    }
+    
+    @Override
+    public boolean has(String target) {
+        return Files.exists(joinPathFrom(super.path(), this.subPath, target));
+    }   
+    
+    @Override
+    public String relativePathTo(String target) {
+        return joinToPathFrom(super.name(), this.subPath, target);
+    }
     
     public String pattern() {
         return this.pattern;
     }
     
-    public Location location() {
-        return new Location(this.locationName, this.locationPath);
-    }    
-
-    public String locationName() {
-        return this.locationName;
-    }
-
-    public String locationPath() {
-        return this.locationPath;
-    }
-    
     public String variantDisplayName() {
         return format("'%s' is %s/%s", 
-                this.pattern, this.locationName, this.subPath);
+                this.pattern, super.name(), this.subPath);
     }
 
     public String subPath() {
@@ -67,28 +101,28 @@ public class LocationSubPath implements ConvertableToVariant {
     }
     
     public String fullName() {
-        return joinToPathFrom(this.locationName, this.subPath);
+        return joinToPathFrom(super.name(), this.subPath);
     }
     
     public String fullPath() {
-        return joinToPathFrom(this.locationPath, this.subPath);
+        return joinToPathFrom(super.path(), this.subPath);
     }
     
     public Path realPath() {
-        return joinPathFrom(this.locationPath, this.subPath);
+        return joinPathFrom(super.path(), this.subPath);
     }
     
     public boolean pointsToDirectory() {
-        return pathIsDirectory(joinPathFrom(this.locationPath, this.subPath));
+        return pathIsDirectory(joinPathFrom(super.path(), this.subPath));
     }
 
     public boolean notPointsToDirectory() {
-        return ! pathIsDirectory(joinPathFrom(this.locationPath, this.subPath));
+        return ! pathIsDirectory(joinPathFrom(super.path(), this.subPath));
     }    
     
     @Override
     public Variant toVariant(int variantIndex) {
-        String combinedPath = joinToPathFrom(this.locationName, this.subPath);
+        String combinedPath = joinToPathFrom(super.name(), this.subPath);
         return new Variant(
                 combinedPath, 
                 this.variantDisplayName(), 
@@ -98,8 +132,8 @@ public class LocationSubPath implements ConvertableToVariant {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 53 * hash + Objects.hashCode(this.locationName);
-        hash = 53 * hash + Objects.hashCode(this.locationPath);
+        hash = 53 * hash + Objects.hashCode(super.name());
+        hash = 53 * hash + Objects.hashCode(super.path());
         hash = 53 * hash + Objects.hashCode(this.subPath);
         return hash;
     }
@@ -116,10 +150,10 @@ public class LocationSubPath implements ConvertableToVariant {
             return false;
         }
         final LocationSubPath other = ( LocationSubPath ) obj;
-        if ( !Objects.equals(this.locationName, other.locationName) ) {
+        if ( !Objects.equals(this.name(), other.name()) ) {
             return false;
         }
-        if ( !Objects.equals(this.locationPath, other.locationPath) ) {
+        if ( !Objects.equals(this.path(), other.path()) ) {
             return false;
         }
         if ( !Objects.equals(this.subPath, other.subPath) ) {

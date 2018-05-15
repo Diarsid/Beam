@@ -7,7 +7,6 @@ package diarsid.beam.core.base.os.treewalking.advanced;
 
 import diarsid.beam.core.application.environment.Catalog;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.domain.entities.LocationSubPath;
 
 /**
  *
@@ -20,8 +19,6 @@ public interface WalkingToFind {
     WalkingInPlace in(Catalog catalog);
     
     WalkingInPlace in(Location location);
-    
-    WalkingInPlace in(LocationSubPath locationSubPath);
     
     WalkingToFind withMaxDepthOf(int maxDepth);
 }

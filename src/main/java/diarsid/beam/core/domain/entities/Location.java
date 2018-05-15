@@ -26,8 +26,8 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.openWithDesktop;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
+import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 
 /**
  *
@@ -65,6 +65,14 @@ public class Location
     @Override
     public NamedEntityType type() {
         return LOCATION;
+    }
+    
+    public String relativePathTo(String target) {
+        return name + "/" + target;
+    }
+    
+    public boolean hasSubPath() {
+        return false;
     }
     
     public void openAsync(

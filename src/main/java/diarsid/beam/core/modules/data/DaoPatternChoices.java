@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
  */
 public interface DaoPatternChoices {
     
-    boolean isChoiceMatchTo(String original, String extended, WeightedVariants variants);
+    boolean hasMatchOf(String original, String extended, WeightedVariants variants);
     
     Optional<String> findChoiceFor(String original, WeightedVariants variants);
     

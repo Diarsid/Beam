@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -23,17 +24,22 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
+import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
+import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.beam.core.modules.data.DaoLocations;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -62,13 +68,14 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.LOCAL_DIRECTORY_PATH_RULE;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 
 class LocationsKeeperWorker implements LocationsKeeper {
     
     private final DaoLocations daoLocations;
+    private final DaoLocationSubPaths daoLocationSubPaths;
+    private final DaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
@@ -80,13 +87,17 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final Help enterLocationPathHelp;
     
     LocationsKeeperWorker(
-            DaoLocations daoLocations, 
+            DaoLocations daoLocations,
+            DaoLocationSubPaths daoLocationSubPaths,
+            DaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper consistencyChecker,
             LocationsInputParser parser,
             PropertyAndTextParser propertyTextParser) {
         this.daoLocations = daoLocations;
+        this.daoLocationSubPaths = daoLocationSubPaths;
+        this.daoPatternChoices = daoPatternChoices;
         this.commandsMemory = commandsMemoryKeeper;
         this.ioEngine = ioEngine;
         this.helper = consistencyChecker;
@@ -206,13 +217,20 @@ class LocationsKeeperWorker implements LocationsKeeper {
             Initiator initiator, String namePattern) {
         List<Location> locations = this.daoLocations.getLocationsByNamePattern(
                 initiator, namePattern);
+        List<LocationSubPath> locationSubPaths = this.daoLocationSubPaths.getSubPathesByPattern(
+                initiator, namePattern);
+        locations.addAll(locationSubPaths);
         if ( hasOne(locations) ) {
             Location location = getOne(locations);
-            if ( isEntitySatisfiable(namePattern, location) ) {
+            if ( location.name().equalsIgnoreCase(namePattern) ) {
                 return valueFlowCompletedWith(location);
             } else {
-                return valueFlowCompletedEmpty();
-            }            
+                if ( isEntitySatisfiable(namePattern, location) ) {
+                    return valueFlowCompletedWith(location);
+                } else {
+                    return valueFlowCompletedEmpty();
+                }
+            }                        
         } else if ( hasMany(locations) ) {
             return this.manageWithManyLocations(initiator, namePattern, locations);
         } else {
@@ -240,9 +258,33 @@ class LocationsKeeperWorker implements LocationsKeeper {
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
+        
+        WeightedVariant bestVariant = variants.best();
+        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+             bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
+            return valueFlowCompletedWith(locations.get(bestVariant.index()));
+        } else {
+            if ( this.daoPatternChoices.hasMatchOf(pattern, bestVariant.text(), variants) ) {
+                return valueFlowCompletedWith(locations.get(bestVariant.index()));
+            } else {
+                return this.askUserForLocationAndSaveChoice(
+                        initiator, pattern, variants, locations);
+            }            
+        }        
+    }    
+    
+    private ValueFlow<Location> askUserForLocationAndSaveChoice(
+            Initiator initiator, 
+            String pattern, 
+            WeightedVariants variants, 
+            List<Location> locations) {
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, variants, this.chooseOneLocationHelp);
         if ( answer.isGiven() ) {
+            asyncDo(() -> {
+                this.daoPatternChoices.save(
+                        pattern, locations.get(answer.index()).name(), variants);
+            });
             return valueFlowCompletedWith(locations.get(answer.index()));
         } else if ( answer.isRejection() ) {
             return valueFlowStopped();
@@ -251,7 +293,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         } else {
             return valueFlowCompletedEmpty();
         }
-    }    
+    }
 
     @Override
     public VoidFlow createLocation(Initiator initiator, ArgumentsCommand command) {
@@ -270,7 +312,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
             path = "";
         }
         
-        path = this.helper.validateInteractively(initiator, path, "path", LOCAL_DIRECTORY_PATH_RULE);
+        path = this.helper.validateInteractively(
+                initiator, path, "path", LOCAL_DIRECTORY_PATH_RULE);
         if ( path.isEmpty() ) {
             return voidFlowStopped();
         }        

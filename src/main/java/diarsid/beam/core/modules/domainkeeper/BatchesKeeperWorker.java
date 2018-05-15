@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -32,10 +33,14 @@ import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.modules.data.DaoBatches;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -44,6 +49,7 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
+import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
@@ -60,11 +66,11 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 
 class BatchesKeeperWorker implements BatchesKeeper {
     
     private final DaoBatches dao;
+    private final DaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
@@ -80,12 +86,14 @@ class BatchesKeeperWorker implements BatchesKeeper {
     
     BatchesKeeperWorker(
             DaoBatches daoBatches, 
+            DaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine,
             KeeperDialogHelper helper,
             Interpreter interpreter,
             PropertyAndTextParser propertyAndTextParser) {
         this.dao = daoBatches;
+        this.daoPatternChoices = daoPatternChoices;
         this.commandsMemory = commandsMemoryKeeper;
         this.ioEngine = ioEngine;
         this.helper = helper;
@@ -227,18 +235,19 @@ class BatchesKeeperWorker implements BatchesKeeper {
 
     @Override
     public ValueFlow<Batch> findByNamePattern(
-            Initiator initiator, String batchNamePattern) {
+            Initiator initiator, String pattern) {
         List<String> foundBatchNames = 
-                this.dao.getBatchNamesByNamePattern(initiator, batchNamePattern);
+                this.dao.getBatchNamesByNamePattern(initiator, pattern);
         if ( hasOne(foundBatchNames) ) {
             String batchName = getOne(foundBatchNames);
-            if ( isNameSatisfiable(batchNamePattern, batchName) ) {
+            if ( batchName.equalsIgnoreCase(pattern) || 
+                 isNameSatisfiable(pattern, batchName) ) {
                 return this.findByExactName(initiator, batchName); 
             } else {
                 return valueFlowCompletedEmpty();
             }  
         } else if ( hasMany(foundBatchNames) ) {
-            return this.manageWithManyBatchNames(initiator, foundBatchNames);
+            return this.manageWithManyBatchNames(initiator, pattern, foundBatchNames);
         } else {
             return valueFlowCompletedEmpty();
         }
@@ -251,19 +260,45 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
 
     private ValueFlow<Batch> manageWithManyBatchNames(
-            Initiator initiator, List<String> foundBatchNames) {
-        VariantsQuestion question = question("choose batch").withAnswerStrings(foundBatchNames);
-        Answer answer = this.ioEngine.ask(initiator, question, this.chooseBatchNameHelp);
-        if ( answer.isGiven() ) {
-            return this.findByExactName(initiator, answer.text());
+            Initiator initiator, String pattern, List<String> foundBatchNames) {
+        WeightedVariants variants = weightVariants(pattern, stringsToVariants(foundBatchNames));
+        if ( variants.isEmpty() ) {
+            return valueFlowCompletedEmpty();
+        }
+        
+        WeightedVariant bestVariant = variants.best();
+        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+             bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
+            return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
         } else {
-            if ( answer.isRejection() ) {
-                return valueFlowStopped();
-            } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueFlowCompletedEmpty();
+            if ( this.daoPatternChoices.hasMatchOf(pattern, bestVariant.text(), variants) ) {
+                return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
             } else {
-                return valueFlowCompletedEmpty();
-            }
+                return this.askUserForBatchAndSaveChoice(
+                        initiator, pattern, variants, foundBatchNames);
+            }            
+        }
+    } 
+    
+    private ValueFlow<Batch> askUserForBatchAndSaveChoice(
+            Initiator initiator, 
+            String pattern, 
+            WeightedVariants variants, 
+            List<String> batchNames) {
+        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                initiator, variants, this.chooseBatchNameHelp);
+        if ( answer.isGiven() ) {
+            asyncDo(() -> {
+                this.daoPatternChoices.save(
+                        pattern, batchNames.get(answer.index()), variants);
+            });
+            return this.findByExactName(initiator, batchNames.get(answer.index()));
+        } else if ( answer.isRejection() ) {
+            return valueFlowStopped();
+        } else if ( answer.variantsAreNotSatisfactory() ) {
+            return valueFlowCompletedEmpty();
+        } else {
+            return valueFlowCompletedEmpty();
         }
     }
 

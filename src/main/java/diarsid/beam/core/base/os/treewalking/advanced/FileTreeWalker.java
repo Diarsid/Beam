@@ -99,13 +99,11 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     
     @Override
     public WalkingInPlace in(Location location) {
-        this.state().setWhereToSearch(location);
-        return this;
-    }
-    
-    @Override
-    public WalkingInPlace in(LocationSubPath locationSubPath) {
-        this.state().setWhereToSearch(locationSubPath);
+        if ( location.hasSubPath() ) {
+            this.state().setWhereToSearch((LocationSubPath) location);
+        } else {
+            this.state().setWhereToSearch(location);
+        }
         return this;
     }
     
@@ -323,7 +321,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         String bestVariant = weightedVariants.best().text();
         return this.daoPatternChoices
                 .get()
-                .isChoiceMatchTo(this.state().pattern(), bestVariant, weightedVariants);
+                .hasMatchOf(this.state().pattern(), bestVariant, weightedVariants);
     }
     
     private void asyncTryToSaveChoiceFrom(
@@ -343,7 +341,8 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     }
 
     private void walkThroughCurrentLevel(WalkState state) {
-        for (File file : state.currentLevel()) {
+        state.nextLevel().clear();
+        for (File file : state.currentLevel()) {            
             if ( state.mode().correspondsTo(file) ) {
                 state.collectedOnCurrentLevel().add(normalizeSeparators(file.getAbsolutePath()));
             }

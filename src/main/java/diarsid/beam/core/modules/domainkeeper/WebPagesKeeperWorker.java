@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.gui.InteractionGui;
+import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -39,6 +40,7 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
+import diarsid.beam.core.modules.data.DaoPatternChoices;
 import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
@@ -48,7 +50,9 @@ import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -101,7 +105,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 public class WebPagesKeeperWorker 
@@ -112,6 +115,7 @@ public class WebPagesKeeperWorker
     
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
+    private final DaoPatternChoices daoPatternChoices;
     private final DaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
@@ -134,6 +138,7 @@ public class WebPagesKeeperWorker
             DaoWebDirectories daoDirectories,
             DaoPictures daoPictures,
             CommandsMemoryKeeper commandsMemory,
+            DaoPatternChoices daoPatternChoices,
             InnerIoEngine ioEngine, 
             InteractionGui interactionGui,
             Initiator systemInitiator,
@@ -145,6 +150,7 @@ public class WebPagesKeeperWorker
         this.commandsMemory = commandsMemory;
         this.daoDirectories = daoDirectories;
         this.daoPictures = daoPictures;
+        this.daoPatternChoices = daoPatternChoices;
         this.ioEngine = ioEngine;
         this.interactionGui = interactionGui;
         this.systemInitiator = systemInitiator;
@@ -282,7 +288,8 @@ public class WebPagesKeeperWorker
         List<WebPage> foundPages = this.daoPages.findByPattern(initiator, namePattern);
         if ( hasOne(foundPages) ) {
             WebPage page = getOne(foundPages);
-            if ( isEntitySatisfiable(namePattern, page) ) {
+            if ( page.name().equalsIgnoreCase(namePattern) ||
+                 isEntitySatisfiable(namePattern, page) ) {
                 return valueFlowCompletedWith(page);
             } else {
                 return valueFlowCompletedEmpty();
@@ -300,18 +307,40 @@ public class WebPagesKeeperWorker
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
+        
+        WeightedVariant bestVariant = variants.best();
+        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+             bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
+            return valueFlowCompletedWith(pages.get(bestVariant.index()));
+        } else {
+            if ( this.daoPatternChoices.hasMatchOf(pattern, bestVariant.text(), variants) ) {
+                return valueFlowCompletedWith(pages.get(bestVariant.index()));
+            } else {
+                return this.askUserForPageAndSaveChoice(
+                        initiator, pattern, variants, pages);
+            }            
+        }
+    }   
+    
+    private ValueFlow<WebPage> askUserForPageAndSaveChoice(
+            Initiator initiator, 
+            String pattern, 
+            WeightedVariants variants, 
+            List<WebPage> pages) {
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, variants, this.chooseOnePageHelp);
         if ( answer.isGiven() ) {
+            asyncDo(() -> {
+                this.daoPatternChoices.save(
+                        pattern, pages.get(answer.index()).name(), variants);
+            });
             return valueFlowCompletedWith(pages.get(answer.index()));
+        } else if ( answer.isRejection() ) {
+            return valueFlowStopped();
+        } else if ( answer.variantsAreNotSatisfactory() ) {
+            return valueFlowCompletedEmpty();
         } else {
-            if ( answer.isRejection() ) {
-                return valueFlowStopped();
-            } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueFlowCompletedEmpty();
-            } else {
-                return valueFlowCompletedEmpty();
-            }
+            return valueFlowCompletedEmpty();
         }
     }
 

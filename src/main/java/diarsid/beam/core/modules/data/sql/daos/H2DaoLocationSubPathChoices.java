@@ -54,7 +54,7 @@ class H2DaoLocationSubPathChoices
                                 "   subpath = ?, " +
                                 "   variants_stamp = ? " +
                                 "WHERE ( LOWER(pattern) IS ? ) ", 
-                                subPath.locationName(), 
+                                subPath.name(), 
                                 lower(subPath.subPath()), 
                                 lower(subPath.fullName()), 
                                 lower(pattern));
@@ -68,7 +68,7 @@ class H2DaoLocationSubPathChoices
                                 "   variants_stamp) " +
                                 "VALUES ( ?, ?, ?, ? ) ", 
                                 lower(pattern), 
-                                subPath.locationName(), 
+                                subPath.name(), 
                                 lower(subPath.subPath()), 
                                 lower(subPath.fullName()));
             }
@@ -110,7 +110,7 @@ class H2DaoLocationSubPathChoices
                                 "   subpath = ?, " +
                                 "   variants_stamp = ? " +
                                 "WHERE ( LOWER(pattern) IS ? ) ", 
-                                subPath.locationName(), 
+                                subPath.name(), 
                                 subPath.subPath(), 
                                 variants.stamp(), 
                                 lower(pattern));
@@ -124,7 +124,7 @@ class H2DaoLocationSubPathChoices
                                 "   variants_stamp) " +
                                 "VALUES ( ?, ?, ?, ? ) ", 
                                 pattern, 
-                                subPath.locationName(), 
+                                subPath.name(), 
                                 subPath.subPath(), 
                                 variants.stamp());
             }
@@ -157,7 +157,7 @@ class H2DaoLocationSubPathChoices
                             "    ( LOWER(loc_name) IS ? ) AND " +
                             "    ( LOWER(subpath) IS ? )", 
                             lower(pattern), 
-                            lower(subPath.locationName()), 
+                            lower(subPath.name()), 
                             lower(subPath.subPath()));
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
             // TODO

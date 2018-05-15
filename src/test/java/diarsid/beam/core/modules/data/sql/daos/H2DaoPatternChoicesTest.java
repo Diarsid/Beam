@@ -103,16 +103,16 @@ public class H2DaoPatternChoicesTest {
         
         boolean isDone;
         
-        isDone = dao.isChoiceMatchTo("BeaProj", "c:/projects/netbeans/beam", variants);        
+        isDone = dao.hasMatchOf("BeaProj", "c:/projects/netbeans/beam", variants);        
         assertEquals(true, isDone);
         
-        isDone = dao.isChoiceMatchTo("BeaPorj", "c:/projects/netbeans/beam", variants);        
+        isDone = dao.hasMatchOf("BeaPorj", "c:/projects/netbeans/beam", variants);        
         assertEquals(true, isDone);
         
-        isDone = dao.isChoiceMatchTo("nebeaproj", "c:/projects/netbeans", variants);        
+        isDone = dao.hasMatchOf("nebeaproj", "c:/projects/netbeans", variants);        
         assertEquals(false, isDone);
         
-        isDone = dao.isChoiceMatchTo("beaproj", "c:/projects/netbeans", variants);        
+        isDone = dao.hasMatchOf("beaproj", "c:/projects/netbeans", variants);        
         assertEquals(false, isDone);
     }
     
@@ -138,7 +138,7 @@ public class H2DaoPatternChoicesTest {
         
         boolean isDone;
         
-        isDone = dao.isChoiceMatchTo("BeaProj", "C:/Projects/NetBeans/Beam", negativeVariants);        
+        isDone = dao.hasMatchOf("BeaProj", "C:/Projects/NetBeans/Beam", negativeVariants);        
         assertEquals(false, isDone);
     }
     

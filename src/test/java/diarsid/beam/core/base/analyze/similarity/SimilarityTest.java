@@ -73,6 +73,11 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_sigmar_sigram() {
+        assertTrue(isSimilar("sigmar", "sigram"));
+    }
+    
+    @Test
     public void test_isSimilar_SoulWindows7_win7() {
         assertTrue(isSimilar("SoulWindows7upd12fw446fngg67jf.exe", "win7"));
     }

@@ -313,6 +313,55 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_9thAgeCase_image() {
+        pattern = "9age";
+        
+        variants = asList(
+                "Image", 
+                "Content/WH/Game/The_9th_Age"
+        );
+        
+        expected = asList(
+                "Content/WH/Game/The_9th_Age",
+                "Image"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_9thAgeRostersCase_image() {
+        pattern = "9agerost";
+        
+        variants = asList(
+                "Content/WH/Game/The_9th_Age/Rosters"
+        );
+        
+        expected = asList(
+                "Content/WH/Game/The_9th_Age/Rosters"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_rostersCase_rosers() {
+        pattern = "rosers";
+        
+        variants = asList(
+                "Rosters", 
+                "Projects/Diarsid"
+        );
+        
+        expected = asList(
+                "Rosters"
+        );
+        
+        expectedToFail();
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_hobbitBookCase_hboitbok() {
         pattern = "hboitbok";
         

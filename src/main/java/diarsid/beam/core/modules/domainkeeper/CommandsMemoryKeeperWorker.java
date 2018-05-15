@@ -30,6 +30,7 @@ import diarsid.beam.core.modules.data.DaoPatternChoices;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -53,7 +54,6 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.MutableString.mutableString;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 
 /**
  *
@@ -63,7 +63,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     
     private final InnerIoEngine ioEngine;
     private final DaoCommands daoCommands;
-    private final DaoPatternChoices daoCommandsChoices;
+    private final DaoPatternChoices daoPatternChoices;
     private final KeeperDialogHelper helper;
     private final Help exactMatchHelp;
     private final Help removeRelatedMemsHelp;
@@ -76,7 +76,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             InnerIoEngine ioEngine, 
             KeeperDialogHelper helper) {
         this.daoCommands = daoCommands;
-        this.daoCommandsChoices = daoChoices;
+        this.daoPatternChoices = daoChoices;
         this.ioEngine = ioEngine;
         this.helper = helper;
         this.exactMatchHelp = this.ioEngine.addToHelpContext(
@@ -250,7 +250,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         Choice choice = this.ioEngine.ask(
                 initiator, "remove all related mems also", this.removeRelatedMemsHelp);
         if ( choice.isPositive() ) {
-            this.daoCommandsChoices.delete(command);
+            this.daoPatternChoices.delete(command);
             boolean removed = this.daoCommands.delete(initiator, command);
             return this.reportRemoving(removed);
         } else if ( choice.isNotMade() || choice.isNegative() ) {
@@ -342,7 +342,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             command.argument().setExtended(exactMatchExtended);
             return voidFlowCompleted();
         } else {
-            boolean exactMatchChoosen = this.daoCommandsChoices.isChoiceMatchTo(
+            boolean exactMatchChoosen = this.daoPatternChoices.hasMatchOf(
                     command.originalArgument(), exactMatchExtended, variants);
             if ( exactMatchChoosen ) {
                 command.setStored();
@@ -358,7 +358,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     command.setStored();
                     command.argument().setExtended(answer.text());
                     asyncDo(() -> {
-                        this.daoCommandsChoices.save(command, variants);
+                        this.daoPatternChoices.save(command, variants);
                         this.daoCommands.save(initiator, command);
                     });
                     return voidFlowCompleted();
@@ -460,7 +460,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
 
     @Override
     public void remove(Initiator initiator, InvocationCommand command) {
-        this.daoCommandsChoices.delete(command);
+        this.daoPatternChoices.delete(command);
         this.daoCommands.delete(initiator, command);
     }
     
@@ -532,7 +532,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             });
             return valueFlowCompletedWith(newCommand);
         } else {
-            boolean exactMatchChoosen = this.daoCommandsChoices.isChoiceMatchTo(
+            boolean exactMatchChoosen = this.daoPatternChoices.hasMatchOf(
                     original, exactMatch.extendedArgument(), variants);
             if ( exactMatchChoosen ) {
                 return valueFlowCompletedWith(exactMatch);
@@ -546,7 +546,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                         answer.text());
                 if ( exactMatch.equals(newCommand) ) {
                     asyncDo(() -> {
-                        this.daoCommandsChoices.save(exactMatch, variants);
+                        this.daoPatternChoices.save(exactMatch, variants);
                     });
                     return valueFlowCompletedWith(exactMatch);
                 } else {
@@ -554,7 +554,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                         this.daoCommands.deleteByExactOriginalOfType(
                                 initiator, exactMatch.originalArgument(), exactMatch.type());
                         this.daoCommands.save(initiator, newCommand);
-                        this.daoCommandsChoices.save(newCommand, variants);
+                        this.daoPatternChoices.save(newCommand, variants);
                     });
                     return valueFlowCompletedWith(newCommand);
                 }                
@@ -623,7 +623,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                         answer.text());
                 asyncDo(() -> {
                     variants.removeWorseThan(newCommand.extendedArgument());
-                    this.daoCommandsChoices.save(newCommand, variants);
+                    this.daoPatternChoices.save(newCommand, variants);
                     this.daoCommands.save(initiator, newCommand);
                 });
                 return valueFlowCompletedWith(newCommand);
@@ -675,7 +675,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return valueFlowCompletedWith(commands.get(variants.best().index()));
         }
         Optional<String> choice = 
-                this.daoCommandsChoices.findChoiceFor(pattern, variants);
+                this.daoPatternChoices.findChoiceFor(pattern, variants);
         if ( choice.isPresent() ) {
             return valueFlowCompletedWith(commands
                     .stream()
@@ -688,7 +688,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             InvocationCommand chosen = commands.get(answer.index());
             asyncDo(() -> {
 //                variants.removeWorseThan(chosen.extendedArgument());
-                this.daoCommandsChoices.save(chosen, variants);
+                this.daoPatternChoices.save(chosen, variants);
             });
             return valueFlowCompletedWith(commands.get(answer.index()));
         } else {

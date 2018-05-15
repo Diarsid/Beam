@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.base.util.CollectionsUtils;
 
 import static java.util.Collections.sort;
@@ -98,7 +97,7 @@ public class WeightedVariants implements Serializable {
         return ! this.variants.isEmpty();
     }
     
-    public Variant best() {
+    public WeightedVariant best() {
         return this.variants.get(0);
     }
     

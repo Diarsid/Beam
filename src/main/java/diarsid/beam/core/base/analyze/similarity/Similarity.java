@@ -394,8 +394,12 @@ public class Similarity {
                     }
                     if ( reverseChainIndexTarget > -1 ) {
                         similarityLog(format("found reverse +%s%%", similarityPercent), 2);
-                        similarityPercentSum = similarityPercentSum + similarityPercent;
-                        inconsistencySum++;
+                        similarityPercentSum = similarityPercentSum + similarityPercent;   
+                        if ( maxInconsistency < 5 ) {
+                            inconsistencySum++;
+                        } else if ( ! previousChainFoundAsReverse ) {
+                            inconsistencySum++;
+                        }
                         if ( previousChainFoundAsWeak ) {
                             similarityLog(format("previous chain found as weak +%s%%", similarityPercent/2), 2);
                             similarityPercentSum = similarityPercentSum + similarityPercent/2;

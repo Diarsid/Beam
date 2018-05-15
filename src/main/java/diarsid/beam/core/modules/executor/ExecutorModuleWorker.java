@@ -14,17 +14,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.flow.ValueFlowFail;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
-import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.BrowsePageCommand;
@@ -40,7 +37,6 @@ import diarsid.beam.core.base.control.plugins.Plugin;
 import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.base.os.treewalking.listing.FileLister;
 import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
-import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 import diarsid.beam.core.base.util.StringUtils;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
@@ -52,9 +48,7 @@ import diarsid.beam.core.modules.ExecutorModule;
 
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
-import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
@@ -73,12 +67,8 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
-import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.ALL;
-import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FOLDERS_ONLY;
-import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.SIMILAR_MATCH;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
@@ -104,31 +94,13 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
  */
 class ExecutorModuleWorker implements ExecutorModule {
     
-    static enum InvocationType {
-        EXTERNAL {
-            @Override
-            boolean isExternal() {
-                return true;
-            }
-        },
-        INTERNAL {
-            @Override
-            boolean isExternal() {
-                return false;
-            }
-        };
-        
-        abstract boolean isExternal();
-    }
-    
     private final DomainKeeperModule domain;
     private final InnerIoEngine ioEngine;
-    private final FileSearcher fileSearcher;
-    private final Walker walk;
+    private final Walker walker;
     private final FileLister fileLister;    
     private final Map<String, Plugin> plugins;
-    private final HelpKey chooseMultipleFoldersHelp;
-    private final HelpKey chooseTargetToOpenHelp;
+    
+    private boolean directSubPathManipulationDisabled = true;
 
     ExecutorModuleWorker(
             InnerIoEngine ioEngine, 
@@ -138,28 +110,11 @@ class ExecutorModuleWorker implements ExecutorModule {
             Walker walk,
             FileLister fileLister) {
         this.ioEngine = ioEngine;
-        this.fileSearcher = fileSearcher;
-        this.walk = walk;
+        this.walker = walk;
         this.domain = domain;
         this.fileLister = fileLister;
         this.plugins = new HashMap<>();
-        plugins.forEach(plugin -> this.plugins.put(plugin.name(), plugin));     
-        this.chooseMultipleFoldersHelp = this.ioEngine.addToHelpContext(
-                "Choose folder to be listed from given variants.",
-                "Use:", 
-                "   - number of folder to choose it",
-                "   - part of folder name to choose it",
-                "   - 'n' or 'no' to see another folders, if any",
-                "   - dot (.) to reject all variants"
-        );
-        this.chooseTargetToOpenHelp = this.ioEngine.addToHelpContext(
-                "Choose target to be opened from given variants.",
-                "Use:", 
-                "   - number of target to choose it",
-                "   - part of target name to choose it",
-                "   - 'n' or 'no' to see another targets, if any",
-                "   - dot (.) to reject all variants"
-        );        
+        plugins.forEach(plugin -> this.plugins.put(plugin.name(), plugin)); 
     }
 
     private void asyncSaveCommandIfNecessary(
@@ -328,7 +283,6 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     private void dispatchCommandInternally(Initiator initiator, ExecutorCommand command) {
-        debug("[EXECUTOR] [dispatch] " + command.stringifyOriginal() + ":" + command.stringify());
         dispatching: switch ( command.type() ) {
             case OPEN_LOCATION : {
                 this.openLocation(initiator, (OpenLocationCommand) command);
@@ -451,8 +405,6 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void doWhenLocationNotFound(
             Initiator initiator, OpenLocationCommand command) {        
         this.deleteCommandIfNecessary(initiator, command);
-        debug("[EXECUTOR] location not found by: " + command.originalArgument());
-        debug("[EXECUTOR] try to proceed as OpenLocationTarget... ");
         ValueFlow<InvocationCommand> commandFlow = this.domain
                 .commandsMemory()
                 .findStoredCommandByPatternAndType(initiator, 
@@ -593,7 +545,6 @@ class ExecutorModuleWorker implements ExecutorModule {
     private void openLocationTargetUsingOriginalArgument(
             Initiator initiator, OpenLocationTargetCommand command) {
         ValueFlow<Location> locationFlow;        
-        debug("[open trarget, NOT extended] " + command.stringifyOriginal());
         command.setNew();
         locationFlow = this.domain
                 .locations()
@@ -629,6 +580,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void doWhenLocationForTargetNotFound(
             Initiator initiator, OpenLocationTargetCommand command) {
+        if ( directSubPathManipulationDisabled ) {
+            this.doWhenNotFound(initiator, command);
+            return;
+        }
+        
         ValueFlow<LocationSubPath> subPathFlow = this.domain
                 .locationSubPaths()
                 .findLocationSubPath(initiator, command.originalLocation());
@@ -636,20 +592,17 @@ class ExecutorModuleWorker implements ExecutorModule {
         switch ( subPathFlow.result() ) {
             case COMPLETE : {
                 if ( subPathFlow.asComplete().hasValue() ) {
-                    LocationSubPath subPath = subPathFlow.asComplete().getOrThrow();   
-                    if ( subPath.notPointsToDirectory() ) {
+                    LocationSubPath locationSubPath = subPathFlow.asComplete().getOrThrow();   
+                    if ( locationSubPath.notPointsToDirectory() ) {
                         this.doWhenNotFound(initiator, command);
                         return;
                     }
-                    Location location = subPath.location();
-                    String subPathAndTarget = 
-                            joinToPathFrom(subPath.subPath(), command.originalTarget());
-                    if ( location.has(subPathAndTarget) ) {
+                    if ( locationSubPath.has(command.originalTarget()) ) {
                         this.openTargetAndExtendCommand(
-                                initiator, location, subPathAndTarget, command);
+                                initiator, locationSubPath, command.originalTarget(), command);
                     } else {
                         this.useSubPathToFindTarget(
-                                initiator, location, subPath, command.originalTarget(), command);
+                                initiator, locationSubPath, command.originalTarget(), command);
                     }
                 } else {
                     this.doWhenNotFound(initiator, command);
@@ -671,31 +624,22 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void useSubPathToFindTarget(
             Initiator initiator, 
-            Location location,
-            LocationSubPath subPath, 
+            LocationSubPath locationSubPath, 
             String target, 
             OpenLocationTargetCommand command) {
         command.setNew();
-        
-        if ( nonNull(this.walk) ) {
-            this.useSubPathToFindTargetWithFileWalker(
-                    initiator, location, subPath, target, command);
-        } else {
-            this.useSubPathToFindTargetWithFileSearcher(
-                    initiator, location, subPath, target, command);
-        }        
+        this.useSubPathToFindTargetWithFileWalker(initiator, locationSubPath, target, command);              
     }
     
     private void useSubPathToFindTargetWithFileWalker(
             Initiator initiator, 
-            Location location,
-            LocationSubPath subPath, 
+            LocationSubPath locationSubPath, 
             String target, 
             OpenLocationTargetCommand command) {
-        ValueFlow<String> targetFlow = this.walk                
+        ValueFlow<String> targetFlow = this.walker                
                 .walkToFind(target)
                 .withMaxDepthOf(5)
-                .in(subPath)
+                .in(locationSubPath)
                 .by(initiator)
                 .andGetResult();
         
@@ -703,14 +647,14 @@ class ExecutorModuleWorker implements ExecutorModule {
             case COMPLETE : {
                 ValueFlowCompleted<String> completedFlow = targetFlow.asComplete();
                 if ( completedFlow.hasValue() ) {
-                    target = joinToPath(subPath.subPath(), completedFlow.getOrThrow());
-                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                    target = joinToPath(locationSubPath.subPath(), completedFlow.getOrThrow());
+                    this.openTargetAndExtendCommand(initiator, locationSubPath, target, command);
                 } else {
                     if ( completedFlow.hasMessage() ) {
                         this.ioEngine.report(initiator, completedFlow.message());
                     } else {
-                        this.ioEngine.report(
-                            initiator, format("'%s' not found in %s", target, subPath.fullName()));
+                        this.ioEngine.report(initiator, format(
+                                "'%s' not found in %s", target, locationSubPath.fullName()));
                     }                   
                 }                
                 break;
@@ -725,47 +669,10 @@ class ExecutorModuleWorker implements ExecutorModule {
             }    
         }
     }
-    
-    private void useSubPathToFindTargetWithFileSearcher(
-            Initiator initiator, 
-            Location location,
-            LocationSubPath subPath, 
-            String target, 
-            OpenLocationTargetCommand command) {
-        FileSearchResult result = 
-                this.fileSearcher.find(target, subPath.fullPath(), SIMILAR_MATCH, ALL);
-        if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                target = joinToPathFrom(subPath.subPath(), result.success().foundFile());
-                this.openTargetAndExtendCommand(initiator, location, target, command);
-            } else {
-                WeightedVariants weightedStrings = 
-                        weightStrings(target, result.success().foundFiles());
-                if ( weightedStrings.isEmpty() ) {
-                    this.ioEngine.report(
-                            initiator, format("'%s' not found in %s", target, subPath.fullName()));
-                    return;
-                }
-                Answer answer = this.ioEngine.chooseInWeightedVariants(
-                        initiator, weightedStrings, this.chooseTargetToOpenHelp);
-                if ( answer.isGiven() ) {
-                    target = joinToPathFrom(subPath.subPath(), answer.text());
-                    this.openTargetAndExtendCommand(initiator, location, target, command);
-                } else if ( answer.variantsAreNotSatisfactory() ) { 
-                    this.ioEngine.report(
-                            initiator, format("'%s' not found in %s", target, subPath.fullName()));
-                }
-            }
-        } else {
-            this.ioEngine.report(
-                    initiator, format("'%s' not found in %s", target, subPath.fullName()));
-        }
-    }
 
     private void openLocationTargetUsingExtendedArgument(
             Initiator initiator, OpenLocationTargetCommand command) {
         ValueFlow<Location> valueFlow;
-        debug("[open trarget, extended] " + command.stringifyOriginal() + " -> " + command.stringify());
         valueFlow = this.domain
                 .locations()
                 .findByExactName(initiator, command.extendedLocation());
@@ -800,12 +707,11 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private void doWhenLocationFoundFromExtended(
             Initiator initiator, OpenLocationTargetCommand command, Location location) {
-        debug("[location found from extended] " + location.name());
         String target;
         target = command.extendedTarget();
         if ( location.has(target) ) {
             command.setTargetFound();
-            this.ioEngine.report(initiator, format("...opening %s/%s", location.name(), target));
+            this.ioEngine.report(initiator, "...opening " + command.extendedArgument());
             location.openAsync(
                     target,
                     this.thenDoOnSuccess(initiator, command),
@@ -827,12 +733,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             String target, 
             OpenLocationTargetCommand command) {
         command.setNew();
-        
-        if ( nonNull(this.walk) ) {
-            this.doWhenTargetNotFoundDirectlyByFileWalker(initiator, location, target, command);
-        } else {
-            this.doWhenTargetNotFoundDirectlyByFileSearcher(initiator, location, target, command);
-        }
+        this.doWhenTargetNotFoundDirectlyByFileWalker(initiator, location, target, command);
     }
     
     private void doWhenTargetNotFoundDirectlyByFileWalker(
@@ -840,7 +741,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             Location location, 
             String target, 
             OpenLocationTargetCommand command) {
-        ValueFlow<String> targetFlow = this.walk                
+        ValueFlow<String> targetFlow = this.walker                
                 .walkToFind(target)
                 .withMaxDepthOf(5)
                 .in(location)
@@ -873,48 +774,13 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         }
     }
-    
-    private void doWhenTargetNotFoundDirectlyByFileSearcher(
-            Initiator initiator, 
-            Location location, 
-            String target, 
-            OpenLocationTargetCommand command) {
-        FileSearchResult result = 
-                this.fileSearcher.find(target, location.path(), SIMILAR_MATCH, ALL);
-        if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                target = result.success().foundFile();
-                this.openTargetAndExtendCommand(initiator, location, target, command);
-            } else {
-                WeightedVariants weightedStrings = 
-                        weightStrings(target, result.success().foundFiles());
-                if ( weightedStrings.isEmpty() ) {
-                    this.ioEngine.report(
-                            initiator, format("'%s' not found in %s", target, location.name()));
-                    return;
-                }
-                Answer answer = this.ioEngine.chooseInWeightedVariants(
-                        initiator, weightedStrings, this.chooseTargetToOpenHelp);
-                if ( answer.isGiven() ) {
-                    target = answer.text();
-                    this.openTargetAndExtendCommand(initiator, location, target, command);
-                } else if ( answer.variantsAreNotSatisfactory() ) { 
-                    this.ioEngine.report(
-                            initiator, format("'%s' not found in %s", target, location.name()));
-                }
-            }
-        } else {
-            this.ioEngine.report(
-                    initiator, format("'%s' not found in %s", target, location.name()));
-        }
-    }
 
     private void openTargetAndExtendCommand(
             Initiator initiator, 
             Location location, 
             String target, 
             OpenLocationTargetCommand command) {
-        command.argument().setExtended(location.name() + "/" + target);
+        command.argument().setExtended(location.relativePathTo(target));
         command.setTargetFound();
         this.ioEngine.report(initiator, "...opening " + command.extendedArgument());
         location.openAsync(
@@ -1287,9 +1153,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     private void doWhenListedLocationNotFound(Initiator initiator, String pattern) {
-//        ValueFlow<InvocationCommand> commandFlow = this.domain
-//                .commandsMemory()
-//                .findStoredCommandByPatternAndType(initiator, pattern, OPEN_LOCATION_TARGET, HIDE_VARIANT_TYPE);
+        if ( directSubPathManipulationDisabled ) {
+            this.ioEngine.report(initiator, format("cannot find '%s'", pattern));
+            return;
+        }
+        
         ValueFlow<LocationSubPath> subPathFlow = this.domain
                 .locationSubPaths()
                 .findLocationSubPath(initiator, pattern);
@@ -1298,8 +1166,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 if ( subPathFlow.asComplete().hasValue() ) {
                     this.listSubPath(initiator, subPathFlow.asComplete().getOrThrow());
                 } else {
-                    this.ioEngine.report(
-                        initiator, format("cannot find '%s'", pattern));
+                    this.ioEngine.report(initiator, format("cannot find '%s'", pattern));
                 }
                 break; 
             }
@@ -1373,6 +1240,11 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void proceedListLocationSubPath(
             Initiator initiator, String subPathPattern, String target) {
+        if ( directSubPathManipulationDisabled ) {
+            this.ioEngine.report(initiator, format("cannot find '%s'", subPathPattern));
+            return;
+        }
+        
         ValueFlow<LocationSubPath> subPathFlow = this.domain
                 .locationSubPaths()
                 .findLocationSubPath(initiator, subPathPattern);
@@ -1380,13 +1252,10 @@ class ExecutorModuleWorker implements ExecutorModule {
         switch ( subPathFlow.result() ) {
             case COMPLETE : {
                 if ( subPathFlow.asComplete().hasValue() ) {
-                    LocationSubPath subPath = subPathFlow.asComplete().getOrThrow();
-                    this.listPathInLocation(initiator, 
-                            subPath.location(), 
-                            joinToPathFrom(subPath.subPath(), target));
+                    LocationSubPath locationSubPath = subPathFlow.asComplete().getOrThrow();
+                    this.listPathInLocation(initiator, locationSubPath, target);
                 } else {                    
-                    this.ioEngine.report(
-                            initiator, format("cannot find '%s'", subPathPattern));
+                    this.ioEngine.report(initiator, format("cannot find '%s'", subPathPattern));
                 }    
                 break;
             }    
@@ -1424,11 +1293,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             if ( pathIsDirectory(finalListingRoot) ) {
                 this.doListing(initiator, location, subpath);                    
             } else {
-                if ( nonNull(this.walk) ) {
-                    this.listPathInLocationByFileWalker(initiator, location, subpath);
-                } else {
-                    this.listPathInLocationByFileSearcher(initiator, location, subpath);
-                }
+                this.listPathInLocationByFileWalker(initiator, location, subpath);
             }
         } else {
             this.ioEngine.report(initiator, "subpath is empty.");
@@ -1437,7 +1302,7 @@ class ExecutorModuleWorker implements ExecutorModule {
     
     private void listPathInLocationByFileWalker(
             Initiator initiator, Location location, String subpath) {
-        ValueFlow<String> subpathFlow = this.walk
+        ValueFlow<String> subpathFlow = this.walker
                 .walkToFind(subpath)
                 .withMaxDepthOf(5)
                 .in(location)
@@ -1469,37 +1334,6 @@ class ExecutorModuleWorker implements ExecutorModule {
             default : {
                 // do nothing;
             }
-        }
-    }
-    
-    private void listPathInLocationByFileSearcher(
-            Initiator initiator, Location location, String subpath) {
-        FileSearchResult result = this.fileSearcher.find(
-                subpath, location.path(), SIMILAR_MATCH, FOLDERS_ONLY);
-        if ( result.isOk() ) {
-            if ( result.success().hasSingleFoundFile() ) {
-                this.doListing(initiator, location, result.success().foundFile());
-            } else {
-                this.resolveMultipleFoldersAndDoListing(
-                        initiator, location, subpath, result.success().foundFiles());
-            }
-        } else {
-            this.ioEngine.report(
-                    initiator, format("%s/%s nof found.", location.path(), subpath));
-        }
-    }
-    
-    private void resolveMultipleFoldersAndDoListing(
-            Initiator initiator, Location location, String subpathPattern, List<String> folders) {
-        WeightedVariants variants = weightStrings(subpathPattern, folders);
-        if ( variants.isEmpty() ) {
-            this.ioEngine.report(initiator, format(
-                    "%s/%s nof found.", location.path(), subpathPattern));
-        }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
-                initiator, variants, this.chooseMultipleFoldersHelp);
-        if ( answer.isGiven() ) {
-            this.doListing(initiator, location, answer.text());
         }
     }
     
