@@ -16,7 +16,7 @@ import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
-import diarsid.beam.core.base.objects.CachedReusable;
+import diarsid.beam.core.base.objects.PooledReusable;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.util.Possible;
 import diarsid.beam.core.domain.entities.Location;
@@ -58,12 +58,12 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
  *
  * @author Diarsid
  */
-class WalkState extends CachedReusable {
+class WalkState extends PooledReusable {
     
     private static final int UNVISITED_LEVEL = -1;
     
     static {
-        CachedReusable.createCacheFor(WalkState.class, () -> new WalkState());
+        PooledReusable.createPoolFor(WalkState.class, () -> new WalkState());
     }
             
     private final Possible<String> absoluteRoot;

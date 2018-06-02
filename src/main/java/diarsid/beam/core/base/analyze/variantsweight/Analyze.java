@@ -28,14 +28,14 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clusters
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOkWhenAdjusted;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
-import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 
 /**
  *
@@ -192,14 +192,14 @@ public class Analyze {
     }
     
     public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
-        AnalyzeData analyze = takeFromCache(AnalyzeData.class);
+        AnalyzeData analyze = takeFromPool(AnalyzeData.class);
         analyze.setVariantText(variant);
         analyze.setPattern(pattern);
         analyze.checkIfVariantEqualsPattern();
         if ( analyze.isVariantEqualsPattern() ) {
             analyze.setNewVariant(variant);
             Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
-            giveBackToCache(analyze);
+            giveBackToPool(analyze);
             return weightedVariant;
         }
         analyze.checkIfVariantTextContainsPatternDirectly();
@@ -209,7 +209,7 @@ public class Analyze {
         analyze.sortPositions();
         analyze.findPositionsClusters();
         if ( analyze.areTooMuchPositionsMissed() ) {
-            giveBackToCache(analyze);
+            giveBackToPool(analyze);
             return Optional.empty();
         }
         analyze.calculateClustersImportance();
@@ -218,12 +218,12 @@ public class Analyze {
         analyze.logState();
         if ( analyze.isVariantTooBad() ) {
             System.out.println(analyze.variantText + " is too bad.");
-            giveBackToCache(analyze);
+            giveBackToPool(analyze);
             return Optional.empty();
         }
         analyze.setNewVariant(variant);
         Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
-        giveBackToCache(analyze);
+        giveBackToPool(analyze);
         return weightedVariant;
     }
     
@@ -238,7 +238,7 @@ public class Analyze {
         Map<String, WeightedVariant> variantsByDisplay = new HashMap<>();
         Map<String, Variant> variantsByText = new HashMap<>();
         List<WeightedVariant> weightedVariants = new ArrayList<>();        
-        AnalyzeData analyze = takeFromCache(AnalyzeData.class);
+        AnalyzeData analyze = takeFromPool(AnalyzeData.class);
         String lowerVariantText;
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
@@ -305,7 +305,7 @@ public class Analyze {
             } 
             analyze.clearForReuse();
         }
-        giveBackToCache(analyze);
+        giveBackToPool(analyze);
         
         double delta = minWeight;
 //        weightedVariants = weightedVariants

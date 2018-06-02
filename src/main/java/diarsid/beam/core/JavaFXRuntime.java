@@ -18,13 +18,13 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
  */
 public class JavaFXRuntime extends Application {
     
-    private static final String ON_LAUNCH_EVENT;
+    private static final String LAUNCHED;
     private static final Object LOCK;
     private static boolean notLaunched;
     
     static {
         LOCK = new Object();
-        ON_LAUNCH_EVENT = "JavaFX Runtime launched";
+        LAUNCHED = "JavaFX Runtime launched";
         notLaunched = true;
     }
     
@@ -35,13 +35,13 @@ public class JavaFXRuntime extends Application {
                         "JavaFX Application starter thread", 
                         () -> Application.launch());
                 notLaunched = false;
-                awaitFor(ON_LAUNCH_EVENT).thenProceed();                
+                awaitFor(LAUNCHED).thenProceed();                
             }            
         }        
     } 
 
     @Override
     public void start(Stage stage) throws Exception {
-        fireAsync(ON_LAUNCH_EVENT);
+        fireAsync(LAUNCHED);
     }
 }

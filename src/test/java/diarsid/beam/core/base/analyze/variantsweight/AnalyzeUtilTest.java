@@ -17,7 +17,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.calculateCluster;
-import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
+import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
 
 /**
  *
@@ -34,10 +34,9 @@ public class AnalyzeUtilTest {
     
     @After
     public void tearDown() {
-        giveBackToCache(cluster);
+        giveBackToPool(cluster);
     }
     
-    // expected to fail
     @Test
     public void test__0_1_1_m2_0_0_0() {
         process(0, 1, 1, -2, 0, 0, 0);
@@ -98,7 +97,6 @@ public class AnalyzeUtilTest {
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));        
     }
 
-    // expected to fail
     @Test
     public void test__0_m1_m1_2_0() {
         process(0, -1, -1, 2, 0);
@@ -136,7 +134,7 @@ public class AnalyzeUtilTest {
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
         assertThat(cluster.ordersDiffSum(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
-        assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
+        assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));
     }
 
     @Test
@@ -196,7 +194,7 @@ public class AnalyzeUtilTest {
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
         assertThat(cluster.ordersDiffSum(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-3));
-        assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
+        assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));
     }
 
     @Test
@@ -206,7 +204,7 @@ public class AnalyzeUtilTest {
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
         assertThat(cluster.ordersDiffSum(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-3));
-        assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
+        assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));
     }
 
     @Test
@@ -219,7 +217,6 @@ public class AnalyzeUtilTest {
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
     }
     
-    // expected to fail
     @Test
     public void test__3_3_2_2_5_3() {
         process(3, 3, 2, 2, 5, 3);

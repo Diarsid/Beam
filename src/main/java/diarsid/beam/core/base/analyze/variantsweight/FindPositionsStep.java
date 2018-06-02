@@ -10,14 +10,17 @@ package diarsid.beam.core.base.analyze.variantsweight;
  * @author Diarsid
  */
 public enum FindPositionsStep {
-    STEP_1 (2, false), 
-    STEP_2 (1, true), 
-    STEP_3 (0, false);
     
+    STEP_1 (/*order*/ 0, /*permission treshold*/ 2, /*typo searching allowed*/ false), 
+    STEP_2 (/*order*/ 1, /*permission treshold*/ 1, /*typo searching allowed*/ true), 
+    STEP_3 (/*order*/ 2, /*permission treshold*/ 0, /*typo searching allowed*/ false);
+    
+    private final int order;
     private final int permissionTreshold;
     private final boolean typoSearchingAllowed;
     
-    private FindPositionsStep(int permissionTreshold, boolean typoSearchingAllowed) {
+    private FindPositionsStep(int order, int permissionTreshold, boolean typoSearchingAllowed) {
+        this.order = order;
         this.permissionTreshold = permissionTreshold;
         this.typoSearchingAllowed = typoSearchingAllowed;
     }
@@ -28,5 +31,9 @@ public enum FindPositionsStep {
     
     boolean typoSearchingAllowed() {
         return this.typoSearchingAllowed;
+    }
+    
+    boolean isLaterThan(FindPositionsStep other) {
+        return this.order > other.order;
     }
 }

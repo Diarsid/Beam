@@ -5,17 +5,17 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
-import diarsid.beam.core.base.objects.CachedReusable;
+import diarsid.beam.core.base.objects.PooledReusable;
 
 
 /**
  *
  * @author Diarsid
  */
-class Cluster extends CachedReusable {
+class Cluster extends PooledReusable {
     
     static {
-        CachedReusable.createCacheFor(Cluster.class, () -> new Cluster());
+        PooledReusable.createPoolFor(Cluster.class, () -> new Cluster());
     }
     
     private int length;

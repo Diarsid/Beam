@@ -11,20 +11,20 @@ import java.util.function.Supplier;
  *
  * @author Diarsid
  */
-public abstract class CachedReusable {
+public abstract class PooledReusable {
     
-    protected CachedReusable() {
-        // empty constructor for creating new objects in cache
+    protected PooledReusable() {
+        // empty constructor for creating new objects in pool
     }
     
-    protected static <T extends CachedReusable> void createCacheFor(
+    protected static <T extends PooledReusable> void createPoolFor(
             Class<T> type, Supplier<T> tSupplier) {
-        Cache.createCache(type, tSupplier);
+        Pool.createPool(type, tSupplier);
     }
     
     protected abstract void clearForReuse();
     
-    final Class getCacheableClass() {
+    final Class getPooleableClass() {
         return this.getClass();
     }
 }

@@ -12,11 +12,11 @@ import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
-import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
+import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 
 /**
  *
@@ -105,6 +105,9 @@ class AnalyzeUtil {
                         haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 2;
                         lastBeforeRepeat = UNINITIALIZED;
+                        if ( clusterLength == 2 ) {
+                            shifts = 2;
+                        }
                     } else if ( absDiff(previous, next) == 4 && 
                                 absDiff(previous, current) == 2 && 
                                 absDiff(current, mean) == 0 ) {
@@ -113,6 +116,9 @@ class AnalyzeUtil {
                         haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 4;
                         lastBeforeRepeat = UNINITIALIZED;
+                        if ( clusterLength == 3 ) {
+                            shifts = 3;
+                        }
                     }                    
                 }
                 
@@ -163,7 +169,7 @@ class AnalyzeUtil {
             diffSum = 1;
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
         }
-        return takeFromCache(Cluster.class)
+        return takeFromPool(Cluster.class)
                 .set(clusterLength, mean, diffSum, diffCount, shifts, haveCompensation);
     }
     

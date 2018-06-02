@@ -9,11 +9,11 @@ import java.nio.file.Path;
 
 import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 
-import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
-import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 
 /**
  *
@@ -25,7 +25,7 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
     
     DetectorForNameOrSubpathSimilarity(String nameToFind) {
         super(nameToFind);
-        this.session = takeFromCache(SimilarityCheckSession.class);
+        this.session = takeFromPool(SimilarityCheckSession.class);
     }
 
     @Override
@@ -49,6 +49,6 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
     
     @Override
     void close() {
-        giveBackToCache(this.session);
+        giveBackToPool(this.session);
     }
 }

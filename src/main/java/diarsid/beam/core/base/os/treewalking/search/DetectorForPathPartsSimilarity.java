@@ -11,13 +11,13 @@ import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 
 import static java.lang.System.arraycopy;
 
-import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
-import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.MathUtil.halfRoundUp;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.joining;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 
 /**
  *
@@ -31,7 +31,7 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     DetectorForPathPartsSimilarity(String[] searchedPthParts) {
         super(searchedPthParts);
         this.searchedPathPartsCopy = new String[searchedPthParts.length];
-        this.session = takeFromCache(SimilarityCheckSession.class);
+        this.session = takeFromPool(SimilarityCheckSession.class);
     }
 
     @Override
@@ -41,7 +41,7 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     
     @Override
     void close() {
-        giveBackToCache(this.session);
+        giveBackToPool(this.session);
     }
     
     private void fillSearchedPathPartsCopy() {

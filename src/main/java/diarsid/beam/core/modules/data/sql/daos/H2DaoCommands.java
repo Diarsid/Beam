@@ -450,24 +450,24 @@ class H2DaoCommands
                 return found;
             } 
             
-            List<String> multicharCriterias = patternToMulticharCriterias(pattern);
-            
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
-                            "SELECT com_type, com_extended " +
-                            "FROM commands " +
-                            "WHERE " + multipleLowerGroupedLikesOrAnd(
-                                    "com_extended", multicharCriterias.size()) +
-                            "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
-                            multicharCriterias)
-                    .collect(toList());    
-            
-            debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
-            if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
-                return found;
-            }
+//            List<String> multicharCriterias = patternToMulticharCriterias(pattern);
+//            
+//            found = transact
+//                    .doQueryAndStreamVarargParams(
+//                            InvocationCommand.class,
+//                            "SELECT com_type, com_extended " +
+//                            "FROM commands " +
+//                            "WHERE " + multipleLowerGroupedLikesOrAnd(
+//                                    "com_extended", multicharCriterias.size()) +
+//                            "GROUP BY com_type, com_extended",
+//                            rowToNewInvocationCommandWithPatternAsOriginal,
+//                            multicharCriterias)
+//                    .collect(toList());    
+//            
+//            debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
+//            if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
+//                return found;
+//            }
 
             List<String> charCriterias = patternToCharCriterias(pattern);
             

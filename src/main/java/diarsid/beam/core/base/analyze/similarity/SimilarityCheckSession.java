@@ -8,7 +8,7 @@ package diarsid.beam.core.base.analyze.similarity;
 import java.util.HashMap;
 import java.util.Map;
 
-import diarsid.beam.core.base.objects.CachedReusable;
+import diarsid.beam.core.base.objects.PooledReusable;
 
 import static java.lang.String.format;
 
@@ -19,10 +19,10 @@ import static diarsid.beam.core.base.util.Logs.debug;
  *
  * @author Diarsid
  */
-public class SimilarityCheckSession extends CachedReusable {
+public class SimilarityCheckSession extends PooledReusable {
     
     static {
-        CachedReusable.createCacheFor(
+        PooledReusable.createPoolFor(
                 SimilarityCheckSession.class, () -> new SimilarityCheckSession());
     }
     

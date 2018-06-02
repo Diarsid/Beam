@@ -31,8 +31,6 @@ import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.fin
 import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.unite;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
-import static diarsid.beam.core.base.objects.Cache.giveBackToCache;
-import static diarsid.beam.core.base.objects.Cache.takeFromCache;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
@@ -43,6 +41,8 @@ import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.haveEqualLength;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 
 
 /**
@@ -78,7 +78,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     private WalkState state() {
         WalkState state = this.localState.get();
         if ( isNull(state) ) {
-            state = takeFromCache(WalkState.class);
+            state = takeFromPool(WalkState.class);
             this.localState.set(state);
         }
         return state;
@@ -225,7 +225,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     private void cleanThreadLocalState() {
         WalkState state = this.localState.get();
         this.localState.remove();
-        giveBackToCache(state);
+        giveBackToPool(state);
     }
     
     private boolean consumeAndDefineIfGoDeeper(WalkState state) {

@@ -26,81 +26,81 @@ import static diarsid.beam.core.base.util.Logs.log;
  *
  * @author Diarsid
  */
-public class Cache<T extends CachedReusable> {
+public class Pool<T extends PooledReusable> {
     
-    private static final Map<Class, Cache> CACHES_BY_CACHED_CLASS;
+    private static final Map<Class, Pool> POOLS_BY_POOLED_CLASS;
     
     static {
-        CACHES_BY_CACHED_CLASS = new HashMap<>();
+        POOLS_BY_POOLED_CLASS = new HashMap<>();
     }
     
     private final Queue<T> queue;
     private final Supplier<T> tNewObjectSupplier;
     
-    private Cache(Supplier<T> newTSupplier) {
+    private Pool(Supplier<T> newTSupplier) {
         this.queue = new ArrayDeque<>();
         this.tNewObjectSupplier = newTSupplier;
     }
     
-    static <T extends CachedReusable> void createCache(Class<T> type, Supplier<T> tSupplier) {
-        synchronized ( CACHES_BY_CACHED_CLASS ) {
-            Cache<T> existedCache = CACHES_BY_CACHED_CLASS.get(type);
-            if ( existedCache == null ) {
-                Cache<T> newTCache = new Cache<>(tSupplier);
-                CACHES_BY_CACHED_CLASS.put(type, newTCache);
-                log(Cache.class, format("Cache for %s created.", type.getCanonicalName()));
+    static <T extends PooledReusable> void createPool(Class<T> type, Supplier<T> tSupplier) {
+        synchronized ( POOLS_BY_POOLED_CLASS ) {
+            Pool<T> existedPool = POOLS_BY_POOLED_CLASS.get(type);
+            if ( existedPool == null ) {
+                Pool<T> newTPool = new Pool<>(tSupplier);
+                POOLS_BY_POOLED_CLASS.put(type, newTPool);
+                log(Pool.class, format("Pool for %s created.", type.getCanonicalName()));
             }       
         } 
     }
     
-    public static <T extends CachedReusable> Optional<Cache<T>> cacheOf(Class<T> type) {
-        return Optional.ofNullable(CACHES_BY_CACHED_CLASS.get(type));
+    public static <T extends PooledReusable> Optional<Pool<T>> poolOf(Class<T> type) {
+        return Optional.ofNullable(POOLS_BY_POOLED_CLASS.get(type));
     }
     
-    public static <T extends CachedReusable> T takeFromCache(Class<T> type) {
-        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(type);
-        T cached;
-        if ( cache == null ) {
-            cached = initializeCacheAndGetInstanceOf(type);
+    public static <T extends PooledReusable> T takeFromPool(Class<T> type) {
+        Pool<T> pool = POOLS_BY_POOLED_CLASS.get(type);
+        T pooled;
+        if ( pool == null ) {
+            pooled = initializePoolAndGetInstanceOf(type);
         } else {
-            cached = cache.give();
+            pooled = pool.give();
         }        
-        return cached;
+        return pooled;
     }
     
-    private static <T extends CachedReusable> T initializeCacheAndGetInstanceOf(Class<T> type) {
+    private static <T extends PooledReusable> T initializePoolAndGetInstanceOf(Class<T> type) {
         Constructor noArgsConstructor = stream(type.getDeclaredConstructors())
                 .filter(constructor -> constructor.getParameterCount() == 0)
                 .peek(constructor -> constructor.setAccessible(true))
                 .findFirst()
                 .orElseThrow(() -> {
-                    return new WorkflowBrokenException("Cannot found cached no-args constructor!");
+                    return new WorkflowBrokenException("Cannot found pooled no-args constructor!");
                 });
         
         try {
             return (T) noArgsConstructor.newInstance();
         } catch (Exception e) {
             throw new WorkflowBrokenException(
-                    "Cannot initialize instance and Cache for class " + type.getCanonicalName());
+                    "Cannot initialize instance and Pool for class " + type.getCanonicalName());
         }
     }
     
-    public static <T extends CachedReusable> void giveBackToCache(T cacheable) {
-        if ( cacheable == null ) {
+    public static <T extends PooledReusable> void giveBackToPool(T pooleable) {
+        if ( pooleable == null ) {
             return;
         }
         
-        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(cacheable.getCacheableClass());
-        cache.takeBack(cacheable);
+        Pool<T> cache = POOLS_BY_POOLED_CLASS.get(pooleable.getPooleableClass());
+        cache.takeBack(pooleable);
     }
     
-    public static <T extends CachedReusable> void giveBackAllToCache(List<T> cacheable) {
-        if ( cacheable == null || cacheable.isEmpty() ) {
+    public static <T extends PooledReusable> void giveBackAllToPool(List<T> pooleable) {
+        if ( pooleable == null || pooleable.isEmpty() ) {
             return;
         }
         
-        Cache<T> cache = CACHES_BY_CACHED_CLASS.get(cacheable.get(0).getCacheableClass());
-        cache.takeBackAll(cacheable);
+        Pool<T> pool = POOLS_BY_POOLED_CLASS.get(pooleable.get(0).getPooleableClass());
+        pool.takeBackAll(pooleable);
     }
     
     public T give() {

@@ -8,7 +8,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.util.Map;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
-import diarsid.beam.core.base.objects.CachedReusable;
+import diarsid.beam.core.base.objects.PooledReusable;
 
 import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
@@ -34,10 +34,10 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
  *
  * @author Diarsid
  */
-class AnalyzeData extends CachedReusable {
+class AnalyzeData extends PooledReusable {
     
     static {
-        createCacheFor(AnalyzeData.class, () -> new AnalyzeData());
+        createPoolFor(AnalyzeData.class, () -> new AnalyzeData());
     }
     
     final AnalyzePositionsData forwardAnalyze;

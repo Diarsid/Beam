@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import diarsid.beam.core.base.objects.Cache;
+import diarsid.beam.core.base.objects.Pool;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -25,7 +25,7 @@ import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.objects.Cache.cacheOf;
+import static diarsid.beam.core.base.objects.Pool.poolOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.warn;
 
@@ -50,9 +50,9 @@ public class AnalyzeTest {
     
     @AfterClass
     public static void tearDownClass() {
-        Optional<Cache<AnalyzeData>> cache = cacheOf(AnalyzeData.class);
-        if ( cache.isPresent() ) {
-            Cache<AnalyzeData> c = cache.get();
+        Optional<Pool<AnalyzeData>> pool = poolOf(AnalyzeData.class);
+        if ( pool.isPresent() ) {
+            Pool<AnalyzeData> c = pool.get();
             AnalyzeData analyzeData = c.give();
         }
     }
@@ -343,6 +343,25 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+        
+    @Test
+    public void test_rostersCase_rester() {
+        pattern = "rester";
+        
+        variants = asList(
+                "Dev/Start_MySQL_server",
+                "Music/2__Store/Therion",
+                "Content/WH/Game/The_9th_Age/Rosters"
+        );
+        
+        expected = asList(
+                "Content/WH/Game/The_9th_Age/Rosters",
+                "Dev/Start_MySQL_server",         
+                "Music/2__Store/Therion"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
     
     @Test
     public void test_rostersCase_rosers() {
@@ -357,7 +376,6 @@ public class AnalyzeTest {
                 "Rosters"
         );
         
-        expectedToFail();
         weightVariantsAndCheckMatching();
     }
     
@@ -372,7 +390,6 @@ public class AnalyzeTest {
         expected = asList(
                 "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2");
         
-        expectedToFail();
         weightVariantsAndCheckMatching();
     }
     
@@ -387,7 +404,6 @@ public class AnalyzeTest {
         expected = asList(
                 "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2");
         
-        expectedToFail();
         weightVariantsAndCheckMatching();
     }
     
@@ -465,11 +481,13 @@ public class AnalyzeTest {
         
         variants = asList(
                 "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators",
-                "1__Projects/Diarsid/NetBeans");
+                "1__Projects/Diarsid/NetBeans"
+        );
         
         expected = asList( 
                 "1__Projects/Diarsid/NetBeans",
-                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators");
+                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators"
+        );
         
         weightVariantsAndCheckMatching();
     }
@@ -833,6 +851,22 @@ public class AnalyzeTest {
     }
     
     private void weightVariantsAndCheckMatching() {
+        boolean failed;
+        try {
+            weightVariantsAndCheckMatchingInternally();
+            failed = false;
+        } catch (AssertionError e) {
+            failed = true;
+            if ( ! this.expectedToFail ) {
+                throw e;
+            }
+        }        
+        if ( !failed && this.expectedToFail ) {
+            fail("=== EXPECTED TO FAIL BUT PASSED ===");
+        }
+    }
+    
+    private void weightVariantsAndCheckMatchingInternally() {
         weightedVariants = weightVariants(pattern, stringsToVariants(variants));
         
         String expectedVariant;

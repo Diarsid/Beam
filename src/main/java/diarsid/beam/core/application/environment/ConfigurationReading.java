@@ -54,7 +54,7 @@ class ConfigurationReading {
                 "ui.images.capture.webpages.resize = true",
                 "ui.console.runOnStart = true",
                 "analyze.weight.base.log = true",
-                "analyze.weight.positions.search.log = true",
+                "analyze.weight.positions.search.log = false",
                 "analyze.weight.positions.clusters.log = true",
                 "analyze.similarity.log.base = true",
                 "analyze.similarity.log.advanced = true",
