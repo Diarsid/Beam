@@ -14,6 +14,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import static diarsid.beam.core.base.util.StringUtils.countOccurences;
 import static diarsid.beam.core.base.util.StringUtils.splitToLines;
 
 /**
@@ -28,5 +29,10 @@ public class StringUtilsTest {
         List<String> expected = asList("line1", "line2", "line3");
         
         assertThat(splitToLines(multilines), equalTo(expected));
+    }
+    
+    @Test
+    public void countOccurencesTest() {
+        assertThat(countOccurences("ABcABd", "AB"), equalTo(2));
     }
 }

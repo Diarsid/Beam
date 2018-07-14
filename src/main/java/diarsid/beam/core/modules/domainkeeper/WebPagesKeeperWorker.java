@@ -86,7 +86,6 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGetValue;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -105,6 +104,7 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGetFlow;
 
 
 public class WebPagesKeeperWorker 
@@ -719,7 +719,7 @@ public class WebPagesKeeperWorker
         WebPage page = optPage.get();
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
-        ValueFlow<Picture> pictureFlow = awaitGetValue(() -> {     
+        ValueFlow<Picture> pictureFlow = awaitGetFlow(() -> {     
             return this.interactionGui.capturePictureOnScreen(page.name());
         });
         

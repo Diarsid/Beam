@@ -61,7 +61,7 @@ public class H2DaoKeyValueStorageTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(87, IN_MACHINE);
-        dataBase = new H2TestDataBase("key-value-test");
+        dataBase = new H2TestDataBase();
         
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoKeyValueStorage(dataBase, ioEngine);

@@ -20,7 +20,6 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
-import static java.lang.String.join;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -28,24 +27,19 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
-import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
-import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_LOCATION;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
-class H2DaoLocations 
+abstract class H2DaoLocationsV0 
         extends BeamCommonDao 
         implements DaoLocations {
     
-    H2DaoLocations(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoLocationsV0(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
     }
 
@@ -59,7 +53,7 @@ class H2DaoLocations
                             "WHERE LOWER(loc_name) IS ? ",
                             lower(exactName));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoLocations.class, ex);
+            logError(H2DaoLocationsV0.class, ex);
             super.ioEngine().report(initiator, "is name free request failed.");
             return false;
         }
@@ -82,88 +76,6 @@ class H2DaoLocations
             super.ioEngine().report(
                     initiator, format("location search by exact name '%s' failed.", exactName));
             return Optional.empty();
-        }
-    }
-
-    @Override
-    public List<Location> getLocationsByNamePattern(
-            Initiator initiator, String pattern) {        
-        try (JdbcTransaction transact = super.openTransaction()) {
-            
-            List<Location> found;
-            
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            Location.class, 
-                            "SELECT loc_name, loc_path " +
-                            "FROM locations " +
-                            "WHERE LOWER(loc_name) LIKE ?  ", 
-                            ROW_TO_LOCATION,
-                            lowerWildcard(pattern))
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            } else {
-                debug("[PATTERN FULL] not found : " + pattern);
-            }
-            
-            List<String> criterias = patternToCharCriterias(pattern);
-            debug("[PATTERN] criterias: " + join(" ", criterias));
-            
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            Location.class, 
-                            "SELECT loc_name, loc_path " +
-                            "FROM locations " +
-                            "WHERE " + multipleLowerLikeAnd("loc_name", criterias.size()), 
-                            ROW_TO_LOCATION,
-                            criterias)
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            } else {
-                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
-            }
-            
-            String andOrCondition = multipleLowerGroupedLikesAndOr("loc_name", criterias.size());
-            List<Location> shiftedFound;
-            
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            Location.class, 
-                            "SELECT loc_name, loc_path " +
-                            "FROM locations " +
-                            "WHERE " + andOrCondition, 
-                            ROW_TO_LOCATION,
-                            criterias)
-                    .collect(toList());
-            
-            shift(criterias);
-            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
-            shiftedFound = transact
-                    .doQueryAndStreamVarargParams(
-                            Location.class, 
-                            "SELECT loc_name, loc_path " +
-                            "FROM locations " +
-                            "WHERE " + andOrCondition, 
-                            ROW_TO_LOCATION,
-                            criterias)
-                    .collect(toList());
-            
-            debug("[PATTERN] found by criterias : " + found.size());
-            debug("[PATTERN] found by shuffled criterias : " + shiftedFound.size());
-            shiftedFound.retainAll(found);
-            found.retainAll(shiftedFound);
-            
-            return found;
-            
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(this.getClass(), ex);
-            super.ioEngine().report(
-                    initiator, format("location search by name '%s' failed.", pattern));
-            return emptyList();
         }
     }
 

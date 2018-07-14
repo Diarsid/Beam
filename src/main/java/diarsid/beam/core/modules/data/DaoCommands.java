@@ -46,7 +46,7 @@ public interface DaoCommands {
             Initiator initiator, InvocationCommand command);
     
     boolean save(
-            Initiator initiator, List<InvocationCommand> commands);
+            Initiator initiator, List<? extends InvocationCommand> commands);
     
     boolean delete(
             Initiator initiator, InvocationCommand command);

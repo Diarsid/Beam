@@ -32,11 +32,11 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  *
  * @author Diarsid
  */
-class H2DaoLocationSubPaths 
+class H2DaoLocationSubPathsV1 
         extends BeamCommonDao 
         implements DaoLocationSubPaths {
     
-    H2DaoLocationSubPaths(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoLocationSubPathsV1(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
     }
 
@@ -159,7 +159,7 @@ class H2DaoLocationSubPaths
                             "   commands AS com " +
                             "   JOIN " +
                             "   locations AS loc " +
-                                "ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
+                            "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 

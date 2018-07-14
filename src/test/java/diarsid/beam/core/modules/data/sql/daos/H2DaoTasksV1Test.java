@@ -54,24 +54,24 @@ import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTime
  *
  * @author Diarsid
  */
-public class H2DaoTasksTest {
+public class H2DaoTasksV1Test {
     
-    private static final Logger logger = LoggerFactory.getLogger(H2DaoTasksTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(H2DaoTasksV1Test.class);
     
     private static TestDataBase dataBase;
     private static InnerIoEngine ioEngine;
     private static DaoTasks dao;
     private static Initiator initiator;
 
-    public H2DaoTasksTest() {
+    public H2DaoTasksV1Test() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(23, IN_MACHINE);
-        dataBase = new H2TestDataBase("tasks_test");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
-        dao = new H2DaoTasks(dataBase, ioEngine);
+        dao = new H2DaoTasksV1(dataBase, ioEngine);
         
         DataBaseModel dataBaseModel = new H2DataBaseModel();
         

@@ -21,7 +21,6 @@ public class JavaFXUtil {
     
     public static double screenHeight() {
         return Screen.getPrimary().getVisualBounds().getHeight();
-    }
-    
+    }    
     
 }

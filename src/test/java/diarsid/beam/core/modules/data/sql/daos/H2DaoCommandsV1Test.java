@@ -49,26 +49,25 @@ import static diarsid.jdbc.transactions.core.Params.params;
  *
  * @author Diarsid
  */
-public class H2DaoCommandsTest {
+public class H2DaoCommandsV1Test {
     
-    private static final Logger logger = LoggerFactory.getLogger(H2DaoCommandsTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(H2DaoCommandsV1Test.class);
     
     static DaoCommands dao;
     static Initiator initiator;
     static TestDataBase dataBase;
-    static InnerIoEngine ioEngine;
-    
+    static InnerIoEngine ioEngine;    
 
-    public H2DaoCommandsTest() {
+    public H2DaoCommandsV1Test() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(41, IN_MACHINE);
-        dataBase = new H2TestDataBase("commands-test");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
         
-        dao = new H2DaoCommands(dataBase, ioEngine);
+        dao = new H2DaoCommandsV1(dataBase, ioEngine);
         DataBaseModel dataBaseModel = new H2DataBaseModel();
         
         DataBaseActuator actuator = getActuatorFor(dataBase, dataBaseModel);
@@ -123,7 +122,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of getByExactOriginalAndType method, of class H2DaoCommands.
+     * Test of getByExactOriginalAndType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testGetByExactOriginalOfType() {
@@ -134,7 +133,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of getByExactOriginalOfAnyType method, of class H2DaoCommands.
+     * Test of getByExactOriginalOfAnyType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testGetByExactOriginalOfAnyType() {
@@ -143,7 +142,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of searchInOriginalByPattern method, of class H2DaoCommands.
+     * Test of searchInOriginalByPattern method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByOriginalPattern() {
@@ -152,7 +151,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of fullSearchByOriginalPatternParts method, of class H2DaoCommands.
+     * Test of fullSearchByOriginalPatternParts method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByOriginalPatternParts() {
@@ -173,7 +172,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of searchInOriginalByPatternAndType method, of class H2DaoCommands.
+     * Test of searchInOriginalByPatternAndType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByOriginalPatternOfType() {
@@ -183,7 +182,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of fullSearchByOriginalPatternPartsOfType method, of class H2DaoCommands.
+     * Test of fullSearchByOriginalPatternPartsOfType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByOriginalPatternPartsOfType() {
@@ -193,7 +192,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of searchInExtendedByPattern method, of class H2DaoCommands.
+     * Test of searchInExtendedByPattern method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByExtendedPattern_case1() {
@@ -222,7 +221,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of fullSearchByExtendedPatternParts method, of class H2DaoCommands.
+     * Test of fullSearchByExtendedPatternParts method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByExtendedPatternParts() {
@@ -231,7 +230,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of searchInExtendedByPatternAndType method, of class H2DaoCommands.
+     * Test of searchInExtendedByPatternAndType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByExtendedPatternOfType_case1() {
@@ -255,7 +254,7 @@ public class H2DaoCommandsTest {
     }
     
     /**
-     * Test of fullSearchByExtendedPatternPartsOfType method, of class H2DaoCommands.
+     * Test of fullSearchByExtendedPatternPartsOfType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testFullSearchByExtendedPatternPartsOfType() {
@@ -265,7 +264,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of save method, of class H2DaoCommands.
+     * Test of save method, of class H2DaoCommandsV0.
      */
     @Test
     public void testSave() {
@@ -280,7 +279,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of delete method, of class H2DaoCommands.
+     * Test of delete method, of class H2DaoCommandsV0.
      */
     @Test
     public void testDelete() {
@@ -302,7 +301,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of deleteByExactOriginalOfAllTypes method, of class H2DaoCommands.
+     * Test of deleteByExactOriginalOfAllTypes method, of class H2DaoCommandsV0.
      */
     @Test
     public void testDeleteByExactOriginalOfAllTypes() {
@@ -315,7 +314,7 @@ public class H2DaoCommandsTest {
     }
 
     /**
-     * Test of deleteByExactOriginalOfType method, of class H2DaoCommands.
+     * Test of deleteByExactOriginalOfType method, of class H2DaoCommandsV0.
      */
     @Test
     public void testDeleteByExactOriginalOfType() {

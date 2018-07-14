@@ -128,7 +128,7 @@ class AnalyzeData extends PooledReusable {
     private void calculateAsUsualClusters() {
         double lengthImportance = lengthImportanceRatio(this.variantText.length());
         this.distanceBetweenClustersImportance = ratio(this.best.distanceBetweenClusters, this.variantText.length()) * 15 * lengthImportance;
-        this.lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.4 * lengthImportance;
+        this.lengthDelta = ( this.variantText.length() - this.best.clustered ) * 0.3 * lengthImportance;
         
         this.variantWeight = this.variantWeight + (
                 ( this.best.nonClusteredImportance )

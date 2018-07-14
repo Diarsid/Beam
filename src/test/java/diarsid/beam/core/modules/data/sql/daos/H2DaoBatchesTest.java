@@ -71,8 +71,8 @@ public class H2DaoBatchesTest {
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
         initiator = new Initiator(13, IN_MACHINE);
-        testDataBase = new H2TestDataBase("testBase");
-        daoBatches = new H2DaoBatches(testDataBase, ioEngine);
+        testDataBase = new H2TestDataBase();
+        daoBatches = new H2DaoBatchesV2(testDataBase, ioEngine);
         SqlDataBaseModel dataBaseModel = new H2DataBaseModel();
         testDataBase.setupRequiredTable(dataBaseModel.table("batches").get().creationScript());
         testDataBase.setupRequiredTable(dataBaseModel.table("batch_commands").get().creationScript());        

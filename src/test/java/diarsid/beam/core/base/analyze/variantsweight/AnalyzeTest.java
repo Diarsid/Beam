@@ -10,19 +10,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import diarsid.beam.core.base.objects.Pool;
 
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
 import static org.junit.Assert.fail;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.disableResultsLimit;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.resultsLimitToDefault;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.objects.Pool.poolOf;
@@ -35,6 +41,10 @@ import static diarsid.beam.core.base.util.Logs.warn;
  */
 public class AnalyzeTest {
     
+    private static int totalVariantsQuantity;
+    private static long start;
+    private static long stop;
+    
     private boolean expectedToFail;
     private String pattern;
     private List<String> variants;
@@ -46,10 +56,20 @@ public class AnalyzeTest {
     
     @BeforeClass
     public static void setUpClass() {
+        start = currentTimeMillis();
     }
     
     @AfterClass
     public static void tearDownClass() {
+        stop = currentTimeMillis();
+        Logger logger = LoggerFactory.getLogger(AnalyzeTest.class);
+        String report = 
+                "\n ======================================" +
+                "\n ====== Total AnalyzeTest results =====" +
+                "\n ======================================" +
+                "\n  total time     : %s " + 
+                "\n  total variants : %s \n";
+        logger.info(format(report, stop - start, totalVariantsQuantity));
         Optional<Pool<AnalyzeData>> pool = poolOf(AnalyzeData.class);
         if ( pool.isPresent() ) {
             Pool<AnalyzeData> c = pool.get();
@@ -59,6 +79,11 @@ public class AnalyzeTest {
     
     @Before
     public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
+        resultsLimitToDefault();
     }
     
     private void expectedToFail() {
@@ -356,8 +381,41 @@ public class AnalyzeTest {
         
         expected = asList(
                 "Content/WH/Game/The_9th_Age/Rosters",
-                "Dev/Start_MySQL_server",         
-                "Music/2__Store/Therion"
+                "Dev/Start_MySQL_server"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_rostersCase2_rester() {
+        pattern = "rester";
+        
+        variants = asList(
+                "Dev/Start_MySQL_server",
+                "Content/WH/Game/The_9th_Age/Rosters/Elves.txt"
+        );
+        
+        expected = asList(
+                "Content/WH/Game/The_9th_Age/Rosters/Elves.txt",
+                "Dev/Start_MySQL_server"         
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_sqlDeveloperCase_sldev() {
+        pattern = "sldev";
+        
+        variants = asList(
+                "Dev/Start_Tomcat",
+                "Dev/Sql_Developer"
+        );
+        
+        expected = asList(
+                "Dev/Sql_Developer",
+                "Dev/Start_Tomcat"         
         );
         
         weightVariantsAndCheckMatching();
@@ -422,8 +480,41 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_hobbitBookCase_hobot() {
+        pattern = "hobot";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2",
+                "Images/Photos"
+        );
+        
+        expected = asList(
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2",
+                "Images/Photos");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_javaHomeCase_homjav() {
         pattern = "homjav";
+        
+        variants = asList(
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe",
+                "Engines/Java/Path/JAVA_HOME/bin/java.spring.exe",
+                "Engines/Java/Path/JAVA_HOME");
+        
+        expected = asList(
+                "Engines/Java/Path/JAVA_HOME", 
+                "Engines/Java/Path/JAVA_HOME/bin/java.exe",
+                "Engines/Java/Path/JAVA_HOME/bin/java.spring.exe");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_javaHomeCase_javhom() {
+        pattern = "javhom";
         
         variants = asList(
                 "Engines/Java/Path/JAVA_HOME/bin/java.exe",
@@ -594,8 +685,8 @@ public class AnalyzeTest {
                 "beam_server_project",
                 "netbeans_projects",
                 "beam netpro",
-                "babel_pro",
-                "abe_netpro");
+                "abe_netpro",
+                "babel_pro");
         
         weightVariantsAndCheckMatching();
     }
@@ -761,8 +852,26 @@ public class AnalyzeTest {
     }
     
     @Test
-    public void test_projectsUkrPoshta_ukrpsoapi() {
-        pattern = "ukrpsoapi";
+    public void test_projectsUkrPoshta_ukrposapi() {
+        pattern = "ukrposapi";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/CainiaoAPI",
+                "Projects/UkrPoshta"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_ukropsapi() {
+        pattern = "ukropsapi";
         
         variants = asList(            
                 "Projects/UkrPoshta",
@@ -842,6 +951,96 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
+    @Test
+    public void test_synthetic_1() {
+        pattern = "abc123";
+        
+        variants = asList(            
+                "xy/ABC_z123er",
+                "ABC/123",
+                "qwCABgfg132",
+                "xcdfABdC_fg123fdf23hj12");
+        
+        expected = asList(
+                "ABC/123",
+                "xy/ABC_z123er",
+                "qwCABgfg132",
+                "xcdfABdC_fg123fdf23hj12");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_synthetic_2() {
+        pattern = "abc123";
+        
+        variants = asList(            
+                "xy/ABC_z123er/Ab",
+                "xy/ABC_123er");
+        
+        expected = asList(       
+                "xy/ABC_123er", 
+                "xy/ABC_z123er/Ab"
+                );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_synthetic_3() {
+        pattern = "abcXYZ";
+        
+        variants = asList(            
+                "ababbaccaABCabbac_xyyxzyyxzXYZzx",
+                "ababbaccaACBabbac_xyyxzyyxzXYZzx");
+        
+        expected = asList(       
+                "ababbaccaABCabbac_xyyxzyyxzXYZzx",
+                "ababbaccaACBabbac_xyyxzyyxzXYZzx");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+//    @Ignore
+    @Test
+    public void test_synthetic_4() {
+        disableResultsLimit();
+        
+        pattern = "abcXYZ";
+        
+        variants = asList(
+                "ABCXYZ",
+                "ABCXYZ_acba",
+                "ABCXYZ_acba/abac_xyyxz_zx",   
+                "ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx", 
+                "zx_ABCXYZ_acba", 
+                "zx_ABCXYZ_acba/abac_xyyxz_zx",
+                "zx_ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx", 
+                "ABCXYZacba",
+                "axABCXYZ_abaca/ab_xyyxz_zx",
+                "axABCXYZacba", 
+                "axABCXYZ_ababbacca/abbac_xyyxzyyxz_zx", 
+                "axABCXYZacba_ab/ab",
+                "ABC_XYZ",
+                "ABC_XYZ_acb",  
+                "ABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
+                "zx_ABC_XYZ", 
+                "abABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",  
+                "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",    
+                "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",    
+                "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx", 
+                "ABC_ababbacca/abbac_xyyxzyyxz_XYZ_zx",  
+                "ababbacca/ABC_abbac_xyyxzyyxz_XYZ_zx",     
+                "ababbacca/ABC_abbac_xyyxzyyxz_XYZzx",
+                "ababbacca/ABC_abbac_xyyxzyyxzXYZzx",
+                "ababbacca/ABCabbac_xyyxzyyxzXYZzx",
+                "ababbaccaABCabbac_xyyxzyyxzXYZzx");
+        
+        expected = new ArrayList<>(variants);
+        
+        weightVariantsAndCheckMatching();
+    }
+    
     private void failThis(String failMessage) {
         if ( this.expectedToFail ) {
             warn(this.getClass(), failMessage);
@@ -853,6 +1052,7 @@ public class AnalyzeTest {
     private void weightVariantsAndCheckMatching() {
         boolean failed;
         try {
+            totalVariantsQuantity = totalVariantsQuantity + variants.size();
             weightVariantsAndCheckMatchingInternally();
             failed = false;
         } catch (AssertionError e) {

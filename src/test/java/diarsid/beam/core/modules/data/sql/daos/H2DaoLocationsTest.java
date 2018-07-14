@@ -58,8 +58,8 @@ public class H2DaoLocationsTest {
     public static void setUpClass() {
         InnerIoEngine ioEngine = mock(InnerIoEngine.class);
         initiator = new Initiator(76, IN_MACHINE);
-        testDataBase = new H2TestDataBase("locations_test");
-        daoLocations = new H2DaoLocations(testDataBase, ioEngine);
+        testDataBase = new H2TestDataBase();
+        daoLocations = new H2DaoLocationsV2(testDataBase, ioEngine);
         SqlDataBaseModel model = new H2DataBaseModel();
         testDataBase.setupRequiredTable(model.table("locations").get().creationScript());
         testDataBase.setupRequiredTable(model.table("subpath_choices").get().creationScript());

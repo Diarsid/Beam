@@ -49,9 +49,9 @@ import static diarsid.jdbc.transactions.core.Params.params;
  *
  * @author Diarsid
  */
-public class H2DaoNamedEntitiesTest {
+public class H2DaoNamedEntitiesV1Test {
     
-    private static final Logger logger = LoggerFactory.getLogger(H2DaoNamedEntitiesTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(H2DaoNamedEntitiesV1Test.class);
     
     private static TestDataBase dataBase;
     private static InnerIoEngine ioEngine;
@@ -59,7 +59,7 @@ public class H2DaoNamedEntitiesTest {
     private static DaoNamedEntities dao;
     private static Initiator initiator;
 
-    public H2DaoNamedEntitiesTest() {
+    public H2DaoNamedEntitiesV1Test() {
     }
 
     @BeforeClass
@@ -81,10 +81,10 @@ public class H2DaoNamedEntitiesTest {
 
     private static void prepareComponents() {
         initiator = new Initiator(36, IN_MACHINE);
-        dataBase = new H2TestDataBase("testBase-gsdfjsqw");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
         programsCatalog = mock(ProgramsCatalog.class);
-        dao = new H2DaoNamedEntities(dataBase, ioEngine, programsCatalog);
+        dao = new H2DaoNamedEntitiesV1(dataBase, ioEngine, programsCatalog);
     }
     
     private static void setupTestData() throws Exception {
@@ -158,7 +158,7 @@ public class H2DaoNamedEntitiesTest {
     }
 
     /**
-     * Test of getEntitiesByNamePattern method, of class H2DaoNamedEntities.
+     * Test of getEntitiesByNamePattern method, of class H2DaoNamedEntitiesV0.
      */
     @Test
     public void testGetEntitiesByNamePattern() {

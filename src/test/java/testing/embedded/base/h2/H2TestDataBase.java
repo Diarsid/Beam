@@ -20,7 +20,9 @@ import diarsid.jdbc.transactions.JdbcConnectionsSource;
 import diarsid.jdbc.transactions.core.JdbcTransactionFactory;
 
 import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.data.DataBaseType.SQL;
 import static diarsid.jdbc.transactions.core.JdbcTransactionFactoryBuilder.buildTransactionFactoryWith;
 
@@ -45,10 +47,10 @@ public class H2TestDataBase implements TestDataBase {
     }
     
     private final JdbcConnectionPool conPool;
-    private final String dataBaseName = "H2_in_memory_test_base";  
     private final JdbcTransactionFactory jdbcTransactionFactory;
     
-    public H2TestDataBase(String name) {
+    public H2TestDataBase() {
+        String name = randomUUID().toString();
         this.conPool = JdbcConnectionPool.create(
                 format(H2_IN_MEMORY_TEST_BASE_URL_TEMPLATE, name), "test", "test");
         this.conPool.setMaxConnections(POOL_SIZE);
@@ -56,6 +58,7 @@ public class H2TestDataBase implements TestDataBase {
                            format(H2_IN_MEMORY_TEST_BASE_URL_TEMPLATE, name)));
         JdbcConnectionsSource source = new H2TestJdbcConnectionsSource(this.conPool);
         this.jdbcTransactionFactory = buildTransactionFactoryWith(source).done();
+        this.jdbcTransactionFactory.logHistory(configuration().asBoolean("data.log"));
     }
         
     @Override

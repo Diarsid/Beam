@@ -19,23 +19,22 @@ import static java.lang.Double.MAX_VALUE;
 import static java.lang.Double.MIN_VALUE;
 import static java.lang.Math.min;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
+import static java.util.Locale.US;
 
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOkWhenAdjusted;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
+import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
 
 /**
  *
@@ -43,7 +42,44 @@ import static diarsid.beam.core.base.objects.Pool.takeFromPool;
  */
 public class Analyze {
     
+    private static boolean isWeightedResultLimitPresent;
+    private static int defaultWeightedResultLimit;
+    private static int weightedResultLimit;
+    
+    static {
+        isWeightedResultLimitPresent = true;
+        defaultWeightedResultLimit = configuration().asInt("analyze.result.variants.limit");
+        weightedResultLimit = defaultWeightedResultLimit;
+    }
+    
     private Analyze() {        
+    }
+    
+    public static int resultsLimit() {
+        return weightedResultLimit;
+    }
+    
+    public static boolean isResultsLimitPresent() {
+        return isWeightedResultLimitPresent;
+    }
+    
+    public static void resultsLimitToDefault() {
+        weightedResultLimit = defaultWeightedResultLimit;
+    }
+    
+    public static void disableResultsLimit() {
+        isWeightedResultLimitPresent = false;
+        weightedResultLimit = defaultWeightedResultLimit;
+    }
+    
+    public static void enableResultsLimit() {
+        isWeightedResultLimitPresent = true;
+        weightedResultLimit = defaultWeightedResultLimit;
+    }
+    
+    public static void setResultsLimit(int newLimit) {
+        weightedResultLimit = newLimit;
+        isWeightedResultLimitPresent = true;
     }
     
     static void logAnalyze(AnalyzeLogType logType, String format, Object... args) {
@@ -54,96 +90,6 @@ public class Analyze {
     
     public static WeightedVariants weightStrings(String pattern, List<String> variants) {
         return weightVariants(pattern, stringsToVariants(variants));
-    }
-    
-    private static List<String> javapathCase() {
-        return asList(
-                "Engines/java/path", 
-                "Books/Tech/Java/JavaFX", 
-                "Books/Tech/Java");
-    }
-    
-    private static List<String> facebookCase() {
-        return asList(                
-                "fb",
-                "fixed beam",
-                "facebook",
-                "epicfantasy crossbooking");
-    }
-    
-    private static List<String> facebookCase2() {
-        return asList(                
-                "c:/books/library/common/author/book.fb2",
-                "facebook");
-    }
-    
-    private static List<String> commonBooksCase() {
-        return asList(                
-                "Books/Common/Tolkien_J.R.R",
-                "Books/Common");
-    }
-    
-    private static List<String> tmmCase() {
-        return asList(                
-                "Domain/ТММ/Functional_Design/Connote_entity_simplified_structure.txt"
-        );        
-    }
-    
-    private static List<String> diarsidProjectsCase() {
-        return asList(
-                "projects/diarsid",
-                "projects/diarsid/netbeans"
-        );
-    }
-    
-    private static List<String> ukrPostApiCase() {
-        return asList(            
-                "Projects/UkrPoshta",
-                "Projects/UkrPoshta/CainiaoAPI",
-                "Projects/UkrPoshta/UkrPostAPI");
-    }
-    
-    private static List<String> ukrPostCase() {
-        return asList(            
-                "Projects/UkrPoshta");
-    }
-    
-    private static List<String> priceApiCase() {
-        return asList(  
-                "images");
-    }
-    
-    private static List<String> javaSpecCase() {
-        return asList(                
-//                "Projects/UkrPoshta/UkrPostAPI",
-                "Tech/langs/Java/Specifications");
-    }
-    
-    private static List<String> netBeansCase() {
-        return asList(                
-//                "Projects/Diarsid/NetBeans",
-//                "Dev/NetBeans_8.2.lnk",
-                "Projects/Diarsid/NetBeans/Beam",
-                "Projects/Diarsid/NetBeans/Research.Java");
-    }
-    
-    private static List<String> visualCase() {
-        return asList(                
-                "JDK_public/lib/visualvm/platform/up",
-                "JDK_public/bin/jvisualvm.exe");
-    }
-            
-    private static List<String> dailyReportsCases() {
-        return arrayListOf("current_job/process/daily_reports_for_standup.txt");
-    }
-    
-    private static List<String> readListCase() {
-        return asList("Books/list_to_read.txt", "Tech/CS/Algorithms");
-    }
-    
-    static void analyze(int clustersQty, int clustered, int nClustered) {
-        System.out.println(format("    %s  %s  %s  -  i: %s", 
-                clustersQty, clustered, nClustered, clustersImportanceDependingOn(clustersQty, clustered, nClustered)));
     }
     
     private static boolean canBeEvaluatedByStrictSimilarity(String pattern, String target) {
@@ -314,11 +260,13 @@ public class Analyze {
 //                .filter(weightedVariant -> isVariantOkWhenAdjusted(weightedVariant))
 //                .collect(toList());
         sort(weightedVariants);
-        shrink(weightedVariants, 11);
+        if ( isWeightedResultLimitPresent ) {
+            shrink(weightedVariants, weightedResultLimit);
+        }
         debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());        
         weightedVariants
                 .stream()
-                .forEach(candidate -> debug(format("%s : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
+                .forEach(candidate -> debug(format(US, "%.3f : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         isDiversitySufficient(minWeight, maxWeight);
         return weightedVariants;
     }

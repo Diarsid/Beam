@@ -68,7 +68,7 @@ public class H2DaoWebDirectoriesTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(12, IN_MACHINE);
-        dataBase = new H2TestDataBase("web_dirs_test");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
         dao = new H2DaoWebDirectories(dataBase, ioEngine);
         

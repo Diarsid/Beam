@@ -228,4 +228,15 @@ public class BeamEventRuntime {
             EVENT_AWAITS_LOCK.unlock();
         }        
     }
+    
+    public static ThenFireAsyncConditionally ifAwaitedFor(String event) {
+        try {
+            EVENT_AWAITS_LOCK.lock();   
+            
+            return when(EVENT_AWAITS.containsKey(event));
+            
+        } finally {
+            EVENT_AWAITS_LOCK.unlock();
+        }
+    }
 }

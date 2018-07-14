@@ -36,7 +36,7 @@ public class ConcurrencyUtil {
     private ConcurrencyUtil() {
     }
     
-    public static <T> ValueFlow<T> awaitGetValue(Callable<ValueFlow<T>> callable) {
+    public static <T> ValueFlow<T> awaitGetFlow(Callable<ValueFlow<T>> callable) {
         try {
             return EXECUTOR.submit(callable).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -58,7 +58,7 @@ public class ConcurrencyUtil {
         try {
             EXECUTOR.submit(runnable).get();
         } catch (InterruptedException | ExecutionException e) {
-             logError(ConcurrencyUtil.class, e);
+            logError(ConcurrencyUtil.class, e);
         } 
     }
     

@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.base.util;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -24,15 +25,15 @@ public class Possible<T> {
         this.t = t;
     }
     
-    public static <T> Possible<T> possible() {
+    public static <T> Possible<T> possibleButEmpty() {
         return new Possible<>(null);
     }
     
-    public static <T> Possible<T> possible(T t) {
+    public static <T> Possible<T> possibleWith(T t) {
         return new Possible<>(t);
     }
     
-    public static <T> Possible<T> possible(Optional<T> optionalT) {
+    public static <T> Possible<T> possibleOf(Optional<T> optionalT) {
         return new Possible<>(optionalT.orElse(null));
     }
     
@@ -93,6 +94,10 @@ public class Possible<T> {
         return this.resetTo(optionalT.orElse(null));
     }
     
+    public T resetTo(Possible<T> possibleT) {
+        return this.resetTo(possibleT.t);
+    }
+    
     public T ifPresentResetTo(T newT) {
         if ( this.isPresent() ) {
             return this.resetTo(newT);
@@ -113,5 +118,33 @@ public class Possible<T> {
         T oldT = this.t;
         this.t = null;
         return oldT;
+    }    
+    
+    @Override
+    public boolean equals(Object o) {
+        return 
+                nonNull(this.t) && 
+                nonNull(o) && 
+                o instanceof Possible && 
+                this.t.equals(((Possible) o).t);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.t);
+        return hash;
+    }
+    
+    public boolean notEquals(Possible<T> possibleT) {
+        return ! this.equals(possibleT);
+    }
+    
+    public boolean equalTo(T otherT) {
+        return nonNull(this.t) && this.t.equals(otherT);
+    }
+    
+    public boolean notEqualTo(T otherT) {
+        return nonNull(this.t) && ! this.t.equals(otherT);
     }
 }

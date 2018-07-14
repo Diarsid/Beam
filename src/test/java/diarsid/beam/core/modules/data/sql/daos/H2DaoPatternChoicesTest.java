@@ -62,7 +62,7 @@ public class H2DaoPatternChoicesTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(41, IN_MACHINE);
-        dataBase = new H2TestDataBase("pattern-choices-test");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
         
         dao = new H2DaoPatternChoices(dataBase, ioEngine);

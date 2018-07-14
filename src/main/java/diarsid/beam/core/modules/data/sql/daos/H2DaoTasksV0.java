@@ -15,12 +15,12 @@ import java.util.function.Function;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
-import diarsid.beam.core.modules.data.DaoTasks;
-import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
@@ -32,25 +32,21 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.multipleValues;
-import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.domain.entities.Tasks.stringifyTaskText;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_TASK;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 
 
-class H2DaoTasks 
+abstract class H2DaoTasksV0 
         extends BeamCommonDao 
         implements DaoTasks {
     
     private final Function<Task, Params> taskToParamsConversion;
     
-    H2DaoTasks(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoTasksV0(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);        
         this.taskToParamsConversion = (task) -> {            
             return params(
@@ -283,44 +279,5 @@ class H2DaoTasks
             
             return false;
         }  
-    }
-
-    @Override
-    public List<Task> findTasksByTextPattern(
-            Initiator initiator, String textPattern) {
-        try (JdbcTransaction transact = super.openTransaction()) {
-            
-            List<Task> tasks = transact
-                    .doQueryAndStreamVarargParams(
-                            Task.class, 
-                            "SELECT * " +
-                            "FROM tasks " +
-                            "WHERE ( LOWER(text) LIKE ? )", 
-                            ROW_TO_TASK, 
-                            lowerWildcard(textPattern))
-                        .collect(toList());
-            
-            if ( nonEmpty(tasks) ) {
-                return tasks;
-            }
-            
-            List<String> criterias = patternToCharCriterias(textPattern);
-            tasks = transact
-                    .doQueryAndStreamVarargParams(
-                            Task.class, 
-                            "SELECT * " +
-                            "FROM tasks " +
-                            "WHERE " + multipleLowerLikeAnd("text", criterias.size()), 
-                            ROW_TO_TASK, 
-                            criterias)
-                        .collect(toList());
-            
-            return tasks;
-            
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(this.getClass(), ex);
-            
-            return emptyList();
-        }        
     }
 }

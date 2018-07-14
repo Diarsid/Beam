@@ -18,7 +18,9 @@ import static javafx.scene.input.MouseEvent.MOUSE_DRAGGED;
 import static javafx.scene.input.MouseEvent.MOUSE_PRESSED;
 import static javafx.scene.input.MouseEvent.MOUSE_RELEASED;
 
-import static diarsid.beam.core.base.util.Possible.possible;
+import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.beam.core.base.util.Possible.possibleWith;
+import static diarsid.beam.core.base.util.Possible.possibleOf;
 
 /**
  *
@@ -66,13 +68,13 @@ class MouseClickNotDragDetector {
     
     MouseClickNotDragDetector setOnMouseClickNotDrag(
             Consumer<MouseEvent> onClickNotDrag) {
-        this.onClickNotDrag = possible(onClickNotDrag);
+        this.onClickNotDrag = possibleWith(onClickNotDrag);
         return this;
     }
     
     MouseClickNotDragDetector setOnMouseDoubleClick(
             Consumer<MouseEvent> onDoubleClick) {
-        this.onDoubleClick = possible(onDoubleClick);
+        this.onDoubleClick = possibleWith(onDoubleClick);
         return this;
     }
     

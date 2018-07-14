@@ -35,17 +35,12 @@ import static java.util.stream.Collectors.toSet;
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
-import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
-import static diarsid.beam.core.base.util.SqlUtil.shift;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 
-class H2DaoBatches 
+abstract class H2DaoBatchesV0 
         extends BeamCommonDao 
         implements DaoBatches {
     
@@ -53,7 +48,7 @@ class H2DaoBatches
     private final Function<BatchedCommand, Params> batchedCommandToParams;
     private final Function<Map.Entry<String, List<ExecutorCommand>>, Batch> entryToBatch;
     
-    H2DaoBatches(DataBase dataBase, InnerIoEngine ioEngine) {
+    H2DaoBatchesV0(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
         this.rowToBatchNameConversion = (row) -> {
             return (String) row.get("bat_name");
@@ -70,6 +65,10 @@ class H2DaoBatches
             return new Batch(entry.getKey(), entry.getValue());
         };
     }
+    
+    protected RowConversion<String> rowToBatchNameConversion() {
+        return this.rowToBatchNameConversion;
+    }
 
     @Override
     public boolean isNameFree(Initiator initiator, String exactName) {
@@ -81,82 +80,9 @@ class H2DaoBatches
                             "WHERE LOWER(bat_name) IS ? ",
                             lower(exactName));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(initiator, "is name free request failed.");
             return false;
-        }
-    }
-
-    @Override
-    public List<String> getBatchNamesByNamePattern(
-            Initiator initiator, String pattern) {
-        try (JdbcTransaction transact = super.openTransaction()) {
-            
-            List<String> found;
-            
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            String.class,
-                            "SELECT bat_name " +
-                            "FROM batches " +
-                            "WHERE LOWER(bat_name) LIKE ? ",
-                            this.rowToBatchNameConversion,
-                            lowerWildcard(pattern))
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            }
-            
-            List<String> criterias = patternToCharCriterias(pattern);
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            String.class,
-                            "SELECT bat_name " +
-                            "FROM batches " +
-                            "WHERE " + multipleLowerLikeAnd("bat_name", criterias.size()),
-                            this.rowToBatchNameConversion,
-                            criterias)
-                    .collect(toList());
-            
-            if ( nonEmpty(found) ) {
-                return found;
-            }
-            
-            String andOrCondition = multipleLowerGroupedLikesAndOr("bat_name", criterias.size());
-            List<String> shuffleFound;
-            
-            found = transact
-                    .doQueryAndStreamVarargParams(
-                            String.class,
-                            "SELECT bat_name " +
-                            "FROM batches " +
-                            "WHERE " + andOrCondition,
-                            this.rowToBatchNameConversion,
-                            criterias)
-                    .collect(toList());
-            
-            shift(criterias);
-            shuffleFound = transact
-                    .doQueryAndStreamVarargParams(
-                            String.class,
-                            "SELECT bat_name " +
-                            "FROM batches " +
-                            "WHERE " + andOrCondition,
-                            this.rowToBatchNameConversion,
-                            criterias)
-                    .collect(toList());
-            
-            shuffleFound.retainAll(found);
-            found.retainAll(shuffleFound);
-            
-            return found;
-            
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
-            super.ioEngine().report(
-                    initiator, "batch names search by name pattern '" + pattern + "' failed.");
-            return emptyList();
         }
     }
     
@@ -190,7 +116,7 @@ class H2DaoBatches
                 return Optional.empty();
             }
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(
                     initiator, "batch obtaining by name '" + name + "' failed.");
             return Optional.empty();
@@ -237,7 +163,7 @@ class H2DaoBatches
                     commandSavedCount == batch.batchedCommands().size() );
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(initiator, "batch saving failed.");
             return false;
         }
@@ -280,7 +206,7 @@ class H2DaoBatches
                 return false;
             }
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(initiator, "batch removing failed.");
             return false;
         }
@@ -311,7 +237,7 @@ class H2DaoBatches
             
             return ( updatedNameQty == 1 && updatedCommands > 0 );
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(
                     initiator, 
                     "batch name changing: " + batchName + " -> " + newName + " failed.");
@@ -363,7 +289,7 @@ class H2DaoBatches
                     oldCommandsRemoved && 
                     modified == newCommands.size() );
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(initiator, "batch commands changing failed.");
             return false;
         }
@@ -391,7 +317,7 @@ class H2DaoBatches
             
             return ( modified == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(initiator, "batch one command changing failed.");
             return false;
         }
@@ -422,7 +348,7 @@ class H2DaoBatches
                     .collect(toList());
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatches.class, ex);
+            logError(H2DaoBatchesV0.class, ex);
             super.ioEngine().report(initiator, "all batches obtaining failed.");
             return emptyList();
         }

@@ -50,7 +50,7 @@ import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
-import static diarsid.beam.core.base.util.Possible.possible;
+import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 import static diarsid.beam.core.base.util.StringUtils.isEmpty;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 
@@ -85,11 +85,11 @@ class WalkState extends PooledReusable {
     
     private WalkState() {
         super();
-        this.absoluteRoot = possible();
-        this.location = possible();
-        this.locationSubPath = possible();
-        this.catalog = possible();
-        this.relativeRoot = possible();
+        this.absoluteRoot = possibleButEmpty();
+        this.location = possibleButEmpty();
+        this.locationSubPath = possibleButEmpty();
+        this.catalog = possibleButEmpty();
+        this.relativeRoot = possibleButEmpty();
         this.variants = new ArrayList<>();
         this.collectedOnCurrentLevel = new ArrayList<>();
         this.currentLevel = new ArrayList<>();
@@ -185,7 +185,7 @@ class WalkState extends PooledReusable {
     }
     
     boolean patternIsPath() {
-        return isPatternPath;
+        return this.isPatternPath;
     }
     
     WeightEstimate weightEstimateAcceptableForCurrentLevel() {
@@ -288,8 +288,8 @@ class WalkState extends PooledReusable {
     }
     
     void weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants() {
-        if ( hasOne(collectedOnCurrentLevel) ) {
-            weightVariant(this.pattern, stringToVariant(getOne(collectedOnCurrentLevel)))
+        if ( hasOne(this.collectedOnCurrentLevel) ) {
+            weightVariant(this.pattern, stringToVariant(getOne(this.collectedOnCurrentLevel)))
                     .ifPresent(weightedVariant -> this.variants.add(weightedVariant));
         } else {
             List<WeightedVariant> currentLevelVariants = 

@@ -44,7 +44,7 @@ public class SqlDataBaseVerificationTest {
     
     @BeforeClass
     public static void setUpClass() throws Exception {
-        dataBase = new H2TestDataBase("data_verification");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
         
         DataBaseModel dataBaseModel = new H2DataBaseModel();

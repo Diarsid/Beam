@@ -71,9 +71,9 @@ public class H2DaoWebPagesTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         initiator = new Initiator(12, IN_MACHINE);
-        dataBase = new H2TestDataBase("web_pages_test");
+        dataBase = new H2TestDataBase();
         ioEngine = mock(InnerIoEngine.class);
-        dao = new H2DaoWebPages(dataBase, ioEngine);
+        dao = new H2DaoWebPagesV2(dataBase, ioEngine);
         
         DataBaseModel dataBaseModel = new H2DataBaseModel();
         
@@ -169,13 +169,19 @@ public class H2DaoWebPagesTest {
     }
 
     @Test
-    public void testFindByPattern() {
+    public void testFindByPattern_gogl() {
         List<WebPage> found1 = dao.findByPattern(initiator, "gogl");
         assertEquals(2, found1.size());
-        
+    }
+    
+    @Test
+    public void testFindByPattern_sprigdosc() {
         List<WebPage> found2 = dao.findByPattern(initiator, "sprigdosc");
         assertEquals(2, found2.size());
-        
+    }
+    
+    @Test
+    public void testFindByPattern_Reacttutoril() {        
         List<WebPage> found3 = dao.findByPattern(initiator, "Reacttutoril");
         assertEquals(0, found3.size());
     }

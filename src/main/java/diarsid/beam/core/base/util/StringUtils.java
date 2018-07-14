@@ -51,12 +51,12 @@ public class StringUtils {
         return target.toUpperCase(ENGLISH);
     }
     
-    public static boolean nonEmpty(String s) {
-        return nonNull(s) && ! s.isEmpty();
+    public static boolean nonEmpty(CharSequence s) {
+        return nonNull(s) && s.length() > 0;
     }
     
-    public static boolean isEmpty(String s) {
-        return isNull(s) || s.isEmpty();
+    public static boolean isEmpty(CharSequence s) {
+        return isNull(s) || s.length() == 0;
     }
     
     public static String normalizeSpaces(String target) {
@@ -126,4 +126,29 @@ public class StringUtils {
     public static boolean haveEqualLength(String one, String two) {
         return one.length() == two.length();
     }
+    
+    public static void purge(StringBuilder stringBuilder) {
+        stringBuilder.delete(0, stringBuilder.length());
+    }
+    
+    public static void replaceAll(StringBuilder sb, String whatToReplace, String replacement) {
+        int index = sb.indexOf(whatToReplace, 0);
+        int whatToReplaceLength = whatToReplace.length();
+        int replacementLength = replacement.length();
+        while ( index >= 0 ) {
+            sb.replace(index, index + whatToReplaceLength, replacement);
+            index = sb.indexOf(whatToReplace, index + replacementLength);
+        }
+    }
+    
+    public static int countOccurences(String where, String what) {
+        int count = 0;
+        int lastOccurence = where.indexOf(what);
+        while ( lastOccurence > -1 ) {
+            count++;
+            lastOccurence = where.indexOf(what, lastOccurence + 1);
+        }
+        return count;
+    }
+    
 }

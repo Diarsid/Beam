@@ -26,7 +26,7 @@ public class EventAwait {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();
-            } catch (InterruptedException ingore) {
+            } catch (InterruptedException ignore) {
                 // nothing
                 return;
             }
@@ -38,7 +38,7 @@ public class EventAwait {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();
-            } catch (InterruptedException ingore) {
+            } catch (InterruptedException ignore) {
                 // nothing
                 return Optional.empty();
             }

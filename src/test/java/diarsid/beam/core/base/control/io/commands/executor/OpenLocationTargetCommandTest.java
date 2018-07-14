@@ -21,9 +21,9 @@ import static diarsid.beam.core.base.control.io.commands.executor.InvocationComm
  *
  * @author Diarsid
  */
-public class OpenPathCommandTest {
+public class OpenLocationTargetCommandTest {
 
-    public OpenPathCommandTest() {
+    public OpenLocationTargetCommandTest() {
     }
 
     @BeforeClass

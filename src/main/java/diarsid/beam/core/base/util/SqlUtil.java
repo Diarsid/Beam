@@ -101,6 +101,31 @@ public class SqlUtil {
                 .collect(joining(", ", " ( ", " ) "));
     }
     
+    public static String patternCriteria(String pattern, String column) {
+        String part1 = " CASE WHEN POSITION('"; 
+        String part2 = "', "; 
+        String part3 = ") > 0 THEN 1 ELSE 0 END ";
+        StringBuilder statement = new StringBuilder();
+        int cycle = pattern.length() - 1;
+        for (int i = 0; i < cycle; i++) {
+            statement
+                    .append(part1)
+                    .append(pattern.charAt(i))
+                    .append(part2)
+                    .append(column)
+                    .append(part3)
+                    .append(" + ");
+        }
+        statement
+                .append(part1)
+                .append(pattern.charAt(pattern.length() - 1))
+                .append(part2)
+                .append(column)
+                .append(part3);
+        
+        return statement.toString();
+    }
+    
     public static String multipleLowerGroupedLikesAndOr(String column, int quantity) {
         String condition = "( LOWER(" + column + ") LIKE ? )";
         switch ( quantity ) {
@@ -110,7 +135,7 @@ public class SqlUtil {
             case 2 : {
                 return 
                         "( " + 
-                        condition + " OR " + 
+                        condition + " AND " + 
                         condition + 
                         " )";
             }
@@ -473,10 +498,10 @@ public class SqlUtil {
         }
     }
     
-    public static List<String> shift(List<String> criterias) {
+    public static void shift(List<String> criterias) {
         int length = criterias.size();
         if ( length == 0 ) {
-            return criterias;
+            return;
         }
         
         int shifting = ( length / 2 ) + ( length % 2 );
@@ -489,7 +514,7 @@ public class SqlUtil {
             criterias.set(i, criterias.get(reverseShifting));
             criterias.set(reverseShifting, shifted);
         }
-        return criterias;
+        return;
     }
     
     public static boolean isResultsQuantiyEnoughForMulticharCriterias(
@@ -564,9 +589,7 @@ public class SqlUtil {
     }
     
     public static void main(String[] args) {
-        List<String> criterias = patternToMulticharCriterias("glg");
-        criterias.forEach(c -> System.out.println(c));
-        System.out.println(multipleLowerGroupedLikesOrAnd("name", criterias.size()));
+        System.out.println(patternCriteria("abc", "col"));
     }
     
     public static List<String> patternToCharCriterias(String pattern) {
@@ -596,7 +619,7 @@ public class SqlUtil {
         return new ArrayList(criterias.values());
     }
     
-    private static boolean isSqlWildcard(char character) {
+    public static boolean isSqlWildcard(char character) {
         return character == '_';
     }
 }
