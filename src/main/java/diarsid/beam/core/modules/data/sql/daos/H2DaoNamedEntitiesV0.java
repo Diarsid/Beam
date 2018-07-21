@@ -16,9 +16,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.Batch;
-import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.jdbc.transactions.JdbcTransaction;
@@ -84,11 +82,10 @@ abstract class H2DaoNamedEntitiesV0
             case LOCATION : {
                 entity = transact
                         .doQueryAndConvertFirstRowVarargParams(
-                                Location.class, 
+                                ROW_TO_LOCATION, 
                                 "SELECT loc_name, loc_path " +
                                 "FROM locations " +
                                 "WHERE ( LOWER(loc_name) IS ? ) ",
-                                ROW_TO_LOCATION, 
                                 lower(name))
                         .orElse(null);
                 break;
@@ -96,11 +93,10 @@ abstract class H2DaoNamedEntitiesV0
             case WEBPAGE : {
                 entity = transact
                         .doQueryAndConvertFirstRowVarargParams(
-                                WebPage.class,
+                                ROW_TO_WEBPAGE,
                                 "SELECT name, shortcuts, url, ordering, dir_id " +
                                 "FROM web_pages " +
                                 "WHERE ( LOWER(name) IS ? )", 
-                                ROW_TO_WEBPAGE,
                                 lower(name))
                         .orElse(null);
                 break;
@@ -122,13 +118,13 @@ abstract class H2DaoNamedEntitiesV0
 
                 List<ExecutorCommand> commands = transact
                         .ifTrue( batchExists )
-                        .doQueryAndStreamVarargParams(ExecutorCommand.class,
+                        .doQueryAndStreamVarargParams(
+                                ROW_TO_EXECUTOR_COMMAND,
                                 "SELECT bat_command_type, " +
                                 "       bat_command_original " +
                                 "FROM batch_commands " +
                                 "WHERE LOWER(bat_name) IS ? " +
                                 "ORDER BY bat_command_order" ,
-                                ROW_TO_EXECUTOR_COMMAND,
                                 lowerName)
                         .collect(toList());
 
@@ -170,7 +166,9 @@ abstract class H2DaoNamedEntitiesV0
             String lowerExactName = lower(exactName);
             List<NamedEntity> maskedEntities = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            (row) -> {
+                                return new NamedEntityMask(row);
+                            },
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE ( LOWER(loc_name) IS ? ) " +
@@ -186,9 +184,6 @@ abstract class H2DaoNamedEntitiesV0
                             "       OR ( LOWER(shortcuts) LIKE ? ) " +
                             "       OR ( LOWER(shortcuts) LIKE ? ) " +
                             "       OR ( LOWER(shortcuts) LIKE ? ) ", 
-                            (row) -> {
-                                return new NamedEntityMask(row);
-                            },
                             lowerExactName, 
                             lowerExactName, 
                             lowerExactName,
@@ -227,7 +222,7 @@ abstract class H2DaoNamedEntitiesV0
             
             entityMasks = transact
                     .doQueryAndStream(
-                            NamedEntity.class,
+                            this.rowToNamedEntityMask,
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "       UNION ALL " +
@@ -235,8 +230,7 @@ abstract class H2DaoNamedEntitiesV0
                             "FROM batches " +
                             "       UNION ALL " +
                             "SELECT name, 'webpage' " +
-                            "FROM web_pages ", 
-                            this.rowToNamedEntityMask)
+                            "FROM web_pages ")
                     .collect(toList());
             
             entityMasks.addAll(this.programsCatalog.getAll());

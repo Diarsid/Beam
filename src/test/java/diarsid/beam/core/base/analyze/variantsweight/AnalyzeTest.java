@@ -31,7 +31,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.disableResul
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.resultsLimitToDefault;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.objects.Pool.poolOf;
+import static diarsid.beam.core.base.objects.Pools.poolOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.warn;
 

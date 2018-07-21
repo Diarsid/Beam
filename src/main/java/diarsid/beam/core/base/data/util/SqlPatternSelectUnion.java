@@ -72,7 +72,7 @@ public class SqlPatternSelectUnion extends SqlPatternQuery {
     }
     
     @Override
-    public String compose() {
+    public String composeSql() {
         return this.sql.toString();
     }
     

@@ -108,11 +108,10 @@ public class H2DaoNamedEntitiesV1Test {
             
             int dirId = transact
                     .doQueryAndConvertFirstRowVarargParams(
-                            Integer.class, 
-                            "SELECT id FROM web_directories WHERE name IS ? ", 
                             (row) -> {
                                 return (Integer) row.get("id");
                             }, 
+                            "SELECT id FROM web_directories WHERE name IS ? ", 
                             "Common")
                     .get();
             

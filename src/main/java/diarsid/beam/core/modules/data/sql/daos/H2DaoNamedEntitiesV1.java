@@ -53,7 +53,7 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
             List<NamedEntity> entityMasks;
             entityMasks = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            super.rowToNamedEntityMask(),
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ? " +
@@ -65,7 +65,6 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? )", 
-                            super.rowToNamedEntityMask(),
                             lowerNamePattern, 
                             lowerNamePattern, 
                             lowerNamePattern,
@@ -81,7 +80,7 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
             List<String> criterias = patternToCharCriterias(pattern);
             entityMasks = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            super.rowToNamedEntityMask(),
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE " + multipleLowerLikeAnd("loc_name", criterias.size()) +
@@ -96,7 +95,6 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
                                     multipleLowerLikeAnd("name", criterias.size()) + 
                                     " OR " + 
                                     multipleLowerLikeAnd("shortcuts", criterias.size()),
-                            super.rowToNamedEntityMask(),
                             criterias, 
                             criterias, 
                             criterias, 
@@ -123,7 +121,7 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
             
             entityMasks = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            super.rowToNamedEntityMask(),
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE " + andOrConditionLocations +
@@ -138,7 +136,6 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
                                     andOrConditionPagesName + 
                                     " OR " + 
                                     andOrConditionPagesShortcuts,
-                            super.rowToNamedEntityMask(),
                             criterias, 
                             criterias, 
                             criterias, 
@@ -149,7 +146,7 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
             
             shiftedMaskedEntities = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            super.rowToNamedEntityMask(),
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE " + andOrConditionLocations +
@@ -164,7 +161,6 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
                                     andOrConditionPagesName + 
                                     " OR " + 
                                     andOrConditionPagesShortcuts,
-                            super.rowToNamedEntityMask(),
                             criterias, 
                             criterias, 
                             criterias, 

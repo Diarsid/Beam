@@ -49,11 +49,10 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            Location.class, 
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ?  ", 
-                            ROW_TO_LOCATION,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -68,11 +67,10 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            Location.class, 
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE " + multipleLowerLikeAnd("loc_name", criterias.size()), 
-                            ROW_TO_LOCATION,
                             criterias)
                     .collect(toList());
             
@@ -87,11 +85,10 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            Location.class, 
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE " + andOrCondition, 
-                            ROW_TO_LOCATION,
                             criterias)
                     .collect(toList());
             
@@ -99,11 +96,10 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
             debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
             shiftedFound = transact
                     .doQueryAndStreamVarargParams(
-                            Location.class, 
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE " + andOrCondition, 
-                            ROW_TO_LOCATION,
                             criterias)
                     .collect(toList());
             

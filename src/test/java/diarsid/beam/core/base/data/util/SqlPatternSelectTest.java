@@ -14,7 +14,7 @@ import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.StringUtils.countOccurences;
 
 /**
@@ -55,7 +55,7 @@ public class SqlPatternSelectTest {
                     .patternForWhereCondition(pattern)
                     .patternColumnForWhereCondition(patternColumn)
                     .limit(limit)
-                    .compose();
+                    .composeSql();
             
             assertThat(sql.contains(format("SELECT %s FROM %s ", columns, table)), equalTo(true));
             assertThat(sql.contains(format("CASE WHEN POSITION('b', LOWER(%s)) > 0 THEN 1 ELSE 0 END", patternColumn)), equalTo(true));
@@ -82,7 +82,7 @@ public class SqlPatternSelectTest {
                     .from(table)
                     .patternForWhereCondition(pattern)
                     .patternColumnForWhereCondition(patternColumn)
-                    .compose();
+                    .composeSql();
             
             assertThat(sql.contains("CASE WHEN POSITION('a', LOWER(col)) > 0 THEN 1 ELSE 0 END"), equalTo(true));
             assertThat(sql.contains("CASE WHEN POSITION('\\_', LOWER(col)) > 0 THEN 1 ELSE 0 END"), equalTo(true));
@@ -104,7 +104,7 @@ public class SqlPatternSelectTest {
                     .from(table)
                     .patternForWhereCondition(pattern)
                     .patternColumnForWhereCondition(patternColumn)
-                    .compose();
+                    .composeSql();
             
             assertThat(sql.contains("CASE WHEN POSITION('a', LOWER(col)) > 0 THEN 1 ELSE 0 END"), equalTo(true));
             assertThat(sql.contains("CASE WHEN POSITION('b', LOWER(col)) > 0 THEN 1 ELSE 0 END"), equalTo(true));
@@ -127,7 +127,7 @@ public class SqlPatternSelectTest {
                     .from(table)
                     .patternForWhereCondition(pattern)
                     .patternColumnForWhereCondition(patternColumn)
-                    .compose();
+                    .composeSql();
             
             assertThat(sql.contains("CASE WHEN POSITION('a', LOWER(col)) > 0 THEN 1 ELSE 0 END"), equalTo(true));
             assertThat(sql.contains("CASE WHEN POSITION('b', LOWER(col)) > 0 THEN 1 ELSE 0 END"), equalTo(true));
@@ -180,7 +180,7 @@ public class SqlPatternSelectTest {
             
             patternUnion.unionDistinct(patternSelect);
             
-            String sql = patternUnion.compose();
+            String sql = patternUnion.composeSql();
             
             assertThat(countOccurences(sql, "UNION ALL"), equalTo(2));
             assertThat(countOccurences(sql, "UNION "), equalTo(3));
@@ -201,19 +201,19 @@ public class SqlPatternSelectTest {
                     .from(table)
                     .patternForWhereCondition(pattern)
                     .patternColumnForWhereCondition(patternColumn)
-                    .compose();
+                    .composeSql();
             
             assertThat(sql.contains(" >= 4 "), equalTo(true));
             
-            sql = patternSelect.decreaseRequiredLikeness().compose();
+            sql = patternSelect.decreaseRequiredLikeness().composeSql();
             
             assertThat(sql.contains(" >= 3 "), equalTo(true));
             
-            sql = patternSelect.decreaseRequiredLikeness().compose();
+            sql = patternSelect.decreaseRequiredLikeness().composeSql();
             
             assertThat(sql.contains(" >= 3 "), equalTo(true));
             
-            sql = patternSelect.decreaseRequiredLikeness().compose();
+            sql = patternSelect.decreaseRequiredLikeness().composeSql();
             
             assertThat(sql.contains(" >= 3 "), equalTo(true));
             

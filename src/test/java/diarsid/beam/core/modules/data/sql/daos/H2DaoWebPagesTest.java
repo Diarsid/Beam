@@ -105,16 +105,15 @@ public class H2DaoWebPagesTest {
                         params("Dev.Tech", BOOKMARKS, 2));
         
         List<WebDirectory> savedDirs = transact
-                .doQueryAndStream(
-                        WebDirectory.class, 
-                        "SELECT id, name, place, ordering FROM web_directories", 
+                .doQueryAndStream( 
                         (row) -> {
                             return restoreDirectory(
                                     (int) row.get("id"), 
                                     (String) row.get("name"), 
                                     parsePlace((String) row.get("place")), 
                                     (int) row.get("ordering"));
-                        })
+                        },
+                        "SELECT id, name, place, ordering FROM web_directories")
                 .collect(toList());
         
         dirs = new HashMap<>();

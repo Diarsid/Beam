@@ -22,7 +22,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -51,7 +51,13 @@ class H2DaoLocationSubPathsV2
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
                             "FROM " +
                             "   commands AS com " +
@@ -61,13 +67,6 @@ class H2DaoLocationSubPathsV2
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( ( LOWER(com_original) IS ? ) OR ( LOWER(com_original) LIKE ? ) )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
                             OPEN_LOCATION_TARGET, lower(pattern), lowerWildcard(pattern))
                     .collect(toList());
             
@@ -88,8 +87,6 @@ class H2DaoLocationSubPathsV2
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
-                            patternSelect.compose(), 
                             (row) -> {
                                 return new LocationSubPath(
                                         pattern, 
@@ -97,6 +94,7 @@ class H2DaoLocationSubPathsV2
                                         row.get("loc_path", String.class),
                                         row.get("com_extended", String.class));
                             }, 
+                            patternSelect.composeSql(), 
                             OPEN_LOCATION_TARGET)
                     .collect(toList());
             
@@ -106,10 +104,6 @@ class H2DaoLocationSubPathsV2
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
-                            patternSelect
-                                    .decreaseRequiredLikeness()
-                                    .compose(), 
                             (row) -> {
                                 return new LocationSubPath(
                                         pattern, 
@@ -117,6 +111,9 @@ class H2DaoLocationSubPathsV2
                                         row.get("loc_path", String.class),
                                         row.get("subpath", String.class));
                             }, 
+                            patternSelect
+                                    .decreaseRequiredLikeness()
+                                    .composeSql(), 
                             OPEN_LOCATION_TARGET)
                     .collect(toList());
             
@@ -126,10 +123,6 @@ class H2DaoLocationSubPathsV2
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
-                            patternSelect
-                                    .decreaseRequiredLikeness()
-                                    .compose(), 
                             (row) -> {
                                 return new LocationSubPath(
                                         pattern, 
@@ -137,6 +130,9 @@ class H2DaoLocationSubPathsV2
                                         row.get("loc_path", String.class),
                                         row.get("subpath", String.class));
                             }, 
+                            patternSelect
+                                    .decreaseRequiredLikeness()
+                                    .composeSql(), 
                             OPEN_LOCATION_TARGET)
                     .collect(toList());
             

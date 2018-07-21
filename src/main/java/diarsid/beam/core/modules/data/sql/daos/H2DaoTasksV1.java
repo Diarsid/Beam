@@ -42,11 +42,10 @@ class H2DaoTasksV1 extends H2DaoTasksV0 {
             
             List<Task> tasks = transact
                     .doQueryAndStreamVarargParams(
-                            Task.class, 
+                            ROW_TO_TASK, 
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE ( LOWER(text) LIKE ? )", 
-                            ROW_TO_TASK, 
                             lowerWildcard(textPattern))
                         .collect(toList());
             
@@ -56,12 +55,11 @@ class H2DaoTasksV1 extends H2DaoTasksV0 {
             
             List<String> criterias = patternToCharCriterias(textPattern);
             tasks = transact
-                    .doQueryAndStreamVarargParams(
-                            Task.class, 
+                    .doQueryAndStreamVarargParams( 
+                            ROW_TO_TASK, 
                             "SELECT * " +
                             "FROM tasks " +
-                            "WHERE " + multipleLowerLikeAnd("text", criterias.size()), 
-                            ROW_TO_TASK, 
+                            "WHERE " + multipleLowerLikeAnd("text", criterias.size()),
                             criterias)
                         .collect(toList());
             

@@ -52,11 +52,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_original) LIKE ? ",
-                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -68,11 +67,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerLikeAnd("com_original", criterias.size()),
-                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -85,11 +83,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -97,11 +94,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            ROW_TO_INVOCATION_COMMAND,
                             criterias)
                     .collect(toList());
             
@@ -125,11 +121,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_original) LIKE ? ) AND ( com_type IS ? )",
-                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern), type)
                     .collect(toList());
             
@@ -141,13 +136,12 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + 
                                     multipleLowerLikeAnd("com_original", criterias.size()) + 
                                     " AND ( com_type IS ? ) ",
-                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -160,11 +154,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -172,11 +165,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            ROW_TO_INVOCATION_COMMAND,
                             criterias, type)
                     .collect(toList());
             
@@ -205,11 +197,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_extended) LIKE ? ",
-                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -221,12 +212,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerGroupedLikesOrAnd(
                                     "com_extended", multicharCriterias.size()),
-                            ROW_TO_INVOCATION_COMMAND,
                             multicharCriterias)
                     .collect(toList());    
             
@@ -239,11 +229,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + multipleLowerLikeAnd("com_extended", charCriterias.size()),
-                            ROW_TO_INVOCATION_COMMAND,
                             charCriterias)
                     .collect(toList());
             
@@ -251,16 +240,16 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
                 return found;
             } 
             
-            String andOrCondition = multipleLowerGroupedLikesAndOr("com_extended", charCriterias.size());
+            String andOrCondition = multipleLowerGroupedLikesAndOr(
+                    "com_extended", charCriterias.size());
             List<InvocationCommand> shuffleFound;
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            ROW_TO_INVOCATION_COMMAND,
                             charCriterias)
                     .collect(toList());
             
@@ -268,11 +257,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition,
-                            ROW_TO_INVOCATION_COMMAND,
                             charCriterias)
                     .collect(toList());
             
@@ -296,11 +284,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? )",
-                            ROW_TO_INVOCATION_COMMAND,
                             lowerWildcard(pattern), type)
                     .collect(toList());
             
@@ -312,14 +299,13 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + 
                                     multipleLowerGroupedLikesOrAnd(
                                             "com_extended", multicharCriterias.size()) + 
                                     " AND ( com_type IS ? ) ",
-                            ROW_TO_INVOCATION_COMMAND,
                             multicharCriterias, type)
                     .collect(toList());
             
@@ -351,11 +337,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            ROW_TO_INVOCATION_COMMAND,
                             charCriterias, type)
                     .collect(toList());
             
@@ -363,11 +348,10 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )",
-                            ROW_TO_INVOCATION_COMMAND,
                             charCriterias, type)
                     .collect(toList());
             
@@ -393,12 +377,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_extended) LIKE ? " +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -447,12 +430,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             charCriterias)
                     .collect(toList());
             
@@ -460,12 +442,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             charCriterias)
                     .collect(toList());
                         
@@ -492,12 +473,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE ( LOWER(com_extended) LIKE ? ) AND ( com_type IS ? )" +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             lowerWildcard(pattern), type)
                     .collect(toList());
             
@@ -509,7 +489,7 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE " + 
@@ -517,7 +497,6 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
                                             "com_extended", multicharCriterias.size()) + 
                                     " AND ( com_type IS ? ) " +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             multicharCriterias, type)
                     .collect(toList());
             
@@ -550,12 +529,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )" +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             charCriterias, type)
                     .collect(toList());
             
@@ -563,12 +541,11 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            rowToNewInvocationCommandWithPatternAsOriginal,
                             "SELECT com_type, com_extended " +
                             "FROM commands " +
                             "WHERE " + andOrCondition + " AND ( com_type IS ? )" +
                             "GROUP BY com_type, com_extended",
-                            rowToNewInvocationCommandWithPatternAsOriginal,
                             charCriterias, type)
                     .collect(toList());
             

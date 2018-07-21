@@ -19,7 +19,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -45,11 +45,10 @@ class H2DaoLocationsV2 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            Location.class, 
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ?  ", 
-                            ROW_TO_LOCATION,
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -59,14 +58,13 @@ class H2DaoLocationsV2 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStream(
-                            Location.class,
+                            ROW_TO_LOCATION,
                             patternSelect
                                     .select("loc_name, loc_path")
                                     .from("locations")
                                     .patternColumnForWhereCondition("loc_name")
                                     .patternForWhereCondition(pattern)
-                                    .compose(),
-                            ROW_TO_LOCATION)
+                                    .composeSql())
                     .collect(toList());
             
             if ( nonEmpty(found) ) {
@@ -75,11 +73,10 @@ class H2DaoLocationsV2 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStream(
-                            Location.class,
+                            ROW_TO_LOCATION,
                             patternSelect
                                     .decreaseRequiredLikeness()
-                                    .compose(),
-                            ROW_TO_LOCATION)
+                                    .composeSql())
                     .collect(toList());
             
             if ( nonEmpty(found) ) {
@@ -88,11 +85,10 @@ class H2DaoLocationsV2 extends H2DaoLocationsV0 {
             
             found = transact
                     .doQueryAndStream(
-                            Location.class,
+                            ROW_TO_LOCATION,
                             patternSelect
                                     .decreaseRequiredLikeness()
-                                    .compose(),
-                            ROW_TO_LOCATION)
+                                    .composeSql())
                     .collect(toList());
             
             return found;

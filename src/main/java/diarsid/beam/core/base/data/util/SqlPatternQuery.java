@@ -29,7 +29,7 @@ public abstract class SqlPatternQuery extends PooledReusable {
         return this.likeness.isNextDecreaseMeaningfull();
     }
 
-    public abstract String compose();
+    public abstract String composeSql();
     
     abstract void onLikenessDecreased(int oldMatches, int newMatches);
     

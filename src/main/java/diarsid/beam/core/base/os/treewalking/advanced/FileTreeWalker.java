@@ -41,8 +41,8 @@ import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.haveEqualLength;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 
 
 /**

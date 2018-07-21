@@ -18,7 +18,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -43,11 +43,10 @@ class H2DaoBatchesV2 extends H2DaoBatchesV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE LOWER(bat_name) LIKE ? ",
-                            super.rowToBatchNameConversion(),
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -57,14 +56,13 @@ class H2DaoBatchesV2 extends H2DaoBatchesV0 {
             
             found = transact
                     .doQueryAndStream(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             patternSelect
                                     .select("bat_name")
                                     .from("batches")
                                     .patternColumnForWhereCondition("bat_name")
                                     .patternForWhereCondition(pattern)
-                                    .compose(),
-                            super.rowToBatchNameConversion())
+                                    .composeSql())
                     .collect(toList());
             
             if ( nonEmpty(found) ) {
@@ -73,11 +71,10 @@ class H2DaoBatchesV2 extends H2DaoBatchesV0 {
             
             found = transact
                     .doQueryAndStream(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             patternSelect
                                     .decreaseRequiredLikeness()
-                                    .compose(),
-                            super.rowToBatchNameConversion())
+                                    .composeSql())
                     .collect(toList());
             
             if ( nonEmpty(found) ) {
@@ -86,11 +83,10 @@ class H2DaoBatchesV2 extends H2DaoBatchesV0 {
             
             found = transact
                     .doQueryAndStream(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             patternSelect
                                     .decreaseRequiredLikeness()
-                                    .compose(),
-                            super.rowToBatchNameConversion())
+                                    .composeSql())
                     .collect(toList());
             
             return found;

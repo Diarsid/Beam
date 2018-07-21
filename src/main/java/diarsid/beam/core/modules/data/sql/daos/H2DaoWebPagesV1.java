@@ -46,11 +46,10 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
             String lowerWildcardPattern = lowerWildcard(pattern);
             List<WebPage> pages = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
-                            ROW_TO_WEBPAGE, 
                             lowerWildcardPattern, lowerWildcardPattern)
                     .sorted()
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
@@ -63,14 +62,13 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
             List<String> criterias = patternToCharCriterias(pattern);
             pages = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " +
                                     multipleLowerLikeAnd("name", criterias.size()) + 
                                     " OR " + 
                                     multipleLowerLikeAnd("shortcuts", criterias.size()), 
-                            ROW_TO_WEBPAGE, 
                             criterias, criterias)                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
@@ -86,14 +84,13 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
             
             pages = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " + 
                                     multipleGroupedLikeOrNameCondition + 
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
-                            ROW_TO_WEBPAGE, 
                             criterias, criterias)                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
@@ -102,14 +99,13 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
             
             List<WebPage> shiftedPages = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE " + 
                                     multipleGroupedLikeOrNameCondition + 
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
-                            ROW_TO_WEBPAGE, 
                             criterias, criterias)                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());

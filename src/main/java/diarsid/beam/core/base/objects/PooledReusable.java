@@ -10,8 +10,6 @@ import java.util.function.Supplier;
 
 import static java.util.UUID.randomUUID;
 
-import static diarsid.beam.core.base.objects.Pool.giveBackToPool;
-
 /**
  *
  * @author Diarsid
@@ -27,7 +25,7 @@ public abstract class PooledReusable implements AutoCloseable {
     
     protected static <T extends PooledReusable> void createPoolFor(
             Class<T> type, Supplier<T> tSupplier) {
-        Pool.createPool(type, tSupplier);
+        Pools.createPool(type, tSupplier);
     }
     
     protected abstract void clearForReuse();
@@ -38,7 +36,7 @@ public abstract class PooledReusable implements AutoCloseable {
 
     @Override
     public void close() {
-        giveBackToPool(this);
+        Pools.giveBackToPool(this);
     }
     
     public final UUID identityUuid() {

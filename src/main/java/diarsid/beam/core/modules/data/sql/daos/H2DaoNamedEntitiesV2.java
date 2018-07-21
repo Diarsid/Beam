@@ -23,7 +23,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -54,7 +54,7 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
             
             entityMasks = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            super.rowToNamedEntityMask(),
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) IS ? " +
@@ -66,7 +66,6 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) IS ? ) OR ( LOWER(shortcuts) IS ? )", 
-                            super.rowToNamedEntityMask(),
                             lowerPattern, 
                             lowerPattern, 
                             lowerPattern,
@@ -83,7 +82,7 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
             
             entityMasks = transact
                     .doQueryAndStreamVarargParams(
-                            NamedEntity.class,
+                            super.rowToNamedEntityMask(),
                             "SELECT loc_name AS entity_name, 'location' AS entity_type " +
                             "FROM locations " +
                             "WHERE LOWER(loc_name) LIKE ? " +
@@ -95,7 +94,6 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
                             "SELECT name, 'webpage' " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? )", 
-                            super.rowToNamedEntityMask(),
                             lowerPatternLike, 
                             lowerPatternLike, 
                             lowerPatternLike,
@@ -141,10 +139,9 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
             patternUnion.unionDistinct(patternSelect);
             
             entityMasks = transact
-                    .doQueryAndStream(
-                            NamedEntity.class,
-                            patternUnion.compose(), 
-                            super.rowToNamedEntityMask())
+                    .doQueryAndStream( 
+                            super.rowToNamedEntityMask(),
+                            patternUnion.composeSql())
                     .collect(toList());
             
             List<Program> programs = super
@@ -157,12 +154,11 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
             }
             
             entityMasks = transact
-                    .doQueryAndStream(
-                            NamedEntity.class,
+                    .doQueryAndStream( 
+                            super.rowToNamedEntityMask(),
                             patternUnion
                                     .decreaseRequiredLikeness()
-                                    .compose(), 
-                            super.rowToNamedEntityMask())
+                                    .composeSql())
                     .collect(toList());
             
             entityMasks.addAll(programs);            
@@ -171,12 +167,11 @@ public class H2DaoNamedEntitiesV2 extends H2DaoNamedEntitiesV0 {
             }
             
             entityMasks = transact
-                    .doQueryAndStream(
-                            NamedEntity.class,
+                    .doQueryAndStream( 
+                            super.rowToNamedEntityMask(),
                             patternUnion
                                     .decreaseRequiredLikeness()
-                                    .compose(), 
-                            super.rowToNamedEntityMask())
+                                    .composeSql())
                     .collect(toList());
             
             entityMasks.addAll(programs); 

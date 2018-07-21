@@ -52,11 +52,10 @@ class H2DaoPatternChoices
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
-                            String.class,
+                            ROW_TO_EXTENDED,
                             "SELECT * " +
                             "FROM pattern_choices " +
                             "WHERE ( LOWER(original) IS ? ) AND ( variants_stamp IS ? )", 
-                            ROW_TO_EXTENDED,
                             lower(original), variants.stamp());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

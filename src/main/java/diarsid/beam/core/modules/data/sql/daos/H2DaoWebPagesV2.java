@@ -20,7 +20,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -47,11 +47,10 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
             
             List<WebPage> tasks = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ",
-                            ROW_TO_WEBPAGE, 
                             lowerWildcardPattern, lowerWildcardPattern)                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
@@ -77,10 +76,9 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
             patternUnion.unionDistinct(patternSelect);
                         
             tasks = transact
-                    .doQueryAndStream(
-                            WebPage.class, 
-                            patternUnion.compose(), 
-                            ROW_TO_WEBPAGE)                    
+                    .doQueryAndStream( 
+                            ROW_TO_WEBPAGE,
+                            patternUnion.composeSql())                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             
@@ -89,12 +87,11 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
             }
             
             tasks = transact
-                    .doQueryAndStream(
-                            WebPage.class, 
+                    .doQueryAndStream(  
+                            ROW_TO_WEBPAGE,
                             patternUnion
                                     .decreaseRequiredLikeness()
-                                    .compose(), 
-                            ROW_TO_WEBPAGE)                    
+                                    .composeSql())                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             
@@ -104,11 +101,10 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
             
             tasks = transact
                     .doQueryAndStream(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE,
                             patternUnion
                                     .decreaseRequiredLikeness()
-                                    .compose(), 
-                            ROW_TO_WEBPAGE)                    
+                                    .composeSql())                    
                     .peek(page -> super.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
             

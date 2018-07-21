@@ -22,6 +22,7 @@ import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
 import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -45,6 +46,7 @@ abstract class H2DaoTasksV0
         implements DaoTasks {
     
     private final Function<Task, Params> taskToParamsConversion;
+    private final RowConversion<LocalDateTime> rowToTimeConversion;
     
     H2DaoTasksV0(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);        
@@ -58,6 +60,14 @@ abstract class H2DaoTasksV0
                     task.type(),
                     task.id());
         };
+        this.rowToTimeConversion = (row) -> {
+            Object time = row.get("time");
+            if ( nonNull(time) ) {
+                return ((Timestamp) time).toLocalDateTime();
+            } else {
+                return null;
+            }                                
+        };
     }
 
     @Override
@@ -66,18 +76,10 @@ abstract class H2DaoTasksV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRow(
-                            LocalDateTime.class, 
+                            this.rowToTimeConversion,
                             "SELECT MIN(time) AS time " +
                             "FROM tasks " +
-                            "WHERE status IS TRUE", 
-                            (row) -> {
-                                Object time = row.get("time");
-                                if ( nonNull(time) ) {
-                                    return ((Timestamp) time).toLocalDateTime();
-                                } else {
-                                    return null;
-                                }                                
-                            });
+                            "WHERE status IS TRUE");
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             logError(this.getClass(), e);
             
@@ -90,14 +92,14 @@ abstract class H2DaoTasksV0
             Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeat... types) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndStreamVarargParams(Task.class,
+                    .doQueryAndStreamVarargParams(
+                            ROW_TO_TASK,
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE type IN " + multipleValues(types.length) + 
                             "       AND ( time >= ? ) AND ( time <= ? ) " +        
                             "       AND ( status IS TRUE ) " +
                             "ORDER BY time ",
-                            ROW_TO_TASK,
                             types, from, to)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -113,11 +115,10 @@ abstract class H2DaoTasksV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            Task.class,
+                            ROW_TO_TASK,
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE ( status IS TRUE ) AND ( time <= ? ) ",
-                            ROW_TO_TASK,
                             tillNow)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {

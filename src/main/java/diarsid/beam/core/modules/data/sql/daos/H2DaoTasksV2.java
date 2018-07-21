@@ -19,7 +19,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.objects.Pool.takeFromPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.logError;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
@@ -45,11 +45,10 @@ class H2DaoTasksV2 extends H2DaoTasksV0 {
             
             List<Task> tasks = transact
                     .doQueryAndStreamVarargParams(
-                            Task.class, 
+                            ROW_TO_TASK, 
                             "SELECT * " +
                             "FROM tasks " +
                             "WHERE ( LOWER(text) LIKE ? )", 
-                            ROW_TO_TASK, 
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -59,14 +58,13 @@ class H2DaoTasksV2 extends H2DaoTasksV0 {
                         
             tasks = transact
                     .doQueryAndStream(
-                            Task.class, 
+                            ROW_TO_TASK,
                             patternSelect
                                     .select("*")
                                     .from("tasks")
                                     .patternForWhereCondition(pattern)
                                     .patternColumnForWhereCondition("text")
-                                    .compose(), 
-                            ROW_TO_TASK)
+                                    .composeSql())
                     .collect(toList());
             
             if ( nonEmpty(tasks) ) {
@@ -75,11 +73,10 @@ class H2DaoTasksV2 extends H2DaoTasksV0 {
             
             tasks = transact
                     .doQueryAndStream(
-                            Task.class, 
+                            ROW_TO_TASK,
                             patternSelect
                                     .decreaseRequiredLikeness()
-                                    .compose(), 
-                            ROW_TO_TASK)
+                                    .composeSql())
                     .collect(toList());
             
             return tasks;

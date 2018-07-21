@@ -22,6 +22,7 @@ import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -34,6 +35,7 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
@@ -44,15 +46,19 @@ import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
-import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 
 
 class H2DaoWebDirectories 
         extends BeamCommonDao 
         implements DaoWebDirectories {
+    
+    private final RowConversion<Integer> rowToDirectoryIdConversion;
 
     H2DaoWebDirectories(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);        
+        this.rowToDirectoryIdConversion = (row) -> {
+            return (int) row.get("id");
+        };
     }   
 
     @Override
@@ -106,20 +112,6 @@ class H2DaoWebDirectories
             Map<WebDirectory, List<WebPage>> data = new HashMap<>();
             super.openDisposableTransaction()
                     .doQuery(
-                            "SELECT " +
-                            "   page.name       AS p_name, " +
-                            "   page.url        AS p_url, " +
-                            "   page.shortcuts  AS p_short, " +
-                            "   page.ordering   AS p_order, " +
-                            "   dir.id          AS d_id, " +
-                            "   dir.name        AS d_name, " +
-                            "   dir.place       AS d_place, " +
-                            "   dir.ordering    AS d_order " +
-                            "FROM " +
-                            "   web_directories AS dir " +
-                            "       LEFT JOIN " +
-                            "   web_pages AS page " +
-                            "       ON page.dir_id = dir.id ",
                             (row) -> {
                                 WebDirectory dir = restoreDirectory(
                                         (int) row.get("d_id"),
@@ -152,7 +144,21 @@ class H2DaoWebDirectories
                                             }
                                     );
                                 }
-                            });
+                            },
+                            "SELECT " +
+                            "   page.name       AS p_name, " +
+                            "   page.url        AS p_url, " +
+                            "   page.shortcuts  AS p_short, " +
+                            "   page.ordering   AS p_order, " +
+                            "   dir.id          AS d_id, " +
+                            "   dir.name        AS d_name, " +
+                            "   dir.place       AS d_place, " +
+                            "   dir.ordering    AS d_order " +
+                            "FROM " +
+                            "   web_directories AS dir " +
+                            "       LEFT JOIN " +
+                            "   web_pages AS page " +
+                            "       ON page.dir_id = dir.id ");
             
             return data
                     .entrySet()
@@ -174,21 +180,6 @@ class H2DaoWebDirectories
             Map<WebDirectory, List<WebPage>> data = new HashMap<>();
             super.openDisposableTransaction()
                     .doQueryVarargParams(
-                            "SELECT " +
-                            "   page.name       AS p_name, " +
-                            "   page.url        AS p_url, " +
-                            "   page.shortcuts  AS p_short, " +
-                            "   page.ordering   AS p_order, " +
-                            "   dir.id          AS d_id, " +
-                            "   dir.name        AS d_name, " +
-                            "   dir.place       AS d_place, " +
-                            "   dir.ordering    AS d_order " +
-                            "FROM " +
-                            "   web_directories AS dir " +
-                            "       LEFT JOIN " +
-                            "   web_pages AS page " +
-                            "       ON page.dir_id = dir.id " +
-                            "WHERE dir.place IS ? ",
                             (row) -> {
                                 WebDirectory dir = restoreDirectory(
                                         (int) row.get("d_id"),
@@ -222,6 +213,21 @@ class H2DaoWebDirectories
                                     );
                                 }
                             }, 
+                            "SELECT " +
+                            "   page.name       AS p_name, " +
+                            "   page.url        AS p_url, " +
+                            "   page.shortcuts  AS p_short, " +
+                            "   page.ordering   AS p_order, " +
+                            "   dir.id          AS d_id, " +
+                            "   dir.name        AS d_name, " +
+                            "   dir.place       AS d_place, " +
+                            "   dir.ordering    AS d_order " +
+                            "FROM " +
+                            "   web_directories AS dir " +
+                            "       LEFT JOIN " +
+                            "   web_pages AS page " +
+                            "       ON page.dir_id = dir.id " +
+                            "WHERE dir.place IS ? ",
                             place);
             
             return data
@@ -244,11 +250,10 @@ class H2DaoWebDirectories
             
             Optional<WebDirectory> directory = transact
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE id IS ? ", 
-                            ROW_TO_WEBDIRECTORY, 
                             id);
             
             if ( ! directory.isPresent() ) {
@@ -257,11 +262,10 @@ class H2DaoWebDirectories
             
             List<WebPage> directoryPages = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, url, shortcuts, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ", 
-                            ROW_TO_WEBPAGE, 
                             directory.get().id())
                     .collect(toList());
             
@@ -279,11 +283,10 @@ class H2DaoWebDirectories
             
             Optional<WebDirectory> directory = transact
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            ROW_TO_WEBDIRECTORY, 
                             lower(name), place);
             
             if ( ! directory.isPresent() ) {
@@ -292,11 +295,10 @@ class H2DaoWebDirectories
             
             List<WebPage> directoryPages = transact
                     .doQueryAndStreamVarargParams(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE, 
                             "SELECT name, url, shortcuts, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ", 
-                            ROW_TO_WEBPAGE, 
                             directory.get().id())
                     .collect(toList());
             
@@ -313,11 +315,10 @@ class H2DaoWebDirectories
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )", 
-                            ROW_TO_WEBDIRECTORY, 
                             lower(name), place);
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             
@@ -334,11 +335,10 @@ class H2DaoWebDirectories
             
             dirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND ( LOWER(name) LIKE ? ) ", 
-                            ROW_TO_WEBDIRECTORY, 
                             place, lowerWildcard(pattern))
                     .sorted()
                     .collect(toList());
@@ -350,12 +350,11 @@ class H2DaoWebDirectories
             List<String> criterias = patternToCharCriterias(pattern);
             dirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND " + 
                                     multipleLowerLikeAnd("name", criterias.size()), 
-                            ROW_TO_WEBDIRECTORY, 
                             place, criterias)
                     .sorted()
                     .collect(toList());
@@ -368,11 +367,10 @@ class H2DaoWebDirectories
                     multipleLowerGroupedLikesAndOr("name", criterias.size());
             dirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND " + multipleGroupedLikeOrNameCondition, 
-                            ROW_TO_WEBDIRECTORY, 
                             place, criterias)
                     .sorted()
                     .collect(toList());
@@ -381,11 +379,10 @@ class H2DaoWebDirectories
                         
             List<WebDirectory> shiftedDirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( place IS ? ) AND " + multipleGroupedLikeOrNameCondition, 
-                            ROW_TO_WEBDIRECTORY, 
                             place, criterias)
                     .sorted()
                     .collect(toList());
@@ -410,11 +407,10 @@ class H2DaoWebDirectories
             
             dirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE ( LOWER(name) LIKE ? ) ", 
-                            ROW_TO_WEBDIRECTORY, 
                             lowerWildcard(pattern))
                     .sorted()
                     .collect(toList());
@@ -426,11 +422,10 @@ class H2DaoWebDirectories
             List<String> criterias = patternToCharCriterias(pattern);
             dirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE " + multipleLowerLikeAnd("name", criterias.size()), 
-                            ROW_TO_WEBDIRECTORY, 
                             criterias)
                     .sorted()
                     .collect(toList());
@@ -443,11 +438,10 @@ class H2DaoWebDirectories
                     multipleLowerGroupedLikesAndOr("name", criterias.size());
             dirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE " + multipleGroupedLikeOrNameCondition, 
-                            ROW_TO_WEBDIRECTORY, 
                             criterias)
                     .sorted()
                     .collect(toList());
@@ -456,11 +450,10 @@ class H2DaoWebDirectories
                         
             List<WebDirectory> shiftedDirs = transact
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " + 
                             "WHERE " + multipleGroupedLikeOrNameCondition, 
-                            ROW_TO_WEBDIRECTORY, 
                             criterias)
                     .sorted()
                     .collect(toList());
@@ -483,10 +476,9 @@ class H2DaoWebDirectories
                         
             return super.openDisposableTransaction()
                     .doQueryAndStream(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY,
                             "SELECT id, name, place, ordering " +
-                            "FROM web_directories ", 
-                            ROW_TO_WEBDIRECTORY)
+                            "FROM web_directories ")
                     .sorted()
                     .collect(toList());
             
@@ -503,11 +495,10 @@ class H2DaoWebDirectories
                         
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE place IS ? ", 
-                            ROW_TO_WEBDIRECTORY, 
                             place)
                     .sorted()
                     .collect(toList());
@@ -664,11 +655,10 @@ class H2DaoWebDirectories
             
             Optional<WebDirectory> optDirectory = transact
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY, 
                             "SELECT id, name, ordering, place " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            ROW_TO_WEBDIRECTORY, 
                             lower(name), place);
             
             if ( ! optDirectory.isPresent() ) {
@@ -716,11 +706,10 @@ class H2DaoWebDirectories
             
             Optional<WebDirectory> movedDir = transact
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebDirectory.class, 
+                            ROW_TO_WEBDIRECTORY,
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
-                            ROW_TO_WEBDIRECTORY,
                             lower(name), oldPlace);
             
             if ( ! movedDir.isPresent() ) {
@@ -833,11 +822,10 @@ class H2DaoWebDirectories
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRow(
-                            WebDirectory.class,
+                            ROW_TO_WEBDIRECTORY,
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
-                            "WHERE id IS ? ",
-                            ROW_TO_WEBDIRECTORY);
+                            "WHERE id IS ? ");
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
             return Optional.empty();
@@ -850,13 +838,10 @@ class H2DaoWebDirectories
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
-                            Integer.class,
+                            this.rowToDirectoryIdConversion,
                             "SELECT id " +
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )",
-                            (row) -> {
-                                return (int) row.get("id");
-                            },
                             lower(name), place);
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

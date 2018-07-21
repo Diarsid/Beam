@@ -44,11 +44,10 @@ class H2DaoBatchesV1 extends H2DaoBatchesV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE LOWER(bat_name) LIKE ? ",
-                            super.rowToBatchNameConversion(),
                             lowerWildcard(pattern))
                     .collect(toList());
             
@@ -59,11 +58,10 @@ class H2DaoBatchesV1 extends H2DaoBatchesV0 {
             List<String> criterias = patternToCharCriterias(pattern);
             found = transact
                     .doQueryAndStreamVarargParams(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE " + multipleLowerLikeAnd("bat_name", criterias.size()),
-                            super.rowToBatchNameConversion(),
                             criterias)
                     .collect(toList());
             
@@ -76,22 +74,20 @@ class H2DaoBatchesV1 extends H2DaoBatchesV0 {
             
             found = transact
                     .doQueryAndStreamVarargParams(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE " + andOrCondition,
-                            super.rowToBatchNameConversion(),
                             criterias)
                     .collect(toList());
             
             shift(criterias);
             shuffleFound = transact
                     .doQueryAndStreamVarargParams(
-                            String.class,
+                            super.rowToBatchNameConversion(),
                             "SELECT bat_name " +
                             "FROM batches " +
                             "WHERE " + andOrCondition,
-                            super.rowToBatchNameConversion(),
                             criterias)
                     .collect(toList());
             

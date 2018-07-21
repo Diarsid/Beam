@@ -100,13 +100,12 @@ abstract class H2DaoBatchesV0
             List<ExecutorCommand> commands = transact
                     .ifTrue( batchExists )
                     .doQueryAndStreamVarargParams(
-                            ExecutorCommand.class,
+                            ROW_TO_EXECUTOR_COMMAND,
                             "SELECT bat_command_type, " +
                             "       bat_command_original " +
                             "FROM batch_commands " +
                             "WHERE LOWER(bat_name) IS ? " +
-                            "ORDER BY bat_command_order" ,
-                            ROW_TO_EXECUTOR_COMMAND,
+                            "ORDER BY bat_command_order",
                             lower(name))
                     .collect(toList());
             
@@ -330,16 +329,16 @@ abstract class H2DaoBatchesV0
             
             super.openDisposableTransaction()
                     .doQuery(
-                            "SELECT bat_name, " + 
-                            "       bat_command_type, " +
-                            "       bat_command_original " +
-                            "FROM batch_commands " +
-                            "ORDER BY bat_name, bat_command_order",
                             (row) -> { 
                                 mergeInMapWithArrayLists(collectedBatches, 
                                         (String) row.get("bat_name"), 
                                         ROW_TO_EXECUTOR_COMMAND.convert(row));
-                            });
+                            },
+                            "SELECT bat_name, " + 
+                            "       bat_command_type, " +
+                            "       bat_command_original " +
+                            "FROM batch_commands " +
+                            "ORDER BY bat_name, bat_command_order");
             
             return collectedBatches
                     .entrySet()

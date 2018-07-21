@@ -12,11 +12,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.Attribute;
-import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.domain.entities.Attribute;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
@@ -32,8 +33,13 @@ class H2DaoKeyValueStorage
         extends BeamCommonDao
         implements DaoKeyValueStorage {
     
+    private final RowConversion<String> firstRowToValueConversion;
+    
     H2DaoKeyValueStorage(DataBase dataBase, InnerIoEngine ioEngine) {
         super(dataBase, ioEngine);
+        this.firstRowToValueConversion = (firstRow) -> {
+            return (String) firstRow.get("value");
+        };
     }
 
     @Override
@@ -41,13 +47,10 @@ class H2DaoKeyValueStorage
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
-                            String.class,
+                            this.firstRowToValueConversion,
                             "SELECT key, value " +
                             "FROM key_value " +
                             "WHERE LOWER(key) IS ? ",
-                            (firstRow) -> {
-                                return (String) firstRow.get("value");
-                            },
                             lower(key));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
@@ -113,13 +116,13 @@ class H2DaoKeyValueStorage
         try {
             super.openDisposableTransaction()
                     .doQuery(
-                            "SELECT key, value " +
-                            "FROM key_value",
                             (row) -> {
                                 all.put(
                                         (String) row.get("key"), 
                                         (String) row.get("value"));
-                            });
+                            },
+                            "SELECT key, value " +
+                            "FROM key_value");
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
         }
@@ -146,10 +149,9 @@ class H2DaoKeyValueStorage
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStream(
-                            Attribute.class,
+                            ROW_TO_ATTRIBUTE,
                             "SELECT key, value " +
-                            "FROM key_value",
-                            ROW_TO_ATTRIBUTE)
+                            "FROM key_value")
                     .collect(toSet());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             

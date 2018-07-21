@@ -71,8 +71,14 @@ class H2DaoLocationSubPathsV1
 //            }
             
             foundSubPaths = transact
-                    .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
+                    .doQueryAndStreamVarargParams(                             
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
                             "FROM " +
                             "   commands AS com " +
@@ -81,14 +87,7 @@ class H2DaoLocationSubPathsV1
                             "   ON LOWER(com.com_extended) LIKE CONCAT(LOWER(loc.loc_name) , '%') " +
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
-                            "   ( ( LOWER(com_original) IS ? ) OR ( LOWER(com_original) LIKE ? ) )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
+                            "   ( ( LOWER(com_original) IS ? ) OR ( LOWER(com_original) LIKE ? ) )",
                             OPEN_LOCATION_TARGET, lower(pattern), lowerWildcard(pattern))
                     .collect(toList());
             
@@ -153,7 +152,13 @@ class H2DaoLocationSubPathsV1
             
             foundSubPaths = transact
                     .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
                             "FROM " +
                             "   commands AS com " +
@@ -163,13 +168,6 @@ class H2DaoLocationSubPathsV1
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
                             OPEN_LOCATION_TARGET, criterias)
                     .collect(toList());            
             
@@ -178,7 +176,13 @@ class H2DaoLocationSubPathsV1
             
             shiftedFoundSubPaths = transact
                     .doQueryAndStreamVarargParams(
-                            LocationSubPath.class, 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             "SELECT DISTINCT loc_name, loc_path, com_extended AS subpath " +
                             "FROM " +
                             "   commands AS com " +
@@ -188,13 +192,6 @@ class H2DaoLocationSubPathsV1
                             "WHERE " +
                             "   ( com_type IS ? ) AND " +
                             "   ( " + andOrCondition + " )", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
                             OPEN_LOCATION_TARGET, criterias)
                     .collect(toList());
             

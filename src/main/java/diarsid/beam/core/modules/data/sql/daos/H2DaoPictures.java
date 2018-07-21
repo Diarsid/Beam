@@ -9,10 +9,10 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.domain.entities.Picture;
-import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.domain.entities.Picture;
 import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
@@ -40,11 +40,11 @@ class H2DaoPictures
     public Optional<Picture> getByName(Initiator initiator, String name) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(Picture.class, 
+                    .doQueryAndConvertFirstRowVarargParams(
+                            ROW_TO_IMAGE, 
                             "SELECT name, bytes " +
                             "FROM images " +
                             "WHERE LOWER(name) IS ? ", 
-                            ROW_TO_IMAGE, 
                             lower(name));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(H2DaoPictures.class, ex);

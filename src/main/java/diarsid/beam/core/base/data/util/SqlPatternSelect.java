@@ -192,7 +192,7 @@ public class SqlPatternSelect extends SqlPatternQuery {
     }
     
     @Override
-    public String compose() {     
+    public String composeSql() {     
         if ( nonEmpty(this.sql) && nonEmpty(this.caseCondition) ) {
             return this.sql.toString();
         }

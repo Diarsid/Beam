@@ -170,8 +170,14 @@ class H2DaoLocationSubPathChoices
             Initiator initiator, String pattern, WeightedVariants variants) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndConvertFirstRowVarargParams(
-                            LocationSubPath.class, 
+                    .doQueryAndConvertFirstRowVarargParams( 
+                            (row) -> {
+                                return new LocationSubPath(
+                                        pattern, 
+                                        row.get("loc_name", String.class),
+                                        row.get("loc_path", String.class),
+                                        row.get("subpath", String.class));
+                            }, 
                             "SELECT loc.loc_name, loc_path, subpath " + 
                             "FROM " + 
                             "    locations AS loc " + 
@@ -180,14 +186,7 @@ class H2DaoLocationSubPathChoices
                             "    ON loc.loc_name = sc.loc_name " + 
                             "WHERE " +
                             "   ( LOWER(pattern) IS ? ) AND " +
-                            "   ( LOWER(variants_stamp) IS ? ) ", 
-                            (row) -> {
-                                return new LocationSubPath(
-                                        pattern, 
-                                        row.get("loc_name", String.class),
-                                        row.get("loc_path", String.class),
-                                        row.get("subpath", String.class));
-                            }, 
+                            "   ( LOWER(variants_stamp) IS ? ) ",
                             lower(pattern), variants.stamp());
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
             // TODO LOW

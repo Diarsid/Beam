@@ -47,11 +47,10 @@ abstract class H2DaoCommandsV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE ( com_type IS ? ) AND ( LOWER(com_original) IS ? ) ",
-                            ROW_TO_INVOCATION_COMMAND,
                             type.name(), lower(original));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logFor(this).error(format("get %s %s command", type, original), ex);
@@ -66,11 +65,10 @@ abstract class H2DaoCommandsV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            InvocationCommand.class,
+                            ROW_TO_INVOCATION_COMMAND,
                             "SELECT com_type, com_original, com_extended " +
                             "FROM commands " +
                             "WHERE LOWER(com_original) IS ? ",
-                            ROW_TO_INVOCATION_COMMAND,
                             lower(original))
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {

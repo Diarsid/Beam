@@ -64,11 +64,10 @@ abstract class H2DaoLocationsV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            Location.class,
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE ( LOWER(loc_name) IS ? ) ",
-                            ROW_TO_LOCATION,
                             lower(exactName))
                     .findFirst();
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
@@ -223,12 +222,11 @@ abstract class H2DaoLocationsV0
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<Location> locationsToModify = transact
-                    .doQueryAndStreamVarargParams(
-                            Location.class,                            
+                    .doQueryAndStreamVarargParams(            
+                            ROW_TO_LOCATION,     
                             "SELECT loc_name, loc_path " +
                             "FROM locations " +
                             "WHERE LOWER(loc_path) LIKE ? ", 
-                            ROW_TO_LOCATION, 
                             lowerWildcard(replaceable))
                     .collect(toList());            
 
@@ -268,11 +266,10 @@ abstract class H2DaoLocationsV0
             Initiator initiator) {
         try {
             return super.openDisposableTransaction()
-                    .doQueryAndStream(
-                            Location.class,
+                    .doQueryAndStream( 
+                            ROW_TO_LOCATION,
                             "SELECT loc_name, loc_path " +
-                            "FROM locations", 
-                            ROW_TO_LOCATION)
+                            "FROM locations")
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             logError(this.getClass(), ex);

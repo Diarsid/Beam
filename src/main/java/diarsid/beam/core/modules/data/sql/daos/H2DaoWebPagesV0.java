@@ -12,7 +12,6 @@ import java.util.Optional;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
-import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoWebPages;
@@ -47,11 +46,10 @@ abstract class H2DaoWebPagesV0
             try {
                 return super.openDisposableTransaction()
                         .doQueryAndConvertFirstRowVarargParams(
-                                WebDirectory.class, 
+                                ROW_TO_WEBDIRECTORY,
                                 "SELECT id, name, place, ordering " +
                                 "FROM web_directories " +
                                 "WHERE ( id IS ? ) ", 
-                                ROW_TO_WEBDIRECTORY,
                                 webPage.directoryId());
             } catch (TransactionHandledSQLException|TransactionHandledException e) {
                 logError(H2DaoWebPagesV0.class, e);
@@ -117,11 +115,10 @@ abstract class H2DaoWebPagesV0
         try {
             Optional<WebPage> page = super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebPage.class,
+                            ROW_TO_WEBPAGE,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
-                            ROW_TO_WEBPAGE,
                             lower(name));
             this.setLoadableDirectoryFor(initiator, page);
             return page;
@@ -137,11 +134,10 @@ abstract class H2DaoWebPagesV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
-                            WebPage.class,
+                            ROW_TO_WEBPAGE,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE dir_id IS ? ",
-                            ROW_TO_WEBPAGE,
                             directoryId)
                     .sorted()
                     .peek(page -> this.setLoadableDirectoryFor(initiator, page))
@@ -219,11 +215,10 @@ abstract class H2DaoWebPagesV0
             
             Optional<WebPage> optPage = transact
                     .doQueryAndConvertFirstRowVarargParams(
-                            WebPage.class,
+                            ROW_TO_WEBPAGE,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
-                            ROW_TO_WEBPAGE,
                             lower(name));
             
             if ( ! optPage.isPresent() ) {
@@ -437,10 +432,9 @@ abstract class H2DaoWebPagesV0
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStream(
-                            WebPage.class, 
+                            ROW_TO_WEBPAGE,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
-                            "FROM web_pages ", 
-                            ROW_TO_WEBPAGE)
+                            "FROM web_pages ")
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
