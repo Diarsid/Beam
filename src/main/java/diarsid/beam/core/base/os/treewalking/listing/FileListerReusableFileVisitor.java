@@ -28,7 +28,7 @@ import static diarsid.beam.core.base.util.Logs.logError;
  *
  * @author Diarsid
  */
-public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
+class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
     
     private final FolderTypeDetector programFolderDetector;
     private final LargeFolderDetector largeFolderDetector;
@@ -36,7 +36,7 @@ public class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
     
     private Path root;
     
-    public FileListerReusableFileVisitor(
+    FileListerReusableFileVisitor(
             FolderTypeDetector programFolderDetector, 
             LargeFolderDetector largeFolderDetector,
             FileItemsFormatter formatter) {

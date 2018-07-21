@@ -83,9 +83,16 @@ class ConfigurationReading {
     
     private static Pair<String, String> parsePair(String line) {
         line = line.trim();
-        return new Pair<>(
-                line.trim().substring(0, line.indexOf("=")).trim(),
-                line.trim().substring(line.indexOf("=") + "=".length(), line.length()).trim());
+        String left = line.substring(0, line.indexOf("=")).trim();
+        String right = line.substring(line.indexOf("=") + "=".length(), line.length()).trim();
+        if ( left.length() == 0 ) {
+            throw new IllegalArgumentException(
+                    format("Line '%s' is not a valid linf for configuration parsing!", line));
+        } 
+        if ( right.length() == 0 ) {
+            right = null;
+        }
+        return new Pair<>(left, right);
     }
 
     private static String clean(String line) {

@@ -92,6 +92,14 @@ public class StringIgnoreCaseUtil {
         }
     }
     
+    public static boolean endsIngoreCase(String whereToSearch, String end) {
+        if ( isNull(whereToSearch) || isNull(end) || end.isEmpty() ) {
+            return false;
+        } else {
+            return lower(whereToSearch).endsWith(lower(end));
+        }
+    }
+    
     public static boolean containsWordInIgnoreCase(
             Collection<String> whereToSearch, String searched) {
         if ( isNull(whereToSearch) || whereToSearch.isEmpty() || isNull(searched) ) {
@@ -137,6 +145,23 @@ public class StringIgnoreCaseUtil {
             String whereToSearch, String... searchedStarts) {
         return stream(searchedStarts)
                 .filter(starting -> startsIngoreCase(whereToSearch, starting))
+                .findFirst()
+                .isPresent();
+    }
+    
+    public static boolean endsWithIgnoreCaseAnyFragment(
+            String whereToSearch, String... searchedEnds) {
+        return stream(searchedEnds)
+                .filter(starting -> endsIngoreCase(whereToSearch, starting))
+                .findFirst()
+                .isPresent();
+    }
+    
+    public static boolean endsWithIgnoreCaseAnyFragment(
+            String whereToSearch, Collection<String> searchedEnds) {
+        return searchedEnds
+                .stream()
+                .filter(starting -> endsIngoreCase(whereToSearch, starting))
                 .findFirst()
                 .isPresent();
     }

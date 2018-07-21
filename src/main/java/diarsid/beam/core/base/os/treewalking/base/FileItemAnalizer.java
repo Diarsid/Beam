@@ -17,6 +17,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.arrayListOf;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.endsWithIgnoreCaseAnyFragment;
 
 /**
  *
@@ -100,7 +101,7 @@ class FileItemAnalizer {
         if ( isDirectory(item) ) {
             return containsIgnoreCaseAnyFragment(asName(item), this.projectSpecificFolderSigns);
         } else {
-            return containsIgnoreCaseAnyFragment(asName(item), this.projectSpecificFileSigns);
+            return endsWithIgnoreCaseAnyFragment(asName(item), this.projectSpecificFileSigns);
         }
     }
     

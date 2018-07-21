@@ -16,6 +16,9 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static java.util.Collections.emptyList;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.application.environment.ConfigurationReading.parseConfigLines;
@@ -111,7 +114,9 @@ public class Configuration {
                     Object value = entry.getValue();
                     String valueString;
                     
-                    if ( value instanceof String ) {
+                    if ( isNull(value) ) {
+                        valueString = "";
+                    } else if ( value instanceof String ) {
                         valueString = (String) value;
                     } else if ( value instanceof List ) {
                         valueString = ((List<String>) value).stream().collect(joining(" "));
@@ -131,21 +136,21 @@ public class Configuration {
             this.options.putIfAbsent(key, value);
         });
     }
-
-    private boolean has(String option) {
-        return this.options.containsKey(option);
-    }
     
     public boolean hasString(String option) {
-        return 
-                this.has(option) && 
-                this.options.get(option) instanceof String;
+        Object value = this.options.get(option);
+        if ( nonNull(value) ) {
+            return value instanceof String;
+        }
+        return false;
     } 
     
     public boolean hasList(String option) {
-        return 
-                this.has(option) && 
-                this.options.get(option) instanceof List;
+        Object value = this.options.get(option);
+        if ( nonNull(value) ) {
+            return value instanceof List;
+        }
+        return false;
     }
     
     public boolean hasInt(String option) {
@@ -162,9 +167,12 @@ public class Configuration {
     }
     
     public String asString(String option) {
-        if ( this.has(option) ) {
+        if ( this.options.containsKey(option) ) {
             Object config = this.options.get(option);
-            if ( config instanceof String ) {
+            if ( isNull(config) ) {
+                throw new IllegalArgumentException(
+                        format("There isn't configured '%s' option.", option));
+            } else if ( config instanceof String ) {
                 return (String) config;
             } else if ( config instanceof List ) {
                 return join(" ", ((List<String>) config));
@@ -179,9 +187,12 @@ public class Configuration {
     }
     
     public int asInt(String option) {
-        if ( this.has(option) ) {
+        if ( this.options.containsKey(option) ) {
             Object config = this.options.get(option);
-            if ( config instanceof String ) {
+            if ( isNull(config) ) {
+                throw new IllegalArgumentException(
+                        format("There isn't configured '%s' option.", option));
+            } if ( config instanceof String ) {
                 return Integer.valueOf((String) config);
             } else if ( config instanceof List ) {
                 throw new IllegalArgumentException(
@@ -198,9 +209,12 @@ public class Configuration {
     }
     
     public boolean asBoolean(String option) {
-        if ( this.has(option) ) {
+        if ( this.options.containsKey(option) ) {
             Object config = this.options.get(option);
-            if ( config instanceof String ) {
+            if ( isNull(config) ) {
+                throw new IllegalArgumentException(
+                        format("There isn't configured '%s' option.", option));
+            } if ( config instanceof String ) {
                 return parseBoolean((String) config);
             } else {
                 throw new IllegalArgumentException(
@@ -212,9 +226,11 @@ public class Configuration {
     }
     
     public List<String> asList(String option) {
-        if ( this.has(option) ) {
+        if ( this.options.containsKey(option) ) {
             Object config = this.options.get(option);
-            if ( config instanceof String ) {
+            if ( isNull(config) ) {
+                return emptyList();
+            } if ( config instanceof String ) {
                 return Arrays.asList((String) config);
             } else if ( config instanceof List ) {
                 return (List<String>) config;
