@@ -31,6 +31,8 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class SqlUtil {
     
+    public static final String SQL_SINGLE_QUOTE_ESCAPE = "''";
+    
     public static enum SqlOperator {
         
         AND (" AND "),
@@ -620,6 +622,6 @@ public class SqlUtil {
     }
     
     public static boolean isSqlWildcard(char character) {
-        return character == '_';
+        return character == '_' || character == '%';
     }
 }

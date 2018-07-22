@@ -14,6 +14,7 @@ import diarsid.beam.core.base.util.Possible;
 import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.beam.core.base.util.SqlUtil.SQL_SINGLE_QUOTE_ESCAPE;
 import static diarsid.beam.core.base.util.SqlUtil.isSqlWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
@@ -232,11 +233,7 @@ public class SqlPatternSelect extends SqlPatternQuery {
 
     private void appendPositionToCondition(Character character) {
         this.caseCondition.append(" CASE WHEN POSITION('");
-        if ( isSqlWildcard(character) ) {
-            this.caseCondition.append("\\").append(character);
-        } else {
-            this.caseCondition.append(character);
-        }    
+        this.appendCharToCaseCondition(character);
         this.caseCondition
                 .append("', LOWER(")
                 .append(this.patternColumn.orThrow())
@@ -249,9 +246,9 @@ public class SqlPatternSelect extends SqlPatternQuery {
         String column = this.patternColumn.orThrow();
         
         this.caseCondition
-                .append(" CASE WHEN POSITION('")
-                .append(isCharSqlWildcard ? "\\" : "")
-                .append(character)
+                .append(" CASE WHEN POSITION('");
+        this.appendCharToCaseCondition(character);
+        this.caseCondition
                 .append("', LOWER(")
                 .append(column)
                 .append(")) > 0 THEN 1 ELSE 0 END ");
@@ -262,11 +259,31 @@ public class SqlPatternSelect extends SqlPatternQuery {
                 .append(column)
                 .append(") LIKE '");                
             for (int j = 0; j < i + 1; j++) {
-                this.caseCondition
-                        .append(isCharSqlWildcard ? "%\\" : "%")
-                        .append(character);
+                if ( character == '\'' ) {
+                    this.caseCondition
+                            .append("%")
+                            .append(SQL_SINGLE_QUOTE_ESCAPE); 
+                } else if ( isCharSqlWildcard ) {
+                    this.caseCondition
+                            .append("%\\")
+                            .append(character);
+                } else {
+                    this.caseCondition
+                            .append("%")
+                            .append(character);
+                }
             }
             this.caseCondition.append("%' THEN 1 ELSE 0 END ");
+        }
+    }
+    
+    private void appendCharToCaseCondition(Character character) {
+        if ( character == '\'' ) {
+            this.caseCondition.append(SQL_SINGLE_QUOTE_ESCAPE); 
+        } else if ( isSqlWildcard(character) ) {
+            this.caseCondition.append("\\").append(character);
+        } else {
+            this.caseCondition.append(character);
         }
     }
     
