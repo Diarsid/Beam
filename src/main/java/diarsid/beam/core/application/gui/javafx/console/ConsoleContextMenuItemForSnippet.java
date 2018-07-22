@@ -35,9 +35,9 @@ class ConsoleContextMenuItemForSnippet extends BeamConsoleContextMenuItem {
     
     @Override 
     protected Node createMenuItemGraphic() {
-        char star = 9733;
-        Label starLabel = new Label(Character.toString(star));
-        return starLabel;
+        Label graphic = new Label();
+        graphic.getStyleClass().add("console-command-menu-item-graphic");
+        return graphic;
     }
     
     @Override

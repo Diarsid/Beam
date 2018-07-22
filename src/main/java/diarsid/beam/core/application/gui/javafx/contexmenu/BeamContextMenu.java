@@ -9,9 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 
 import static java.util.Arrays.asList;
@@ -57,12 +55,6 @@ public class BeamContextMenu {
     
     public final void registerBeamItems(BeamContextMenuItem... items) {
         this.beamContextMenuItems.addAll(asList(items));
-    }
-    
-    public final Node createStandardMenuItemGraphic() {
-        Label point = new Label();
-        point.getStyleClass().add("console-menu-item-point");
-        return point;
     }
     
     void add(BeamContextMenuItem menuItem) {

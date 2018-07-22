@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
@@ -42,7 +43,13 @@ public abstract class BeamContextMenuItem
     }
     
     protected Node createMenuItemGraphic() {        
-        return this.contextMenu.createStandardMenuItemGraphic();
+        return createStandardMenuItemGraphic();
+    }
+    
+    public static Node createStandardMenuItemGraphic() {
+        Label graphic = new Label();
+        graphic.getStyleClass().add("console-menu-item-graphic");
+        return graphic;
     }
 
     private void checkIfPositionIsFree(int position) throws WorkflowBrokenException {

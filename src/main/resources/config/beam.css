@@ -83,16 +83,17 @@
 	-fx-background-color: beam-white;
 }
 
-.console-menu-item .console-menu-item-point {
-	-fx-min-width: 7px;
-	-fx-max-width: 7px;
-	-fx-min-height: 7px;
-	-fx-max-height: 7px;
-	-fx-background-color: transparent;
-	-fx-background-radius: 7px; 
+.console-menu-item .console-menu-item-graphic {
+	-fx-graphic: url("./../res/images/menu-item-arrow-inactive.png");
 }
-.console-menu-item:focused .console-menu-item-point {
-	-fx-background-color: #FFDE00;
+.console-menu-item:focused .console-menu-item-graphic {
+	-fx-graphic: url("./../res/images/menu-item-arrow-active.png");
+}
+.console-menu-item .console-command-menu-item-graphic {
+	-fx-graphic: url("./../res/images/menu-item-command-inactive.png");
+}
+.console-menu-item:focused .console-command-menu-item-graphic {
+	-fx-graphic: url("./../res/images/menu-item-command-active.png");
 }
 
 .console-main-area {

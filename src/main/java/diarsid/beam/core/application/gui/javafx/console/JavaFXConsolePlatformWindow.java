@@ -32,6 +32,7 @@ import static javafx.geometry.Pos.TOP_CENTER;
 import static javafx.stage.WindowEvent.WINDOW_HIDDEN;
 import static javafx.stage.WindowEvent.WINDOW_SHOWN;
 
+import static diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenuItem.createStandardMenuItemGraphic;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 
 /**
@@ -84,7 +85,7 @@ public class JavaFXConsolePlatformWindow
         this.contextMenu = new BeamContextMenu(); 
         MenuItem closeMenuItem = new MenuItem("close");        
         closeMenuItem.getStyleClass().add("console-menu-item");
-        closeMenuItem.setGraphic(this.contextMenu.createStandardMenuItemGraphic());
+        closeMenuItem.setGraphic(createStandardMenuItemGraphic());
         closeMenuItem.setOnAction(event -> {
             this.hide();
         });

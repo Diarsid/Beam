@@ -27,6 +27,7 @@ import static javafx.scene.input.ContextMenuEvent.CONTEXT_MENU_REQUESTED;
 
 import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.application.gui.javafx.MouseClickNotDragDetector.smartClickDetectionOn;
+import static diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenuItem.createStandardMenuItemGraphic;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.JavaFXUtil.screenHeight;
 
@@ -176,7 +177,7 @@ class BeamControlWindow {
                         beamRuntime().exitBeamCoreNow();
                     });
         });
-        menuItem.setGraphic(this.beamContextMenu.createStandardMenuItemGraphic());
+        menuItem.setGraphic(createStandardMenuItemGraphic());
         this.beamContextMenu.registerJavaFxItem(menuItem);
         
         ContextMenu javaFxContextMenu = this.beamContextMenu.javaFxContextMenu();
