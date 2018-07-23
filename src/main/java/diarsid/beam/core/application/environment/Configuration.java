@@ -55,6 +55,8 @@ public class Configuration {
                 "ui.images.resources = ../res/images/",
                 "ui.images.capture.webpages.resize = true",
                 "ui.console.runOnStart = true",
+                "ui.console.default.height = ",
+                "ui.console.default.width = ",
                 "analyze.weight.base.log = true",
                 "analyze.weight.positions.search.log = false",
                 "analyze.weight.positions.clusters.log = true",

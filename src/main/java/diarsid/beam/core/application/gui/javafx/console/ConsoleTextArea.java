@@ -17,7 +17,10 @@ import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 
+import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.util.MutableString;
+
+import static java.lang.Integer.max;
 
 import static javafx.scene.input.KeyCode.DOWN;
 import static javafx.scene.input.KeyCode.ENTER;
@@ -36,20 +39,39 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
  */
 class ConsoleTextArea {
     
+    private static final int DEFAULT_CONSOLE_WIDTH = 500;
+    private static final int DEFAULT_CONSOLE_HEIGHT = 200;
+    
     private final JavaFXConsolePlatformWindow console;
     private final AtomicInteger consoleCommitedLength;
     private final AtomicInteger consoleTextAreaInternalInputCounter;
     private final AtomicBoolean deleteCommitedTextAllowed;
     private final Object consoleTextAreaLock;
+    private final int prefereableHeight;
+    private final int prefereableWidth;
     
     private TextArea textArea;
 
-    ConsoleTextArea(JavaFXConsolePlatformWindow console) {
+    ConsoleTextArea(JavaFXConsolePlatformWindow console, Configuration configuration) {
         this.console = console;
         this.consoleCommitedLength = new AtomicInteger();
         this.consoleTextAreaInternalInputCounter = new AtomicInteger();
         this.deleteCommitedTextAllowed = new AtomicBoolean();
         this.consoleTextAreaLock = new Object();
+        
+        int height = DEFAULT_CONSOLE_HEIGHT;
+        if ( configuration.hasInt("ui.console.default.height") ) {
+            int configuredHeight = configuration.asInt("ui.console.default.height");
+            height = max(configuredHeight, DEFAULT_CONSOLE_HEIGHT);
+        }
+        this.prefereableHeight = height;
+        
+        int width = DEFAULT_CONSOLE_WIDTH;
+        if ( configuration.hasInt("ui.console.default.width") ) {
+            int configuredWidth = configuration.asInt("ui.console.default.width");
+            width = max(configuredWidth, DEFAULT_CONSOLE_WIDTH);
+        }
+        this.prefereableWidth = width;        
     }
     
     final void imitateEnterPressed() {
@@ -96,8 +118,8 @@ class ConsoleTextArea {
         newTextArea.addEventFilter(KEY_PRESSED, this.createEnterKeyInterceptor());
         newTextArea.addEventFilter(KEY_PRESSED, this.createCtrlZYKeyCombinationInterceptor());
         newTextArea.addEventFilter(KEY_PRESSED, this.createUpDownArrowsInterceptor());
-        newTextArea.setMinHeight(200);
-        newTextArea.setMinWidth(500);
+        newTextArea.setMinHeight(this.prefereableHeight);
+        newTextArea.setMinWidth(this.prefereableWidth);
         newTextArea.getStyleClass().add("console-text-area");
         this.textArea = newTextArea;
         return this.textArea;

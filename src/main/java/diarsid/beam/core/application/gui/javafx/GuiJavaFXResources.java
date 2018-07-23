@@ -19,6 +19,7 @@ import diarsid.beam.core.application.environment.Configuration;
 public class GuiJavaFXResources {
     
     private final String pathToCssFile = "file:./../config/beam.css";
+    private final Configuration configuration;
     
     private Image taskImage;
     private Image errorImage;
@@ -28,6 +29,7 @@ public class GuiJavaFXResources {
     private DropShadow opacityBlackShadow;
     
     public GuiJavaFXResources(Configuration configuration) {
+        this.configuration = configuration;
         String imagesLocation = configuration.asString("ui.images.resources");
         Platform.runLater(() -> {
             this.buttonShadow = new DropShadow();
@@ -45,6 +47,10 @@ public class GuiJavaFXResources {
             this.messageImage = new Image("file:"+ imagesLocation + "message.png");
             this.errorImage = new Image("file:"+ imagesLocation + "exception.png");           
         });
+    }
+    
+    public Configuration configuration() {
+        return this.configuration;
     }
     
     public DropShadow opacityBlackShadow() {

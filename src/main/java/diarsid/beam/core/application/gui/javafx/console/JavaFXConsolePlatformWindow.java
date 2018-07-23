@@ -94,7 +94,7 @@ public class JavaFXConsolePlatformWindow
                 new ConsoleContextMenuItemForSnippet(this, this.contextMenu), 
                 new ConsoleContextMenuItemForClear(this, this.contextMenu),
                 new ConsoleContextMenuItemForDefaultSize(this, this.contextMenu));
-        this.consoleTextArea = new ConsoleTextArea(this);
+        this.consoleTextArea = new ConsoleTextArea(this, this.windowResources.configuration());
     }
     
     final ConsoleWindowBlockingIO blockingIo() {
