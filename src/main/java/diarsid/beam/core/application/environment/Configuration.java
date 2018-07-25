@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import diarsid.beam.core.base.util.Possible;
+
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -24,6 +26,8 @@ import static java.util.stream.Collectors.joining;
 import static diarsid.beam.core.application.environment.ConfigurationReading.parseConfigLines;
 import static diarsid.beam.core.application.environment.ConfigurationReading.readConfigEntriesAsLinesFrom;
 import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.beam.core.base.util.Possible.possibleWith;
 
 /**
  *
@@ -55,6 +59,7 @@ public class Configuration {
                 "ui.images.resources = ../res/images/",
                 "ui.images.capture.webpages.resize = true",
                 "ui.console.runOnStart = true",
+                "ui.console.showOnControlClick = true",
                 "ui.console.default.height = ",
                 "ui.console.default.width = ",
                 "analyze.weight.base.log = true",
@@ -225,6 +230,16 @@ public class Configuration {
         } else {
             return false;
         }
+    }
+    
+    public Possible<Boolean> possibleBoolean(String option) {
+        if ( this.options.containsKey(option) ) {
+            Object config = this.options.get(option);
+            if ( nonNull(config) && config instanceof String ) {
+                return possibleWith(parseBoolean((String) config));
+            }
+        } 
+        return possibleButEmpty();
     }
     
     public List<String> asList(String option) {

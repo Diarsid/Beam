@@ -27,6 +27,7 @@ public class ScriptBuilder {
     
     private final Path scripts;
     private final ScriptSyntax syntax;
+    private final String currentClassClasspath;
     private final String scriptName;
     private final List<String> comments;
     private final List<String> classpath;
@@ -35,15 +36,20 @@ public class ScriptBuilder {
     private String javaExecutable;
     private String executableClass;
     
-    ScriptBuilder(String name, Path scriptsCatalog, ScriptSyntax syntax) {
+    ScriptBuilder(
+            String name, 
+            String currentClassClasspath, 
+            Path scriptsCatalog, 
+            ScriptSyntax syntax) {
         this.scripts = scriptsCatalog;
         this.syntax = syntax;
         this.scriptName = name;
+        this.currentClassClasspath = currentClassClasspath;
         this.comments = new ArrayList<>();
         this.arguments = new ArrayList<>();
         this.jvmOptions = new ArrayList<>();
         this.classpath = new ArrayList<>();
-        this.classpath.add("Beam.jar");
+        this.classpath.add(currentClassClasspath);
         this.executableClass = "";
         this.javaExecutable = "java";
     }

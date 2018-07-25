@@ -20,16 +20,21 @@ import javafx.stage.StageStyle;
 
 import diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatformWindow;
 import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
+import diarsid.beam.core.application.starter.Launcher;
+import diarsid.beam.core.base.util.Possible;
 
-import static java.util.Objects.nonNull;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 import static javafx.scene.input.ContextMenuEvent.CONTEXT_MENU_REQUESTED;
 
 import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.application.gui.javafx.MouseClickNotDragDetector.smartClickDetectionOn;
 import static diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenuItem.createStandardMenuItemGraphic;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.JavaFXUtil.screenHeight;
+import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 
 /**
  *
@@ -39,18 +44,29 @@ class BeamControlWindow {
     
     private final WindowMover windowMover;
     private final GuiJavaFXResources resources;
+    private final Possible<Boolean> showConsoleOnClick;
+    private final Possible<JavaFXConsolePlatformWindow> consoleWindow;
+    private final Runnable asyncLaunchSystemConsole;
     private BeamContextMenu beamContextMenu;
     
     private Stage stage;
     private Pane outerPane;
-    
-    private JavaFXConsolePlatformWindow consoleWindow;
 
     BeamControlWindow(
             BeamHiddenRoot beamHiddenRootWindow,
-            GuiJavaFXResources resources) {
+            GuiJavaFXResources resources,
+            Launcher launcher) {
         this.resources = resources;
         this.windowMover = new WindowMover();
+        this.showConsoleOnClick = this.resources
+                .configuration()
+                .possibleBoolean("ui.console.showOnControlClick")
+                .orDefault(true);
+        this.consoleWindow = possibleButEmpty();
+        
+        this.asyncLaunchSystemConsole = () -> {
+            asyncDo(() -> launcher.executeSysConsoleScript());
+        };
         
         Platform.runLater(() -> {
             this.createStage(beamHiddenRootWindow);            
@@ -69,7 +85,7 @@ class BeamControlWindow {
     }
     
     void setConsoleWindow(JavaFXConsolePlatformWindow consoleWindow) {
-        this.consoleWindow = consoleWindow;
+        this.consoleWindow.resetTo(consoleWindow);
     }
 
     private void setLifecycleCallbacks() {
@@ -106,12 +122,12 @@ class BeamControlWindow {
     }
     
     private void onLeftMouseClicked(MouseEvent event) {
-        if ( nonNull(this.consoleWindow) ) {
-            if ( this.beamContextMenu.javaFxContextMenu().isShowing() ) {
-                this.beamContextMenu.javaFxContextMenu().hide();
-                event.consume();
-            } else {
-                this.consoleWindow.touched();
+        if ( this.beamContextMenu.javaFxContextMenu().isShowing() ) {
+            this.beamContextMenu.javaFxContextMenu().hide();
+            event.consume();
+        } else {
+            if ( this.consoleWindow.isPresent() && this.showConsoleOnClick.equalTo(TRUE) ) {
+                this.consoleWindow.orThrow().touched();
             }
         }
     }
@@ -168,17 +184,38 @@ class BeamControlWindow {
     private void createControlContextMenu() {
         this.beamContextMenu = new BeamContextMenu();
         
-        MenuItem menuItem = new MenuItem("exit");        
-        menuItem.getStyleClass().add("console-menu-item");
-        menuItem.setOnAction((event) -> {
+        MenuItem exitItem = new MenuItem("exit");        
+        exitItem.getStyleClass().add("console-menu-item");
+        exitItem.setOnAction((event) -> {
             asyncDoIndependently(
                     "Async Beam termination Thread", 
                     () -> {
                         beamRuntime().exitBeamCoreNow();
                     });
         });
-        menuItem.setGraphic(createStandardMenuItemGraphic());
-        this.beamContextMenu.registerJavaFxItem(menuItem);
+        exitItem.setGraphic(createStandardMenuItemGraphic());
+        
+        if ( this.showConsoleOnClick.equalTo(FALSE) ) {
+            MenuItem javaFxConsoleItem = new MenuItem("JavaFX console");
+            javaFxConsoleItem.getStyleClass().add("console-menu-item");
+            javaFxConsoleItem.setOnAction((event) -> {
+                if ( this.consoleWindow.isPresent() ) {
+                    this.consoleWindow.orThrow().touched();
+                }
+            });
+            javaFxConsoleItem.setGraphic(createStandardMenuItemGraphic());
+            this.beamContextMenu.registerJavaFxItem(javaFxConsoleItem);
+        }
+        
+        MenuItem systemConsoleItem = new MenuItem("System console");        
+        systemConsoleItem.getStyleClass().add("console-menu-item");
+        systemConsoleItem.setOnAction((event) -> {
+            this.asyncLaunchSystemConsole.run();
+        });
+        systemConsoleItem.setGraphic(createStandardMenuItemGraphic());
+        
+        this.beamContextMenu.registerJavaFxItem(systemConsoleItem);
+        this.beamContextMenu.registerJavaFxItem(exitItem);
         
         ContextMenu javaFxContextMenu = this.beamContextMenu.javaFxContextMenu();
         

@@ -15,6 +15,8 @@ import diarsid.beam.core.application.gui.javafx.GuiJavaFX;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 
+import static diarsid.beam.core.application.starter.Launcher.getLauncher;
+
 /**
  * Module intended to convey configuration parameters 
  * across all program where they are required.
@@ -37,7 +39,7 @@ class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHo
         this.interpreter = new Interpreter();
         this.programsCatalog = BeamEnvironment.programsCatalog();
         this.notesCatalog = BeamEnvironment.notesCatalog();
-        this.gui = new GuiJavaFX(this.configuration);
+        this.gui = new GuiJavaFX(this.configuration, getLauncher());
     }
     
     @Override

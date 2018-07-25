@@ -7,33 +7,38 @@
 package diarsid.beam.core.application.starter;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
+
+import diarsid.beam.core.application.environment.Configuration;
+import diarsid.beam.core.base.util.Possible;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.application.starter.Flags.flagOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 
 /**
  *
  * @author Diarsid
  */
-public class Procedure {
+class Procedure {
     
-    private Optional<FlagLaunchable> launchable;
-    private boolean procedureIsSet;
+    private final Possible<FlagLaunchable> launchable;
     private final Set<FlagConfigurable> configurables;
+    private boolean procedureIsSet;
     
-    public Procedure() {
+    Procedure() {
         this.procedureIsSet = false;
-        this.launchable = Optional.empty();
+        this.launchable = possibleButEmpty();
         this.configurables = new HashSet<>();
     }
     
     static Procedure defineProcedure(String[] flags) {
+        Configuration configuration = configuration();
         Procedure procedure = new Procedure();
         stream(flags)
                 .map(flagString -> flagOf(flagString))
@@ -50,16 +55,16 @@ public class Procedure {
         }
         switch ( newFlag.type() ) {
             case STARTABLE : {
-                FlagLaunchable startableFlag = (FlagLaunchable) newFlag;
+                FlagLaunchable launchableFlag = (FlagLaunchable) newFlag;
                 if ( this.launchable.isPresent() ) {
-                    if ( this.launchable.get().hasLowerPriorityThan(startableFlag) ) {
-                        this.warnThatPreviousFlagIsSuppressed(startableFlag);
-                        this.launchable = Optional.of(startableFlag);
+                    if ( this.launchable.orThrow().hasLowerPriorityThan(launchableFlag) ) {
+                        this.warnThatPreviousFlagIsSuppressed(launchableFlag);
+                        this.launchable.resetTo(launchableFlag);
                     } else {
-                        this.warnThatNewFlagIsSuppressed(startableFlag);
+                        this.warnThatNewFlagIsSuppressed(launchableFlag);
                     }
                 } else {
-                    this.launchable = Optional.of(startableFlag);
+                    this.launchable.resetTo(launchableFlag);
                 }    
                 break;
             }
@@ -67,20 +72,21 @@ public class Procedure {
                 this.configurables.add((FlagConfigurable) newFlag);
                 break;
             }
-            default : {}
+            default : {
+            }
         }
     }
 
     private void warnThatPreviousFlagIsSuppressed(FlagLaunchable startableFlag) {
         log(Procedure.class, format(" %s is suppressed by %s",
-                this.launchable.get().text(),
+                this.launchable.orThrow().text(),
                 startableFlag.text()));
     }
 
     private void warnThatNewFlagIsSuppressed(FlagLaunchable startableFlag) {
         log(Procedure.class, format(" %s is suppressed by %s",
                 startableFlag.text(),
-                this.launchable.get().text()));
+                this.launchable.orThrow().text()));
     }
     
     void flagsAccepted() {
@@ -96,10 +102,10 @@ public class Procedure {
     }
     
     FlagLaunchable getLaunchable() {
-        return this.launchable.get();
+        return this.launchable.orThrow();
     }
 
-    public Set<FlagConfigurable> getConfigurables() {
+    Set<FlagConfigurable> getConfigurables() {
         return this.configurables;
     }
 }

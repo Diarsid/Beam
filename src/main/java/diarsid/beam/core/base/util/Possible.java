@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -35,6 +36,13 @@ public class Possible<T> {
     
     public static <T> Possible<T> possibleOf(Optional<T> optionalT) {
         return new Possible<>(optionalT.orElse(null));
+    }
+    
+    public Possible<T> orDefault(T defaultT) {
+        if ( isNull(this.t) ) {
+            this.t = defaultT;
+        }
+        return this;
     }
     
     private void checkValueNotNull() {
@@ -74,6 +82,14 @@ public class Possible<T> {
     public T orThrow() {
         this.checkValueNotNull();
         return this.t;
+    }
+    
+    public T orThrow(Supplier<RuntimeException> exceptionCreator) {
+        if ( isNull(this.t) ) {
+            throw exceptionCreator.get();
+        } else {
+            return this.t;
+        }
     }
     
     public T or(T otherT) {

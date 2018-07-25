@@ -21,7 +21,7 @@ public class BeamEnvironment {
 
     public static ScriptsCatalog scriptsCatalog() {
         return new ScriptsCatalogReal(
-                ".", librariesCatalog(), configuration(), scriptSyntax())
+                new CurrentWorkingDirectory(), librariesCatalog(), configuration(), scriptSyntax())
                 .refreshScripts();
     }
 

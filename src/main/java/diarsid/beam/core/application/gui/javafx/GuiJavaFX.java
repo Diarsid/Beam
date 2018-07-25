@@ -13,6 +13,7 @@ import diarsid.beam.core.application.gui.OutputMessagesGui;
 import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatformWindow;
 import diarsid.beam.core.application.gui.javafx.screencapturer.ScreenCapturerWindow;
+import diarsid.beam.core.application.starter.Launcher;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.console.ConsoleBlockingExecutor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
@@ -42,11 +43,11 @@ public class GuiJavaFX
     
     private JavaFXConsolePlatformWindow consoleWindow;
     
-    public GuiJavaFX(Configuration configuration) {
+    public GuiJavaFX(Configuration configuration, Launcher launcher) {
         this.beamHiddenRoot = new BeamHiddenRoot();
         this.guiResources = new GuiJavaFXResources(configuration);
         this.beamControlWindow = new BeamControlWindow(
-                this.beamHiddenRoot, this.guiResources);
+                this.beamHiddenRoot, this.guiResources, launcher);
         
         WindowPositionManager windowPositionManager = new WindowPositionManager();
         this.windowManager = new WindowManager(

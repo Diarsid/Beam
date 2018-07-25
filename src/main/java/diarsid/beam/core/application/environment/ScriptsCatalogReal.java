@@ -9,7 +9,6 @@ package diarsid.beam.core.application.environment;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,17 +30,17 @@ import static diarsid.beam.core.base.util.PathUtils.asName;
  */
 class ScriptsCatalogReal implements ScriptsCatalog {
     
-    private final Path catalogPath;
+    private final CurrentWorkingDirectory currentWorkingDirectory;
     private final LibrariesCatalog librariesCatalog;
     private final Configuration config;
     private final ScriptSyntax scriptSyntax;
     
     ScriptsCatalogReal(
-            String catalogPath, 
+            CurrentWorkingDirectory currentWorkingDirectory,
             LibrariesCatalog librariesCatalog,
             Configuration config,
             ScriptSyntax scriptSyntax) {
-        this.catalogPath = Paths.get(catalogPath).toAbsolutePath().normalize();
+        this.currentWorkingDirectory = currentWorkingDirectory;
         this.librariesCatalog = librariesCatalog;
         this.config = config;
         this.scriptSyntax = scriptSyntax;
@@ -78,13 +77,17 @@ class ScriptsCatalogReal implements ScriptsCatalog {
     
     @Override
     public ScriptBuilder newScript(String name) {
-        return new ScriptBuilder(name, this.catalogPath, this.scriptSyntax);
+        return new ScriptBuilder(
+                name, 
+                this.currentWorkingDirectory.currentClassClasspath(), 
+                this.currentWorkingDirectory.path(), 
+                this.scriptSyntax);
     }
     
     @Override
     public List<Script> scripts() {
         try {
-            return Files.list(this.catalogPath)
+            return Files.list(this.currentWorkingDirectory.path())
                     .filter(path -> isRegularFile(path))
                     .filter(path -> this.ifFileHasScriptExtension(path))
                     .map(scriptPath -> toScript(scriptPath)) 
@@ -96,14 +99,14 @@ class ScriptsCatalogReal implements ScriptsCatalog {
     }
     
     private Script toScript(Path path) {
-        return new ScriptReal(asName(path), this.catalogPath);
+        return new ScriptReal(asName(path), this.currentWorkingDirectory.path());
     }
     
     @Override
     public Optional<Script> findScriptByName(String name) {
         String nameWithExtension = this.scriptSyntax.addExtensionTo(name);
         try {
-            return Files.find(this.catalogPath, 
+            return Files.find(this.currentWorkingDirectory.path(), 
                     1, 
                     (path, attributes) -> {
                         return 
@@ -126,7 +129,7 @@ class ScriptsCatalogReal implements ScriptsCatalog {
     @Override
     public boolean notContains(Script script) {
         try {
-            return Files.list(this.catalogPath)
+            return Files.list(this.currentWorkingDirectory.path())
                     .filter(path -> isRegularFile(path))
                     .filter(path -> this.ifFileHasScriptExtension(path))
                     .filter(path -> script.name().equals(asName(path)))
@@ -140,7 +143,7 @@ class ScriptsCatalogReal implements ScriptsCatalog {
 
     @Override
     public Path path() {
-        return this.catalogPath;
+        return this.currentWorkingDirectory.path();
     }
     
     @Override

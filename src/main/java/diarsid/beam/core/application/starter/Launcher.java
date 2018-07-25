@@ -39,13 +39,22 @@ import static diarsid.beam.core.base.util.Logs.logError;
  *
  * @author Diarsid
  */
-class Launcher {
+public class Launcher {
+    
+    private final static Launcher LAUNCHER;
+    
+    static {
+        LAUNCHER = new Launcher(
+                configuration(), 
+                scriptsCatalog(), 
+                librariesCatalog());
+    }
     
     private final Configuration config;
     private final ScriptsCatalog scriptsCatalog;
     private final LibrariesCatalog librariesCatalog;
     
-    Launcher(
+    private Launcher(
             Configuration configuration, 
             ScriptsCatalog scriptsCatalog, 
             LibrariesCatalog librariesCatalog) {
@@ -54,11 +63,8 @@ class Launcher {
         this.librariesCatalog = librariesCatalog;
     }
     
-    static Launcher getLauncher() {
-        return new Launcher(
-                configuration(), 
-                scriptsCatalog(), 
-                librariesCatalog());
+    public static Launcher getLauncher() {
+        return LAUNCHER;
     }
     
     void launch(Procedure procedure) {
@@ -97,7 +103,7 @@ class Launcher {
         }
     }
 
-    private void executeCoreScript() throws RequirementException {
+    public void executeCoreScript() throws RequirementException {
         Optional<Script> coreScript = this.scriptsCatalog.findScriptByName("beam.core");
         if ( coreScript.isPresent() ) {
             coreScript.get().execute();
@@ -114,10 +120,10 @@ class Launcher {
         }
     }
     
-    private void executeSysConsoleScript() throws RequirementException {
-        Optional<Script> coreScript = this.scriptsCatalog.findScriptByName("beam.sysconsole");
-        if ( coreScript.isPresent() ) {
-            coreScript.get().execute();
+    public void executeSysConsoleScript() throws RequirementException {
+        Optional<Script> sysconsoleScript = this.scriptsCatalog.findScriptByName("beam.sysconsole");
+        if ( sysconsoleScript.isPresent() ) {
+            sysconsoleScript.get().execute();
         } else {
             this.scriptsCatalog
                     .newScript("beam.sysconsole")
