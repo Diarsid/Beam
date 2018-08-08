@@ -25,7 +25,7 @@ import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.application.environment.ConfigurationReading.parseConfigLines;
 import static diarsid.beam.core.application.environment.ConfigurationReading.readConfigEntriesAsLinesFrom;
-import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 import static diarsid.beam.core.base.util.Possible.possibleWith;
 
@@ -40,6 +40,7 @@ public class Configuration {
     
     static {
         DEFAULT_CONFIGURATION = parseConfigLines(
+                "log = true",
                 "data.store = ../res/data",
                 "data.driver = org.h2.Driver",
                 "data.user = root",
@@ -95,7 +96,6 @@ public class Configuration {
         Path configFile = Paths.get("../config/beam.config");
         ACTUAL_CONFIGURATION = parseConfigLines(readConfigEntriesAsLinesFrom(configFile));
         ACTUAL_CONFIGURATION.takeUnconfiguredFrom(DEFAULT_CONFIGURATION);
-        ACTUAL_CONFIGURATION.logAll();
     }
     
     // Object value may be String or List<String>
@@ -134,8 +134,7 @@ public class Configuration {
                     return key + " = " + valueString;
                 })
                 .sorted()
-                .forEach(line -> log(Configuration.class, line));
-                
+                .forEach(line -> logFor(Configuration.class).info(line));                
     }
     
     void takeUnconfiguredFrom(Configuration other) {

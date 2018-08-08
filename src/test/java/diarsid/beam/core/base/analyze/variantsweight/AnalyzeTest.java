@@ -33,7 +33,6 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVarian
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.objects.Pools.poolOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.warn;
 
 /**
  *
@@ -936,6 +935,26 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_hiringCase_hring() {
+        expectedToFail();
+        
+        pattern = "hring";
+        
+        variants = asList(            
+                "Current_Job/Hiring/CVs/Java_Junior/hr",
+                "Job/Current/Hiring",
+                "Current_Job/hiring");
+        
+        expected = asList(            
+                "Job/Current/Hiring",
+                "Current_Job/hiring",
+                "Current_Job/Hiring/CVs/Java_Junior/hr"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_JavaPathBinCase_jbin() {
         pattern = "jbin";
         
@@ -1001,7 +1020,6 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
-//    @Ignore
     @Test
     public void test_synthetic_4() {
         disableResultsLimit();
@@ -1041,14 +1059,6 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
-    private void failThis(String failMessage) {
-        if ( this.expectedToFail ) {
-            warn(this.getClass(), failMessage);
-        } else {
-            fail(failMessage);
-        }
-    }
-    
     private void weightVariantsAndCheckMatching() {
         boolean failed;
         try {
@@ -1061,7 +1071,7 @@ public class AnalyzeTest {
                 throw e;
             }
         }        
-        if ( !failed && this.expectedToFail ) {
+        if ( ! failed && this.expectedToFail ) {
             fail("=== EXPECTED TO FAIL BUT PASSED ===");
         }
     }
@@ -1080,7 +1090,7 @@ public class AnalyzeTest {
         int mismatches = 0;
         
         if ( expected.isEmpty() && weightedVariants.size() > 0 ) {
-            failThis("No variants expected!");
+            fail("No variants expected!");
         }
         
         while ( weightedVariants.next() && ( counter.get() < expected.size() ) ) {
@@ -1159,7 +1169,7 @@ public class AnalyzeTest {
                 reports.addAll(presentButNotExpected);
             }
             reports.add(0, collectVariantsToReport());
-            failThis(reports.stream().collect(joining()));
+            fail(reports.stream().collect(joining()));
         }
     }
     

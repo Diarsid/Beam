@@ -12,6 +12,5 @@ package diarsid.beam.core.application.starter;
 public enum FlagType {
     
     STARTABLE,
-    CONFIGURABLE,
     EXECUTABLE;
 }

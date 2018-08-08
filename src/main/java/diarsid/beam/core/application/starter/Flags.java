@@ -26,7 +26,6 @@ class Flags {
     private static final Set<Flag> ALL_FLAGS;
     static {
         Set<Flag> flags = new HashSet<>();
-        flags.addAll(asList(FlagConfigurable.values()));
         flags.addAll(asList(FlagLaunchable.values()));     
         ALL_FLAGS = unmodifiableSet(flags);
     }

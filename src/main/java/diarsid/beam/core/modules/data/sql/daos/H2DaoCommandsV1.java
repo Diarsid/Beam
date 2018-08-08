@@ -21,7 +21,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.SqlUtil.isResultsQuantiyEnoughForMulticharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
@@ -220,7 +219,6 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
                             multicharCriterias)
                     .collect(toList());    
             
-            debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
             if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }
@@ -309,7 +307,6 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
                             multicharCriterias, type)
                     .collect(toList());
             
-            debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
             if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }
@@ -500,7 +497,6 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
                             multicharCriterias, type)
                     .collect(toList());
             
-            debug("[DAO COMMANDS] found by multichar criteria: " + found.size());
             if ( isResultsQuantiyEnoughForMulticharCriterias(found, multicharCriterias.size()) ) {
                 return found;
             }

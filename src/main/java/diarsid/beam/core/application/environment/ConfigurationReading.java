@@ -16,12 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+
 import diarsid.beam.core.base.util.Pair;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
-
-import static diarsid.beam.core.base.util.Logs.log;
 
 /**
  *
@@ -42,8 +42,9 @@ class ConfigurationReading {
                 .filter(line -> isConfigLine(line))
                 .map(line -> clean(line));
         } catch (IOException e) {
-            log(ConfigurationReading.class, 
-                    format("Config file '%s' not found. Default config will be used.", configFile.toString()));
+            LoggerFactory.getLogger(ConfigurationReading.class).error( 
+                    format("Config file '%s' not found. Default config will be used.", 
+                           configFile.toString()));
             return Stream.empty();
         }
     }
@@ -68,13 +69,15 @@ class ConfigurationReading {
             Pair<String, String> pair, 
             Map<String, String> singleOptions, 
             Map<String, List<String>> multipleOptions) {
-        if ( singleOptions.containsKey(pair.first()) && ! multipleOptions.containsKey(pair.first()) ) {
+        if ( singleOptions.containsKey(pair.first()) && 
+             ! multipleOptions.containsKey(pair.first()) ) {
             List<String> list = new ArrayList<>();
             list.add(pair.second());
             list.add(singleOptions.get(pair.first()));
             multipleOptions.put(pair.first(), list);
             singleOptions.remove(pair.first());
-        } else if ( ! singleOptions.containsKey(pair.first()) && multipleOptions.containsKey(pair.first()) ) {
+        } else if ( ! singleOptions.containsKey(pair.first()) && 
+                    multipleOptions.containsKey(pair.first()) ) {
             multipleOptions.get(pair.first()).add(pair.second());            
         } else {
             singleOptions.put(pair.first(), pair.second());

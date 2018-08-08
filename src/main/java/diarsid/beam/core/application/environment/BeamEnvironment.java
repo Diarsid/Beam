@@ -9,6 +9,7 @@ package diarsid.beam.core.application.environment;
 import static diarsid.beam.core.application.environment.Configuration.actualConfiguration;
 import static diarsid.beam.core.application.environment.ScriptSyntax.scriptSyntax;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
+import static diarsid.beam.core.application.environment.CurrentWorkingDirectory.currentWorkingDirectory;
 
 /**
  *
@@ -21,7 +22,7 @@ public class BeamEnvironment {
 
     public static ScriptsCatalog scriptsCatalog() {
         return new ScriptsCatalogReal(
-                new CurrentWorkingDirectory(), librariesCatalog(), configuration(), scriptSyntax())
+                currentWorkingDirectory(), librariesCatalog(), configuration(), scriptSyntax())
                 .refreshScripts();
     }
 

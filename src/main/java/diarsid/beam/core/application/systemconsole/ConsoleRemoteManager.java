@@ -24,9 +24,9 @@ import static java.rmi.server.UnicastRemoteObject.exportObject;
 import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
-import static diarsid.beam.core.application.systemconsole.SystemConsoleLog.consoleDebug;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -61,10 +61,10 @@ public class ConsoleRemoteManager {
                 try {
                     registry = createRegistry(this.consoleRegistryPort); 
                     registryNotCreated = false;
-                    consoleDebug("port: " + this.consoleRegistryPort + " is free.");
+                    logFor(this).info("port: " + this.consoleRegistryPort + " is free.");
                     getPassport().setPort(this.consoleRegistryPort);
                 } catch (ExportException ex) {
-                    consoleDebug("port: " + this.consoleRegistryPort + " is in use.");
+                    logFor(this).info("port: " + this.consoleRegistryPort + " is in use.");
                     this.consoleRegistryPort++;
                     otherConsolesCounter++;
                 }
@@ -73,7 +73,7 @@ public class ConsoleRemoteManager {
                 throw new StartupFailedException("Cannot create or obtain RMI Registry.");
             }      
             ConsoleRemoteObjectsHolder.holdedRegistry = registry;
-            consoleDebug("registry created.");
+            logFor(this).info("registry created.");
             
             RemoteOuterIoEngine remoteConsole = new RemoteConsoleAdpater(console);
             RemoteOuterIoEngine remoteConsoleExported =
@@ -89,7 +89,7 @@ public class ConsoleRemoteManager {
                     this.consoleName, 
                     this.consoleRegistryHost, 
                     this.consoleRegistryPort);
-            consoleDebug("Console is binded with core successfully.");
+            logFor(this).info("Console is binded with core successfully.");
             
         } catch (AlreadyBoundException|NotBoundException|RemoteException e) {
             throw new StartupFailedException(e);
@@ -102,7 +102,7 @@ public class ConsoleRemoteManager {
                     (RemoteCoreAccessEndpoint) getRegistry(
                             this.coreRegistryHost,
                             this.coreRegistryPort).lookup(this.coreAccessEndpointName);
-            consoleDebug("RemoteAccess is imported successfully.");
+            logFor(this).info("RemoteAccess is imported successfully.");
             ConsoleRemoteObjectsHolder.holdedRemoteCoreAccess = remoteAccess;
             return remoteAccess;
         } catch (NumberFormatException|NotBoundException|RemoteException e) {

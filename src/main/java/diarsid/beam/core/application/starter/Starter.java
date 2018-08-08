@@ -19,8 +19,7 @@ import static diarsid.beam.core.application.starter.Flags.formatToPrintables;
 import static diarsid.beam.core.application.starter.Launcher.getLauncher;
 import static diarsid.beam.core.application.starter.Procedure.defineProcedure;
 import static diarsid.beam.core.base.util.ArraysUtil.isEmpty;
-import static diarsid.beam.core.base.util.Logs.log;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -37,18 +36,18 @@ public class Starter {
             printPromptAndExit();
         } else {
             try {
-                log(Starter.class, "starting with: " + join(", ", args));                
+                logFor(Starter.class).info("starting with: " + join(", ", args));                
                 Procedure procedure = defineProcedure(args);
                 if ( procedure.hasLaunchable() ) {     
                     getLauncher().launch(procedure);
                 } else {
-                    log(Starter.class, "there is nothing to launch.");
+                    logFor(Starter.class).info("there is nothing to launch.");
                 }                
             } catch (NoClassDefFoundError error) {
-                logError(Starter.class, "some class is missed: ", error);
-                logError(Starter.class, "check your classpath statement.");
+                logFor(Starter.class).error("some class is missed: ", error);
+                logFor(Starter.class).error("check your classpath statement.");
             } catch (RequirementException | WorkflowBrokenException e) {
-                logError(Starter.class, e.getMessage());
+                logFor(Starter.class).error(e.getMessage());
             }
         }
     }
@@ -65,9 +64,6 @@ public class Starter {
         prompt.add("");
         prompt.add("  Options specifying which part should be launched:");
         prompt.addAll(formatToPrintables(FlagLaunchable.values()));
-        prompt.add("");
-        prompt.add("  Options specifying how launched part could be configured:");
-        prompt.addAll(formatToPrintables(FlagConfigurable.values()));
         prompt.add("");
         prompt.stream().forEach(System.out::println);
     }

@@ -5,20 +5,18 @@
  */
 package diarsid.beam.core.base.os.treewalking.search;
 
-import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
-
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
+import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
 
 import static java.nio.file.Files.walkFileTree;
 import static java.util.Collections.emptySet;
 
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 
 /**
@@ -37,8 +35,7 @@ class FilesCollectorByVisitor implements FilesCollector {
     private final FolderTypeDetector folderTypeDetector;
     private final NameDetector nameDetectorStub;
 
-    FilesCollectorByVisitor(int searchDepth, FolderTypeDetector folderTypeDetector) {          
-        debug("[FILE SEARCH] by visitor");    
+    FilesCollectorByVisitor(int searchDepth, FolderTypeDetector folderTypeDetector) {      
         this.searchDepth = searchDepth;
         this.folderTypeDetector = folderTypeDetector;
         this.nameDetectorStub = new NameDetector(null) {

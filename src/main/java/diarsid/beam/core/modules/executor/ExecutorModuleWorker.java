@@ -69,7 +69,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
@@ -352,7 +352,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                 }
             }
         } catch (InterruptedException e) {
-            logError(this.getClass(), e);
+            logFor(this).error(e.getMessage(), e);
             this.ioEngine.report(initiator, "...pause interrupted: " + e.getMessage());
         }        
     }    

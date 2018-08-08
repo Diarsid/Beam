@@ -21,7 +21,7 @@ import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.application.starter.FlagLaunchable.START_ALL;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 
 /**
@@ -93,7 +93,7 @@ class ScriptsCatalogReal implements ScriptsCatalog {
                     .map(scriptPath -> toScript(scriptPath)) 
                     .collect(toList());
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error("unable to get sripts", ex);
             throw new WorkflowBrokenException("unable to obtain scripts.");
         }
     }
@@ -117,7 +117,7 @@ class ScriptsCatalogReal implements ScriptsCatalog {
                     .findFirst()
                     .map(path -> this.toScript(path));
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error("find script by name: " + name, ex);
             throw new WorkflowBrokenException("unable to obtain scripts.");
         }
     }
@@ -136,7 +136,7 @@ class ScriptsCatalogReal implements ScriptsCatalog {
                     .findFirst()
                     .isPresent();
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error("not contains script: " + script.name(), ex);
             throw new WorkflowBrokenException("unable to list scripts.");
         }
     }

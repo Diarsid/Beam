@@ -11,7 +11,7 @@ import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.INCORRECT;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -31,7 +31,7 @@ public class ConsoleCommandRealProcessor implements ConsoleBlockingExecutor {
     public void processCommand(Initiator initiator, String commandLine) {
         Command command = this.interpreter.interprete(commandLine);
         if ( command.type().is(INCORRECT) || command.type().isUndefined() ) {
-            debug("initiator:" + initiator.identity() + " commandType: " + command.type());
+            logFor(this).info("commandType: " + command.type());
             return;
         }
         this.dispatcher.dispatch(initiator, command);

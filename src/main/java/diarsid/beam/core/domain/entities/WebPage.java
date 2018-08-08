@@ -24,7 +24,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWi
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 
@@ -110,7 +110,7 @@ public class WebPage
                 browseWithDesktop(this.url);
                 calbackOnSuccess.call();
             } catch (URISyntaxException|IOException ex) {
-                logError(this.getClass(), ex.getMessage());
+                logFor(this).error("Cannot browse URI: " + this.url, ex);
                 callbackOnFail.onEvent(format("cannot browse %s", this.name));
             } 
         });

@@ -19,7 +19,7 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -149,7 +149,7 @@ class SystemConsoleIO implements ConsoleIO {
             this.writer.newLine();
             this.writer.flush();
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error(ex.getMessage(), ex);
         }
     }
 }

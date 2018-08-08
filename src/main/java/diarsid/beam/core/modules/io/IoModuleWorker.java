@@ -15,8 +15,7 @@ import diarsid.beam.core.modules.IoModule;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.Logs.logError; 
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 
 
@@ -39,10 +38,10 @@ public class IoModuleWorker implements IoModule {
     @Override
     public boolean registerOuterIoEngine(OuterIoEngine ioEngine) {
         try {
-            debug(format("register ioEngine name:%s, type:%s", ioEngine.name(), ioEngine.type()));
+            logFor(this).info(format("register ioEngine name:%s, type:%s", ioEngine.name(), ioEngine.type()));
             return this.ioEnginesHolder.acceptNewIoEngine(ioEngine);
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error(ex.getMessage(), ex);
             return false;
         }        
     }
@@ -59,7 +58,7 @@ public class IoModuleWorker implements IoModule {
 
     @Override
     public void stopModule() {
-        debug("close all engines...");
+        logFor(this).info("close all engines...");
         this.ioEnginesHolder.closeAllEngines();
     }
 }

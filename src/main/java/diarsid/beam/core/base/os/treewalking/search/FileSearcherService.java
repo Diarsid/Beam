@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.base.os.treewalking.search;
 
-import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
-
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -15,26 +13,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 import diarsid.beam.core.base.util.Pair;
 
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.failWithInvalidLocationFailure;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.failWithTargetInvalidMessage;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.failWithTargetNotFoundFailure;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.successWithFile;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.successWithFiles;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
 import static diarsid.beam.core.base.util.PathUtils.trimSeparators;
-import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
-import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
-import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
-import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 
 /**
  *
@@ -75,11 +72,11 @@ class FileSearcherService implements FileSearcher {
             }
         } catch (AccessDeniedException e) {
             String message = this.accessDeniedMessageFor(location);
-            logError(this.getClass(), message, e);
+            logFor(this).error(message, e);
             return failWithTargetInvalidMessage(message);
         } catch (IOException e) {
             String message = this.ioExceptionMessageFor(location);
-            logError(this.getClass(), message, e);
+            logFor(this).error(message, e);
             return failWithTargetInvalidMessage(message);
         }        
     }
@@ -105,10 +102,10 @@ class FileSearcherService implements FileSearcher {
                 }    
             }
         } catch (AccessDeniedException e) {
-            logError(this.getClass(), this.accessDeniedMessageFor(target, location), e);
+            logFor(this).error(this.accessDeniedMessageFor(target, location), e);
             return failWithTargetInvalidMessage(this.accessDeniedMessageFor(target, location));
         } catch (IOException e) {
-            logError(this.getClass(), this.ioExceptionMessageFor(target, location), e);
+            logFor(this).error(this.ioExceptionMessageFor(target, location), e);
             return failWithTargetInvalidMessage("Unknown IOException occured.");
         }
     }

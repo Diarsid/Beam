@@ -24,7 +24,7 @@ import static java.lang.Thread.sleep;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -51,7 +51,7 @@ public class SystemConsole {
             remoteManager.export(console);
             console.launch();
         } catch (StartupFailedException|WorkflowBrokenException e) {
-            logError(SystemConsole.class, e.getCause());
+            logFor(SystemConsole.class).error(e.getMessage(), e.getCause());
             delayedShutdown();
         }
     }

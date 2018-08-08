@@ -8,7 +8,7 @@ package diarsid.beam.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -32,7 +32,7 @@ public class BeamRuntime {
     
     public void exitBeamCoreNow() {
         synchronized ( this.beamRuntimeLock ) {
-            log(Beam.class, "stopping Beam.core");
+            logFor(Beam.class).info("stopping Beam.core");
             this.beforeExitActions.forEach(runnable -> runnable.run());
             System.exit(0);          
         }

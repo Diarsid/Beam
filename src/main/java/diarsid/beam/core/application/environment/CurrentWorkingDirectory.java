@@ -26,11 +26,17 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
  */
 public class CurrentWorkingDirectory {
     
+    private static final CurrentWorkingDirectory INSTANCE;
+    
+    static {
+        INSTANCE = new CurrentWorkingDirectory();
+    }
+    
     private final Path current;
     private final Possible<String> beamJarName;
     private final boolean containsBeamPackagesRoot;    
 
-    CurrentWorkingDirectory() {
+    private CurrentWorkingDirectory() {
         this.current = Paths.get(".").toAbsolutePath().normalize();
         String beamClassName = Beam.class.getCanonicalName();
         String beamPackagesRoot = beamClassName.substring(0, beamClassName.indexOf('.'));
@@ -39,16 +45,15 @@ public class CurrentWorkingDirectory {
         
         try {
             Files.list(this.current)
-                .peek(path -> {
-                    String pathName = path.getFileName().toString();
-                    if ( pathName.equals(beamPackagesRoot) ) {
-                        hasBeamPackagesRoot.set(true);
-                    }
-                    if ( containsIgnoreCase(pathName, "beam") && pathName.endsWith(".jar") ) {
-                        this.beamJarName.resetTo(pathName);
-                    }
-                })
-                .count();
+                    .map(path -> path.getFileName().toString())
+                    .forEach(fileName -> {
+                        if ( fileName.equals(beamPackagesRoot) ) {
+                            hasBeamPackagesRoot.set(true);
+                        }
+                        if ( containsIgnoreCase(fileName, "beam") && fileName.endsWith(".jar") ) {
+                            this.beamJarName.resetTo(fileName);
+                        }
+                    });
         } catch (IOException e) {
             throw new WorkflowBrokenException(
                     format("unexpected IOException during current working directory scanning: %s", 
@@ -65,6 +70,10 @@ public class CurrentWorkingDirectory {
         this.containsBeamPackagesRoot = hasBeamPackagesRoot.get();        
     }
     
+    public static CurrentWorkingDirectory currentWorkingDirectory() {
+        return INSTANCE;
+    }
+    
     public Path path() {
         return this.current;
     }
@@ -78,6 +87,6 @@ public class CurrentWorkingDirectory {
     }
     
     public boolean isCurrentClassUnpacked() {
-        return this.beamJarName.isNotPresent();
+        return this.containsBeamPackagesRoot;
     }
 }

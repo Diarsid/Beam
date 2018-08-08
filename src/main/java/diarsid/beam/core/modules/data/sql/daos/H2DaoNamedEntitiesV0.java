@@ -29,8 +29,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.sortAndGetFirstFrom;
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.spacingWildcards;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceAfter;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceBefore;
@@ -147,7 +146,6 @@ abstract class H2DaoNamedEntitiesV0
     protected final List<NamedEntity> collectRealEntitiesUsing(
             List<NamedEntity> maskedEntities, JdbcTransaction transact) 
             throws TransactionHandledSQLException, TransactionHandledException {
-        debug("[ALL ENTITIES DAO] [collect real] " + maskedEntities);
         List<NamedEntity> realEntities = new ArrayList<>();
         for (NamedEntity maskedEntity : maskedEntities) {
             this.findRealEntityUsing(maskedEntity, transact)
@@ -206,8 +204,8 @@ abstract class H2DaoNamedEntitiesV0
             } else {
                 return Optional.empty();
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoNamedEntitiesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, "named entities obtaining by exact name failed.");
             return Optional.empty();
@@ -237,8 +235,8 @@ abstract class H2DaoNamedEntitiesV0
             
             return entityMasks;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoNamedEntitiesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, "cannot get all named entities.");
             return emptyList();

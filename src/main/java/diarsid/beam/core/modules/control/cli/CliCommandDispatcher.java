@@ -29,8 +29,7 @@ import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -75,7 +74,7 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
     
     @Override
     public void dispatch(Initiator initiator, Command command) {
-        debug("initiator:" + initiator.identity() + " commandType: " + command.type());
+        logFor(this).info("initiator:" + initiator.identity() + " commandType: " + command.type());
         try {
             switch ( command.type() ) {
                 case OPEN_LOCATION: {
@@ -372,7 +371,7 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
                 }
             }
         } catch (ClassCastException cce) {
-            logError(this.getClass(), cce);
+            logFor(this).error(cce.getMessage(), cce);
             this.ioModule
                     .getInnerIoEngine()
                     .report(initiator, "command type casting failed.");

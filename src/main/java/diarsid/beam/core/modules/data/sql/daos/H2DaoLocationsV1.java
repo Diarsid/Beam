@@ -16,13 +16,11 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
-import static java.lang.String.join;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
@@ -58,12 +56,9 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
             
             if ( nonEmpty(found) ) {
                 return found;
-            } else {
-                debug("[PATTERN FULL] not found : " + pattern);
             }
             
             List<String> criterias = patternToCharCriterias(pattern);
-            debug("[PATTERN] criterias: " + join(" ", criterias));
             
             found = transact
                     .doQueryAndStreamVarargParams(
@@ -76,9 +71,7 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
             
             if ( nonEmpty(found) ) {
                 return found;
-            } else {
-                debug("[PATTERN CRITERIAS AND] not found : " + pattern);
-            }
+            } 
             
             String andOrCondition = multipleLowerGroupedLikesAndOr("loc_name", criterias.size());
             List<Location> shiftedFound;
@@ -93,7 +86,6 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
                     .collect(toList());
             
             shift(criterias);
-            debug("[PATTERN] shuffled criterias: " + join(" ", criterias));
             shiftedFound = transact
                     .doQueryAndStreamVarargParams(
                             ROW_TO_LOCATION,
@@ -103,15 +95,13 @@ class H2DaoLocationsV1 extends H2DaoLocationsV0 {
                             criterias)
                     .collect(toList());
             
-            debug("[PATTERN] found by criterias : " + found.size());
-            debug("[PATTERN] found by shuffled criterias : " + shiftedFound.size());
             shiftedFound.retainAll(found);
             found.retainAll(shiftedFound);
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(this.getClass(), ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, format("location search by name '%s' failed.", pattern));
             return emptyList();

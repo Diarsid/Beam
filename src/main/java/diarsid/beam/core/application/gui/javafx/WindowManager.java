@@ -10,7 +10,6 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import static diarsid.beam.core.Beam.beamRuntime;
-import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *
@@ -72,10 +71,8 @@ public class WindowManager {
         BeamPopupWindow window;
         synchronized ( this.popupWindows ) {            
             if ( this.popupWindows.isEmpty() ) {
-                debug("[GUI] [POPUP WINDOWS] new!");
                 window = new BeamPopupWindow(this, resources);
             } else {
-                debug("[GUI] [POPUP WINDOWS] reuse!");
                 window = this.popupWindows.poll();
             }
         }
@@ -86,10 +83,8 @@ public class WindowManager {
         BeamTaskWindow window;
         synchronized ( this.taskWindows ) {            
             if ( this.taskWindows.isEmpty() ) {
-                debug("[GUI] [TASK WINDOWS] new!");
                 window = new BeamTaskWindow(this, resources);
             } else {
-                debug("[GUI] [TASK WINDOWS] reuse!");
                 window = this.taskWindows.poll();
             }
         }
@@ -100,10 +95,8 @@ public class WindowManager {
         BeamTaskListWindow window;
         synchronized ( this.taskListWindows ) {            
             if ( this.taskListWindows.isEmpty() ) {
-                debug("[GUI] [TASK LIST WINDOWS] new!");
                 window = new BeamTaskListWindow(this, resources);
             } else {
-                debug("[GUI] [TASK LIST WINDOWS] reuse!");
                 window = this.taskListWindows.poll();
             }
         }

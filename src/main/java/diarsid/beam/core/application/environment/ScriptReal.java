@@ -21,7 +21,7 @@ import static java.nio.file.StandardOpenOption.SYNC;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -60,7 +60,7 @@ class ScriptReal implements Script {
                         WRITE, CREATE, TRUNCATE_EXISTING, SYNC);
                 saved.toFile().setExecutable(true);
             } catch (IOException ex) {
-                logError(this.getClass(), "failed to save script " + this.name, ex);
+                logFor(this).error("failed to save script " + this.name, ex);
                 throw new WorkflowBrokenException("failed to save script " + this.name);
             }
         } 
@@ -72,7 +72,7 @@ class ScriptReal implements Script {
         try {
             Desktop.getDesktop().open(this.scriptPath().toFile());
         } catch (IOException ex) {
-            logError(this.getClass(), "failed to execute script " + this.name, ex);
+            logFor(this).error("failed to execute script " + this.name, ex);
             throw new WorkflowBrokenException("failed to execute script " + this.name);
         }
         return this;

@@ -33,7 +33,7 @@ import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
 import static diarsid.beam.core.Beam.systemInitiator;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -105,7 +105,7 @@ class JettyResourceServletContainer implements ResourceServletContainer {
         try {
             this.jettyServer.start();
         } catch (Exception e) {
-            logError(this.getClass(), e);
+            logFor(this).error("Cannot start Jetty", e);
             this.ioEngine.reportAndExitLater(
                     systemInitiator(), "It is impossible to start Jetty Server.");
             throw new ModuleInitializationException(
@@ -118,7 +118,7 @@ class JettyResourceServletContainer implements ResourceServletContainer {
         try {
             this.jettyServer.stop();
         } catch (Exception e) {
-            logError(this.getClass(), e);            
+            logFor(this).error("Cannot stop Jetty", e);    
             this.ioEngine.report(systemInitiator(), "Jetty Server fails to stop.");
         }        
     }

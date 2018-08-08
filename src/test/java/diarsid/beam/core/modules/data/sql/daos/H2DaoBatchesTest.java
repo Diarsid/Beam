@@ -35,7 +35,6 @@ import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import static org.junit.Assert.assertEquals;
@@ -49,7 +48,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBP
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 import static diarsid.jdbc.transactions.core.Params.params;
 
@@ -327,7 +325,6 @@ public class H2DaoBatchesTest {
     @Test
     public void testGetAllBatches() {
         List<Batch> batchs = daoBatches.getAllBatches(initiator);
-        batchs.forEach(batch -> debug(batch.name() + " " + batch.stringifyCommands().stream().collect(joining(", "))));
         assertEquals(3, batchs.size());
         List<String> names = batchs
                 .stream()

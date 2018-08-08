@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.flow.ValueFlow;
 import static java.util.Optional.empty;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -40,7 +40,7 @@ public class ConcurrencyUtil {
         try {
             return EXECUTOR.submit(callable).get();
         } catch (InterruptedException | ExecutionException e) {
-            logError(ConcurrencyUtil.class, e);
+            logFor(ConcurrencyUtil.class).error(e.getMessage(), e);
             return valueFlowFail("waiting for value has been interrupted!");
         } 
     }
@@ -49,7 +49,7 @@ public class ConcurrencyUtil {
         try {
             return Optional.ofNullable(EXECUTOR.submit(callable).get());
         } catch (InterruptedException | ExecutionException e) {
-            logError(ConcurrencyUtil.class, e);
+            logFor(ConcurrencyUtil.class).error(e.getMessage(), e);
             return empty();
         } 
     }
@@ -58,7 +58,7 @@ public class ConcurrencyUtil {
         try {
             EXECUTOR.submit(runnable).get();
         } catch (InterruptedException | ExecutionException e) {
-            logError(ConcurrencyUtil.class, e);
+            logFor(ConcurrencyUtil.class).error(e.getMessage(), e);
         } 
     }
     

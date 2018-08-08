@@ -24,8 +24,7 @@ import static java.util.Arrays.asList;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.openWithDesktop;
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 
@@ -88,16 +87,17 @@ public class Location
                         openWithDesktop(finalTarget);   
                         successCallback.call();
                     } catch (IOException | IllegalArgumentException e) {
-                        failCallback.onEvent(format("cannot open '%s' in %s", target, this.name));
-                        logError(this.getClass(), e);
+                        String message = format("cannot open '%s' in %s", target, this.name);
+                        failCallback.onEvent(message);
+                        logFor(this).error(message, e);
                     }
                 } else {
                     failCallback.onEvent("target not found.");
-                    debug(format("Target '%s' not found in %s.", target, this.name));
+                    logFor(this).error(format("Target '%s' not found in %s.", target, this.name));
                 }                
             } else {
                 failCallback.onEvent("location real place not found.");
-                debug(format("%s path '%s' does not exist.", this.name, this.path));
+                logFor(this).error(format("%s path '%s' does not exist.", this.name, this.path));
             }            
         });
     }
@@ -116,12 +116,13 @@ public class Location
                     openWithDesktop(location);   
                     successCallback.call();
                 } catch (IOException | IllegalArgumentException e) {
-                    failCallback.onEvent(format("cannot open %s", this.name));
-                    logError(this.getClass(), e);
+                    String message = format("cannot open %s", this.name);
+                    failCallback.onEvent(message);
+                    logFor(this).error(message, e);
                 }
             } else {
                 failCallback.onEvent("location real place not found.");
-                debug(format("%s path '%s' does not exist.", this.name, this.path));
+                logFor(this).error(format("%s path '%s' does not exist.", this.name, this.path));
             }            
         });
     }

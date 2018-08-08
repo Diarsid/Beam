@@ -18,8 +18,7 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.util.Logs.log;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -64,7 +63,7 @@ public class OuterIoEnginesHolder {
                     .registerEngine(ioEngine);
             if ( initiator.isPresent() ) {
                 this.initiators.add(initiator.get());
-                log(this.getClass(), format("%s %s set with initiator: %s, into slot %d", 
+                logFor(this).info(format("%s %s set with initiator: %s, into slot %d", 
                         ioEngine.name(), 
                         ioEngine.type(),
                         initiator.get().identity(), 
@@ -94,7 +93,7 @@ public class OuterIoEnginesHolder {
                 return false;
             }
         } catch (IOException e) {
-            logError(this.getClass(), "exception during ioEngine closing attempt.", e);
+            logFor(this).error("exception during ioEngine closing attempt.", e);
             return false;
         } 
     }
@@ -103,10 +102,10 @@ public class OuterIoEnginesHolder {
         synchronized ( this.enginesLock ) {
             this.initiators.remove(initiator);
             if ( this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator) ) {
-                log(this.getClass(), "engine has been removed.");
+                logFor(this).info("engine has been removed.");
                 return true;
             } else {
-                log(this.getClass(), "engine has not been removed.");
+                logFor(this).info("engine has not been removed.");
                 return false;
             }
         }
@@ -124,8 +123,7 @@ public class OuterIoEnginesHolder {
                 try {
                     this.enginesManagerFor(initiator).closeAndRemoveEngineBy(initiator);
                 } catch (IOException ex) {
-                    logError(this.getClass(), 
-                            "exception during ioEngine closing attempt.", ex);
+                    logFor(this).error("exception during ioEngine closing attempt.", ex);
                 }
             });
             this.initiators.clear();

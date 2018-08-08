@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**
@@ -89,7 +89,7 @@ public class H2DaoKeyValueStorageTest {
                             params("own_address", "127.0.0.1"),
                             params("user_name", "John Doe"));
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoKeyValueStorageTest.class, ex);
+            logFor(H2DaoKeyValueStorageTest.class).error("", ex);
         }
     }
     
@@ -101,7 +101,7 @@ public class H2DaoKeyValueStorageTest {
                     .doUpdate(
                             "DELETE FROM key_value");
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoKeyValueStorageTest.class, ex);
+            logFor(H2DaoKeyValueStorageTest.class).error("", ex);
         }
     }
 

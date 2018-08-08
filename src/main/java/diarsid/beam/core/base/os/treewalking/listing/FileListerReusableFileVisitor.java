@@ -22,7 +22,7 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LARGE;
 import static diarsid.beam.core.base.os.treewalking.listing.FileItemsFormatter.INLINE_SKIPPED;
 import static diarsid.beam.core.base.os.treewalking.listing.FileItemsFormatter.NEW_LINE_SKIPPED;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -96,7 +96,7 @@ class FileListerReusableFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        logError(this.getClass(),"", exc);
+        logFor(this).error("visit failed in: " + file.toString(), exc);
         this.formatter.skipFailedItem(file, "access denied");
         return CONTINUE;
     }

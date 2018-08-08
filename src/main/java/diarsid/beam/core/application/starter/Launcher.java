@@ -30,10 +30,7 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 import static diarsid.beam.core.application.environment.BeamEnvironment.librariesCatalog;
 import static diarsid.beam.core.application.environment.BeamEnvironment.scriptsCatalog;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.base.util.Logs.disableConsoleDebugging;
-import static diarsid.beam.core.base.util.Logs.disableFileDebugging;
-import static diarsid.beam.core.base.util.Logs.log;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -68,9 +65,6 @@ public class Launcher {
     }
     
     void launch(Procedure procedure) {
-        if ( procedure.hasAnyConfigurables() ) {
-            procedure.getConfigurables().forEach(this::processConfigurable);
-        }
         if ( procedure.hasLaunchable() ) {
             this.processStartable(procedure.getLaunchable());
         }
@@ -79,26 +73,26 @@ public class Launcher {
     private void processStartable(FlagLaunchable startable) {
         switch ( startable ) {
             case START_ALL : {
-                log(this.getClass(), "launching core...");
+                logFor(this).info("launching core...");
                 this.executeCoreScript();
-                log(this.getClass(), "launching sysconsole...");
+                logFor(this).info("launching sysconsole...");
                 this.awaitCore();
                 this.executeSysConsoleScript();
                 break;
             }    
             case START_CORE : {
-                log(this.getClass(), "launching core...");
+                logFor(this).info("launching core...");
                 this.executeCoreScript();
                 break;
             }  
             case START_SYSTEM_CONSOLE : {
-                log(this.getClass(), "launching sysconsole...");
+                logFor(this).info("launching sysconsole...");
                 this.awaitCore();                
                 this.executeSysConsoleScript();
                 break;
             }  
             default : {
-                log(this.getClass(), "unknown startable component: " + startable.text());
+                logFor(this).info("unknown startable component: " + startable.text());
             }
         }
     }
@@ -136,32 +130,6 @@ public class Launcher {
         }
     }
     
-    private void processConfigurable(FlagConfigurable configurable) {
-        switch ( configurable ) {
-            case NO_DEBUG : {
-                disableConsoleDebugging();
-                log(this.getClass(), "console debugging disabled!");
-                disableFileDebugging();
-                log(this.getClass(), "file debugging disabled!");
-                break;
-            }
-            case NO_FILE_DEBUG : {
-                log(this.getClass(), "file debugging disabled!");
-                disableFileDebugging();
-                break;
-            }
-            case NO_CONSOLE_DEBUG : {
-                log(this.getClass(), "console debugging disabled!");
-                disableConsoleDebugging();
-                break;
-            }
-            case NO_CONSOLE_LOG : {
-                break;
-            }    
-            default : {}            
-        }
-    }
-    
     private void awaitCore() {
         int coreRegistryPort = parseInt(this.config.asString("rmi.core.port"));
         String coreRegistryHost = this.config.asString("rmi.core.host");
@@ -186,7 +154,7 @@ public class Launcher {
             throw new WorkflowBrokenException(
                     format("cannot connect to core for %d millis", (sleep * awaitCounter)));
         } catch (InterruptedException e) {
-            logError(Launcher.class, e);
+            logFor(this).error(e.getMessage(), e);
             throw new WorkflowBrokenException("waiting for core has been interrupted.");
         }
     }

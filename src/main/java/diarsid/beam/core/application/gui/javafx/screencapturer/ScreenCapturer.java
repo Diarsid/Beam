@@ -15,15 +15,11 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import static diarsid.beam.core.base.util.Logs.debug;
-
 import diarsid.beam.core.base.control.flow.ValueFlow;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 
 /**
@@ -51,7 +47,7 @@ public class ScreenCapturer {
             ImageIO.write(image, "png", baos);
             baos.flush();                 
             byte[] imageBytes = baos.toByteArray();
-            debug("[SCREEN CAPTURER] bytes: " + imageBytes.length);
+            logFor(this).info("[SCREEN CAPTURER] bytes: " + imageBytes.length);
             return valueFlowCompletedWith(imageBytes);
         } catch (IOException e) {
             // TODO MEDIUM

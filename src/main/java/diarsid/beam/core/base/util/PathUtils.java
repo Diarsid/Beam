@@ -20,7 +20,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.charsAreDomainAcceptable;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
 /**
@@ -169,7 +168,6 @@ public class PathUtils {
         if ( path.isEmpty() ) {
             return "";
         } else if ( containsPathSeparator(path) ) {
-            debug("[PATHS] extract location from : '" + path + "'");
             return path.substring(0, indexOfFirstPathSeparator(path));
         } else {
             return path;

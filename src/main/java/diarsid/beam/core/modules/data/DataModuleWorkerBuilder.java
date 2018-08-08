@@ -26,11 +26,10 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.Beam.systemInitiator;
+import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.logError;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 
 /**
@@ -68,7 +67,7 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         try {
             Class.forName(driverClassName);
         } catch (Exception e) {
-            logError(DataModuleWorkerBuilder.class, e);
+            logFor(this).error("cannot load Driver: " + driverClassName, e);
             this.ioModule
                     .getInnerIoEngine()
                     .reportAndExitLater(

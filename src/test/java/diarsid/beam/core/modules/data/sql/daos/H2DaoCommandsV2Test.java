@@ -42,7 +42,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**
@@ -215,15 +214,13 @@ public class H2DaoCommandsV2Test {
     
     @Test
     public void testFullSearchByExtendedPattern_case3() {     
-        List<InvocationCommand> commands3 = dao.searchInExtendedByPattern(initiator, "startmct");       
-        commands3.forEach(command -> debug(command.stringify()));
+        List<InvocationCommand> commands3 = dao.searchInExtendedByPattern(initiator, "startmct"); 
         assertEquals(2, commands3.size());
     }
     
     @Test
     public void testFullSearchByExtendedPattern_case4() {     
-        List<InvocationCommand> commands3 = dao.searchInExtendedByPattern(initiator, "stptmct");       
-        commands3.forEach(command -> debug(command.stringify()));
+        List<InvocationCommand> commands3 = dao.searchInExtendedByPattern(initiator, "stptmct");     
         assertEquals(2, commands3.size());
     }
 

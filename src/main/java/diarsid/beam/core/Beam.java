@@ -21,8 +21,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static diarsid.beam.core.JavaFXRuntime.launchJavaFXRuntimeAndWait;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
-import static diarsid.beam.core.base.util.Logs.log;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -46,14 +45,14 @@ public class Beam {
            
     public static void main(String... args) {
         try {
-            log(Beam.class, "start Beam.core");
+            logFor(Beam.class).info("start Beam.core");
             Configuration configuration = configuration();
             launchJavaFXRuntimeAndWait();
             initApplication(configuration);
             stopModulesBeforeExit(configuration);
-            log(Beam.class, "Beam.core started successfully");
+            logFor(Beam.class).info("Beam.core started successfully");
         } catch (Exception e) {
-            logError(Beam.class, e);
+            logFor(Beam.class).error("Beam.core failed:", e);
         }
     }
     
@@ -74,7 +73,7 @@ public class Beam {
             container.getModule(ExecutorModule.class).stopModule();
             container.getModule(DataModule.class).stopModule();
             container.getModule(WebModule.class).stopModule();
-            log(Beam.class, "JVM shutdown: Beam.core modules stopped");
+            logFor(Beam.class).info("JVM shutdown: Beam.core modules stopped");
         });
     }
     

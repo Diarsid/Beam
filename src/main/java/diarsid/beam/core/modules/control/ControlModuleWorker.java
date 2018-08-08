@@ -15,7 +15,6 @@ import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
-import static diarsid.beam.core.base.util.Logs.debug;
 
 /**
  *
@@ -52,10 +51,8 @@ public class ControlModuleWorker implements ControlModule {
 
     @Override
     public void blockingExecuteCommand(Initiator initiator, String commandLine) {
-        debug("initiator:" + initiator.identity() + " command: " + commandLine );
         if ( this.ioModule.isInitiatorLegal(initiator) ) {
             this.cliProcessor.processCommand(initiator, commandLine);
         }
-        debug("executed...");
     }
 }

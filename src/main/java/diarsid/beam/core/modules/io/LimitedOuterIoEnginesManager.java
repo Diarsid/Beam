@@ -19,8 +19,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.util.Logs.log;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.MathUtil.adjustBetween;
 import static diarsid.beam.core.base.util.Requirements.requireNotNull;
 import static diarsid.beam.core.base.util.Requirements.requireNull;
@@ -272,13 +271,12 @@ class LimitedOuterIoEnginesManager implements OuterIoEnginesManager {
                     setEngineByNumber(slotNumber, engine);
                     return Optional.of(initiator);
                 } catch (RequirementException e) {
-                    logError(this.getClass(), e);
-                    log(this.getClass(), "cannot accept new engine.");
+                    logFor(this).error("engine must be installed in empty slot!", e);
                     engine.report("cannot accept new engine.");
                     return Optional.empty();
                 }                
             } else {
-                log(this.getClass(), "there are no free slots.");
+                logFor(this).error("there are no free slots.");
                 engine.report("there are no free slots.");
                 return Optional.empty();
             }
@@ -295,7 +293,7 @@ class LimitedOuterIoEnginesManager implements OuterIoEnginesManager {
                 FREE_ENGINES_SLOTS.add(engineNumber);
                 return true;
             } catch (RequirementException e) {
-                logError(this.getClass(), e);
+                logFor(this).error("Engine to be closed must be presen!", e);
                 return false;
             }
         }

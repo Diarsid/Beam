@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_TASK;
 
@@ -82,7 +82,7 @@ class H2DaoTasksV2 extends H2DaoTasksV0 {
             return tasks;
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error(ex.getMessage(), ex);
             
             return emptyList();
         }        

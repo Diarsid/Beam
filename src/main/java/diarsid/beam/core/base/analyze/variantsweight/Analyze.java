@@ -31,7 +31,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Variants.string
 import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
 import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -42,14 +42,14 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class Analyze {
     
+    private static final int DEFAULT_WEIGHTED_RESULT_LIMIT;
     private static boolean isWeightedResultLimitPresent;
-    private static int defaultWeightedResultLimit;
     private static int weightedResultLimit;
     
     static {
         isWeightedResultLimitPresent = true;
-        defaultWeightedResultLimit = configuration().asInt("analyze.result.variants.limit");
-        weightedResultLimit = defaultWeightedResultLimit;
+        DEFAULT_WEIGHTED_RESULT_LIMIT = configuration().asInt("analyze.result.variants.limit");
+        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
     }
     
     private Analyze() {        
@@ -64,17 +64,17 @@ public class Analyze {
     }
     
     public static void resultsLimitToDefault() {
-        weightedResultLimit = defaultWeightedResultLimit;
+        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
     }
     
     public static void disableResultsLimit() {
         isWeightedResultLimitPresent = false;
-        weightedResultLimit = defaultWeightedResultLimit;
+        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
     }
     
     public static void enableResultsLimit() {
         isWeightedResultLimitPresent = true;
-        weightedResultLimit = defaultWeightedResultLimit;
+        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
     }
     
     public static void setResultsLimit(int newLimit) {
@@ -234,11 +234,11 @@ public class Analyze {
             
             analyze.setNewVariant(variant);
             if ( analyze.newVariant.hasDisplayText() ) {
-                debug("[ANALYZE] " + analyze.newVariant.text() + ":" + analyze.newVariant.displayText());
+                logFor(Analyze.class).info(analyze.newVariant.text() + ":" + analyze.newVariant.displayText());
                 if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {
                     analyze.setPreviousVariantWithSameDisplayText(variantsByDisplay);
                     if ( analyze.isNewVariantBetterThanPrevious() ) {
-                        debug("[ANALYZE] [DUPLICATE] " + analyze.newVariant.text() + " is better than: " + analyze.prevVariant.text());
+                        logFor(Analyze.class).info("[DUPLICATE] " + analyze.newVariant.text() + " is better than: " + analyze.prevVariant.text());
                         variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
                         weightedVariants.add(analyze.newVariant);
                     } 
@@ -263,10 +263,10 @@ public class Analyze {
         if ( isWeightedResultLimitPresent ) {
             shrink(weightedVariants, weightedResultLimit);
         }
-        debug("[ANALYZE] weightedVariants qty: " + weightedVariants.size());        
+        logFor(Analyze.class).info("weightedVariants qty: " + weightedVariants.size());        
         weightedVariants
                 .stream()
-                .forEach(candidate -> debug(format(US, "%.3f : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
+                .forEach(candidate -> logFor(Analyze.class).info(format(US, "%.3f : %s:%s", candidate.weight(), candidate.text(), candidate.displayText())));
         isDiversitySufficient(minWeight, maxWeight);
         return weightedVariants;
     }

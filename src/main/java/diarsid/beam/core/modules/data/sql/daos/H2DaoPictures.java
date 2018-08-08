@@ -19,8 +19,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logs.debug;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_IMAGE;
 
@@ -46,8 +45,8 @@ class H2DaoPictures
                             "FROM images " +
                             "WHERE LOWER(name) IS ? ", 
                             lower(name));
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoPictures.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, format("cannot get '%s' image.", name));
             return Optional.empty();
         }
@@ -55,7 +54,6 @@ class H2DaoPictures
 
     @Override
     public boolean save(Initiator initiator, Picture picture) {
-        debug("[DAO PICTURES] saving picture: " + picture.toString());
         if ( picture.hasNoData() ) {
             this.ioEngine().report(initiator, format("image '%s' data is empty.", picture.name()));
             return false;
@@ -93,8 +91,8 @@ class H2DaoPictures
                 return false;
             }
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoPictures.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, format("cannot save '%s' image.", picture.name()));
             return false;
         }
@@ -116,8 +114,8 @@ class H2DaoPictures
                 return false;
             }
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoPictures.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, format("cannot remove '%s' image.", name));
             return false;
         }

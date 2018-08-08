@@ -18,11 +18,9 @@ import diarsid.beam.core.domain.entities.Location;
 
 import static java.nio.file.Files.walkFileTree;
 import static java.util.EnumSet.of;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 
 import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getFolderTypeDetector;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -57,11 +55,10 @@ public class FileLister {
         this.visitor.useAgainWith(root);
         try {
             walkFileTree(root, of(FileVisitOption.FOLLOW_LINKS), depth, this.visitor);
-            return of(this.visitor.getResults());
+            return Optional.of(this.visitor.getResults());
         } catch (IOException e) {
-            logError(this.getClass(), "", e);
-            //debug("[FILE LISTER] IOException while processing " + root.toString());
-            return empty();
+            logFor(this).error(e.getMessage(), e);
+            return Optional.empty();
         } finally {
             this.visitor.clear();
         }       

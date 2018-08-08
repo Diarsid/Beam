@@ -20,7 +20,7 @@ import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
 
@@ -62,8 +62,9 @@ class SqlDataBaseActuator implements DataBaseActuator {
                         }
                     });            
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(SqlDataBaseActuator.class, ex);
-            throw new DataBaseActuationException("Cannot discover data base table names.");
+            String message = "Cannot discover data base table names.";
+            logFor(this).error(message, ex);
+            throw new DataBaseActuationException(message);
         }
     }
     
@@ -82,8 +83,9 @@ class SqlDataBaseActuator implements DataBaseActuator {
                         }
                     });
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(SqlDataBaseActuator.class, ex);
-            throw new DataBaseActuationException("Cannot discover data base constraint names.");
+            String message = "Cannot discover data base constraint names.";
+            logFor(this).error(message, ex);
+            throw new DataBaseActuationException(message);
         }
     }
     
@@ -147,7 +149,7 @@ class SqlDataBaseActuator implements DataBaseActuator {
             
         } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            logError(SqlDataBaseActuator.class, ex);
+            logFor(this).error("SQL exception occured: ", ex);
             
             String message;
             if ( nonNull(currentlyProcessedObject) ) {

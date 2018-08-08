@@ -86,7 +86,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGetFlow;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
@@ -104,7 +104,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGetFlow;
 
 
 public class WebPagesKeeperWorker 
@@ -240,7 +239,6 @@ public class WebPagesKeeperWorker
             if ( nonEmpty(pageOldShorts) ) {
                 splitBySpacesToList(pageOldShorts)
                         .stream()
-                        .peek(alias -> debug("[WEB PAGES KEEPER] delete command by alias: " + alias))
                         .forEach(alias -> {
                             this.commandsMemory.removeByExactOriginalAndType(
                                     initiator, alias, BROWSE_WEBPAGE);
@@ -249,7 +247,6 @@ public class WebPagesKeeperWorker
             if ( nonEmpty(pageNewShorts) ) {
                 splitBySpacesToList(pageNewShorts)
                         .stream()
-                        .peek(alias -> debug("[WEB PAGES KEEPER] save alias as command: " + alias))
                         .forEach(alias -> {
                             this.commandsMemory.save(
                                     initiator, 
@@ -266,7 +263,6 @@ public class WebPagesKeeperWorker
             if ( nonEmpty(page.shortcuts()) ) {
                 splitBySpacesToList(page.shortcuts())
                         .stream()
-                        .peek(alias -> debug("[WEB PAGES KEEPER] save alias as command: " + alias))
                         .forEach(alias -> {
                             this.commandsMemory.save(
                                     initiator, 

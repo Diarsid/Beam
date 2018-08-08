@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.util.Possible;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
@@ -22,7 +23,8 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_INITIAL_START;
@@ -48,7 +50,7 @@ class TasksExecutionScheduler {
     // Is refreshed every time when task or tasks are 
     // being executed.
     // Can be null, if there are no any tasks.
-    private ScheduledFuture currentExecution;
+    private final Possible<ScheduledFuture> currentExecution;
 
     TasksExecutionScheduler(
             OutputTasksGui tasksGui, 
@@ -60,6 +62,7 @@ class TasksExecutionScheduler {
         this.scheduler = scheduler;
         this.taskExecutionLock = new Object();
         this.ownInitiator = ownInitiator;
+        this.currentExecution = possibleButEmpty();
     }
     
     void refresh() {
@@ -73,7 +76,8 @@ class TasksExecutionScheduler {
             // if possible lag is not present it means that there are no active
             // tasks to measure lag between their expired but active execution time
             // and present moment
-            Optional<Long> possibleLag = this.tasksKeeper.getInactivePeriodMinutes(this.ownInitiator);
+            Optional<Long> possibleLag = this.tasksKeeper
+                    .getInactivePeriodMinutes(this.ownInitiator);
             if ( possibleLag.isPresent() ) {
                 // get lag, expired tasks, and show them
                 List<Task> expiredTasks = this.tasksKeeper.getPastActiveTasks(this.ownInitiator); 
@@ -106,14 +110,15 @@ class TasksExecutionScheduler {
         // all operations have been performed properly.
         if ( probableNewTimeToSchedule.isPresent() ) {
             LocalDateTime scheduledTime = probableNewTimeToSchedule.get();
-            this.currentExecution = this.scheduler.schedule(
+            ScheduledFuture execution = this.scheduler.schedule(
                     // runnable to execute when scheduled time comes
                     () -> {
                         synchronized ( this.taskExecutionLock ) {
-                            debug("...first tasks delayed execution.");
+                            logFor(this).info("...first tasks delayed execution.");
                             // get all first tasks, compute the lag (if any) and 
                             // create appropriate displayable messages and show them
-                            List<Task> tasks = this.tasksKeeper.getPastActiveTasks(this.ownInitiator); // getPastActiveTasks() to avoid possible multiple executions?
+                            List<Task> tasks = this.tasksKeeper
+                                    .getPastActiveTasks(this.ownInitiator); // getPastActiveTasks() to avoid possible multiple executions?
                             this.showFirstTasks(tasks, scheduledTime);
 
                             // switch all tasks
@@ -126,22 +131,23 @@ class TasksExecutionScheduler {
                     // calculate runnable's delay
                     getMillisFromNowToTime(scheduledTime),
                     MILLISECONDS);
+            this.currentExecution.resetTo(execution);
         } else {
-            this.currentExecution = null;
+            this.currentExecution.nullify();
         }
     }
 
     private void purgeCurrentExecutionIfAny() {
         if ( this.isCurrentExecutionAlive() ) {
-            this.currentExecution.cancel(false);
-            this.currentExecution = null;
+            this.currentExecution.orThrow().cancel(false);
+            this.currentExecution.nullify();
         }
     }
 
     private boolean isCurrentExecutionAlive() {
         return 
-                this.currentExecution != null && 
-                ! this.currentExecution.isDone();
+                this.currentExecution.isPresent() && 
+                ! this.currentExecution.orThrow().isDone();
     }
 
     private void showFirstTasks(List<Task> tasks, LocalDateTime scheduledTime) {

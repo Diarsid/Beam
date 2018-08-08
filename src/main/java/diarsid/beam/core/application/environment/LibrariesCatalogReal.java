@@ -18,7 +18,7 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 
@@ -41,7 +41,7 @@ class LibrariesCatalogReal
                     .map(path -> this.applicationPath.relativize(path).toString())
                     .collect(toList());
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error("unable to read libraries: ", ex);
             throw new WorkflowBrokenException("unable to obtain libraries.");
         }
     }
@@ -55,7 +55,8 @@ class LibrariesCatalogReal
                     .map(path -> this.applicationPath.relativize(path).toString())
                     .collect(toList());
         } catch (IOException ex) {
-            logError(this.getClass(), ex);
+            logFor(this).error(
+                    "unable to find libraries containing: " + join(", ", libFragments), ex);
             throw new WorkflowBrokenException(
                     "unable to obtain libraries with: " + join(", ", fragments));
         }

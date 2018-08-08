@@ -5,19 +5,18 @@
  */
 package diarsid.beam.core.base.os.treewalking.search;
 
-import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
+import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
+
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
@@ -34,8 +33,7 @@ class FilesCollectorByStream implements FilesCollector {
     
     private final int searchDepth;
 
-    FilesCollectorByStream(int searchDepth) {        
-        debug("[FILE SEARCH] by stream");
+    FilesCollectorByStream(int searchDepth) {  
         this.searchDepth = searchDepth;
     }
     

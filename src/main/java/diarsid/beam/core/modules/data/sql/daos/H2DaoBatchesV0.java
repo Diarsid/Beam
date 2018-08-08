@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
@@ -79,8 +79,8 @@ abstract class H2DaoBatchesV0
                             "FROM batches " +
                             "WHERE LOWER(bat_name) IS ? ",
                             lower(exactName));
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "is name free request failed.");
             return false;
         }
@@ -114,8 +114,8 @@ abstract class H2DaoBatchesV0
             } else {
                 return Optional.empty();
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, "batch obtaining by name '" + name + "' failed.");
             return Optional.empty();
@@ -161,8 +161,8 @@ abstract class H2DaoBatchesV0
                     nameSavedCount == 1 && 
                     commandSavedCount == batch.batchedCommands().size() );
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "batch saving failed.");
             return false;
         }
@@ -204,8 +204,8 @@ abstract class H2DaoBatchesV0
                 transact.rollbackAndProceed();
                 return false;
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "batch removing failed.");
             return false;
         }
@@ -235,8 +235,8 @@ abstract class H2DaoBatchesV0
                     .rollbackAndProceed();
             
             return ( updatedNameQty == 1 && updatedCommands > 0 );
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, 
                     "batch name changing: " + batchName + " -> " + newName + " failed.");
@@ -287,8 +287,8 @@ abstract class H2DaoBatchesV0
             return ( 
                     oldCommandsRemoved && 
                     modified == newCommands.size() );
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "batch commands changing failed.");
             return false;
         }
@@ -315,8 +315,8 @@ abstract class H2DaoBatchesV0
                     .rollbackAndProceed();
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "batch one command changing failed.");
             return false;
         }
@@ -346,8 +346,8 @@ abstract class H2DaoBatchesV0
                     .map(this.entryToBatch)
                     .collect(toList());
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logError(H2DaoBatchesV0.class, ex);
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "all batches obtaining failed.");
             return emptyList();
         }

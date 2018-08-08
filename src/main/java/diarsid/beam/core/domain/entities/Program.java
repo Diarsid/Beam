@@ -22,7 +22,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.indexOfLastPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
@@ -78,8 +78,8 @@ public class Program
                     Desktop.getDesktop().open(program);  
                     successCallback.call();
                 } catch (IOException | IllegalArgumentException e) {
-                    failCallback.onEvent("..." + e.getMessage());
-                    logError(this.getClass(), e);
+                    failCallback.onEvent(format("...cannot execute '%s'", this.name));
+                    logFor(this).error("Cannot execute file: " + program.toString(), e);
                 }
             } else {
                 failCallback.onEvent(

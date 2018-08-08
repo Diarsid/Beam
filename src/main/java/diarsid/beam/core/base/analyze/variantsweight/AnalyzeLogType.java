@@ -14,6 +14,7 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 enum AnalyzeLogType {
     
     BASE (
+            configuration().asBoolean("log") && 
             configuration().asBoolean("analyze.weight.base.log")),
     POSITIONS_SEARCH (
             BASE.isEnabled && configuration().asBoolean("analyze.weight.positions.search.log")),

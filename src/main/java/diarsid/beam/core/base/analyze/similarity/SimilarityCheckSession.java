@@ -12,7 +12,7 @@ import diarsid.beam.core.base.objects.PooledReusable;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 
 /**
@@ -32,7 +32,7 @@ public class SimilarityCheckSession extends PooledReusable {
 
     private SimilarityCheckSession() {
         this.cachedSimilarResults = new HashMap<>();
-        debug("[SIMILARITY SESSION] [START]");
+        logFor(this).info("[SIMILARITY SESSION] [START]");
     }
 
     @Override
@@ -57,7 +57,8 @@ public class SimilarityCheckSession extends PooledReusable {
         this.freshCount++;
         this.usedCount++;
         this.cachedSimilarResults.clear();
-        debug(format("[SIMILARITY SESSION] [END] fresh: %s, duplicates: %s", this.freshCount, this.usedCount));
+        logFor(this).info(format("[SIMILARITY SESSION] [END] fresh: %s, duplicates: %s", 
+                                 this.freshCount, this.usedCount));
     }
     
     private static int pairHash(String s1, String s2) {

@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -147,9 +147,8 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
     public void print(Exception e) {
         try {
             this.intoConsole.put("\n" + e.getMessage() + "\n");
-            e.printStackTrace();
-        } catch (Exception ex) {
-            logError(this.getClass(), ex);
+        } catch (InterruptedException ex) {
+            logFor(this).error("console blocking IO print() has been interruped: ", ex);
         }
     }
     

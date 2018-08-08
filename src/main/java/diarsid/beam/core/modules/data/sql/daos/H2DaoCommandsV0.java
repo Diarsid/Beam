@@ -27,7 +27,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.Logging.logFor;
-import static diarsid.beam.core.base.util.Logs.debug;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcardAfter;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_INVOCATION_COMMAND;
@@ -95,7 +94,8 @@ abstract class H2DaoCommandsV0
     @Override
     public boolean save(
             Initiator initiator, List<? extends InvocationCommand> commands) {       
-        commands.forEach(command -> debug("[DAO COMMANDS] saving: " + command.originalArgument() + ":" + command.stringify()));
+        commands.forEach(command -> logFor(this).info(
+                "saving: " + command.originalArgument() + ":" + command.stringify()));
         try (JdbcTransaction transact = super.openTransaction()) {
             boolean done = false;
             for (InvocationCommand command : commands) {
@@ -194,7 +194,7 @@ abstract class H2DaoCommandsV0
         }
 
         if ( modified > 0 ) {
-            debug("[DAO COMMANDS] saved: " + modified);
+            logFor(this).info("saved: " + modified);
         }
 
         return modified;
@@ -203,7 +203,8 @@ abstract class H2DaoCommandsV0
     @Override
     public boolean delete(
             Initiator initiator, InvocationCommand command) {
-        debug("[DAO COMMANDS] delete all: " + command.originalArgument() + ":" + command.extendedArgument());
+        logFor(this).info(
+                "delete all: " + command.originalArgument() + ":" + command.extendedArgument());
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int modified = transact
@@ -221,7 +222,7 @@ abstract class H2DaoCommandsV0
             }
             
             if ( modified > 0 ) {
-                debug("[DAO COMMANDS] deleted: " + modified);
+                logFor(this).info("deleted: " + modified);
             }
             
             return ( modified > 0 );
@@ -238,7 +239,7 @@ abstract class H2DaoCommandsV0
     @Override
     public boolean deleteByExactOriginalOfAllTypes(
             Initiator initiator, String original) {
-        debug("[DAO COMMANDS] delete by original: " + original);
+        logFor(this).info("delete by original: " + original);
         try {
             return 0 < super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -255,7 +256,7 @@ abstract class H2DaoCommandsV0
     @Override
     public boolean deleteByExactOriginalOfType(
             Initiator initiator, String original, CommandType type) {
-        debug("[DAO COMMANDS] delete by original and type: " + original + ", " + type.name());
+        logFor(this).info("delete by original and type: " + original + ", " + type.name());
         try {
             return 1 == super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -272,7 +273,7 @@ abstract class H2DaoCommandsV0
     @Override
     public boolean deleteByExactExtendedOfType(
             Initiator initiator, String extended, CommandType type) {
-        debug("[DAO COMMANDS] delete by extended and type: " + extended + ", " + type.name());
+        logFor(this).info("delete by extended and type: " + extended + ", " + type.name());
         try {
             return 1 < super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -289,7 +290,8 @@ abstract class H2DaoCommandsV0
     @Override
     public boolean deleteByPrefixInExtended(
             Initiator initiator, String prefixInExtended, CommandType type) {
-        debug("[DAO COMMANDS] delete by extended-prefix and type: " + prefixInExtended + ", " + type.name());
+        logFor(this).info(
+                "delete by extended-prefix and type: " + prefixInExtended + ", " + type.name());
         try {
             return 1 < super.openDisposableTransaction()
                     .doUpdateVarargParams(

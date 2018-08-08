@@ -33,7 +33,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGet;
-import static diarsid.beam.core.base.util.Logs.logError;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -71,7 +71,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     }
                     return choice;
                 } catch (IOException ex) {
-                    logError(this.getClass(), ex);
+                    logFor(this).error(ex.getMessage(), ex);
                     this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return NOT_MADE;
                 }
@@ -98,7 +98,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     }
                     return answer; 
                 } catch (IOException ex) {
-                    logError(this.getClass(), ex);
+                    logFor(this).error(ex.getMessage(), ex);
                     this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return rejectedAnswer();
                 }
@@ -127,7 +127,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     }
                     return answer;        
                 } catch (IOException ex) {
-                    logError(this.getClass(), ex);
+                    logFor(this).error(ex.getMessage(), ex);
                     this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return rejectedAnswer();
                 }
@@ -154,7 +154,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     }    
                     return input;
                 } catch (IOException ex) {
-                    logError(this.getClass(), ex);
+                    logFor(this).error(ex.getMessage(), ex);
                     this.ioEnginesHolder.processCloseRequestBy(initiator);
                     return "";
                 }
@@ -183,7 +183,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                             .getEngineBy(initiator)
                             .report(string);
                 } catch (IOException ex) {
-                    logError(this.getClass(), ex);
+                    logFor(this).error(ex.getMessage(), ex);
                     this.ioEnginesHolder.processCloseRequestBy(initiator);
                 }
             });            
@@ -201,7 +201,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                         try {
                             ioEngine.report(string);
                         } catch (IOException ex) {
-                            logError(this.getClass(), ex);
+                            logFor(this).error(ex.getMessage(), ex);
                         }
                     });                  
                 });
@@ -218,7 +218,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                             .getEngineBy(initiator)
                             .report(message);
                 } catch (IOException ex) {
-                    logError(this.getClass(), ex);
+                    logFor(this).error(ex.getMessage(), ex);
                     this.ioEnginesHolder.processCloseRequestBy(initiator);
                 }
             });            
@@ -236,7 +236,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                         try {
                             ioEngine.report(message);
                         } catch (IOException ex) {
-                            logError(this.getClass(), ex);
+                            logFor(this).error(ex.getMessage(), ex);
                         }
                     });                    
                 });

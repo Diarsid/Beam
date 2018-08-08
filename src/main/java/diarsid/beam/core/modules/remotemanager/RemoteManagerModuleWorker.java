@@ -27,7 +27,7 @@ import static java.rmi.registry.LocateRegistry.getRegistry;
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRegistry;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRemoteAccessEndpoint;
 
@@ -60,7 +60,7 @@ public class RemoteManagerModuleWorker implements RemoteManagerModule {
             registry.bind(CORE_ACCESS_ENDPOINT_NAME, access);
             holdedRegistry = registry;
             holdedRemoteAccessEndpoint = access;
-            debug("Core endpoints exported successfully");
+            logFor(this).info("Core endpoints exported successfully");
         } catch (AlreadyBoundException|RemoteException e) {            
             this.io.getInnerIoEngine().reportMessageAndExitLater(
                     systemInitiator(), 

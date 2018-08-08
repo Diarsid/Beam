@@ -17,7 +17,7 @@ import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
-import static diarsid.beam.core.base.util.Logs.log;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -39,7 +39,7 @@ public class Pools {
             if ( existedPool == null ) {
                 Pool<T> newTPool = new Pool<>(tSupplier);
                 POOLS_BY_POOLED_CLASS.put(type, newTPool);
-                log(Pool.class, format("Pool for %s created.", type.getCanonicalName()));
+                logFor(Pools.class).info(format("Pool for %s created.", type.getCanonicalName()));
             }       
         } 
     }

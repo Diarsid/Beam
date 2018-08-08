@@ -90,7 +90,7 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognit
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.prefixes;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.relativePath;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.singleArg;
-import static diarsid.beam.core.base.util.Logs.debug;
+import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
 /**
@@ -382,7 +382,7 @@ public class Interpreter {
     
     public Command interprete(String inputString) {
         if ( this.controlWordsContext.isDependentControlWord(inputString) ) {
-            debug("[INTERPRETER] " + inputString + " is dependent control word.");
+            logFor(this).info(inputString + " is dependent control word.");
             return incorrectCommand();
         }
         return this.decisionTree.assess(new Input(normalizeSpaces(inputString)));
