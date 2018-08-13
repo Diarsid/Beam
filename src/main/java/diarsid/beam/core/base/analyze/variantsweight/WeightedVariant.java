@@ -23,23 +23,25 @@ public class WeightedVariant
                 Comparable<Variant>, 
                 Serializable {
     
-    static final double EQUALITY_WEIGHT = -900;
-    
+    private final boolean equalsToPattern;
     private double weight;
 
-    WeightedVariant(Variant parent, double weight) {
+    WeightedVariant(Variant parent, boolean equalsToPattern, double weight) {
         super(parent);
+        this.equalsToPattern = equalsToPattern;
         this.weight = weight;
     }
     
-    public boolean hasEqualOrBetterWeightThan(WeightEstimate estimate) {
-        WeightEstimate thisEstimate = estimateWeightOf(this);
-        boolean hasEqualOrBetter = thisEstimate.isEqualOrBetterThan(estimate);
-        return hasEqualOrBetter;
+    public boolean hasEqualOrBetterWeightThan(WeightEstimate otherEstimate) {
+        return estimateWeightOf(this).isEqualOrBetterThan(otherEstimate);
     }
     
     public boolean betterThan(WeightedVariant other) {
         return this.weight < other.weight;
+    }
+    
+    public boolean isEqualToPattern() {
+        return this.equalsToPattern;
     }
 
     public double weight() {

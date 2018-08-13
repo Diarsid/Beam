@@ -430,7 +430,8 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Rosters"
+                "Rosters", 
+                "Projects/Diarsid"
         );
         
         weightVariantsAndCheckMatching();
@@ -588,7 +589,8 @@ public class AnalyzeTest {
         
         variants = asList(
                 "Soul/programs/src",
-                "Soul/programs");
+                "Soul/programs"
+        );
         
         expected = asList( 
                 "Soul/programs",
@@ -936,19 +938,35 @@ public class AnalyzeTest {
     
     @Test
     public void test_hiringCase_hring() {
-        expectedToFail();
         
         pattern = "hring";
         
         variants = asList(            
                 "Current_Job/Hiring/CVs/Java_Junior/hr",
-                "Job/Current/Hiring",
-                "Current_Job/hiring");
+                "Job/Current/Hiring"
+        );
         
         expected = asList(            
                 "Job/Current/Hiring",
-                "Current_Job/hiring",
                 "Current_Job/Hiring/CVs/Java_Junior/hr"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_fullNameCase_Current_Job() {
+        
+        pattern = "Current_Job";
+        
+        variants = asList(            
+                "Current_Job/Hiring",
+                "Current_Job"
+        );
+        
+        expected = asList(            
+                "Current_Job",
+                "Current_Job/Hiring"
         );
         
         weightVariantsAndCheckMatching();

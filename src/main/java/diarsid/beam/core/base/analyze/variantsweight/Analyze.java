@@ -139,11 +139,9 @@ public class Analyze {
     
     public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
         AnalyzeData analyze = takeFromPool(AnalyzeData.class);
-        analyze.setVariantText(variant);
-        analyze.setPattern(pattern);
-        analyze.checkIfVariantEqualsPattern();
+        analyze.set(pattern, variant);
         if ( analyze.isVariantEqualsPattern() ) {
-            analyze.setNewVariant(variant);
+            analyze.complete();
             Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
             giveBackToPool(analyze);
             return weightedVariant;
@@ -163,11 +161,10 @@ public class Analyze {
         analyze.calculateWeight();  
         analyze.logState();
         if ( analyze.isVariantTooBad() ) {
-            System.out.println(analyze.variantText + " is too bad.");
+            logAnalyze(BASE, "%s is too bad.", analyze.variantText);
             giveBackToPool(analyze);
             return Optional.empty();
         }
-        analyze.setNewVariant(variant);
         Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
         giveBackToPool(analyze);
         return weightedVariant;
@@ -196,13 +193,11 @@ public class Analyze {
                     continue variantsWeighting;
                 }
             }
-            System.out.println();
+            logAnalyze(BASE, "");
             logAnalyze(BASE, "===== ANALYZE : %s ( %s ) ===== ", variant.text(), pattern);
             variantsByText.put(lowerVariantText, variant);
             
-            analyze.setVariantText(variant);
-            analyze.setPattern(pattern);
-            analyze.checkIfVariantEqualsPattern();
+            analyze.set(pattern, variant);
             if ( analyze.isVariantNotEqualsPattern() ) {
                 analyze.checkIfVariantTextContainsPatternDirectly();
                 analyze.setPatternCharsAndPositions();
@@ -232,7 +227,7 @@ public class Analyze {
                 }                
             }
             
-            analyze.setNewVariant(variant);
+            analyze.complete();
             if ( analyze.newVariant.hasDisplayText() ) {
                 logFor(Analyze.class).info(analyze.newVariant.text() + ":" + analyze.newVariant.displayText());
                 if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {

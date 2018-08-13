@@ -42,7 +42,7 @@ class ConfigurationReading {
                 .filter(line -> isConfigLine(line))
                 .map(line -> clean(line));
         } catch (IOException e) {
-            LoggerFactory.getLogger(ConfigurationReading.class).error( 
+            LoggerFactory.getLogger(ConfigurationReading.class).warn( 
                     format("Config file '%s' not found. Default config will be used.", 
                            configFile.toString()));
             return Stream.empty();
