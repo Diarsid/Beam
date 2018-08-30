@@ -102,8 +102,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         programsKeeper = new ProgramsKeeperWorker(
                 ioEngine,
                 newWalker(ioEngine, this.dataModule.patternChoices(), getFolderTypeDetector()),
-                this.appComponentsHolderModule.programsCatalog(), 
-                dialogHelper);
+                this.appComponentsHolderModule.programsCatalog());
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
                 this.dataModule.tasks(), 

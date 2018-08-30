@@ -13,6 +13,10 @@ public interface ValueFlowCompleted<T extends Object> extends ValueFlow<T> {
     
     boolean hasValue();
     
+    default boolean isEmpty() {
+        return ! this.hasValue();
+    }
+    
     default boolean hasMessage() {
         return false;
     }
@@ -21,7 +25,7 @@ public interface ValueFlowCompleted<T extends Object> extends ValueFlow<T> {
         throw new IllegalStateException("This flow does not have message.");
     }
     
-    T getOrThrow();
+    T orThrow();
     
-    T getOrDefault(T defaultT);
+    T orDefault(T defaultT);
 }

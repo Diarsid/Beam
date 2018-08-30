@@ -8,6 +8,7 @@ package diarsid.beam.core.base.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
@@ -24,12 +25,18 @@ import static java.util.stream.Collectors.toList;
 public class StringUtils {
     
     private final static RandomHexadecimalStringGenerator GENERATOR;
+    private final static Predicate<String> NON_EMPTY;
     
     static {
         GENERATOR = new RandomHexadecimalStringGenerator();
+        NON_EMPTY = s -> nonEmpty(s);
     }
     
     private StringUtils() {
+    }
+    
+    public static Predicate<String> nonEmpty() {
+        return NON_EMPTY;
     }
     
     public static String randomString(int length) {

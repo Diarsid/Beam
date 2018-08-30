@@ -19,7 +19,7 @@ import diarsid.beam.core.domain.entities.WebPlace;
  */
 public interface DaoWebDirectories {
     
-    Optional<Integer> freeNameNextIndex(
+    Optional<Integer> findFreeNameNextIndex(
             Initiator initiator, String name, WebPlace place);
     
     List<WebDirectoryPages> getAllDirectoriesPages(

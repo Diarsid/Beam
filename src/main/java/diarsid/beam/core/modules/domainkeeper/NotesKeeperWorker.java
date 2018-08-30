@@ -11,37 +11,36 @@ import java.util.List;
 
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
+import diarsid.beam.core.domain.entities.validation.ValidationRule;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_NOTE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
+import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.SIMPLE_PATH_RULE;
-
-import diarsid.beam.core.base.control.flow.VoidFlow;
-
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.SIMPLE_PATH_RULE;
 
 /**
  *
@@ -52,6 +51,7 @@ class NotesKeeperWorker implements NotesKeeper {
     private final InnerIoEngine ioEngine;
     private final NotesCatalog notesCatalog;
     private final KeeperDialogHelper helper;
+    private final Help enterNoteNameHelp;
     private final Help chooseOneNoteHelp;
     
     // TODO ??? find closest path te/rea -> is tech/react/ ?
@@ -60,6 +60,10 @@ class NotesKeeperWorker implements NotesKeeper {
         this.ioEngine = ioEngine;
         this.notesCatalog = notesCatalog;
         this.helper = helper;
+        this.enterNoteNameHelp = this.ioEngine.addToHelpContext(
+                "Enter note name.", 
+                "It can be just name or simple relative path."
+        );
         this.chooseOneNoteHelp = this.ioEngine.addToHelpContext(
                 "Choose one note.",
                 "Use:",
@@ -88,8 +92,8 @@ class NotesKeeperWorker implements NotesKeeper {
         try {
             this.ioEngine.report(initiator, "...openinig Notes");
             this.notesCatalog.open();
-        } catch (IOException ex) {
-            return voidFlowFail(ex.getMessage());
+        } catch (IOException e) {
+            return voidFlowFail(e.getMessage());
         }    
         return voidFlowCompleted();
     }
@@ -114,8 +118,8 @@ class NotesKeeperWorker implements NotesKeeper {
             try {
                 this.reportAndOpen(initiator, getOne(foundNotes));                
                 return voidFlowCompleted();
-            } catch (IOException ex) {
-                return voidFlowFail(ex.getMessage());
+            } catch (IOException e) {
+                return voidFlowFail(e.getMessage());
             }
         } else {
             return this.processMultipleNotes(initiator, noteName, foundNotes);
@@ -142,8 +146,8 @@ class NotesKeeperWorker implements NotesKeeper {
             try {
                 this.reportAndOpen(initiator, getOne(foundNotePaths));
                 return voidFlowCompleted();
-            } catch (IOException ex) {
-                return voidFlowFail(ex.getMessage());
+            } catch (IOException e) {
+                return voidFlowFail(e.getMessage());
             }    
         } else {            
             return this.processMultipleNotes(initiator, pathToOpen, foundNotePaths);
@@ -163,8 +167,8 @@ class NotesKeeperWorker implements NotesKeeper {
             try {
                 this.reportAndOpen(initiator, answer.text());
                 return voidFlowCompleted();
-            } catch (IOException ex) {
-                return voidFlowFail(ex.getMessage());
+            } catch (IOException e) {
+                return voidFlowFail(e.getMessage());
             }
         } else {
             return voidFlowStopped();
@@ -182,12 +186,28 @@ class NotesKeeperWorker implements NotesKeeper {
             noteName = now().format(ISO_LOCAL_DATE_TIME).replace(':', '-');
         } else {
             noteName = normalizeSpaces(noteName);
+            ValidationRule rule;
             if ( containsPathSeparator(noteName) ) {
-                noteName = helper.validateInteractively(
-                        initiator, noteName, "note path", SIMPLE_PATH_RULE);
+                rule = SIMPLE_PATH_RULE;
             } else {
-                noteName = helper.validateEntityNameInteractively(initiator, noteName);
-            }            
+                rule = ENTITY_NAME_RULE;
+            }
+            KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+            try {
+                noteName = dialog
+                        .withInitialArgument(noteName)
+                        .withRule(rule)
+                        .withInputSource(() -> {
+                            return this.ioEngine.askInput(
+                                    initiator, "name", this.enterNoteNameHelp);
+                        })
+                        .withOutputDestination((validationFail) -> {
+                            this.ioEngine.report(initiator, validationFail);
+                        })
+                        .validateAndGet();
+            } finally {
+                giveBackToPool(dialog);
+            }
         }
         
         if ( noteName.isEmpty() ) {
@@ -197,8 +217,8 @@ class NotesKeeperWorker implements NotesKeeper {
         try {
             this.reportCreateAndOpen(initiator, noteName);
             return voidFlowCompleted();
-        } catch (IOException ex) {
-            return voidFlowFail(ex.getMessage());
+        } catch (IOException e) {
+            return voidFlowFail(e.getMessage());
         }
     }
 }

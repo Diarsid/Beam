@@ -67,6 +67,16 @@ public class Flows {
             public ValueFlowCompleted asComplete() {
                 throw new IllegalStateException("This is Stop operation");
             }
+
+            @Override
+            public boolean isCompletedWithValue() {
+                return false;
+            }
+
+            @Override
+            public boolean isNotCompletedWithValue() {
+                return true;
+            }
             
             @Override
             public boolean isCompletedEmpty() {
@@ -106,12 +116,22 @@ public class Flows {
             }
 
             @Override
-            public Object getOrThrow() {
+            public boolean isCompletedWithValue() {
+                return false;
+            }
+
+            @Override
+            public boolean isNotCompletedWithValue() {
+                return true;
+            }
+
+            @Override
+            public Object orThrow() {
                 throw new IllegalStateException("This is empty flow.");
             }
 
             @Override
-            public Object getOrDefault(Object defaultT) {
+            public Object orDefault(Object defaultT) {
                 return defaultT;
             }
 
@@ -192,12 +212,22 @@ public class Flows {
             }
 
             @Override
-            public T getOrThrow() {
+            public boolean isCompletedWithValue() {
+                return true;
+            }
+
+            @Override
+            public boolean isNotCompletedWithValue() {
+                return false;
+            }
+
+            @Override
+            public T orThrow() {
                 return t;
             }
 
             @Override
-            public T getOrDefault(T defaultT) {
+            public T orDefault(T defaultT) {
                 return t;
             }
 
@@ -260,12 +290,12 @@ public class Flows {
             }
 
             @Override
-            public T getOrThrow() {
+            public T orThrow() {
                 throw new IllegalStateException("This is empty flow.");
             }
 
             @Override
-            public T getOrDefault(T defaultT) {
+            public T orDefault(T defaultT) {
                 return defaultT;
             }
 
@@ -276,6 +306,16 @@ public class Flows {
 
             @Override
             public boolean isCompletedEmpty() {
+                return true;
+            }
+
+            @Override
+            public boolean isCompletedWithValue() {
+                return false;
+            }
+
+            @Override
+            public boolean isNotCompletedWithValue() {
                 return true;
             }
 
@@ -338,6 +378,16 @@ public class Flows {
             @Override
             public boolean isCompletedEmpty() {
                 return false;
+            }
+
+            @Override
+            public boolean isCompletedWithValue() {
+                return false;
+            }
+
+            @Override
+            public boolean isNotCompletedWithValue() {
+                return true;
             }
 
             @Override

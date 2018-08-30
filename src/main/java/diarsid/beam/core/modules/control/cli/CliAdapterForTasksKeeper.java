@@ -9,6 +9,9 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.List;
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -17,10 +20,6 @@ import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.tasksToMessage;
-
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -52,8 +51,8 @@ public class CliAdapterForTasksKeeper extends AbstractCliAdapter {
     
     void findTasksAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<List<Task>> flow = this.tasksKeeper.findTasks(initiator, command);
-        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
-            return tasksToMessage((List<Task>) success.getOrThrow());
+        Function<ValueFlowCompleted<List<Task>>, Message> ifSuccess = (success) -> {
+            return tasksToMessage(success.orThrow());
         };
         super.reportValueFlow(initiator, flow, ifSuccess, "tasks not found.");
     }

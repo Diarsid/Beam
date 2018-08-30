@@ -33,10 +33,10 @@ class CliAdapterForWebDirectoriesKeeper extends AbstractCliAdapter {
     }
     
     void findWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueFlow<? extends WebDirectory> flow = 
+        ValueFlow<WebDirectory> flow = 
                 this.directoriesKeeper.findWebDirectory(initiator, command);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return ((WebDirectory) success.getOrThrow()).toMessage();
+        Function<ValueFlowCompleted<WebDirectory>, Message> onSuccess = (success) -> {
+            return success.orThrow().toMessage();
         };
         super.reportValueFlow(initiator, flow, onSuccess, "web directory not found.");
     }
@@ -58,8 +58,8 @@ class CliAdapterForWebDirectoriesKeeper extends AbstractCliAdapter {
     
     void showAllWebDirectories(Initiator initiator) {
         ValueFlow<Message> flow = this.directoriesKeeper.showAll(initiator);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+            return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all WebDirectories.");
     }

@@ -44,6 +44,7 @@ abstract class WebObjectsCommonKeeper {
         placeDefining: while ( place.isUndefined() ) {     
             placeInput = this.ioEngine.askInput(initiator, "place", this.chooseWebPlaceHelp);
             if ( placeInput.isEmpty() ) {
+                place = UNDEFINED_PLACE;
                 break placeDefining;
             }
             place = parsePlace(placeInput);

@@ -32,16 +32,13 @@ class CliAdapterForProgramsKeeper extends AbstractCliAdapter {
     
     void findProgramAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<Program> flow = this.programsKeeper.findProgram(initiator, command);
-        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
-            return ((Program) success.getOrThrow()).toMessage();
-        };
-        super.reportValueFlow(initiator, flow, ifSuccess, "not found.");
+        super.reportValueFlow(initiator, flow, "not found.");
     }
     
     void showAllPrograms(Initiator initiator) {
-        ValueFlow<Message> flow = this.programsKeeper.showAll(initiator);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        ValueFlow<Message> flow = this.programsKeeper.findAll(initiator);
+        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+            return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all Programs.");
     }

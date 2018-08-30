@@ -51,7 +51,7 @@ abstract class H2DaoWebPagesV0
                                 "FROM web_directories " +
                                 "WHERE ( id IS ? ) ", 
                                 webPage.directoryId());
-            } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            } catch (TransactionHandledSQLException | TransactionHandledException e) {
                 logFor(this).error(e.getMessage(), e);
                 super.ioEngine().report(
                         initiator, "Cannot find WebDirectory by id " + webPage.directoryId());
@@ -103,7 +103,7 @@ abstract class H2DaoWebPagesV0
                                 lower(name));
             } while ( exists ) ;
             return Optional.of(nameCounter);
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return Optional.empty();
         }
@@ -113,7 +113,8 @@ abstract class H2DaoWebPagesV0
     public Optional<WebPage> getByExactName(
             Initiator initiator, String name) {
         try {
-            Optional<WebPage> page = super.openDisposableTransaction()
+            Optional<WebPage> page = super
+                    .openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
                             ROW_TO_WEBPAGE,
                             "SELECT name, shortcuts, url, ordering, dir_id " +
@@ -122,10 +123,30 @@ abstract class H2DaoWebPagesV0
                             lower(name));
             this.setLoadableDirectoryFor(initiator, page);
             return page;
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return Optional.empty();
         }        
+    }
+    
+    @Override
+    public Optional<WebPage> getByUrl(
+            Initiator initiator, String url) {
+        try {
+            Optional<WebPage> page = super
+                    .openDisposableTransaction()
+                    .doQueryAndConvertFirstRowVarargParams(
+                            ROW_TO_WEBPAGE,
+                            "SELECT name, shortcuts, url, ordering, dir_id " +
+                            "FROM web_pages " +
+                            "WHERE LOWER(url) IS ? ",
+                            lower(url));
+            this.setLoadableDirectoryFor(initiator, page);
+            return page;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            
+            return Optional.empty();
+        }    
     }
 
     @Override
@@ -142,7 +163,7 @@ abstract class H2DaoWebPagesV0
                     .sorted()
                     .peek(page -> this.setLoadableDirectoryFor(initiator, page))
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return emptyList();
         }
@@ -202,7 +223,7 @@ abstract class H2DaoWebPagesV0
                 return false;
             }
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -246,7 +267,7 @@ abstract class H2DaoWebPagesV0
                     .rollbackAndProceed();
             
             return ( removed == 1 );
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -282,7 +303,7 @@ abstract class H2DaoWebPagesV0
             
             return ( renamed == 1 );
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -306,7 +327,7 @@ abstract class H2DaoWebPagesV0
             
             return ( edited == 1 );
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -330,7 +351,7 @@ abstract class H2DaoWebPagesV0
                 transact.rollbackAndProceed();
                 return false;
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -386,7 +407,7 @@ abstract class H2DaoWebPagesV0
             
             return true;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -421,7 +442,7 @@ abstract class H2DaoWebPagesV0
                 return true;
             }
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return false;
         }
@@ -436,7 +457,7 @@ abstract class H2DaoWebPagesV0
                             "SELECT name, shortcuts, url, ordering, dir_id " +
                             "FROM web_pages ")
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             
             return emptyList();
         }

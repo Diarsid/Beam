@@ -17,8 +17,8 @@ import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.ok;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
 
 /**
  *

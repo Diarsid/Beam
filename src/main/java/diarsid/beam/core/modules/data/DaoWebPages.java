@@ -23,6 +23,9 @@ public interface DaoWebPages {
     Optional<WebPage> getByExactName(
             Initiator initiator, String name);
     
+    Optional<WebPage> getByUrl(
+            Initiator initiator, String newUrl);
+    
     List<WebPage> findByPattern(
             Initiator initiator, String pattern);
     

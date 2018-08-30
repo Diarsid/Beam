@@ -26,6 +26,7 @@ import diarsid.beam.core.domain.entities.Program;
 
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -35,13 +36,15 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.entiti
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_ONLY;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 
 
 class ProgramsKeeperWorker implements ProgramsKeeper {
@@ -49,21 +52,24 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     private final InnerIoEngine ioEngine;
     private final Walker walker;
     private final ProgramsCatalog programsCatalog;
-    private final KeeperDialogHelper helper;
     private final Set<CommandType> operatingCommandTypes;
+    private final Help enterProgramNameHelp;
     private final Help chooseOneProgramHelp;
     private boolean useWalker;
     
     ProgramsKeeperWorker(
             InnerIoEngine ioEngine, 
             Walker walker,
-            ProgramsCatalog programsCatalog, 
-            KeeperDialogHelper keeperDialogHelper) {
+            ProgramsCatalog programsCatalog) {
         this.ioEngine = ioEngine;
         this.walker = walker;
         this.programsCatalog = programsCatalog;
-        this.helper = keeperDialogHelper;
         this.operatingCommandTypes = toSet(RUN_PROGRAM);
+        this.enterProgramNameHelp = this.ioEngine.addToHelpContext(
+                "Enter Program name.", 
+                "Programs are executable files placed in configured catalog.", 
+                "Currently this catalog is " + 
+                        this.programsCatalog.path().toAbsolutePath().toString());
         this.chooseOneProgramHelp = this.ioEngine.addToHelpContext(
                 "Choose one Program.",
                 "Use:",
@@ -96,8 +102,23 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         } else {
             name = "";
         }
-        
-        name = this.helper.validateEntityNameInteractively(initiator, name);
+                
+        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+        try {
+            name = dialog
+                    .withInitialArgument(name)
+                    .withRule(ENTITY_NAME_RULE)
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(
+                                initiator, "name", this.enterProgramNameHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    })
+                    .validateAndGet();
+        } finally {
+            giveBackToPool(dialog);
+        }
         if ( name.isEmpty() ) {
             return valueFlowStopped();
         }
@@ -127,7 +148,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             case COMPLETE : {
                 if ( fileFlow.asComplete().hasValue() ) {
                     Optional<Program> program = this.programsCatalog.toProgram(
-                            fileFlow.asComplete().getOrThrow());
+                            fileFlow.asComplete().orThrow());
                     return valueFlowCompletedWith(program);
                 } else if ( fileFlow.asComplete().hasMessage() ) {
                     return valueFlowCompletedEmpty(fileFlow.asComplete().message());
@@ -212,7 +233,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     }
 
     @Override
-    public ValueFlow<Message> showAll(Initiator initiator) {
+    public ValueFlow<Message> findAll(Initiator initiator) {
         return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
                     "all Programs:", this.programsCatalog.getAll()));
     }

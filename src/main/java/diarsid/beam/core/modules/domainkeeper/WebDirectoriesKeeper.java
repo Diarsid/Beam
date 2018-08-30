@@ -30,7 +30,7 @@ public interface WebDirectoriesKeeper {
     VoidFlow editWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
-    ValueFlow<? extends WebDirectory> findWebDirectory(
+    ValueFlow<WebDirectory> findWebDirectory(
             Initiator initiator, ArgumentsCommand command);
     
     ValueFlow<Message> showAll(

@@ -34,11 +34,8 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     }
     
     void findLocationAndReport(Initiator initiator, ArgumentsCommand command) {
-        ValueFlow<Location> flow = this.locationsKeeper.findLocation(initiator, command);
-        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
-            return ((Location) success.getOrThrow()).toMessage();
-        };
-        super.reportValueFlow(initiator, flow, ifSuccess, "location not found");
+        ValueFlow<Location> flow = this.locationsKeeper.findLocation(initiator, command);        
+        super.reportValueFlow(initiator, flow, "location not found");
     }
     
     void editLocationAndReport(Initiator initiator, ArgumentsCommand command) {
@@ -57,9 +54,9 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     }
     
     void showAllLocations(Initiator initiator) {
-        ValueFlow<Message> flow = this.locationsKeeper.showAll(initiator);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        ValueFlow<Message> flow = this.locationsKeeper.findAll(initiator);
+        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+            return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all Locations.");
     }

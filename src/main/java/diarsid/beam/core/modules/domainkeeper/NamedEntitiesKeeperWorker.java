@@ -111,7 +111,7 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
     } 
 
     @Override
-    public ValueFlow<Message> showAll(Initiator initiator) {
+    public ValueFlow<Message> findAll(Initiator initiator) {
         return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
                     "all named entities:", this.namedEntitiesDao.getAll(initiator)));
     }

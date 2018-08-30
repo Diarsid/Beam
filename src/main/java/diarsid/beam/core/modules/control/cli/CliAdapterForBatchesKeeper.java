@@ -33,8 +33,8 @@ class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
     
     void findBatchAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<Batch> flow = this.batchesKeeper.findBatch(initiator, command);
-        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
-            return ((Batch) success.getOrThrow()).toMessage();
+        Function<ValueFlowCompleted<Batch>, Message> ifSuccess = (success) -> {
+            return success.orThrow().toMessage();
         };
         super.reportValueFlow(initiator, flow, ifSuccess, "batch not found.");
     }
@@ -55,9 +55,9 @@ class CliAdapterForBatchesKeeper extends AbstractCliAdapter {
     }
     
     void showAllBatches(Initiator initiator) {
-        ValueFlow<Message> flow = this.batchesKeeper.showAll(initiator);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        ValueFlow<Message> flow = this.batchesKeeper.findAll(initiator);
+        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+            return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all Batches.");
     }

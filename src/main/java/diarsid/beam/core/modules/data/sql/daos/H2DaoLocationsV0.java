@@ -52,7 +52,7 @@ abstract class H2DaoLocationsV0
                             "FROM locations " +
                             "WHERE LOWER(loc_name) IS ? ",
                             lower(exactName));
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "is name free request failed.");
             return false;
@@ -70,10 +70,29 @@ abstract class H2DaoLocationsV0
                             "WHERE ( LOWER(loc_name) IS ? ) ",
                             lower(exactName))
                     .findFirst();
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, format("location search by exact name '%s' failed.", exactName));
+            return Optional.empty();
+        }
+    }
+    
+    @Override
+    public Optional<Location> getLocationByPath(Initiator initiator, String path) {
+        try {
+            return super.openDisposableTransaction()
+                    .doQueryAndStreamVarargParams(
+                            ROW_TO_LOCATION, 
+                            "SELECT loc_name, loc_path " +
+                            "FROM locations " +
+                            "WHERE LOWER(loc_path) IS ? ",
+                            lower(path))
+                    .findFirst();
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            logFor(this).error(e.getMessage(), e);
+            super.ioEngine().report(
+                    initiator, format("location search by path '%s' failed.", path));
             return Optional.empty();
         }
     }
@@ -98,7 +117,7 @@ abstract class H2DaoLocationsV0
                             location.name(), location.path());
             
             return ( updated == 1 && nameIsFree );
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().reportMessage(initiator, error(
                     "Location saving failed:",
@@ -123,7 +142,7 @@ abstract class H2DaoLocationsV0
                             lowerLocationName);
             
             return ( removed > 0 );            
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(
                     initiator, format("Location removing by '%s' failed.", locationName));
@@ -158,7 +177,7 @@ abstract class H2DaoLocationsV0
                     .rollbackAndProceed();
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().reportMessage(
                     initiator, 
@@ -203,7 +222,7 @@ abstract class H2DaoLocationsV0
             }    
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().reportMessage(
                     initiator, 
@@ -248,7 +267,7 @@ abstract class H2DaoLocationsV0
             ).sum();
                 
             return ( modified > 0 );            
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().reportMessage(
                     initiator, 
@@ -271,7 +290,7 @@ abstract class H2DaoLocationsV0
                             "SELECT loc_name, loc_path " +
                             "FROM locations")
                     .collect(toList());
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
             super.ioEngine().report(initiator, "All locations obtaining failed.");
             return emptyList();

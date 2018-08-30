@@ -20,6 +20,8 @@ public interface DaoLocations {
     
     Optional<Location> getLocationByExactName(Initiator initiator, String exactName);
     
+    Optional<Location> getLocationByPath(Initiator initiator, String path);
+    
     List<Location> getLocationsByNamePattern(
             Initiator initiator, String locationName);
     

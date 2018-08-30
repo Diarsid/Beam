@@ -7,13 +7,13 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.modules.domainkeeper.AllKeeper;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -30,8 +30,8 @@ class CliAdapterForAllKeeper extends AbstractCliAdapter {
     
     void findAll(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<Message> messageFlow = this.allKeeper.findAll(initiator, command);
-        Function<ValueFlowCompleted, Message> ifSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        Function<ValueFlowCompleted<Message>, Message> ifSuccess = (success) -> {
+            return success.orThrow();
         };
         super.reportValueFlow(initiator, messageFlow, ifSuccess, "anything found.");
     }

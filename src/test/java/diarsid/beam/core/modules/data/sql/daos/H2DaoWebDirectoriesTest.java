@@ -149,14 +149,14 @@ public class H2DaoWebDirectoriesTest {
      */
     @Test
     public void testFreeNameNextIndex_0() {
-        Optional<Integer> nextFreeIndex = dao.freeNameNextIndex(initiator, "English", WEBPANEL);
+        Optional<Integer> nextFreeIndex = dao.findFreeNameNextIndex(initiator, "English", WEBPANEL);
         assertTrue(nextFreeIndex.isPresent());
         assertEquals(0, (int) nextFreeIndex.get());
     }
     
     @Test
     public void testFreeNameNextIndex_3() {
-        Optional<Integer> nextFreeIndex = dao.freeNameNextIndex(initiator, "commoN", WEBPANEL);
+        Optional<Integer> nextFreeIndex = dao.findFreeNameNextIndex(initiator, "commoN", WEBPANEL);
         assertTrue(nextFreeIndex.isPresent());
         assertEquals(3, (int) nextFreeIndex.get());
     }

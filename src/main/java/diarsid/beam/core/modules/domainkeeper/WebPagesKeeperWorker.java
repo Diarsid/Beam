@@ -19,6 +19,7 @@ import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
+import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
@@ -81,6 +82,8 @@ import static diarsid.beam.core.base.control.io.commands.executor.InvocationComm
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_DOMAIN_CHARS;
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
+import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -102,8 +105,10 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.SHORTCUT
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRECTORY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.WEB_URL_RULE;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
+import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
 
 
 public class WebPagesKeeperWorker 
@@ -112,6 +117,7 @@ public class WebPagesKeeperWorker
         implements 
                 WebPagesKeeper {
     
+    private final Object allPagesConsistencyLock;
     private final DaoWebPages daoPages;
     private final DaoWebDirectories daoDirectories;
     private final DaoPatternChoices daoPatternChoices;
@@ -127,6 +133,8 @@ public class WebPagesKeeperWorker
     private final WebDirectory defaultDirectory;
     private final Help chooseOnePageHelp;
     private final Help enterNewPageNameHelp;
+    private final Help enterNewPageUrlHelp;
+    private final Help applyFreeIndexToNameHelp;
     private final Help enterExistingPageNameHelp;
     private final Help chooseOneDirectoryHelp;
     private final Help enterDirectoryNameHelp;
@@ -145,6 +153,7 @@ public class WebPagesKeeperWorker
             PropertyAndTextParser propetyTextParser,
             WebObjectsInputParser parser) {
         super(ioEngine);
+        this.allPagesConsistencyLock = new Object();
         this.daoPages = dao;
         this.commandsMemory = commandsMemory;
         this.daoDirectories = daoDirectories;
@@ -169,6 +178,19 @@ public class WebPagesKeeperWorker
         this.enterNewPageNameHelp = this.ioEngine.addToHelpContext(
                 "Enter WebPage name.",
                 "Name cannot contain following chars: " + join("", UNACCEPTABLE_DOMAIN_CHARS)
+        );
+        this.enterNewPageUrlHelp = this.ioEngine.addToHelpContext(
+                "Enter WebPage URL.",
+                "It must be a valid URL."
+        );
+        this.applyFreeIndexToNameHelp = this.ioEngine.addToHelpContext(
+                "This means that such name already exists. Thus you can choose ", 
+                "to save page name with index (+1) to avoid name duplication.",
+                "Specify whether you want to save new name with given free index.",
+                "Use: ",
+                "   - y/yes/+ to agree",
+                "   - n/no to enter other name",
+                "   - dot to break"
         );
         this.enterExistingPageNameHelp = this.ioEngine.addToHelpContext(
                 "Enter existing WebPage name or name pattern.",
@@ -341,6 +363,7 @@ public class WebPagesKeeperWorker
     }
 
     private String discussShortcuts(Initiator initiator) {
+        
         String shortcuts = this.ioEngine.askInput(
                 initiator, "shortcuts, if any", this.enterShortcutsHelp);
         if ( nonEmpty(shortcuts) ) {
@@ -360,114 +383,201 @@ public class WebPagesKeeperWorker
         return shortcuts;
     }
     
-    private Optional<WebPage> discussExistingPage(Initiator initiator, String pagePattern) {
-        Optional<WebPage> optPage = Optional.empty();
+    private ValueFlow<WebPage> findExistingPageInternally(Initiator initiator, String pagePattern) {
         List<WebPage> foundPages;
-        boolean pageNotDefined = true;
         VariantsQuestion question;
-        directoryDefining: while ( pageNotDefined ) {  
-            if ( pagePattern.isEmpty() ) {
-                pagePattern = this.ioEngine.askInput(
-                        initiator, "page name", this.enterExistingPageNameHelp);
-            }            
-            if ( pagePattern.isEmpty() ) {
-                optPage = Optional.empty();
-                pageNotDefined = false;
-                continue;
-            }
-            pagePattern = this.helper.validateEntityNameInteractively(initiator, pagePattern);
+        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);                
+               
+        synchronized ( this.allPagesConsistencyLock ) {
+            try { 
+                dialog
+                        .withRule(ENTITY_NAME_RULE)
+                        .withInputSource(() -> {
+                            return this.ioEngine.askInput(
+                                    initiator, "name", this.enterExistingPageNameHelp);
+                        })
+                        .withOutputDestination((validationFail) -> {
+                            this.ioEngine.report(initiator, validationFail);
+                        });
+                pageFinding : while ( true ) {  
 
-            foundPages = this.daoPages.findByPattern(initiator, pagePattern);
+                    pagePattern = dialog
+                            .withInitialArgument(pagePattern)
+                            .validateAndGet();
 
-            if ( foundPages.isEmpty() ) {
-                this.ioEngine.report(initiator, format("page not found by '%s'.", pagePattern));
-                pagePattern = "";
-            } else if ( hasOne(foundPages) ) {
-                optPage = Optional.of(getOne(foundPages));
-                pageNotDefined = false;
-            } else {
-                question = question("choose page").withAnswerEntities(foundPages);
-                Answer answer = this.ioEngine.ask(initiator, question, this.chooseOnePageHelp);
-                if ( answer.isGiven() ) {
-                    optPage = foundPages
-                            .stream()
-                            .filter(page -> page.name().equalsIgnoreCase(answer.text()))
-                            .findFirst();
-                } else {
-                    optPage = Optional.empty();
+                    if ( pagePattern.isEmpty() ) {
+                        return valueFlowStopped();
+                    }
+
+                    foundPages = this.daoPages.findByPattern(initiator, pagePattern);
+
+                    if ( foundPages.isEmpty() ) {
+                        this.ioEngine.report(
+                                initiator, format("page not found by '%s'.", pagePattern));
+                        pagePattern = "";
+                    } else if ( hasOne(foundPages) ) {
+                        return valueFlowCompletedWith(getOne(foundPages));
+                    } else {
+                        question = question("choose page").withAnswerEntities(foundPages);
+                        Answer answer = this.ioEngine.ask(
+                                initiator, question, this.chooseOnePageHelp);
+                        if ( answer.isGiven() ) {
+                            return valueFlowCompletedWith(foundPages.get(answer.index()));
+                        } else if ( answer.isRejection() ) {
+                            return valueFlowStopped();
+                        } else if ( answer.variantsAreNotSatisfactory() ) {
+                            pagePattern = "";
+                            continue pageFinding;
+                        } else {
+                            this.ioEngine.report(initiator, "cannot determine your answer.");
+                            return valueFlowStopped();
+                        }
+                    }
                 }
-                pageNotDefined = false;
+            } finally {
+                giveBackToPool(dialog);
             }
         }
-        return optPage;
     }
-    
-    private String discussPageNewName(Initiator initiator) {
-        String pageNewName = "";
-        boolean newNameNotDefined = true;
-        newNameDefining: while ( newNameNotDefined ) {            
-            pageNewName = this.ioEngine.askInput(initiator, "new name", this.enterNewPageNameHelp);
-            if ( pageNewName.isEmpty() ) {
-                return "";
+
+    private String discussPageNewName(Initiator initiator, String name) {
+        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+        Optional<Integer> freeNameIndex;
+        Choice applyIndexChoice;
+        String applyIndexQuestion;
+        
+        try { 
+            dialog
+                    .withRule(ENTITY_NAME_RULE)
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(initiator, "name", this.enterNewPageNameHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    });
+
+            nameDiscussing: while ( true ) {
+                name = dialog
+                        .withInitialArgument(name)
+                        .validateAndGet();
+                
+                if ( name.isEmpty() ) {
+                    return name;
+                }                
+                
+                freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
+                if ( isNotPresent(freeNameIndex) ) {
+                    this.ioEngine.report(initiator, "DAO failed to get free name index.");
+                    return "";
+                }
+                if ( freeNameIndex.get() > 0 ) {
+                    this.ioEngine.report(initiator, format("page '%s' already exists.", name));
+                    applyIndexQuestion = format(
+                            "name page as '%s (%s)'", name, freeNameIndex.get());
+                    applyIndexChoice = this.ioEngine.ask(
+                            initiator, applyIndexQuestion, this.applyFreeIndexToNameHelp);
+                    if ( applyIndexChoice.isPositive() ) {
+                        name = format("%s (%d)", name, freeNameIndex.get());
+                        this.ioEngine.report(
+                                initiator, format("name '%s' will be saved instead.", name));
+                        break nameDiscussing;
+                    } else if ( applyIndexChoice.isRejected() ) {
+                        return "";
+                    } else if ( applyIndexChoice.isNegative() ) {
+                        name = "";
+                        continue nameDiscussing;
+                    }                    
+                }
             }
-            pageNewName = this.helper.validateEntityNameInteractively(initiator, pageNewName);
-            if ( pageNewName.isEmpty() ) {
-                return "";
-            } else {
-                return pageNewName;
-            }
+
+            return name;
+        } finally {
+            giveBackToPool(dialog);
         }
-        return pageNewName;
     }
     
-    private Optional<WebDirectory> discussExistingWebDirectory(
+    private String discussPageNewUrl(Initiator initiator, String url) {
+        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+        
+        try { 
+            url = dialog
+                    .withInitialArgument(url)
+                    .withRule(WEB_URL_RULE)
+                    .withRule((newUrl) -> {
+                        Optional<WebPage> page = this.daoPages.getByUrl(initiator, newUrl);
+                        if ( page.isPresent() ) {
+                            return validationFailsWith(
+                                    format("Page '%s' already has given URL", page.get().name()));
+                        }
+                        return validationOk();
+                    })
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(initiator, "url", this.enterNewPageUrlHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    })
+                    .validateAndGet();
+
+            return url;
+        } finally {
+            giveBackToPool(dialog);
+        }
+    }
+    
+    private ValueFlow<WebDirectory> findExistingWebDirectoryInternally(
             Initiator initiator, WebPlace place) {
         if ( place.isUndefined() ) {
             place = super.discussWebPlace(initiator);
         }        
         if ( place.isUndefined() ) {
-            return Optional.empty();
+            return valueFlowStopped();
         }
         
         String directoryName;
-        Optional<WebDirectory> optDirectory = Optional.empty();
         List<WebDirectory> foundDirectories;
-        boolean directoryNotDefined = true;
-        VariantsQuestion question;        
-        directoryDefining: while ( directoryNotDefined ) {            
-            directoryName = this.ioEngine.askInput(
-                    initiator, "directory name", this.enterDirectoryNameHelp);
-            if ( directoryName.isEmpty() ) {
-                return Optional.empty();                
-            }
-            directoryName = this.helper.validateEntityNameInteractively(initiator, directoryName);
-            if ( directoryName.isEmpty() ) {
-                return Optional.empty();                
-            }
-            
-            foundDirectories = this.daoDirectories
-                    .findDirectoriesByPatternInPlace(initiator, directoryName, place);
+        VariantsQuestion question;    
+        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class)
+                .withInitialArgument("")
+                .withRule(ENTITY_NAME_RULE)
+                .withInputSource(() -> {
+                    return this.ioEngine.askInput(
+                            initiator, "directory name", this.enterDirectoryNameHelp);
+                })
+                .withOutputDestination((validationFail) -> {
+                    this.ioEngine.report(initiator, validationFail);
+                });
+         
+        try {
+            directoryDefining: while ( true ) {            
+                directoryName = dialog
+                        .withInitialArgument("")
+                        .validateAndGet();
 
-            if ( foundDirectories.isEmpty() ) {
-                this.ioEngine.report(initiator, "directory not found.");
-            } else if ( hasOne(foundDirectories) ) {
-                optDirectory = Optional.of(getOne(foundDirectories));
-                directoryNotDefined = false;
-            } else {
-                question = question("choose directory").withAnswerEntities(foundDirectories);
-                Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneDirectoryHelp);
-                if ( answer.isGiven() ) {
-                    optDirectory = foundDirectories
-                            .stream()
-                            .filter(dir -> dir.name().equalsIgnoreCase(answer.text()))
-                            .findFirst();
+                foundDirectories = this.daoDirectories
+                        .findDirectoriesByPatternInPlace(initiator, directoryName, place);
+
+                if ( foundDirectories.isEmpty() ) {
+                    this.ioEngine.report(initiator, "directory not found.");
+                } else if ( hasOne(foundDirectories) ) {
+                    return valueFlowCompletedWith(getOne(foundDirectories));
                 } else {
-                    return Optional.empty();
+                    question = question("choose directory").withAnswerEntities(foundDirectories);
+                    Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneDirectoryHelp);
+                    if ( answer.isGiven() ) {
+                        return valueFlowCompletedWith(foundDirectories.get(answer.index()));
+                    } else if ( answer.isRejection() ) {
+                        return valueFlowStopped();
+                    } else if ( answer.variantsAreNotSatisfactory() ) {
+                        continue directoryDefining;
+                    } else {
+                        return valueFlowFail("unknown flow");
+                    }
                 }
-                directoryNotDefined = false;
             }
-        }
-        return optDirectory;
+        } finally {
+            giveBackToPool(dialog);
+        }    
     }
 
     @Override
@@ -492,45 +602,53 @@ public class WebPagesKeeperWorker
             url = "";
         }
         
-        name = this.helper.validateEntityNameInteractively(initiator, name);
-        if ( name.isEmpty() ) {
-            return voidFlowStopped();
-        }
-        Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
-        if ( isNotPresent(freeNameIndex) ) {
-            return voidFlowFail("DAO failed to get free name index.");
-        }
-        if ( freeNameIndex.get() > 0 ) {
-            this.ioEngine.report(initiator, format("page '%s' already exists.", name));
-            name = format("%s (%d)", name, freeNameIndex.get());
-            this.ioEngine.report(initiator, format("name '%s' will be saved instead.", name));
-        }
-        
-        url = this.helper.validateInteractively(initiator, url, "url", WEB_URL_RULE);
-        if ( url.isEmpty() ) {
-            return voidFlowStopped();
-        }
-        
-        String shortcuts = this.discussShortcuts(initiator);
-        
-        Optional<WebDirectory> directory = this.discussExistingWebDirectory(initiator, place);
-        if ( isNotPresent(directory) ) {
-            this.ioEngine.report(
-                    initiator, 
-                    format("default directory '%s' will be used.", this.defaultDirectory.name()));
-            directory = Optional.of(this.defaultDirectory);
-        } else {
-            this.ioEngine.report(
-                    initiator, format("directory found: '%s'", directory.get().name()));
-        }       
-        
-        WebPage page = newWebPage(name, shortcuts, url, directory.get().id());
-        if ( daoPages.save(initiator, page) ) {
-            this.asyncAddCommandsForPage(initiator, page);
-            return voidFlowCompleted();
-        } else {
-            return voidFlowFail("DAO failed to save new page.");
-        }
+        synchronized ( this.allPagesConsistencyLock ) {
+            
+            name = this.discussPageNewName(initiator, name);
+            if ( name.isEmpty() ) {
+                return voidFlowStopped();
+            }
+
+            url = this.discussPageNewUrl(initiator, url);
+            if ( url.isEmpty() ) {
+                return voidFlowStopped();
+            }
+
+            String shortcuts = this.discussShortcuts(initiator);
+
+            ValueFlow<WebDirectory> directoryFlow = 
+                    this.findExistingWebDirectoryInternally(initiator, place);
+            switch ( directoryFlow.result() ) {
+                case COMPLETE :
+                    String message;
+                    if ( directoryFlow.asComplete().hasValue() ) {
+                        message = format("directory found: '%s'", 
+                                         directoryFlow.asComplete().orThrow().name());
+                        
+                    } else {
+                        message = format("default directory '%s' will be used.", 
+                                         this.defaultDirectory.name());
+                        directoryFlow = valueFlowCompletedWith(this.defaultDirectory);
+                    }
+                    this.ioEngine.report(initiator, message);
+                    break;
+                case STOP :
+                    return voidFlowStopped();
+                case FAIL :
+                    return directoryFlow.toVoid();
+                default :
+                    return voidFlowFail("unkown flow result");
+            } 
+
+            int dirId = directoryFlow.asComplete().orThrow().id();
+            WebPage page = newWebPage(name, shortcuts, url, dirId);
+            if ( daoPages.save(initiator, page) ) {
+                this.asyncAddCommandsForPage(initiator, page);
+                return voidFlowCompleted();
+            } else {
+                return voidFlowFail("DAO failed to save new page.");
+            }
+        }    
     }
 
     @Override
@@ -551,46 +669,51 @@ public class WebPagesKeeperWorker
             propertyToEdit = UNDEFINED_PROPERTY;
         }
         
-        Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
-        if ( ! optPage.isPresent() ) {
-            return voidFlowStopped();
-        }
-        WebPage page = optPage.get();
-        this.ioEngine.report(initiator, format("'%s' found.", page.name()));
-        
-        propertyToEdit = this.helper.validatePropertyInteractively(
-                initiator, propertyToEdit, SHORTCUTS, WEB_URL, NAME, ORDER, WEB_DIRECTORY);
-        if ( propertyToEdit.isUndefined() ) {
-            return voidFlowStopped();
-        }
-        
-        switch ( propertyToEdit ) {
-            case NAME : {
-                return this.editPageName(initiator, page.name());
+        synchronized ( this.allPagesConsistencyLock ) {
+            ValueFlow<WebPage> pageFlow = this.findExistingPageInternally(initiator, pagePattern);
+            if ( pageFlow.isNotCompletedWithValue() ) {
+                return pageFlow.toVoid();
             }
-            case SHORTCUTS : {
-                return this.editPageShortcuts(initiator, page.name(), page.shortcuts());
+            
+            WebPage page = pageFlow.asComplete().orThrow();
+            this.ioEngine.report(initiator, format("'%s' found.", page.name()));
+
+            propertyToEdit = this.helper.validatePropertyInteractively(
+                    initiator, propertyToEdit, SHORTCUTS, WEB_URL, NAME, ORDER, WEB_DIRECTORY);
+            if ( propertyToEdit.isUndefined() ) {
+                return voidFlowStopped();
             }
-            case WEB_URL : {
-                return this.editPageUrl(initiator, page.name());
-            }
-            case ORDER : {
-                return this.editPageOrder(initiator, page);
-            }
-            case WEB_DIRECTORY : {
-                return this.editPageWebDirectory(initiator, page);
-            }
-            default : {
-                return voidFlowFail("undefined property.");
-            }
-        }        
+
+            switch ( propertyToEdit ) {
+                case NAME : {
+                    return this.editPageName(initiator, page.name());
+                }
+                case SHORTCUTS : {
+                    return this.editPageShortcuts(initiator, page.name(), page.shortcuts());
+                }
+                case WEB_URL : {
+                    return this.editPageUrl(initiator, page.name());
+                }
+                case ORDER : {
+                    return this.editPageOrder(initiator, page);
+                }
+                case WEB_DIRECTORY : {
+                    return this.editPageWebDirectory(initiator, page);
+                }
+                default : {
+                    return voidFlowFail("undefined property.");
+                }
+            } 
+        }    
     }
     
     private VoidFlow editPageName(Initiator initiator, String pageName) {
-        String newName = this.discussPageNewName(initiator);
+        String newName = this.discussPageNewName(initiator, "");
+        
         if ( newName.isEmpty() ) {
             return voidFlowStopped();
         }
+        
         if ( this.daoPages.editName(initiator, pageName, newName) ) {
             this.asyncChangeCommandsForPageNames(initiator, pageName, newName);
             return voidFlowCompleted();
@@ -615,11 +738,12 @@ public class WebPagesKeeperWorker
     }
     
     private VoidFlow editPageUrl(Initiator initiator, String pageName) {
-        String url = "";
-        url = this.helper.validateInteractively(initiator, url, "url", WEB_URL_RULE);
+        String url = this.discussPageNewUrl(initiator, "");
+        
         if ( url.isEmpty() ) {
             return voidFlowStopped();
         }
+        
         if ( this.daoPages.editUrl(initiator, pageName, url) ) {
             return voidFlowCompleted();
         } else {
@@ -649,14 +773,14 @@ public class WebPagesKeeperWorker
     
     private VoidFlow editPageWebDirectory(Initiator initiator, WebPage page) {
         this.ioEngine.report(initiator, "choosing new page directory...");
-        Optional<WebDirectory> optDirectory = 
-                this.discussExistingWebDirectory(initiator, UNDEFINED_PLACE);
-        if ( ! optDirectory.isPresent() ) {
+        ValueFlow<WebDirectory> directoryFlow = 
+                this.findExistingWebDirectoryInternally(initiator, UNDEFINED_PLACE);
+        if ( directoryFlow.isNotCompletedWithValue() ) {
             return voidFlowStopped();
         }
         
-        boolean pageMoved = this.daoPages
-                .movePageFromDirToDir(initiator, page, optDirectory.get().id());
+        WebDirectory directory = directoryFlow.asComplete().orThrow();
+        boolean pageMoved = this.daoPages.movePageFromDirToDir(initiator, page, directory.id());
         
         if ( pageMoved ) {
             return voidFlowCompleted();
@@ -679,19 +803,22 @@ public class WebPagesKeeperWorker
             pagePattern = "";
         }
         
-        Optional<WebPage> page = this.discussExistingPage(initiator, pagePattern);
-        if ( page.isPresent() ) {
-            this.ioEngine.report(initiator, format("'%s' found.", page.get().name()));            
-        } else {
-            return voidFlowStopped();
-        }
-        
-        if ( this.daoPages.remove(initiator, page.get().name()) ) {
-            this.asyncRemoveCommandsForPage(initiator, page.get());
-            return voidFlowCompleted();
-        } else {
-            return voidFlowFail("DAO failed to remove page.");
-        }
+        synchronized ( this.allPagesConsistencyLock ) {
+            ValueFlow<WebPage> pageFlow = this.findExistingPageInternally(initiator, pagePattern);
+            if ( pageFlow.isNotCompletedWithValue() ) {
+                return pageFlow.toVoid();                  
+            } 
+
+            WebPage page = pageFlow.asComplete().orThrow();
+            this.ioEngine.report(initiator, format("'%s' found.", page.name()));              
+
+            if ( this.daoPages.remove(initiator, page.name()) ) {
+                this.asyncRemoveCommandsForPage(initiator, page);
+                return voidFlowCompleted();
+            } else {
+                return voidFlowFail("DAO failed to remove page.");
+            }
+        }        
     }
     
     @Override
@@ -708,11 +835,23 @@ public class WebPagesKeeperWorker
             pageNamePattern = "";
         }
         
-        Optional<WebPage> optPage = this.discussExistingPage(initiator, pageNamePattern);
-        if ( isNotPresent(optPage) ) {
-            return voidFlowStopped();
+        ValueFlow<WebPage> pageFlow = this.findExistingPageInternally(initiator, pageNamePattern);
+        switch ( pageFlow.result() ) {
+            case COMPLETE :
+                if ( pageFlow.asComplete().isEmpty() ) {
+                    return voidFlowStopped();
+                } else {
+                    break;
+                }                
+            case STOP :
+                return voidFlowStopped();
+            case FAIL :
+                return pageFlow.toVoid();
+            default :
+                return voidFlowFail("unexpected flow result.");          
         }
-        WebPage page = optPage.get();
+        
+        WebPage page = pageFlow.asComplete().orThrow();
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
         ValueFlow<Picture> pictureFlow = awaitGetFlow(() -> {     
@@ -737,7 +876,7 @@ public class WebPagesKeeperWorker
             }    
         }
         
-        Picture picture = pictureFlow.asComplete().getOrThrow();
+        Picture picture = pictureFlow.asComplete().orThrow();
         
         boolean saved = this.daoPictures.save(initiator, picture);
         if ( saved ) {
@@ -762,12 +901,7 @@ public class WebPagesKeeperWorker
             pagePattern = "";
         }
         
-        Optional<WebPage> optPage = this.discussExistingPage(initiator, pagePattern);
-        if ( optPage.isPresent() ) {
-            return valueFlowCompletedWith(optPage.get());
-        } else {
-            return valueFlowStopped();
-        }
+        return this.findExistingPageInternally(initiator, pagePattern);
     }
 
     @Override
@@ -828,75 +962,79 @@ public class WebPagesKeeperWorker
             return badRequestWithJson(pageNameValidity.getFailureMessage());
         }
         
-        Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(
-                this.systemInitiator, pageName);
-        if ( ! freeNameIndex.isPresent() ) {
-            return badRequestWithJson("Cannot get free name next index.");
-        }
-        if ( freeNameIndex.get() > 0 ) {
-            pageName = format("%s (%d)", pageName, freeNameIndex.get());
-        }
-        
-        Optional<Integer> optId =  this.daoDirectories.getDirectoryIdByNameAndPlace(
-                this.systemInitiator, directoryName, place);
-        if ( ! optId.isPresent() ) {
-            return notFoundWithJson(
-                    format("WebDirectory '%s' does not exist in %s", directoryName, place.name()));
-        } 
-        
-        WebPage newPage = newWebPage(pageName, "", pageUrl, optId.get());
-        boolean saved = this.daoPages.save(this.systemInitiator, newPage);
-        if ( saved ) {
-            this.asyncAddCommandsForPage(this.systemInitiator, newPage);
-            return ok();
-        } else {
-            return badRequestWithJson(
-                    format("page '%s' not saved in '%s'.", pageName, directoryName));
-        }
+        synchronized ( this.allPagesConsistencyLock ) {
+            Optional<Integer> freeNameIndex = daoPages.findFreeNameNextIndex(
+                    this.systemInitiator, pageName);
+            if ( ! freeNameIndex.isPresent() ) {
+                return badRequestWithJson("Cannot get free name next index.");
+            }
+            if ( freeNameIndex.get() > 0 ) {
+                pageName = format("%s (%d)", pageName, freeNameIndex.get());
+            }
+
+            Optional<Integer> optId =  this.daoDirectories.getDirectoryIdByNameAndPlace(
+                    this.systemInitiator, directoryName, place);
+            if ( ! optId.isPresent() ) {
+                return notFoundWithJson(
+                        format("WebDirectory '%s' does not exist in %s", directoryName, place.name()));
+            } 
+
+            WebPage newPage = newWebPage(pageName, "", pageUrl, optId.get());
+            boolean saved = this.daoPages.save(this.systemInitiator, newPage);
+            if ( saved ) {
+                this.asyncAddCommandsForPage(this.systemInitiator, newPage);
+                return ok();
+            } else {
+                return badRequestWithJson(
+                        format("page '%s' not saved in '%s'.", pageName, directoryName));
+            }
+        }    
     }
 
     @Override
     public WebResponse editWebPageName(
             WebPlace place, String directoryName, String pageOldName, String pageNewName) {
-        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
-                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
-        if ( isNotPresent(webDirectoryPages) ) {
-            return notFoundWithJson(format(
-                    "Directory '%s' not found in %s!", directoryName, place.name()));
+        synchronized ( this.allPagesConsistencyLock ) {
+            Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                    .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+            if ( isNotPresent(webDirectoryPages) ) {
+                return notFoundWithJson(format(
+                        "Directory '%s' not found in %s!", directoryName, place.name()));
+            }
+
+            Optional<WebPage> page = webDirectoryPages.get().pages()
+                    .stream()
+                    .filter(webPage -> webPage.name().equalsIgnoreCase(pageOldName))
+                    .findFirst();
+
+            if ( isNotPresent(page) ) {
+                return notFoundWithJson(format(
+                        "Page '%s' not found in %s!", pageOldName, directoryName));
+            }
+
+            ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(pageNewName);
+            if ( newNameValidity.isFail() ) {
+                return badRequestWithJson(newNameValidity.getFailureMessage());
+            }
+
+            Optional<Integer> freeNameIndex = daoPages
+                    .findFreeNameNextIndex(this.systemInitiator, pageNewName);
+            if ( ! freeNameIndex.isPresent() ) {
+                return badRequestWithJson("Cannot get free name next index.");
+            }
+            if ( freeNameIndex.get() > 0 ) {
+                pageNewName = format("%s (%d)", pageNewName, freeNameIndex.get());
+            }
+
+            boolean edited = this.daoPages
+                    .editName(this.systemInitiator, page.get().name(), pageNewName);
+            if ( edited ) {
+                this.asyncChangeCommandsForPageNames(this.systemInitiator, pageOldName, pageNewName);
+                return ok();
+            } else {
+                return badRequestWithJson(format("Page '%s' is not renamed.", page.get().name()));
+            } 
         }
-        
-        Optional<WebPage> page = webDirectoryPages.get().pages()
-                .stream()
-                .filter(webPage -> webPage.name().equalsIgnoreCase(pageOldName))
-                .findFirst();
-        
-        if ( isNotPresent(page) ) {
-            return notFoundWithJson(format(
-                    "Page '%s' not found in %s!", pageOldName, directoryName));
-        }
-        
-        ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(pageNewName);
-        if ( newNameValidity.isFail() ) {
-            return badRequestWithJson(newNameValidity.getFailureMessage());
-        }
-        
-        Optional<Integer> freeNameIndex = daoPages
-                .findFreeNameNextIndex(this.systemInitiator, pageNewName);
-        if ( ! freeNameIndex.isPresent() ) {
-            return badRequestWithJson("Cannot get free name next index.");
-        }
-        if ( freeNameIndex.get() > 0 ) {
-            pageNewName = format("%s (%d)", pageNewName, freeNameIndex.get());
-        }
-        
-        boolean edited = this.daoPages
-                .editName(this.systemInitiator, page.get().name(), pageNewName);
-        if ( edited ) {
-            this.asyncChangeCommandsForPageNames(this.systemInitiator, pageOldName, pageNewName);
-            return ok();
-        } else {
-            return badRequestWithJson(format("Page '%s' is not renamed.", page.get().name()));
-        }     
     }
 
     @Override
@@ -1031,38 +1169,40 @@ public class WebPagesKeeperWorker
             String pageName, 
             WebPlace newPlace, 
             String newDirectoryName) {
-        Optional<WebDirectory> newDirectory = daoDirectories
-                .getDirectoryByNameAndPlace(this.systemInitiator, newDirectoryName, newPlace);
-        if ( isNotPresent(newDirectory) ) {
-            return notFoundWithJson(format(
-                    "Directory '%s' not found in %s!", newDirectoryName, newPlace.name()));
-        }
-        
-        Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
-                .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
-        if ( isNotPresent(webDirectoryPages) ) {
-            return notFoundWithJson(format(
-                    "Directory '%s' not found in %s!", directoryName, place.name()));
-        }
-        
-        Optional<WebPage> page = webDirectoryPages.get().pages()
-                .stream()
-                .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
-                .findFirst();
-        
-        if ( isNotPresent(page) ) {
-            return notFoundWithJson(format(
-                    "Page '%s' not found in %s!", pageName, directoryName));
-        }
-        
-        boolean moved = daoPages
-                .movePageFromDirToDir(this.systemInitiator, page.get(), newDirectory.get().id());
-        if ( moved ) {
-            return ok();
-        } else {
-            return badRequestWithJson(format(
-                    "Page '%s' directory is not changed.", page.get().name()));
-        }
+        synchronized ( this.allPagesConsistencyLock ) {
+            Optional<WebDirectory> newDirectory = daoDirectories
+                    .getDirectoryByNameAndPlace(this.systemInitiator, newDirectoryName, newPlace);
+            if ( isNotPresent(newDirectory) ) {
+                return notFoundWithJson(format(
+                        "Directory '%s' not found in %s!", newDirectoryName, newPlace.name()));
+            }
+
+            Optional<WebDirectoryPages> webDirectoryPages = this.daoDirectories
+                    .getDirectoryPagesByNameAndPlace(this.systemInitiator, directoryName, place);
+            if ( isNotPresent(webDirectoryPages) ) {
+                return notFoundWithJson(format(
+                        "Directory '%s' not found in %s!", directoryName, place.name()));
+            }
+
+            Optional<WebPage> page = webDirectoryPages.get().pages()
+                    .stream()
+                    .filter(webPage -> webPage.name().equalsIgnoreCase(pageName))
+                    .findFirst();
+
+            if ( isNotPresent(page) ) {
+                return notFoundWithJson(format(
+                        "Page '%s' not found in %s!", pageName, directoryName));
+            }
+
+            boolean moved = daoPages
+                    .movePageFromDirToDir(this.systemInitiator, page.get(), newDirectory.get().id());
+            if ( moved ) {
+                return ok();
+            } else {
+                return badRequestWithJson(format(
+                        "Page '%s' directory is not changed.", page.get().name()));
+            }
+        }    
     }
 
     @Override
@@ -1098,7 +1238,7 @@ public class WebPagesKeeperWorker
     }
 
     @Override
-    public ValueFlow<Message> showAll(Initiator initiator) {
+    public ValueFlow<Message> findAll(Initiator initiator) {
         return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
                     "all WebPages:", this.daoPages.getAll(initiator)));
     }

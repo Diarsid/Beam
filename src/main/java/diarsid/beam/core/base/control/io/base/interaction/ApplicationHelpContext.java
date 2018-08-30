@@ -14,12 +14,12 @@ import java.util.Random;
  *
  * @author Diarsid
  */
-public class HelpContext {
+public class ApplicationHelpContext {
     
     private final Map<HelpKey, HelpInfo> helps;
     private final Random random;
 
-    public HelpContext() {
+    public ApplicationHelpContext() {
         this.helps = new HashMap<>();
         this.random = new Random();
     }

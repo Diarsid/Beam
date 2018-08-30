@@ -21,7 +21,7 @@ public interface NamedEntitiesKeeper <T extends NamedEntity> {
     
     ValueFlow<T> findByNamePattern(Initiator initiator, String pattern);
     
-    ValueFlow<Message> showAll(Initiator initiator);
+    ValueFlow<Message> findAll(Initiator initiator);
     
     boolean isSubjectedTo(InvocationCommand command);
     

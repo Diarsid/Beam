@@ -43,6 +43,7 @@ public class LocationSubPath extends Location {
         this.subPath = subPath;
     } 
     
+    @Override
     public boolean hasSubPath() {
         return true;
     }    

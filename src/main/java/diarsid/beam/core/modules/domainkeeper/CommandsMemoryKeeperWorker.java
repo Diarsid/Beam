@@ -28,6 +28,7 @@ import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
@@ -45,6 +46,9 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
+import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_TEXT_CHARS;
+import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
+import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
@@ -53,7 +57,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.MutableString.mutableString;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.TEXT_RULE;
+import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.TEXT_RULE;
 
 /**
  *
@@ -65,6 +69,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     private final DaoCommands daoCommands;
     private final DaoPatternChoices daoPatternChoices;
     private final KeeperDialogHelper helper;
+    private final Help enterMemoryHelp;
     private final Help exactMatchHelp;
     private final Help removeRelatedMemsHelp;
     private final Help chooseOneCommandHelp;
@@ -79,6 +84,9 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         this.daoPatternChoices = daoChoices;
         this.ioEngine = ioEngine;
         this.helper = helper;
+        this.enterMemoryHelp = this.ioEngine.addToHelpContext(
+                "", 
+                "" + UNACCEPTABLE_TEXT_CHARS.stream().collect(joining()));
         this.exactMatchHelp = this.ioEngine.addToHelpContext(
                 "Choose search mode. ",
                 "Exact will search by exact pattern match, while",
@@ -133,63 +141,73 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
 
     private ValueFlow<List<InvocationCommand>> findCommands(
-            Initiator initiator, MutableString memPattern) {       
+            Initiator initiator, MutableString memPattern) {   
+        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
         
-        memPattern.muteTo(helper.validateInteractively(initiator, memPattern.get(), "mem", TEXT_RULE));
-        
-        if ( memPattern.isEmpty() ) {
-            return valueFlowStopped();
-        }
-        
-        boolean isExactSearch = false;
-        Choice choice;
-        List<InvocationCommand> foundCommands;        
-        searching: while ( true ) { 
+        try {
+            boolean isExactSearch = false;
+            Choice choice;
+            String mem;
+            List<InvocationCommand> foundCommands;        
+            dialog
+                    .withRule(TEXT_RULE)
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(initiator, "mem", this.enterMemoryHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    });
             
-            choice = this.ioEngine.ask(initiator, "exact match", this.exactMatchHelp);
-            if ( choice.isPositive() ) {
-                isExactSearch = true;
-            } else if ( choice.isNotMade() || choice.isNegative() ) {
-                isExactSearch = false;
-            } else if ( choice.isRejected() ) {
-                return valueFlowStopped();
-            } 
-            
-            if ( memPattern.isEmpty() ) {
-                memPattern.muteTo(helper.validateInteractively(
-                        initiator, memPattern.get(), "mem", TEXT_RULE));
+            searching: while ( true ) {
+                
+                mem = dialog
+                        .withInitialArgument(memPattern.get())
+                        .validateAndGet();
+                memPattern.muteTo(mem);
+
                 if ( memPattern.isEmpty() ) {
                     return valueFlowStopped();
                 }
-            }            
-            
-            if ( isExactSearch ) {
-                foundCommands = this.daoCommands
-                        .getByExactOriginalOfAnyType(initiator, memPattern.get());
-            } else {
-                foundCommands = this.daoCommands
-                        .searchInOriginalByPattern(initiator, memPattern.get());
-                foundCommands.addAll(this.daoCommands
-                        .searchInExtendedByPattern(initiator, memPattern.get()));
-                foundCommands = foundCommands.stream().distinct().collect(toList());
-            }
-            
-            if ( foundCommands.isEmpty() ) {
-                this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
-                memPattern.empty();
-                continue searching;
-            } else {
-                WeightedVariants variants = weightVariants(
-                        memPattern.get(), commandsToVariants(foundCommands));
-                if ( variants.isNotEmpty() ) {
-                   return this.getAllFoundUsingVariantsIndexes(foundCommands, variants.indexes());
+                
+                choice = this.ioEngine.ask(initiator, "exact match", this.exactMatchHelp);
+                if ( choice.isPositive() ) {
+                    isExactSearch = true;
+                } else if ( choice.isNotMade() || choice.isNegative() ) {
+                    isExactSearch = false;
+                } else if ( choice.isRejected() ) {
+                    return valueFlowStopped();
+                }      
+
+                if ( isExactSearch ) {
+                    foundCommands = this.daoCommands
+                            .getByExactOriginalOfAnyType(initiator, memPattern.get());
                 } else {
+                    foundCommands = this.daoCommands
+                            .searchInOriginalByPattern(initiator, memPattern.get());
+                    foundCommands.addAll(this.daoCommands
+                            .searchInExtendedByPattern(initiator, memPattern.get()));
+                    foundCommands = foundCommands.stream().distinct().collect(toList());
+                }
+
+                if ( foundCommands.isEmpty() ) {
                     this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
                     memPattern.empty();
                     continue searching;
-                }                
-            }
-        } 
+                } else {
+                    WeightedVariants variants = weightVariants(
+                            memPattern.get(), commandsToVariants(foundCommands));
+                    if ( variants.isNotEmpty() ) {
+                       return this.getAllFoundUsingVariantsIndexes(foundCommands, variants.indexes());
+                    } else {
+                        this.ioEngine.report(initiator, format("'%s' not found", memPattern.get()));
+                        memPattern.empty();
+                        continue searching;
+                    }                
+                }
+            }             
+        } finally {
+            giveBackToPool(dialog);
+        }    
     }
     
     private ValueFlow<List<InvocationCommand>> getAllFoundUsingVariantsIndexes(
@@ -219,7 +237,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         switch ( commandsFlow.result() ) {
             case COMPLETE : {
                 return this.chooseOneCommandAndRemoveIt(
-                        initiator, memPattern.get(), commandsFlow.asComplete().getOrThrow());
+                        initiator, memPattern.get(), commandsFlow.asComplete().orThrow());
             }
             case FAIL : {
                 return voidFlowFail(commandsFlow.asFail().reason());
@@ -280,7 +298,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         switch ( removedFlow.result() ) {
             case COMPLETE : {
                 if ( removedFlow.asComplete().hasValue() ) {
-                    return this.removeCommand(initiator, removedFlow.asComplete().getOrThrow());
+                    return this.removeCommand(initiator, removedFlow.asComplete().orThrow());
                 } else {
                     return voidFlowCompleted(format("'%s' not found", memPattern));
                 }
@@ -426,7 +444,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 case COMPLETE : {
                     if ( commandFlow.asComplete().hasValue() ) {
                         command.argument().setExtended(
-                                commandFlow.asComplete().getOrThrow().extendedArgument());
+                                commandFlow.asComplete().orThrow().extendedArgument());
                     } 
                     return voidFlowCompleted();
                 }

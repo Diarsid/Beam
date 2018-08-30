@@ -62,7 +62,7 @@ class H2DaoWebDirectories
     }   
 
     @Override
-    public Optional<Integer> freeNameNextIndex(
+    public Optional<Integer> findFreeNameNextIndex(
             Initiator initiator, String name, WebPlace place) {
         try (JdbcTransaction transact = super.openTransaction()) {
             

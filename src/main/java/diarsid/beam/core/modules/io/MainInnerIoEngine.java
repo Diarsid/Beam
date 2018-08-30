@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
-import diarsid.beam.core.base.control.io.base.interaction.HelpContext;
+import diarsid.beam.core.base.control.io.base.interaction.ApplicationHelpContext;
 import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
@@ -43,11 +43,11 @@ public class MainInnerIoEngine implements InnerIoEngine {
     
     private final OuterIoEnginesHolder ioEnginesHolder;
     private final Gui gui;
-    private final HelpContext helpContext;
+    private final ApplicationHelpContext helpContext;
     private final Initiator systemInitiator;
     
     public MainInnerIoEngine(
-            OuterIoEnginesHolder ioEnginesHolder, Gui gui, HelpContext helpContext) {
+            OuterIoEnginesHolder ioEnginesHolder, Gui gui, ApplicationHelpContext helpContext) {
         this.ioEnginesHolder = ioEnginesHolder;
         this.gui = gui;
         this.helpContext = helpContext;
@@ -62,11 +62,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     Choice choice = ioEngine.resolve(yesOrNoQuestion);
                     while ( choice.isHelpRequest() ) {
-                        if ( help.isKey() ) {
-                            ioEngine.report(this.helpContext.get(help.asKey()));
-                        } else {
-                            ioEngine.report(help.asInfo());
-                        }                        
+                        this.reportHelpUsing(ioEngine, help);
                         choice = ioEngine.resolve(yesOrNoQuestion);
                     }
                     return choice;
@@ -89,11 +85,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     Answer answer = ioEngine.resolve(question);
                     while ( answer.isHelpRequest() ) {
-                        if ( help.isKey() ) {
-                            ioEngine.report(this.helpContext.get(help.asKey()));
-                        } else {
-                            ioEngine.report(help.asInfo());
-                        }
+                        this.reportHelpUsing(ioEngine, help);
                         answer = ioEngine.resolve(question);
                     }
                     return answer; 
@@ -117,11 +109,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     Answer answer = ioEngine.resolve(variants);
                     while ( answer.isHelpRequest() ) {
-                        if ( help.isKey() ) {
-                            ioEngine.report(this.helpContext.get(help.asKey()));
-                        } else {
-                            ioEngine.report(help.asInfo());
-                        }
+                        this.reportHelpUsing(ioEngine, help);
                         variants.setTraversingToPositionBefore(answer.index());
                         answer = ioEngine.resolve(variants);
                     }
@@ -145,11 +133,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
                     OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
                     String input = ioEngine.askForInput(inputQuestion); 
                     while ( isHelpRequest(input) ) {
-                        if ( help.isKey() ) {
-                            ioEngine.report(this.helpContext.get(help.asKey()));
-                        } else {
-                            ioEngine.report(help.asInfo());
-                        }
+                        this.reportHelpUsing(ioEngine, help);
                         input = ioEngine.askForInput(inputQuestion); 
                     }    
                     return input;
@@ -161,6 +145,14 @@ public class MainInnerIoEngine implements InnerIoEngine {
             }).orElse("");
         } else {
             return "";
+        }
+    }
+
+    private void reportHelpUsing(OuterIoEngine ioEngine, Help help) throws IOException {
+        if ( help.isKey() ) {
+            ioEngine.report(this.helpContext.get(help.asKey()));
+        } else {
+            ioEngine.report(help.asInfo());
         }
     }
 

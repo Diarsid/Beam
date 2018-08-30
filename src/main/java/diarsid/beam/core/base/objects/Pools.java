@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
@@ -57,6 +59,31 @@ public class Pools {
             pooled = pool.give();
         }        
         return pooled;
+    }
+    
+    public static <T, P extends PooledReusable> T usePooledObjectUnsafe(
+            Class<P> type, Function<P, T> pooledObjectOperation) {
+        P pooled = takeFromPool(type);
+        try {            
+            return pooledObjectOperation.apply(pooled);
+        } catch (Throwable t) {
+            logFor(Pools.class).error("Exception during pooled object use:", t);
+            throw t;
+        } finally {
+            giveBackToPool(pooled);
+        }
+    }
+    
+    public static <P extends PooledReusable> void usePooledObject(
+            Class<P> type, Consumer<P> pooledObjectOperation) {
+        P pooled = takeFromPool(type);
+        try {            
+            pooledObjectOperation.accept(pooled);
+        } catch (Throwable t) {
+            logFor(Pools.class).error("Exception during pooled object use:", t);
+        } finally {
+            giveBackToPool(pooled);
+        }
     }
     
     private static <T extends PooledReusable> T initializePoolAndGetInstanceOf(Class<T> type) {

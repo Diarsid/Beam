@@ -9,17 +9,17 @@ package diarsid.beam.core.modules.control.cli;
 
 import java.util.function.Function;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
+import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
-
-import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 
 /**
  *
@@ -85,16 +85,43 @@ abstract class AbstractCliAdapter {
         }        
     }
     
-    protected final void reportValueFlow(
+    protected final <T> void reportValueFlow(
             Initiator initiator, 
-            ValueFlow flow, 
-            Function<ValueFlowCompleted, Message> ifNonEmptyFunction, 
+            ValueFlow<T> flow, 
+            Function<ValueFlowCompleted<T>, Message> ifNonEmptyFunction, 
             String ifEmptyMessage) {
         switch ( flow.result() ) {
             case COMPLETE : {
                 if ( flow.asComplete().hasValue() ) {
                     this.ioEngine.reportMessage(
                             initiator, ifNonEmptyFunction.apply(flow.asComplete()));
+                } else {
+                    this.ioEngine.report(initiator, ifEmptyMessage);
+                }                
+                break;
+            }         
+            case FAIL : {
+                this.ioEngine.report(initiator, flow.asFail().reason());
+                break;
+            }         
+            case STOP : {
+                break;
+            }         
+            default : {
+                this.ioEngine.report(initiator, "unkown operation result.");
+            }
+        }
+    }
+    
+    protected final <T extends ConvertableToMessage> void reportValueFlow(
+            Initiator initiator, 
+            ValueFlow<T> flow, 
+            String ifEmptyMessage) {
+        switch ( flow.result() ) {
+            case COMPLETE : {
+                if ( flow.asComplete().hasValue() ) {
+                    this.ioEngine.reportMessage(
+                            initiator, flow.asComplete().orThrow().toMessage());
                 } else {
                     this.ioEngine.report(initiator, ifEmptyMessage);
                 }                

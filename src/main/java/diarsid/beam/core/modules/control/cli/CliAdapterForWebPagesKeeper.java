@@ -34,8 +34,8 @@ class CliAdapterForWebPagesKeeper extends AbstractCliAdapter {
     
     void findWebPageAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<WebPage> flow = this.pagesKeeper.findWebPageByPattern(initiator, command);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return ((WebPage) success.getOrThrow()).toMessage();
+        Function<ValueFlowCompleted<WebPage>, Message> onSuccess = (success) -> {
+            return success.orThrow().toMessage();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "page not found.");
     }
@@ -57,16 +57,16 @@ class CliAdapterForWebPagesKeeper extends AbstractCliAdapter {
     
     void showWebPlace(Initiator initiator, EmptyCommand command) {
         ValueFlow<Message> flow = this.pagesKeeper.getWebPlace(initiator, command);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+            return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "Panel not available.");
     }
     
     void showAllWebPages(Initiator initiator) {
-        ValueFlow<Message> flow = this.pagesKeeper.showAll(initiator);
-        Function<ValueFlowCompleted, Message> onSuccess = (success) -> {
-            return (Message) success.getOrThrow();
+        ValueFlow<Message> flow = this.pagesKeeper.findAll(initiator);
+        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+            return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all WebPages.");
     }

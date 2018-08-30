@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.io;
 
 
 import diarsid.beam.core.application.gui.Gui;
-import diarsid.beam.core.base.control.io.base.interaction.HelpContext;
+import diarsid.beam.core.base.control.io.base.interaction.ApplicationHelpContext;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.IoModule;
 
@@ -36,7 +36,7 @@ class IoModuleWorkerBuilder implements GemModuleBuilder<IoModule> {
                 new UnlimitedOuterIoEnginesManager();
         OuterIoEnginesHolder ioEnginesHolder = 
                 new OuterIoEnginesHolder(limitedEnginesManager, unlimitedEnginesManager);
-        HelpContext helpContext = new HelpContext();
+        ApplicationHelpContext helpContext = new ApplicationHelpContext();
         MainInnerIoEngine mainIo = new MainInnerIoEngine(ioEnginesHolder, gui, helpContext);
         return new IoModuleWorker(ioEnginesHolder, mainIo);
     }

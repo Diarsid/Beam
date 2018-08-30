@@ -7,16 +7,12 @@
 package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
-import diarsid.beam.core.domain.entities.validation.ValidationResult;
-import diarsid.beam.core.domain.entities.validation.ValidationRule;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
@@ -24,10 +20,8 @@ import static java.lang.String.format;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
 import static diarsid.beam.core.base.util.StringNumberUtils.notNumeric;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
-import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY_NAME_RULE;
 
 /**
  *
@@ -36,64 +30,9 @@ import static diarsid.beam.core.domain.entities.validation.ValidationRule.ENTITY
 public class KeeperDialogHelper {
     
     private final InnerIoEngine ioEngine;
-    private final Map<ValidationRule, Help> validationRulesHelp;
     
     public KeeperDialogHelper(InnerIoEngine ioEngine) {
         this.ioEngine = ioEngine;
-        this.validationRulesHelp = new HashMap<>();
-        Help ruleHelp;
-        for (ValidationRule rule : ValidationRule.values()) {
-            ruleHelp = this.ioEngine.addToHelpContext(rule.helpInfo());
-            this.validationRulesHelp.put(rule, ruleHelp);
-        }
-    }
-    
-    public String validateInteractively(
-            Initiator initiator, String argument, String ioRequest, ValidationRule rule) {
-        return this.validate(initiator, ioRequest, rule, argument);
-    } 
-
-    private String validate( 
-            Initiator initiator, 
-            String ioRequest, 
-            ValidationRule rule, 
-            String argument) {
-        if ( nonEmpty(argument) ) {
-            ValidationResult result = rule.applyTo(argument);
-            if ( result.isOk() ) {
-                return argument;
-            } else {
-                this.ioEngine.report(initiator, result.getFailureMessage());
-                return this.loopValidation(initiator, ioRequest, rule);
-            }
-        } else {
-            return this.loopValidation(initiator, ioRequest, rule);
-        }
-    }
-    
-    private String loopValidation(
-            Initiator initiator, String ioRequest, ValidationRule rule) {
-        String value;
-        ValidationResult validity;
-        valueDefining: while ( true ) {
-            value = this.ioEngine.askInput(
-                    initiator, ioRequest, this.validationRulesHelp.get(rule));
-            if ( value.isEmpty() ) {
-                return "";
-            } else {
-                validity = rule.applyTo(value);
-                if ( validity.isOk() ) {
-                    return value;
-                } else {
-                    this.ioEngine.report(initiator, validity.getFailureMessage());
-                }
-            }
-        }        
-    }
-
-    public String validateEntityNameInteractively(
-            Initiator initiator, String argument) {
-        return this.validate(initiator, "name", ENTITY_NAME_RULE, argument);
     }
     
     public EntityProperty validatePropertyInteractively(
@@ -145,7 +84,8 @@ public class KeeperDialogHelper {
             }
             i = parseInt(intInput);
             if ( i < fromInclusive || i > toInclusive ) {
-                this.ioEngine.report(initiator, format("out of range %d-%d", fromInclusive, toInclusive));
+                this.ioEngine.report(initiator, 
+                                     format("out of range %d-%d", fromInclusive, toInclusive));
                 continue intDefining;
             }
             intNotDefined = false;

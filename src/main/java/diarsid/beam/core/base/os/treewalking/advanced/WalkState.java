@@ -358,7 +358,7 @@ class WalkState extends PooledReusable {
     
     void processResultFlowAfterSearching() {        
         if ( this.isPatternPath && this.isResultFlowCompletedWithValue() ) {
-            String lastFoundTarget = this.resultFlow.asComplete().getOrThrow();
+            String lastFoundTarget = this.resultFlow.asComplete().orThrow();
             String foundPathTarget = joinToPath(this.relativeRoot.orThrow(), lastFoundTarget);
             this.resultFlow = valueFlowCompletedWith(foundPathTarget);
         }
@@ -380,7 +380,7 @@ class WalkState extends PooledReusable {
     
     void muteAfterWalkingForPattern() {
         this.variants.clear();
-        String foundTarget = this.resultFlow.asComplete().getOrThrow();
+        String foundTarget = this.resultFlow.asComplete().orThrow();
         if ( this.relativeRoot.isPresent() ) {
             this.relativeRoot.resetTo(joinToPath(this.relativeRoot.orThrow(), foundTarget));
         } else {
