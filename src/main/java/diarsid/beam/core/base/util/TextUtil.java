@@ -89,6 +89,23 @@ public class TextUtil {
         return -1;
     }
     
+    public static int indexOfFirstNonSpaceIn(String target, int fromInclusive, int toExclusive) {
+        if ( isNull(target) 
+             || target.isEmpty() 
+             || fromInclusive < 0 
+             || toExclusive > target.length() 
+             || fromInclusive >= toExclusive ) {
+            return -1;
+        }
+        
+        for (int i = fromInclusive; i < toExclusive; i++) {
+            if ( target.charAt(i) != ' ' ) {
+                return i - fromInclusive;
+            }            
+        }
+        return -1;
+    }
+    
     public static Comparator<String> shorterStringsFirstNotCountingSpaces() {
         return SHORTER_FIRST;
     }

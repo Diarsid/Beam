@@ -375,6 +375,11 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
             this.ioModule
                     .getInnerIoEngine()
                     .report(initiator, "command type casting failed.");
+        } catch (Exception e) {
+            logFor(this).error("Exception occured", e);
+            this.ioModule
+                    .getInnerIoEngine()
+                    .report(initiator, "Error occured, execution failed.");
         }
     }
 }

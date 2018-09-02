@@ -32,14 +32,13 @@ import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.is
 import static diarsid.beam.core.base.util.CollectionsUtils.removeLastFrom;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
+import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.indexOfAny;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.base.util.StringUtils.splitToLines;
 import static diarsid.beam.core.base.util.TextUtil.indexOfFirstNonSpaceIn;
 import static diarsid.beam.core.base.util.TextUtil.lineAtCaret;
-import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
-import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 
 /**
  *
@@ -130,6 +129,10 @@ public class ConsoleSnippetFinder {
                 this.composeSnippetWithTraversingToFirstNode();
                 break;
             }
+            case TRAVERSE_TO_PREVIOUS_NODE : {
+                this.composeSnippetWithTraversingToPreviousNode();
+                break;
+            }
             case TRAVERSE_TO_ROOT_DIRECTLY : {
                 this.composeSnippetWithTraversingDirectly();
                 break;
@@ -152,6 +155,25 @@ public class ConsoleSnippetFinder {
     private void composeSnippetSimply() {
         this.snippet = new Snippet(
                 this.snippetType, this.snippetType.lineToSnippet(this.lineAtCaret));
+    }
+    
+    private void composeSnippetWithTraversingToPreviousNode() {
+        int initialIndentLevel = indexOfFirstNonSpaceIn(this.lineAtCaret);
+        
+        int currentLineIndentLevel = initialIndentLevel;
+        int currentLineStart = this.text.lastIndexOf('\n', this.caret);
+        int currentLineEnd = currentLineStart;
+        
+        while ( currentLineIndentLevel == initialIndentLevel ) {
+            currentLineEnd = currentLineStart;
+            currentLineStart = this.text.lastIndexOf('\n', currentLineEnd - 1);
+            currentLineIndentLevel = indexOfFirstNonSpaceIn(
+                    this.text, currentLineStart + 1, currentLineEnd);
+        }
+        
+        String snippetLine = this.text.substring(currentLineStart + 1, currentLineEnd);        
+        snippetLine = this.snippetType.lineToSnippet(snippetLine.trim()); 
+        this.snippet = new Snippet(this.snippetType, snippetLine);
     }
     
     private void composeSnippetWithTraversingToFirstNode() {

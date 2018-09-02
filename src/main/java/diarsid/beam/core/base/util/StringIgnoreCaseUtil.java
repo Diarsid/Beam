@@ -149,6 +149,15 @@ public class StringIgnoreCaseUtil {
                 .isPresent();
     }
     
+    public static boolean startsWithIgnoreCaseAnyFragment(
+            String whereToSearch, Collection<String> searchedStarts) {
+        return searchedStarts
+                .stream()
+                .filter(starting -> startsIngoreCase(whereToSearch, starting))
+                .findFirst()
+                .isPresent();
+    }
+    
     public static boolean endsWithIgnoreCaseAnyFragment(
             String whereToSearch, String... searchedEnds) {
         return stream(searchedEnds)

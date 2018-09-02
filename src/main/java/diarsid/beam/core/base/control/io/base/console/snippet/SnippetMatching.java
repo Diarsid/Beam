@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.control.io.base.console.snippet;
 
+import java.util.List;
+
 import static java.lang.Character.isDigit;
 
 import static org.eclipse.jetty.util.StringUtil.startsWithIgnoreCase;
@@ -35,7 +37,13 @@ interface SnippetMatching {
         };
     }
     
-    static SnippetMatching matchesByNotContaining(String... parts) {
+    static SnippetMatching matchesByNotContainingAny(String... parts) {
+        return (line) -> {
+            return ! containsIgnoreCaseAnyFragment(line, parts);
+        };
+    }
+    
+    static SnippetMatching matchesByNotContainingAny(List<String> parts) {
         return (line) -> {
             return ! containsIgnoreCaseAnyFragment(line, parts);
         };
@@ -51,13 +59,19 @@ interface SnippetMatching {
         };
     }
     
+    static SnippetMatching matchesByStartingWithAny(List<String> starts) {
+        return (line) -> {
+            return startsWithIgnoreCaseAnyFragment(line.trim(), starts);
+        };
+    }
+    
     static SnippetMatching matchesByNotStartingWith(String start) {
         return (line) -> {
             return ! startsWithIgnoreCase(line.trim(), start);
         };
     }
     
-    static SnippetMatching matchesByNotStartingWith(String... starts) {
+    static SnippetMatching matchesByNotStartingWithAny(String... starts) {
         return (line) -> {
             return ! startsWithIgnoreCaseAnyFragment(line.trim(), starts);
         };

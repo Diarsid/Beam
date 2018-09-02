@@ -9,13 +9,15 @@ import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByContaining;
-import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotContaining;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotContainingAny;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotStartingWith;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotStartingWithAny;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotStartingWithDigit;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingContainingEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingEndingWith;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWith;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithAny;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByStartingWithDigitAndContains;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.noMatching;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetRefining.noRefining;
@@ -31,8 +33,10 @@ import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.Reinvokability.REINVOKABLE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.NO_TRAVERSE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_FIRST_NODE;
+import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_PREVIOUS_NODE;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_ROOT_DIRECTLY;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetType.TraverseMode.TRAVERSE_TO_ROOT_HIERARCHICALLY;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.allEntityPropertyNames;
 
 /**
  *
@@ -99,13 +103,20 @@ public enum SnippetType {
     LISTED_ENTITY (
             REINVOKABLE,
             TRAVERSE_TO_FIRST_NODE,
-            matchesByNotStartingWith("> ", "- ", "[_] ", "Beam > ", "...")
-                    .and(matchesByNotContaining(" -> ", " is one of ", "are you sure"))
+            matchesByNotStartingWithAny("> ", "- ", "[_] ", "Beam > ", "...")
+                    .and(matchesByNotContainingAny(" -> ", " is one of ", "are you sure"))
+                    .and(matchesByNotContainingAny(allEntityPropertyNames()))
                     .and(matchesByNotEndingWith(" ?"))
                     .and(matchesByNotStartingWith("WebPanel > "))
                     .and(matchesByNotStartingWithDigit()),
             refiningByTrim(),
             noFormat()),
+    PRINTED_ENTITY_PROPERTY (
+            REINVOKABLE,
+            TRAVERSE_TO_PREVIOUS_NODE,
+            matchesByStartingWithAny(allEntityPropertyNames()),
+            refiningByTrim(),
+            reinvocationTextFormat("open %s")),
     LISTED_WEBPANEL_DIRECTORY (
             NON_REINVOKABLE,
             NO_TRAVERSE,
@@ -117,7 +128,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> ", " ?")
-                    .and(matchesByNotContaining(
+                    .and(matchesByNotContainingAny(
                             " is one of ", 
                             "are you sure", 
                             " is ", 
@@ -136,7 +147,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> open ", " ?")
-                    .and(matchesByNotContaining(
+                    .and(matchesByNotContainingAny(
                             " is one of ", "are you sure", " is ", " call ", " browse ", " run "))
                     .and(matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
@@ -145,7 +156,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> run ", " ?")
-                    .and(matchesByNotContaining(
+                    .and(matchesByNotContainingAny(
                             " is one of ", "are you sure", " is ", " call ", " browse ", " open "))
                     .and(matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
@@ -154,7 +165,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> call ", " ?")
-                    .and(matchesByNotContaining(
+                    .and(matchesByNotContainingAny(
                             " is one of ", "are you sure", " is ", " run ", " browse ", " open "))
                     .and(matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
@@ -163,7 +174,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingEndingWith("> browse ", " ?")
-                    .and(matchesByNotContaining(
+                    .and(matchesByNotContainingAny(
                             " is one of ", "are you sure", " is ", " run ", " call ", " open "))
                     .and(matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
@@ -178,7 +189,7 @@ public enum SnippetType {
             REINVOKABLE, 
             NO_TRAVERSE, 
             matchesByStartingContainingEndingWith("> ", " is ", " ?")
-                    .and(matchesByNotContaining(" is one of ", "are you sure")),
+                    .and(matchesByNotContainingAny(" is one of ", "are you sure")),
             refiningByRemoveAllBeforeAndAfter(" is ", " ?"),
             reinvocationTextFormat("call '%s'")),
     
@@ -244,6 +255,7 @@ public enum SnippetType {
     static enum TraverseMode {
         NO_TRAVERSE,
         TRAVERSE_TO_FIRST_NODE,
+        TRAVERSE_TO_PREVIOUS_NODE,
         TRAVERSE_TO_ROOT_DIRECTLY,
         TRAVERSE_TO_ROOT_HIERARCHICALLY
     }

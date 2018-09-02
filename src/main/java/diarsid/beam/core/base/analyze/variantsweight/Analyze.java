@@ -139,35 +139,36 @@ public class Analyze {
     
     public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
         AnalyzeData analyze = takeFromPool(AnalyzeData.class);
-        analyze.set(pattern, variant);
-        if ( analyze.isVariantEqualsPattern() ) {
+        try {
+            analyze.set(pattern, variant);
+            if ( analyze.isVariantEqualsPattern() ) {
+                analyze.complete();
+                Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
+                return weightedVariant;
+            }
+            analyze.checkIfVariantTextContainsPatternDirectly();
+            analyze.setPatternCharsAndPositions();
+            analyze.analyzePatternCharsPositions();
+            analyze.logUnsortedPositions();
+            analyze.sortPositions();
+            analyze.findPositionsClusters();
+            if ( analyze.areTooMuchPositionsMissed() ) {
+                return Optional.empty();
+            }
+            analyze.calculateClustersImportance();
+            analyze.isFirstCharMatchInVariantAndPattern(pattern);
+            analyze.calculateWeight();  
+            analyze.logState();
+            if ( analyze.isVariantTooBad() ) {
+                logAnalyze(BASE, "%s is too bad.", analyze.variantText);
+                return Optional.empty();
+            }
             analyze.complete();
             Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
-            giveBackToPool(analyze);
             return weightedVariant;
-        }
-        analyze.checkIfVariantTextContainsPatternDirectly();
-        analyze.setPatternCharsAndPositions();
-        analyze.analyzePatternCharsPositions();
-        analyze.logUnsortedPositions();
-        analyze.sortPositions();
-        analyze.findPositionsClusters();
-        if ( analyze.areTooMuchPositionsMissed() ) {
+        } finally {
             giveBackToPool(analyze);
-            return Optional.empty();
         }
-        analyze.calculateClustersImportance();
-        analyze.isFirstCharMatchInVariantAndPattern(pattern);
-        analyze.calculateWeight();  
-        analyze.logState();
-        if ( analyze.isVariantTooBad() ) {
-            logAnalyze(BASE, "%s is too bad.", analyze.variantText);
-            giveBackToPool(analyze);
-            return Optional.empty();
-        }
-        Optional<WeightedVariant> weightedVariant = Optional.of(analyze.newVariant);
-        giveBackToPool(analyze);
-        return weightedVariant;
     }
     
     public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
@@ -186,69 +187,72 @@ public class Analyze {
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
         
-        variantsWeighting: for (Variant variant : variants) {             
-            lowerVariantText = lower(variant.text());
-            if ( variantsByText.containsKey(lowerVariantText) ) {
-                if ( variantsByText.get(lowerVariantText).equalsByLowerDisplayText(variant) ) {
-                    continue variantsWeighting;
+        try {
+            variantsWeighting: for (Variant variant : variants) {             
+                lowerVariantText = lower(variant.text());
+                if ( variantsByText.containsKey(lowerVariantText) ) {
+                    if ( variantsByText.get(lowerVariantText).equalsByLowerDisplayText(variant) ) {
+                        continue variantsWeighting;
+                    }
                 }
-            }
-            logAnalyze(BASE, "");
-            logAnalyze(BASE, "===== ANALYZE : %s ( %s ) ===== ", variant.text(), pattern);
-            variantsByText.put(lowerVariantText, variant);
-            
-            analyze.set(pattern, variant);
-            if ( analyze.isVariantNotEqualsPattern() ) {
-                analyze.checkIfVariantTextContainsPatternDirectly();
-                analyze.setPatternCharsAndPositions();
-                analyze.analyzePatternCharsPositions();
-                analyze.logUnsortedPositions();
-                analyze.sortPositions();
-                analyze.findPositionsClusters();
-                if ( analyze.areTooMuchPositionsMissed() ) {
-                    analyze.clearForReuse();
-                    continue variantsWeighting;
-                }
-                analyze.calculateClustersImportance();
-                analyze.isFirstCharMatchInVariantAndPattern(pattern);
-                analyze.calculateWeight();  
-                analyze.logState();
-                if ( analyze.isVariantTooBad() ) {
-                    logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
-                    analyze.clearForReuse();
-                    continue variantsWeighting;
+                logAnalyze(BASE, "");
+                logAnalyze(BASE, "===== ANALYZE : %s ( %s ) ===== ", variant.text(), pattern);
+                variantsByText.put(lowerVariantText, variant);
+
+                analyze.set(pattern, variant);
+                if ( analyze.isVariantNotEqualsPattern() ) {
+                    analyze.checkIfVariantTextContainsPatternDirectly();
+                    analyze.setPatternCharsAndPositions();
+                    analyze.analyzePatternCharsPositions();
+                    analyze.logUnsortedPositions();
+                    analyze.sortPositions();
+                    analyze.findPositionsClusters();
+                    if ( analyze.areTooMuchPositionsMissed() ) {
+                        analyze.clearForReuse();
+                        continue variantsWeighting;
+                    }
+                    analyze.calculateClustersImportance();
+                    analyze.isFirstCharMatchInVariantAndPattern(pattern);
+                    analyze.calculateWeight();  
+                    analyze.logState();
+                    if ( analyze.isVariantTooBad() ) {
+                        logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
+                        analyze.clearForReuse();
+                        continue variantsWeighting;
+                    }
+
+                    if ( analyze.variantWeight < minWeight ) {
+                        minWeight = analyze.variantWeight;
+                    }
+                    if ( analyze.variantWeight > maxWeight ) {
+                        maxWeight = analyze.variantWeight;
+                    }                
                 }
 
-                if ( analyze.variantWeight < minWeight ) {
-                    minWeight = analyze.variantWeight;
-                }
-                if ( analyze.variantWeight > maxWeight ) {
-                    maxWeight = analyze.variantWeight;
-                }                
-            }
-            
-            analyze.complete();
-            if ( analyze.newVariant.hasDisplayText() ) {
-                logFor(Analyze.class).info(analyze.newVariant.text() + ":" + analyze.newVariant.displayText());
-                if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {
-                    analyze.setPreviousVariantWithSameDisplayText(variantsByDisplay);
-                    if ( analyze.isNewVariantBetterThanPrevious() ) {
-                        logFor(Analyze.class).info("[DUPLICATE] " + analyze.newVariant.text() + " is better than: " + analyze.prevVariant.text());
+                analyze.complete();
+                if ( analyze.newVariant.hasDisplayText() ) {
+                    logFor(Analyze.class).info(analyze.newVariant.text() + ":" + analyze.newVariant.displayText());
+                    if ( variantsByDisplay.containsKey(lower(variant.displayText())) ) {
+                        analyze.setPreviousVariantWithSameDisplayText(variantsByDisplay);
+                        if ( analyze.isNewVariantBetterThanPrevious() ) {
+                            logFor(Analyze.class).info("[DUPLICATE] " + analyze.newVariant.text() + " is better than: " + analyze.prevVariant.text());
+                            variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
+                            weightedVariants.add(analyze.newVariant);
+                        } 
+                    } else {
                         variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
-                        weightedVariants.add(analyze.newVariant);
-                    } 
+                        weightedVariants.add(analyze.newVariant);                  
+                    }
                 } else {
-                    variantsByDisplay.put(lower(analyze.newVariant.displayText()), analyze.newVariant);
-                    weightedVariants.add(analyze.newVariant);                  
-                }
-            } else {
-                weightedVariants.add(analyze.newVariant);                
-            } 
-            analyze.clearForReuse();
+                    weightedVariants.add(analyze.newVariant);                
+                } 
+                analyze.clearForReuse();
+            }
+        } finally {
+            giveBackToPool(analyze);
         }
-        giveBackToPool(analyze);
         
-        double delta = minWeight;
+//        double delta = minWeight;
 //        weightedVariants = weightedVariants
 //                .stream()
 //                .peek(weightedVariant -> weightedVariant.adjustWeight(delta))

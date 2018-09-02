@@ -146,6 +146,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
     @Override
     public void print(Exception e) {
         try {
+            logFor(this).error("Exception occured", e);
             this.intoConsole.put("\n" + e.getMessage() + "\n");
         } catch (InterruptedException ex) {
             logFor(this).error("console blocking IO print() has been interruped: ", ex);

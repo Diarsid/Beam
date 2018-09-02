@@ -14,6 +14,8 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.EnumUtils.argMatchesEnum;
 
@@ -39,7 +41,7 @@ public enum EntityProperty implements Serializable, ParseableEnum {
             "WebPlace", 
             asList("webplace", "wplace", "place")),
     WEB_DIRECTORY (
-            "WebDirectory", 
+            "directory", 
             asList("webdirectory", "wdirectory", "webdir", "wdir", "directory")),
     WEB_URL (
             "url", 
@@ -52,6 +54,10 @@ public enum EntityProperty implements Serializable, ParseableEnum {
             asList("path", "file")),
     
     UNDEFINED_PROPERTY ("undefined", emptyList());
+    
+    private final static List<String> ALL_PROPERTY_NAMES = unmodifiableList(stream(values())
+            .map(property -> property.displayName)
+            .collect(toList()));
     
     private final String displayName;
     private final List<String> keyWords;
@@ -105,5 +111,9 @@ public enum EntityProperty implements Serializable, ParseableEnum {
                 .filter(property -> argMatchesEnum(arg, property))
                 .findFirst()
                 .orElse(UNDEFINED_PROPERTY);
+    }
+    
+    public static List<String> allEntityPropertyNames() {
+        return ALL_PROPERTY_NAMES;
     }
 }
