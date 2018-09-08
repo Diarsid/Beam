@@ -25,12 +25,6 @@ interface SnippetMatching {
     
     boolean matches(String line);
     
-    default SnippetMatching and(SnippetMatching other) {
-        return (line) -> {
-            return this.matches(line) && other.matches(line);
-        };
-    }
-    
     static SnippetMatching matchesByNotContaining(String part) {
         return (line) -> {
             return ! containsIgnoreCase(line, part);

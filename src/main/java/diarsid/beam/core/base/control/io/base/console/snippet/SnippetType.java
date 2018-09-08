@@ -5,9 +5,11 @@
  */
 package diarsid.beam.core.base.control.io.base.console.snippet;
 
+
 import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LONG;
+import static diarsid.beam.core.base.control.io.base.console.snippet.MultipleSnippetMatching.matchesAll;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByContaining;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotContainingAny;
 import static diarsid.beam.core.base.control.io.base.console.snippet.SnippetMatching.matchesByNotEndingWith;
@@ -103,12 +105,13 @@ public enum SnippetType {
     LISTED_ENTITY (
             REINVOKABLE,
             TRAVERSE_TO_FIRST_NODE,
-            matchesByNotStartingWithAny("> ", "- ", "[_] ", "Beam > ", "...")
-                    .and(matchesByNotContainingAny(" -> ", " is one of ", "are you sure"))
-                    .and(matchesByNotContainingAny(allEntityPropertyNames()))
-                    .and(matchesByNotEndingWith(" ?"))
-                    .and(matchesByNotStartingWith("WebPanel > "))
-                    .and(matchesByNotStartingWithDigit()),
+            matchesAll(
+                    matchesByNotStartingWithAny("> ", "- ", "[_] ", "Beam > ", "..."),
+                    matchesByNotContainingAny(" -> ", " is one of ", "are you sure"),
+                    matchesByNotContainingAny(allEntityPropertyNames()),
+                    matchesByNotEndingWith(" ?"),
+                    matchesByNotStartingWith("WebPanel > "),
+                    matchesByNotStartingWithDigit()),
             refiningByTrim(),
             noFormat()),
     PRINTED_ENTITY_PROPERTY (
@@ -127,8 +130,9 @@ public enum SnippetType {
     SINGLE_VARIANT (
             REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingEndingWith("> ", " ?")
-                    .and(matchesByNotContainingAny(
+            matchesAll(
+                    matchesByStartingEndingWith("> ", " ?"),
+                    matchesByNotContainingAny(
                             " is one of ", 
                             "are you sure", 
                             " is ", 
@@ -139,44 +143,68 @@ public enum SnippetType {
                             " (Program) ",
                             " (WebPage) ",
                             " (Location) ",
-                            " (Batch) "))
-                    .and(matchesByNotStartingWith("> exact match ?")),
+                            " (Batch) "),
+                    matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             reinvocationTextFormat("open '%s'")),     
     SINGLE_VARIANT_OPEN (
             REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingEndingWith("> open ", " ?")
-                    .and(matchesByNotContainingAny(
-                            " is one of ", "are you sure", " is ", " call ", " browse ", " run "))
-                    .and(matchesByNotStartingWith("> exact match ?")),
+            matchesAll(
+                    matchesByStartingEndingWith("> open ", " ?"),
+                    matchesByNotContainingAny(
+                            " is one of ", 
+                            "are you sure", 
+                            " is ", 
+                            " call ", 
+                            " browse ", 
+                            " run "),
+                    matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             noFormat()),     
     SINGLE_VARIANT_RUN (
             REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingEndingWith("> run ", " ?")
-                    .and(matchesByNotContainingAny(
-                            " is one of ", "are you sure", " is ", " call ", " browse ", " open "))
-                    .and(matchesByNotStartingWith("> exact match ?")),
+            matchesAll(
+                    matchesByStartingEndingWith("> run ", " ?"),
+                    matchesByNotContainingAny(
+                            " is one of ", 
+                            "are you sure", 
+                            " is ", 
+                            " call ", 
+                            " browse ", 
+                            " open "),
+                    matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             noFormat()),    
     SINGLE_VARIANT_CALL (
             REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingEndingWith("> call ", " ?")
-                    .and(matchesByNotContainingAny(
-                            " is one of ", "are you sure", " is ", " run ", " browse ", " open "))
-                    .and(matchesByNotStartingWith("> exact match ?")),
+            matchesAll(
+                    matchesByStartingEndingWith("> call ", " ?"),
+                    matchesByNotContainingAny(
+                            " is one of ", 
+                            "are you sure", 
+                            " is ", 
+                            " run ", 
+                            " browse ", 
+                            " open "),
+                    matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             noFormat()),    
     SINGLE_VARIANT_BROWSE (
             REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingEndingWith("> browse ", " ?")
-                    .and(matchesByNotContainingAny(
-                            " is one of ", "are you sure", " is ", " run ", " call ", " open "))
-                    .and(matchesByNotStartingWith("> exact match ?")),
+            matchesAll(
+                    matchesByStartingEndingWith("> browse ", " ?"),
+                    matchesByNotContainingAny(
+                            " is one of ", 
+                            "are you sure", 
+                            " is ", 
+                            " run ", 
+                            " call ", 
+                            " open "),
+                    matchesByNotStartingWith("> exact match ?")),
             refiningByRemoveAllBeforeAndAfter("> ", " ?"),
             noFormat()),    
     NUMBERED_VARIANT (
@@ -188,8 +216,14 @@ public enum SnippetType {
     ARGUMENT_CLARIFY (
             REINVOKABLE, 
             NO_TRAVERSE, 
-            matchesByStartingContainingEndingWith("> ", " is ", " ?")
-                    .and(matchesByNotContainingAny(" is one of ", "are you sure")),
+            matchesAll(
+                    matchesByStartingContainingEndingWith(
+                            "> ", 
+                            " is ", 
+                            " ?"),
+                    matchesByNotContainingAny(
+                            " is one of ", 
+                            "are you sure")),
             refiningByRemoveAllBeforeAndAfter(" is ", " ?"),
             reinvocationTextFormat("call '%s'")),
     
