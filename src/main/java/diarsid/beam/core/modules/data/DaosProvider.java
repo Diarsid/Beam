@@ -35,4 +35,6 @@ public interface DaosProvider {
     
     DaoLocationSubPathChoices createDaoLocationSubPathChoices();
     
+    DaoSimilarityCache createDaoSimilarityCache();
+    
 }

@@ -9,6 +9,9 @@ package diarsid.beam.core.modules.data;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.DataModule;
 
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.events.BeamEventRuntime.awaitForPayloadRequestThenSupply;
+
 
 class DataModuleWorker implements DataModule {
     
@@ -40,6 +43,10 @@ class DataModuleWorker implements DataModule {
         this.daoImages = daosProvider.createDaoImages();
         this.daoLocationSubPaths = daosProvider.createDaoLocationSubPaths();
         this.daoLocationSubPathChoices = daosProvider.createDaoLocationSubPathChoices();
+        DaoSimilarityCache daoSimilarityCache = daosProvider.createDaoSimilarityCache();
+        asyncDo(() -> {
+            awaitForPayloadRequestThenSupply(daoSimilarityCache, DaoSimilarityCache.class);
+        });        
     }
 
     @Override

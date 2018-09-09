@@ -21,6 +21,7 @@ import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
 import diarsid.beam.core.modules.data.DaoPictures;
+import diarsid.beam.core.modules.data.DaoSimilarityCache;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
@@ -161,4 +162,9 @@ public class H2DaosProvider implements DaosProvider {
     public DaoLocationSubPathChoices createDaoLocationSubPathChoices() {
         return new H2DaoLocationSubPathChoices(this.dataBase, this.ioModule.getInnerIoEngine());
     }    
+    
+    @Override
+    public DaoSimilarityCache createDaoSimilarityCache() {
+        return new H2DaoSimilarityCache(this.dataBase, this.ioModule.getInnerIoEngine());
+    }
 }

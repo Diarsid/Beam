@@ -9,7 +9,9 @@ package diarsid.beam.core.base.events;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -18,8 +20,10 @@ import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEventPayload;
 
 import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.Logging.logFor;
 
 /**
  *
@@ -136,10 +140,14 @@ public class BeamEventRuntime {
                 EVENT_AWAITS_LOCK.lock();
                 EMPTY_CALLBACKS_LOCK.lock();
                 
+                logFor(BeamEventRuntime.class).info("fired: " + eventType);
+                
                 Set<CallbackEvent> callbacks = EMPTY_CALLBACKS.get(eventType);
                 if ( nonNull(callbacks) ) {
                     callbacks
                             .stream()
+                            .peek(callback -> logFor(BeamEventRuntime.class)
+                                    .info("  ...process callback of: " + eventType))
                             .forEach(emptyCallback -> {
                                 emptyCallback.onEvent(eventType);
                             });
@@ -147,10 +155,31 @@ public class BeamEventRuntime {
                 
                 Set<EventAwait> eventAwaits = EVENT_AWAITS.get(eventType);
                 if ( nonNull(eventAwaits) ) {
+                    AtomicInteger payloadAwaits = new AtomicInteger(0);
+                    
                     eventAwaits
                             .stream()
+                            .filter(eventAwait -> { 
+                                if (eventAwait instanceof EventPayloadAwait) {
+                                    payloadAwaits.incrementAndGet();
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            })
+                            .peek(eventAwait -> logFor(BeamEventRuntime.class)
+                                    .info("  ...process awaiting of: " + eventType))
                             .forEach(eventAwait -> eventAwait.notifyAwaitedOnEvent());
-                    EVENT_AWAITS.remove(eventType);
+                    
+                    if ( payloadAwaits.get() == 0 ) {
+                        EVENT_AWAITS.remove(eventType);
+                    } else {
+                        Set<EventAwait> payloadEventAwaits = eventAwaits
+                                .stream()
+                                .filter(eventAwait -> eventAwait instanceof EventPayloadAwait)
+                                .collect(toSet());
+                        EVENT_AWAITS.put(eventType, payloadEventAwaits);
+                    }
                 }                        
                 
             } finally {
@@ -167,10 +196,15 @@ public class BeamEventRuntime {
                 EMPTY_CALLBACKS_LOCK.lock();
                 PAYLOAD_CALLBACKS_LOCK.lock();
                 
+                logFor(BeamEventRuntime.class).info(
+                        "fired: " + eventType + ", payload: " + payload.getClass().getSimpleName());
+                
                 Set<CallbackEvent> callbacks = EMPTY_CALLBACKS.get(eventType);
                 if ( nonNull(callbacks) ) {
                     callbacks
                             .stream()
+                            .peek(callback -> logFor(BeamEventRuntime.class)
+                                    .info("  ...process callback of: " + eventType))
                             .forEach(emptyCallback -> {
                                 emptyCallback.onEvent(eventType);
                             });
@@ -180,6 +214,8 @@ public class BeamEventRuntime {
                 if ( nonNull(callbackPayloads) ) {
                     callbackPayloads
                             .stream()
+                            .peek(payloadCallback -> logFor(BeamEventRuntime.class)
+                                    .info("  ...process callback of: " + eventType))
                             .forEach(payloadCallback -> {
                                 payloadCallback.onEvent(eventType, payload);
                             });
@@ -189,7 +225,15 @@ public class BeamEventRuntime {
                 if ( nonNull(eventAwaits) ) {
                     eventAwaits
                             .stream()
-                            .forEach(eventAwait -> eventAwait.notifyAwaitedOnEvent());
+                            .peek(eventAwait -> logFor(BeamEventRuntime.class)
+                                    .info("  ...process awaiting of: " + eventType))
+                            .forEach(eventAwait -> {
+                                if ( eventAwait instanceof EventPayloadAwait ) {
+                                    ((EventPayloadAwait) eventAwait).notifyAwaitedOnEvent(payload);
+                                } else {
+                                    eventAwait.notifyAwaitedOnEvent();
+                                }                                
+                            });
                     EVENT_AWAITS.remove(eventType);
                 }
                 
@@ -222,11 +266,36 @@ public class BeamEventRuntime {
                 EVENT_AWAITS.get(event).add(eventAwait);
             }
             
+            logFor(BeamEventRuntime.class).info("await for: " + event);
+            
             return eventAwait;
                     
         } finally {
-            EVENT_AWAITS_LOCK.unlock();
+            EVENT_AWAITS_LOCK.unlock(); 
         }        
+    }
+    
+    public static EventPayloadAwait awaitForPayload(String event) {
+        try {
+            EVENT_AWAITS_LOCK.lock();
+            
+            EventPayloadAwait eventAwait = new EventPayloadAwait();
+            
+            if ( EVENT_AWAITS.containsKey(event) ) {
+                EVENT_AWAITS.get(event).add(eventAwait);
+            } else {
+                EVENT_AWAITS.put(event, new HashSet<>());
+                EVENT_AWAITS.get(event).add(eventAwait);
+            }
+            
+            logFor(BeamEventRuntime.class).info(
+                    "await for object: " + event);
+            
+            return eventAwait;
+                    
+        } finally {
+            EVENT_AWAITS_LOCK.unlock(); 
+        }      
     }
     
     public static ThenFireAsyncConditionally ifAwaitedFor(String event) {
@@ -238,5 +307,24 @@ public class BeamEventRuntime {
         } finally {
             EVENT_AWAITS_LOCK.unlock();
         }
+    }
+    
+    public static void awaitForPayloadRequestThenSupply(Object payload, Class type) {
+        if ( ! type.isAssignableFrom(payload.getClass()) ) {
+            logFor(BeamEventRuntime.class).error("INVALID PAYLOAD EXCHANGE!");
+            return;
+        }
+        String payloadRequestEvent = "request of: " + type.getCanonicalName();
+        String payloadSupplyingEvent = "await for supply:" + type.getCanonicalName();
+        
+        awaitFor(payloadRequestEvent).thenFire(payloadSupplyingEvent, payload);
+    }
+    
+    public static <T> Optional<T> requestPayloadThenAwaitSupplying(Class<T> type) {
+        fireAsync("request of: " + type.getCanonicalName());
+        
+        return awaitForPayload("await for supply:" + type.getCanonicalName())
+                .thenReturn()
+                .map(payload -> (T) payload);
     }
 }

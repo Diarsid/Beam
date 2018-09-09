@@ -8,11 +8,15 @@ package diarsid.beam.core.base.analyze.similarity;
 
 import java.util.Collection;
 
+import diarsid.beam.core.modules.data.DaoSimilarityCache;
+
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
+import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitSupplying;
+import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
@@ -24,6 +28,14 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  * @author Diarsid
  */
 public class Similarity {
+    
+    private static SimilarityCache cache = new InMemorySimilarityCache();
+    
+    static {
+        asyncDo(() -> {
+            awaitAndCreatePersistentCache();
+        });
+    }
     
     static final char CHAIN_NOT_FOUND_CHAR = '*';
     
@@ -37,6 +49,20 @@ public class Similarity {
     
 
     private Similarity() {        
+    }
+    
+    public static void awaitAndCreatePersistentCache() {
+        if ( cache instanceof PersistentSimilarityCache ) {
+            return;
+        }
+        
+        requestPayloadThenAwaitSupplying(DaoSimilarityCache.class).ifPresent((dao) -> {
+            InMemorySimilarityCache inMemoryCache = (InMemorySimilarityCache) cache;
+            inMemoryCache.addAll(dao.loadAllHashesWith(similarityAlgorithmVersion()));
+            logFor(Similarity.class).info("cache loaded");
+            cache = new PersistentSimilarityCache(dao, inMemoryCache, similarityAlgorithmVersion());
+            logFor(Similarity.class).info("persistent cache created");
+        });
     }
     
     private static int indexOfChain(String target, char chain1, char chain2) {
@@ -88,15 +114,14 @@ public class Similarity {
             similarityLog(s);
         } else {
             if ( logLevelBasicEnabled && logLevelAdvancedEnabled ) {
-                logFor(Similarity.class).info(
-                        format("[SIMILARITY] %s%s", indentOf(indentLevel), s));
+                logFor(Similarity.class).info(indentOf(indentLevel) + s);
             } 
         }               
     }
     
     private static void similarityLog(String s) {
         if ( logLevelBasicEnabled ) {
-            logFor(Similarity.class).info("[SIMILARITY] " + s);
+            logFor(Similarity.class).info(s);
         }        
     }
     
@@ -108,6 +133,10 @@ public class Similarity {
             case 3  : return "      ";
             default : return "        ";
         }
+    }
+    
+    private static int similarityAlgorithmVersion() {
+        return 0;
     }
     
     private static int calculateSimilarityPercent(String target, String pattern) {        
@@ -425,15 +454,24 @@ public class Similarity {
     }
     
     public static boolean isSimilar(String target, String pattern) {
-        target = removeSeparators(target);
-        pattern = removeSeparators(pattern);
-        int similarityPercent = calculateSimilarityPercent(target, pattern);
-        int requiredPercent = requiredSimilarityPercentDependingOn(pattern.length());
+        CachedSimilarity similarity = cache.searchSimilarityForPair(target, pattern);
+        if ( similarity.isFound() ) {
+            similarityLog(format("%s (target: %s, pattern: %s)", similarity, target, pattern));
+            return similarity.isSimilar();
+        }
+        
+        String pureTarget = removeSeparators(target);
+        String purePattern = removeSeparators(pattern);
+        int similarityPercent = calculateSimilarityPercent(pureTarget, purePattern);
+        int requiredPercent = requiredSimilarityPercentDependingOn(purePattern.length());
         boolean similar = similarityPercent > requiredPercent;       
         similarityLog(format("result : %s %s%% (%s%% required)", 
                 similar ? "OK" : "FAIL",
                 similarityPercent, 
                 requiredPercent));
+        
+        cache.addToCache(target, pattern, similar);
+        
         return similar;          
     }
     

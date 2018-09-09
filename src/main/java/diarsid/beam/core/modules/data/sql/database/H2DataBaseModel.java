@@ -123,6 +123,18 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "   variants_stamp  VARCHAR NOT NULL )", 
                 4);
         
+        SqlTable similarityCache = new H2SqlTable(
+                "similarity_cache", 
+                "CREATE TABLE similarity_cache ( " +
+                "   uuid                UUID    DEFAULT RANDOM_UUID() PRIMARY KEY, " +    
+                "   target              VARCHAR     NOT NULL, " +     
+                "   pattern             VARCHAR     NOT NULL, " +
+                "   pair_hash           BIGINT      NOT NULL, " +         
+                "   isSimilar           BOOLEAN     NOT NULL, " +
+                "   algorithm_version   INTEGER     NOT NULL, " +
+                "   created             TIMESTAMP   NOT NULL ) ", 
+                7);
+        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
@@ -134,6 +146,7 @@ public class H2DataBaseModel implements SqlDataBaseModel {
         this.tables.add(webDirs);
         this.tables.add(images);
         this.tables.add(locationSubPathChoices);
+        this.tables.add(similarityCache);
         
         SqlConstraint fkBatchCommandsToBatchNames = new H2SqlConstraint(
                 "FK_BatchCommands_to_Batches", 
