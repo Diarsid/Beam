@@ -31,7 +31,7 @@ import static diarsid.beam.core.base.util.Logging.logFor;
  */
 public class BeamEventRuntime {
     
-    private final static Map<String, Set<EventAwait>> EVENT_AWAITS;
+    private final static Map<String, Set<PlannedAwaitForEvent>> EVENT_AWAITS;
     private final static Map<String, Set<CallbackEvent>> EMPTY_CALLBACKS;
     private final static Map<String, Set<CallbackEventPayload>> PAYLOAD_CALLBACKS;
     
@@ -153,14 +153,14 @@ public class BeamEventRuntime {
                             });
                 }
                 
-                Set<EventAwait> eventAwaits = EVENT_AWAITS.get(eventType);
+                Set<PlannedAwaitForEvent> eventAwaits = EVENT_AWAITS.get(eventType);
                 if ( nonNull(eventAwaits) ) {
                     AtomicInteger payloadAwaits = new AtomicInteger(0);
                     
                     eventAwaits
                             .stream()
                             .filter(eventAwait -> { 
-                                if (eventAwait instanceof EventPayloadAwait) {
+                                if (eventAwait instanceof PlannedAwaitForEventPayload) {
                                     payloadAwaits.incrementAndGet();
                                     return false;
                                 } else {
@@ -174,9 +174,9 @@ public class BeamEventRuntime {
                     if ( payloadAwaits.get() == 0 ) {
                         EVENT_AWAITS.remove(eventType);
                     } else {
-                        Set<EventAwait> payloadEventAwaits = eventAwaits
+                        Set<PlannedAwaitForEvent> payloadEventAwaits = eventAwaits
                                 .stream()
-                                .filter(eventAwait -> eventAwait instanceof EventPayloadAwait)
+                                .filter(eventAwait -> eventAwait instanceof PlannedAwaitForEventPayload)
                                 .collect(toSet());
                         EVENT_AWAITS.put(eventType, payloadEventAwaits);
                     }
@@ -221,15 +221,15 @@ public class BeamEventRuntime {
                             });
                 }     
                 
-                Set<EventAwait> eventAwaits = EVENT_AWAITS.get(eventType);
+                Set<PlannedAwaitForEvent> eventAwaits = EVENT_AWAITS.get(eventType);
                 if ( nonNull(eventAwaits) ) {
                     eventAwaits
                             .stream()
                             .peek(eventAwait -> logFor(BeamEventRuntime.class)
                                     .info("  ...process awaiting of: " + eventType))
                             .forEach(eventAwait -> {
-                                if ( eventAwait instanceof EventPayloadAwait ) {
-                                    ((EventPayloadAwait) eventAwait).notifyAwaitedOnEvent(payload);
+                                if ( eventAwait instanceof PlannedAwaitForEventPayload ) {
+                                    ((PlannedAwaitForEventPayload) eventAwait).notifyAwaitedOnEvent(payload);
                                 } else {
                                     eventAwait.notifyAwaitedOnEvent();
                                 }                                
@@ -253,11 +253,11 @@ public class BeamEventRuntime {
         }
     } 
     
-    public static EventAwait awaitFor(String event) {
+    public static PlannedAwaitForEvent planAwaitingFor(String event) {
         try {
             EVENT_AWAITS_LOCK.lock();
             
-            EventAwait eventAwait = new EventAwait();
+            PlannedAwaitForEvent eventAwait = new PlannedAwaitForEvent();
             
             if ( EVENT_AWAITS.containsKey(event) ) {
                 EVENT_AWAITS.get(event).add(eventAwait);
@@ -275,11 +275,11 @@ public class BeamEventRuntime {
         }        
     }
     
-    public static EventPayloadAwait awaitForPayload(String event) {
+    public static PlannedAwaitForEventPayload planAwaitingForPayload(String event) {
         try {
             EVENT_AWAITS_LOCK.lock();
             
-            EventPayloadAwait eventAwait = new EventPayloadAwait();
+            PlannedAwaitForEventPayload eventAwait = new PlannedAwaitForEventPayload();
             
             if ( EVENT_AWAITS.containsKey(event) ) {
                 EVENT_AWAITS.get(event).add(eventAwait);
@@ -317,14 +317,17 @@ public class BeamEventRuntime {
         String payloadRequestEvent = "request of: " + type.getCanonicalName();
         String payloadSupplyingEvent = "await for supply:" + type.getCanonicalName();
         
-        awaitFor(payloadRequestEvent).thenFire(payloadSupplyingEvent, payload);
+        planAwaitingFor(payloadRequestEvent).awaitThenFire(payloadSupplyingEvent, payload);
     }
     
     public static <T> Optional<T> requestPayloadThenAwaitSupplying(Class<T> type) {
+        PlannedAwaitForEventPayload plannedAwait = 
+                planAwaitingForPayload("await for supply:" + type.getCanonicalName());
+        
         fireAsync("request of: " + type.getCanonicalName());
         
-        return awaitForPayload("await for supply:" + type.getCanonicalName())
-                .thenReturn()
+        return plannedAwait
+                .awaitThenReturn()
                 .map(payload -> (T) payload);
     }
 }

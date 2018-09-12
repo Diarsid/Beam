@@ -47,12 +47,20 @@ class InMemorySimilarityCache implements SimilarityCache {
         return result;
     }
     
-    @Override
-    public void addToCache(String target, String pattern, boolean similar) {
-        Long pairHash = SIMILARITY_PAIR_HASH.apply(target, pattern);
+    boolean notCached(Long pairHash) {
+        return ! this.cache.containsKey(pairHash);
+    }
+    
+    void addHashToCache(Long pairHash, boolean similar) {
         synchronized ( this.cacheLock ) {
             this.cache.put(pairHash, similar);
         }
+    }
+    
+    @Override
+    public void addToCache(String target, String pattern, boolean similar) {
+        Long pairHash = SIMILARITY_PAIR_HASH.apply(target, pattern);
+        this.addHashToCache(pairHash, similar);
     }
     
     void addAll(Map<Long, Boolean> otherCache) {

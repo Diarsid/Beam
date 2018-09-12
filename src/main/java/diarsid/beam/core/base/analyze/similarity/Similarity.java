@@ -7,6 +7,8 @@ package diarsid.beam.core.base.analyze.similarity;
 
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 import diarsid.beam.core.modules.data.DaoSimilarityCache;
 
@@ -15,6 +17,7 @@ import static java.lang.Integer.min;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
+import static diarsid.beam.core.base.analyze.similarity.CacheUsage.NOT_USE_CACHE;
 import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitSupplying;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.Logging.logFor;
@@ -29,6 +32,7 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class Similarity {
     
+    private static final int SIMILARITY_ALGORITHM_VERSION = 1;
     private static SimilarityCache cache = new InMemorySimilarityCache();
     
     static {
@@ -58,10 +62,21 @@ public class Similarity {
         
         requestPayloadThenAwaitSupplying(DaoSimilarityCache.class).ifPresent((dao) -> {
             InMemorySimilarityCache inMemoryCache = (InMemorySimilarityCache) cache;
-            inMemoryCache.addAll(dao.loadAllHashesWith(similarityAlgorithmVersion()));
+            inMemoryCache.addAll(dao.loadAllHashesWith(SIMILARITY_ALGORITHM_VERSION));
+            
             logFor(Similarity.class).info("cache loaded");
-            cache = new PersistentSimilarityCache(dao, inMemoryCache, similarityAlgorithmVersion());
+            cache = new PersistentSimilarityCache(dao, inMemoryCache, SIMILARITY_ALGORITHM_VERSION);
             logFor(Similarity.class).info("persistent cache created");
+            
+            asyncDo(() -> {
+                BiFunction<String, String, Boolean> similarityFunction = 
+                    (target, pattern) -> isSimilarInternally(target, pattern, NOT_USE_CACHE); 
+                
+                Map<Long, Boolean> reassesedHashes = dao.reassessAllHashesOlderThan(
+                                SIMILARITY_ALGORITHM_VERSION, similarityFunction);
+                
+                inMemoryCache.addAll(reassesedHashes);
+            });
         });
     }
     
@@ -133,10 +148,6 @@ public class Similarity {
             case 3  : return "      ";
             default : return "        ";
         }
-    }
-    
-    private static int similarityAlgorithmVersion() {
-        return 0;
     }
     
     private static int calculateSimilarityPercent(String target, String pattern) {        
@@ -454,11 +465,18 @@ public class Similarity {
     }
     
     public static boolean isSimilar(String target, String pattern) {
-        CachedSimilarity similarity = cache.searchSimilarityForPair(target, pattern);
-        if ( similarity.isFound() ) {
-            similarityLog(format("%s (target: %s, pattern: %s)", similarity, target, pattern));
-            return similarity.isSimilar();
-        }
+        return isSimilarInternally(target, pattern, CacheUsage.USE_CACHE);
+    }
+    
+    static boolean isSimilarInternally(
+            String target, String pattern, CacheUsage cacheUsage) {
+        if ( cacheUsage == CacheUsage.USE_CACHE ) {
+            CachedSimilarity similarity = cache.searchSimilarityForPair(target, pattern);
+            if ( similarity.isFound() ) {
+                similarityLog(format("%s (target: %s, pattern: %s)", similarity, target, pattern));
+                return similarity.isSimilar();
+            }
+        }        
         
         String pureTarget = removeSeparators(target);
         String purePattern = removeSeparators(pattern);
@@ -470,7 +488,9 @@ public class Similarity {
                 similarityPercent, 
                 requiredPercent));
         
-        cache.addToCache(target, pattern, similar);
+        if ( cacheUsage == CacheUsage.USE_CACHE ) {
+            cache.addToCache(target, pattern, similar);
+        }
         
         return similar;          
     }

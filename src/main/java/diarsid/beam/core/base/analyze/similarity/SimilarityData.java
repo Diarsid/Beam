@@ -7,7 +7,6 @@ package diarsid.beam.core.base.analyze.similarity;
 
 import java.util.Objects;
 
-import static diarsid.beam.core.base.analyze.similarity.SimilarityCache.SIMILARITY_PAIR_HASH;
 
 /**
  *
@@ -17,11 +16,13 @@ public class SimilarityData {
     
     private final String target;
     private final String pattern;
+    private final long pairHash;
     private final boolean isSimilar;
 
-    public SimilarityData(String target, String pattern, boolean isSimilar) {
+    public SimilarityData(String target, String pattern, Long hash, boolean isSimilar) {
         this.target = target;
         this.pattern = pattern;
+        this.pairHash = hash;
         this.isSimilar = isSimilar;
     }
 
@@ -38,15 +39,16 @@ public class SimilarityData {
     }
     
     public long hash() {
-        return SIMILARITY_PAIR_HASH.apply(this.target, this.pattern);
+        return this.pairHash;
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 43 * hash + Objects.hashCode(this.target);
-        hash = 43 * hash + Objects.hashCode(this.pattern);
-        hash = 43 * hash + (this.isSimilar ? 1 : 0);
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.target);
+        hash = 89 * hash + Objects.hashCode(this.pattern);
+        hash = 89 * hash + ( int ) (this.pairHash ^ (this.pairHash >>> 32));
+        hash = 89 * hash + (this.isSimilar ? 1 : 0);
         return hash;
     }
 
@@ -62,6 +64,9 @@ public class SimilarityData {
             return false;
         }
         final SimilarityData other = ( SimilarityData ) obj;
+        if ( this.pairHash != other.pairHash ) {
+            return false;
+        }
         if ( this.isSimilar != other.isSimilar ) {
             return false;
         }
@@ -72,6 +77,6 @@ public class SimilarityData {
             return false;
         }
         return true;
-    }
+    }    
     
 }

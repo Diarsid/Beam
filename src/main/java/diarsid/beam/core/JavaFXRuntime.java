@@ -8,9 +8,9 @@ package diarsid.beam.core;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-import static diarsid.beam.core.base.events.BeamEventRuntime.awaitFor;
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
+import static diarsid.beam.core.base.events.BeamEventRuntime.planAwaitingFor;
 
 /**
  *
@@ -35,7 +35,7 @@ public class JavaFXRuntime extends Application {
                         "JavaFX Application starter thread", 
                         () -> Application.launch());
                 notLaunched = false;
-                awaitFor(LAUNCHED).thenProceed();                
+                planAwaitingFor(LAUNCHED).awaitThenProceed();                
             }            
         }        
     } 

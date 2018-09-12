@@ -16,11 +16,11 @@ import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
  *
  * @author Diarsid
  */
-public class EventAwait {
+public class PlannedAwaitForEvent {
     
     private final Object monitor;
 
-    EventAwait() {
+    PlannedAwaitForEvent() {
         this.monitor = new Object();
     }
     
@@ -28,7 +28,7 @@ public class EventAwait {
         return this.monitor;
     }
     
-    public void thenDo(CallbackEmpty callback) {
+    public void awaitThenDo(CallbackEmpty callback) {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();
@@ -40,7 +40,7 @@ public class EventAwait {
         callback.call();
     }
     
-    public void thenFire(String eventType) {
+    public void awaitThenFire(String eventType) {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();
@@ -52,7 +52,7 @@ public class EventAwait {
         fireAsync(eventType);
     }
     
-    public void thenFire(String eventType, Object payload) {
+    public void awaitThenFire(String eventType, Object payload) {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();
@@ -64,7 +64,7 @@ public class EventAwait {
         fireAsync(eventType, payload);
     }
     
-    public <T> Optional<T> thenGet(Supplier<T> supplierT) {
+    public <T> Optional<T> awaitThenGet(Supplier<T> supplierT) {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();
@@ -76,7 +76,7 @@ public class EventAwait {
         return Optional.ofNullable(supplierT.get());
     }
     
-    public void thenProceed() {
+    public void awaitThenProceed() {
         synchronized ( this.monitor ) {
             try {
                 this.monitor.wait();

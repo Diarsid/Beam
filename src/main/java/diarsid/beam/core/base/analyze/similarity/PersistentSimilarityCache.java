@@ -56,13 +56,16 @@ class PersistentSimilarityCache implements SimilarityCache {
 
     @Override
     public void addToCache(String target, String pattern, boolean similar) {
-        this.inMemoryCache.addToCache(target, pattern, similar);
-        this.persist(target, pattern, similar);
+        Long pairHash = SIMILARITY_PAIR_HASH.apply(target, pattern);
+        if ( this.inMemoryCache.notCached(pairHash) ) {
+            this.inMemoryCache.addHashToCache(pairHash, similar);
+            this.persist(target, pattern, pairHash, similar);
+        }        
     }
     
-    private void persist(String target, String pattern, boolean similar) {
+    private void persist(String target, String pattern, Long pairHash, boolean similar) {
         synchronized ( this.buffer ) {
-            this.buffer.add(new SimilarityData(target, pattern, similar));
+            this.buffer.add(new SimilarityData(target, pattern, pairHash, similar));
         }
     }
     

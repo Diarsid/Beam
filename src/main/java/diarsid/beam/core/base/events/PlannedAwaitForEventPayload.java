@@ -12,15 +12,15 @@ import java.util.function.Consumer;
  *
  * @author Diarsid
  */
-public class EventPayloadAwait extends EventAwait {
+public class PlannedAwaitForEventPayload extends PlannedAwaitForEvent {
     
     private Object payload;
 
-    public EventPayloadAwait() {
+    public PlannedAwaitForEventPayload() {
         super();
     }
     
-    public void thenAccept(Consumer consumer) {
+    public void awaitThenAccept(Consumer consumer) {
         synchronized ( super.monitor() ) {
             try {
                 super.monitor().wait();
@@ -32,7 +32,7 @@ public class EventPayloadAwait extends EventAwait {
         consumer.accept(this.payload);
     }
     
-    public Optional<Object> thenReturn() {
+    public Optional<Object> awaitThenReturn() {
         synchronized ( super.monitor() ) {
             try {
                 super.monitor().wait();
