@@ -139,6 +139,7 @@ class AnalyzePositionsData {
     boolean clusterEndsWithSeparator;
     boolean previousClusterEndsWithSeparator;
     int separatorsBetweenClusters;
+    int allClustersInconsistency;
     
     double missedImportance;
     double clustersImportance; 
@@ -242,8 +243,12 @@ class AnalyzePositionsData {
         }        
         
         this.patternInVariantLength = last(this.positions) - first(this.positions) + 1;
+                
+        if ( nonEmpty(this.clusters) ) {
+            this.analyzeAllClustersOrderDiffs();
+        }
         
-        if ( this.clustersQty > 1 ) {
+        if ( this.clustersQty > 1 && this.allClustersInconsistency == 0 ) {
             if ( this.separatorsBetweenClusters > 0 ) {
                 if ( this.distanceBetweenClusters == this.separatorsBetweenClusters) {
                     logAnalyze(POSITIONS_CLUSTERS, "               [weight] all clusters are one pattern, can be regarded as one cluster!");
@@ -252,10 +257,6 @@ class AnalyzePositionsData {
             } else {
                 
             }           
-        }
-        
-        if ( nonEmpty(this.clusters) ) {
-            this.analyzeAllClustersOrderDiffs();
         }
     }
 
@@ -318,9 +319,9 @@ class AnalyzePositionsData {
         }
         
         if ( orderMeansDifferentFromZero > 0 ) {
-            int incosistency = orderMeansDifferentFromZero * 2;
-            logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : clusters order incosistency", incosistency);
-            this.positionsWeight = this.positionsWeight + incosistency;
+            this.allClustersInconsistency = orderMeansDifferentFromZero * 2;
+            logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : clusters order incosistency", allClustersInconsistency);
+            this.positionsWeight = this.positionsWeight + this.allClustersInconsistency;
         }        
         
         if ( allClustersHaveLength2 ) {
@@ -340,13 +341,13 @@ class AnalyzePositionsData {
         
         if ( direction.equals(FORWARD) ) {
             unclusteredPatternCharIndexes = forwardUnclusteredIndexes;
-            for (int currentPatternCharIndex = 0; currentPatternCharIndex < data.patternChars.length; currentPatternCharIndex++) {                
-                processCurrentPatternCharOf(currentPatternCharIndex);
+            for (int currentPatternCharIndex = 0, charsRemained = data.patternChars.length - 1; currentPatternCharIndex < data.patternChars.length; currentPatternCharIndex++, charsRemained--) {                
+                processCurrentPatternCharOf(currentPatternCharIndex, charsRemained);
             } 
         } else {
             unclusteredPatternCharIndexes = reverseUnclusteredIndexes;
-            for (int currentPatternCharIndex = data.patternChars.length - 1; currentPatternCharIndex > -1 ; currentPatternCharIndex--) {
-                processCurrentPatternCharOf(currentPatternCharIndex);
+            for (int currentPatternCharIndex = data.patternChars.length - 1, charsRemained = data.patternChars.length - 1; currentPatternCharIndex > -1 ; currentPatternCharIndex--, charsRemained--) {
+                processCurrentPatternCharOf(currentPatternCharIndex, charsRemained);
             }
         }
         swapUnclusteredPatternCharIndexes();
@@ -368,8 +369,10 @@ class AnalyzePositionsData {
     private void processAccumulatedUnclusteredPatternCharIndexes() {
         if ( nonEmpty(unclusteredPatternCharIndexes) ) {
             logAnalyze(POSITIONS_SEARCH, "    %s", findPositionsStep);
+            int charsRemained = unclusteredPatternCharIndexes.size();
             for (Integer currentPatternCharIndex : unclusteredPatternCharIndexes) {
-                processCurrentPatternCharOf(currentPatternCharIndex);
+                charsRemained--;
+                processCurrentPatternCharOf(currentPatternCharIndex, charsRemained);
             }
         }
     }
@@ -396,7 +399,7 @@ class AnalyzePositionsData {
         this.findPositionsStep = STEP_1;
     }
     
-    private void processCurrentPatternCharOf(int currentPatternCharIndex) {
+    private void processCurrentPatternCharOf(int currentPatternCharIndex, int charsRemained) {
         currentChar = data.patternChars[currentPatternCharIndex];
         logAnalyze(POSITIONS_SEARCH, "      [explore] '%s'(%s in pattern)", this.currentChar, currentPatternCharIndex);
         if ( skipNextPatternChar ) {
@@ -545,8 +548,8 @@ class AnalyzePositionsData {
                 } else {
                     // on steps, other than STEP_1, do not save positions directly, just record them as appropriate for saving.
                     if ( findPositionsStep.canAddToPositions(charsInClusterQty) ) {
-                        
-                        isCurrentCharPositionAddedToPositions = true;
+                                                
+                        isCurrentCharPositionAddedToPositions = positionCandidate.hasAtLeastOneAcceptedCandidate();
                         Integer nearestPatternCharIndex = positionPatternIndexes.get(nearestPositionInVariant);
                         if ( isNull(nearestPatternCharIndex) ) {
                             // nearest char can be null only when current char is clastered with next pattern position
@@ -629,11 +632,12 @@ class AnalyzePositionsData {
                         }    
                         // end of debugging zone
                                                 
-                        positionCandidate.mutate(
+                        positionCandidate.tryToMutate(
                                 currentPatternCharPositionInVariant, 
                                 orderDiffInVariant, 
                                 orderDiffInPattern, 
-                                charsInClusterQty);
+                                charsInClusterQty,
+                                charsRemained);
                     }
                 }
                 
@@ -827,7 +831,7 @@ class AnalyzePositionsData {
                 }            
             }
         }
-
+        
         if ( this.currentClusterLength > 2 && this.currentClusterOrdersIsConsistent && ! this.currentClusterOrdersHaveDiffCompensations ) {
             if ( this.patternContainsClusterFoundInVariant() ) {
                 logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] pattern contains cluster!");                
@@ -850,13 +854,40 @@ class AnalyzePositionsData {
         this.clusterEndsWithSeparator = false;
     }
     
+    private int countPatternAndClusterMatches() {
+        int patternPointer;
+        int clusterPointer;
+        char patternPointedChar;
+        char clusterPointedChar;
+        int matches = 0;
+        
+        clusterPointer = this.currentClusterFirstPosition;
+        patternPointer = 0;
+        
+        for (int step = 0; step < this.currentClusterLength; step++) {
+            patternPointedChar = this.data.patternChars[patternPointer];
+            clusterPointedChar = this.data.variantText.charAt(clusterPointer);
+            
+            if ( patternPointedChar == clusterPointedChar ) {
+                matches++;
+                patternPointer++;
+                clusterPointer++;                
+            } else {
+                // patternPointer doesn't move!
+                clusterPointer++;
+            } 
+        }
+        
+        return matches;
+    }
+    
     private boolean patternContainsClusterFoundInVariant() {
         char first = this.data.variantText.charAt(this.currentClusterFirstPosition);
         char patternChar;
         char clusteredChar;
         
         int clusteredCharPos;
-        int patternChatPos;
+        int patternCharPos;
         
         int variantLength = this.data.variantText.length();
         int patternLength = this.data.patternChars.length;
@@ -873,15 +904,15 @@ class AnalyzePositionsData {
                 
                 clusterIterating : for ( ; j < this.currentClusterLength; j++) {
                     clusteredCharPos = this.currentClusterFirstPosition + j;
-                    patternChatPos = i + j;
+                    patternCharPos = i + j;
                     
-                    if ( clusteredCharPos >= variantLength || patternChatPos >= patternLength ) {
+                    if ( clusteredCharPos >= variantLength || patternCharPos >= patternLength ) {
                         found = false;
                         break patternIterating;
                     }
                     
                     clusteredChar = this.data.variantText.charAt(clusteredCharPos);
-                    patternChar = this.data.patternChars[patternChatPos];
+                    patternChar = this.data.patternChars[patternCharPos];
                     
                     if ( clusteredChar != patternChar ) {
                         found = false;                        
@@ -1011,6 +1042,9 @@ class AnalyzePositionsData {
                 this.clustersImportance,
                 this.data.patternChars.length,
                 this.data.variantText.length());
+        logAnalyze(POSITIONS_CLUSTERS, "    [importance] clusters: %s", this.clustersImportance);
+        logAnalyze(POSITIONS_CLUSTERS, "    [importance] non-clustered: %s", this.nonClusteredImportance);
+        logAnalyze(POSITIONS_CLUSTERS, "    [importance] missed: %s", this.missedImportance);
     }
     
     boolean isCurrentPositionNotMissed() {
@@ -1086,6 +1120,7 @@ class AnalyzePositionsData {
         this.positionCandidate.clear();
         this.nearestPositionInVariant = POS_UNINITIALIZED;
         this.currentClusterOrderDiffs.clear();
+        this.allClustersInconsistency = 0;
         if ( nonEmpty(this.clusters) ) {
             giveBackAllToPool(this.clusters);
         }

@@ -419,6 +419,23 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+        
+    @Test
+    public void test_tomcarotCase_sldev() {
+        pattern = "tomcarot";
+        
+        variants = asList(
+                "Dev/Start_Tomcat",
+                "Tomcat root"
+        );
+        
+        expected = asList(
+                "Tomcat root",
+                "Dev/Start_Tomcat"         
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
     
     @Test
     public void test_rostersCase_rosers() {

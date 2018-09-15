@@ -34,14 +34,17 @@ class PositionCandidate {
         this.mutationsAttempts = 0;
     }
     
-    void mutate(int position, int orderDiffInVariant, int orderDiffInPattern, int clusteredAround) {
+    void tryToMutate(int position, int orderDiffInVariant, int orderDiffInPattern, int clusteredAround, int charsRemained) {
+        this.mutationsAttempts++;
+        
         if (POSITIONS_SEARCH.isEnabled()) {
             logAnalyze(POSITIONS_SEARCH, "          [info] candidate %s in variant has:", position);
             logAnalyze(POSITIONS_SEARCH, "             pattern order diff  %s", orderDiffInPattern);
             logAnalyze(POSITIONS_SEARCH, "             variant order diff  %s", orderDiffInVariant == UNINITIALIZED ? "_" : orderDiffInPattern);
             logAnalyze(POSITIONS_SEARCH, "             clustered positions %s", clusteredAround);
-        }        
-                        
+            logAnalyze(POSITIONS_SEARCH, "             chars remained %s", charsRemained);
+        }
+        
         if ( this.isCurrentStateWorseThan(
                 orderDiffInVariant, orderDiffInPattern, clusteredAround) ) {
             logAnalyze(POSITIONS_SEARCH, "          [info] accept %s", position);
@@ -53,7 +56,6 @@ class PositionCandidate {
     
     private boolean isCurrentStateWorseThan(
             int otherOrderDiffInVariant, int otherOrderDiffInPattern, int otherClusteredAround) {
-        this.mutationsAttempts++;
         if ( this.position == UNINITIALIZED ) {
             return CURRENT_IS_WORSE;
         }
@@ -198,6 +200,10 @@ class PositionCandidate {
     
     int mutationAttempts() {
         return this.mutationsAttempts;
+    }
+    
+    boolean hasAtLeastOneAcceptedCandidate() {
+        return this.mutationsCommitted > 0;
     }
     
     boolean hasRejectedMutations() {
