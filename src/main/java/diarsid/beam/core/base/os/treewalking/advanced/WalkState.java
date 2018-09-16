@@ -17,10 +17,10 @@ import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
-import diarsid.support.objects.Possible;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.support.objects.PooledReusable;
+import diarsid.support.objects.Possible;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
@@ -201,6 +201,10 @@ class WalkState extends PooledReusable {
     
     String pattern() {
         return this.pattern;
+    }
+    
+    int depth() {
+        return this.maxLevelsToVisit;
     }
     
     Initiator initiator() {

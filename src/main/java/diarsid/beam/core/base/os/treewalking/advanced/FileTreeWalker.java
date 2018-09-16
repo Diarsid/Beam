@@ -24,6 +24,7 @@ import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
@@ -41,6 +42,7 @@ import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.haveEqualLength;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
 
@@ -147,7 +149,21 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         }
     }
     
+    private void logWalkingQuery() {
+        logFor(this).info(format(
+                "\n" +
+                "   FIND %s\n" +
+                "   LIKE PATTERN %s\n" +
+                "   IN %s\n" +
+                "   WITH DEPTH %s", 
+                state().searchMode(), 
+                state().pattern(), 
+                state().absoluteRoot(), 
+                state().depth()));
+    }
+    
     private void walkUsing(WalkState state) {
+        this.logWalkingQuery();
         if ( state.patternIsPath() ) {
             this.multipleWalkIterationsThroughPathUsing(state);
         } else {
