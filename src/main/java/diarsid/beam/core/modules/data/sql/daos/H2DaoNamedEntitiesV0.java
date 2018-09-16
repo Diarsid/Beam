@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.sortAndGetFirstFrom;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.spacingWildcards;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceAfter;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceBefore;

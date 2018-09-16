@@ -9,7 +9,7 @@ package diarsid.beam.core.base.os.treewalking.base;
 import java.nio.file.Path;
 import java.util.List;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 
 import static java.nio.file.Files.isDirectory;
 

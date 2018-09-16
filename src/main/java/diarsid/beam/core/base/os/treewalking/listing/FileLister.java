@@ -20,7 +20,7 @@ import static java.nio.file.Files.walkFileTree;
 import static java.util.EnumSet.of;
 
 import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getFolderTypeDetector;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

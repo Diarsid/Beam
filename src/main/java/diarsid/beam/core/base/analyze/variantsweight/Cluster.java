@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
-import diarsid.beam.core.base.objects.PooledReusable;
+import diarsid.support.objects.PooledReusable;
 
 
 /**

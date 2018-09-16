@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 
 import static java.util.Arrays.stream;
 

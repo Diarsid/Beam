@@ -6,7 +6,7 @@
 
 package diarsid.beam.core.modules.data.sql.database;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataBaseType;
 import diarsid.jdbc.transactions.JdbcConnectionsSource;

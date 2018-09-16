@@ -16,8 +16,8 @@ import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.joining;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
+import static diarsid.support.objects.Pools.giveBackToPool;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

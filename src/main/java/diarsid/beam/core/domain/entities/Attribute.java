@@ -8,7 +8,7 @@ package diarsid.beam.core.domain.entities;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.util.Pair;
+import diarsid.support.objects.Pair;
 
 import static java.util.Objects.isNull;
 

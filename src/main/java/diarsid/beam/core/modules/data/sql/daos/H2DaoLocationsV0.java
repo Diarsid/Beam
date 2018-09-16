@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;

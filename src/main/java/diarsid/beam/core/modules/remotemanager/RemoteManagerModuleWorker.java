@@ -13,7 +13,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
@@ -27,7 +27,7 @@ import static java.rmi.registry.LocateRegistry.getRegistry;
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRegistry;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRemoteAccessEndpoint;
 

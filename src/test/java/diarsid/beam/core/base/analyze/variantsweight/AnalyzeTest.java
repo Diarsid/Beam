@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import diarsid.beam.core.base.objects.Pool;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
@@ -31,8 +31,8 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.disableResul
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.resultsLimitToDefault;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.objects.Pools.poolOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
+import static diarsid.support.objects.Pools.poolOf;
 
 /**
  *

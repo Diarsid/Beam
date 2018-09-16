@@ -20,7 +20,7 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 import static diarsid.beam.core.base.analyze.similarity.CacheUsage.NOT_USE_CACHE;
 import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitSupplying;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;

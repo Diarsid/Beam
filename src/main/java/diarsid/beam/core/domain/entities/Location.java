@@ -24,7 +24,7 @@ import static java.util.Arrays.asList;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.openWithDesktop;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 

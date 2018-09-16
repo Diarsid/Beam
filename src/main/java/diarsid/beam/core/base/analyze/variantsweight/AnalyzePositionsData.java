@@ -35,7 +35,6 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.nonClust
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
-import static diarsid.beam.core.base.objects.Pools.giveBackAllToPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
@@ -44,6 +43,7 @@ import static diarsid.beam.core.base.util.MathUtil.cube;
 import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
 import static diarsid.beam.core.base.util.MathUtil.square;
 import static diarsid.beam.core.base.util.StringUtils.isWordsSeparator;
+import static diarsid.support.objects.Pools.giveBackAllToPool;
 
 /**
  *

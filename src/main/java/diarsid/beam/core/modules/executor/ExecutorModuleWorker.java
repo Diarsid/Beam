@@ -69,7 +69,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;

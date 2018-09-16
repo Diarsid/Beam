@@ -9,19 +9,21 @@ package diarsid.beam.core.base.data.util;
 import org.junit.Before;
 import org.junit.Test;
 
+import diarsid.beam.base.BaseTest;
+
 import static java.lang.String.format;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.StringUtils.countOccurences;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
  * @author Diarsid
  */
-public class SqlPatternSelectTest {
+public class SqlPatternSelectTest extends BaseTest {
     
     private String pattern;
     private String columns;

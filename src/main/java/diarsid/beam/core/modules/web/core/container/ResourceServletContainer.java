@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 
-import diarsid.beam.core.base.util.Pair;
+import diarsid.support.objects.Pair;
 
 
 /**

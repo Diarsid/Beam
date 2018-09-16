@@ -13,12 +13,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import diarsid.beam.core.Beam;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *

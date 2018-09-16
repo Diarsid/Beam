@@ -22,10 +22,10 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

@@ -33,14 +33,14 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_NOTE
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET_IN_NOTES;
-import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.SIMPLE_PATH_RULE;
+import static diarsid.support.objects.Pools.giveBackToPool;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

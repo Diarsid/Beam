@@ -16,11 +16,11 @@ import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
-import diarsid.beam.core.base.objects.PooledReusable;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
+import diarsid.support.objects.PooledReusable;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
@@ -50,9 +50,9 @@ import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 import static diarsid.beam.core.base.util.StringUtils.isEmpty;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *
@@ -231,7 +231,7 @@ class WalkState extends PooledReusable {
         return this.variants;
     }
     
-    FileSearchMode mode() {
+    FileSearchMode searchMode() {
         return this.mode;
     }
     

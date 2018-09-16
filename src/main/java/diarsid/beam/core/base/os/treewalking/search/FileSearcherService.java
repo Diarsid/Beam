@@ -15,7 +15,7 @@ import java.util.List;
 
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
-import diarsid.beam.core.base.util.Pair;
+import diarsid.support.objects.Pair;
 
 import static java.util.stream.Collectors.toList;
 
@@ -25,7 +25,7 @@ import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResu
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.failWithTargetNotFoundFailure;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.successWithFile;
 import static diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult.successWithFiles;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;

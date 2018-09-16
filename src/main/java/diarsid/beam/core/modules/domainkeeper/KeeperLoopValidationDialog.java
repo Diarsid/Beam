@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import diarsid.beam.core.base.objects.PooledReusable;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
+import diarsid.support.objects.PooledReusable;
 
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.validation.Validation.validateUsingRules;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *

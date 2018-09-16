@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;

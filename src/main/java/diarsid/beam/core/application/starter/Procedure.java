@@ -6,16 +6,16 @@
 
 package diarsid.beam.core.application.starter;
 
-import diarsid.beam.core.application.environment.Configuration;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.configuration.Configuration;
+import diarsid.support.objects.Possible;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.application.starter.Flags.flagOf;
-import static diarsid.beam.core.base.util.Logging.logFor;
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.support.log.Logging.logFor;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *

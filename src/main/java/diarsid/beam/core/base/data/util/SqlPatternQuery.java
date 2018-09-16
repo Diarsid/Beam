@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.base.data.util;
 
-import diarsid.beam.core.base.objects.PooledReusable;
+import diarsid.support.objects.PooledReusable;
 
 
 /**

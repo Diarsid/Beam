@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.base.util;
 
+import diarsid.support.objects.Pair;
+
 import java.util.List;
 
 import org.junit.BeforeClass;

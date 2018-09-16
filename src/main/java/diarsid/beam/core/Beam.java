@@ -4,7 +4,6 @@
  */
 package diarsid.beam.core;
 
-import diarsid.beam.core.application.environment.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.ExecutorModule;
@@ -12,6 +11,7 @@ import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.WebModule;
+import diarsid.support.configuration.Configuration;
 
 import com.drs.gem.injector.core.Container;
 import com.drs.gem.injector.core.GemInjector;
@@ -21,7 +21,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static diarsid.beam.core.JavaFXRuntime.launchJavaFXRuntimeAndWait;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *
@@ -45,8 +45,8 @@ public class Beam {
            
     public static void main(String... args) {
         try {
-            logFor(Beam.class).info("start Beam.core");
-            Configuration configuration = configuration();
+            Configuration configuration = configuration();            
+            logFor(Beam.class).info("start Beam.core");            
             launchJavaFXRuntimeAndWait();
             initApplication(configuration);
             stopModulesBeforeExit(configuration);

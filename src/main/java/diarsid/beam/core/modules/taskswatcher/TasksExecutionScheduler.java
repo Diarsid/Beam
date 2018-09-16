@@ -14,7 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
@@ -23,14 +23,14 @@ import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logging.logFor;
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_INITIAL_START;
 import static diarsid.beam.core.modules.taskswatcher.LagType.LAG_AFTER_TEMPORARY_PAUSE;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowToTime;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMinutesFromPastToNow;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *

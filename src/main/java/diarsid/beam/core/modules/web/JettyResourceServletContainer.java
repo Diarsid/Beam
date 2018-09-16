@@ -23,17 +23,17 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
-import diarsid.beam.core.base.util.Pair;
+import diarsid.support.objects.Pair;
 import diarsid.beam.core.modules.web.core.container.ResourceDispatcherServlet;
 import diarsid.beam.core.modules.web.core.container.ResourceServletContainer;
 
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
 import static diarsid.beam.core.Beam.systemInitiator;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

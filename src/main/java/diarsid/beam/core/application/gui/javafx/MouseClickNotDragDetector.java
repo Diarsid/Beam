@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -18,9 +18,7 @@ import static javafx.scene.input.MouseEvent.MOUSE_DRAGGED;
 import static javafx.scene.input.MouseEvent.MOUSE_PRESSED;
 import static javafx.scene.input.MouseEvent.MOUSE_RELEASED;
 
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
-import static diarsid.beam.core.base.util.Possible.possibleWith;
-import static diarsid.beam.core.base.util.Possible.possibleOf;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *
@@ -28,17 +26,21 @@ import static diarsid.beam.core.base.util.Possible.possibleOf;
  */
 class MouseClickNotDragDetector {
     
-    private Possible<Consumer<MouseEvent>> onClickNotDrag;
-    private Possible<Consumer<MouseEvent>> onDoubleClick;
+    private final Possible<Consumer<MouseEvent>> onClickNotDrag;
+    private final Possible<Consumer<MouseEvent>> onDoubleClick;
     private boolean wasDragged;
     private long timePressed;
     private long timeReleased;
     private long pressedDurationTreshold;
 
     MouseClickNotDragDetector() {
+        this.onClickNotDrag = possibleButEmpty();
+        this.onDoubleClick = possibleButEmpty();
     }
 
     private MouseClickNotDragDetector(Node node) {
+        this.onClickNotDrag = possibleButEmpty();
+        this.onDoubleClick = possibleButEmpty();
         
         node.addEventHandler(MOUSE_PRESSED, (mouseEvent) -> {
             this.timePressed = currentTimeMillis();
@@ -68,13 +70,13 @@ class MouseClickNotDragDetector {
     
     MouseClickNotDragDetector setOnMouseClickNotDrag(
             Consumer<MouseEvent> onClickNotDrag) {
-        this.onClickNotDrag = possibleWith(onClickNotDrag);
+        this.onClickNotDrag.resetTo(onClickNotDrag);
         return this;
     }
     
     MouseClickNotDragDetector setOnMouseDoubleClick(
             Consumer<MouseEvent> onDoubleClick) {
-        this.onDoubleClick = possibleWith(onDoubleClick);
+        this.onDoubleClick.resetTo(onDoubleClick);
         return this;
     }
     

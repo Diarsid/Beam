@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

@@ -8,7 +8,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.util.Map;
 
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
-import diarsid.beam.core.base.objects.PooledReusable;
+import diarsid.support.objects.PooledReusable;
 
 import static java.lang.Math.pow;
 import static java.util.Arrays.fill;

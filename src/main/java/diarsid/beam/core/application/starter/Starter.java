@@ -19,7 +19,7 @@ import static diarsid.beam.core.application.starter.Flags.formatToPrintables;
 import static diarsid.beam.core.application.starter.Launcher.getLauncher;
 import static diarsid.beam.core.application.starter.Procedure.defineProcedure;
 import static diarsid.beam.core.base.util.ArraysUtil.isEmpty;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

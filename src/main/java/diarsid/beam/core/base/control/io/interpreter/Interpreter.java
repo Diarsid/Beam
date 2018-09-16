@@ -90,7 +90,7 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognit
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.prefixes;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.relativePath;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.singleArg;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 
 /**

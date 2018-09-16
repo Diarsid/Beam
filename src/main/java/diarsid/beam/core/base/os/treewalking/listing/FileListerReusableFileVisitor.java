@@ -22,7 +22,7 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import static diarsid.beam.core.base.control.io.base.console.ConsoleSigns.SIGN_OF_TOO_LARGE;
 import static diarsid.beam.core.base.os.treewalking.listing.FileItemsFormatter.INLINE_SKIPPED;
 import static diarsid.beam.core.base.os.treewalking.listing.FileItemsFormatter.NEW_LINE_SKIPPED;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

@@ -12,8 +12,8 @@ import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
+import static diarsid.support.objects.Pools.giveBackToPool;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

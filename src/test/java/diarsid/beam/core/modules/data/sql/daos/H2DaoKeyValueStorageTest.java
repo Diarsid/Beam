@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.jdbc.transactions.core.Params.params;
 
 /**

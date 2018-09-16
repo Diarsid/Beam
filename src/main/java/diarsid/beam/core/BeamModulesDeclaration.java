@@ -9,7 +9,7 @@ package diarsid.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.DataModule;

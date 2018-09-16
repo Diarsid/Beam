@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

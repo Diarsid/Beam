@@ -6,7 +6,7 @@ import java.util.List;
 
 import javafx.application.Platform;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.application.gui.Gui;
 import diarsid.beam.core.application.gui.InteractionGui;
 import diarsid.beam.core.application.gui.OutputMessagesGui;

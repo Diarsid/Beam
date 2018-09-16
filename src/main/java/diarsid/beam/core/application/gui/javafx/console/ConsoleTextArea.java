@@ -17,7 +17,7 @@ import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.util.MutableString;
 
 import static java.lang.Integer.max;

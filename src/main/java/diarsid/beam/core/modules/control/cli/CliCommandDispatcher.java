@@ -29,7 +29,7 @@ import diarsid.beam.core.modules.IoModule;
 
 import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

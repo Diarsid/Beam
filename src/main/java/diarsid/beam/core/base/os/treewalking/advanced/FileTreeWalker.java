@@ -41,8 +41,8 @@ import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.haveEqualLength;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
+import static diarsid.support.objects.Pools.giveBackToPool;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 
 /**
@@ -204,7 +204,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
 
             state.addListedFilesToCurrentLevel(root.listFiles());
             this.walkThroughCurrentLevel(state);
-            needToGoDeeper = this.consumeAndDefineIfGoDeeper(state);
+            needToGoDeeper = this.consumeWalkResultsAndDefineIfGoDeeper(state);
 
             if ( state.nextLevel().isEmpty() || state.ifCannotGoDeeper() ) {
                 return;
@@ -214,7 +214,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             while ( needToGoDeeper && canGoDeeper && nonEmpty(state.nextLevel()) ) {   
                 state.swapNextLevelToCurrentLevel();            
                 this.walkThroughCurrentLevel(state);
-                needToGoDeeper = this.consumeAndDefineIfGoDeeper(state);
+                needToGoDeeper = this.consumeWalkResultsAndDefineIfGoDeeper(state);
                 canGoDeeper = state.ifCanGoDeeper();
             }
         } finally {
@@ -228,24 +228,22 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         giveBackToPool(state);
     }
     
-    private boolean consumeAndDefineIfGoDeeper(WalkState state) {
+    private boolean consumeWalkResultsAndDefineIfGoDeeper(WalkState state) {
         try {
             String processedFile;
             int rootLength = state.absoluteRoot().length() + 1; // +1 to cut separator after root
-            for (int i = 0; i < state.collectedOnCurrentLevel().size(); i++) {
-                processedFile = state
-                        .collectedOnCurrentLevel()
-                        .get(i)
-                        .substring(rootLength); 
+            List<String> collectedOnCurrentLevel = state.collectedOnCurrentLevel();
+            for (int i = 0; i < collectedOnCurrentLevel.size(); i++) {
+                processedFile = collectedOnCurrentLevel.get(i).substring(rootLength); 
                 state.collectedOnCurrentLevel().set(i, processedFile);
             }  
-            return this.consumeRefinedAndDefineIfGoDeeper(state);
+            return this.consumeRefinedWalkResultsAndDefineIfGoDeeper(state);
         } finally {
             state.collectedOnCurrentLevel().clear();
         }
     }
     
-    private boolean consumeRefinedAndDefineIfGoDeeper(WalkState state) {
+    private boolean consumeRefinedWalkResultsAndDefineIfGoDeeper(WalkState state) {
         
         String pattern = state.pattern();
         String processedFile;
@@ -343,7 +341,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     private void walkThroughCurrentLevel(WalkState state) {
         state.nextLevel().clear();
         for (File file : state.currentLevel()) {            
-            if ( state.mode().correspondsTo(file) ) {
+            if ( state.searchMode().correspondsTo(file) ) {
                 state.collectedOnCurrentLevel().add(normalizeSeparators(file.getAbsolutePath()));
             }
             if ( this.canEnterIn(file) ) {

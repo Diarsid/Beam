@@ -22,7 +22,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWithHeader;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.indexOfLastPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;

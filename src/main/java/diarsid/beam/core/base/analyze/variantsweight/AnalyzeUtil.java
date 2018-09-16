@@ -16,7 +16,7 @@ import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

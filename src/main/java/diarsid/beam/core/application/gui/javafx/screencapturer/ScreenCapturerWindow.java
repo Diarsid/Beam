@@ -23,7 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.application.gui.javafx.BeamHiddenRoot;
 import diarsid.beam.core.application.gui.javafx.GuiJavaFXResources;
 import diarsid.beam.core.application.gui.javafx.WindowMover;

@@ -8,11 +8,11 @@ package diarsid.beam.core.base.analyze.similarity;
 import java.util.HashMap;
 import java.util.Map;
 
-import diarsid.beam.core.base.objects.PooledReusable;
+import diarsid.support.objects.PooledReusable;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 
 /**

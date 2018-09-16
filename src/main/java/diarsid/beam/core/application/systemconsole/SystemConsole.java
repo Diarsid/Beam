@@ -24,7 +24,7 @@ import static java.lang.Thread.sleep;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

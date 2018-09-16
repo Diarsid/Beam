@@ -12,7 +12,7 @@ import java.rmi.registry.Registry;
 import java.util.Optional;
 
 import diarsid.beam.core.Beam;
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.application.environment.LibrariesCatalog;
 import diarsid.beam.core.application.environment.Script;
 import diarsid.beam.core.application.environment.ScriptsCatalog;
@@ -30,7 +30,7 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 import static diarsid.beam.core.application.environment.BeamEnvironment.librariesCatalog;
 import static diarsid.beam.core.application.environment.BeamEnvironment.scriptsCatalog;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

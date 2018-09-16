@@ -10,9 +10,9 @@ package diarsid.beam.core.modules.web;
 import java.util.HashMap;
 import java.util.Map;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.base.util.Pair;
+import diarsid.support.objects.Pair;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;

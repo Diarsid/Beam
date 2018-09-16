@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.base.util;
 
+import diarsid.support.objects.Pair;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;

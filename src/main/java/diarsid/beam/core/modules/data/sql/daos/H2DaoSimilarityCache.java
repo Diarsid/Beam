@@ -16,7 +16,7 @@ import java.util.function.BiFunction;
 import diarsid.beam.core.base.analyze.similarity.SimilarityData;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoSimilarityCache;
 import diarsid.jdbc.transactions.JdbcTransaction;
@@ -37,9 +37,9 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logging.logFor;
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 
 class H2DaoSimilarityCache  

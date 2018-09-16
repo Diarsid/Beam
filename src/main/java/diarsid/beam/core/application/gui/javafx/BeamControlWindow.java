@@ -21,7 +21,7 @@ import javafx.stage.StageStyle;
 import diarsid.beam.core.application.gui.javafx.console.JavaFXConsolePlatformWindow;
 import diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMenu;
 import diarsid.beam.core.application.starter.Launcher;
-import diarsid.beam.core.base.util.Possible;
+import diarsid.support.objects.Possible;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -34,7 +34,7 @@ import static diarsid.beam.core.application.gui.javafx.contexmenu.BeamContextMen
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.JavaFXUtil.screenHeight;
-import static diarsid.beam.core.base.util.Possible.possibleButEmpty;
+import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *

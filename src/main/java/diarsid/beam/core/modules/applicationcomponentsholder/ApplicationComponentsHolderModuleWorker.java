@@ -7,7 +7,7 @@
 package diarsid.beam.core.modules.applicationcomponentsholder;
 
 import diarsid.beam.core.application.environment.BeamEnvironment;
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.application.gui.Gui;

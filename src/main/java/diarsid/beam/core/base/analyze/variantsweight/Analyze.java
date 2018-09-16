@@ -28,13 +28,13 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isDiversitySufficient;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOkWhenAdjusted;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
-import static diarsid.beam.core.base.objects.Pools.giveBackToPool;
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
-import static diarsid.beam.core.base.util.Logging.logFor;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.log.Logging.logFor;
+import static diarsid.support.objects.Pools.giveBackToPool;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

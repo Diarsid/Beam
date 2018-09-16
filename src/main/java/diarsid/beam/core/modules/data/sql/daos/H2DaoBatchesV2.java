@@ -18,10 +18,10 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.objects.Pools.takeFromPool;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
+import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *

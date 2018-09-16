@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataBaseActuationException;
 import diarsid.beam.core.base.data.DataBaseActuator;
@@ -29,7 +29,7 @@ import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 
 /**

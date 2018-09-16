@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.application.environment;
 
+import diarsid.support.configuration.Configuration;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +23,7 @@ import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.application.starter.FlagLaunchable.START_ALL;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 
 /**

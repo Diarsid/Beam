@@ -12,7 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 
-import diarsid.beam.core.application.environment.Configuration;
+import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.console.Console;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
 import diarsid.beam.core.base.rmi.RemoteOuterIoEngine;
@@ -26,7 +26,7 @@ import static java.util.Objects.isNull;
 import static diarsid.beam.core.application.systemconsole.SystemConsole.getPassport;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.CORE_ACCESS_ENDPOINT_NAME;
 import static diarsid.beam.core.base.rmi.RmiComponentNames.SYS_CONSOLE_NAME;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *

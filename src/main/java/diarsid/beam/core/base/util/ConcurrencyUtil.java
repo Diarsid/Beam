@@ -17,7 +17,7 @@ import diarsid.beam.core.base.control.flow.ValueFlow;
 import static java.util.Optional.empty;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
-import static diarsid.beam.core.base.util.Logging.logFor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *
