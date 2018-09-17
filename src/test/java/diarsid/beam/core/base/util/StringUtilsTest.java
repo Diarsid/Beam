@@ -9,19 +9,22 @@ import java.util.List;
 
 import org.junit.Test;
 
+import diarsid.beam.base.BaseTest;
+
 import static java.util.Arrays.asList;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import static diarsid.beam.core.base.util.StringUtils.countOccurences;
+import static diarsid.beam.core.base.util.StringUtils.removeAllSeparators;
 import static diarsid.beam.core.base.util.StringUtils.splitToLines;
 
 /**
  *
  * @author Diarsid
  */
-public class StringUtilsTest {
+public class StringUtilsTest extends BaseTest {
     
     @Test
     public void splitToLinesTest() {
@@ -34,5 +37,12 @@ public class StringUtilsTest {
     @Test
     public void countOccurencesTest() {
         assertThat(countOccurences("ABcABd", "AB"), equalTo(2));
+    }
+    
+    @Test
+    public void removeAllSeparatorsTest() {
+        String target = "0_1-2\\3/4_5--6\\\\7//8__9";
+        String result = removeAllSeparators(target);
+        assertThat(result, equalTo("0123456789"));
     }
 }

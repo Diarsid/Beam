@@ -20,11 +20,11 @@ import static diarsid.beam.core.application.environment.BeamEnvironment.configur
 import static diarsid.beam.core.base.analyze.similarity.CacheUsage.NOT_USE_CACHE;
 import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitSupplying;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
-import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.removeAllSeparators;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *
@@ -32,7 +32,7 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
  */
 public class Similarity {
     
-    private static final int SIMILARITY_ALGORITHM_VERSION = 1;
+    private static final int SIMILARITY_ALGORITHM_VERSION = 2;
     private static SimilarityCache cache = new InMemorySimilarityCache();
     
     static {
@@ -478,8 +478,8 @@ public class Similarity {
             }
         }        
         
-        String pureTarget = removeSeparators(target);
-        String purePattern = removeSeparators(pattern);
+        String pureTarget = removeAllSeparators(target);
+        String purePattern = removeAllSeparators(pattern);
         int similarityPercent = calculateSimilarityPercent(pureTarget, purePattern);
         int requiredPercent = requiredSimilarityPercentDependingOn(purePattern.length());
         boolean similar = similarityPercent > requiredPercent;       

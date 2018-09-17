@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import diarsid.support.strings.replace.Replace;
+
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -17,6 +19,8 @@ import static java.util.Locale.ENGLISH;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+
+import static diarsid.support.strings.replace.Replace.replace;
 
 /**
  *
@@ -26,10 +30,16 @@ public class StringUtils {
     
     private final static RandomHexadecimalStringGenerator GENERATOR;
     private final static Predicate<String> NON_EMPTY;
+    private static final Replace ALL_SEPARATORS_REPLACE;
     
     static {
         GENERATOR = new RandomHexadecimalStringGenerator();
         NON_EMPTY = s -> nonEmpty(s);
+        ALL_SEPARATORS_REPLACE = replace()
+                .regexToString("[/\\\\]+", "")
+                .regexToString("-+", "")
+                .regexToString("\\s+", "")
+                .regexToString("_+", "");
     }
     
     private StringUtils() {
@@ -76,6 +86,10 @@ public class StringUtils {
 
     public static String[] splitBySpaces(String target) {
         return target.split("\\s+");
+    }
+    
+    public static String removeAllSeparators(String target) {
+        return ALL_SEPARATORS_REPLACE.doFor(target);
     }
 
     public static int countSpaces(String target) {
