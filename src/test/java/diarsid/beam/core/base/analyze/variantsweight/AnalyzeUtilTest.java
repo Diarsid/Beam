@@ -29,7 +29,7 @@ public class AnalyzeUtilTest {
     
     private void process(Integer... orders) {
         List<Integer> ordersList = stream(orders).collect(toList());
-        cluster = calculateCluster(ordersList, orders.length);
+        cluster = calculateCluster(ordersList, 0, orders.length);
     }
     
     @After

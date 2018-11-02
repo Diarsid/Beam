@@ -89,6 +89,14 @@ public class AnalyzeTest {
         this.expectedToFail = true;
     }
     
+    private void expectedSameOrderAsVariants() {
+        if ( nonEmpty(expected) ) {
+            throw new IllegalStateException("Expected already set!");
+        }
+        
+        expected = new ArrayList<>(variants);
+    }
+    
     @Test
     public void test_EnginesCase_engns() {
         pattern = "engns";
@@ -175,9 +183,9 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech",
-                "Tech/langs",
                 "Books/tech",
-                "Books/Tech/Design");
+                "Books/Tech/Design", 
+                "Tech/langs");
         
         weightVariantsAndCheckMatching();
     }
@@ -196,14 +204,13 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech",
-                "Tech/langs",
                 "Books/tech",
-                "Books/Tech/Design");
+                "Books/Tech/Design", 
+                "Tech/langs");
         
         weightVariantsAndCheckMatching();
     }
     
-//    @Ignore
     @Test
     public void test_techAnotherCase_jtec() {
         pattern = "jtec";
@@ -215,6 +222,34 @@ public class AnalyzeTest {
         expected = asList(
                 "Tech",
                 "Tech/langs");
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_techAnotherCase2_jtec() {
+        pattern = "jtec";
+        
+        variants = asList(
+                "Tech",
+                "langs/Tech",
+                "Tech/langs");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_starWarsCase_sarwars() {
+        pattern = "sarwars";
+        
+        variants = asList(
+                "Films/Movies/Star.Wars.The.Last.Jedi.2017.D.BDRip.720p.ExKinoRay.mkv",
+                "Content/WH/Game/Age_Of_Sigmar/Warscrolls"
+        );
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -379,8 +414,7 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Content/WH/Game/The_9th_Age/Rosters",
-                "Dev/Start_MySQL_server"
+                "Content/WH/Game/The_9th_Age/Rosters"
         );
         
         weightVariantsAndCheckMatching();
@@ -396,8 +430,7 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Content/WH/Game/The_9th_Age/Rosters/Elves.txt",
-                "Dev/Start_MySQL_server"         
+                "Content/WH/Game/The_9th_Age/Rosters/Elves.txt"
         );
         
         weightVariantsAndCheckMatching();
@@ -421,7 +454,7 @@ public class AnalyzeTest {
     }
         
     @Test
-    public void test_tomcarotCase_sldev() {
+    public void test_tomcarotCase_tomcarot() {
         pattern = "tomcarot";
         
         variants = asList(
@@ -447,8 +480,7 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Rosters", 
-                "Projects/Diarsid"
+                "Rosters"
         );
         
         weightVariantsAndCheckMatching();
@@ -506,8 +538,7 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2",
-                "Images/Photos");
+                "Books/Common/Tolkien_J.R.R/The_Hobbit.fb2");
         
         weightVariantsAndCheckMatching();
     }
@@ -560,42 +591,6 @@ public class AnalyzeTest {
         expected = asList( 
                 "Books/Tech/Java",
                 "Tech/langs");
-        
-        weightVariantsAndCheckMatching();
-    }
-
-    @Test
-    public void test_NetBeansCase_nebean() {
-        pattern = "nebean";
-        
-        variants = asList(
-                "Projects/Diarsid/NetBeans/Beam",                
-                "Projects/Diarsid/NetBeans",
-                "Projects/Diarsid/NetBeans/Research.Java",
-                "Dev/NetBeans_8.2.lnk");
-        
-        expected = asList( 
-                "Dev/NetBeans_8.2.lnk",
-                "Projects/Diarsid/NetBeans",
-                "Projects/Diarsid/NetBeans/Beam",
-                "Projects/Diarsid/NetBeans/Research.Java");
-        
-        weightVariantsAndCheckMatching();
-    }
-    
-    @Test
-    public void test_NetBeansCase_nebena() {
-        pattern = "nebena";
-        
-        variants = asList(
-                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators",
-                "1__Projects/Diarsid/NetBeans"
-        );
-        
-        expected = asList( 
-                "1__Projects/Diarsid/NetBeans",
-                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators"
-        );
         
         weightVariantsAndCheckMatching();
     }
@@ -658,10 +653,95 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+
+    @Test
+    public void test_NetBeansCase_nebean() {
+        pattern = "nebean";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam",                
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Research.Java",
+                "Dev/NetBeans_8.2.lnk");
+        
+        expected = asList( 
+                "Projects/Diarsid/NetBeans",
+                "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans/Beam",
+                "Projects/Diarsid/NetBeans/Research.Java");
+        
+        weightVariantsAndCheckMatching();
+    }
+
+    @Test
+    public void test_NetBeansShortCase_nebean() {
+        pattern = "nebean";
+        
+        variants = asList(               
+                "Projects/Diarsid/NetBeans",
+                "Dev/NetBeans");
+        
+        expected = asList( 
+                "Dev/NetBeans",
+                "Projects/Diarsid/NetBeans");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_NetBeansCase_nebena() {
+        pattern = "nebena";
+        
+        variants = asList(
+                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators",
+                "1__Projects/Diarsid/NetBeans"
+        );
+        
+        expected = asList( 
+                "1__Projects/Diarsid/NetBeans",
+                "2__LIB/Maven_Local_Repo/io/springfox/springfox-bean-validators"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
     
     @Test
     public void test_NetBeansCase_nebaen() {
         pattern = "nebaen";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam",                
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Research.Java",
+                "Dev/NetBeans_8.2.lnk");
+        
+        expected = asList( 
+                "Projects/Diarsid/NetBeans",
+                "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans/Beam",
+                "Projects/Diarsid/NetBeans/Research.Java");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_NetBeansCase_nebaen_short() {
+        pattern = "nebaen";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam", 
+                "Dev/NetBeans_8.2.lnk");
+        
+        expected = asList( 
+                "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans/Beam");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_NetBeansCase_nebaen8() {
+        pattern = "nebaen8";
         
         variants = asList(
                 "Projects/Diarsid/NetBeans/Beam",                
@@ -698,13 +778,27 @@ public class AnalyzeTest {
         
         expected = asList( 
                 "beam_project",
-                "beam_project/src",
                 "beam_project_home",
                 "beam_server_project",
+                "beam_project/src",
                 "netbeans_projects",
                 "beam netpro",
                 "abe_netpro",
                 "babel_pro");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_beamProjectCase_beaporj_2() {
+        pattern = "beaporj";
+        
+        variants = asList( 
+                "beam_server_project",
+                "netbeans_projects"
+        );
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -740,9 +834,7 @@ public class AnalyzeTest {
         
         expected = asList(
                 "Tools",
-                "Books/Common/Tolkien_J.R.R",
-                "Images/Photos",
-                "Music/2__Store");
+                "Books/Common/Tolkien_J.R.R");
         
         weightVariantsAndCheckMatching();
     }
@@ -914,10 +1006,25 @@ public class AnalyzeTest {
                 "Projects/UkrPoshta/CainiaoAPI",
                 "Projects/UkrPoshta/UkrPostAPI");
         
-        expected = asList( 
+        expected = asList(
                 "Projects/UkrPoshta",
-                "Projects/UkrPoshta/CainiaoAPI",
-                "Projects/UkrPoshta/UkrPostAPI");
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/CainiaoAPI"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_ukrpsoht() {
+        pattern = "ukrpsoht";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/CainiaoAPI");
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -990,6 +1097,26 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_mathCase_math() {
+        
+        pattern = "math";
+        
+        variants = asList( 
+                "math",
+                "math/autocad/xxx",
+                "xxx/autocad/Math_other"
+        );
+        
+        expected = asList(
+                "math",
+                "xxx/autocad/Math_other",
+                "math/autocad/xxx"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_JavaPathBinCase_jbin() {
         pattern = "jbin";
         
@@ -1056,6 +1183,50 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_synthetic_placingImportance() {
+        pattern = "abcXYZ";
+        
+        variants = asList(            
+                "some/path/ending/ABC/with_XYZ_end",
+                "some/ABC/begin/XYZ/no_ending_with");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_synthetic() {
+        pattern = "abcXYZ";
+        
+        variants = asList( 
+                "ABC_XYZ",        
+                "ABC_XYZ_acb",
+                "zx_ABC_XYZ");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_synthetic_distanceBetweenClustersIsMoreImportantThanPlacing() {
+        pattern = "abcXYZ";
+        
+        variants = asList( 
+                "abbac_ABC_ba_XYZ_bacxy", // TODO HIGH increase assessment here
+                "caba/abbac_ABC_ba_XYZ_bacxyyxzyyxz_zx",
+                "a_xyyxzyyxz_zx/ABC_bbacbacacaba_XYZ_b", 
+                "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",
+                "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx"               
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_synthetic_4() {
         disableResultsLimit();
         
@@ -1079,6 +1250,10 @@ public class AnalyzeTest {
                 "ABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
                 "zx_ABC_XYZ", 
                 "abABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",  
+                "abbac_xyyxzyyxz_zx/ABC_ba_XYZ_baccaba",    
+                "abbac_xyyxzyyxz_zx/caba_ABC_ba_XYZ_bac",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ",
+                "abbac_xy/cab_bac_ba_ABC_XYZ/yxzyyxz_zx",
                 "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",    
                 "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",    
                 "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx", 
@@ -1089,7 +1264,7 @@ public class AnalyzeTest {
                 "ababbacca/ABCabbac_xyyxzyyxzXYZzx",
                 "ababbaccaABCabbac_xyyxzyyxzXYZzx");
         
-        expected = new ArrayList<>(variants);
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }

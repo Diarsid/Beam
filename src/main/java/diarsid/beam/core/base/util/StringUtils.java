@@ -131,6 +131,36 @@ public class StringUtils {
                 c == '\\';
     }
     
+    public static boolean isTextSeparator(char c) {
+        return 
+                c == '.' ||
+                c == ',' ||
+                c == ';' ||
+                c == ':' ||
+                c == ' ' || 
+                c == '_' || 
+                c == '-';
+    }
+    
+    public static boolean isPathSeparator(char c) {
+        return 
+                c == '/' || 
+                c == '\\';
+    }
+    
+    public static int countWordSeparatorsInBetween(
+            String where, int fromInclusive, int toInclusive) {
+        int separators = 0;
+        
+        for (int i = fromInclusive; i <= toInclusive; i++) {
+            if ( isWordsSeparator(where.charAt(i)) ) {
+                separators++;
+            }
+        }
+        
+        return separators;
+    }
+    
     public static boolean containsWordsSeparator(String target) {
         for (int i = 0; i < target.length(); i++) {
             if ( isWordsSeparator(target.charAt(i))) {

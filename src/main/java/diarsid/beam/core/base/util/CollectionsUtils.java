@@ -149,6 +149,19 @@ public class CollectionsUtils {
         return ts[ts.length - 1];
     }
     
+    public static <T> T last(List<T> list) {
+        if ( list.isEmpty() ) {
+            throw new IllegalArgumentException(
+                    "Passed list is implied to contain at least one element.");
+        }
+        
+        return list.get(list.size() - 1);
+    }
+    
+    public static <T> T lastFrom(List<T> list) {
+        return last(list);
+    }
+    
     public static boolean indexInRange(int index, Collection collection) {
         return ( index > -1 ) && ( index < collection.size() );
     }

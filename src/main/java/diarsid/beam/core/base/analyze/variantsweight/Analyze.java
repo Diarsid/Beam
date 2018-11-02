@@ -84,7 +84,11 @@ public class Analyze {
     
     static void logAnalyze(AnalyzeLogType logType, String format, Object... args) {
         if ( logType.isEnabled() ) {
-            System.out.println(format(format, args));
+            if ( args.length == 0 ) {
+                System.out.println(format);
+            } else {
+                System.out.println(format(format, args));
+            }            
         }
     }
     
@@ -147,11 +151,16 @@ public class Analyze {
                 return weightedVariant;
             }
             analyze.checkIfVariantTextContainsPatternDirectly();
+            analyze.findPathAndTextSeparators();
             analyze.setPatternCharsAndPositions();
             analyze.analyzePatternCharsPositions();
             analyze.logUnsortedPositions();
             analyze.sortPositions();
             analyze.findPositionsClusters();
+            if ( analyze.ifClustersPresentButWeightTooBad() ) {
+                logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
+                return Optional.empty();
+            }
             if ( analyze.areTooMuchPositionsMissed() ) {
                 return Optional.empty();
             }
@@ -202,11 +211,17 @@ public class Analyze {
                 analyze.set(pattern, variant);
                 if ( analyze.isVariantNotEqualsPattern() ) {
                     analyze.checkIfVariantTextContainsPatternDirectly();
+                    analyze.findPathAndTextSeparators();
                     analyze.setPatternCharsAndPositions();
                     analyze.analyzePatternCharsPositions();
                     analyze.logUnsortedPositions();
                     analyze.sortPositions();
                     analyze.findPositionsClusters();
+                    if ( analyze.ifClustersPresentButWeightTooBad() ) {
+                        logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
+                        analyze.clearForReuse();
+                        continue variantsWeighting;
+                    }
                     if ( analyze.areTooMuchPositionsMissed() ) {
                         analyze.clearForReuse();
                         continue variantsWeighting;

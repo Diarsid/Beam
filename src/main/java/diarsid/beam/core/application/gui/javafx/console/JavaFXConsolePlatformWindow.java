@@ -46,8 +46,6 @@ public class JavaFXConsolePlatformWindow
     private final GuiJavaFXResources windowResources;
     private final WindowMover windowMover;
     private final ConsoleWindowResizer windowResizer;
-    private final ConsoleWindowBlockingIO blockingIo;
-    private final ConsoleInputPersistentBuffer consoleInputBuffer;
     private final Runnable runnableLaunch;
     private final AtomicBoolean isShown;
     private final ConsoleTextArea consoleTextArea;
@@ -62,14 +60,13 @@ public class JavaFXConsolePlatformWindow
     JavaFXConsolePlatformWindow(
             GuiJavaFXResources javaFxResources, 
             ConsoleWindowBlockingIO consoleBlockingIo,
-            ConsoleBlockingExecutor blockingExecutor,
-            ConsoleInputPersistentBuffer consoleInputPersistentBuffer) {
+            ConsoleBlockingExecutor blockingExecutor, 
+            ConsoleTextArea consoleTextArea) {
         super(consoleBlockingIo, blockingExecutor, IN_MACHINE);
         this.windowResources = javaFxResources;
+        this.consoleTextArea = consoleTextArea;
         this.windowMover = new WindowMover();
         this.windowResizer = new ConsoleWindowResizer();
-        this.blockingIo = consoleBlockingIo;
-        this.consoleInputBuffer = consoleInputPersistentBuffer;
         this.ready = false;
         this.isShown = new AtomicBoolean(false);
         
@@ -94,15 +91,6 @@ public class JavaFXConsolePlatformWindow
                 new ConsoleContextMenuItemForSnippet(this, this.contextMenu), 
                 new ConsoleContextMenuItemForClear(this, this.contextMenu),
                 new ConsoleContextMenuItemForDefaultSize(this, this.contextMenu));
-        this.consoleTextArea = new ConsoleTextArea(this, this.windowResources.configuration());
-    }
-    
-    final ConsoleWindowBlockingIO blockingIo() {
-        return this.blockingIo;
-    }
-    
-    final ConsoleInputPersistentBuffer inputBuffer() {
-        return this.consoleInputBuffer;
     }
     
     public final void touched() {
@@ -123,11 +111,15 @@ public class JavaFXConsolePlatformWindow
             DataModule dataModule, 
             GuiJavaFXResources resources, 
             ConsoleBlockingExecutor blockingExecutor) {
-        ConsoleWindowBlockingIO consoleIo = new ConsoleWindowBlockingIO();
+        ConsoleWindowBlockingIO consoleBlockingIo = new ConsoleWindowBlockingIO();
         ConsoleInputPersistentBuffer consoleInputPersistentBuffer = 
                 new ConsoleInputPersistentBuffer(50, dataModule.keyValues());
+        ConsoleTextArea consoleTextArea = new ConsoleTextArea(
+                consoleBlockingIo, 
+                consoleInputPersistentBuffer, 
+                resources.configuration());
         JavaFXConsolePlatformWindow consoleWindow = new JavaFXConsolePlatformWindow(
-                resources, consoleIo, blockingExecutor, consoleInputPersistentBuffer);
+                resources, consoleBlockingIo, blockingExecutor, consoleTextArea);
         consoleWindow.launch();
         return consoleWindow;
     }

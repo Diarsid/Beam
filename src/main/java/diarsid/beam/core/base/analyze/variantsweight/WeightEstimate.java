@@ -30,6 +30,10 @@ public enum WeightEstimate {
         return estimate(weightedVariant.weight());
     }
     
+    static WeightEstimate estimatePreliminarily(double weight) { 
+        return estimate(weight - 5.0);
+    }
+    
     public static WeightEstimate estimate(double weight) {        
         if ( weight > BAD_BOUND ) {
             return BAD;

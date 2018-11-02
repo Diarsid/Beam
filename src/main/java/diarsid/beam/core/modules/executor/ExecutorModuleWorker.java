@@ -69,7 +69,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
@@ -87,6 +86,7 @@ import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *
@@ -1321,8 +1321,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                     } else {
                         this.ioEngine.report(initiator, format(
                                 "%s/%s not found.", location.name(), subpath));
-                    }
-                    
+                    }                    
                 }                
                 break;
             }    

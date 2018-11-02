@@ -32,7 +32,7 @@ class AnalyzeUtil {
         return (percent + orderDiff.ordersDiffSum() + (orderDiff.ordersDiffSum()/2) ) * orderDiff.ordersDiffSum();
     }
     
-    static Cluster calculateCluster(List<Integer> ints, int clusterLength) {
+    static Cluster calculateCluster(List<Integer> ints, int clusterFirstPosition, int clusterLength) {
         int mean = meanSmartIngoringZeros(ints);
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs         %s", 
@@ -170,7 +170,7 @@ class AnalyzeUtil {
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
         }
         return takeFromPool(Cluster.class)
-                .set(clusterLength, mean, diffSum, diffCount, shifts, haveCompensation);
+                .set(clusterFirstPosition, clusterLength, mean, diffSum, diffCount, shifts, haveCompensation);
     }
     
     static int lengthTolerance(int variantLength) {

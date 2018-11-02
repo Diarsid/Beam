@@ -6,11 +6,9 @@
 package diarsid.beam.core.base.util;
 
 import java.util.Collection;
-import java.util.List;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
-import static java.util.Arrays.asList;
 
 /**
  *
@@ -48,12 +46,6 @@ public class MathUtil {
         }
     }
     
-    public static void main(String... args) {
-        List<Integer> poss = asList(4, 5, 5, 5);
-        System.out.println(meanSmartIngoringZeros(poss));
-        
-    }
-    
     public static double absDiff(double one, double two) {
         if ( one == two ) {
             return 0;
@@ -87,7 +79,19 @@ public class MathUtil {
     }
     
     public static int percentAsInt(int part, int whole) {
-        return part * 100 / whole ;
+        return ( part * 100 ) / whole ;
+    }
+    
+    public static int percentAsIntOf(int target, int percent) {
+        return ( target * percent ) / 100;
+    }
+    
+    public static float percentAsFloat(float part, float whole) {
+        return ( part * 100f ) / whole ;
+    }
+    
+    public static float percentAsFloatOf(float target, float percent) {
+        return ( target * percent ) / 100f;
     }
     
     public static int meanSmartIngoringZeros(Collection<Integer> ints) {
@@ -118,8 +122,36 @@ public class MathUtil {
         }        
     }
     
+    public static int mean(int a, int b) {
+        return ( a + b ) / 2;
+    }
+    
+    public static int mean(int a, int b, int c) {
+        return ( a + b + c ) / 3;
+    }
+    
+    public static int mean(int a, int b, int c, int d) {
+        return ( a + b + c + d ) / 4;
+    }
+        
+    public static float mean(float a, float b) {
+        return ( a + b ) / 2.0f;
+    }
+    
+    public static float mean(float a, float b, float c) {
+        return ( a + b + c ) / 3.0f;
+    }
+    
+    public static float mean(float a, float b, float c, float d) {
+        return ( a + b + c + d ) / 4.0f;
+    }
+    
     public static int square(int x) {
         return x * x;
+    }
+    
+    public static double square(double d) {
+        return d * d;
     }
     
     public static int cube(int x) {

@@ -17,8 +17,8 @@ import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 
-import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.util.MutableString;
+import diarsid.support.configuration.Configuration;
 
 import static java.lang.Integer.max;
 
@@ -42,7 +42,8 @@ class ConsoleTextArea {
     private static final int DEFAULT_CONSOLE_WIDTH = 500;
     private static final int DEFAULT_CONSOLE_HEIGHT = 200;
     
-    private final JavaFXConsolePlatformWindow console;
+    private final ConsoleWindowBlockingIO consoleBlockingIo;
+    private final ConsoleInputPersistentBuffer consoleBuffer;
     private final AtomicInteger consoleCommitedLength;
     private final AtomicInteger consoleTextAreaInternalInputCounter;
     private final AtomicBoolean deleteCommitedTextAllowed;
@@ -52,8 +53,12 @@ class ConsoleTextArea {
     
     private TextArea textArea;
 
-    ConsoleTextArea(JavaFXConsolePlatformWindow console, Configuration configuration) {
-        this.console = console;
+    ConsoleTextArea(
+            ConsoleWindowBlockingIO consoleBlockingIo, 
+            ConsoleInputPersistentBuffer consoleInputPersistentBuffer, 
+            Configuration configuration) {
+        this.consoleBlockingIo = consoleBlockingIo;
+        this.consoleBuffer = consoleInputPersistentBuffer;
         this.consoleCommitedLength = new AtomicInteger();
         this.consoleTextAreaInternalInputCounter = new AtomicInteger();
         this.deleteCommitedTextAllowed = new AtomicBoolean();
@@ -151,12 +156,12 @@ class ConsoleTextArea {
         return (keyEvent) -> {            
             if ( keyEvent.getCode().equals(UP) ) {
                 synchronized ( this.consoleTextAreaLock ) {
-                    this.changeUncommitedTextTo(this.console.inputBuffer().toLastAndGet());
+                    this.changeUncommitedTextTo(this.consoleBuffer.toLastAndGet());
                 }    
                 keyEvent.consume();
             } else if ( keyEvent.getCode().equals(DOWN) ) {
                 synchronized ( this.consoleTextAreaLock ) {
-                    this.changeUncommitedTextTo(this.console.inputBuffer().toFirstAndGet());
+                    this.changeUncommitedTextTo(this.consoleBuffer.toFirstAndGet());
                 }    
                 keyEvent.consume();
             }
@@ -273,19 +278,34 @@ class ConsoleTextArea {
     }
     
     final void startListenBlockingConsoleIncome() {        
-        // mutableChangeProcess is a lock shared only between two threads:
-        //  - JavaFX Application Thread can only .notify
-        //  - JavaFX Console Listener Thread can only .wait
-        // There are no any other threads accessing this lock.
+        /* 
+         * mutableChangeProcess is a lock shared only between two threads:
+         *  - JavaFX Application Thread can only .notify
+         *  - JavaFX Console Listener Thread can only .wait
+         * There are no any other threads accessing this lock.
+         *
+         * These threads should act in a strict order:
+         *  - JavaFX Console Listener Thread is a permanently running thread, 
+         *    waiting each time on blocking get method to obtain next user input 
+         *    from console.
+         *  - When user input has been provided, JavaFX Console Listener Thread launches
+         *    JavaFX console change as a Runnable constant that should be executed 
+         *    in JavaFX Application Thread to adopt given changes to a JavaFX component.
+         *  - The crucial point in this interaction is that Listener Thread MUST NOT 
+         *    attempt to take new part of user input UNTIL PREVIOUS ONE IS COMPLETELY 
+         *    PROCESSED in JavaFX Thread. That's why JavaFX Application Thread is 
+         *    notifying lock when it finished its work and Listener Thread is 
+         *    waiting.
+         */
         Object mutableChangeProcess = new Object();
         MutableString mutableNewLine = emptyMutableString();
         Runnable consoleTextAreaMutableChange = () -> {
             synchronized ( this.consoleTextAreaLock ) {
-                this.consoleTextAreaInternalInputCounter.incrementAndGet();
-                this.textArea.setEditable(false);
-                this.textArea.appendText(mutableNewLine.getAndEmpty());
-                this.textArea.commitValue();
                 synchronized ( mutableChangeProcess ) {
+                    this.consoleTextAreaInternalInputCounter.incrementAndGet();
+                    this.textArea.setEditable(false);
+                    this.textArea.appendText(mutableNewLine.getAndEmpty());
+                    this.textArea.commitValue();
                     mutableChangeProcess.notify();
                 }
             }
@@ -294,9 +314,9 @@ class ConsoleTextArea {
         asyncDoIndependently("JavaFX Console Listener Thread", ()-> {
             while ( true ) {                
                 try {
-                    mutableNewLine.muteTo(this.console.blockingIo().blockingGetPrintedString());
-                    Platform.runLater(consoleTextAreaMutableChange);
                     synchronized ( mutableChangeProcess ) {
+                        mutableNewLine.muteTo(this.consoleBlockingIo.blockingGetPrintedString());
+                        Platform.runLater(consoleTextAreaMutableChange);
                         mutableChangeProcess.wait();
                     }
                 } catch (InterruptedException ignore) {
@@ -308,9 +328,9 @@ class ConsoleTextArea {
     
     private void acceptInput(String input) {
         try {
-            this.console.blockingIo().blockingSetString(input);
+            this.consoleBlockingIo.blockingSetString(input);
             if ( input.length() > 1 ) {
-                this.console.inputBuffer().add(input);
+                this.consoleBuffer.add(input);
             }
         } catch (InterruptedException e) {
             // TODO ?
