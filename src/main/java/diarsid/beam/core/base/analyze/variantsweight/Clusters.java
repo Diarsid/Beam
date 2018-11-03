@@ -8,11 +8,13 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 
 import diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection;
 import diarsid.support.objects.Possible;
 import diarsid.support.objects.StatefulClearable;
 
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
@@ -261,7 +263,7 @@ class Clusters implements StatefulClearable {
                     if ( this.isClusteredPartFormingMajority() ) {
                         this.bestPlacing();
                     } else {
-                        this.bestPlacingPercent(97, "single cluster at variant start, no separators");
+                        this.placingBonusOf(97, "single cluster at variant start, no separators");
                     }
                 } else {
                     if ( this.isClusteredPartFormingMajority() ) {
@@ -274,13 +276,13 @@ class Clusters implements StatefulClearable {
                 if ( this.areAllClustersSeparatedByOneChar() ) {
                     if ( this.isClusteredPartFormingMajority() ) {
                         if ( this.isFirstClusterAtVariantStart() ) {
-                            this.bestPlacingPercent(90, "all clusters-as-one at variant start, forming majority, no separators");
+                            this.placingBonusOf(90, "all clusters-as-one at variant start, forming majority, no separators");
                         } else {
                             this.manyAsOneMajorClosierToStartAreBetter();
                         }
                     } else {
                         if ( this.isFirstClusterAtVariantStart() ) {
-                            this.bestPlacingPercent(85, "all clusters-as-one at variant start, no separators");
+                            this.placingBonusOf(85, "all clusters-as-one at variant start, no separators");
                         } else {
                             this.manyAsOneClosierToStartAreBetter();
                         }
@@ -304,11 +306,13 @@ class Clusters implements StatefulClearable {
         } else {
             /* variant contains path separators */
             if ( this.quantity() == 1 ) {
-                if ( this.isLastClusterAtVariantEnd() ) {
+                if ( this.isLastClusterStartsWithSeparator() ) {
+                    this.placingBonusOf(95, "single cluster begins at last path element");
+                } else if ( this.isLastClusterAtVariantEnd() ) {
                     if ( this.isClusteredPartFormingMajority() ) {
-                        this.bestPlacingPercent(95, "single cluster at variant start, forming majority, with separators");
+                        this.placingBonusOf(90, "single cluster at variant end, forming majority, with separators");
                     } else {
-                        this.bestPlacingPercent(90, "single cluster at variant start, with separators");
+                        this.placingBonusOf(85, "single cluster at variant end, with separators");
                     }
                 } else if ( this.isSingleClusterAfterLastPathSeparator() ) {
                     if ( this.isClusteredPartFormingMajority() ) {
@@ -322,6 +326,9 @@ class Clusters implements StatefulClearable {
                     } else {
                         this.singleClosierToStartIsBetterBeforeFirstPathSeparator();
                     }
+                    if ( ! this.isFirstClusterStartsWithSeparator() ) {
+                        this.applyCasePenaltyToBonus(60); 
+                    }      
                 } else {
                     this.placingBonusNoMoreThanPercent(80);
                     if ( this.isClusteredPartFormingMajority() ) {
@@ -335,15 +342,27 @@ class Clusters implements StatefulClearable {
                 if ( this.areAllClustersSeparatedByOneChar() ) {
                     if ( this.isLastClusterAtVariantEnd() ) {
                         if ( this.isClusteredPartFormingMajority() ) {
-                            this.bestPlacingPercent(90, "all clusters-as-one at variant end, forming majority, with separators");
+                            this.placingBonusOf(75, "all clusters-as-one at variant end, forming majority, with separators");
+                            this.applyPathComplexityPenaltyToBonus();
                         } else {
-                            this.bestPlacingPercent(85, "all clusters-as-one at variant end, with separators");
+                            this.placingBonusOf(70, "all clusters-as-one at variant end, with separators");
+                            this.applyPathComplexityPenaltyToBonus();
                         }
                     } else if ( this.areAllClustersAfterLastPathSeparator() ) {
                         if ( this.isClusteredPartFormingMajority() ) {
-                            this.manyAsOneMajorClosierToEndAreBetterAfterLastPathSeparator();
+                            if ( this.isFirstClusterStartsWithSeparator() ) {
+                                this.placingBonusOf(95, "all clusters-as-one forming majority, starts with last path element");
+                                this.applyPathComplexityPenaltyToBonus();
+                            } else {
+                                this.manyAsOneMajorClosierToEndAreBetterAfterLastPathSeparator();
+                            }
                         } else {
-                            this.manyAsOneClosierToEndAreBetterAfterLastPathSeparator();
+                            if ( this.isFirstClusterStartsWithSeparator() ) {                                
+                                this.placingBonusOf(90, "all clusters-as-one, starts with last path element");
+                                this.applyPathComplexityPenaltyToBonus();
+                            } else {
+                                this.manyAsOneClosierToEndAreBetterAfterLastPathSeparator();
+                            }
                         }
                     } else if ( this.areAllClustersBeforeFirstPathSeparator() ) {
                         this.placingBonusNoMoreThanPercent(60);
@@ -352,6 +371,9 @@ class Clusters implements StatefulClearable {
                         } else {
                             this.manyAsOneClosierToStartAreBetterBeforeFirstPathSeparator();
                         }
+                        if ( ! this.isFirstClusterStartsWithSeparator() ) {
+                            this.applyCasePenaltyToBonus(60); 
+                        }                         
                     } else {
                         this.placingBonusNoMoreThanPercent(75);
                         if ( this.isClusteredPartFormingMajority() ) {
@@ -362,12 +384,37 @@ class Clusters implements StatefulClearable {
                     }
                 } else {
                     /* no many-as-one clusters */
-                    if ( this.isLastClusterAtVariantEnd() ) {
+                    if ( this.areClustersAtFirstAndLastPathElement() ) {
+                        if ( this.isFirstClusterStartsWithSeparator() ) {
+                            if ( this.isLastClusterStartsWithSeparator() ) {
+                                this.placingBonusOf(80, "two clusters at start and end");
+                            } else {
+                                this.placingBonusNoMoreThanPercent(80);
+                                this.lastClusterCloserToStartIsBetter();
+                            }
+                        } else if ( this.isLastClusterStartsWithSeparator() ) {
+                            this.placingBonusNoMoreThanPercent(80);
+                            this.firstClusterCloserToStartIsBetter();
+                        } else {
+                            this.placingBonusNoMoreThanPercent(75);
+                            this.firstAndLastClustersCloserToStartAreBetter();
+                            this.applyCasePenaltyToBonus(90);    
+                        }
+                    } else if ( this.isEveryClusterMeansEveryPathElement() ) {
+                        if ( this.isClusteredPartFormingMajority() ) {
+//                            this.placingBonusNoMoreThanPercent(65);
+//                            this.manyMajorClosierToEndAreBetter();
+                        } else {
+//                            this.placingBonusNoMoreThanPercent(50);
+//                            this.manyClosierToEndAreBetter();
+                        }
+                    } else if ( this.isLastClusterAtVariantEnd() ) {
                         if ( this.isClusteredPartFormingMajority() ) {
                             this.manyMajorClosierToEndAreBetterLastAtEnd();
                         } else {
                             this.manyClosierToEndAreBetterLastAtEnd();
                         }
+                        this.applyCasePenaltyToBonus(85);  
                     } else if ( this.areAllClustersAfterLastPathSeparator() ) {
                         this.placingBonusNoMoreThanPercent(70);
                         if ( this.isClusteredPartFormingMajority() ) {
@@ -383,6 +430,9 @@ class Clusters implements StatefulClearable {
                         } else {
                             this.manyClosierToStartAreBetterBeforeFirstPathSeparator();
                         }
+                        if ( ! this.isFirstClusterStartsWithSeparator() ) {
+                            this.applyCasePenaltyToBonus(60); 
+                        } 
                     } else {
                         if ( this.isClusteredPartFormingMajority() ) {
                             this.placingBonusNoMoreThanPercent(65);
@@ -391,6 +441,7 @@ class Clusters implements StatefulClearable {
                             this.placingBonusNoMoreThanPercent(50);
                             this.manyClosierToEndAreBetter();
                         }
+                        this.applyCasePenaltyToBonus(55);  
                     }
                 }
             } 
@@ -506,14 +557,94 @@ class Clusters implements StatefulClearable {
         return this.lastCluster().lastPosition() < this.data.variantPathSeparators.first();
     }
     
+    private boolean areClustersAtFirstAndLastPathElement() {
+        return 
+                this.firstCluster().lastPosition() < this.data.variantPathSeparators.first() &&
+                this.lastCluster().firstPosition() > this.data.variantPathSeparators.last();
+    }
+    
+    private boolean isFirstClusterStartsWithSeparator() {
+        int firstClusterFirstPosition = this.firstCluster().firstPosition();
+        return 
+                firstClusterFirstPosition == 0 ||
+                this.data.variantPathSeparators.contains(firstClusterFirstPosition - 1);
+    }
+    
+    private boolean isLastClusterStartsWithSeparator() {
+        return this.lastCluster().firstPosition() == this.data.variantPathSeparators.last() + 1;
+    }
+    
+    private boolean isEveryClusterMeansEveryPathElement() {
+        if ( this.quantity() != this.data.variantPathSeparators.size() + 1 ) {
+            return false;
+        }
+        
+        TreeSet<Integer> pathSeparators = this.data.variantPathSeparators;
+        Integer nextSeparatorPosition = pathSeparators.first();
+        for (Cluster cluster : this.clusters) {
+            if ( cluster.lastPosition() < nextSeparatorPosition ) {
+                nextSeparatorPosition = pathSeparators.higher(nextSeparatorPosition);
+                if ( isNull(nextSeparatorPosition) ) {
+                    return cluster.equals(this.lastCluster());
+                } 
+            } else {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
     private void bestPlacing() {
         this.placingCase.resetTo("single cluster at variant start, forming majority, no separators");
         this.placingBonus = MAX_PLACING_BONUS;
     }
     
-    private void bestPlacingPercent(int percent, String description) {
+    private void placingBonusOf(int percent, String description) {
         this.placingCase.resetTo(description);
         this.placingBonus = ( MAX_PLACING_BONUS * (float) percent ) / 100f;
+    }
+    
+    private void lastClusterCloserToStartIsBetter() {
+        this.placingCase.resetTo("first cluster starts with variant, last cluster in last path element");
+        this.meanPosition = this.lastCluster().firstPosition();
+        this.adjustMeanPositionAfterLastPathSeparator();
+        this.placingPercent = 100f - percentAsFloat(this.meanPosition, this.adjustedVariantLength);
+        
+        this.placingBonus = ( MAX_PLACING_BONUS
+                * this.placingPercent )
+                / 100f;
+    }
+    
+    private void firstClusterCloserToStartIsBetter() {
+        this.placingCase.resetTo("first cluster in first path element, last cluster starts with last path element");
+        this.meanPosition = this.firstCluster().firstPosition();
+        this.adjustVariantLengthBeforeFirstPathSeparator();
+        this.placingPercent = 100f - percentAsFloat(this.meanPosition, this.adjustedVariantLength);
+        
+        this.placingBonus = ( MAX_PLACING_BONUS
+                * this.placingPercent )
+                / 100f;
+    }
+    
+    private void firstAndLastClustersCloserToStartAreBetter() {
+        this.placingCase.resetTo("first cluster in first path element, last cluster in last path element");
+        
+        int lastPathSeparator = this.data.variantPathSeparators.last();
+        int lastClusterAdjustedMeanPosition = this.lastCluster().firstPosition() - lastPathSeparator;
+        int lastPathElementLength = this.data.variantText.length() - 1 - lastPathSeparator;
+        float placingPercentInLastPathElement = 100f - percentAsFloat(lastClusterAdjustedMeanPosition, lastPathElementLength);
+        
+        int firstPathSeparator = this.data.variantPathSeparators.first();
+        int firstClusterMeanPosition = this.firstCluster().firstPosition();
+        int firstPathElementLength = firstPathSeparator;
+        float placingPercentInFirstPathElement = 100f - percentAsFloat(firstClusterMeanPosition, firstPathElementLength);
+        
+        this.placingPercent = mean(placingPercentInLastPathElement, placingPercentInFirstPathElement);
+        
+        this.placingBonus = ( MAX_PLACING_BONUS
+                * this.placingPercent )
+                / 100f;
     }
     
     private void singleClosierToStartIsBetter() {
@@ -688,7 +819,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
         
         this.placingPercentNoHigherThan(85);
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         
         this.placingBonus = ( MAX_PLACING_BONUS
                 * this.placingPercent )
@@ -701,7 +832,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
         
         this.placingPercentNoHigherThan(93);
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         
         this.placingBonus = ( MAX_PLACING_BONUS
                 * this.placingPercent )
@@ -723,7 +854,7 @@ class Clusters implements StatefulClearable {
     }
     
     private void manyAsOneMajorClosierToEndAreBetterAfterLastPathSeparator() {
-        this.placingCase.resetTo("many-as-one clusters, with separators, after last separator");
+        this.placingCase.resetTo("many-as-one major clusters, with separators, after last separator");
         this.meanPosition = this.lastCluster().lastPosition();
         this.adjustMeanPositionAfterLastPathSeparator();
         this.placingPercent = percentAsFloat(this.meanPosition, this.adjustedVariantLength);
@@ -741,9 +872,24 @@ class Clusters implements StatefulClearable {
         this.placingPercent = this.placingPercent + separatorsBonus;
     }
     
-    private void applyPathComplexityPenalty() {
-        int pathComplexity = this.data.variantPathSeparators.size() 
-                             - this.data.positionsOf(direction).keyChars.size();
+    private void applyPathComplexityPenaltyToBonus() {
+        int pathComplexity = calculatePathComplexity();
+        
+        if ( pathComplexity <= 0 ) {
+            return;
+        }
+        
+        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] path complexity bonus penalty : -%s%%", pathComplexity * 10); 
+        this.placingBonus = percentAsFloatOf(this.placingBonus, 100 - (pathComplexity * 10));
+        this.placingBonus = placingBonus - pathComplexity;
+        
+        if ( this.placingBonus <= 0 ) {
+            this.placingBonus = 0;
+        }
+    }
+    
+    private void applyPathComplexityPenaltyToPlacingPercent() {
+        int pathComplexity = calculatePathComplexity();
         
         if ( pathComplexity <= 0 ) {
             return;
@@ -756,10 +902,16 @@ class Clusters implements StatefulClearable {
             this.placingPercent = 0;
         }
     }
+
+    private int calculatePathComplexity() {
+        int pathComplexity = this.data.variantPathSeparators.size()
+                             - this.data.positionsOf(direction).keyChars.size();
+        return pathComplexity;
+    }
     
-    private void applyCasePenalty(int penaltyPercent) {
-        this.placingPercent = percentAsFloatOf(this.placingPercent, penaltyPercent);
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] case-dependent placing penalty : *%s%%", penaltyPercent); 
+    private void applyCasePenaltyToBonus(int penaltyPercent) {
+        this.placingBonus = percentAsFloatOf(this.placingBonus, penaltyPercent);
+        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] case-dependent bonus penalty : *%s%%", penaltyPercent); 
     }
     
     private void adjustMeanPositionAfterLastPathSeparator() {
@@ -767,8 +919,12 @@ class Clusters implements StatefulClearable {
         this.adjustedVariantLength = this.data.variantText.length() - 1 - this.data.variantPathSeparators.last();
     }
     
+    private void adjustVariantLengthBeforeFirstPathSeparator() {
+        this.adjustedVariantLength = this.data.variantText.length() - 1 - this.data.variantPathSeparators.first();
+    }
+    
     private void manyClosierToEndAreBetterLastAtEnd() {
-        this.placingCase.resetTo("many clusters, no separators");
+        this.placingCase.resetTo("many clusters, with separators");
         this.meanPosition = this.findMeanPosition() / 2;
         this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
         
@@ -836,7 +992,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
         this.applyKeyCharsBonusToPlacingPercent();
         this.placingPercentNoHigherThan(70);
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         
         this.clustersPlacingImportance = 100 - this.clustersPercentInVariant;
         this.applyKeyCharsBonusToPlacingImportance();
@@ -868,7 +1024,7 @@ class Clusters implements StatefulClearable {
         this.placingPercentNoHigherThan(75);
         
         this.calculateDistanceBetweenClustersImportance();
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         
         this.placingBonus = MAX_PLACING_BONUS
                 * mean(
@@ -914,13 +1070,14 @@ class Clusters implements StatefulClearable {
     }
     
     private void manyMajorClosierToStartAreBetterBeforeFirstPathSeparator() {
-        this.placingCase.resetTo("many clusters, with separators, before first separator");
+        this.placingCase.resetTo("many major clusters, with separators, before first separator");
         this.meanPosition = this.findMeanFirstPosition();
+        this.adjustVariantLengthBeforeFirstPathSeparator();
         
         int firstPathSeparator = this.data.variantPathSeparators.first();
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, firstPathSeparator - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, adjustedVariantLength);
         this.applyKeyCharsBonusToPlacingPercent();
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
@@ -939,11 +1096,12 @@ class Clusters implements StatefulClearable {
     private void manyClosierToStartAreBetterBeforeFirstPathSeparator() {
         this.placingCase.resetTo("many clusters, with separators, before first separator");
         this.meanPosition = this.findMeanPosition();
+        this.adjustVariantLengthBeforeFirstPathSeparator();
         
         int firstPathSeparator = this.data.variantPathSeparators.first();
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, firstPathSeparator - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, adjustedVariantLength);
         this.applyKeyCharsBonusToPlacingPercent();
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
@@ -966,7 +1124,7 @@ class Clusters implements StatefulClearable {
         int firstPathSeparator = this.data.variantPathSeparators.first();
         this.placingPercent = 100 - percentAsFloat(this.meanPosition, firstPathSeparator - 1);
         this.applyKeyCharsBonusToPlacingPercent();
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
@@ -989,7 +1147,7 @@ class Clusters implements StatefulClearable {
         int firstPathSeparator = this.data.variantPathSeparators.first();
         this.placingPercent = 100 - percentAsFloat(this.meanPosition, firstPathSeparator - 1);
         this.applyKeyCharsBonusToPlacingPercent();
-        this.applyPathComplexityPenalty();
+        this.applyPathComplexityPenaltyToPlacingPercent();
         float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);

@@ -27,7 +27,7 @@ class PersistentSimilarityCache implements SimilarityCache {
     private final int algorithmVersion;
     private final List<SimilarityData> buffer;
 
-    public PersistentSimilarityCache(
+    PersistentSimilarityCache(
             DaoSimilarityCache daoSimilarityCache, 
             InMemorySimilarityCache inMemoryCache, 
             int algorithmVersion) {

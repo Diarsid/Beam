@@ -120,6 +120,55 @@ class Cluster
     }
 
     @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 17 * hash + this.firstPosition;
+        hash = 17 * hash + this.length;
+        hash = 17 * hash + this.ordersDiffMean;
+        hash = 17 * hash + this.ordersDiffSum;
+        hash = 17 * hash + this.ordersDiffCount;
+        hash = 17 * hash + this.ordersDiffShifts;
+        hash = 17 * hash + (this.ordersDiffHaveCompensation ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj ) {
+            return true;
+        }
+        if ( obj == null ) {
+            return false;
+        }
+        if ( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final Cluster other = ( Cluster ) obj;
+        if ( this.firstPosition != other.firstPosition ) {
+            return false;
+        }
+        if ( this.length != other.length ) {
+            return false;
+        }
+        if ( this.ordersDiffMean != other.ordersDiffMean ) {
+            return false;
+        }
+        if ( this.ordersDiffSum != other.ordersDiffSum ) {
+            return false;
+        }
+        if ( this.ordersDiffCount != other.ordersDiffCount ) {
+            return false;
+        }
+        if ( this.ordersDiffShifts != other.ordersDiffShifts ) {
+            return false;
+        }
+        if ( this.ordersDiffHaveCompensation != other.ordersDiffHaveCompensation ) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public int compareTo(Cluster other) {
         if ( this.firstPosition < other.firstPosition ) {
             return -1;

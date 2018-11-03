@@ -665,8 +665,8 @@ public class AnalyzeTest {
                 "Dev/NetBeans_8.2.lnk");
         
         expected = asList( 
-                "Projects/Diarsid/NetBeans",
                 "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans",
                 "Projects/Diarsid/NetBeans/Beam",
                 "Projects/Diarsid/NetBeans/Research.Java");
         
@@ -716,8 +716,8 @@ public class AnalyzeTest {
                 "Dev/NetBeans_8.2.lnk");
         
         expected = asList( 
-                "Projects/Diarsid/NetBeans",
                 "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans",
                 "Projects/Diarsid/NetBeans/Beam",
                 "Projects/Diarsid/NetBeans/Research.Java");
         
@@ -780,8 +780,8 @@ public class AnalyzeTest {
                 "beam_project",
                 "beam_project_home",
                 "beam_server_project",
-                "beam_project/src",
                 "netbeans_projects",
+                "beam_project/src",
                 "beam netpro",
                 "abe_netpro",
                 "babel_pro");
@@ -1045,6 +1045,47 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_TechBooksCase_() {
+        pattern = "techbok";
+        
+        variants = asList(
+                "Books/tech", // TODO increase here
+                "Books/Tech/Unsorted"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_PriceAPICase_ukrposporj() {
+        pattern = "ukrposporj";
+        
+        variants = asList(            
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/PriceCalculationAPI");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_MusicStoreCase_msustor() {
+        pattern = "msustor";
+        
+        variants = asList(
+                "Music/2__Store",
+                "Music/2__Store/Therion"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_projectsUkrPoshta_pstoapi() {
         pattern = "pstoapi";
         
@@ -1111,6 +1152,24 @@ public class AnalyzeTest {
                 "math",
                 "xxx/autocad/Math_other",
                 "math/autocad/xxx"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_mathCase_math_longerCase() {
+        
+        pattern = "math";
+        
+        variants = asList( 
+                "math/autocad",
+                "Books/Tech/Math_&_CompScience"
+        );
+        
+        expected = asList(
+                "Books/Tech/Math_&_CompScience",
+                "math/autocad"
         );
         
         weightVariantsAndCheckMatching();
@@ -1214,7 +1273,7 @@ public class AnalyzeTest {
         pattern = "abcXYZ";
         
         variants = asList( 
-                "abbac_ABC_ba_XYZ_bacxy", // TODO HIGH increase assessment here
+                "abbac_ABC_ba_XYZ_bacxy", 
                 "caba/abbac_ABC_ba_XYZ_bacxyyxzyyxz_zx",
                 "a_xyyxzyyxz_zx/ABC_bbacbacacaba_XYZ_b", 
                 "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",
@@ -1232,37 +1291,81 @@ public class AnalyzeTest {
         
         pattern = "abcXYZ";
         
-        variants = asList(
+        variants = asList(                
                 "ABCXYZ",
                 "ABCXYZ_acba",
-                "ABCXYZ_acba/abac_xyyxz_zx",   
-                "ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx", 
-                "zx_ABCXYZ_acba", 
+                "zx_ABCXYZ_acba",
+                "ABCXYZ_acba/abac_xyyxz_zx",
+                "ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx",
                 "zx_ABCXYZ_acba/abac_xyyxz_zx",
-                "zx_ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx", 
+                "zx_ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx",
                 "ABCXYZacba",
+                "axABCXYZacba",
                 "axABCXYZ_abaca/ab_xyyxz_zx",
-                "axABCXYZacba", 
-                "axABCXYZ_ababbacca/abbac_xyyxzyyxz_zx", 
+                "axABCXYZ_ababbacca/abbac_xyyxzyyxz_zx",
                 "axABCXYZacba_ab/ab",
                 "ABC_XYZ",
-                "ABC_XYZ_acb",  
-                "ABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
-                "zx_ABC_XYZ", 
-                "abABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",  
-                "abbac_xyyxzyyxz_zx/ABC_ba_XYZ_baccaba",    
-                "abbac_xyyxzyyxz_zx/caba_ABC_ba_XYZ_bac",
+                "ABC_XYZ_acb",
+                "zx_ABC_XYZ",
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba",
                 "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ",
+                "ABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
                 "abbac_xy/cab_bac_ba_ABC_XYZ/yxzyyxz_zx",
-                "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",    
-                "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",    
-                "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx", 
-                "ABC_ababbacca/abbac_xyyxzyyxz_XYZ_zx",  
-                "ababbacca/ABC_abbac_xyyxzyyxz_XYZ_zx",     
+                "abABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
+                "ababbacca/ABC_abbac_xyyxzyyxz_XYZ_zx",
+                "abbac_xyyxzyyxz_zx/ABC_ba_XYZ_baccaba",
+                "abbac_xyyxzyyxz_zx/caba_ABC_ba_XYZ_bac",
+                "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",
+                "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",
+                "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx",
+                "ABC_ababbacca/abbac_xyyxzyyxz_XYZ_zx",
                 "ababbacca/ABC_abbac_xyyxzyyxz_XYZzx",
                 "ababbacca/ABC_abbac_xyyxzyyxzXYZzx",
                 "ababbacca/ABCabbac_xyyxzyyxzXYZzx",
-                "ababbaccaABCabbac_xyyxzyyxzXYZzx");
+                "ababbaccaABCabbac_xyyxzyyxzXYZzx"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_synthetic_5() {
+        pattern = "abcXYZ";
+        
+        variants = asList(
+                "ABCXYZ_ababbacca/abbac_xyyxzyyxz_zx",
+                "zx_ABCXYZ_acba/abac_xyyxz_zx"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }   
+    
+    @Test
+    public void test_synthetic_6() {
+        pattern = "abcXYZ";
+        
+        variants = asList(
+                "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",
+                "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    } 
+    
+    @Test
+    public void test_synthetic_7() {
+        pattern = "abcXYZ";
+        
+        variants = asList(
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ"
+        );
         
         expectedSameOrderAsVariants();
         
