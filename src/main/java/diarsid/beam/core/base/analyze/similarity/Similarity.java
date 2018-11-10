@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import diarsid.beam.core.base.analyze.AnalyzeCache;
+import diarsid.beam.core.base.analyze.InMemoryAnalyzeCache;
+import diarsid.beam.core.base.analyze.PersistentAnalyzeCache;
 import diarsid.beam.core.modules.data.DaoSimilarityCache;
 
 import static java.lang.Integer.max;
@@ -17,6 +20,7 @@ import static java.lang.Integer.min;
 import static java.lang.String.format;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
+import static diarsid.beam.core.base.analyze.AnalyzeCache.PAIR_HASH;
 import static diarsid.beam.core.base.analyze.similarity.CacheUsage.NOT_USE_CACHE;
 import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitSupplying;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
@@ -33,7 +37,7 @@ import static diarsid.support.log.Logging.logFor;
 public class Similarity {
     
     private static final int SIMILARITY_ALGORITHM_VERSION = 2;
-    private static SimilarityCache cache = new InMemorySimilarityCache();
+    private static AnalyzeCache<CachedSimilarity> cache = new InMemoryAnalyzeCache<>(PAIR_HASH);
     
     static {
         asyncDo(() -> {
@@ -65,7 +69,7 @@ public class Similarity {
             inMemoryCache.addAll(dao.loadAllHashesWith(SIMILARITY_ALGORITHM_VERSION));
             
             logFor(Similarity.class).info("cache loaded");
-            cache = new PersistentSimilarityCache(dao, inMemoryCache, SIMILARITY_ALGORITHM_VERSION);
+            cache = new PersistentAnalyzeCache<>(dao, inMemoryCache, SIMILARITY_ALGORITHM_VERSION);
             logFor(Similarity.class).info("persistent cache created");
             
             asyncDo(() -> {
