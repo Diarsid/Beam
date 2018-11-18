@@ -9,8 +9,6 @@ package diarsid.beam.core.modules.data;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.DataModule;
 
-import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.events.BeamEventRuntime.awaitForPayloadRequestThenSupply;
 
 
 class DataModuleWorker implements DataModule {
@@ -28,6 +26,8 @@ class DataModuleWorker implements DataModule {
     private final DaoPictures daoImages;
     private final DaoLocationSubPaths daoLocationSubPaths;
     private final DaoLocationSubPathChoices daoLocationSubPathChoices;
+    private final DaoPersistableCacheData<Boolean> daoSimilarityCache;
+    private final DaoPersistableCacheData<Float> daoWeightCache;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
@@ -43,10 +43,8 @@ class DataModuleWorker implements DataModule {
         this.daoImages = daosProvider.createDaoImages();
         this.daoLocationSubPaths = daosProvider.createDaoLocationSubPaths();
         this.daoLocationSubPathChoices = daosProvider.createDaoLocationSubPathChoices();
-        DaoSimilarityCache daoSimilarityCache = daosProvider.createDaoSimilarityCache();
-        asyncDo(() -> {
-            awaitForPayloadRequestThenSupply(daoSimilarityCache, DaoSimilarityCache.class);
-        });        
+        this.daoSimilarityCache = daosProvider.createDaoSimilarityCache();
+        this.daoWeightCache = daosProvider.createDaoWeightCache();
     }
 
     @Override
@@ -112,5 +110,15 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoLocationSubPathChoices locationSubPathChoices() {
         return this.daoLocationSubPathChoices;
+    }
+
+    @Override
+    public DaoPersistableCacheData<Boolean> cachedSimilarity() {
+        return this.daoSimilarityCache;
+    }
+
+    @Override
+    public DaoPersistableCacheData<Float> cachedWeight() {
+        return this.daoWeightCache;
     }
 }

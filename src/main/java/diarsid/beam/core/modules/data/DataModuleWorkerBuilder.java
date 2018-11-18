@@ -8,7 +8,6 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataBaseActuationException;
 import diarsid.beam.core.base.data.DataBaseActuator;
@@ -20,6 +19,7 @@ import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.sql.daos.H2DaosProvider;
 import diarsid.beam.core.modules.data.sql.database.H2DataBase;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
+import diarsid.support.configuration.Configuration;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -28,6 +28,7 @@ import static java.lang.String.format;
 import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
+import static diarsid.beam.core.base.events.BeamEventRuntime.subscribeOnRequestsForPayloadOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.support.log.Logging.logFor;
 
@@ -60,7 +61,11 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         
         DaosProvider daosProvider = new H2DaosProvider(
                 dataBase, this.ioModule, this.applicationComponentsHolderModule);
-        return new DataModuleWorker(dataBase, daosProvider);
+        DataModule dataModule = new DataModuleWorker(dataBase, daosProvider);
+        
+        subscribeOnRequestsForPayloadOf(DataModule.class, () -> dataModule);
+        
+        return dataModule;
     }
     
     private void loadDriver(String driverClassName) {

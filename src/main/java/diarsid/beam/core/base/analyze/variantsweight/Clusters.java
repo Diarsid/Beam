@@ -384,7 +384,15 @@ class Clusters implements StatefulClearable {
                     }
                 } else {
                     /* no many-as-one clusters */
-                    if ( this.areClustersAtFirstAndLastPathElement() ) {
+                    if ( this.isEveryClusterMeansEveryPathElement() ) {
+                        if ( this.isClusteredPartFormingMajority() ) {
+//                            this.placingBonusNoMoreThanPercent(65);
+//                            this.manyMajorClosierToEndAreBetter();
+                        } else {
+//                            this.placingBonusNoMoreThanPercent(50);
+//                            this.manyClosierToEndAreBetter();
+                        }
+                    } else if ( this.areClustersAtFirstAndLastPathElement() ) {
                         if ( this.isFirstClusterStartsWithSeparator() ) {
                             if ( this.isLastClusterStartsWithSeparator() ) {
                                 this.placingBonusOf(80, "two clusters at start and end");
@@ -399,14 +407,6 @@ class Clusters implements StatefulClearable {
                             this.placingBonusNoMoreThanPercent(75);
                             this.firstAndLastClustersCloserToStartAreBetter();
                             this.applyCasePenaltyToBonus(90);    
-                        }
-                    } else if ( this.isEveryClusterMeansEveryPathElement() ) {
-                        if ( this.isClusteredPartFormingMajority() ) {
-//                            this.placingBonusNoMoreThanPercent(65);
-//                            this.manyMajorClosierToEndAreBetter();
-                        } else {
-//                            this.placingBonusNoMoreThanPercent(50);
-//                            this.manyClosierToEndAreBetter();
                         }
                     } else if ( this.isLastClusterAtVariantEnd() ) {
                         if ( this.isClusteredPartFormingMajority() ) {
@@ -585,7 +585,7 @@ class Clusters implements StatefulClearable {
             if ( cluster.lastPosition() < nextSeparatorPosition ) {
                 nextSeparatorPosition = pathSeparators.higher(nextSeparatorPosition);
                 if ( isNull(nextSeparatorPosition) ) {
-                    return cluster.equals(this.lastCluster());
+                    return this.isPenultimate(cluster);
                 } 
             } else {
                 return false;
@@ -593,6 +593,22 @@ class Clusters implements StatefulClearable {
         }
         
         return true;
+    }
+    
+    private boolean isPenultimate(Cluster cluster) {
+        switch ( this.clusters.size() ) {
+            case 0:
+                return false;
+            case 1:
+                return false;
+            case 2: 
+                return this.clusters.indexOf(cluster) == 0;
+            case 3: 
+                return this.clusters.indexOf(cluster) == 1;
+            default:
+                int index = this.clusters.indexOf(cluster);
+                return index == this.clusters.size() - 2;
+        }        
     }
     
     private void bestPlacing() {

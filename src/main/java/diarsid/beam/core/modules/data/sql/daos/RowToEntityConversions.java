@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.sql.Timestamp;
 
+import diarsid.beam.core.base.analyze.cache.PersistableCacheData;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.Attribute;
@@ -106,5 +107,21 @@ class RowToEntityConversions {
         return new Attribute(
                 (String) row.get("key"),
                 (String) row.get("value"));
+    };
+    
+    static final RowConversion<PersistableCacheData<Float>> ROW_TO_CACHED_FLOAT = (row) -> {
+        return new PersistableCacheData<>(
+                row.get("target", String.class), 
+                row.get("pattern", String.class), 
+                row.get("pair_hash", Long.class),
+                row.get("weight", Float.class));
+    };
+    
+    static final RowConversion<PersistableCacheData<Boolean>> ROW_TO_CACHED_BOOLEAN = (row) -> {
+        return new PersistableCacheData(
+                row.get("target", String.class), 
+                row.get("pattern", String.class), 
+                row.get("pair_hash", Long.class),
+                row.get("isSimilar", Boolean.class));
     };
 }

@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 
 import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *
@@ -18,77 +19,93 @@ import static diarsid.beam.core.base.events.BeamEventRuntime.fireAsync;
  */
 public class PlannedAwaitForEvent {
     
-    private final Object monitor;
+    protected boolean isAwaited;
+    protected boolean isToBeNotified;
 
     PlannedAwaitForEvent() {
-        this.monitor = new Object();
+        this.isAwaited = false;
+        this.isToBeNotified = false;
     }
-    
-    protected final Object monitor() {
-        return this.monitor;
+
+    protected final void syncAwaitBewareOfNotifier() throws InterruptedException {
+        synchronized ( this ) {
+            this.isAwaited = true;
+            if ( this.isToBeNotified ) {
+                logFor(this).info("notifier thread is already awaiting to notify!");
+                this.notifyAll();
+                this.wait();
+            } else {
+                this.wait();
+            }
+        }
+    }
+
+    protected final void syncNotifyBewareOfAwaiting() throws InterruptedException{
+        synchronized ( this ) {            
+            this.isToBeNotified = true;
+            if ( this.isAwaited ) {
+                this.notifyAll();
+            } else {
+                logFor(this).info("notifier thread is awaiting for event to be awaited...");
+                this.wait();
+                this.notifyAll();
+            }
+        }         
     }
     
     public void awaitThenDo(CallbackEmpty callback) {
-        synchronized ( this.monitor ) {
-            try {
-                this.monitor.wait();
-            } catch (InterruptedException ignore) {
-                // nothing
-                return;
-            }
+        try {
+            this.syncAwaitBewareOfNotifier();
+        } catch (InterruptedException ignore) {
+            // nothing
+            return;
         }
         callback.call();
     }
     
     public void awaitThenFire(String eventType) {
-        synchronized ( this.monitor ) {
-            try {
-                this.monitor.wait();
-            } catch (InterruptedException ignore) {
-                // nothing
-                return;
-            }
+        try {
+            this.syncAwaitBewareOfNotifier();
+        } catch (InterruptedException ignore) {
+            // nothing
+            return;
         }
         fireAsync(eventType);
     }
     
     public void awaitThenFire(String eventType, Object payload) {
-        synchronized ( this.monitor ) {
-            try {
-                this.monitor.wait();
-            } catch (InterruptedException ignore) {
-                // nothing
-                return;
-            }
+        try {
+            this.syncAwaitBewareOfNotifier();
+        } catch (InterruptedException ignore) {
+            // nothing
+            return;
         }
         fireAsync(eventType, payload);
     }
     
     public <T> Optional<T> awaitThenGet(Supplier<T> supplierT) {
-        synchronized ( this.monitor ) {
-            try {
-                this.monitor.wait();
-            } catch (InterruptedException ignore) {
-                // nothing
-                return Optional.empty();
-            }
+        try {
+            this.syncAwaitBewareOfNotifier();
+        } catch (InterruptedException ignore) {
+            // nothing
+            return Optional.empty();
         }
         return Optional.ofNullable(supplierT.get());
     }
     
     public void awaitThenProceed() {
-        synchronized ( this.monitor ) {
-            try {
-                this.monitor.wait();
-            } catch (InterruptedException ingore) {
-                // nothing
-            }
+        try {
+            this.syncAwaitBewareOfNotifier();
+        } catch (InterruptedException ignore) {
+            // nothing
         }
     }
     
     void notifyAwaitedOnEvent() {
-        synchronized ( this.monitor ) {
-            this.monitor.notifyAll();
+        try {
+            this.syncNotifyBewareOfAwaiting();
+        } catch (InterruptedException ignore) {
+            // nothing
         }
     }
 }

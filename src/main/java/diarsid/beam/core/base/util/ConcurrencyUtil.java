@@ -8,13 +8,17 @@ package diarsid.beam.core.base.util;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
 
 import static java.util.Optional.empty;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.support.log.Logging.logFor;
@@ -54,6 +58,12 @@ public class ConcurrencyUtil {
         } 
     }
     
+    public static <T> CompletableFuture<T> asyncGet(Supplier<T> tSupplier) {
+        return supplyAsync(
+                () -> tSupplier.get(), 
+                EXECUTOR);
+    }
+    
     public static void awaitDo(Runnable runnable) {
         try {
             EXECUTOR.submit(runnable).get();
@@ -70,10 +80,10 @@ public class ConcurrencyUtil {
         new Thread(runnable, threadName).start();
     }
     
-    public static void asyncDoPeriodically(
+    public static ScheduledFuture asyncDoPeriodically(
             String name, Runnable runnable, int period, TimeUnit timeUnit) {
         EXECUTOR.setMaximumPoolSize(EXECUTOR.getMaximumPoolSize() + 1);
         EXECUTOR.setCorePoolSize(EXECUTOR.getCorePoolSize() + 1);
-        EXECUTOR.scheduleAtFixedRate(runnable, period, period, timeUnit);
+        return EXECUTOR.scheduleAtFixedRate(runnable, period, period, timeUnit);
     }
 }

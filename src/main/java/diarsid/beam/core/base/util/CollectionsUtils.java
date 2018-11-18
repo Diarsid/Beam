@@ -37,6 +37,10 @@ public class CollectionsUtils {
         return ( nonNull(c) && ! c.isEmpty() );
     }
     
+    public static boolean nonEmpty(Map map) {
+        return ( nonNull(map) && ! map.isEmpty() );
+    }
+    
     public static boolean hasAny(Collection c) {
         return ( ! c.isEmpty() );
     }

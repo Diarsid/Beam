@@ -7,22 +7,22 @@ package diarsid.beam.core.base.analyze.similarity;
 
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.function.BiFunction;
 
-import diarsid.beam.core.base.analyze.AnalyzeCache;
-import diarsid.beam.core.base.analyze.InMemoryAnalyzeCache;
-import diarsid.beam.core.base.analyze.PersistentAnalyzeCache;
-import diarsid.beam.core.modules.data.DaoSimilarityCache;
+import diarsid.beam.core.base.analyze.cache.CacheUsage;
+import diarsid.beam.core.base.analyze.cache.PersistentAnalyzeCache;
+import diarsid.beam.core.modules.DataModule;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
-import static diarsid.beam.core.base.analyze.AnalyzeCache.PAIR_HASH;
-import static diarsid.beam.core.base.analyze.similarity.CacheUsage.NOT_USE_CACHE;
-import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitSupplying;
+import static diarsid.beam.core.base.analyze.cache.AnalyzeCache.PAIR_HASH_FUNCTION;
+import static diarsid.beam.core.base.analyze.cache.CacheUsage.NOT_USE_CACHE;
+import static diarsid.beam.core.base.analyze.cache.CacheUsage.USE_CACHE;
+import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenAwaitForSupply;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
@@ -36,12 +36,26 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class Similarity {
     
-    private static final int SIMILARITY_ALGORITHM_VERSION = 2;
-    private static AnalyzeCache<CachedSimilarity> cache = new InMemoryAnalyzeCache<>(PAIR_HASH);
+    private static final int SIMILARITY_ALGORITHM_VERSION = 3;
+    private static final PersistentAnalyzeCache<Boolean> CACHE;
     
     static {
+        BiFunction<String, String, Boolean> similarityFunction = (target, pattern) -> {
+            return isSimilarInternally(target, pattern, NOT_USE_CACHE);
+        };
+        
+        CACHE = new PersistentAnalyzeCache<>(
+                similarityFunction,
+                PAIR_HASH_FUNCTION, 
+                SIMILARITY_ALGORITHM_VERSION);
+        
         asyncDo(() -> {
-            awaitAndCreatePersistentCache();
+            logFor(Similarity.class).info("requesting for data module...");
+            requestPayloadThenAwaitForSupply(DataModule.class).ifPresent((dataModule) -> {
+                logFor(Similarity.class).info("cache loading...");
+                CACHE.initPersistenceWith(dataModule.cachedSimilarity());
+                logFor(Similarity.class).info("cache loaded");            
+            });
         });
     }
     
@@ -57,31 +71,6 @@ public class Similarity {
     
 
     private Similarity() {        
-    }
-    
-    public static void awaitAndCreatePersistentCache() {
-        if ( cache instanceof PersistentSimilarityCache ) {
-            return;
-        }
-        
-        requestPayloadThenAwaitSupplying(DaoSimilarityCache.class).ifPresent((dao) -> {
-            InMemorySimilarityCache inMemoryCache = (InMemorySimilarityCache) cache;
-            inMemoryCache.addAll(dao.loadAllHashesWith(SIMILARITY_ALGORITHM_VERSION));
-            
-            logFor(Similarity.class).info("cache loaded");
-            cache = new PersistentAnalyzeCache<>(dao, inMemoryCache, SIMILARITY_ALGORITHM_VERSION);
-            logFor(Similarity.class).info("persistent cache created");
-            
-            asyncDo(() -> {
-                BiFunction<String, String, Boolean> similarityFunction = 
-                    (target, pattern) -> isSimilarInternally(target, pattern, NOT_USE_CACHE); 
-                
-                Map<Long, Boolean> reassesedHashes = dao.reassessAllHashesOlderThan(
-                                SIMILARITY_ALGORITHM_VERSION, similarityFunction);
-                
-                inMemoryCache.addAll(reassesedHashes);
-            });
-        });
     }
     
     private static int indexOfChain(String target, char chain1, char chain2) {
@@ -469,16 +458,18 @@ public class Similarity {
     }
     
     public static boolean isSimilar(String target, String pattern) {
-        return isSimilarInternally(target, pattern, CacheUsage.USE_CACHE);
+        return isSimilarInternally(target, pattern, USE_CACHE);
     }
     
     static boolean isSimilarInternally(
             String target, String pattern, CacheUsage cacheUsage) {
-        if ( cacheUsage == CacheUsage.USE_CACHE ) {
-            CachedSimilarity similarity = cache.searchSimilarityForPair(target, pattern);
-            if ( similarity.isFound() ) {
-                similarityLog(format("%s (target: %s, pattern: %s)", similarity, target, pattern));
-                return similarity.isSimilar();
+        if ( cacheUsage.equals(USE_CACHE) ) {
+            Boolean similarity = CACHE.searchNullableCachedFor(target, pattern);
+            if ( nonNull(similarity) ) {
+                similarityLog(format(
+                        "FOUND CACHED %s (target: %s, pattern: %s)", 
+                        similarity, target, pattern));
+                return similarity;
             }
         }        
         
@@ -492,8 +483,8 @@ public class Similarity {
                 similarityPercent, 
                 requiredPercent));
         
-        if ( cacheUsage == CacheUsage.USE_CACHE ) {
-            cache.addToCache(target, pattern, similar);
+        if ( cacheUsage.equals(USE_CACHE) ) {
+            CACHE.addToCache(target, pattern, similar);
         }
         
         return similar;          

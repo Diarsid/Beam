@@ -5,7 +5,6 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
-import java.util.Map;
 import java.util.TreeSet;
 
 import diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection;
@@ -15,6 +14,7 @@ import diarsid.support.objects.PooledReusable;
 import static java.lang.Math.pow;
 import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
@@ -51,10 +51,9 @@ class AnalyzeData extends PooledReusable {
     
     AnalyzePositionsData best;
             
-    WeightedVariant newVariant;
-    WeightedVariant prevVariant;
+    WeightedVariant weightedVariant;
     
-    Variant variant;
+    private Variant variant;
     TreeSet<Integer> variantPathSeparators;
     TreeSet<Integer> variantTextSeparators;
     String variantText;
@@ -87,6 +86,17 @@ class AnalyzeData extends PooledReusable {
         }
     }
     
+    void set(String pattern, String variantText) {
+        this.variant = null;
+        this.variantText = lower(variantText);
+        this.pattern = pattern;
+        this.variantEqualsToPattern = this.pattern.equalsIgnoreCase(this.variantText);
+        if ( this.variantEqualsToPattern ) {
+            this.variantWeight = -pow(this.variantText.length(), 5);
+            logAnalyze(BASE, "  variant is equal to pattern: weight %s", this.variantWeight);            
+        }
+    }
+    
     @Override
     public void clearForReuse() {
         this.pattern = null;
@@ -100,23 +110,17 @@ class AnalyzeData extends PooledReusable {
         this.variantEqualsToPattern = false;
         this.variantWeight = 0;
         this.lengthDelta = 0;
-        this.newVariant = null;
-        this.prevVariant = null;
+        this.weightedVariant = null;
         this.forwardAndReverseEqual = false;
         this.calculatedAsUsualClusters = true;
     }
 
-    boolean isNewVariantBetterThanPrevious() {
-        return this.newVariant.betterThan(this.prevVariant);
-    }
-
-    void setPreviousVariantWithSameDisplayText(Map<String, WeightedVariant> variantsByDisplay) {
-        this.prevVariant = variantsByDisplay.get(lower(this.newVariant.displayText()));
-    }
-
     void complete() {
         // weight calculation ends
-        this.newVariant = new WeightedVariant(this.variant, this.variantEqualsToPattern, this.variantWeight);
+        if ( nonNull(this.variant) ) {
+            this.weightedVariant = new WeightedVariant(
+                    this.variant, this.variantEqualsToPattern, this.variantWeight);
+        }        
     }
 
     void calculateWeight() {        

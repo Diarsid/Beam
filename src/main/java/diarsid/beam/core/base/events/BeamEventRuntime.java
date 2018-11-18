@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import diarsid.beam.core.base.control.io.base.interaction.Callback;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
@@ -314,20 +315,29 @@ public class BeamEventRuntime {
             logFor(BeamEventRuntime.class).error("INVALID PAYLOAD EXCHANGE!");
             return;
         }
-        String payloadRequestEvent = "request of: " + type.getCanonicalName();
-        String payloadSupplyingEvent = "await for supply:" + type.getCanonicalName();
+        String payloadRequestEvent = type.getCanonicalName() + "_requested";
+        String payloadSupplyingEvent = type.getCanonicalName() + "_supplied";
         
         planAwaitingFor(payloadRequestEvent).awaitThenFire(payloadSupplyingEvent, payload);
     }
     
-    public static <T> Optional<T> requestPayloadThenAwaitSupplying(Class<T> type) {
+    public static <T> void subscribeOnRequestsForPayloadOf(Class<T> type, Supplier<T> tSupplier) {
+        subscribe(onEvent(type.getCanonicalName() + "_requested")
+                .withCallback((event) -> {
+                    fireAsync(type.getCanonicalName() + "_supplied", tSupplier.get());
+                }));
+        fireAsync(type.getCanonicalName() + "_supplying_subscription_created");
+    }
+    
+    public static <T> Optional<T> requestPayloadThenAwaitForSupply(Class<T> type) {
         PlannedAwaitForEventPayload plannedAwait = 
-                planAwaitingForPayload("await for supply:" + type.getCanonicalName());
+                planAwaitingForPayload(type.getCanonicalName() + "_supplied");
         
-        fireAsync("request of: " + type.getCanonicalName());
+        fireAsync(type.getCanonicalName() + "_requested");
         
         return plannedAwait
                 .awaitThenReturn()
                 .map(payload -> (T) payload);
     }
+    
 }

@@ -1372,6 +1372,42 @@ public class AnalyzeTest {
         weightVariantsAndCheckMatching();
     }
     
+    @Test
+    public void test_synthetic_8() {
+        pattern = "abcXYZqwe";
+        
+        variants = asList(
+                "aaa_ABC/dd_xyz_x/ff_qwe_xy",
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_synthetic_7_duplicates() {
+        pattern = "abcXYZ";
+        
+        variants = asList(
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ",
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ",
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ"
+        );
+        
+        expected  = asList(
+                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba",
+                "abbac_xyyxzyyxz_zx/caba_bac_ba_ABC_XYZ"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
     private void weightVariantsAndCheckMatching() {
         boolean failed;
         try {

@@ -8,6 +8,8 @@ package diarsid.beam.core.base.events;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static diarsid.support.log.Logging.logFor;
+
 /**
  *
  * @author Diarsid
@@ -21,25 +23,21 @@ public class PlannedAwaitForEventPayload extends PlannedAwaitForEvent {
     }
     
     public void awaitThenAccept(Consumer consumer) {
-        synchronized ( super.monitor() ) {
-            try {
-                super.monitor().wait();
-            } catch (InterruptedException ignore) {
-                // nothing
-                return;
-            }
+        try {
+            super.syncAwaitBewareOfNotifier();       
+        } catch (InterruptedException ignore) {
+            // nothing
+            return;
         }
         consumer.accept(this.payload);
     }
     
     public Optional<Object> awaitThenReturn() {
-        synchronized ( super.monitor() ) {
-            try {
-                super.monitor().wait();
-            } catch (InterruptedException ignore) {
-                // nothing
-                return Optional.empty();
-            }
+        try {
+            super.syncAwaitBewareOfNotifier();                
+        } catch (InterruptedException ignore) {
+            // nothing
+            return Optional.empty();
         }
         return Optional.ofNullable(this.payload);
     }
@@ -51,8 +49,12 @@ public class PlannedAwaitForEventPayload extends PlannedAwaitForEvent {
     
     void notifyAwaitedOnEvent(Object payload) {        
         this.payload = payload;
-        synchronized ( super.monitor() ) {
-            super.monitor().notifyAll();
-        }         
+        try {
+            super.syncNotifyBewareOfAwaiting();
+        } catch (InterruptedException ignore) {
+            // nothing
+        }
+        logFor(this).info("notifying with " + payload.getClass().getSimpleName() + "...");        
     }
+    
 }

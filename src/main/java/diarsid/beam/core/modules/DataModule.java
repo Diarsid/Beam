@@ -6,7 +6,6 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
-import diarsid.beam.core.base.analyze.similarity.CachedSimilarity;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
@@ -51,7 +50,7 @@ public interface DataModule extends StoppableBeamModule  {
     
     DaoLocationSubPathChoices locationSubPathChoices();
     
-    DaoPersistableCacheData<CachedSimilarity> cachedSimilarity();
+    DaoPersistableCacheData<Boolean> cachedSimilarity();
     
     DaoPersistableCacheData<Float> cachedWeight();
     

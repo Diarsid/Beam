@@ -135,6 +135,18 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "   created             TIMESTAMP   NOT NULL ) ", 
                 7);
         
+        SqlTable weightCache = new H2SqlTable(
+                "weight_cache", 
+                "CREATE TABLE weight_cache ( " +
+                "   uuid                UUID    DEFAULT RANDOM_UUID() PRIMARY KEY, " +    
+                "   target              VARCHAR     NOT NULL, " +     
+                "   pattern             VARCHAR     NOT NULL, " +
+                "   pair_hash           BIGINT      NOT NULL, " +         
+                "   weight              FLOAT(3)    NOT NULL, " +
+                "   algorithm_version   INTEGER     NOT NULL, " +
+                "   created             TIMESTAMP   NOT NULL ) ", 
+                7);
+        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
@@ -147,6 +159,7 @@ public class H2DataBaseModel implements SqlDataBaseModel {
         this.tables.add(images);
         this.tables.add(locationSubPathChoices);
         this.tables.add(similarityCache);
+        this.tables.add(weightCache);
         
         SqlConstraint fkBatchCommandsToBatchNames = new H2SqlConstraint(
                 "FK_BatchCommands_to_Batches", 

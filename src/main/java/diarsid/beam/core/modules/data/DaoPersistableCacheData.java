@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import diarsid.beam.core.base.analyze.PersistableCacheData;
+import diarsid.beam.core.base.analyze.cache.PersistableCacheData;
 
 /**
  *

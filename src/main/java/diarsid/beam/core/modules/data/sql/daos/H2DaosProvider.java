@@ -20,8 +20,8 @@ import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
+import diarsid.beam.core.modules.data.DaoPersistableCacheData;
 import diarsid.beam.core.modules.data.DaoPictures;
-import diarsid.beam.core.modules.data.DaoSimilarityCache;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
@@ -31,6 +31,8 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.modules.data.sql.daos.DataAccessVersion.V1;
 import static diarsid.beam.core.modules.data.sql.daos.DataAccessVersion.getDataAccessVersion;
+import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_BOOLEAN;
+import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_FLOAT;
 
 /**
  *
@@ -161,10 +163,29 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoLocationSubPathChoices createDaoLocationSubPathChoices() {
         return new H2DaoLocationSubPathChoices(this.dataBase, this.ioModule.getInnerIoEngine());
-    }    
-    
+    }  
+
     @Override
-    public DaoSimilarityCache createDaoSimilarityCache() {
-        return new H2DaoSimilarityCache(this.dataBase, this.ioModule.getInnerIoEngine());
+    public DaoPersistableCacheData<Float> createDaoWeightCache() {
+        return new H2DaoPersistableCacheData<>(
+                this.dataBase, 
+                this.ioModule.getInnerIoEngine(), 
+                "weight_cache", 
+                "weight", 
+                Float.class, 
+                "variants weigth cache",
+                ROW_TO_CACHED_FLOAT);
+    }
+
+    @Override
+    public DaoPersistableCacheData<Boolean> createDaoSimilarityCache() {
+        return new H2DaoPersistableCacheData<>(
+                this.dataBase, 
+                this.ioModule.getInnerIoEngine(), 
+                "similarity_cache", 
+                "isSimilar", 
+                Boolean.class, 
+                "similarity cache",
+                ROW_TO_CACHED_BOOLEAN);
     }
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.analyze;
+package diarsid.beam.core.base.analyze.cache;
 
 import java.util.Objects;
 
@@ -18,7 +18,7 @@ public class PersistableCacheData<T> {
     private final long pairHash;
     private final T cacheable;
 
-    PersistableCacheData(String target, String pattern, long pairHash, T cacheable) {
+    public PersistableCacheData(String target, String pattern, long pairHash, T cacheable) {
         this.target = target;
         this.pattern = pattern;
         this.pairHash = pairHash;

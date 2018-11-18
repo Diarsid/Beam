@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.analyze;
+package diarsid.beam.core.base.analyze.cache;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,20 +15,20 @@ import java.util.function.BiFunction;
  *
  * @author Diarsid
  */
-public class InMemoryAnalyzeCache<T> implements AnalyzeCache<T> {
+class InMemoryAnalyzeCache<T> implements AnalyzeCache<T> {
     
     private final BiFunction<String, String, Long> hashFunction;
     private final Map<Long, T> cache;
     private final Object cacheLock;
 
-    public InMemoryAnalyzeCache(BiFunction<String, String, Long> hashFunction) {
+    InMemoryAnalyzeCache(BiFunction<String, String, Long> hashFunction) {
         this.hashFunction = hashFunction;
         this.cache = new HashMap<>();
         this.cacheLock = new Object();
     }    
     
     @Override
-    public T searchCachedFor(String target, String pattern) {
+    public T searchNullableCachedFor(String target, String pattern) {
         Long pairHash = this.hashFunction.apply(target, pattern);
         
         synchronized ( this.cacheLock ) {

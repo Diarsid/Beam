@@ -13,22 +13,21 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
-import diarsid.beam.core.base.analyze.PersistableCacheData;
+import diarsid.beam.core.base.analyze.cache.PersistableCacheData;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoPersistableCacheData;
 import diarsid.jdbc.transactions.JdbcTransaction;
+import diarsid.jdbc.transactions.Row;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.RowOperation;
 import diarsid.jdbc.transactions.core.Params;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
-import diarsid.support.objects.Possible;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
@@ -40,7 +39,6 @@ import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.jdbc.transactions.core.Params.params;
 import static diarsid.support.log.Logging.logFor;
-import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 
 class H2DaoPersistableCacheData <T>  
@@ -53,6 +51,11 @@ class H2DaoPersistableCacheData <T>
     private static final String SQL_TEMPLATE_SELECT_HASHES_WITH_ALGORITHM;
     private static final String SQL_TEMPLATE_SELECT_UUIDS_WHERE_HASHES_IN;
     private static final String SQL_TEMPLATE_DELETE_WHERE_UUID_IS;
+    private static final String SQL_TEMPLATE_INSERT_INTO_TABLE;
+    private static final String SQL_TEMPLATE_SELECT_WITH_ALGORITHM_OLDER_THAN;
+    private static final String SQL_TEMPLATE_SELECT_WHERE_HASH_IS;
+    private static final String SQL_TEMPLATE_DELETE_WHERE_HASH_AND_UUID_ARE;
+    private static final String SQL_UPDATE_CACHED_ALGORITHM_TIME_WHERE_UUID_IS;
     
     static {
         CACHE_TABLE = ":table";
@@ -77,10 +80,98 @@ class H2DaoPersistableCacheData <T>
                 "DELETE FROM " + CACHE_TABLE + " " +
                 "WHERE uuid = ? ";
         
+        SQL_TEMPLATE_INSERT_INTO_TABLE = 
+                "INSERT INTO " + CACHE_TABLE + " (" +
+                "   uuid, " +
+                "   algorithm_version, " +
+                "   target, " +
+                "   pattern, " +
+                "   pair_hash, " +
+                "   " + CACHE_COLUMN + ", " +
+                "   created ) " +
+                "VALUES ( ?, ?, ?, ?, ?, ?, ? ) ";
+        
+        SQL_TEMPLATE_SELECT_WITH_ALGORITHM_OLDER_THAN = 
+                "SELECT uuid, target, pattern, pair_hash " +
+                "FROM " + CACHE_TABLE + " " +
+                "WHERE algorithm_version < ? ";
+        
+        SQL_TEMPLATE_SELECT_WHERE_HASH_IS = 
+                "SELECT * " +
+                "FROM " + CACHE_TABLE + " " +
+                "WHERE pair_hash = ? ";
+        
+        SQL_TEMPLATE_DELETE_WHERE_HASH_AND_UUID_ARE = 
+                "DELETE FROM " + CACHE_TABLE + " " +
+                "WHERE pair_hash = ? AND uuid != ? ";
+        
+        SQL_UPDATE_CACHED_ALGORITHM_TIME_WHERE_UUID_IS = 
+                "UPDATE " + CACHE_TABLE + " " +
+                "SET " +
+                "   " + CACHE_COLUMN + " = ?, " +
+                "   algorithm_version = ?, " +
+                "   created = ? " + 
+                "WHERE uuid = ? ";
+        
+    }
+    
+    private static class Cached {
+        
+        private UUID uuid;
+        private String target;
+        private String pattern;
+        private Long pairHash;
+        private boolean filled;
+        
+        void fillFrom(Row row) throws TransactionHandledSQLException {
+            try {
+                this.target = row.get("target", String.class);
+                this.pattern = row.get("pattern", String.class);
+                this.pairHash = row.get("pair_hash", Long.class);
+                this.uuid = row.get("uuid", UUID.class);
+                this.filled = true;
+            } catch (Exception e) {
+                this.clear();
+                throw e;
+            }            
+        }
+
+        UUID uuid() {
+            return this.uuid;
+        }
+
+        String target() {
+            return this.target;
+        }
+
+        String pattern() {
+            return this.pattern;
+        }
+
+        Long pairHash() {
+            return this.pairHash;
+        }
+        
+        boolean isFilled() {
+            return this.filled;
+        }
+        
+        boolean isEmpty() {
+            return ! this.filled;
+        }
+        
+        void clear() {
+            this.target = null;
+            this.pattern = null;
+            this.pairHash = null;
+            this.uuid = null;
+        }
+        
     }
     
     private final Object similarityCacheLock;
     private final Class<T> cachedType;
+    private final String cacheName;
     private final RowConversion<PersistableCacheData<T>> rowToDataConversion;
     private final RowConversion<UUID> rowToUuidConversion;
     private final String cacheDataTableName;
@@ -89,6 +180,11 @@ class H2DaoPersistableCacheData <T>
     private final String sqlSelectHashesWithAlgorithm;
     private final String sqlSelectUuidsWhereHashesIn;
     private final String sqlDeleteWhereUuidIs;
+    private final String sqlInsertInto;
+    private final String sqlSelectAllWithOlderAlgorithm;
+    private final String sqlSelectWhereHashIs;
+    private final String sqlDeleteWhereHashAndUuidAre;
+    private final String sqlUpdateCachedAlgorithmTimeWhereUuidIs;
     
     H2DaoPersistableCacheData(
             DataBase dataBase,
@@ -96,10 +192,13 @@ class H2DaoPersistableCacheData <T>
             String cacheDataTableName,
             String cacheDataColumnName,
             Class<T> cachedType,
+            String cacheName,
             RowConversion<PersistableCacheData<T>> rowToDataConversion) {
         super(dataBase, ioEngine);
         this.similarityCacheLock = new Object();
         this.cachedType = cachedType;
+        this.cacheName = cacheName;
+        
         this.rowToDataConversion = rowToDataConversion;
         this.rowToUuidConversion = (row) -> {
             return row.get("uuid", UUID.class);
@@ -125,6 +224,29 @@ class H2DaoPersistableCacheData <T>
         this.sqlDeleteWhereUuidIs = 
                 SQL_TEMPLATE_DELETE_WHERE_UUID_IS
                         .replace(CACHE_TABLE, this.cacheDataTableName);
+        
+        this.sqlInsertInto = 
+                SQL_TEMPLATE_INSERT_INTO_TABLE
+                        .replace(CACHE_TABLE, this.cacheDataTableName)
+                        .replace(CACHE_COLUMN, this.cacheDataColumnName);
+        
+        this.sqlSelectAllWithOlderAlgorithm = 
+                SQL_TEMPLATE_SELECT_WITH_ALGORITHM_OLDER_THAN
+                        .replace(CACHE_TABLE, this.cacheDataTableName);
+        
+        this.sqlSelectWhereHashIs = 
+                SQL_TEMPLATE_SELECT_WHERE_HASH_IS
+                        .replace(CACHE_TABLE, this.cacheDataTableName);
+        
+        this.sqlDeleteWhereHashAndUuidAre = 
+                SQL_TEMPLATE_DELETE_WHERE_HASH_AND_UUID_ARE
+                        .replace(CACHE_TABLE, this.cacheDataTableName);
+        
+        this.sqlUpdateCachedAlgorithmTimeWhereUuidIs = 
+                SQL_UPDATE_CACHED_ALGORITHM_TIME_WHERE_UUID_IS
+                        .replace(CACHE_TABLE, this.cacheDataTableName)
+                        .replace(CACHE_COLUMN, this.cacheDataColumnName);                
+                
     }
 
     @Override
@@ -140,7 +262,9 @@ class H2DaoPersistableCacheData <T>
             
         } catch(TransactionHandledSQLException | TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(systemInitiator(), "cannot load cache data.");
+            super.ioEngine().report(
+                    systemInitiator(), 
+                    format("cannot load cached data.", this.cacheName));
             return emptyList();
         }
     }
@@ -152,7 +276,7 @@ class H2DaoPersistableCacheData <T>
             Map<Long, T> cache = new HashMap<>();
             
             String columnName = this.cacheDataColumnName;
-            Class<T> type = this.cachedType;
+            Class<T> type = this.cachedType;            
             transact
                     .doQueryVarargParams(
                             (row) -> {
@@ -167,7 +291,9 @@ class H2DaoPersistableCacheData <T>
             
         } catch(TransactionHandledSQLException|TransactionHandledException e) {
             logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(systemInitiator(), "cannot load similarity data.");
+            super.ioEngine().report(
+                    systemInitiator(), 
+                    format("cannot load cached data.", this.cacheName));
             return emptyMap();
         }
     }
@@ -206,121 +332,96 @@ class H2DaoPersistableCacheData <T>
                                     this.sqlDeleteWhereUuidIs, 
                                     params);
                 }
+                
+                LocalDateTime now = now();
+                
+                Set<Params> dataAsParams = persistableCacheData
+                        .stream()
+                        .map(data -> params(
+                                randomUUID(),
+                                algorithmVersion, 
+                                data.target(), 
+                                data.pattern(), 
+                                data.hash(),
+                                data.cacheable(),
+                                now))
+                        .collect(toSet());
 
-                transact
-                        .doBatchUpdate(
-                                "INSERT INTO similarity_cache (" +
-                                "   uuid, " +
-                                "   algorithm_version, " +
-                                "   target, " +
-                                "   pattern, " +
-                                "   pair_hash, " +
-                                "   isSimilar, " +
-                                "   created ) " +
-                                "VALUES ( ?, ?, ?, ?, ?, ?, ? ) ", 
-                                toParams(algorithmVersion, persistableCacheData));
+                transact.doBatchUpdate(this.sqlInsertInto, dataAsParams);
 
             } catch(TransactionHandledSQLException|TransactionHandledException e) {
                 logFor(this).error(e.getMessage(), e);
-                super.ioEngine().report(systemInitiator(), "cannot save similarity data.");
+                super.ioEngine().report(
+                        systemInitiator(), 
+                        format("cannot save cached data in %s.", this.cacheName));
             }
         }    
-    }
-    
-    private Set<Params> toParams(
-            int algorithmVersion, List<PersistableCacheData<T>> cacheData) {
-        LocalDateTime now = now();
-        return cacheData
-                    .stream()
-                    .map(data -> params(
-                            randomUUID(),
-                            algorithmVersion, 
-                            data.target(), 
-                            data.pattern(), 
-                            data.hash(),
-                            data.cacheable(),
-                            now))
-                    .collect(toSet());
     }
 
     @Override
     public Map<Long, T> reassessAllHashesOlderThan(
             int algorithmVersion, 
-            BiFunction<String, String, T> similarityFunction) {
+            BiFunction<String, String, T> analyzeFunction) {
         
         Map<Long, T> reassessedCachHashes = new HashMap<>();
         
-        Possible<String> target = possibleButEmpty();
-        Possible<String> pattern = possibleButEmpty();
-        Possible<Long> hash = possibleButEmpty();
-        Possible<UUID> uuid = possibleButEmpty();
+        Cached cached = new Cached();
         
-        RowOperation sqlRowOperation = (row) -> {
-            target.resetTo(row.get("target", String.class));
-            pattern.resetTo(row.get("pattern", String.class));
-            hash.resetTo(row.get("pair_hash", Long.class));
-            uuid.resetTo(row.get("uuid", UUID.class));
+        RowOperation fillCachedFromRow = (row) -> {
+            cached.fillFrom(row);
         };
         
-        T newSimilarity;
+        T newCachedValue;
         boolean sameDataExist;
         
-        List<Possible> fields = asList(target, pattern, hash, uuid);
-        
-        logFor(this).info("try to reassess old similarity data");
+        logFor(this).info(format("try to reassess old cached data in %s", this.cacheName));
         
         synchronized ( this.similarityCacheLock ) {
             boolean dataForProcessExist = true;
             while ( dataForProcessExist ) {
                 try (JdbcTransaction transact = super.openTransaction()) {
 
-                    fields.forEach(field -> field.nullify());
+                    cached.clear();
 
                     transact
                             .doQueryAndProcessFirstRowVarargParams(
-                                    sqlRowOperation, 
-                                    "SELECT uuid, target, pattern, pair_hash " +
-                                    "FROM similarity_cache " +
-                                    "WHERE algorithm_version < ? ",
+                                    fillCachedFromRow, 
+                                    this.sqlSelectAllWithOlderAlgorithm,
                                     algorithmVersion);
 
-                    if ( uuid.isNotPresent() ) {
+                    if ( cached.isEmpty() ) {
                         dataForProcessExist = false;
                         continue;
                     }
 
-                    newSimilarity = similarityFunction.apply(target.orThrow(), pattern.orThrow());
+                    newCachedValue = analyzeFunction.apply(cached.target(), cached.pattern());
 
                     sameDataExist = transact
                             .doesQueryHaveResultsVarargParams(
-                                    "SELECT * " +
-                                    "FROM similarity_cache " +
-                                    "WHERE pair_hash = ? ", 
-                                    hash.orThrow());
+                                    this.sqlSelectWhereHashIs, 
+                                    cached.pairHash());
 
                     if ( sameDataExist ) {                    
                         transact
                                 .doUpdateVarargParams(
-                                        "DELETE FROM similarity_cache " +
-                                        "WHERE pair_hash = ? AND uuid != ? ", 
-                                        hash.orThrow(), uuid.orThrow());
+                                        this.sqlDeleteWhereHashAndUuidAre, 
+                                        cached.pairHash(), cached.uuid());
                     } else {
-                        reassessedCachHashes.put(hash.orThrow(), newSimilarity);
+                        reassessedCachHashes.put(cached.pairHash(), newCachedValue);
                     }
 
+                    LocalDateTime now = now();
+                    
                     transact
                             .doUpdateVarargParams(
-                                    "UPDATE similarity_cache " +
-                                    "SET " +
-                                    "   isSimilar = ?, " +
-                                    "   algorithm_version = ?, " +
-                                    "   created = ? " + 
-                                    "WHERE uuid = ? ", 
-                                    newSimilarity, algorithmVersion, now(), uuid.orThrow());
+                                    this.sqlUpdateCachedAlgorithmTimeWhereUuidIs, 
+                                    newCachedValue, algorithmVersion, now, cached.uuid());
 
                 } catch(TransactionHandledSQLException|TransactionHandledException e) {
                     logFor(this).error(e.getMessage(), e);
-                    super.ioEngine().report(systemInitiator(), "cannot reassess obsolete hashes.");
+                    super.ioEngine().report(
+                            systemInitiator(), 
+                            format("cannot reassess obsolete hashes in %s.", this.cacheName));
                 }
             }
         }
