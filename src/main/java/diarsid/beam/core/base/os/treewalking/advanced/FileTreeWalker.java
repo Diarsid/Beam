@@ -24,7 +24,6 @@ import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
 
-import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
@@ -149,21 +148,8 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         }
     }
     
-    private void logWalkingQuery() {
-        logFor(this).info(format(
-                "\n" +
-                "   FIND %s\n" +
-                "   LIKE PATTERN %s\n" +
-                "   IN %s\n" +
-                "   WITH DEPTH %s", 
-                state().searchMode(), 
-                state().pattern(), 
-                state().absoluteRoot(), 
-                state().depth()));
-    }
-    
     private void walkUsing(WalkState state) {
-        this.logWalkingQuery();
+        logFor(this).info(this.state().walkingQuery());
         if ( state.patternIsPath() ) {
             this.multipleWalkIterationsThroughPathUsing(state);
         } else {

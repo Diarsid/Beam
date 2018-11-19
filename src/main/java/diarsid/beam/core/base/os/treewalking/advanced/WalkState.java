@@ -20,7 +20,6 @@ import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.support.objects.PooledReusable;
-import diarsid.support.objects.Possible;
 
 import static java.lang.String.format;
 import static java.util.Collections.sort;
@@ -33,6 +32,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.GOOD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.MODERATE;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -48,11 +48,8 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
-import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.StringUtils.isEmpty;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
  *
@@ -66,11 +63,7 @@ class WalkState extends PooledReusable {
         PooledReusable.createPoolFor(WalkState.class, () -> new WalkState());
     }
             
-    private final Possible<String> absoluteRoot;
-    private final Possible<Location> location;
-    private final Possible<LocationSubPath> locationSubPath;
-    private final Possible<Catalog> catalog;      
-    private final Possible<String> relativeRoot;
+    private final WalkStartPlace place;
     private final List<WeightedVariant> variants;
     private final List<String> collectedOnCurrentLevel;
     private /* non-final in order to swap levels with ease */ List<File> currentLevel;
@@ -85,11 +78,7 @@ class WalkState extends PooledReusable {
     
     private WalkState() {
         super();
-        this.absoluteRoot = possibleButEmpty();
-        this.location = possibleButEmpty();
-        this.locationSubPath = possibleButEmpty();
-        this.catalog = possibleButEmpty();
-        this.relativeRoot = possibleButEmpty();
+        this.place = new WalkStartPlace();
         this.variants = new ArrayList<>();
         this.collectedOnCurrentLevel = new ArrayList<>();
         this.currentLevel = new ArrayList<>();
@@ -103,11 +92,9 @@ class WalkState extends PooledReusable {
         if ( isEmpty(this.pattern) ) {
             return voidFlowFail("pattern must be specified!");
         }
-        if ( this.absoluteRoot.notMatch(root -> nonEmpty(root)) ) {
-            return voidFlowFail("root must be specified!");
-        } 
-        if ( notExistsInFileSystem(this.absoluteRoot.orThrow()) ) {
-            return voidFlowFail(format("%s does not exist!", this.absoluteRoot));
+        VoidFlow placeCheck = this.place.check();
+        if ( placeCheck.result().is(FAIL) ) {
+            return placeCheck;
         }
                 
         this.initialize();
@@ -128,16 +115,12 @@ class WalkState extends PooledReusable {
 
     @Override
     protected void clearForReuse() {
+        this.place.clear();
+        
         this.variants.clear();
         this.collectedOnCurrentLevel.clear();
         this.currentLevel.clear();
-        this.nextLevel.clear();        
-        
-        this.absoluteRoot.nullify();
-        this.location.nullify();
-        this.locationSubPath.nullify();
-        this.catalog.nullify();
-        this.relativeRoot.nullify();
+        this.nextLevel.clear();
         
         this.visitedLevel = UNVISITED_LEVEL;
         
@@ -147,24 +130,6 @@ class WalkState extends PooledReusable {
         this.mode = null;
         this.maxLevelsToVisit = null;
         this.resultFlow = null;
-    }
-    
-    void setWhereToSearch(Catalog where) {
-        this.catalog.resetTo(where);
-    }
-    
-    void setWhereToSearch(String where) {
-        this.absoluteRoot.resetTo(where);
-    }
-    
-    void setWhereToSearch(Location where) {
-        this.location.resetTo(where);
-        this.absoluteRoot.resetTo(where.path());
-    }
-    
-    void setWhereToSearch(LocationSubPath where) {
-        this.locationSubPath.resetTo(where);
-        this.absoluteRoot.resetTo(where.fullPath());
     }
     
     void setHowDeepToGo(int maxDepth) {
@@ -182,10 +147,35 @@ class WalkState extends PooledReusable {
     void setWhatToSearch(String pattern) {
         this.pattern = pattern;
         this.isPatternPath = containsPathSeparator(pattern);
+        this.place.setIsPatternPath(this.isPatternPath);
+    }
+    
+    void setWhereToSearch(Catalog where) {
+        this.place.setWhereToSearch(where);
+    }
+    
+    void setWhereToSearch(String where) {
+        this.place.setWhereToSearch(where);
+    }
+    
+    void setWhereToSearch(Location where) {
+        this.place.setWhereToSearch(where);
+    }
+    
+    void setWhereToSearch(LocationSubPath where) {
+        this.place.setWhereToSearch(where);
     }
     
     boolean patternIsPath() {
         return this.isPatternPath;
+    }
+    
+    String absoluteRoot() {
+        return this.place.absoluteRoot();
+    }
+    
+    File absoluteRootAsFile() {
+        return this.place.absoluteRootAsFile();
     }
     
     WeightEstimate weightEstimateAcceptableForCurrentLevel() {
@@ -203,7 +193,11 @@ class WalkState extends PooledReusable {
         return this.pattern;
     }
     
-    int depth() {
+    boolean isDepthDefined() {
+        return nonNull(this.maxLevelsToVisit);
+    }
+    
+    Integer depth() {
         return this.maxLevelsToVisit;
     }
     
@@ -213,10 +207,6 @@ class WalkState extends PooledReusable {
     
     String[] patternToPathFragments() {
         return splitPathFragmentsFrom(this.pattern);
-    }
-    
-    File absoluteRootAsFile() {
-        return new File(this.absoluteRoot.orThrow());
     }
     
     List<String> collectedOnCurrentLevel() {
@@ -239,50 +229,9 @@ class WalkState extends PooledReusable {
         return this.mode;
     }
     
-    String absoluteRoot() {
-        return this.absoluteRoot.orThrow();
-    }
-    
-    String searchPlace() {
-        String where;
-        
-        if ( this.isPatternPath ) {
-            if ( this.location.isPresent() ) {
-                where = this.location.orThrow().name();
-                if ( this.relativeRoot.isPresent() ) {
-                    where = joinToPath(where, this.relativeRoot.orThrow());
-                }                
-            } else if ( this.locationSubPath.isPresent() ) {
-                where = locationSubPath.orThrow().fullName();
-                if ( this.relativeRoot.isPresent() ) {
-                    where = joinToPath(where, this.relativeRoot.orThrow());
-                }
-            } else if ( this.catalog.isPresent() ) { 
-                where = this.catalog.orThrow().name();
-                if ( this.relativeRoot.isPresent() ) {
-                    where = joinToPath(where, this.relativeRoot.orThrow());
-                }
-            } else {
-                where = this.absoluteRoot.orThrow();
-            }      
-        } else {
-            if ( this.location.isPresent() ) {
-                where = this.location.orThrow().name();
-            } else if ( this.locationSubPath.isPresent() ) {
-                where = this.locationSubPath.orThrow().fullName();
-            } else if ( this.catalog.isPresent() ) { 
-                where = this.catalog.orThrow().name();
-            } else {
-                where = this.absoluteRoot.orThrow();
-            }
-        }
-        
-        return where;
-    }
-    
     Help composeHelp() {        
         return asHelp(
-                format("Choose variant for '%s' in %s", this.pattern, this.searchPlace()), 
+                format("Choose variant for '%s' in %s", this.pattern, this.place.name()), 
                 "Use:", 
                 "   - number of target to choose it",
                 "   - part of target name to choose it",
@@ -357,13 +306,14 @@ class WalkState extends PooledReusable {
     }
     
     void resultFlowFailBecauseAbsoluteRootIsNotDirectory() {
-        this.resultFlow = valueFlowFail(format("%s is not a directory!", this.absoluteRoot));
+        this.resultFlow = valueFlowFail(format(
+                "%s is not a directory!", this.place.absoluteRoot()));
     }
     
     void processResultFlowAfterSearching() {        
         if ( this.isPatternPath && this.isResultFlowCompletedWithValue() ) {
             String lastFoundTarget = this.resultFlow.asComplete().orThrow();
-            String foundPathTarget = joinToPath(this.relativeRoot.orThrow(), lastFoundTarget);
+            String foundPathTarget = joinToPath(this.place.relativeRoot(), lastFoundTarget);
             this.resultFlow = valueFlowCompletedWith(foundPathTarget);
         }
     }
@@ -371,7 +321,7 @@ class WalkState extends PooledReusable {
     void processResultFlowAfterSingleWalkIteration() {
         if ( isNull(this.resultFlow) ) {            
             this.resultFlow = valueFlowCompletedEmpty(format(
-                "'%s' not found in %s", this.pattern, this.searchPlace()));
+                "'%s' not found in %s", this.pattern, this.place.name()));
         }
     }
     
@@ -385,12 +335,7 @@ class WalkState extends PooledReusable {
     void muteAfterWalkingForPattern() {
         this.variants.clear();
         String foundTarget = this.resultFlow.asComplete().orThrow();
-        if ( this.relativeRoot.isPresent() ) {
-            this.relativeRoot.resetTo(joinToPath(this.relativeRoot.orThrow(), foundTarget));
-        } else {
-            this.relativeRoot.resetTo(foundTarget);
-        }
-        this.absoluteRoot.resetTo(joinToPath(this.absoluteRoot.orThrow(), foundTarget));   
+        this.place.muteUsing(foundTarget); 
         this.resultFlow = null;
     }
     
@@ -408,6 +353,34 @@ class WalkState extends PooledReusable {
     
     boolean ifCanGoDeeper() {
         return isNull(this.maxLevelsToVisit) || this.visitedLevel < this.maxLevelsToVisit;
+    }
+    
+    String walkingQuery() {
+        String query;
+        
+        if ( this.isDepthDefined() ) {
+            query = format(
+                "\n" +
+                "    FIND %s\n" +
+                "    LIKE PATTERN %s\n" +
+                "    IN %s\n" +
+                "    WITH DEPTH %s", 
+                this.mode, 
+                this.pattern, 
+                this.place.absoluteRoot(), 
+                this.depth());
+        } else {
+            query = format(
+                "\n" +
+                "    FIND %s\n" +
+                "    LIKE PATTERN %s\n" +
+                "    IN %s", 
+                this.mode, 
+                this.pattern, 
+                this.place.absoluteRoot());
+        }
+        
+        return query;
     }
     
 }
