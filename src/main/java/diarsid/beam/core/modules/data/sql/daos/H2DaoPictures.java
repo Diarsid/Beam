@@ -7,11 +7,9 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Picture;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
@@ -19,7 +17,6 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
 
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_IMAGE;
 
@@ -31,12 +28,12 @@ class H2DaoPictures
         extends BeamCommonDao 
         implements DaoPictures {
     
-    H2DaoPictures(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoPictures(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public Optional<Picture> getByName(Initiator initiator, String name) {
+    public Optional<Picture> getByName(String name) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
@@ -46,17 +43,14 @@ class H2DaoPictures
                             "WHERE LOWER(name) IS ? ", 
                             lower(name));
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, format("cannot get '%s' image.", name));
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean save(Initiator initiator, Picture picture) {
+    public boolean save(Picture picture) throws DataExtractionException {
         if ( picture.hasNoData() ) {
-            this.ioEngine().report(initiator, format("image '%s' data is empty.", picture.name()));
-            return false;
+            throw new DataExtractionException(format("image '%s' data is empty.", picture.name()));
         }
         
         try (JdbcTransaction transact = super.openTransaction()) {
@@ -92,14 +86,12 @@ class H2DaoPictures
             }
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, format("cannot save '%s' image.", picture.name()));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean removeByName(Initiator initiator, String name) {
+    public boolean removeByName(String name) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             int removed = transact
                     .doUpdateVarargParams(
@@ -115,14 +107,12 @@ class H2DaoPictures
             }
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, format("cannot remove '%s' image.", name));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean remove(Initiator initiator, Picture image) {
-        return this.removeByName(initiator, image.name());
+    public boolean remove(Picture image) throws DataExtractionException {
+        return this.removeByName(image.name());
     }
 }

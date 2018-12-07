@@ -8,51 +8,63 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.WebPage;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoWebPages {
+public interface DaoWebPages extends Dao {
     
     Optional<Integer> findFreeNameNextIndex(
-            Initiator initiator, String name);
+            String name) 
+            throws DataExtractionException;
     
     Optional<WebPage> getByExactName(
-            Initiator initiator, String name);
+            String name) 
+            throws DataExtractionException;
     
     Optional<WebPage> getByUrl(
-            Initiator initiator, String newUrl);
+            String newUrl) 
+            throws DataExtractionException;
     
     List<WebPage> findByPattern(
-            Initiator initiator, String pattern);
+            String pattern) 
+            throws DataExtractionException;
     
     List<WebPage> getAllFromDirectory(
-            Initiator initiator, int directoryId);
+            int directoryId) 
+            throws DataExtractionException;
     
-    List<WebPage> getAll(
-            Initiator initiator);
+    List<WebPage> getAll() 
+            throws DataExtractionException;
     
     boolean save(
-            Initiator initiator, WebPage page);
+            WebPage page) 
+            throws DataExtractionException;
     
     boolean remove(
-            Initiator initiator, String name);
+            String name) 
+            throws DataExtractionException;
     
     boolean editName(
-            Initiator initiator, String oldName, String newName);
+            String oldName, String newName) 
+            throws DataExtractionException;
     
     boolean editShortcuts(
-            Initiator initiator, String name, String newShortcuts);
+            String name, String newShortcuts) 
+            throws DataExtractionException;
     
     boolean editUrl(
-            Initiator initiator, String name, String newUrl);    
+            String name, String newUrl) 
+            throws DataExtractionException;    
     
     boolean movePageFromDirToDir(
-            Initiator initiator, WebPage page, int newDirId);
+            WebPage page, int newDirId) 
+            throws DataExtractionException;
     
     boolean updatePageOrdersInDir(
-            Initiator initiator, List<WebPage> pages);
+            List<WebPage> pages) 
+            throws DataExtractionException;
 }

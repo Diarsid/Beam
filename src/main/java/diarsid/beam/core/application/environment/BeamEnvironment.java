@@ -46,6 +46,7 @@ public class BeamEnvironment {
                             "ui.console.showOnControlClick = true",
                             "ui.console.default.height = ",
                             "ui.console.default.width = ",
+                            "ui.screen.insets = 30",
                             "analyze.weight.base.log = true",
                             "analyze.weight.positions.search.log = false",
                             "analyze.weight.positions.clusters.log = true",

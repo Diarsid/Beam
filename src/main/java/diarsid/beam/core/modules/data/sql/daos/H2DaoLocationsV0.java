@@ -9,25 +9,19 @@ package diarsid.beam.core.modules.data.sql.daos;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Location;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.lang.String.format;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.error;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.replaceIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -39,12 +33,12 @@ abstract class H2DaoLocationsV0
         extends BeamCommonDao 
         implements DaoLocations {
     
-    H2DaoLocationsV0(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoLocationsV0(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public boolean isNameFree(Initiator initiator, String exactName) {
+    public boolean isNameFree(String exactName) throws DataExtractionException {
         try {
             return ! super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
@@ -53,14 +47,13 @@ abstract class H2DaoLocationsV0
                             "WHERE LOWER(loc_name) IS ? ",
                             lower(exactName));
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "is name free request failed.");
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Optional<Location> getLocationByExactName(Initiator initiator, String exactName) {
+    public Optional<Location> getLocationByExactName(String exactName) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
@@ -71,15 +64,12 @@ abstract class H2DaoLocationsV0
                             lower(exactName))
                     .findFirst();
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, format("location search by exact name '%s' failed.", exactName));
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
     
     @Override
-    public Optional<Location> getLocationByPath(Initiator initiator, String path) {
+    public Optional<Location> getLocationByPath(String path) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
@@ -90,16 +80,12 @@ abstract class H2DaoLocationsV0
                             lower(path))
                     .findFirst();
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, format("location search by path '%s' failed.", path));
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean saveNewLocation(
-            Initiator initiator, Location location) {
+    public boolean saveNewLocation(Location location) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameIsFree = ! transact
@@ -118,18 +104,12 @@ abstract class H2DaoLocationsV0
             
             return ( updated == 1 && nameIsFree );
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().reportMessage(initiator, error(
-                    "Location saving failed:",
-                    "   name: " + location.name(),
-                    "   path: " + location.path()));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean removeLocation(
-            Initiator initiator, String locationName) {
+    public boolean removeLocation(String locationName) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             String lowerLocationName = lower(locationName);
@@ -143,10 +123,7 @@ abstract class H2DaoLocationsV0
             
             return ( removed > 0 );            
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, format("Location removing by '%s' failed.", locationName));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
     
@@ -161,8 +138,8 @@ abstract class H2DaoLocationsV0
     }
 
     @Override
-    public boolean editLocationPath(
-            Initiator initiator, String locationName, String newPath) {
+    public boolean editLocationPath(String locationName, String newPath) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int modified = transact
@@ -178,21 +155,13 @@ abstract class H2DaoLocationsV0
             
             return ( modified == 1 );
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().reportMessage(
-                    initiator, 
-                    error(
-                            "Location path changing:", 
-                            "   by name: " + locationName,
-                            "   new path: " + newPath, 
-                            "failed."));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean editLocationName(
-            Initiator initiator, String locationName, String newName) {
+    public boolean editLocationName(String locationName, String newName) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameIsNotFree = transact
@@ -223,21 +192,13 @@ abstract class H2DaoLocationsV0
             
             return ( modified == 1 );
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().reportMessage(
-                    initiator, 
-                    error(
-                            "Location name changing:", 
-                            "   by name: " + locationName,
-                            "   new name: " + newName, 
-                            "failed."));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean replaceInPaths(
-            Initiator initiator, String replaceable, String replacement) {        
+    public boolean replaceInPaths(String replaceable, String replacement) 
+            throws DataExtractionException {        
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<Location> locationsToModify = transact
@@ -268,21 +229,12 @@ abstract class H2DaoLocationsV0
                 
             return ( modified > 0 );            
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().reportMessage(
-                    initiator, 
-                    error(
-                            "Locations path replacing:", 
-                            "   of: " + replaceable,
-                            "   with: " + replacement, 
-                            "failed."));
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<Location> getAllLocations(
-            Initiator initiator) {
+    public List<Location> getAllLocations() throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStream( 
@@ -291,9 +243,7 @@ abstract class H2DaoLocationsV0
                             "FROM locations")
                     .collect(toList());
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "All locations obtaining failed.");
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 }

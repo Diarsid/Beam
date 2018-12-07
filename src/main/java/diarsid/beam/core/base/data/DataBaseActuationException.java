@@ -9,7 +9,7 @@ package diarsid.beam.core.base.data;
  *
  * @author Diarsid
  */
-public class DataBaseActuationException extends Exception {
+public class DataBaseActuationException extends DataException {
     
     public DataBaseActuationException(String msg) {
         super(msg);

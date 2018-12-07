@@ -27,7 +27,7 @@ import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
 import diarsid.beam.core.domain.inputparsing.time.Time;
 import diarsid.beam.core.domain.inputparsing.time.TimeAndText;
 import diarsid.beam.core.domain.inputparsing.time.TimeParser;
-import diarsid.beam.core.modules.data.DaoTasks;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoTasks;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -69,7 +69,7 @@ import static diarsid.beam.core.domain.entities.Tasks.newReminderTask;
 public class TasksKeeperWorker implements TasksKeeper {
     
     private final InnerIoEngine ioEngine;
-    private final DaoTasks dao;
+    private final ResponsiveDaoTasks dao;
     private final KeeperDialogHelper helper;
     private final TimeParser parser;
     private final AllowedTimePeriodsParser timePeriodsParser;
@@ -87,7 +87,7 @@ public class TasksKeeperWorker implements TasksKeeper {
 
     public TasksKeeperWorker(
             InnerIoEngine ioEngine, 
-            DaoTasks dao, 
+            ResponsiveDaoTasks dao, 
             KeeperDialogHelper helper, 
             TimeParser timeParser,
             AllowedTimePeriodsParser timePeriodsParser) {

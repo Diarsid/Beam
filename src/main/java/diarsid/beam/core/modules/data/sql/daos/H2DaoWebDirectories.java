@@ -12,23 +12,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -54,16 +52,16 @@ class H2DaoWebDirectories
     
     private final RowConversion<Integer> rowToDirectoryIdConversion;
 
-    H2DaoWebDirectories(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);        
+    H2DaoWebDirectories(DataBase dataBase) {
+        super(dataBase);        
         this.rowToDirectoryIdConversion = (row) -> {
             return (int) row.get("id");
         };
     }   
 
     @Override
-    public Optional<Integer> findFreeNameNextIndex(
-            Initiator initiator, String name, WebPlace place) {
+    public Optional<Integer> findFreeNameNextIndex(String name, WebPlace place) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             // test if original name is free
@@ -99,14 +97,12 @@ class H2DaoWebDirectories
             } while ( exists ) ;
             return Optional.of(nameCounter);
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
     
     @Override
-    public List<WebDirectoryPages> getAllDirectoriesPages(
-            Initiator initiator) {
+    public List<WebDirectoryPages> getAllDirectoriesPages() throws DataExtractionException {
         try {
 
             Map<WebDirectory, List<WebPage>> data = new HashMap<>();
@@ -167,16 +163,14 @@ class H2DaoWebDirectories
                     .sorted()
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<WebDirectoryPages> getAllDirectoriesPagesInPlace(
-            Initiator initiator, WebPlace place) {
+    public List<WebDirectoryPages> getAllDirectoriesPagesInPlace(WebPlace place) 
+            throws DataExtractionException {
         try {
-
             Map<WebDirectory, List<WebPage>> data = new HashMap<>();
             super.openDisposableTransaction()
                     .doQueryVarargParams(
@@ -237,15 +231,13 @@ class H2DaoWebDirectories
                     .sorted()
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Optional<WebDirectoryPages> getDirectoryPagesById(
-            Initiator initiator, int id) {
-        
+    public Optional<WebDirectoryPages> getDirectoryPagesById(int id) 
+            throws DataExtractionException {        
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> directory = transact
@@ -271,14 +263,13 @@ class H2DaoWebDirectories
             
             return Optional.of(directory.get().withPages(directoryPages));
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(
-            Initiator initiator, String name, WebPlace place) {
+    public Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(String name, WebPlace place) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> directory = transact
@@ -304,14 +295,13 @@ class H2DaoWebDirectories
             
             return Optional.of(directory.get().withPages(directoryPages));
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Optional<WebDirectory> getDirectoryByNameAndPlace(
-            Initiator initiator, String name, WebPlace place) {
+    public Optional<WebDirectory> getDirectoryByNameAndPlace(String name, WebPlace place) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
@@ -327,8 +317,8 @@ class H2DaoWebDirectories
     }
 
     @Override
-    public List<WebDirectory> findDirectoriesByPatternInPlace(
-            Initiator initiator, String pattern, WebPlace place) {
+    public List<WebDirectory> findDirectoriesByPatternInPlace(String pattern, WebPlace place) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<WebDirectory> dirs;
@@ -393,14 +383,13 @@ class H2DaoWebDirectories
             return dirs;            
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<WebDirectory> findDirectoriesByPatternInAnyPlace(
-            Initiator initiator, String pattern) {
+    public List<WebDirectory> findDirectoriesByPatternInAnyPlace(String pattern) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<WebDirectory> dirs;
@@ -464,14 +453,12 @@ class H2DaoWebDirectories
             return dirs;            
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<WebDirectory> getAllDirectories(
-            Initiator initiator) {
+    public List<WebDirectory> getAllDirectories() throws DataExtractionException {
         try {
                         
             return super.openDisposableTransaction()
@@ -483,14 +470,13 @@ class H2DaoWebDirectories
                     .collect(toList());
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<WebDirectory> getAllDirectoriesInPlace(
-            Initiator initiator, WebPlace place) {
+    public List<WebDirectory> getAllDirectoriesInPlace(WebPlace place) 
+            throws DataExtractionException {
         try {
                         
             return super.openDisposableTransaction()
@@ -504,14 +490,12 @@ class H2DaoWebDirectories
                     .collect(toList());
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean exists(
-            Initiator initiator, String directoryName, WebPlace place) {
+    public boolean exists(String directoryName, WebPlace place) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
@@ -520,14 +504,13 @@ class H2DaoWebDirectories
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? ) ", 
                             lower(directoryName), place);
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean updateWebDirectoryOrders(
-            Initiator initiator, List<WebDirectory> directories) {
+    public boolean updateWebDirectoryOrders(List<WebDirectory> directories) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             int[] udpated = transact
                     .doBatchUpdate(
@@ -546,15 +529,13 @@ class H2DaoWebDirectories
                 transact.rollbackAndProceed();
                 return false;
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean save(
-            Initiator initiator, WebDirectory directory) {
+    public boolean save(WebDirectory directory) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean alreadyExists = transact
@@ -565,8 +546,7 @@ class H2DaoWebDirectories
                             lower(directory.name()), directory.place());
             
             if ( alreadyExists ) {
-                super.ioEngine().report(initiator, "this directory already exists.");
-                return false;
+                throw transact.rollbackAndTermination("this directory already exists.");
             } 
             
             int order = transact
@@ -577,8 +557,7 @@ class H2DaoWebDirectories
                             directory.place());            
             
             if ( order < 0 ) {
-                super.ioEngine().report(initiator, "new order is less than 0, cannot proceed.");
-                return false;
+                throw transact.rollbackAndTermination("new order is less than 0, cannot proceed.");
             }
             
             directory.setOrder(order);
@@ -590,20 +569,21 @@ class H2DaoWebDirectories
                             directory.name(), directory.order(), directory.place());
 
             if ( saved != 1 ) {
-                transact.rollbackAndProceed();
-                return false;
+                throw transact.rollbackAndTermination(
+                        format("directory %s has not been saved", directory.name()));
             } else {
                 return true;
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            return false;
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
     
     @Override
-    public boolean save(
-            Initiator initiator, String name, WebPlace place) {
+    public boolean save(String name, WebPlace place) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean alreadyExists = transact
@@ -614,8 +594,7 @@ class H2DaoWebDirectories
                             lower(name), place);
             
             if ( alreadyExists ) {
-                super.ioEngine().report(initiator, "this directory already exists.");
-                return false;
+                throw transact.rollbackAndTermination("this directory already exists.");
             } 
             
             int order = transact
@@ -626,8 +605,7 @@ class H2DaoWebDirectories
                             place);
             
             if ( order < 0 ) {
-                super.ioEngine().report(initiator, "new order is less than 0, cannot proceed.");
-                return false;
+                throw transact.rollbackAndTermination("new order is less than 0, cannot proceed.");
             }
             
             int saved = transact
@@ -637,20 +615,21 @@ class H2DaoWebDirectories
                             name, order, place);
 
             if ( saved != 1 ) {
-                transact.rollbackAndProceed();
-                return false;
+                throw transact.rollbackAndTermination(
+                        format("directory %s has not been saved", name));
             } else {
                 return true;
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
             
-            return false;
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public boolean remove(
-            Initiator initiator, String name, WebPlace place) {
+    public boolean remove(String name, WebPlace place) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> optDirectory = transact
@@ -662,8 +641,7 @@ class H2DaoWebDirectories
                             lower(name), place);
             
             if ( ! optDirectory.isPresent() ) {
-                super.ioEngine().report(initiator, "cannot find such directory.");
-                return false;
+                throw transact.rollbackAndTermination("cannot find such directory.");
             }
             
             transact
@@ -693,15 +671,16 @@ class H2DaoWebDirectories
             
             return true;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
     
     @Override
-    public boolean moveDirectoryToPlace(
-            Initiator initiator, String name, WebPlace oldPlace, WebPlace newPlace) {
+    public boolean moveDirectoryToPlace(String name, WebPlace oldPlace, WebPlace newPlace) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebDirectory> movedDir = transact
@@ -713,8 +692,7 @@ class H2DaoWebDirectories
                             lower(name), oldPlace);
             
             if ( ! movedDir.isPresent() ) {
-                super.ioEngine().report(initiator, "cannot find such directory.");
-                return false;
+                throw transact.rollbackAndTermination("cannot find such directory.");
             }
             
             // test if such directory name already exists in destination place
@@ -739,7 +717,7 @@ class H2DaoWebDirectories
                                     lower(name), newPlace);
                 } while ( exists ) ;
                 // name has been already reassigned as following.
-                super.ioEngine().report(initiator, "directory will be moved with name " + name);
+//                super.ioEngine().report(initiator, "directory will be moved with name " + name);
             }
             
             int newOrder = transact
@@ -760,9 +738,7 @@ class H2DaoWebDirectories
                             name, newOrder, newPlace, lower(movedDir.get().name()));
             
             if ( moved != 1 ) {
-                transact.rollbackAndProceed();
-                super.ioEngine().report(initiator, "cannot move directory.");
-                return false;
+                throw transact.rollbackAndTermination(format("directory %s move failed", name));
             }
             
             int oldPlaceReordered = transact
@@ -774,15 +750,16 @@ class H2DaoWebDirectories
             
             return true;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public boolean editDirectoryName(
-            Initiator initiator, String name, WebPlace place, String newName) {
+    public boolean editDirectoryName(String name, WebPlace place, String newName) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean alreadyExists = transact
@@ -793,8 +770,7 @@ class H2DaoWebDirectories
                             lower(newName), place);
             
             if ( alreadyExists ) {
-                super.ioEngine().report(initiator, "directory with this name already exists.");
-                return false;
+                throw transact.rollbackAndTermination("directory with this name already exists.");
             }
             
             int renamed = transact
@@ -810,15 +786,15 @@ class H2DaoWebDirectories
             
             return ( renamed == 1 ); 
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public Optional<WebDirectory> getDirectoryById(
-            Initiator initiator, int id) {
+    public Optional<WebDirectory> getDirectoryById(int id) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRow(
@@ -826,15 +802,14 @@ class H2DaoWebDirectories
                             "SELECT id, name, place, ordering " +
                             "FROM web_directories " +
                             "WHERE id IS ? ");
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return Optional.empty();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Optional<Integer> getDirectoryIdByNameAndPlace(
-            Initiator initiator, String name, WebPlace place) {
+    public Optional<Integer> getDirectoryIdByNameAndPlace(String name, WebPlace place) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
@@ -843,9 +818,8 @@ class H2DaoWebDirectories
                             "FROM web_directories " +
                             "WHERE ( LOWER(name) IS ? ) AND ( place IS ? )",
                             lower(name), place);
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return Optional.empty();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }        
     }
     

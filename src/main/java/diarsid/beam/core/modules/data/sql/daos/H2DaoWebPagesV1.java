@@ -7,15 +7,13 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
@@ -32,13 +30,12 @@ import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW
  */
 class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
     
-    H2DaoWebPagesV1(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoWebPagesV1(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public List<WebPage> findByPattern(
-            Initiator initiator, String pattern) {
+    public List<WebPage> findByPattern(String pattern) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             transact.logHistoryAfterCommit();
@@ -52,7 +49,7 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ", 
                             lowerWildcardPattern, lowerWildcardPattern)
                     .sorted()
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             if ( nonEmpty(pages) ) {
@@ -70,7 +67,7 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
                                     " OR " + 
                                     multipleLowerLikeAnd("shortcuts", criterias.size()), 
                             criterias, criterias)                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             if ( nonEmpty(pages) ) {
@@ -92,7 +89,7 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
                             criterias, criterias)                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             shift(criterias);
@@ -107,7 +104,7 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
                                     " OR " + 
                                     multipleGroupedLikeOrShortcutsCondition, 
                             criterias, criterias)                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             shiftedPages.retainAll(pages);
@@ -116,8 +113,7 @@ class H2DaoWebPagesV1 extends H2DaoWebPagesV0 {
             return pages;            
             
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 }

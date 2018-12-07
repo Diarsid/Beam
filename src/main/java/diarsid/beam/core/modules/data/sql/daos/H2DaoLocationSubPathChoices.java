@@ -9,11 +9,9 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.LocationSubPath;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
@@ -29,12 +27,13 @@ class H2DaoLocationSubPathChoices
         extends BeamCommonDao 
         implements DaoLocationSubPathChoices {
 
-    public H2DaoLocationSubPathChoices(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    public H2DaoLocationSubPathChoices(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public boolean saveSingle(Initiator initiator, LocationSubPath subPath, String pattern) {
+    public boolean saveSingle(LocationSubPath subPath, String pattern) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exists = transact
@@ -80,17 +79,16 @@ class H2DaoLocationSubPathChoices
             return true;
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            // TODO LOW
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean saveWithVariants(
-            Initiator initiator, 
+    public boolean saveWithVariants(            
             LocationSubPath subPath, 
             String pattern, 
-            WeightedVariants variants) {
+            WeightedVariants variants) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exists = transact
@@ -135,18 +133,17 @@ class H2DaoLocationSubPathChoices
              
             return true;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            // TODO LOW
-            return false;
-        } catch (TransactionTerminationException e) {
-            // TODO LOW
-            return false;
-        }
+        } catch (
+                TransactionHandledSQLException | 
+                TransactionHandledException | 
+                TransactionTerminationException e) {
+            throw super.logAndWrap(e);
+        } 
     }
 
     @Override
     public boolean isChoiceExistsForSingle(
-            Initiator initiator, LocationSubPath subPath, String pattern) {
+            LocationSubPath subPath, String pattern) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
@@ -160,14 +157,13 @@ class H2DaoLocationSubPathChoices
                             lower(subPath.name()), 
                             lower(subPath.subPath()));
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
-            // TODO
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public Optional<LocationSubPath> getChoiceFor(
-            Initiator initiator, String pattern, WeightedVariants variants) {
+            String pattern, WeightedVariants variants) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams( 
@@ -189,13 +185,12 @@ class H2DaoLocationSubPathChoices
                             "   ( LOWER(variants_stamp) IS ? ) ",
                             lower(pattern), variants.stamp());
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
-            // TODO LOW
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
     
     @Override
-    public VoidFlow remove(Initiator initiator, LocationSubPath subPath) {
+    public VoidFlow remove(LocationSubPath subPath) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exist = transact
@@ -224,8 +219,7 @@ class H2DaoLocationSubPathChoices
             }
             
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
-            // TODO LOW
-            return voidFlowFail(e.getMessage());
+            throw super.logAndWrap(e);
         }
     }
     

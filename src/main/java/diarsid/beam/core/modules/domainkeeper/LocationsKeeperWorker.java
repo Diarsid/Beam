@@ -30,9 +30,9 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
-import diarsid.beam.core.modules.data.DaoLocationSubPaths;
-import diarsid.beam.core.modules.data.DaoLocations;
-import diarsid.beam.core.modules.data.DaoPatternChoices;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPaths;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocations;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -79,9 +79,9 @@ import static diarsid.support.objects.Pools.takeFromPool;
 class LocationsKeeperWorker implements LocationsKeeper {
     
     private final Object allLocationsConsistencyLock;
-    private final DaoLocations daoLocations;
-    private final DaoLocationSubPaths daoLocationSubPaths;
-    private final DaoPatternChoices daoPatternChoices;
+    private final ResponsiveDaoLocations daoLocations;
+    private final ResponsiveDaoLocationSubPaths daoLocationSubPaths;
+    private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
@@ -94,9 +94,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final Help enterPropertyToEditHelp;
     
     LocationsKeeperWorker(
-            DaoLocations daoLocations,
-            DaoLocationSubPaths daoLocationSubPaths,
-            DaoPatternChoices daoPatternChoices,
+            ResponsiveDaoLocations daoLocations,
+            ResponsiveDaoLocationSubPaths daoLocationSubPaths,
+            ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine, 
             KeeperDialogHelper consistencyChecker,
@@ -297,7 +297,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return valueFlowCompletedWith(locations.get(bestVariant.index()));
         } else {
-            if ( this.daoPatternChoices.hasMatchOf(pattern, bestVariant.text(), variants) ) {
+            boolean hasMatch = this.daoPatternChoices
+                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+            if ( hasMatch ) {
                 return valueFlowCompletedWith(locations.get(bestVariant.index()));
             } else {
                 return this.askUserForLocationAndSaveChoice(
@@ -314,11 +316,11 @@ class LocationsKeeperWorker implements LocationsKeeper {
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, variants, this.chooseOneLocationHelp);
         if ( answer.isGiven() ) {
+            Location location = locations.get(answer.index());
             asyncDo(() -> {
-                this.daoPatternChoices.save(
-                        pattern, locations.get(answer.index()).name(), variants);
+                this.daoPatternChoices.save(initiator, pattern, location.name(), variants);
             });
-            return valueFlowCompletedWith(locations.get(answer.index()));
+            return valueFlowCompletedWith(location);
         } else if ( answer.isRejection() ) {
             return valueFlowStopped();
         } else if ( answer.variantsAreNotSatisfactory() ) {

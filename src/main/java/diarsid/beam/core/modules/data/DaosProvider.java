@@ -39,4 +39,6 @@ public interface DaosProvider {
     
     DaoPersistableCacheData<Float> createDaoWeightCache();
     
+    DaoNamedRectangles persistablePositions();
+    
 }

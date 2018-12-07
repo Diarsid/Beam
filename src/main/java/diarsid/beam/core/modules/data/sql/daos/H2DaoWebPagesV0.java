@@ -9,27 +9,28 @@ package diarsid.beam.core.modules.data.sql.daos;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
+import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebPage;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.support.log.Logging.logFor;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;
+import static diarsid.support.log.Logging.logFor;
 
 
 
@@ -37,38 +38,37 @@ abstract class H2DaoWebPagesV0
         extends BeamCommonDao 
         implements DaoWebPages {
     
-    H2DaoWebPagesV0(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoWebPagesV0(DataBase dataBase) {
+        super(dataBase);
     }
     
-    protected final void setLoadableDirectoryFor(Initiator initiator, WebPage webPage) {
+    protected final void setLoadableDirectoryFor(WebPage webPage) {
         webPage.setLoadableDirectory(()-> {
             try {
-                return super.openDisposableTransaction()
+                Optional<WebDirectory> dir = super.openDisposableTransaction()
                         .doQueryAndConvertFirstRowVarargParams(
                                 ROW_TO_WEBDIRECTORY,
                                 "SELECT id, name, place, ordering " +
                                 "FROM web_directories " +
                                 "WHERE ( id IS ? ) ", 
                                 webPage.directoryId());
+                return valueFlowCompletedWith(dir);
             } catch (TransactionHandledSQLException | TransactionHandledException e) {
                 logFor(this).error(e.getMessage(), e);
-                super.ioEngine().report(
-                        initiator, "Cannot find WebDirectory by id " + webPage.directoryId());
-                return Optional.empty();
+                String message = "Cannot find WebDirectory by id " + webPage.directoryId();
+                return valueFlowFail(message);
             }
         });
     }
     
-    protected final void setLoadableDirectoryFor(Initiator initiator, Optional<WebPage> webPage) {
+    protected final void setLoadableDirectoryFor(Optional<WebPage> webPage) {
         if ( webPage.isPresent() ) {
-            this.setLoadableDirectoryFor(initiator, webPage.get());
+            this.setLoadableDirectoryFor(webPage.get());
         }
     }
 
     @Override
-    public Optional<Integer> findFreeNameNextIndex(
-            Initiator initiator, String name) {
+    public Optional<Integer> findFreeNameNextIndex(String name) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             // test if original name is free
@@ -104,14 +104,12 @@ abstract class H2DaoWebPagesV0
             } while ( exists ) ;
             return Optional.of(nameCounter);
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Optional<WebPage> getByExactName(
-            Initiator initiator, String name) {
+    public Optional<WebPage> getByExactName(String name) throws DataExtractionException {
         try {
             Optional<WebPage> page = super
                     .openDisposableTransaction()
@@ -121,17 +119,15 @@ abstract class H2DaoWebPagesV0
                             "FROM web_pages " +
                             "WHERE LOWER(name) IS ? ",
                             lower(name));
-            this.setLoadableDirectoryFor(initiator, page);
+            this.setLoadableDirectoryFor(page);
             return page;
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }        
     }
     
     @Override
-    public Optional<WebPage> getByUrl(
-            Initiator initiator, String url) {
+    public Optional<WebPage> getByUrl(String url) throws DataExtractionException {
         try {
             Optional<WebPage> page = super
                     .openDisposableTransaction()
@@ -141,17 +137,15 @@ abstract class H2DaoWebPagesV0
                             "FROM web_pages " +
                             "WHERE LOWER(url) IS ? ",
                             lower(url));
-            this.setLoadableDirectoryFor(initiator, page);
+            this.setLoadableDirectoryFor(page);
             return page;
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }    
     }
 
     @Override
-    public List<WebPage> getAllFromDirectory(
-            Initiator initiator, int directoryId) {
+    public List<WebPage> getAllFromDirectory(int directoryId) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
@@ -161,17 +155,15 @@ abstract class H2DaoWebPagesV0
                             "WHERE dir_id IS ? ",
                             directoryId)
                     .sorted()
-                    .peek(page -> this.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> this.setLoadableDirectoryFor(page))
                     .collect(toList());
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean save(
-            Initiator initiator, WebPage page) {
+    public boolean save(WebPage page) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exists = transact
@@ -182,8 +174,7 @@ abstract class H2DaoWebPagesV0
                             lower(page.name()));
             
             if ( exists ) {
-                super.ioEngine().report(initiator, "this page already exists.");
-                return false;
+                throw transact.rollbackAndTermination("this page already exists.");
             } 
             
             boolean directoryExists = transact
@@ -194,8 +185,7 @@ abstract class H2DaoWebPagesV0
                             page.directoryId());
             
             if ( ! directoryExists ) {
-                super.ioEngine().report(initiator, "Not found directory to save this page.");
-                return false;
+                throw transact.rollbackAndTermination("Not found directory to save this page.");
             }
             
             int newPageOrder = transact
@@ -224,14 +214,14 @@ abstract class H2DaoWebPagesV0
             }
             
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public boolean remove(
-            Initiator initiator, String name) {
+    public boolean remove(String name) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Optional<WebPage> optPage = transact
@@ -268,14 +258,12 @@ abstract class H2DaoWebPagesV0
             
             return ( removed == 1 );
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean editName(
-            Initiator initiator, String oldName, String newName) {
+    public boolean editName(String oldName, String newName) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
              boolean exists = transact
@@ -286,8 +274,7 @@ abstract class H2DaoWebPagesV0
                             lower(newName));
              
             if ( exists ) {
-                super.ioEngine().report(initiator, "this name already exists.");
-                return false;
+                throw transact.rollbackAndTermination("this name already exists.");
             }
             
             int renamed = transact
@@ -304,14 +291,14 @@ abstract class H2DaoWebPagesV0
             return ( renamed == 1 );
             
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public boolean editShortcuts(
-            Initiator initiator, String name, String newShortcuts) {
+    public boolean editShortcuts(String name, String newShortcuts) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int edited = transact
@@ -328,14 +315,12 @@ abstract class H2DaoWebPagesV0
             return ( edited == 1 );
             
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean editUrl(
-            Initiator initiator, String name, String newUrl) {
+    public boolean editUrl(String name, String newUrl) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int edited = transact
@@ -352,14 +337,12 @@ abstract class H2DaoWebPagesV0
                 return false;
             }
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean movePageFromDirToDir(
-            Initiator initiator, WebPage page, int newDirId) {
+    public boolean movePageFromDirToDir(WebPage page, int newDirId) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean exists = transact
@@ -370,8 +353,7 @@ abstract class H2DaoWebPagesV0
                             newDirId);
             
             if ( ! exists ) {
-                super.ioEngine().report(initiator, "target directory does not exist.");
-                return false;
+                throw transact.rollbackAndTermination("target directory does not exist.");
             }
             
             int newOrder = transact
@@ -382,8 +364,7 @@ abstract class H2DaoWebPagesV0
                             newDirId);
             
             if ( newOrder < 0 ) {
-                super.ioEngine().report(initiator, "cannot define new page order.");
-                return false;
+                throw transact.rollbackAndTermination("cannot define new page order.");
             }
             
             int moved = transact
@@ -408,14 +389,15 @@ abstract class H2DaoWebPagesV0
             return true;
             
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public boolean updatePageOrdersInDir(
-            Initiator initiator, List<WebPage> pagesToReorder) {
+    public boolean updatePageOrdersInDir(List<WebPage> pagesToReorder) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int[] reordered = transact
@@ -435,21 +417,20 @@ abstract class H2DaoWebPagesV0
             int sum = stream(reordered).sum();
             
             if ( sum > pagesToReorder.size() ) {
-                super.ioEngine().report(initiator, "unpredicatble pages order modifications.");
-                transact.rollbackAndProceed();
-                return false;
+                throw transact.rollbackAndTermination("unpredicatble pages order modifications.");
             } else {
                 return true;
             }
             
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return false;
+            throw super.logAndWrap(e);
+        } catch (TransactionTerminationException e) {
+            throw super.wrap(e.getMessage());
         }
     }
 
     @Override
-    public List<WebPage> getAll(Initiator initiator) {
+    public List<WebPage> getAll() throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStream(
@@ -458,8 +439,7 @@ abstract class H2DaoWebPagesV0
                             "FROM web_pages ")
                     .collect(toList());
         } catch (TransactionHandledSQLException | TransactionHandledException e) {
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
     

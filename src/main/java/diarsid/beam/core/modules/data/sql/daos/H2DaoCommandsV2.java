@@ -7,23 +7,19 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.base.data.util.SqlPatternSelect;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_INVOCATION_COMMAND;
@@ -36,13 +32,13 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 class H2DaoCommandsV2 extends H2DaoCommandsV0 {   
         
-    H2DaoCommandsV2(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoCommandsV2(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public List<InvocationCommand> searchInOriginalByPattern(
-            Initiator initiator, String pattern) {
+    public List<InvocationCommand> searchInOriginalByPattern(String pattern) 
+            throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class);) 
@@ -112,16 +108,15 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(format("search on %s", pattern), ex);
-            this.ioEngine().report(initiator, format("error on search %s in commands", pattern));
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<InvocationCommand> searchInOriginalByPatternAndType(
-            Initiator initiator, String pattern, CommandType type) {
+            String pattern, CommandType type) 
+            throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
@@ -195,16 +190,14 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(format("search on %s and type %s", pattern, type), ex);
-            this.ioEngine().report(initiator, format("error on search %s in commands", pattern));
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<InvocationCommand> searchInExtendedByPattern(
-            Initiator initiator, String pattern) {
+    public List<InvocationCommand> searchInExtendedByPattern(String pattern) 
+            throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class);) 
@@ -261,16 +254,15 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(format("search on %s ", pattern), ex);
-            this.ioEngine().report(initiator, format("error on search %s in commands", pattern));
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<InvocationCommand> searchInExtendedByPatternAndType(
-            Initiator initiator, String pattern, CommandType type) {
+            String pattern, CommandType type) 
+            throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
@@ -331,16 +323,14 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(format("search on %s and type %s", pattern, type), ex);
-            this.ioEngine().report(initiator, format("error on search %s in commands", pattern));
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<InvocationCommand> searchInExtendedByPatternGroupByExtended(
-            Initiator initiator, String pattern) {
+    public List<InvocationCommand> searchInExtendedByPatternGroupByExtended(String pattern) 
+            throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
@@ -402,16 +392,15 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(format("search on %s", pattern), ex);
-            this.ioEngine().report(initiator, format("error on search %s in commands", pattern));
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<InvocationCommand> searchInExtendedByPatternAndTypeGroupByExtended(
-            Initiator initiator, String pattern, CommandType type) {
+            String pattern, CommandType type) 
+            throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
@@ -477,10 +466,8 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(format("search on %s and type %s", pattern, type), ex);
-            this.ioEngine().report(initiator, format("error on search %s in commands", pattern));
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }    
     

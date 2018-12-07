@@ -15,9 +15,9 @@ import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
 import diarsid.beam.core.domain.inputparsing.time.TimeParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
-import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
+import diarsid.beam.core.modules.ResponsiveDataModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -27,21 +27,22 @@ import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getF
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
 
+
 /**
  *
  * @author Diarsid
  */
 public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainKeeperModule> {
     
-    private final DataModule dataModule;
+    private final ResponsiveDataModule responsiveDataModule;
     private final IoModule ioModule;
     private final ApplicationComponentsHolderModule appComponentsHolderModule;
     
     public DomainKeeperModuleWorkerBuilder(
-            DataModule dataModule, 
+            ResponsiveDataModule dataModule, 
             IoModule ioModule, 
             ApplicationComponentsHolderModule appComponentsHolderModule) {
-        this.dataModule = dataModule;
+        this.responsiveDataModule = dataModule;
         this.ioModule = ioModule;
         this.appComponentsHolderModule = appComponentsHolderModule;
     }
@@ -78,22 +79,22 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         AllKeeper allKeeper;
         
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
-                this.dataModule.commands(), 
-                this.dataModule.patternChoices(),
+                this.responsiveDataModule.commands(), 
+                this.responsiveDataModule.patternChoices(),
                 ioEngine, 
                 dialogHelper);
         locationsKeeper = new LocationsKeeperWorker(
-                this.dataModule.locations(),
-                this.dataModule.locationSubPaths(),
-                this.dataModule.patternChoices(),
+                this.responsiveDataModule.locations(),
+                this.responsiveDataModule.locationSubPaths(),
+                this.responsiveDataModule.patternChoices(),
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
                 locationsInputParser, 
                 propertyAndTextParser);
         batchesKeeper = new BatchesKeeperWorker(
-                this.dataModule.batches(), 
-                this.dataModule.patternChoices(),
+                this.responsiveDataModule.batches(), 
+                this.responsiveDataModule.patternChoices(),
                 commandsMemoryKeeper,
                 ioEngine, 
                 dialogHelper, 
@@ -101,28 +102,31 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 propertyAndTextParser);
         programsKeeper = new ProgramsKeeperWorker(
                 ioEngine,
-                newWalker(ioEngine, this.dataModule.patternChoices(), getFolderTypeDetector()),
+                newWalker(
+                        ioEngine, 
+                        this.responsiveDataModule.patternChoices(), 
+                        getFolderTypeDetector()),
                 this.appComponentsHolderModule.programsCatalog());
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
-                this.dataModule.tasks(), 
+                this.responsiveDataModule.tasks(), 
                 dialogHelper, 
                 timeParser, 
                 timePeriodsParser);
         pagesKeeper = new WebPagesKeeperWorker(
-                this.dataModule.webPages(), 
-                this.dataModule.webDirectories(), 
-                this.dataModule.images(),
+                this.responsiveDataModule.webPages(), 
+                this.responsiveDataModule.webDirectories(), 
+                this.responsiveDataModule.images(),
                 commandsMemoryKeeper,
-                this.dataModule.patternChoices(),
+                this.responsiveDataModule.patternChoices(),
                 ioEngine, 
-                this.appComponentsHolderModule.gui().interactionGui(),
+                this.ioModule.gui(),
                 systemInitiator,
                 dialogHelper, 
                 propertyAndTextParser, 
                 webObjectsParser);
         directoriesKeeper = new WebDirectoriesKeeperWorker(
-                this.dataModule.webDirectories(), 
+                this.responsiveDataModule.webDirectories(), 
                 commandsMemoryKeeper,
                 ioEngine, 
                 systemInitiator,
@@ -130,17 +134,17 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 webObjectsParser);   
         defaultKeeper = new NamedEntitiesKeeperWorker(
                 ioEngine, 
-                this.dataModule.namedEntities());
+                this.responsiveDataModule.namedEntities());
         locationSubPathKeeper = new LocationSubPathKeeperWorker(
-                this.dataModule.locationSubPaths(), 
-                this.dataModule.locationSubPathChoices(),
+                this.responsiveDataModule.locationSubPaths(), 
+                this.responsiveDataModule.locationSubPathChoices(),
                 ioEngine);
         notesKeeper = new NotesKeeperWorker(
                 ioEngine,
                 this.appComponentsHolderModule.notesCatalog(), 
                 dialogHelper);
         allKeeper = new AllKeeperWorker(
-                this.dataModule,
+                this.responsiveDataModule,
                 programsKeeper);
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 

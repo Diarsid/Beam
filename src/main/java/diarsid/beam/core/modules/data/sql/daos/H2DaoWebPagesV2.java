@@ -7,9 +7,8 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.base.data.util.SqlPatternSelect;
 import diarsid.beam.core.base.data.util.SqlPatternSelectUnion;
 import diarsid.beam.core.domain.entities.WebPage;
@@ -17,13 +16,11 @@ import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
@@ -32,12 +29,12 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
     
-    H2DaoWebPagesV2(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoWebPagesV2(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public List<WebPage> findByPattern(Initiator initiator, String pattern) {
+    public List<WebPage> findByPattern(String pattern) throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class);
@@ -52,7 +49,7 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                             "FROM web_pages " +
                             "WHERE ( LOWER(name) LIKE ? ) OR ( LOWER(shortcuts) LIKE ? ) ",
                             lowerWildcardPattern, lowerWildcardPattern)                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             if ( nonEmpty(tasks) ) {
@@ -79,7 +76,7 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                     .doQueryAndStream( 
                             ROW_TO_WEBPAGE,
                             patternUnion.composeSql())                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             if ( nonEmpty(tasks) ) {
@@ -92,7 +89,7 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                             patternUnion
                                     .decreaseRequiredLikeness()
                                     .composeSql())                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             if ( nonEmpty(tasks) && patternUnion.isNextRequiredLikenessDecreaseMeaningfull() ) {
@@ -105,15 +102,13 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                             patternUnion
                                     .decreaseRequiredLikeness()
                                     .composeSql())                    
-                    .peek(page -> super.setLoadableDirectoryFor(initiator, page))
+                    .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
             return tasks;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(ex.getMessage(), ex);
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }        
     }
 }

@@ -6,6 +6,7 @@
 package diarsid.beam.core.modules;
 
 import diarsid.beam.core.StoppableBeamModule;
+import diarsid.beam.core.modules.io.gui.Gui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
@@ -17,6 +18,8 @@ import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 public interface IoModule extends StoppableBeamModule {
     
     InnerIoEngine getInnerIoEngine();
+    
+    Gui gui();
     
     boolean registerOuterIoEngine(OuterIoEngine ioEngine);
     

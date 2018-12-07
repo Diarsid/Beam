@@ -10,20 +10,28 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import diarsid.beam.core.base.analyze.cache.PersistableCacheData;
+import diarsid.beam.core.base.data.DataExtractionException;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoPersistableCacheData<T> {
+public interface DaoPersistableCacheData<T> extends Dao {
     
-    List<PersistableCacheData<T>> loadAll(int algorithmVersion);
+    List<PersistableCacheData<T>> loadAll(
+            int algorithmVersion) 
+            throws DataExtractionException;
     
     Map<Long, T> reassessAllHashesOlderThan(
-            int algorithmVersion, BiFunction<String, String, T> similarityAssessmentFunction);
+            int algorithmVersion, BiFunction<String, String, T> similarityAssessmentFunction) 
+            throws DataExtractionException;
     
-    Map<Long, T> loadAllHashesWith(int algorithmVersion);
+    Map<Long, T> loadAllHashesWith(
+            int algorithmVersion) 
+            throws DataExtractionException;
     
-    void persistAll(List<PersistableCacheData<T>> data, int algorithmVersion);
+    void persistAll(
+            List<PersistableCacheData<T>> data, int algorithmVersion) 
+            throws DataExtractionException;
     
 }

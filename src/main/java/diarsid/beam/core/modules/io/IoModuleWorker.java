@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.io;
 
 import java.io.IOException;
 
+import diarsid.beam.core.modules.io.gui.Gui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
@@ -21,11 +22,13 @@ import static diarsid.support.log.Logging.logFor;
 
 public class IoModuleWorker implements IoModule {
     
+    private final Gui gui;
     private final OuterIoEnginesHolder ioEnginesHolder;
     private final MainInnerIoEngine mainIo;
     
     public IoModuleWorker(
-            OuterIoEnginesHolder ioEnginesHolder, MainInnerIoEngine defaultIoEngine) {
+            Gui gui, OuterIoEnginesHolder ioEnginesHolder, MainInnerIoEngine defaultIoEngine) {
+        this.gui = gui;
         this.ioEnginesHolder = ioEnginesHolder;
         this.mainIo = defaultIoEngine;
     }
@@ -60,5 +63,10 @@ public class IoModuleWorker implements IoModule {
     public void stopModule() {
         logFor(this).info("close all engines...");
         this.ioEnginesHolder.closeAllEngines();
+    }
+
+    @Override
+    public Gui gui() {
+        return this.gui;
     }
 }

@@ -8,10 +8,11 @@ package diarsid.beam.core.modules.taskswatcher;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.application.gui.OutputTasksGui;
+import diarsid.beam.core.modules.io.gui.TasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
+import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
 
@@ -25,13 +26,16 @@ import static diarsid.beam.core.Beam.systemInitiator;
  */
 class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherModule>{
     
+    private final IoModule ioModule;
     private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
     private final DomainKeeperModule domainKeeperModule;
 
     TasksWatcherModuleWorkerBuilder(
             ApplicationComponentsHolderModule applicationComponentsHolderModule, 
+            IoModule ioModule,
             DomainKeeperModule domainKeeperModule) {
         this.applicationComponentsHolderModule = applicationComponentsHolderModule;
+        this.ioModule = ioModule;
         this.domainKeeperModule = domainKeeperModule;
     }
     
@@ -40,11 +44,11 @@ class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherMo
         TasksExecutionScheduler tasksExecutionScheduler;
         TasksNotificationScheduler tasksNotificationScheduler;
         ScheduledThreadPoolExecutor scheduler;        
-        OutputTasksGui tasksGui;
+        TasksGui tasksGui;
         TasksKeeper tasksKeeper;
         Initiator watcherPrivateInitiator = systemInitiator();
         
-        tasksGui = this.applicationComponentsHolderModule.gui().tasksGui();
+        tasksGui = this.ioModule.gui().tasksGui();
         tasksKeeper = this.domainKeeperModule.tasks();
         scheduler = new ScheduledThreadPoolExecutor(2);
         scheduler.setMaximumPoolSize(2);        

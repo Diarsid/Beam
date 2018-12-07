@@ -14,11 +14,13 @@ import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
-import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.ResponsiveDataModule;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
@@ -27,16 +29,14 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.base.util.TextUtil.shorterStringsFirstNotCountingSpaces;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 
 class AllKeeperWorker implements AllKeeper {
     
-    private final DataModule data;
+    private final ResponsiveDataModule data;
     private final ProgramsKeeper programs;
 
-    AllKeeperWorker(DataModule dataModule, ProgramsKeeper programsKeeper) {
+    AllKeeperWorker(ResponsiveDataModule dataModule, ProgramsKeeper programsKeeper) {
         this.data = dataModule;
         this.programs = programsKeeper;
     }

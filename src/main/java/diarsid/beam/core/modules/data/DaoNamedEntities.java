@@ -8,20 +8,18 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.NamedEntity;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoNamedEntities {
+public interface DaoNamedEntities extends Dao {
     
-    Optional<NamedEntity> getByExactName(
-            Initiator initiator, String exactName);
+    Optional<NamedEntity> getByExactName(String exactName) throws DataExtractionException;
     
-    List<NamedEntity> getEntitiesByNamePattern(
-            Initiator initiator, String namePattern);
+    List<NamedEntity> getEntitiesByNamePattern(String namePattern) throws DataExtractionException;
     
-    List<NamedEntity> getAll(Initiator initiator);
+    List<NamedEntity> getAll() throws DataExtractionException;
 }

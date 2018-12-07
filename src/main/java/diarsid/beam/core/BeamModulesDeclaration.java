@@ -9,7 +9,6 @@ package diarsid.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.DataModule;
@@ -18,8 +17,10 @@ import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.PluginsLoaderModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
+import diarsid.beam.core.modules.ResponsiveDataModule;
 import diarsid.beam.core.modules.TasksWatcherModule;
 import diarsid.beam.core.modules.WebModule;
+import diarsid.support.configuration.Configuration;
 
 import com.drs.gem.injector.core.Declaration;
 import com.drs.gem.injector.core.GemModuleDeclaration;
@@ -69,6 +70,11 @@ class BeamModulesDeclaration implements Declaration {
         modules.add(new GemModuleDeclaration(
                 IoModule.class.getCanonicalName(), 
                 "diarsid.beam.core.modules.io.IoModuleWorker",
+                GemModuleType.SINGLETON));
+        
+        modules.add(new GemModuleDeclaration(
+                ResponsiveDataModule.class.getCanonicalName(), 
+                "diarsid.beam.core.modules.responsivedata.ResponsiveDataModuleWorker",
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(

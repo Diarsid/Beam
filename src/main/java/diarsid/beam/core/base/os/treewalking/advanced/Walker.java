@@ -8,7 +8,7 @@ package diarsid.beam.core.base.os.treewalking.advanced;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
-import diarsid.beam.core.modules.data.DaoPatternChoices;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
 
 /**
  *
@@ -24,7 +24,7 @@ public interface Walker {
     
     static Walker newWalker(
             InnerIoEngine ioEngine, 
-            DaoPatternChoices daoPatternChoices, 
+            ResponsiveDaoPatternChoices daoPatternChoices, 
             FolderTypeDetector folderTypeDetector) {
         return new FileTreeWalker(ioEngine, daoPatternChoices, folderTypeDetector);
     }

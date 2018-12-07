@@ -6,11 +6,11 @@
 package diarsid.beam.core.modules.executor;
 
 import diarsid.beam.core.base.os.treewalking.advanced.Walker;
-import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.PluginsLoaderModule;
+import diarsid.beam.core.modules.ResponsiveDataModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -26,13 +26,13 @@ import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcher
 class ExecutorModuleWorkerBuilder implements GemModuleBuilder<ExecutorModule> {
     
     private final IoModule ioModule;
-    private final DataModule dataModule;
+    private final ResponsiveDataModule dataModule;
     private final DomainKeeperModule domainKeeperModule;
     private final PluginsLoaderModule pluginsLoaderModule;
 
     public ExecutorModuleWorkerBuilder(
             IoModule ioModule, 
-            DataModule dataModule,
+            ResponsiveDataModule dataModule,
             DomainKeeperModule domainKeeperModule, 
             PluginsLoaderModule pluginsLoaderModule) {
         this.ioModule = ioModule;

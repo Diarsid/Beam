@@ -8,38 +8,41 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Batch;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoBatches {
+public interface DaoBatches extends Dao {
     
-    boolean isNameFree(Initiator initiator, String exactName);
+    boolean isNameFree(String exactName) 
+            throws DataExtractionException;
     
-    List<String> getBatchNamesByNamePattern(
-            Initiator initiator, String batchName);
+    List<String> getBatchNamesByNamePattern(String batchName) 
+            throws DataExtractionException;
     
-    Optional<Batch> getBatchByExactName(Initiator initiator, String name);
+    Optional<Batch> getBatchByExactName(String name) 
+            throws DataExtractionException;
     
-    boolean saveBatch(
-            Initiator initiator, Batch batch);
+    boolean saveBatch(Batch batch) 
+            throws DataExtractionException;
     
-    boolean removeBatch(
-            Initiator initiator, String batchName);
+    boolean removeBatch(String batchName) 
+            throws DataExtractionException;
     
-    boolean editBatchName(
-            Initiator initiator, String batchName, String newName);
+    boolean editBatchName(String batchName, String newName) 
+            throws DataExtractionException;
     
-    boolean editBatchCommands(
-            Initiator initiator, String batchName, List<ExecutorCommand> newCommands);
+    boolean editBatchCommands(String batchName, List<ExecutorCommand> newCommands) 
+            throws DataExtractionException;
     
-    boolean editBatchOneCommand(
-            Initiator initiator, String batchName, int commandOrder, ExecutorCommand newCommand);
+    boolean editBatchOneCommand(String batchName, int commandOrder, ExecutorCommand newCommand) 
+            throws DataExtractionException;
     
-    List<Batch> getAllBatches(
-            Initiator initiator);
+    List<Batch> getAllBatches() 
+            throws DataExtractionException;
+    
 }

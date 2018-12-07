@@ -9,17 +9,21 @@ package diarsid.beam.core.modules.control;
 import diarsid.beam.core.base.control.io.base.console.Console;
 import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcessor;
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
+import diarsid.beam.core.base.data.DataExtractionException;
+import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
-import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.base.control.io.base.console.Console.buildConsoleUsing;
 import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCommandLineProcessor;
+import static diarsid.support.log.Logging.logFor;
 
 /**
  *
@@ -28,19 +32,16 @@ import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCo
 public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModule> {
     
     private final IoModule ioModule;
-    private final DataModule dataModule;
     private final ApplicationComponentsHolderModule appComponentsHolderModule;
     private final DomainKeeperModule domainModule;
     private final ExecutorModule executorModule;
     
     public ControlModuleWorkerBuilder(
             IoModule ioModule, 
-            DataModule dataModule,
             ApplicationComponentsHolderModule appComponentsHolderModule,
             DomainKeeperModule domainModule,
             ExecutorModule executorModule) {
         this.ioModule = ioModule;
-        this.dataModule = dataModule;
         this.appComponentsHolderModule = appComponentsHolderModule;
         this.domainModule = domainModule;
         this.executorModule = executorModule;
@@ -55,18 +56,25 @@ public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModul
                 this.domainModule);
         
         if ( this.appComponentsHolderModule.configuration().asBoolean("ui.console.runOnStart") ) {
-            this.startJavaFxConsoleUsing(consoleProcessor);
+            try {
+                this.startJavaFxConsoleUsing(consoleProcessor);
+            } catch (DataExtractionException e) {
+                logFor(this).error(e.getMessage(), e);
+                throw new ModuleInitializationException(format(
+                        "Cannot initialize %s: %s", 
+                        ControlModule.class.getSimpleName(), e.getMessage()));
+            }
         }       
         
         ControlModule coreControlModule = new ControlModuleWorker(this.ioModule, consoleProcessor);
         return coreControlModule;
     }
     
-    private void startJavaFxConsoleUsing(ConsoleCommandRealProcessor consoleProcessor) {
-        ConsolePlatform javaFxConsolePlatform = this.appComponentsHolderModule
+    private void startJavaFxConsoleUsing(ConsoleCommandRealProcessor consoleProcessor) 
+            throws DataExtractionException {
+        ConsolePlatform javaFxConsolePlatform = this.ioModule
                 .gui()
-                .interactionGui()
-                .guiConsolePlatformFor(this.dataModule, consoleProcessor);
+                .guiConsolePlatformFor(consoleProcessor);
         
         Console javaFxConsole = buildConsoleUsing(javaFxConsolePlatform);
         

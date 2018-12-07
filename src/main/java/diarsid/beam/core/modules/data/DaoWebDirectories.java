@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPlace;
@@ -17,62 +17,80 @@ import diarsid.beam.core.domain.entities.WebPlace;
  *
  * @author Diarsid
  */
-public interface DaoWebDirectories {
+public interface DaoWebDirectories extends Dao {
     
     Optional<Integer> findFreeNameNextIndex(
-            Initiator initiator, String name, WebPlace place);
+            String name, WebPlace place) 
+            throws DataExtractionException;
     
-    List<WebDirectoryPages> getAllDirectoriesPages(
-            Initiator initiator);
+    List<WebDirectoryPages> getAllDirectoriesPages() 
+            throws DataExtractionException;
     
     List<WebDirectoryPages> getAllDirectoriesPagesInPlace(
-            Initiator initiator, WebPlace place);
+            WebPlace place) 
+            throws DataExtractionException;
     
     Optional<WebDirectoryPages> getDirectoryPagesById(
-            Initiator initiator, int id);
+            int id) 
+            throws DataExtractionException;
     
     Optional<WebDirectoryPages> getDirectoryPagesByNameAndPlace(
-            Initiator initiator, String name, WebPlace place);
+            String name, WebPlace place) 
+            throws DataExtractionException;
     
     Optional<WebDirectory> getDirectoryByNameAndPlace(
-            Initiator initiator, String name, WebPlace place);
+            String name, WebPlace place) 
+            throws DataExtractionException;
     
     Optional<WebDirectory> getDirectoryById(
-            Initiator initiator, int id);
+            int id) 
+            throws DataExtractionException;
     
     Optional<Integer> getDirectoryIdByNameAndPlace(
-            Initiator initiator, String name, WebPlace place);
+            String name, WebPlace place) 
+            throws DataExtractionException;
     
     List<WebDirectory> findDirectoriesByPatternInPlace(
-            Initiator initiator, String pattern, WebPlace place);
+            String pattern, WebPlace place) 
+            throws DataExtractionException;
     
     List<WebDirectory> findDirectoriesByPatternInAnyPlace(
-            Initiator initiator, String pattern);
+            String pattern) 
+            throws DataExtractionException;
     
-    List<WebDirectory> getAllDirectories(
-            Initiator initiator);
+    List<WebDirectory> getAllDirectories() 
+            throws DataExtractionException;
     
     List<WebDirectory> getAllDirectoriesInPlace(
-            Initiator initiator, WebPlace place);
+            WebPlace place) 
+            throws DataExtractionException;
     
     boolean exists(
-            Initiator initiator, String directoryName, WebPlace place);
+            String directoryName, WebPlace place) 
+            throws DataExtractionException;
     
     boolean updateWebDirectoryOrders(
-            Initiator initiator, List<WebDirectory> directories);
+            List<WebDirectory> directories) 
+            throws DataExtractionException;
         
     boolean save(
-            Initiator initiator, WebDirectory directory);
+            WebDirectory directory) 
+            throws DataExtractionException;
     
     boolean save(
-            Initiator initiator, String name, WebPlace place);
+            String name, WebPlace place) 
+            throws DataExtractionException;
 
     boolean remove(
-            Initiator initiator, String name, WebPlace place);
+            String name, WebPlace place) 
+            throws DataExtractionException;
     
     boolean moveDirectoryToPlace(
-            Initiator initiator, String name, WebPlace from, WebPlace to);
+            String name, WebPlace from, WebPlace to) 
+            throws DataExtractionException;
     
     boolean editDirectoryName(
-            Initiator initiator, String name, WebPlace place, String newName);
+            String name, WebPlace place, String newName) 
+            throws DataExtractionException;
+    
 }

@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.BiFunction;
 
-import diarsid.beam.core.modules.data.DaoPersistableCacheData;
+import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPersistableCacheData;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -28,18 +29,21 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class PersistentAnalyzeCache<T> implements AnalyzeCache<T> {
     
+    private final Initiator initiator;
     private final BiFunction<String, String, T> analyzeFunction;
     private final BiFunction<String, String, Long> hashFunction;
     private final InMemoryAnalyzeCache<T> inMemoryCache;
     private final int algorithmVersion;
     private final List<PersistableCacheData<T>> buffer;
-    private DaoPersistableCacheData<T> dao;
+    private ResponsiveDaoPersistableCacheData<T> dao;
     private ScheduledFuture execution;
 
     public PersistentAnalyzeCache(
+            Initiator initiator,
             BiFunction<String, String, T> analyzeFunction,
             BiFunction<String, String, Long> hashFunction, 
             int algorithmVersion) {
+        this.initiator = initiator;
         this.analyzeFunction = analyzeFunction;
         this.hashFunction = hashFunction;
         this.inMemoryCache = new InMemoryAnalyzeCache<>(hashFunction);
@@ -47,11 +51,11 @@ public class PersistentAnalyzeCache<T> implements AnalyzeCache<T> {
         this.buffer = new ArrayList<>();        
     }
     
-    public void initPersistenceWith(DaoPersistableCacheData<T> dao) {
+    public void initPersistenceWith(ResponsiveDaoPersistableCacheData<T> dao) {
         Runnable persistCacheOperation = () -> {
             synchronized ( this.buffer ) {
                 if ( nonEmpty(this.buffer) ) {
-                    this.dao.persistAll(this.buffer, this.algorithmVersion);
+                    this.dao.persistAll(this.initiator, this.buffer, this.algorithmVersion);
                     this.buffer.clear();
                 }                        
             }
@@ -68,10 +72,11 @@ public class PersistentAnalyzeCache<T> implements AnalyzeCache<T> {
             }
         }
         
-        this.inMemoryCache.addAll(this.dao.loadAllHashesWith(this.algorithmVersion));
+        Map<Long, T> loadedHashes = this.dao.loadAllHashesWith(this.initiator, this.algorithmVersion);
+        this.inMemoryCache.addAll(loadedHashes);
 
-        Map<Long, T> reassesedHashes = this.dao
-                .reassessAllHashesOlderThan(this.algorithmVersion, this.analyzeFunction);
+        Map<Long, T> reassesedHashes = this.dao.reassessAllHashesOlderThan(
+                this.initiator, this.algorithmVersion, this.analyzeFunction);
         if ( nonEmpty(reassesedHashes) ) {
             logFor(this).info(format(
                     "Reassesed %s cached %s for algorithm version %s", 

@@ -11,13 +11,14 @@ import java.util.function.BiFunction;
 
 import diarsid.beam.core.base.analyze.cache.CacheUsage;
 import diarsid.beam.core.base.analyze.cache.PersistentAnalyzeCache;
-import diarsid.beam.core.modules.DataModule;
+import diarsid.beam.core.modules.ResponsiveDataModule;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.cache.AnalyzeCache.PAIR_HASH_FUNCTION;
 import static diarsid.beam.core.base.analyze.cache.CacheUsage.NOT_USE_CACHE;
@@ -45,13 +46,14 @@ public class Similarity {
         };
         
         CACHE = new PersistentAnalyzeCache<>(
+                systemInitiator(),
                 similarityFunction,
                 PAIR_HASH_FUNCTION, 
                 SIMILARITY_ALGORITHM_VERSION);
         
         asyncDo(() -> {
             logFor(Similarity.class).info("requesting for data module...");
-            requestPayloadThenAwaitForSupply(DataModule.class).ifPresent((dataModule) -> {
+            requestPayloadThenAwaitForSupply(ResponsiveDataModule.class).ifPresent((dataModule) -> {
                 logFor(Similarity.class).info("cache loading...");
                 CACHE.initPersistenceWith(dataModule.cachedSimilarity());
                 logFor(Similarity.class).info("cache loaded");            

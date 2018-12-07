@@ -7,20 +7,20 @@ package diarsid.beam.core.modules.data;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Picture;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoPictures {
+public interface DaoPictures extends Dao {
     
-    Optional<Picture> getByName(Initiator initiator, String name);
+    Optional<Picture> getByName(String name) throws DataExtractionException;
     
-    boolean save(Initiator initiator, Picture image);
+    boolean save(Picture image) throws DataExtractionException;
     
-    boolean removeByName(Initiator initiator, String name);
+    boolean removeByName(String name) throws DataExtractionException;
     
-    boolean remove(Initiator initiator, Picture image);
+    boolean remove(Picture image) throws DataExtractionException;
 }

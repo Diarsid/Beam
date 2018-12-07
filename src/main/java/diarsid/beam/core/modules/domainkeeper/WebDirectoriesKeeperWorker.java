@@ -29,7 +29,7 @@ import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNameAndPlace;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNamePlaceAndProperty;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
-import diarsid.beam.core.modules.data.DaoWebDirectories;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebDirectories;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -77,7 +77,7 @@ class WebDirectoriesKeeperWorker
         implements WebDirectoriesKeeper {
     
     private final Object allDirectoriesConsistencyLock;
-    private final DaoWebDirectories daoDirectories;
+    private final ResponsiveDaoWebDirectories daoDirectories;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final Initiator systemInitiator;
@@ -91,7 +91,7 @@ class WebDirectoriesKeeperWorker
     private final Help deleteDirectoryConfirmationHelp;
 
     public WebDirectoriesKeeperWorker(
-            DaoWebDirectories daoDirectories, 
+            ResponsiveDaoWebDirectories daoDirectories, 
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
             Initiator systemInitiator,

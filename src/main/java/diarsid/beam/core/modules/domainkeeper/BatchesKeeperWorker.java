@@ -32,8 +32,8 @@ import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
-import diarsid.beam.core.modules.data.DaoBatches;
-import diarsid.beam.core.modules.data.DaoPatternChoices;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoBatches;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
@@ -77,8 +77,8 @@ import static diarsid.support.objects.Pools.takeFromPool;
 class BatchesKeeperWorker implements BatchesKeeper {
     
     private final Object allBatchesConsistencyLock;
-    private final DaoBatches dao;
-    private final DaoPatternChoices daoPatternChoices;
+    private final ResponsiveDaoBatches dao;
+    private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
@@ -94,8 +94,8 @@ class BatchesKeeperWorker implements BatchesKeeper {
     private final Help editOneCommandHelp;
     
     BatchesKeeperWorker(
-            DaoBatches daoBatches, 
-            DaoPatternChoices daoPatternChoices,
+            ResponsiveDaoBatches daoBatches, 
+            ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine,
             KeeperDialogHelper helper,
@@ -302,7 +302,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
         } else {
-            if ( this.daoPatternChoices.hasMatchOf(pattern, bestVariant.text(), variants) ) {
+            boolean hasMatch = this.daoPatternChoices
+                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+            if ( hasMatch ) {
                 return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
             } else {
                 return this.askUserForBatchAndSaveChoice(
@@ -321,7 +323,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         if ( answer.isGiven() ) {
             asyncDo(() -> {
                 this.daoPatternChoices.save(
-                        pattern, batchNames.get(answer.index()), variants);
+                        initiator, pattern, batchNames.get(answer.index()), variants);
             });
             return this.findByExactName(initiator, batchNames.get(answer.index()));
         } else if ( answer.isRejection() ) {

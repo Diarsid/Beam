@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.application.gui.InteractionGui;
+import diarsid.beam.core.modules.io.gui.Gui;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -41,10 +41,10 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
-import diarsid.beam.core.modules.data.DaoPatternChoices;
-import diarsid.beam.core.modules.data.DaoPictures;
-import diarsid.beam.core.modules.data.DaoWebDirectories;
-import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPictures;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebDirectories;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebPages;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -118,13 +118,13 @@ public class WebPagesKeeperWorker
                 WebPagesKeeper {
     
     private final Object allPagesConsistencyLock;
-    private final DaoWebPages daoPages;
-    private final DaoWebDirectories daoDirectories;
-    private final DaoPatternChoices daoPatternChoices;
-    private final DaoPictures daoPictures;
+    private final ResponsiveDaoWebPages daoPages;
+    private final ResponsiveDaoWebDirectories daoDirectories;
+    private final ResponsiveDaoPatternChoices daoPatternChoices;
+    private final ResponsiveDaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
-    private final InteractionGui interactionGui;
+    private final Gui gui;
     private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
     private final PropertyAndTextParser propetyTextParser;
@@ -141,13 +141,13 @@ public class WebPagesKeeperWorker
     private final Help enterShortcutsHelp;
     
     public WebPagesKeeperWorker(
-            DaoWebPages dao, 
-            DaoWebDirectories daoDirectories,
-            DaoPictures daoPictures,
+            ResponsiveDaoWebPages dao, 
+            ResponsiveDaoWebDirectories daoDirectories,
+            ResponsiveDaoPictures daoPictures,
             CommandsMemoryKeeper commandsMemory,
-            DaoPatternChoices daoPatternChoices,
+            ResponsiveDaoPatternChoices daoPatternChoices,
             InnerIoEngine ioEngine, 
-            InteractionGui interactionGui,
+            Gui gui,
             Initiator systemInitiator,
             KeeperDialogHelper helper,
             PropertyAndTextParser propetyTextParser,
@@ -160,7 +160,7 @@ public class WebPagesKeeperWorker
         this.daoPictures = daoPictures;
         this.daoPatternChoices = daoPatternChoices;
         this.ioEngine = ioEngine;
-        this.interactionGui = interactionGui;
+        this.gui = gui;
         this.systemInitiator = systemInitiator;
         this.helper = helper;
         this.propetyTextParser = propetyTextParser;
@@ -331,7 +331,9 @@ public class WebPagesKeeperWorker
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return valueFlowCompletedWith(pages.get(bestVariant.index()));
         } else {
-            if ( this.daoPatternChoices.hasMatchOf(pattern, bestVariant.text(), variants) ) {
+            boolean hasMatch = this.daoPatternChoices
+                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+            if ( hasMatch ) {
                 return valueFlowCompletedWith(pages.get(bestVariant.index()));
             } else {
                 return this.askUserForPageAndSaveChoice(
@@ -350,7 +352,7 @@ public class WebPagesKeeperWorker
         if ( answer.isGiven() ) {
             asyncDo(() -> {
                 this.daoPatternChoices.save(
-                        pattern, pages.get(answer.index()).name(), variants);
+                        initiator, pattern, pages.get(answer.index()).name(), variants);
             });
             return valueFlowCompletedWith(pages.get(answer.index()));
         } else if ( answer.isRejection() ) {
@@ -855,7 +857,7 @@ public class WebPagesKeeperWorker
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
         ValueFlow<Picture> pictureFlow = awaitGetFlow(() -> {     
-            return this.interactionGui.capturePictureOnScreen(page.name());
+            return this.gui.capturePictureOnScreen(page.name());
         });
         
         switch ( pictureFlow.result() ) {

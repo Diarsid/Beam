@@ -788,6 +788,36 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+
+    @Test
+    public void test_JavaSE8Case_jse8() {
+        pattern = "jse8";
+        
+        variants = asList(               
+                "Java SE 8 API");
+        
+        expected = asList( 
+                "Java SE 8 API");
+        
+        weightVariantsAndCheckMatching();
+    }
+
+    @Test
+    public void test_jpaSpecCase_jpaspce() {
+        pattern = "jpaspce";
+        
+        variants = asList(               
+                "Java/Specifications",
+                "Java/Specifications/JPA_v.2.0_(JSR_317).pdf"
+        );
+        
+        expected = asList(            
+                "Java/Specifications/JPA_v.2.0_(JSR_317).pdf",
+                "Java/Specifications"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
     
     @Test
     public void test_beamProjectCase_beaporj_2() {

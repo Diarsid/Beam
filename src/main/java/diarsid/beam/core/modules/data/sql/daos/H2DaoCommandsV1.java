@@ -7,17 +7,15 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
@@ -38,13 +36,13 @@ import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.row
  */
 class H2DaoCommandsV1 extends H2DaoCommandsV0 {
         
-    H2DaoCommandsV1(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoCommandsV1(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public List<InvocationCommand> searchInOriginalByPattern(
-            Initiator initiator, String pattern) {        
+    public List<InvocationCommand> searchInOriginalByPattern(String pattern) 
+            throws DataExtractionException {        
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<InvocationCommand> found;
@@ -105,15 +103,15 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<InvocationCommand> searchInOriginalByPatternAndType(
-            Initiator initiator, String pattern, CommandType type) {
+            String pattern, CommandType type) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<InvocationCommand> found;
@@ -175,15 +173,14 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             found.retainAll(shuffleFound);
             
             return found;
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<InvocationCommand> searchInExtendedByPattern(
-            Initiator initiator, String pattern) {
+    public List<InvocationCommand> searchInExtendedByPattern(String pattern) 
+            throws DataExtractionException {
         // TODO HIGH
         if ( pattern.length() == 2 ) {
             
@@ -267,15 +264,15 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<InvocationCommand> searchInExtendedByPatternAndType(
-            Initiator initiator, String pattern, CommandType type) {
+            String pattern, CommandType type) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<InvocationCommand> found;
@@ -356,15 +353,14 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             found.retainAll(shuffleFound);
             
             return found;
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }   
     }
 
     @Override
-    public List<InvocationCommand> searchInExtendedByPatternGroupByExtended(
-            Initiator initiator, String pattern) {
+    public List<InvocationCommand> searchInExtendedByPatternGroupByExtended(String pattern) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             RowConversion<InvocationCommand> rowToNewInvocationCommandWithPatternAsOriginal = 
@@ -452,15 +448,15 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             
             return found;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<InvocationCommand> searchInExtendedByPatternAndTypeGroupByExtended(
-            Initiator initiator, String pattern, CommandType type) {
+            String pattern, CommandType type) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             RowConversion<InvocationCommand> rowToNewInvocationCommandWithPatternAsOriginal = 
@@ -549,9 +545,8 @@ class H2DaoCommandsV1 extends H2DaoCommandsV0 {
             found.retainAll(shuffleFound);
             
             return found;
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }   
     }
 }

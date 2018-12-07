@@ -19,8 +19,9 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.modules.data.DaoNamedEntities;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoNamedEntities;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -32,7 +33,6 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
 
 /**
  *
@@ -41,11 +41,11 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySati
 class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
     
     private final InnerIoEngine ioEngine;
-    private final DaoNamedEntities namedEntitiesDao;
+    private final ResponsiveDaoNamedEntities namedEntitiesDao;
     private final Set<CommandType> subjectedCommandTypes;
     private final Help chooseOneEntityHelp;
 
-    NamedEntitiesKeeperWorker(InnerIoEngine ioEngine, DaoNamedEntities dao) {
+    NamedEntitiesKeeperWorker(InnerIoEngine ioEngine, ResponsiveDaoNamedEntities dao) {
         this.ioEngine = ioEngine;
         this.namedEntitiesDao = dao;
         this.subjectedCommandTypes = toSet(EXECUTOR_DEFAULT);

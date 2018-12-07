@@ -26,4 +26,5 @@ public interface ValueFlow<T extends Object> extends Flow {
     ValueFlowFail asFail();
     
     VoidFlow toVoid();
+    
 }

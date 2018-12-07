@@ -7,19 +7,16 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
@@ -31,13 +28,12 @@ import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW
  */
 class H2DaoTasksV1 extends H2DaoTasksV0 {
     
-    H2DaoTasksV1(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);    
+    H2DaoTasksV1(DataBase dataBase) {
+        super(dataBase);    
     }    
 
     @Override
-    public List<Task> findTasksByTextPattern(
-            Initiator initiator, String textPattern) {
+    public List<Task> findTasksByTextPattern(String textPattern) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<Task> tasks = transact
@@ -65,10 +61,8 @@ class H2DaoTasksV1 extends H2DaoTasksV0 {
             
             return tasks;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            logFor(this).error(ex.getMessage(), ex);
-            
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }        
     }
 }

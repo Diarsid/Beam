@@ -8,10 +8,9 @@ package diarsid.beam.core.modules.data.sql.daos;
 import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.data.DataBase;
-import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
@@ -25,12 +24,13 @@ class H2DaoPatternChoices
         extends BeamCommonDao 
         implements DaoPatternChoices {
 
-    H2DaoPatternChoices(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoPatternChoices(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public boolean hasMatchOf(String original, String extended, WeightedVariants variants) {
+    public boolean hasMatchOf(String original, String extended, WeightedVariants variants) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
@@ -41,14 +41,14 @@ class H2DaoPatternChoices
                             "   ( LOWER(extended) IS ? ) AND " +
                             "   ( variants_stamp IS ? )", 
                             lower(original), lower(extended), variants.stamp());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;            
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);        
         }
     }
 
     @Override
-    public Optional<String> findChoiceFor(String original, WeightedVariants variants) {
+    public Optional<String> findChoiceFor(String original, WeightedVariants variants) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams(
@@ -57,14 +57,14 @@ class H2DaoPatternChoices
                             "FROM pattern_choices " +
                             "WHERE ( LOWER(original) IS ? ) AND ( variants_stamp IS ? )", 
                             lower(original), variants.stamp());
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return Optional.empty();            
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);          
         }
     }  
     
     @Override
-    public boolean save(String original, String extended, WeightedVariants variants) {
+    public boolean save(String original, String extended, WeightedVariants variants) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean choiceExists = transact
@@ -104,19 +104,19 @@ class H2DaoPatternChoices
                     .rollbackAndProceed();
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;            
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);         
         }
     }
     
     @Override
-    public boolean save(InvocationCommand command, WeightedVariants variants) {
+    public boolean save(InvocationCommand command, WeightedVariants variants) 
+            throws DataExtractionException {
         return this.save(command.originalArgument(), command.extendedArgument(), variants);
     }
 
     @Override
-    public boolean delete(String original) {
+    public boolean delete(String original) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doUpdateVarargParams(
@@ -124,14 +124,13 @@ class H2DaoPatternChoices
                             "WHERE LOWER(original) IS ? ", 
                             lower(original))
                     == 1;
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            
-            return false;            
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean delete(InvocationCommand command) {
+    public boolean delete(InvocationCommand command) throws DataExtractionException {
         return this.delete(command.originalArgument());
     }
 }

@@ -11,10 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.domain.entities.Attribute;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
@@ -35,8 +33,8 @@ class H2DaoKeyValueStorage
     
     private final RowConversion<String> firstRowToValueConversion;
     
-    H2DaoKeyValueStorage(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoKeyValueStorage(DataBase dataBase) {
+        super(dataBase);
         this.firstRowToValueConversion = (firstRow) -> {
             return (String) firstRow.get("value");
         };

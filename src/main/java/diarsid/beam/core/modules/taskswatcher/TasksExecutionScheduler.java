@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.support.objects.Possible;
 import diarsid.beam.core.domain.entities.Task;
@@ -32,13 +31,15 @@ import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMillisFromNowTo
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getMinutesFromPastToNow;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 
+import diarsid.beam.core.modules.io.gui.TasksGui;
+
 /**
  *
  * @author Diarsid
  */
 class TasksExecutionScheduler {
     
-    private final OutputTasksGui tasksGui;
+    private final TasksGui tasksGui;
     private final TasksKeeper tasksKeeper;
     private final Initiator ownInitiator;
     private final ScheduledThreadPoolExecutor scheduler;        
@@ -53,7 +54,7 @@ class TasksExecutionScheduler {
     private final Possible<ScheduledFuture> currentExecution;
 
     TasksExecutionScheduler(
-            OutputTasksGui tasksGui, 
+            TasksGui tasksGui, 
             TasksKeeper tasksKeeper, 
             ScheduledThreadPoolExecutor scheduler,
             Initiator ownInitiator) {

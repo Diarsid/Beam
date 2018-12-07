@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import diarsid.beam.core.application.gui.OutputTasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.modules.domainkeeper.TasksKeeper;
@@ -25,13 +24,15 @@ import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextMonthBeginn
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getNextWeekBeginning;
 import static diarsid.beam.core.modules.taskswatcher.TimeUtil.getThisWeekBeginning;
 
+import diarsid.beam.core.modules.io.gui.TasksGui;
+
 /**
  *
  * @author Diarsid
  */
 class TasksNotificationScheduler {
     
-    private final OutputTasksGui tasksGui;
+    private final TasksGui tasksGui;
     private final TasksKeeper tasksKeeper;
     private final Initiator ownInitiator;
     private final ScheduledThreadPoolExecutor scheduler;
@@ -45,7 +46,7 @@ class TasksNotificationScheduler {
     private ScheduledFuture currentNotification;
 
     public TasksNotificationScheduler(
-            OutputTasksGui tasksGui, 
+            TasksGui tasksGui, 
             TasksKeeper tasksKeeper, 
             ScheduledThreadPoolExecutor scheduler,
             Initiator ownInitiator) {

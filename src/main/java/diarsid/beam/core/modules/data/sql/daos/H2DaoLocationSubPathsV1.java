@@ -7,17 +7,14 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.LocationSubPath;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
@@ -36,12 +33,13 @@ class H2DaoLocationSubPathsV1
         extends BeamCommonDao 
         implements DaoLocationSubPaths {
     
-    H2DaoLocationSubPathsV1(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoLocationSubPathsV1(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public List<LocationSubPath> getSubPathesByPattern(Initiator initiator, String pattern) {
+    public List<LocationSubPath> getSubPathesByPattern(String pattern) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<LocationSubPath> foundSubPaths;
@@ -200,9 +198,8 @@ class H2DaoLocationSubPathsV1
             
             return foundSubPaths;
             
-        } catch (TransactionHandledSQLException|TransactionHandledException ex) {
-            // TODO LOW
-            return emptyList();
+        } catch (TransactionHandledSQLException|TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }    
     }
 }

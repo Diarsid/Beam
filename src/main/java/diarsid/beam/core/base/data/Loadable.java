@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.base.data;
 
-import java.util.Optional;
+import diarsid.beam.core.base.control.flow.ValueFlow;
 
 /**
  *
@@ -13,5 +13,6 @@ import java.util.Optional;
  */
 public interface Loadable <T> {
     
-    Optional<T> load();
+    ValueFlow<T> load();
+    
 }

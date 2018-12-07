@@ -9,7 +9,7 @@ package diarsid.beam.core.modules.io;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.application.gui.Gui;
+import diarsid.beam.core.modules.io.gui.Gui;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;

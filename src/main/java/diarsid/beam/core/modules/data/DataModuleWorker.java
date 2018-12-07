@@ -28,6 +28,7 @@ class DataModuleWorker implements DataModule {
     private final DaoLocationSubPathChoices daoLocationSubPathChoices;
     private final DaoPersistableCacheData<Boolean> daoSimilarityCache;
     private final DaoPersistableCacheData<Float> daoWeightCache;
+    private final DaoNamedRectangles persistablePositions;
     
     DataModuleWorker(DataBase dataBase, DaosProvider daosProvider) {
         this.dataBase = dataBase;
@@ -45,6 +46,7 @@ class DataModuleWorker implements DataModule {
         this.daoLocationSubPathChoices = daosProvider.createDaoLocationSubPathChoices();
         this.daoSimilarityCache = daosProvider.createDaoSimilarityCache();
         this.daoWeightCache = daosProvider.createDaoWeightCache();
+        this.persistablePositions = daosProvider.persistablePositions();
     }
 
     @Override
@@ -120,5 +122,10 @@ class DataModuleWorker implements DataModule {
     @Override
     public DaoPersistableCacheData<Float> cachedWeight() {
         return this.daoWeightCache;
+    }
+
+    @Override
+    public DaoNamedRectangles namedRectangles() {
+        return this.persistablePositions;
     }
 }

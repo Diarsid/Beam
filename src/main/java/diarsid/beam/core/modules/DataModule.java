@@ -19,6 +19,7 @@ import diarsid.beam.core.modules.data.DaoPictures;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
+import diarsid.beam.core.modules.data.DaoNamedRectangles;
 
 /**
  *
@@ -53,5 +54,7 @@ public interface DataModule extends StoppableBeamModule  {
     DaoPersistableCacheData<Boolean> cachedSimilarity();
     
     DaoPersistableCacheData<Float> cachedWeight();
+    
+    DaoNamedRectangles namedRectangles();
     
 }

@@ -11,25 +11,21 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.NamedEntity;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.sortAndGetFirstFrom;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.spacingWildcards;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceAfter;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceBefore;
@@ -53,9 +49,8 @@ abstract class H2DaoNamedEntitiesV0
     
     H2DaoNamedEntitiesV0(
             DataBase dataBase, 
-            InnerIoEngine ioEngine, 
             ProgramsCatalog programsCatalog) {
-        super(dataBase, ioEngine);
+        super(dataBase);
         this.programsCatalog = programsCatalog;
         this.rowToNamedEntityMask = (row) -> {
             return new NamedEntityMask(row);
@@ -155,8 +150,7 @@ abstract class H2DaoNamedEntitiesV0
     }
 
     @Override
-    public Optional<NamedEntity> getByExactName(
-            Initiator initiator, String exactName) {
+    public Optional<NamedEntity> getByExactName(String exactName) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             transact.logHistoryAfterCommit();
@@ -205,15 +199,12 @@ abstract class H2DaoNamedEntitiesV0
                 return Optional.empty();
             }
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, "named entities obtaining by exact name failed.");
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<NamedEntity> getAll(Initiator initiator) {
+    public List<NamedEntity> getAll() throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             List<NamedEntity> entityMasks;
@@ -236,10 +227,7 @@ abstract class H2DaoNamedEntitiesV0
             return entityMasks;
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, "cannot get all named entities.");
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 }

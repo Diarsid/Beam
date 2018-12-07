@@ -147,6 +147,16 @@ public class H2DataBaseModel implements SqlDataBaseModel {
                 "   created             TIMESTAMP   NOT NULL ) ", 
                 7);
         
+        SqlTable named2DPoints = new H2SqlTable(
+                "named_rectangles", 
+                "CREATE TABLE named_rectangles ( " +
+                "   name    VARCHAR NOT NULL PRIMARY KEY, " +    
+                "   x       DOUBLE  NOT NULL, " +
+                "   y       DOUBLE  NOT NULL, " +                  
+                "   width   DOUBLE  NOT NULL, " +
+                "   height  DOUBLE  NOT NULL ) ", 
+                5);
+        
         this.tables.add(locations);
         this.tables.add(batches); 
         this.tables.add(batchCommands);
@@ -160,6 +170,7 @@ public class H2DataBaseModel implements SqlDataBaseModel {
         this.tables.add(locationSubPathChoices);
         this.tables.add(similarityCache);
         this.tables.add(weightCache);
+        this.tables.add(named2DPoints);
         
         SqlConstraint fkBatchCommandsToBatchNames = new H2SqlConstraint(
                 "FK_BatchCommands_to_Batches", 

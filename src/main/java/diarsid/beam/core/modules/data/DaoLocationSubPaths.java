@@ -7,14 +7,15 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoLocationSubPaths {
+public interface DaoLocationSubPaths extends Dao {
     
-    List<LocationSubPath> getSubPathesByPattern(Initiator initiator, String pattern);
+    List<LocationSubPath> getSubPathesByPattern(String pattern) throws DataExtractionException;
+    
 }

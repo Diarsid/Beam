@@ -9,27 +9,28 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Attribute;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoKeyValueStorage {
+public interface DaoKeyValueStorage extends Dao {
     
-    Optional<String> get(String key);
+    Optional<String> get(String key) throws DataExtractionException;
     
-    boolean save(String key, String value);
+    boolean save(String key, String value) throws DataExtractionException;
     
-    boolean delete(String key);
+    boolean delete(String key) throws DataExtractionException;
     
-    Map<String, String> getAll();
+    Map<String, String> getAll() throws DataExtractionException;
     
-    Optional<Attribute> getAttribute(String key);
+    Optional<Attribute> getAttribute(String key) throws DataExtractionException;
     
-    boolean saveAttribute(Attribute attribute);
+    boolean saveAttribute(Attribute attribute) throws DataExtractionException;
     
-    boolean deleteAttribute(Attribute attribute);
+    boolean deleteAttribute(Attribute attribute) throws DataExtractionException;
     
-    Set<Attribute> getAllAttributes();
+    Set<Attribute> getAllAttributes() throws DataExtractionException;
 }

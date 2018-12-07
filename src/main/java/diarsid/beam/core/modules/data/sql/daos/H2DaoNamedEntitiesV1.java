@@ -8,21 +8,17 @@ package diarsid.beam.core.modules.data.sql.daos;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.domain.entities.Program;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr;
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
@@ -37,14 +33,13 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
     
     H2DaoNamedEntitiesV1(
             DataBase dataBase, 
-            InnerIoEngine ioEngine, 
             ProgramsCatalog programsCatalog) {
-        super(dataBase, ioEngine, programsCatalog);
+        super(dataBase, programsCatalog);
     }
 
     @Override
-    public List<NamedEntity> getEntitiesByNamePattern(
-            Initiator initiator, String pattern) {
+    public List<NamedEntity> getEntitiesByNamePattern(String pattern) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             transact.logHistoryAfterCommit();
@@ -177,11 +172,8 @@ class H2DaoNamedEntitiesV1 extends H2DaoNamedEntitiesV0 {
                 return entityMasks;
             }            
             
-        } catch (TransactionHandledSQLException | TransactionHandledException ex) {
-            logFor(this).error(format("find all named entities by %s", pattern), ex);
-            super.ioEngine().report(
-                    initiator, "named entities searching failed");
-            return emptyList();
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 }

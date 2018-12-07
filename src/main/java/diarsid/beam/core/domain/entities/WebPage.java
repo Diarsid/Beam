@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
@@ -24,9 +25,9 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWi
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
+import static diarsid.support.log.Logging.logFor;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -151,14 +152,30 @@ public class WebPage
             message.add("alias     " + this.shortcuts);            
         }
         if ( nonNull(this.loadableDirectory) ) {
-            this.loadableDirectory
-                    .load()
-                    .ifPresent(directory -> {
+            ValueFlow<WebDirectory> directoryFlow = this.loadableDirectory.load();
+            
+            switch ( directoryFlow.result() ) {
+                case COMPLETE : {
+                    if ( directoryFlow.isCompletedWithValue() ) {
+                        WebDirectory directory = directoryFlow.asComplete().orThrow();
                         message.add(format(
                                 "directory %s > %s", 
                                 directory.place().displayName(), 
                                 directory.name()));
-                    });
+                    } else {
+                        message.add(format("directory with id %s not found", this.directoryId));
+                    }
+                }
+                case FAIL : {
+                    message.add(format("cannot load directory with id %s:", this.directoryId));
+                    message.add(directoryFlow.asFail().reason());
+                    break;
+                }
+                case STOP :
+                default : {
+                    message.add("unexpected flow");
+                }
+            }
         }
         message.add("order     " + this.pageOrder);
         return infoWithHeader(this.name, message);

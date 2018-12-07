@@ -14,9 +14,8 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 
 import diarsid.beam.core.base.analyze.cache.PersistableCacheData;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
-import diarsid.beam.core.modules.data.BeamCommonDao;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.modules.data.DaoPersistableCacheData;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.Row;
@@ -28,14 +27,11 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.Beam.systemInitiator;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.jdbc.transactions.core.Params.params;
 import static diarsid.support.log.Logging.logFor;
@@ -188,13 +184,12 @@ class H2DaoPersistableCacheData <T>
     
     H2DaoPersistableCacheData(
             DataBase dataBase,
-            InnerIoEngine ioEngine,
             String cacheDataTableName,
             String cacheDataColumnName,
             Class<T> cachedType,
             String cacheName,
             RowConversion<PersistableCacheData<T>> rowToDataConversion) {
-        super(dataBase, ioEngine);
+        super(dataBase);
         this.similarityCacheLock = new Object();
         this.cachedType = cachedType;
         this.cacheName = cacheName;
@@ -250,7 +245,8 @@ class H2DaoPersistableCacheData <T>
     }
 
     @Override
-    public List<PersistableCacheData<T>> loadAll(int algorithmVersion) {
+    public List<PersistableCacheData<T>> loadAll(int algorithmVersion) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             return transact
@@ -261,16 +257,12 @@ class H2DaoPersistableCacheData <T>
                     .collect(toList());
             
         } catch(TransactionHandledSQLException | TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    systemInitiator(), 
-                    format("cannot load cached data.", this.cacheName));
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public Map<Long, T> loadAllHashesWith(int algorithmVersion) {
+    public Map<Long, T> loadAllHashesWith(int algorithmVersion) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             Map<Long, T> cache = new HashMap<>();
@@ -290,16 +282,14 @@ class H2DaoPersistableCacheData <T>
             return cache;
             
         } catch(TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    systemInitiator(), 
-                    format("cannot load cached data.", this.cacheName));
-            return emptyMap();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public void persistAll(List<PersistableCacheData<T>> persistableCacheData, int algorithmVersion) {
+    public void persistAll(
+            List<PersistableCacheData<T>> persistableCacheData, int algorithmVersion) 
+            throws DataExtractionException {
         synchronized ( this.similarityCacheLock ) {
             try (JdbcTransaction transact = super.openTransaction()) {
                 
@@ -350,18 +340,15 @@ class H2DaoPersistableCacheData <T>
                 transact.doBatchUpdate(this.sqlInsertInto, dataAsParams);
 
             } catch(TransactionHandledSQLException|TransactionHandledException e) {
-                logFor(this).error(e.getMessage(), e);
-                super.ioEngine().report(
-                        systemInitiator(), 
-                        format("cannot save cached data in %s.", this.cacheName));
+                throw super.logAndWrap(e);
             }
         }    
     }
 
     @Override
     public Map<Long, T> reassessAllHashesOlderThan(
-            int algorithmVersion, 
-            BiFunction<String, String, T> analyzeFunction) {
+            int algorithmVersion, BiFunction<String, String, T> analyzeFunction) 
+            throws DataExtractionException {
         
         Map<Long, T> reassessedCachHashes = new HashMap<>();
         
@@ -418,10 +405,7 @@ class H2DaoPersistableCacheData <T>
                                     newCachedValue, algorithmVersion, now, cached.uuid());
 
                 } catch(TransactionHandledSQLException|TransactionHandledException e) {
-                    logFor(this).error(e.getMessage(), e);
-                    super.ioEngine().report(
-                            systemInitiator(), 
-                            format("cannot reassess obsolete hashes in %s.", this.cacheName));
+                    throw super.logAndWrap(e);
                 }
             }
         }

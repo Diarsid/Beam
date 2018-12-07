@@ -13,13 +13,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Task;
 import diarsid.beam.core.domain.entities.TaskRepeat;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
@@ -28,12 +26,10 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.multipleValues;
 import static diarsid.beam.core.domain.entities.Tasks.stringifyTaskText;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_TASK;
@@ -48,8 +44,8 @@ abstract class H2DaoTasksV0
     private final Function<Task, Params> taskToParamsConversion;
     private final RowConversion<LocalDateTime> rowToTimeConversion;
     
-    H2DaoTasksV0(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);        
+    H2DaoTasksV0(DataBase dataBase) {
+        super(dataBase);        
         this.taskToParamsConversion = (task) -> {            
             return params(
                     task.time(), 
@@ -71,8 +67,7 @@ abstract class H2DaoTasksV0
     }
 
     @Override
-    public Optional<LocalDateTime> getTimeOfFirstActiveTask(
-            Initiator initiator) {
+    public Optional<LocalDateTime> getTimeOfFirstActiveTask() throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRow(
@@ -81,15 +76,14 @@ abstract class H2DaoTasksV0
                             "FROM tasks " +
                             "WHERE status IS TRUE");
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return Optional.empty();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public List<Task> getActiveTasksOfTypeBetweenDates(
-            Initiator initiator, LocalDateTime from, LocalDateTime to, TaskRepeat... types) {
+            LocalDateTime from, LocalDateTime to, TaskRepeat... types) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
@@ -103,15 +97,13 @@ abstract class H2DaoTasksV0
                             types, from, to)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<Task> getActiveTasksBeforeTime(
-            Initiator initiator, LocalDateTime tillNow) {
+    public List<Task> getActiveTasksBeforeTime(LocalDateTime tillNow) 
+            throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndStreamVarargParams(
@@ -122,15 +114,12 @@ abstract class H2DaoTasksV0
                             tillNow)
                     .collect(toList());
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return emptyList();
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean updateTasks(
-            Initiator initiator, List<Task> tasks) {
+    public boolean updateTasks(List<Task> tasks) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int[] updated = transact
@@ -152,9 +141,7 @@ abstract class H2DaoTasksV0
             
             return isOk;
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
     
@@ -166,8 +153,7 @@ abstract class H2DaoTasksV0
     }
 
     @Override
-    public boolean saveTask(
-            Initiator initiator, Task task) {
+    public boolean saveTask(Task task) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int updated = transact
@@ -185,15 +171,12 @@ abstract class H2DaoTasksV0
             
             return ( updated == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean deleteTaskById(
-            Initiator initiator, int id) {
+    public boolean deleteTaskById(int id) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int removed = transact
@@ -206,15 +189,12 @@ abstract class H2DaoTasksV0
             
             return ( removed == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return false;
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean editTaskText(
-            Initiator initiator, int taskId, List<String> newText) {
+    public boolean editTaskText(int taskId, List<String> newText) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int updated = transact
@@ -228,15 +208,12 @@ abstract class H2DaoTasksV0
             
             return ( updated == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return false;
+            throw super.logAndWrap(e);
         }        
     }
 
     @Override
-    public boolean editTaskTime(
-            Initiator initiator, int taskId, LocalDateTime newTime) {
+    public boolean editTaskTime(int taskId, LocalDateTime newTime) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int updated = transact
@@ -250,15 +227,14 @@ abstract class H2DaoTasksV0
             
             return ( updated == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return false;
+            throw super.logAndWrap(e);
         }  
     }
 
     @Override
     public boolean editTaskTime(
-            Initiator initiator, int taskId, LocalDateTime newTime, AllowedTimePeriod timePeriod) {
+            int taskId, LocalDateTime newTime, AllowedTimePeriod timePeriod) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             String days = timePeriod.stringifyDays();
             String hours = timePeriod.stringifyHours();
@@ -276,9 +252,7 @@ abstract class H2DaoTasksV0
             
             return ( updated == 1 );
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            
-            return false;
+            throw super.logAndWrap(e);
         }  
     }
 }

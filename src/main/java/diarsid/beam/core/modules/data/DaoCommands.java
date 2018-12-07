@@ -8,58 +8,73 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.data.DataExtractionException;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoCommands {
+public interface DaoCommands extends Dao {
     
     Optional<InvocationCommand> getByExactOriginalAndType(
-            Initiator initiator, String original, CommandType type);
+            String original, CommandType type) 
+            throws DataExtractionException;
     
     List<InvocationCommand> getByExactOriginalOfAnyType(
-            Initiator initiator, String original);
+            String original) 
+            throws DataExtractionException;
     
     List<InvocationCommand> searchInOriginalByPattern(
-            Initiator initiator, String pattern);
+            String pattern) 
+            throws DataExtractionException;
     
     List<InvocationCommand> searchInOriginalByPatternAndType(
-            Initiator initiator, String pattern, CommandType type);
+            String pattern, CommandType type) 
+            throws DataExtractionException;
     
     List<InvocationCommand> searchInExtendedByPattern(
-            Initiator initiator, String pattern);
+            String pattern) 
+            throws DataExtractionException;
     
     List<InvocationCommand> searchInExtendedByPatternAndType(
-            Initiator initiator, String pattern, CommandType type);
+            String pattern, CommandType type) 
+            throws DataExtractionException;
     
     List<InvocationCommand> searchInExtendedByPatternGroupByExtended(
-            Initiator initiator, String pattern);
+            String pattern) 
+            throws DataExtractionException;
     
     List<InvocationCommand> searchInExtendedByPatternAndTypeGroupByExtended(
-            Initiator initiator, String pattern, CommandType type);
+            String pattern, CommandType type) 
+            throws DataExtractionException;
     
     boolean save(
-            Initiator initiator, InvocationCommand command);
+            InvocationCommand command) 
+            throws DataExtractionException;
     
     boolean save(
-            Initiator initiator, List<? extends InvocationCommand> commands);
+            List<? extends InvocationCommand> commands) 
+            throws DataExtractionException;
     
     boolean delete(
-            Initiator initiator, InvocationCommand command);
+            InvocationCommand command) 
+            throws DataExtractionException;
     
     boolean deleteByExactOriginalOfAllTypes(
-            Initiator initiator, String original);
+            String original) 
+            throws DataExtractionException;
     
     boolean deleteByExactExtendedOfType(
-            Initiator initiator, String extended, CommandType type);
+            String extended, CommandType type) 
+            throws DataExtractionException;
     
     boolean deleteByExactOriginalOfType(
-            Initiator initiator, String original, CommandType type);
+            String original, CommandType type) 
+            throws DataExtractionException;
     
     boolean deleteByPrefixInExtended(
-            Initiator initiator, String prefixInExtended, CommandType type);
+            String prefixInExtended, CommandType type) 
+            throws DataExtractionException;
 }

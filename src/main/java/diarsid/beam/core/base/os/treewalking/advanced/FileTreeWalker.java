@@ -22,7 +22,7 @@ import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
-import diarsid.beam.core.modules.data.DaoPatternChoices;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
 
 import static java.util.Objects.isNull;
 
@@ -54,7 +54,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     
     private final FolderTypeDetector folderTypeDetector;
     private final InnerIoEngine ioEngine;
-    private final Optional<DaoPatternChoices> daoPatternChoices;
+    private final Optional<ResponsiveDaoPatternChoices> daoPatternChoices;
     private final ThreadLocal<WalkState> localState;
     
     FileTreeWalker(
@@ -68,7 +68,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     
     FileTreeWalker(
             InnerIoEngine ioEngine, 
-            DaoPatternChoices daoPatternChoices, 
+            ResponsiveDaoPatternChoices daoPatternChoices, 
             FolderTypeDetector folderTypeDetector) {
         this.folderTypeDetector = folderTypeDetector;
         this.ioEngine = ioEngine;
@@ -319,16 +319,18 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         }
         
         String bestVariant = weightedVariants.best().text();
+        WalkState state = this.state();
         return this.daoPatternChoices
                 .get()
-                .hasMatchOf(this.state().pattern(), bestVariant, weightedVariants);
+                .hasMatchOf(state.initiator(), state.pattern(), bestVariant, weightedVariants);
     }
     
     private void asyncTryToSaveChoiceFrom(
             String pattern, String choice, WeightedVariants weightedVariants) {
         if ( this.daoPatternChoices.isPresent() ) {
+            Initiator initiator = this.state().initiator();
             asyncDo(() -> {
-                this.daoPatternChoices.get().save(pattern, choice, weightedVariants);
+                this.daoPatternChoices.get().save(initiator, pattern, choice, weightedVariants);
             });
         }
     }

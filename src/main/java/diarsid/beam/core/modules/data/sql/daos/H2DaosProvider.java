@@ -7,11 +7,9 @@
 package diarsid.beam.core.modules.data.sql.daos;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
-import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
@@ -34,21 +32,20 @@ import static diarsid.beam.core.modules.data.sql.daos.DataAccessVersion.getDataA
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_BOOLEAN;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_FLOAT;
 
+import diarsid.beam.core.modules.data.DaoNamedRectangles;
+
 /**
  *
  * @author Diarsid
  */
 public class H2DaosProvider implements DaosProvider {
     
-    private final IoModule ioModule;
     private final DataBase dataBase;
     private final ApplicationComponentsHolderModule components;
     private final DataAccessVersion dataAccessVersion;
     
-    public H2DaosProvider(
-            DataBase dataBase, IoModule ioModule, ApplicationComponentsHolderModule components) {
+    public H2DaosProvider(DataBase dataBase, ApplicationComponentsHolderModule components) {
         this.dataBase = dataBase;
-        this.ioModule = ioModule;
         this.components = components;
         this.dataAccessVersion = getDataAccessVersion(components.configuration());
     }
@@ -61,8 +58,8 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoLocations createDaoLocations() {
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoLocationsV1(this.dataBase, this.ioModule.getInnerIoEngine());
-            case V2 : return new H2DaoLocationsV2(this.dataBase, this.ioModule.getInnerIoEngine());
+            case V1 : return new H2DaoLocationsV1(this.dataBase);
+            case V2 : return new H2DaoLocationsV2(this.dataBase);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoLocations.class);
             }
@@ -72,8 +69,8 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoBatches createDaoBatches() {
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoBatchesV1(this.dataBase, this.ioModule.getInnerIoEngine());
-            case V2 : return new H2DaoBatchesV2(this.dataBase, this.ioModule.getInnerIoEngine());
+            case V1 : return new H2DaoBatchesV1(this.dataBase);
+            case V2 : return new H2DaoBatchesV2(this.dataBase);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoBatches.class);
             }
@@ -82,11 +79,10 @@ public class H2DaosProvider implements DaosProvider {
 
     @Override
     public DaoNamedEntities createDaoNamedEntities() {
-        InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
         ProgramsCatalog programsCatalog = this.components.programsCatalog();
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoNamedEntitiesV1(this.dataBase, ioEngine, programsCatalog);
-            case V2 : return new H2DaoNamedEntitiesV2(this.dataBase, ioEngine, programsCatalog);
+            case V1 : return new H2DaoNamedEntitiesV1(this.dataBase, programsCatalog);
+            case V2 : return new H2DaoNamedEntitiesV2(this.dataBase, programsCatalog);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoNamedEntities.class);
             }
@@ -96,8 +92,8 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoCommands createDaoCommands() {
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoCommandsV1(this.dataBase, this.ioModule.getInnerIoEngine());
-            case V2 : return new H2DaoCommandsV2(this.dataBase, this.ioModule.getInnerIoEngine());
+            case V1 : return new H2DaoCommandsV1(this.dataBase);
+            case V2 : return new H2DaoCommandsV2(this.dataBase);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoCommands.class);
             }
@@ -106,19 +102,19 @@ public class H2DaosProvider implements DaosProvider {
     
     @Override
     public DaoPatternChoices createDaoPatternChoices() {
-        return new H2DaoPatternChoices(this.dataBase, this.ioModule.getInnerIoEngine());
+        return new H2DaoPatternChoices(this.dataBase);
     }
 
     @Override
     public DaoKeyValueStorage createDaoKeyValueStorage() {
-        return new H2DaoKeyValueStorage(this.dataBase, this.ioModule.getInnerIoEngine());
+        return new H2DaoKeyValueStorage(this.dataBase);
     }
     
     @Override
     public DaoTasks createDaoTasks() {
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoTasksV1(this.dataBase, this.ioModule.getInnerIoEngine());
-            case V2 : return new H2DaoTasksV2(this.dataBase, this.ioModule.getInnerIoEngine());
+            case V1 : return new H2DaoTasksV1(this.dataBase);
+            case V2 : return new H2DaoTasksV2(this.dataBase);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoTasks.class);
             }
@@ -128,14 +124,14 @@ public class H2DaosProvider implements DaosProvider {
 
     @Override
     public DaoWebDirectories createDaoWebDirectories() {
-        return new H2DaoWebDirectories(this.dataBase, this.ioModule.getInnerIoEngine());
+        return new H2DaoWebDirectories(this.dataBase);
     }
 
     @Override
     public DaoWebPages createDaoWebPages() {
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoWebPagesV1(this.dataBase, this.ioModule.getInnerIoEngine());
-            case V2 : return new H2DaoWebPagesV2(this.dataBase, this.ioModule.getInnerIoEngine());
+            case V1 : return new H2DaoWebPagesV1(this.dataBase);
+            case V2 : return new H2DaoWebPagesV2(this.dataBase);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoWebPages.class);
             }
@@ -144,16 +140,16 @@ public class H2DaosProvider implements DaosProvider {
     
     @Override
     public DaoPictures createDaoImages() {
-        return new H2DaoPictures(this.dataBase, this.ioModule.getInnerIoEngine());
+        return new H2DaoPictures(this.dataBase);
     }
     
     @Override
     public DaoLocationSubPaths createDaoLocationSubPaths() {
         switch ( this.dataAccessVersion ) {
             case V1 : return new H2DaoLocationSubPathsV1(
-                    this.dataBase, this.ioModule.getInnerIoEngine());
+                    this.dataBase);
             case V2 : return new H2DaoLocationSubPathsV2(
-                    this.dataBase, this.ioModule.getInnerIoEngine());
+                    this.dataBase);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoLocationSubPaths.class);
             }
@@ -162,14 +158,13 @@ public class H2DaosProvider implements DaosProvider {
 
     @Override
     public DaoLocationSubPathChoices createDaoLocationSubPathChoices() {
-        return new H2DaoLocationSubPathChoices(this.dataBase, this.ioModule.getInnerIoEngine());
+        return new H2DaoLocationSubPathChoices(this.dataBase);
     }  
 
     @Override
     public DaoPersistableCacheData<Float> createDaoWeightCache() {
         return new H2DaoPersistableCacheData<>(
                 this.dataBase, 
-                this.ioModule.getInnerIoEngine(), 
                 "weight_cache", 
                 "weight", 
                 Float.class, 
@@ -181,11 +176,15 @@ public class H2DaosProvider implements DaosProvider {
     public DaoPersistableCacheData<Boolean> createDaoSimilarityCache() {
         return new H2DaoPersistableCacheData<>(
                 this.dataBase, 
-                this.ioModule.getInnerIoEngine(), 
                 "similarity_cache", 
                 "isSimilar", 
                 Boolean.class, 
                 "similarity cache",
                 ROW_TO_CACHED_BOOLEAN);
+    }
+
+    @Override
+    public DaoNamedRectangles persistablePositions() {
+        return new H2DaoNamedRectangles(this.dataBase);
     }
 }

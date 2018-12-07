@@ -7,39 +7,41 @@ package diarsid.beam.core.modules.data;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Location;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoLocations {
+public interface DaoLocations extends Dao {
     
-    boolean isNameFree(Initiator initiator, String exactName);
+    boolean isNameFree(
+            String exactName) throws DataExtractionException;
     
-    Optional<Location> getLocationByExactName(Initiator initiator, String exactName);
+    Optional<Location> getLocationByExactName(
+            String exactName) throws DataExtractionException;
     
-    Optional<Location> getLocationByPath(Initiator initiator, String path);
+    Optional<Location> getLocationByPath(
+            String path) throws DataExtractionException;
     
     List<Location> getLocationsByNamePattern(
-            Initiator initiator, String locationName);
+            String locationName) throws DataExtractionException;
     
     boolean saveNewLocation(
-            Initiator initiator, Location location);
+            Location location) throws DataExtractionException;
     
     boolean removeLocation(
-            Initiator initiator, String locationName);
+            String locationName) throws DataExtractionException;
     
     boolean editLocationPath(
-            Initiator initiator, String locationName, String newPath);
+            String locationName, String newPath) throws DataExtractionException;
     
     boolean editLocationName(
-            Initiator initiator, String locationName, String newName);
+            String locationName, String newName) throws DataExtractionException;
     
     boolean replaceInPaths(
-            Initiator initiator, String replaceable, String replacement);
+            String replaceable, String replacement) throws DataExtractionException;
             
-    List<Location> getAllLocations(
-            Initiator initiator);
+    List<Location> getAllLocations() throws DataExtractionException;
 }

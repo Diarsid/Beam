@@ -12,6 +12,7 @@ import static java.util.Arrays.stream;
  * @author Diarsid
  */
 public enum FlowResult {
+    
     COMPLETE,
     FAIL,
     STOP;

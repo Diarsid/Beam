@@ -17,11 +17,12 @@ import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.domain.entities.LocationSubPath;
-import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
-import diarsid.beam.core.modules.data.DaoLocationSubPaths;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPathChoices;
+import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPaths;
 
 import static java.util.stream.Collectors.toList;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isVariantSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
@@ -33,20 +34,19 @@ import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isVariantSatisfiable;
 
 
 class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
 
-    private final DaoLocationSubPaths daoSubPaths;
-    private final DaoLocationSubPathChoices daoSubPathChoices;
+    private final ResponsiveDaoLocationSubPaths daoSubPaths;
+    private final ResponsiveDaoLocationSubPathChoices daoSubPathChoices;
     private final InnerIoEngine ioEngine;
     private final Help getOneSubPathHelp;
     private final Help chooseOneSubPathHelp;
     
     LocationSubPathKeeperWorker(
-            DaoLocationSubPaths daoSubPaths,
-            DaoLocationSubPathChoices daoSubPathChoices,
+            ResponsiveDaoLocationSubPaths daoSubPaths,
+            ResponsiveDaoLocationSubPathChoices daoSubPathChoices,
             InnerIoEngine ioEngine) {        
         this.daoSubPaths = daoSubPaths;
         this.daoSubPathChoices = daoSubPathChoices;

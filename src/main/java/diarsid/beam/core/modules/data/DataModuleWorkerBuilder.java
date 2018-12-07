@@ -8,6 +8,8 @@ package diarsid.beam.core.modules.data;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataBaseActuationException;
 import diarsid.beam.core.base.data.DataBaseActuator;
@@ -15,7 +17,6 @@ import diarsid.beam.core.base.data.DataBaseModel;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
-import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.data.sql.daos.H2DaosProvider;
 import diarsid.beam.core.modules.data.sql.database.H2DataBase;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
@@ -25,10 +26,7 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.Beam.systemInitiator;
-import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
-import static diarsid.beam.core.base.events.BeamEventRuntime.subscribeOnRequestsForPayloadOf;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.support.log.Logging.logFor;
 
@@ -39,13 +37,10 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
-    private final IoModule ioModule;
     private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
     
     public DataModuleWorkerBuilder(
-            ApplicationComponentsHolderModule applicationComponentsHolderModule,
-            IoModule ioModule) {
-        this.ioModule = ioModule;
+            ApplicationComponentsHolderModule applicationComponentsHolderModule) {
         this.applicationComponentsHolderModule = applicationComponentsHolderModule;
     }
 
@@ -60,10 +55,8 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         this.actuateDataBase(dataBase, dataBaseModel);
         
         DaosProvider daosProvider = new H2DaosProvider(
-                dataBase, this.ioModule, this.applicationComponentsHolderModule);
+                dataBase, this.applicationComponentsHolderModule);
         DataModule dataModule = new DataModuleWorker(dataBase, daosProvider);
-        
-        subscribeOnRequestsForPayloadOf(DataModule.class, () -> dataModule);
         
         return dataModule;
     }
@@ -72,13 +65,9 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         try {
             Class.forName(driverClassName);
         } catch (Exception e) {
-            logFor(this).error("cannot load Driver: " + driverClassName, e);
-            this.ioModule
-                    .getInnerIoEngine()
-                    .reportAndExitLater(
-                            systemInitiator(), 
-                            format("Cannot load %s JDBC driver.", driverClassName));
-            throw new ModuleInitializationException();
+            String message = format("Cannot load %s JDBC driver.", driverClassName);
+            logFor(this).error(message, e);
+            throw new ModuleInitializationException(message);
         }
     }
     
@@ -88,16 +77,12 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
             List<String> reports = actuator.actuateAndGetReport();
             
             if ( nonEmpty(reports) ) {
-                this.ioModule
-                        .getInnerIoEngine()
-                        .reportMessage(systemInitiator(), info(reports));
+                Logger logger = logFor(this);
+                reports.forEach(report -> logger.info(report));
             }
-        } catch (DataBaseActuationException ex) {
-            this.ioModule
-                    .getInnerIoEngine()
-                    .reportAndExitLater(
-                            systemInitiator(), ex.getMessage());
-            throw new ModuleInitializationException();
+        } catch (DataBaseActuationException e) {
+            logFor(this).error(e.getMessage(), e);
+            throw new ModuleInitializationException(e.getMessage());
         }
     }
 }

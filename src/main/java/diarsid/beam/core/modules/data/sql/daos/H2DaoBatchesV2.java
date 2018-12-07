@@ -7,19 +7,16 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.List;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.base.data.util.SqlPatternSelect;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.support.objects.Pools.takeFromPool;
 
@@ -29,12 +26,12 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 class H2DaoBatchesV2 extends H2DaoBatchesV0 {
     
-    H2DaoBatchesV2(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoBatchesV2(DataBase dataBase) {
+        super(dataBase);
     }
 
     @Override
-    public List<String> getBatchNamesByNamePattern(Initiator initiator, String pattern) {
+    public List<String> getBatchNamesByNamePattern(String pattern) throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
                 SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
@@ -92,10 +89,7 @@ class H2DaoBatchesV2 extends H2DaoBatchesV0 {
             return found;
             
         } catch (TransactionHandledException | TransactionHandledSQLException ex) {
-            logFor(this).error("error on batch search " + pattern, ex);
-            super.ioEngine().report(
-                    initiator, "batches search '" + pattern + "' failed.");
-            return emptyList();
+            throw super.logAndWrap(ex);
         }
     }
 }

@@ -9,22 +9,35 @@ import java.util.Optional;
 
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
+import diarsid.beam.core.base.data.DataExtractionException;
 
 /**
  *
  * @author Diarsid
  */
-public interface DaoPatternChoices {
+public interface DaoPatternChoices extends Dao {
     
-    boolean hasMatchOf(String original, String extended, WeightedVariants variants);
+    boolean hasMatchOf(
+            String original, String extended, WeightedVariants variants) 
+            throws DataExtractionException;
     
-    Optional<String> findChoiceFor(String original, WeightedVariants variants);
+    Optional<String> findChoiceFor(
+            String original, WeightedVariants variants)
+            throws DataExtractionException;
     
-    boolean save(String original, String extended, WeightedVariants variants);
+    boolean save(
+            String original, String extended, WeightedVariants variants)
+            throws DataExtractionException;
     
-    boolean save(InvocationCommand command, WeightedVariants variants);
+    boolean save(
+            InvocationCommand command, WeightedVariants variants)
+            throws DataExtractionException;
     
-    boolean delete(String original);
+    boolean delete(
+            String original)
+            throws DataExtractionException;
     
-    boolean delete(InvocationCommand command);
+    boolean delete(
+            InvocationCommand command)
+            throws DataExtractionException;
 }

@@ -13,13 +13,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchedCommand;
-import diarsid.beam.core.modules.data.BeamCommonDao;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
@@ -28,13 +26,11 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.mergeInMapWithArrayLists;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_EXECUTOR_COMMAND;
 import static diarsid.jdbc.transactions.core.Params.params;
@@ -48,8 +44,8 @@ abstract class H2DaoBatchesV0
     private final Function<BatchedCommand, Params> batchedCommandToParams;
     private final Function<Map.Entry<String, List<ExecutorCommand>>, Batch> entryToBatch;
     
-    H2DaoBatchesV0(DataBase dataBase, InnerIoEngine ioEngine) {
-        super(dataBase, ioEngine);
+    H2DaoBatchesV0(DataBase dataBase) {
+        super(dataBase);
         this.rowToBatchNameConversion = (row) -> {
             return (String) row.get("bat_name");
         };
@@ -71,7 +67,7 @@ abstract class H2DaoBatchesV0
     }
 
     @Override
-    public boolean isNameFree(Initiator initiator, String exactName) {
+    public boolean isNameFree(String exactName) throws DataExtractionException {
         try {
             return ! super.openDisposableTransaction()
                     .doesQueryHaveResultsVarargParams(
@@ -79,15 +75,13 @@ abstract class H2DaoBatchesV0
                             "FROM batches " +
                             "WHERE LOWER(bat_name) IS ? ",
                             lower(exactName));
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "is name free request failed.");
-            return false;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
     
     @Override
-    public Optional<Batch> getBatchByExactName(Initiator initiator, String name) {
+    public Optional<Batch> getBatchByExactName(String name) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean batchExists = transact
@@ -114,16 +108,13 @@ abstract class H2DaoBatchesV0
             } else {
                 return Optional.empty();
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, "batch obtaining by name '" + name + "' failed.");
-            return Optional.empty();
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean saveBatch(Initiator initiator, Batch batch) {        
+    public boolean saveBatch(Batch batch) throws DataExtractionException {        
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean nameIsFree = ! transact
@@ -161,15 +152,13 @@ abstract class H2DaoBatchesV0
                     nameSavedCount == 1 && 
                     commandSavedCount == batch.batchedCommands().size() );
             
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "batch saving failed.");
-            return false;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean removeBatch(Initiator initiator, String batchName) {
+    public boolean removeBatch(String batchName) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             boolean batchExists = transact
@@ -204,15 +193,13 @@ abstract class H2DaoBatchesV0
                 transact.rollbackAndProceed();
                 return false;
             }
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "batch removing failed.");
-            return false;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public boolean editBatchName(Initiator initiator, String batchName, String newName) {
+    public boolean editBatchName(String batchName, String newName) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             int updatedNameQty = transact
@@ -235,18 +222,14 @@ abstract class H2DaoBatchesV0
                     .rollbackAndProceed();
             
             return ( updatedNameQty == 1 && updatedCommands > 0 );
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(
-                    initiator, 
-                    "batch name changing: " + batchName + " -> " + newName + " failed.");
-            return false;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public boolean editBatchCommands(
-            Initiator initiator, String batchName, List<ExecutorCommand> newCommands) {
+            String batchName, List<ExecutorCommand> newCommands) throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
             if ( newCommands.isEmpty() ) {
@@ -287,16 +270,15 @@ abstract class H2DaoBatchesV0
             return ( 
                     oldCommandsRemoved && 
                     modified == newCommands.size() );
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "batch commands changing failed.");
-            return false;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
     public boolean editBatchOneCommand(
-            Initiator initiator, String batchName, int commandOrder, ExecutorCommand newCommand) {
+            String batchName, int commandOrder, ExecutorCommand newCommand) 
+            throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             int modified = transact
                     .doUpdateVarargParams(
@@ -315,15 +297,13 @@ abstract class H2DaoBatchesV0
                     .rollbackAndProceed();
             
             return ( modified == 1 );
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "batch one command changing failed.");
-            return false;
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 
     @Override
-    public List<Batch> getAllBatches(Initiator initiator) {
+    public List<Batch> getAllBatches() throws DataExtractionException {
         try {
             Map<String, List<ExecutorCommand>> collectedBatches = new HashMap<>();
             
@@ -346,10 +326,8 @@ abstract class H2DaoBatchesV0
                     .map(this.entryToBatch)
                     .collect(toList());
             
-        } catch (TransactionHandledSQLException|TransactionHandledException e) {
-            logFor(this).error(e.getMessage(), e);
-            super.ioEngine().report(initiator, "all batches obtaining failed.");
-            return emptyList();
+        } catch (TransactionHandledSQLException | TransactionHandledException e) {
+            throw super.logAndWrap(e);
         }
     }
 }
