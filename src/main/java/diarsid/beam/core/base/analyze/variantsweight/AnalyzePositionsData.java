@@ -219,6 +219,8 @@ class AnalyzePositionsData {
                         
                         if ( this.prevCharIsSeparator && this.nextCharIsSeparator ) {
                             this.doWhenNextAndPreviousCharsAreSeparators();
+                            this.clustered++;
+                            this.nonClustered--;
                         } else if ( this.prevCharIsSeparator ) {
                             this.doWhenOnlyPreviousCharacterIsSeparator();
                         } else if ( this.nextCharIsSeparator ) {
@@ -238,6 +240,8 @@ class AnalyzePositionsData {
                         
                         if ( this.prevCharIsSeparator && this.nextCharIsSeparator ) {
                             this.doWhenNextAndPreviousCharsAreSeparators();
+                            this.clustered++;
+                            this.nonClustered--;
                         } else if ( this.prevCharIsSeparator ) {
                             this.doWhenOnlyPreviousCharacterIsSeparator();
                         } else if ( this.nextCharIsSeparator ) {

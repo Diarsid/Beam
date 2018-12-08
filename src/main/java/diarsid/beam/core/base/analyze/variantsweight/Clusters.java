@@ -386,11 +386,9 @@ class Clusters implements StatefulClearable {
                     /* no many-as-one clusters */
                     if ( this.isEveryClusterMeansEveryPathElement() ) {
                         if ( this.isClusteredPartFormingMajority() ) {
-//                            this.placingBonusNoMoreThanPercent(65);
-//                            this.manyMajorClosierToEndAreBetter();
+                           this.placingBonusOf(60, "every cluster means every path element, majority");
                         } else {
-//                            this.placingBonusNoMoreThanPercent(50);
-//                            this.manyClosierToEndAreBetter();
+                           this.placingBonusOf(50, "every cluster means every path element");
                         }
                     } else if ( this.areClustersAtFirstAndLastPathElement() ) {
                         if ( this.isFirstClusterStartsWithSeparator() ) {
@@ -575,17 +573,35 @@ class Clusters implements StatefulClearable {
     }
     
     private boolean isEveryClusterMeansEveryPathElement() {
+        if ( this.data.variantPathSeparators.isEmpty() ) {
+            return false;
+        }
+        if ( this.quantity() < 2 ) {
+            return false;
+        }
         if ( this.quantity() != this.data.variantPathSeparators.size() + 1 ) {
             return false;
         }
         
         TreeSet<Integer> pathSeparators = this.data.variantPathSeparators;
         Integer nextSeparatorPosition = pathSeparators.first();
-        for (Cluster cluster : this.clusters) {
-            if ( cluster.lastPosition() < nextSeparatorPosition ) {
+        
+        Cluster clusterPrev;
+        Cluster clusterNext;
+        boolean clustersSeparated;
+        
+        for (int i = 0; i < this.clusters.size() - 1; i++) {
+            clusterPrev = this.clusters.get(i);
+            clusterNext = this.clusters.get(i + 1);
+            
+            clustersSeparated = 
+                    clusterPrev.lastPosition() < nextSeparatorPosition &&
+                    clusterNext.firstPosition() > nextSeparatorPosition;
+            
+            if ( clustersSeparated ) {
                 nextSeparatorPosition = pathSeparators.higher(nextSeparatorPosition);
                 if ( isNull(nextSeparatorPosition) ) {
-                    return this.isPenultimate(cluster);
+                    return this.lastCluster().equals(clusterNext);
                 } 
             } else {
                 return false;

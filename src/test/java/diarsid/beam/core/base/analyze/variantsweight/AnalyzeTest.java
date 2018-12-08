@@ -1345,10 +1345,10 @@ public class AnalyzeTest {
                 "ababbacca/ABC_abbac_xyyxzyyxz_XYZ_zx",
                 "abbac_xyyxzyyxz_zx/ABC_ba_XYZ_baccaba",
                 "abbac_xyyxzyyxz_zx/caba_ABC_ba_XYZ_bac",
+                "ABC_ababbacca/abbac_xyyxzyyxz_XYZ_zx",
                 "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",
                 "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",
                 "ABC_bbacbacacaba_XYZ_b/a_xyyxzyyxz_zx",
-                "ABC_ababbacca/abbac_xyyxzyyxz_XYZ_zx",
                 "ababbacca/ABC_abbac_xyyxzyyxz_XYZzx",
                 "ababbacca/ABC_abbac_xyyxzyyxzXYZzx",
                 "ababbacca/ABCabbac_xyyxzyyxzXYZzx",
@@ -1358,7 +1358,7 @@ public class AnalyzeTest {
         expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
-    }    
+    }  
     
     @Test
     public void test_synthetic_5() {
@@ -1408,7 +1408,7 @@ public class AnalyzeTest {
         
         variants = asList(
                 "aaa_ABC/dd_xyz_x/ff_qwe_xy",
-                "abbac_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba"
+                "abbac_qwe_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba"
         );
         
         expectedSameOrderAsVariants();
