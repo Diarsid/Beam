@@ -535,17 +535,21 @@ class AnalyzePositionsData {
                         nearestPositionInVariant = currentPatternCharPositionInVariant + 1;
                     }
                 }
+                
                 if ( findPositionsStep.typoSearchingAllowed() ) {
-                    int typosFound = 0;
+                    int typosFound = 0;                    
+                    boolean distanceOneTypoFound = false;
+                    
                     if ( hasPreviousInPattern && hasNextInVariant ) {
-
+                        
                         previousCharInPattern = data.patternChars[currentPatternCharIndex - 1];
                         nextCharInVariant = data.variantText.charAt(currentPatternCharPositionInVariant + 1);
-
+                        
                         if ( previousCharInPattern == nextCharInVariant ) {
                             logAnalyze(POSITIONS_SEARCH, "          [info] typo found '%s'(%s in variant) - '%s' is previous in pattern and next in variant", 
                                     currentChar, currentPatternCharPositionInVariant, nextCharInVariant);
                             typosFound++;
+                            distanceOneTypoFound = true;
                             nearestPositionInVariant = currentPatternCharPositionInVariant + 1;
                         }
                     }
@@ -559,8 +563,41 @@ class AnalyzePositionsData {
                                 logAnalyze(POSITIONS_SEARCH, "          [info] typo found '%s'(%s in variant) - '%s' is next in pattern and previous in variant", 
                                         currentChar, currentPatternCharPositionInVariant, nextCharInPattern);
                                 typosFound++;
+                                distanceOneTypoFound = true;
                                 nearestPositionInVariant = currentPatternCharPositionInVariant - 1;
                             }                            
+                        }
+                    }
+                    
+                    if ( ! distanceOneTypoFound ) {
+                        if ( hasNextInPattern && hasNextInVariant ) {
+                            nextCharInPattern = data.patternChars[currentPatternCharIndex + 1];
+                            // if there are at least two characters ahead in variant...
+                            if ( data.variantText.length() - currentPatternCharPositionInVariant > 2 ) {
+                                int nextNextPosition = currentPatternCharPositionInVariant + 2;
+                                if ( ! data.variantSeparators.contains(nextNextPosition - 1) ) {
+                                    if ( filledPositions.contains(nextNextPosition) ) {
+                                        if ( nextCharInPattern == data.variantText.charAt(nextNextPosition) ) {
+                                            typosFound++;
+                                            nearestPositionInVariant = nextNextPosition;
+                                        }
+                                    }  
+                                }                                                              
+                            }
+                        } else if ( hasPreviousInPattern && hasPreviousInVariant ) {
+                            previousCharInPattern = data.patternChars[currentPatternCharIndex - 1];
+                            // if there are at least two characters behind in variant...
+                            if ( currentPatternCharPositionInVariant > 1 ) {
+                                int prevPrevPosition = currentPatternCharPositionInVariant - 2;
+                                if ( ! data.variantSeparators.contains(prevPrevPosition + 1) ) {
+                                    if ( filledPositions.contains(prevPrevPosition) ) {
+                                        if ( previousCharInPattern == data.variantText.charAt(prevPrevPosition) ) {
+                                            typosFound++;
+                                            nearestPositionInVariant = prevPrevPosition;
+                                        }
+                                    } 
+                                }                                                               
+                            }
                         }
                     }
                     
@@ -725,7 +762,7 @@ class AnalyzePositionsData {
             positions[currentPatternCharIndex] = position;
             positionPatternIndexes.put(position, currentPatternCharIndex);
             filledPositions.add(position);
-            logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant)", currentChar, position);
+            logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant), %s", currentChar, position, positionCandidate);
             logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
             logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
         }

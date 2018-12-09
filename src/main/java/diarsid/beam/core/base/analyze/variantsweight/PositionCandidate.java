@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
+import static java.lang.String.format;
+
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_SEARCH;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
@@ -218,4 +220,15 @@ class PositionCandidate {
         this.mutationsAttempts = 0;
         this.mutationsCommitted = 0;
     }
+
+    @Override
+    public String toString() {
+        if ( this.position == UNINITIALIZED ) {
+            return "PositionCandidate[UNINITIALIZED]";
+        }
+        
+        return format("PositionCandidate[pos:%s clusteredAround:%s mutations:[attemtps:%s committed:%s] ]", 
+                      this.position, this.clusteredAround, this.mutationsAttempts, this.mutationsCommitted);
+    }
+    
 }

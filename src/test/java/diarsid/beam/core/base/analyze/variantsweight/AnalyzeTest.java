@@ -414,7 +414,8 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Content/WH/Game/The_9th_Age/Rosters"
+                "Content/WH/Game/The_9th_Age/Rosters",
+                "Music/2__Store/Therion"
         );
         
         weightVariantsAndCheckMatching();
@@ -794,10 +795,14 @@ public class AnalyzeTest {
         pattern = "jse8";
         
         variants = asList(               
-                "Java SE 8 API");
+                "Java SE 8 API",
+                "Job/Search"
+        );
         
         expected = asList( 
-                "Java SE 8 API");
+                "Java SE 8 API",
+                "Job/Search"
+        );
         
         weightVariantsAndCheckMatching();
     }
@@ -1144,6 +1149,24 @@ public class AnalyzeTest {
         expected = asList(            
                 "Job/Current/Hiring",
                 "Current_Job/Hiring/CVs/Java_Junior/hr"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_reactJsCase_jsract() {
+        
+        pattern = "jsract";
+        
+        variants = asList(            
+                "Java/Specifications/JPA_v.2.2_(JSR_318).pdf",
+                "Projects/Diarsid/WebStorm/React.js"
+        );
+        
+        expected = asList(            
+                "Projects/Diarsid/WebStorm/React.js",
+                "Java/Specifications/JPA_v.2.2_(JSR_318).pdf"
         );
         
         weightVariantsAndCheckMatching();

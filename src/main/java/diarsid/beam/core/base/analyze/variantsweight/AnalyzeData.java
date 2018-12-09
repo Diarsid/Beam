@@ -28,6 +28,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTo
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.BAD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimate;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimatePreliminarily;
+import static diarsid.beam.core.base.util.CollectionsUtils.isNotEmpty;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.isPathSeparator;
@@ -54,6 +55,7 @@ class AnalyzeData extends PooledReusable {
     WeightedVariant weightedVariant;
     
     private Variant variant;
+    TreeSet<Integer> variantSeparators;
     TreeSet<Integer> variantPathSeparators;
     TreeSet<Integer> variantTextSeparators;
     String variantText;
@@ -70,6 +72,7 @@ class AnalyzeData extends PooledReusable {
         super();
         this.forwardAnalyze = new AnalyzePositionsData(this, FORWARD);
         this.reverseAnalyze = new AnalyzePositionsData(this, REVERSE);
+        this.variantSeparators = new TreeSet<>();
         this.variantPathSeparators = new TreeSet<>();
         this.variantTextSeparators = new TreeSet<>();
         this.forwardAndReverseEqual = false;
@@ -102,6 +105,7 @@ class AnalyzeData extends PooledReusable {
         this.pattern = null;
         this.forwardAnalyze.clearPositionsAnalyze();
         this.reverseAnalyze.clearPositionsAnalyze();
+        this.variantSeparators.clear();
         this.variantPathSeparators.clear();
         this.variantTextSeparators.clear();
         this.best = null;
@@ -322,6 +326,12 @@ class AnalyzeData extends PooledReusable {
             if ( isTextSeparator(this.variantText.charAt(i)) ) {
                 this.variantTextSeparators.add(i);
             }
+        }
+        if ( isNotEmpty(this.variantPathSeparators) ) {
+            this.variantSeparators.addAll(this.variantPathSeparators);
+        }
+        if ( isNotEmpty(this.variantTextSeparators) ) {
+            this.variantSeparators.addAll(this.variantTextSeparators);
         }
     }
 

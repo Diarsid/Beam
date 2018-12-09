@@ -44,7 +44,8 @@ public class ResponsiveDaoPersistableCacheData<T>
             int algorithmVersion, 
             BiFunction<String, String, T> similarityAssessmentFunction) {
         try {
-            return super.dao().reassessAllHashesOlderThan(algorithmVersion, similarityAssessmentFunction);
+            return super.dao()
+                    .reassessAllHashesOlderThan(algorithmVersion, similarityAssessmentFunction);
         } catch (DataExtractionException e) {
             super.responseOn(initiator, e);
             return emptyMap();
