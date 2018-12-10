@@ -52,6 +52,7 @@ class H2DaoPersistableCacheData <T>
     private static final String SQL_TEMPLATE_SELECT_WHERE_HASH_IS;
     private static final String SQL_TEMPLATE_DELETE_WHERE_HASH_AND_UUID_ARE;
     private static final String SQL_UPDATE_CACHED_ALGORITHM_TIME_WHERE_UUID_IS;
+    private static final String SQL_MERGE_CACHED_UUID_VALUE_ALGORITHM_TIME;
     
     static {
         CACHE_TABLE = ":table";
@@ -108,6 +109,15 @@ class H2DaoPersistableCacheData <T>
                 "   algorithm_version = ?, " +
                 "   created = ? " + 
                 "WHERE uuid = ? ";
+        
+        SQL_MERGE_CACHED_UUID_VALUE_ALGORITHM_TIME = 
+                "MERGE INTO " + CACHE_TABLE + " ( " +
+                "   uuid, " + 
+                    CACHE_COLUMN + ", " +
+                "   algorithm_version, " +
+                "   created ) " +
+                "KEY (uuid) " +
+                "VALUES ( ?, ?, ?, ? )";
         
     }
     
@@ -181,6 +191,7 @@ class H2DaoPersistableCacheData <T>
     private final String sqlSelectWhereHashIs;
     private final String sqlDeleteWhereHashAndUuidAre;
     private final String sqlUpdateCachedAlgorithmTimeWhereUuidIs;
+    private final String sqlMergeCachedUuidValueAlgorithmTime;
     
     H2DaoPersistableCacheData(
             DataBase dataBase,
@@ -225,6 +236,7 @@ class H2DaoPersistableCacheData <T>
                         .replace(CACHE_TABLE, this.cacheDataTableName)
                         .replace(CACHE_COLUMN, this.cacheDataColumnName);
         
+        // reasses V1
         this.sqlSelectAllWithOlderAlgorithm = 
                 SQL_TEMPLATE_SELECT_WITH_ALGORITHM_OLDER_THAN
                         .replace(CACHE_TABLE, this.cacheDataTableName);
@@ -240,7 +252,13 @@ class H2DaoPersistableCacheData <T>
         this.sqlUpdateCachedAlgorithmTimeWhereUuidIs = 
                 SQL_UPDATE_CACHED_ALGORITHM_TIME_WHERE_UUID_IS
                         .replace(CACHE_TABLE, this.cacheDataTableName)
-                        .replace(CACHE_COLUMN, this.cacheDataColumnName);                
+                        .replace(CACHE_COLUMN, this.cacheDataColumnName);      
+        
+        // reassess V2
+        this.sqlMergeCachedUuidValueAlgorithmTime = 
+                SQL_MERGE_CACHED_UUID_VALUE_ALGORITHM_TIME
+                        .replace(CACHE_TABLE, this.cacheDataTableName)
+                        .replace(CACHE_COLUMN, this.cacheDataColumnName);   
                 
     }
 
@@ -350,6 +368,73 @@ class H2DaoPersistableCacheData <T>
             int algorithmVersion, BiFunction<String, String, T> analyzeFunction) 
             throws DataExtractionException {
         
+        return v2(algorithmVersion, analyzeFunction);
+    }
+    
+    private Map<Long, T> v2(
+            int algorithmVersion, BiFunction<String, String, T> analyzeFunction) 
+            throws DataExtractionException {
+        Map<Long, T> reassessedCachedHashes = new HashMap<>();
+        
+        logFor(this).info(format("try to reassess old cached data in %s", this.cacheName));
+        
+        synchronized ( this.similarityCacheLock ) {
+            List<Cached> cachedToReassess;
+            
+            try (JdbcTransaction transact = super.openTransaction()) {
+                
+                cachedToReassess = transact
+                        .doQueryAndStreamVarargParams(
+                                (row) -> {
+                                    Cached cached = new Cached();
+                                    cached.fillFrom(row);
+                                    return cached;
+                                }, 
+                                this.sqlSelectAllWithOlderAlgorithm, 
+                                algorithmVersion)
+                        .collect(toList());
+                
+            } catch (TransactionHandledSQLException | TransactionHandledException e) {
+                throw super.logAndWrap(e);
+            }
+            
+            LocalDateTime now = now();
+            Map<UUID, T> reassessedCachedValues = new HashMap<>();
+            T reassesedValue;
+            for (Cached cached : cachedToReassess) {
+                reassesedValue = analyzeFunction.apply(cached.target(), cached.pattern());
+                reassessedCachedValues.put(cached.uuid(), reassesedValue);
+                reassessedCachedHashes.put(cached.pairHash(), reassesedValue);
+            }
+            
+            logFor(this).info(format("%s old cached data reassessed in %s", 
+                                     reassessedCachedValues.size(), this.cacheName));
+            
+            Set<Params> params = reassessedCachedValues
+                    .entrySet()
+                    .stream()
+                    .map(entry -> params(entry.getKey(), entry.getValue(), algorithmVersion, now))
+                    .collect(toSet());
+            
+            try (JdbcTransaction transact = super.openTransaction()) {
+                
+                transact
+                        .doBatchUpdate(
+                                this.sqlMergeCachedUuidValueAlgorithmTime, 
+                                params);
+                
+            } catch (TransactionHandledSQLException | TransactionHandledException e) {
+                throw super.logAndWrap(e);
+            }
+            
+        }
+        
+        return reassessedCachedHashes;
+    }
+
+    private Map<Long, T> v1(
+            int algorithmVersion, BiFunction<String, String, T> analyzeFunction) 
+            throws DataExtractionException {
         Map<Long, T> reassessedCachHashes = new HashMap<>();
         
         Cached cached = new Cached();
@@ -387,7 +472,7 @@ class H2DaoPersistableCacheData <T>
                             .doesQueryHaveResultsVarargParams(
                                     this.sqlSelectWhereHashIs, 
                                     cached.pairHash());
-
+                    
                     if ( sameDataExist ) {                    
                         transact
                                 .doUpdateVarargParams(
@@ -404,7 +489,7 @@ class H2DaoPersistableCacheData <T>
                                     this.sqlUpdateCachedAlgorithmTimeWhereUuidIs, 
                                     newCachedValue, algorithmVersion, now, cached.uuid());
 
-                } catch(TransactionHandledSQLException|TransactionHandledException e) {
+                } catch (TransactionHandledSQLException | TransactionHandledException e) {
                     throw super.logAndWrap(e);
                 }
             }

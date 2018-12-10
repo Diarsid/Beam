@@ -137,13 +137,49 @@ class AnalyzeData extends PooledReusable {
             return;
         }
         if ( this.best.clustered > 0 ) {
-            if ( ratio(this.best.nonClustered, this.patternChars.length) > 0.4 ) {
-                this.best.badReason = "Too much unclustered positions";
-                return;
-            } else {
-                this.calculateAsUsualClusters();
-                this.calculatedAsUsualClusters = true;
-            }
+            switch ( this.pattern.length() ) {
+                case 0 : 
+                case 1 : {
+                    throw new IllegalStateException(
+                            "This analyze is not intended to process 0 or 1 length patterns!");
+                }
+                case 2 : {
+                    this.calculateAsUsualClusters();
+                    this.calculatedAsUsualClusters = true;
+                    break;
+                }
+                case 3 :
+                case 4 : {
+                    if ( this.best.missed == 0 && this.best.nonClustered > 2 ) {
+                        this.best.badReason = "Too much unclustered positions";
+                        return; 
+                    } else if ( this.best.missed == 1 && this.best.nonClustered > 1 ) {
+                        this.best.badReason = "Too much unclustered positions";
+                        return;
+                    } else if ( this.best.missed == 0 && this.best.nonClustered > 1 ) {
+                        if ( this.best.clustersFacingStartEdges > 0 ) {
+                            this.calculateAsUsualClusters();
+                            this.calculatedAsUsualClusters = true;
+                        } else {
+                            this.best.badReason = "Too much unclustered positions";
+                            return;
+                        }                        
+                    } else {
+                        this.calculateAsUsualClusters();
+                        this.calculatedAsUsualClusters = true;
+                    }
+                    break;
+                }
+                default: {
+                    if ( ratio(this.best.nonClustered, this.patternChars.length) > 0.4 ) {
+                        this.best.badReason = "Too much unclustered positions";
+                        return;
+                    } else {
+                        this.calculateAsUsualClusters();
+                        this.calculatedAsUsualClusters = true;
+                    }
+                }
+            }            
         } else {
             if ( this.best.unsortedPositions == 0 && this.best.missed == 0 ) {
                 this.calculateAsSeparatedCharsWithoutClusters();

@@ -17,6 +17,7 @@ import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
 import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.beam.core.modules.data.DaoLocations;
 import diarsid.beam.core.modules.data.DaoNamedEntities;
+import diarsid.beam.core.modules.data.DaoNamedRectangles;
 import diarsid.beam.core.modules.data.DaoPatternChoices;
 import diarsid.beam.core.modules.data.DaoPersistableCacheData;
 import diarsid.beam.core.modules.data.DaoPictures;
@@ -31,8 +32,6 @@ import static diarsid.beam.core.modules.data.sql.daos.DataAccessVersion.V1;
 import static diarsid.beam.core.modules.data.sql.daos.DataAccessVersion.getDataAccessVersion;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_BOOLEAN;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_FLOAT;
-
-import diarsid.beam.core.modules.data.DaoNamedRectangles;
 
 /**
  *
@@ -168,7 +167,7 @@ public class H2DaosProvider implements DaosProvider {
                 "weight_cache", 
                 "weight", 
                 Float.class, 
-                "variants weigth cache",
+                "variants weight cache",
                 ROW_TO_CACHED_FLOAT);
     }
 

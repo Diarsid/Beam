@@ -613,6 +613,19 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_sqlDeveloperCase_slde() {
+        pattern = "slde";
+        
+        variants = asList(
+                "Dev/Sql_Developer");
+        
+        expected = asList( 
+                "Dev/Sql_Developer");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_tolkienCase_tolknei() {
         pattern = "tolknei";
         
@@ -800,8 +813,7 @@ public class AnalyzeTest {
         );
         
         expected = asList( 
-                "Java SE 8 API",
-                "Job/Search"
+                "Java SE 8 API"
         );
         
         weightVariantsAndCheckMatching();
