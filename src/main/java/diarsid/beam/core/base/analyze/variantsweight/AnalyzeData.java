@@ -11,7 +11,6 @@ import diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.Analyz
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.support.objects.PooledReusable;
 
-import static java.lang.Math.pow;
 import static java.util.Arrays.fill;
 import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
@@ -30,7 +29,8 @@ import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estim
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimatePreliminarily;
 import static diarsid.beam.core.base.util.CollectionsUtils.isNotEmpty;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
-import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.indexOfIgnoreCase;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.lastIndexOfIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.isPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.isTextSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
@@ -60,6 +60,8 @@ class AnalyzeData extends PooledReusable {
     TreeSet<Integer> variantTextSeparators;
     String variantText;
     boolean variantEqualsToPattern;
+    boolean variantContainsPattern;
+    int patternInVariantIndex;
     
     double variantWeight;
     double lengthDelta;
@@ -82,20 +84,20 @@ class AnalyzeData extends PooledReusable {
         this.variant = variant;
         this.variantText = lower(variant.text());
         this.pattern = pattern;
-        this.variantEqualsToPattern = this.pattern.equalsIgnoreCase(this.variantText);
-        if ( this.variantEqualsToPattern ) {
-            this.variantWeight = -pow(this.variantText.length(), 5);
-            logAnalyze(BASE, "  variant is equal to pattern: weight %s", this.variantWeight);            
-        }
+        this.checkIfVariantEqualsToPatternAndAssignWeight();
     }
     
     void set(String pattern, String variantText) {
         this.variant = null;
         this.variantText = lower(variantText);
         this.pattern = pattern;
+        this.checkIfVariantEqualsToPatternAndAssignWeight();
+    }
+
+    private void checkIfVariantEqualsToPatternAndAssignWeight() {
         this.variantEqualsToPattern = this.pattern.equalsIgnoreCase(this.variantText);
         if ( this.variantEqualsToPattern ) {
-            this.variantWeight = -pow(this.variantText.length(), 5);
+            this.variantWeight = - this.variantText.length() * 1024;
             logAnalyze(BASE, "  variant is equal to pattern: weight %s", this.variantWeight);            
         }
     }
@@ -112,6 +114,8 @@ class AnalyzeData extends PooledReusable {
         this.variant = null;
         this.variantText = "";
         this.variantEqualsToPattern = false;
+        this.variantContainsPattern = false;
+        this.patternInVariantIndex = -1;
         this.variantWeight = 0;
         this.lengthDelta = 0;
         this.weightedVariant = null;
@@ -347,10 +351,12 @@ class AnalyzeData extends PooledReusable {
     }
 
     void checkIfVariantTextContainsPatternDirectly() {
-        if ( containsIgnoreCase(this.variantText, this.pattern) ) {
+        this.patternInVariantIndex = indexOfIgnoreCase(this.variantText, this.pattern);
+        if ( this.patternInVariantIndex >= 0 ) {
             double lengthRatio = patternLengthRatio(this.pattern);
             logAnalyze(BASE, "  variant contains pattern: weight -%s", lengthRatio);
             this.variantWeight = this.variantWeight - lengthRatio;
+            this.variantContainsPattern = true;
         }
     }
     
@@ -383,9 +389,20 @@ class AnalyzeData extends PooledReusable {
         return pattern.length() * 5.5;
     }
 
-    void analyzePatternCharsPositions() {
-        this.forwardAnalyze.findPatternCharsPositions();
-        this.reverseAnalyze.findPatternCharsPositions();
+    void findPatternCharsPositions() {
+        if ( this.variantContainsPattern ) {
+            this.forwardAnalyze.fillPositionsFromIndex(this.patternInVariantIndex);
+            if ( variantText.length() < this.pattern.length() * 2 ) {
+                this.reverseAnalyze.fillPositionsFromIndex(this.patternInVariantIndex);                
+            } else {
+                int patternInVariantReverseIndex = lastIndexOfIgnoreCase(this.variantText, this.pattern);
+                this.reverseAnalyze.fillPositionsFromIndex(patternInVariantReverseIndex);
+            }            
+        } else {
+            this.forwardAnalyze.findPatternCharsPositions();
+            this.reverseAnalyze.findPatternCharsPositions();
+        }
+        
         this.forwardAndReverseEqual = arePositionsEquals(this.forwardAnalyze, this.reverseAnalyze);
         if ( this.forwardAndReverseEqual ) {
             logAnalyze(BASE, "  FORWARD equals to REVERSE");

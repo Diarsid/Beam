@@ -84,6 +84,22 @@ public class StringIgnoreCaseUtil {
         }        
     }
     
+    public static int indexOfIgnoreCase(String whereToSearch, String searched) {
+        if ( isNull(searched) || isNull(whereToSearch) || searched.isEmpty() ) {
+            return -1;
+        } else {
+            return lower(whereToSearch).indexOf(lower(searched));
+        }  
+    }
+    
+    public static int lastIndexOfIgnoreCase(String whereToSearch, String searched) {
+        if ( isNull(searched) || isNull(whereToSearch) || searched.isEmpty() ) {
+            return -1;
+        } else {
+            return lower(whereToSearch).lastIndexOf(lower(searched));
+        }  
+    }
+    
     public static boolean startsIngoreCase(String whereToSearch, String start) {
         if ( isNull(whereToSearch) || isNull(start) || start.isEmpty() ) {
             return false;

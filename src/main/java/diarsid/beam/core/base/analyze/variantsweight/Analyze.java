@@ -52,7 +52,7 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 public class Analyze {
     
-    private static final int WEIGHT_ALGORITHM_VERSION = 2;
+    private static final int WEIGHT_ALGORITHM_VERSION = 3;
     private static final PersistentAnalyzeCache<Float> CACHE;
     private static final Float TOO_BAD_WEIGHT;
     
@@ -229,7 +229,7 @@ public class Analyze {
             analyze.checkIfVariantTextContainsPatternDirectly();
             analyze.findPathAndTextSeparators();
             analyze.setPatternCharsAndPositions();
-            analyze.analyzePatternCharsPositions();
+            analyze.findPatternCharsPositions();
             analyze.logUnsortedPositions();
             analyze.sortPositions();
             analyze.findPositionsClusters();
@@ -351,7 +351,7 @@ public class Analyze {
                     analyze.checkIfVariantTextContainsPatternDirectly();
                     analyze.findPathAndTextSeparators();
                     analyze.setPatternCharsAndPositions();
-                    analyze.analyzePatternCharsPositions();
+                    analyze.findPatternCharsPositions();
                     analyze.logUnsortedPositions();
                     analyze.sortPositions();
                     analyze.findPositionsClusters();

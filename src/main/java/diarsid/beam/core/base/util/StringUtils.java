@@ -54,7 +54,21 @@ public class StringUtils {
     }
     
     public static String lower(String target) {
-        return target.toLowerCase(ENGLISH);
+        if ( isLower(target) ) {
+            return target;
+        } else {
+            return target.toLowerCase(ENGLISH);
+        }        
+    }
+    
+    public static boolean isLower(String target) {
+        int length = target.length();
+        for (int i = 0; i < length; i++) {
+            if ( ! Character.isLowerCase(target.charAt(i)) ) {
+                return false;
+            }
+        }
+        return true;
     }
     
     public static List<String> lower(List<String> targets) {

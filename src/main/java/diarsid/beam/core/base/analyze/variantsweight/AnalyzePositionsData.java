@@ -19,6 +19,7 @@ import static java.lang.Math.abs;
 import static java.util.Arrays.stream;
 import static java.util.Collections.reverseOrder;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
 
@@ -32,6 +33,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clusters
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.inconsistencyOf;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.nonClusteredImportanceDependingOn;
+import static diarsid.beam.core.base.analyze.variantsweight.ClusterOrderDiffTeardownPolicy.teardownPolicyFor;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
@@ -165,6 +167,20 @@ class AnalyzePositionsData {
     
     static boolean arePositionsEquals(AnalyzePositionsData dataOne, AnalyzePositionsData dataTwo) {
         return Arrays.equals(dataOne.positions, dataTwo.positions);
+    }
+    
+    void fillPositionsFromIndex(int patternInVariantIndex) {
+        int length = positions.length;
+        int position = patternInVariantIndex;
+        logAnalyze(POSITIONS_SEARCH, "  %s, pattern found directly", direction);
+        for (int i = 0; i < length; i++) {
+            positions[i] = position;
+            filledPositions.add(position);
+            logAnalyze(POSITIONS_SEARCH, "    [SAVE] %s : %s", data.patternChars[i], position);    
+            position++;        
+        }
+        logAnalyze(POSITIONS_SEARCH, "         %s", displayPositions());
+        clearState();
     }
     
     private String displayPositions() {
@@ -411,15 +427,19 @@ class AnalyzePositionsData {
         swapUnclusteredPatternCharIndexes();
         
         findPositionsStep = STEP_2;
-        processAccumulatedUnclusteredPatternCharIndexes();           
-        swapUnclusteredPatternCharIndexes();
-        
-        processAccumulatedUnclusteredPatternCharIndexes();        
-        swapUnclusteredPatternCharIndexes();
-        
-        findPositionsStep = STEP_3;
-        processAccumulatedUnclusteredPatternCharIndexes();      
-        swapUnclusteredPatternCharIndexes();
+        if ( findPositionsStep.canProceedWith(data.pattern.length()) ) {
+            processAccumulatedUnclusteredPatternCharIndexes();           
+            swapUnclusteredPatternCharIndexes();
+
+            processAccumulatedUnclusteredPatternCharIndexes();        
+            swapUnclusteredPatternCharIndexes();
+            
+            findPositionsStep = STEP_3;
+            if ( findPositionsStep.canProceedWith(data.pattern.length()) ) {
+                processAccumulatedUnclusteredPatternCharIndexes();      
+                swapUnclusteredPatternCharIndexes();
+            }
+        }
         
         clearState();
     }
@@ -443,7 +463,9 @@ class AnalyzePositionsData {
 
     private void clearState() {
         this.filledPositions.clear();
-        this.unclusteredPatternCharIndexes.clear();
+        if ( nonNull(this.unclusteredPatternCharIndexes) ) {
+            this.unclusteredPatternCharIndexes.clear();
+        }
         this.unclusteredPatternCharIndexes = null;
         this.previousPositionInVariantFound = false;
         this.nextPositionInVariantFound = false;
@@ -759,7 +781,7 @@ class AnalyzePositionsData {
         }  
         // end of characterFinding loop
         
-        if ( findPositionsStep.isLaterThan(STEP_1) && positionCandidate.isPresent() ) {
+        if ( findPositionsStep.isAfter(STEP_1) && positionCandidate.isPresent() ) {
             int position = positionCandidate.position();
             
             if ( positionCandidate.committedMutations() > 0 && positionCandidate.hasRejectedMutations() ) {
@@ -1130,14 +1152,31 @@ class AnalyzePositionsData {
                 logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for shifts", shiftDeviation);
                 this.positionsWeight = this.positionsWeight + shiftDeviation;    
             } else {
-                if ( this.currentClusterLength == 2 ) {
-                    // no reward
-                } else {
-                    int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
-                    logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
-                    logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
-                    this.positionsWeight = this.positionsWeight - consistencyReward;  
-                }                  
+                boolean teardown = false;
+                if ( cluster.ordersDiffCount() > 0 ) {
+                    ClusterOrderDiffTeardownPolicy teardownPolicy = teardownPolicyFor(data.pattern.length());
+                    if ( teardownPolicy.doesAllowTeardown() ) {
+                        int teardownValue = teardownPolicy.clusterPartToBeTeardown(this.currentClusterLength, cluster.ordersDiffCount());
+                        if ( teardownValue > 0 ) {
+                            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster has %s order diff (not shifts)", cluster.ordersDiffCount());
+                            logAnalyze(POSITIONS_CLUSTERS, "               [TEARDOWN] cluster is to be teardown by %s", teardownValue);
+                            this.clustered = this.clustered - teardownValue;
+                            this.nonClustered = this.nonClustered + teardownValue;
+                            teardown = true;
+                        }                        
+                    }        
+                } 
+                
+                if ( ! teardown ) {
+                    if ( this.currentClusterLength == 2 ) {
+                        // no reward
+                    } else {
+                        int consistencyReward = this.consistencyRewardDependingOnCurrentClusterLength();
+                        logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster is consistent");
+                        logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : for consistency", consistencyReward);
+                        this.positionsWeight = this.positionsWeight - consistencyReward;  
+                    }  
+                }                
             }
         }
         

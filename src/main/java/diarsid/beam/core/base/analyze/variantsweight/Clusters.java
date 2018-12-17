@@ -265,6 +265,12 @@ class Clusters implements StatefulClearable {
                     } else {
                         this.placingBonusOf(97, "single cluster at variant start, no separators");
                     }
+                } else if ( this.isLastClusterAtVariantEnd() ) {
+                    if ( this.isClusteredPartFormingMajority() ) {
+                        this.placingBonusOf(70, "single cluster at variant end, no separators, majority");
+                    } else {
+                        this.placingBonusOf(60, "single cluster at variant end, no separators");
+                    }
                 } else {
                     if ( this.isClusteredPartFormingMajority() ) {
                         this.singleMajorClosierToStartIsBetter();

@@ -302,10 +302,16 @@ public class AnalyzeTest {
         pattern = "ml";
         
         variants = asList(
+                "ml",
+                "some_ml_string",
+                "some_ml",
                 "some_Mstring_Lwith_ml_cluster",
                 "gmail");
         
         expected = asList(
+                "ml",
+                "some_ml",
+                "some_ml_string",
                 "some_Mstring_Lwith_ml_cluster",
                 "gmail"
         );
@@ -322,8 +328,7 @@ public class AnalyzeTest {
                 "gmail");
         
         expected = asList(
-                "gmail",                
-                "some_stMring_wLith_cluster"
+                "gmail"
         );
         
         weightVariantsAndCheckMatching();
@@ -449,6 +454,38 @@ public class AnalyzeTest {
         expected = asList(
                 "Dev/Sql_Developer",
                 "Dev/Start_Tomcat"         
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_sqlDeveloperCase2_slde() {
+        pattern = "slde";
+        
+        variants = asList(
+                "Books/Common/Lem_S",
+                "Dev/Sql_Developer"
+        );
+        
+        expected = asList(
+                "Dev/Sql_Developer"      
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_sqlDeveloperCase3_slde() {
+        pattern = "slde";
+        
+        variants = asList(
+                "Films/Movies/Middle_Earth",
+                "Dev/Sql_Developer"
+        );
+        
+        expected = asList(
+                "Dev/Sql_Developer"       
         );
         
         weightVariantsAndCheckMatching();
@@ -1444,6 +1481,19 @@ public class AnalyzeTest {
         variants = asList(
                 "aaa_ABC/dd_xyz_x/ff_qwe_xy",
                 "abbac_qwe_xyyxzyyxz_zx/ABC_XYZ_bac_ba_caba"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_mock() {
+        pattern = "abcdef";
+        
+        variants = asList(
+                "acdebf"
         );
         
         expectedSameOrderAsVariants();
