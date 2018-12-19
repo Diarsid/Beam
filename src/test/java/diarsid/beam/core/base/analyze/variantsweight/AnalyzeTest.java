@@ -525,6 +525,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_projectsCase_porj() {
+        pattern = "porj";
+        
+        variants = asList(
+                "projects"
+        );
+        
+        expected = asList(
+                "projects"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_hobbitBookCase_hboitbok() {
         pattern = "hboitbok";
         

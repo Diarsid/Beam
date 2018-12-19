@@ -427,7 +427,7 @@ class AnalyzePositionsData {
         swapUnclusteredPatternCharIndexes();
         
         findPositionsStep = STEP_2;
-        if ( findPositionsStep.canProceedWith(data.pattern.length()) ) {
+        if ( isAllowedToProceedOnCurrentStep() ) {
             processAccumulatedUnclusteredPatternCharIndexes();           
             swapUnclusteredPatternCharIndexes();
 
@@ -435,13 +435,21 @@ class AnalyzePositionsData {
             swapUnclusteredPatternCharIndexes();
             
             findPositionsStep = STEP_3;
-            if ( findPositionsStep.canProceedWith(data.pattern.length()) ) {
+            if ( isAllowedToProceedOnCurrentStep() ) {
                 processAccumulatedUnclusteredPatternCharIndexes();      
                 swapUnclusteredPatternCharIndexes();
             }
         }
         
         clearState();
+    }
+
+    private boolean isAllowedToProceedOnCurrentStep() {
+        boolean allowed = findPositionsStep.canProceedWith(data.pattern.length());
+        if ( ! allowed ) {
+            logAnalyze(POSITIONS_SEARCH, "    %s is not allowed for pattern with length %s", findPositionsStep, data.pattern.length());
+        }
+        return allowed;
     }
     
     private void processAccumulatedUnclusteredPatternCharIndexes() {
@@ -1153,7 +1161,7 @@ class AnalyzePositionsData {
                 this.positionsWeight = this.positionsWeight + shiftDeviation;    
             } else {
                 boolean teardown = false;
-                if ( cluster.ordersDiffCount() > 0 ) {
+                if ( cluster.ordersDiffCount() > this.currentClusterLength / 2 ) {
                     ClusterOrderDiffTeardownPolicy teardownPolicy = teardownPolicyFor(data.pattern.length());
                     if ( teardownPolicy.doesAllowTeardown() ) {
                         int teardownValue = teardownPolicy.clusterPartToBeTeardown(this.currentClusterLength, cluster.ordersDiffCount());

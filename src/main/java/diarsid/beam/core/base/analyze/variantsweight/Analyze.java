@@ -52,7 +52,7 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 public class Analyze {
     
-    private static final int WEIGHT_ALGORITHM_VERSION = 3;
+    private static final int WEIGHT_ALGORITHM_VERSION = 4;
     private static final PersistentAnalyzeCache<Float> CACHE;
     private static final Float TOO_BAD_WEIGHT;
     
