@@ -34,6 +34,7 @@ class Cluster
     private int ordersDiffCount;
     private int ordersDiffShifts;
     private boolean ordersDiffHaveCompensation;
+    private int compensationSum;
 
     private Cluster() {
         super();
@@ -44,6 +45,7 @@ class Cluster
         this.ordersDiffCount = 0;
         this.ordersDiffShifts = 0;
         this.ordersDiffHaveCompensation = false;
+        this.compensationSum = 0;
     }
     
     Cluster set(
@@ -53,7 +55,8 @@ class Cluster
             int diffSum, 
             int diffCount, 
             int shifts, 
-            boolean haveCompensation) {
+            boolean haveCompensation,
+            int compensationSum) {
         this.firstPosition = firstPosition;
         this.length = length;
         this.ordersDiffMean = mean;
@@ -61,6 +64,7 @@ class Cluster
         this.ordersDiffCount = diffCount;
         this.ordersDiffShifts = shifts;
         this.ordersDiffHaveCompensation = haveCompensation;
+        this.compensationSum = compensationSum;
         return this;
     }
     
@@ -107,6 +111,10 @@ class Cluster
     boolean haveOrdersDiffCompensations() {
         return this.ordersDiffHaveCompensation;
     }
+    
+    int compensationSum() {
+        return this.compensationSum;
+    }
 
     @Override
     public void clearForReuse() {
@@ -117,18 +125,20 @@ class Cluster
         this.ordersDiffCount = 0;
         this.ordersDiffShifts = 0;
         this.ordersDiffHaveCompensation = false;
+        this.compensationSum = 0;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 17 * hash + this.firstPosition;
-        hash = 17 * hash + this.length;
-        hash = 17 * hash + this.ordersDiffMean;
-        hash = 17 * hash + this.ordersDiffSum;
-        hash = 17 * hash + this.ordersDiffCount;
-        hash = 17 * hash + this.ordersDiffShifts;
-        hash = 17 * hash + (this.ordersDiffHaveCompensation ? 1 : 0);
+        int hash = 5;
+        hash = 79 * hash + this.firstPosition;
+        hash = 79 * hash + this.length;
+        hash = 79 * hash + this.ordersDiffMean;
+        hash = 79 * hash + this.ordersDiffSum;
+        hash = 79 * hash + this.ordersDiffCount;
+        hash = 79 * hash + this.ordersDiffShifts;
+        hash = 79 * hash + (this.ordersDiffHaveCompensation ? 1 : 0);
+        hash = 79 * hash + this.compensationSum;
         return hash;
     }
 
@@ -163,6 +173,9 @@ class Cluster
             return false;
         }
         if ( this.ordersDiffHaveCompensation != other.ordersDiffHaveCompensation ) {
+            return false;
+        }
+        if ( this.compensationSum != other.compensationSum ) {
             return false;
         }
         return true;

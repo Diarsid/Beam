@@ -175,7 +175,15 @@ class AnalyzeData extends PooledReusable {
                     break;
                 }
                 default: {
-                    if ( ratio(this.best.nonClustered, this.patternChars.length) > 0.4 ) {
+                    float tresholdRatio;
+                    
+                    if ( this.best.clustersQty == 1 ) {
+                        tresholdRatio = 0.5f;
+                    } else {
+                        tresholdRatio = 0.4f;
+                    }
+                    
+                    if ( ratio(this.best.nonClustered, this.patternChars.length) > tresholdRatio ) {
                         this.best.badReason = "Too much unclustered positions";
                         return;
                     } else {

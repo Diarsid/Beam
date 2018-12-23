@@ -328,7 +328,8 @@ public class AnalyzeTest {
                 "gmail");
         
         expected = asList(
-                "gmail"
+                "gmail",
+                "some_stMring_wLith_cluster"
         );
         
         weightVariantsAndCheckMatching();
@@ -519,6 +520,22 @@ public class AnalyzeTest {
         
         expected = asList(
                 "Rosters"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_musicListCase_muslit() {
+        pattern = "muslit";
+        
+        variants = asList(
+                "Music/List",
+                "Programs/Links/util"
+        );
+        
+        expected = asList(
+                "Music/List"
         );
         
         weightVariantsAndCheckMatching();

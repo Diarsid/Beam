@@ -41,8 +41,8 @@ class PositionCandidate {
         
         if (POSITIONS_SEARCH.isEnabled()) {
             logAnalyze(POSITIONS_SEARCH, "          [info] candidate %s in variant has:", position);
-            logAnalyze(POSITIONS_SEARCH, "             pattern order diff  %s", orderDiffInPattern);
-            logAnalyze(POSITIONS_SEARCH, "             variant order diff  %s", orderDiffInVariant == UNINITIALIZED ? "_" : orderDiffInPattern);
+            logAnalyze(POSITIONS_SEARCH, "             pattern order diff  %s", orderDiffInPattern == UNINITIALIZED ? "_" : orderDiffInPattern);
+            logAnalyze(POSITIONS_SEARCH, "             variant order diff  %s", orderDiffInVariant == UNINITIALIZED ? "_" : orderDiffInVariant);
             logAnalyze(POSITIONS_SEARCH, "             clustered positions %s", clusteredAround);
             logAnalyze(POSITIONS_SEARCH, "             chars remained %s", charsRemained);
         }

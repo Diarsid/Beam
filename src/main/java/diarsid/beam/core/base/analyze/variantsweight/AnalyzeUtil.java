@@ -50,6 +50,7 @@ class AnalyzeUtil {
         int repeat = 0;
         int repeatQty = 0;
         int shifts = 0;
+        int compensationSum = 0;
         boolean haveCompensation = false;
         boolean haveCompensationInCurrentStep = false;
         boolean previousIsRepeat = false;
@@ -102,6 +103,7 @@ class AnalyzeUtil {
                     if ( absDiff(current, mean) == 1 ) {
                         logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +1-1 compensation for %s_vs_%s", current, next);
                         haveCompensation = true;
+                        compensationSum = compensationSum + 2;
                         haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 2;
                         lastBeforeRepeat = UNINITIALIZED;
@@ -115,6 +117,9 @@ class AnalyzeUtil {
                         haveCompensation = true;
                         haveCompensationInCurrentStep = true;
                         diffSum = diffSum - 4;
+                        if ( diffCount == 2 ) {
+                            compensationSum = compensationSum + 2;
+                        }                        
                         lastBeforeRepeat = UNINITIALIZED;
                         if ( clusterLength == 3 ) {
                             shifts = 3;
@@ -164,13 +169,14 @@ class AnalyzeUtil {
             }    
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum      %s", diffSum);
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff count    %s", diffCount);
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff compensation  %s", compensationSum);
         }
         if ( diffSum == 0 && haveCompensation && clusterLength == 2 ) {            
             diffSum = 1;
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
         }
-        return takeFromPool(Cluster.class)
-                .set(clusterFirstPosition, clusterLength, mean, diffSum, diffCount, shifts, haveCompensation);
+        return takeFromPool(Cluster.class).set(
+                clusterFirstPosition, clusterLength, mean, diffSum, diffCount, shifts, haveCompensation, compensationSum);
     }
     
     static int lengthTolerance(int variantLength) {
