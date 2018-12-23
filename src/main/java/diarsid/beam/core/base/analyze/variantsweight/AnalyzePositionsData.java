@@ -100,7 +100,6 @@ class AnalyzePositionsData {
     int betterCurrentPatternCharPositionInVariant;
     
     // v.2
-    Set<Integer> filledPositions = new HashSet<>();
     SortedSet<Integer> forwardUnclusteredIndexes = new TreeSet<>();
     SortedSet<Integer> reverseUnclusteredIndexes = new TreeSet<>(reverseOrder());
     Set<Integer> unclusteredPatternCharIndexes = null;
@@ -125,6 +124,7 @@ class AnalyzePositionsData {
     Map<Integer, Integer> positionUnsortedOrders = new HashMap<>();
     Map<Integer, Integer> positionPatternIndexes = new HashMap<>();
     Map<Integer, FindPositionsStep> positionFoundSteps = new HashMap<>();
+    Set<Integer> filledPositions = positionFoundSteps.keySet();
     PositionCandidate positionCandidate = new PositionCandidate();
     int nearestPositionInVariant;
     List<Integer> currentClusterOrderDiffs = new ArrayList();
@@ -176,13 +176,12 @@ class AnalyzePositionsData {
         logAnalyze(POSITIONS_SEARCH, "  %s, pattern found directly", direction);
         for (int i = 0; i < length; i++) {
             positions[i] = position;
-            filledPositions.add(position);
             positionFoundSteps.put(position, STEP_1);
             logAnalyze(POSITIONS_SEARCH, "    [SAVE] %s : %s", data.patternChars[i], position);    
             position++;        
         }
         logAnalyze(POSITIONS_SEARCH, "         %s", displayPositions());
-        clearState();
+        clearPositionsSearchingState();
     }
     
     private String displayPositions() {
@@ -451,7 +450,7 @@ class AnalyzePositionsData {
             swapUnclusteredPatternCharIndexes();
         }
         
-        clearState();
+        clearPositionsSearchingState();
     }
     
     private void proceedWith(FindPositionsStep step) {
@@ -483,8 +482,7 @@ class AnalyzePositionsData {
         localUnclusteredPatternCharIndexes.clear();
     }
 
-    private void clearState() {
-        this.filledPositions.clear();
+    private void clearPositionsSearchingState() {
         if ( nonNull(this.unclusteredPatternCharIndexes) ) {
             this.unclusteredPatternCharIndexes.clear();
         }
@@ -663,7 +661,6 @@ class AnalyzePositionsData {
                         isCurrentCharPositionAddedToPositions = true;
                         positions[currentPatternCharIndex] = currentPatternCharPositionInVariant;
                         positionPatternIndexes.put(currentPatternCharPositionInVariant, currentPatternCharIndex);
-                        filledPositions.add(currentPatternCharPositionInVariant);                        
                         positionFoundSteps.put(currentPatternCharPositionInVariant, findPositionsStep);
                         logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant)", currentChar, currentPatternCharPositionInVariant);
                         logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
@@ -819,7 +816,6 @@ class AnalyzePositionsData {
             
             positions[currentPatternCharIndex] = position;
             positionPatternIndexes.put(position, currentPatternCharIndex);
-            filledPositions.add(position);
             positionFoundSteps.put(position, findPositionsStep);
             logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant), %s", currentChar, position, positionCandidate);
             logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
@@ -839,7 +835,6 @@ class AnalyzePositionsData {
                 } else {
                     positions[currentPatternCharIndex] = currentPatternCharPositionInVariantToSave;
                     positionPatternIndexes.put(currentPatternCharPositionInVariantToSave, currentPatternCharIndex);
-                    filledPositions.add(currentPatternCharPositionInVariantToSave);
                     positionFoundSteps.put(currentPatternCharPositionInVariantToSave, findPositionsStep);
                     logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant) is single char in variant", currentChar, currentPatternCharPositionInVariantToSave);
                     logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
@@ -860,7 +855,6 @@ class AnalyzePositionsData {
             if ( ! filledPositions.contains(positionValue) ) {
                 positions[positionIndex] = positionValue;
                 positionPatternIndexes.put(positionValue, positionIndex);
-                filledPositions.add(positionValue);
                 positionFoundSteps.put(positionValue, findPositionsStep);
                 return true;
             }
