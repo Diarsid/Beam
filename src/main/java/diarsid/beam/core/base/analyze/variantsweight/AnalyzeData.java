@@ -140,7 +140,7 @@ class AnalyzeData extends PooledReusable {
             this.best.badReason = "preliminary position calculation is too bad";
             return;
         }
-        if ( this.best.clustered > 0 ) {
+        if ( this.best.clustersQty > 0 ) {
             switch ( this.pattern.length() ) {
                 case 0 : 
                 case 1 : {
