@@ -298,6 +298,17 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_warCraft3Case_wc3() {
+        pattern = "wc3";
+        
+        variants = asList("WarCraft_3");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_gmailWithOtherMLClusterCase_ml() {
         pattern = "ml";
         

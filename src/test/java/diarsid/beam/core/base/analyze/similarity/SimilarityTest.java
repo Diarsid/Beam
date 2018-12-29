@@ -43,6 +43,11 @@ public class SimilarityTest {
     }
     
     @Test
+    public void test_isSimilar_apacheds_messea() {
+        assertFalse(isSimilar("apacheds", "messea"));
+    }
+    
+    @Test
     public void test_isSimilar_get_teg() {
         assertFalse(isSimilar("get", "teg"));
     }

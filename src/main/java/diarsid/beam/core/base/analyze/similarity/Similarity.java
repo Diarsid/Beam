@@ -37,7 +37,7 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class Similarity {
     
-    private static final int SIMILARITY_ALGORITHM_VERSION = 3;
+    private static final int SIMILARITY_ALGORITHM_VERSION = 4;
     private static final PersistentAnalyzeCache<Boolean> CACHE;
     
     static {
@@ -171,6 +171,7 @@ public class Similarity {
         char chain2;
         char reverseChain1;
         char reverseChain2;
+        boolean chainAreDuplicate;
         int chainIndexTarget;
         int reverseChainIndexTarget;  
         int chainIndexTargetPrev = -1;
@@ -200,7 +201,11 @@ public class Similarity {
         for (int chainIndexPattern = 0; chainIndexPattern < pattern.length() - 1; chainIndexPattern++) {
             chain1 = pattern.charAt(chainIndexPattern);
             chain2 = pattern.charAt(chainIndexPattern + 1);
+            chainAreDuplicate = chain1 == chain2;
             similarityLog(format("chain '%s%s'", chain1, chain2), 1);
+            if ( chainAreDuplicate ) {
+                similarityLog("duplicated chars", 2);
+            }
             
             chainIndexTarget = indexOfChain(target, chain1, chain2);
             if ( chainIndexTarget > -1 && chainIndexTarget == chainIndexTargetPrev ) {
@@ -265,6 +270,10 @@ public class Similarity {
                     weakChainLastChar = chain2;
                     previousChainsNotFoundQty = 0;
                 } else {
+                    if ( chainAreDuplicate ) {
+                        similarityLog("no sense for reverse check of duplicated chain", 2);
+                        continue;
+                    }
                     reverseChain1 = chain2;
                     reverseChain2 = chain1;
                     reverseChainIndexTarget = indexOfChain(target, reverseChain1, reverseChain2);
@@ -296,7 +305,13 @@ public class Similarity {
                         } else {
                             previousChainsNotFoundQty++;
                             if ( chainIndexTargetPrev > -1 ) {
-                                char prevFoundChain2 = target.charAt(chainIndexTargetPrev + 1);
+                                char prevFoundChain2 = '3';
+                                try {
+                                    prevFoundChain2 = target.charAt(chainIndexTargetPrev + 1);
+                                } catch (Exception e) {
+                                    similarityLog(format("target:%s pattern%s", target, pattern));
+                                    throw e;
+                                }
                                 if ( prevFoundChain2 == chain1 ) {
                                     int chain2IndexTarget = target.indexOf(chain2);
                                     if ( chain2IndexTarget > -1 && chain2IndexTarget > chainIndexTarget ) {
