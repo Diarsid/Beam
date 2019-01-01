@@ -309,6 +309,17 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_activeMQCase_mq() {
+        pattern = "mq";
+        
+        variants = asList("D:/DEV/3__Tools/Servers/Messaging_Servers/ActiveMQ/5.15.8");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_gmailWithOtherMLClusterCase_ml() {
         pattern = "ml";
         

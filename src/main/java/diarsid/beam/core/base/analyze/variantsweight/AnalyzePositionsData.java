@@ -394,7 +394,7 @@ class AnalyzePositionsData {
             return;
         }
         
-        if ( estimate(this.positionsWeight).equals(BAD) ) {
+        if ( estimate(this.positionsWeight + this.data.variantWeight).equals(BAD) ) {
             double placingPenalty = square( ( 10.0 - this.clustersQty ) / this.clustered );
             logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] positions weight is too bad for placing assessment");
             logAnalyze(POSITIONS_CLUSTERS, "        [weight] +%s", placingPenalty);
