@@ -6,7 +6,7 @@
 package diarsid.beam.core.base.util;
 
 import diarsid.beam.core.domain.entities.WebPlace;
-import diarsid.beam.core.domain.entities.validation.ValidationResult;
+import diarsid.beam.core.domain.entities.validation.Validity;
 
 /**
  *
@@ -24,7 +24,7 @@ public class ClassCastUtil {
         return (WebPlace) object;
     }
     
-    public static ValidationResult asValidationResult(Object object) {
-        return (ValidationResult) object;
+    public static Validity asValidationResult(Object object) {
+        return (Validity) object;
     }
 }

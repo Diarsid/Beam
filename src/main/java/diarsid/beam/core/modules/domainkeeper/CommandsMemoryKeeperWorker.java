@@ -68,7 +68,6 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     private final InnerIoEngine ioEngine;
     private final ResponsiveDaoCommands daoCommands;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
-    private final KeeperDialogHelper helper;
     private final Help enterMemoryHelp;
     private final Help exactMatchHelp;
     private final Help removeRelatedMemsHelp;
@@ -78,12 +77,10 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     CommandsMemoryKeeperWorker(
             ResponsiveDaoCommands daoCommands, 
             ResponsiveDaoPatternChoices daoChoices, 
-            InnerIoEngine ioEngine, 
-            KeeperDialogHelper helper) {
+            InnerIoEngine ioEngine) {
         this.daoCommands = daoCommands;
         this.daoPatternChoices = daoChoices;
         this.ioEngine = ioEngine;
-        this.helper = helper;
         this.enterMemoryHelp = this.ioEngine.addToHelpContext(
                 "", 
                 "" + UNACCEPTABLE_TEXT_CHARS.stream().collect(joining()));

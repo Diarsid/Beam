@@ -18,8 +18,8 @@ import static diarsid.beam.core.base.util.ClassCastUtil.asWebPlace;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.TEXT_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
 
 /**
  *
@@ -29,9 +29,9 @@ public class Validation {
     
     private Validation() {}
     
-    public static ValidationResult validateUsingRules(
+    public static Validity validateUsingRules(
             String value, Collection<ValidationRule> rules) {
-        ValidationResult result;
+        Validity result;
         for (ValidationRule rule : rules) {
             result = rule.applyTo(value);
             if ( result.isFail() ) {
@@ -50,7 +50,7 @@ public class Validation {
     }
     
     private static void discoverTypeAndValidate(Object obj) {
-        if ( obj instanceof ValidationResult ) {
+        if ( obj instanceof Validity ) {
             asValidationResult(obj).throwIfFail();
         } else if ( obj instanceof String ) {
             TEXT_RULE.applyTo(asString(obj)).throwIfFail();
@@ -65,11 +65,11 @@ public class Validation {
         }
     }
     
-    public static ValidationResult asName(String name) {
+    public static Validity asName(String name) {
         return ENTITY_NAME_RULE.applyTo(name);
     }
     
-    public static ValidationResult asNames(String... names) {
+    public static Validity asNames(String... names) {
         return stream(names)
                 .filter(name -> nonNull(name))
                 .map(name -> ENTITY_NAME_RULE.applyTo(name))
@@ -78,11 +78,11 @@ public class Validation {
                 .orElse(validationOk());
     }
     
-    public static ValidationResult asUrl(String url) {
+    public static Validity asUrl(String url) {
         return WEB_URL_RULE.applyTo(url);
     }
     
-    public static ValidationResult asOrder(int i) {
+    public static Validity asOrder(int i) {
         if ( i < 0 ) {
             return validationFailsWith("Natural order is less than 0.");
         } else {

@@ -10,12 +10,12 @@ package diarsid.beam.core.domain.entities.validation;
  *
  * @author Diarsid
  */
-class ValidationResultObject implements ValidationResult {
+class ValidityImpl implements Validity {
         
     private final String description;
     private final boolean isOk;
     
-    ValidationResultObject(boolean isOk, String description) {
+    ValidityImpl(boolean isOk, String description) {
         this.isOk = isOk;
         this.description = description;
     }

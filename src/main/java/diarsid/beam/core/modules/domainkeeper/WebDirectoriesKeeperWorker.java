@@ -25,7 +25,6 @@ import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
-import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNameAndPlace;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNamePlaceAndProperty;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
@@ -70,6 +69,8 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLAC
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
+
+import diarsid.beam.core.domain.entities.validation.Validity;
 
 
 class WebDirectoriesKeeperWorker 
@@ -557,7 +558,7 @@ class WebDirectoriesKeeperWorker
             
     @Override
     public WebResponse createWebDirectory(WebPlace place, String name) {
-        ValidationResult nameValidity = ENTITY_NAME_RULE.applyTo(name);
+        Validity nameValidity = ENTITY_NAME_RULE.applyTo(name);
         if ( nameValidity.isFail() ) {
             return badRequestWithJson(nameValidity.getFailureMessage());
         }
@@ -600,7 +601,7 @@ class WebDirectoriesKeeperWorker
             return notFoundWithJson(format("Directory '%s' not found in %s", name, place.name()));
         } 
         
-        ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(newName);
+        Validity newNameValidity = ENTITY_NAME_RULE.applyTo(newName);
         if ( newNameValidity.isFail() ) {
             return badRequestWithJson(newNameValidity.getFailureMessage());
         }

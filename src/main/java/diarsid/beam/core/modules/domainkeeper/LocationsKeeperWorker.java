@@ -26,6 +26,8 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+import diarsid.beam.core.domain.entities.validation.UndefinedValidity;
+import diarsid.beam.core.domain.entities.validation.Validity;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationNameAndPath;
@@ -38,6 +40,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
@@ -63,14 +66,16 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
+import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.LOCAL_DIRECTORY_PATH_RULE;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
+import static diarsid.beam.core.domain.entities.validation.UndefinedValidity.undefinedValidityMutableOnce;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
 
@@ -84,11 +89,11 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
-    private final KeeperDialogHelper helper;
     private final LocationsInputParser locationInpurParser;
     private final PropertyAndTextParser propertyTextParser;
     private final Set<CommandType> subjectedCommandTypes;
     private final Help chooseOneLocationHelp;
+    private final Help chooseOneSubPathHelp;
     private final Help enterLocationNameHelp;
     private final Help enterLocationPathHelp;
     private final Help enterPropertyToEditHelp;
@@ -99,7 +104,6 @@ class LocationsKeeperWorker implements LocationsKeeper {
             ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
             InnerIoEngine ioEngine, 
-            KeeperDialogHelper consistencyChecker,
             LocationsInputParser parser,
             PropertyAndTextParser propertyTextParser) {
         this.allLocationsConsistencyLock = new Object();
@@ -108,7 +112,6 @@ class LocationsKeeperWorker implements LocationsKeeper {
         this.daoPatternChoices = daoPatternChoices;
         this.commandsMemory = commandsMemoryKeeper;
         this.ioEngine = ioEngine;
-        this.helper = consistencyChecker;
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
         this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_LOCATION_TARGET);
@@ -118,6 +121,14 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 "   - number to choose Location",
                 "   - part of Location name to choose it",
                 "   - n/no to see more found Locations if any",
+                "   - dot to break"
+        );
+        this.chooseOneSubPathHelp = this.ioEngine.addToHelpContext(
+                "Choose one path from given variants.",
+                "Use:",
+                "   - number to choose path",
+                "   - part of path to choose it",
+                "   - n/no to see more found paths if any",
                 "   - dot to break"
         );
         this.enterLocationNameHelp = this.ioEngine.addToHelpContext(
@@ -401,15 +412,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         path = dialog
                 .withInitialArgument(path)
-                .withRule(LOCAL_DIRECTORY_PATH_RULE)
                 .withRule((newLocationPath) -> {
-                    Optional<Location> location = this.daoLocations
-                            .getLocationByPath(initiator, newLocationPath);
-                    if ( location.isPresent() ) {
-                        return validationFailsWith(format(
-                                "location '%s' already has this path.", location.get().name()));
-                    }
-                    return validationOk();
+                    return this.validateLocationNewPath(initiator, newLocationPath, dialog);
                 })
                 .withInputSource(() -> {
                     return this.ioEngine.askInput(
@@ -423,6 +427,105 @@ class LocationsKeeperWorker implements LocationsKeeper {
         giveBackToPool(dialog);
         
         return path;
+    }
+    
+    private Validity validateLocationNewPath(
+            Initiator initiator, String newPath, KeeperLoopValidationDialog dialog) {
+        if ( ! containsPathSeparator(newPath) ) {
+            return validationFailsWith("must be path!");
+        }
+
+        UndefinedValidity validity = undefinedValidityMutableOnce();
+
+        if ( LOCAL_DIRECTORY_PATH_RULE.applyTo(newPath).isOk() ) {
+            Optional<Location> locationFoundByPath = this.daoLocations
+                    .getLocationByPath(initiator, newPath);
+            if ( locationFoundByPath.isPresent() ) {
+                String reason = format(
+                        "location '%s' already has this path.", 
+                        locationFoundByPath.get().name());
+                validity.failsWith(reason);
+            } else {
+                validity.ok();
+            }            
+        } else {                    
+            List<LocationSubPath> subPathes = this.daoLocationSubPaths
+                    .getSubPathesByPattern(initiator, newPath);
+
+            if ( hasOne(subPathes) ) {
+                LocationSubPath locationSubPath = getOne(subPathes);
+                String locationAndSubPath = locationSubPath.name();
+                boolean pathFound = 
+                        locationAndSubPath.equalsIgnoreCase(newPath) ||
+                        isNameSatisfiable(newPath, locationAndSubPath);
+                if ( pathFound ) {
+                    String realFoundPath = locationSubPath.fullPath();
+                    validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));   
+                } else {
+                    validity.failsWith(format("'%s' not found", newPath));
+                }
+            } else if ( hasMany(subPathes) ) {
+                WeightedVariants variants = weightVariants(
+                        newPath, entitiesToVariants(subPathes));
+                if ( variants.isEmpty() ) {
+                    validity.failsWith(format("'%s' not found", newPath));
+                } else {
+                    WeightedVariant best = variants.best();
+                    boolean bestIsGoodEnough = 
+                            best.text().equalsIgnoreCase(newPath) || 
+                            best.hasEqualOrBetterWeightThan(PERFECT);
+                    if ( bestIsGoodEnough ) {
+                        String realFoundPath = subPathes.get(best.index()).fullPath();
+                        validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));   
+                    } else {
+                        boolean hasMatch = this.daoPatternChoices
+                                .hasMatchOf(initiator, newPath, best.text(), variants);
+                        if ( hasMatch ) {
+                            String realFoundPath = subPathes.get(best.index()).fullPath();
+                            validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
+                        } else {
+                            Answer answer = this.ioEngine.chooseInWeightedVariants(
+                                    initiator, variants, this.chooseOneSubPathHelp);
+                            if ( answer.isGiven() ) {
+                                LocationSubPath foundSubPath = subPathes.get(answer.index());
+                                asyncDo(() -> {
+                                    this.daoPatternChoices.save(
+                                            initiator, newPath, foundSubPath.name(), variants);
+                                });
+                                String realFoundPath = foundSubPath.fullPath();
+                                validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
+                            } else {
+                                validity.fails();
+                            }
+                        }            
+                    }
+                }                
+            } else {
+                validity.failsWith(format("'%s' not found", newPath));
+            }
+        }
+
+        return validity.get();
+    }
+
+    private Validity defineNewPathValidityUsing(
+            Initiator initiator, String realFoundPath, KeeperLoopValidationDialog dialog) {
+        Optional<Location> locationFoundByPath = this.daoLocations
+                .getLocationByPath(initiator, realFoundPath);
+        if ( locationFoundByPath.isPresent() ) {
+            String reason = format(
+                    "location '%s' already has path %s.",
+                    locationFoundByPath.get().name(),
+                    realFoundPath);
+            return validationFailsWith(reason);
+        } else {
+            if ( LOCAL_DIRECTORY_PATH_RULE.applyTo(realFoundPath).isOk() ) {
+                dialog.replaceInput(realFoundPath);
+                return validationOk();
+            } else {
+                return validationFailsWith("path not found");
+            }
+        }
     }
 
     @Override

@@ -15,8 +15,8 @@ import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.textIsNo
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.isAcceptableWebPath;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
 
 /**
  *
@@ -27,7 +27,7 @@ public enum DomainValidationRule implements ValidationRule {
     TEXT_RULE {        
         
         @Override
-        public ValidationResult applyTo(String target) {
+        public Validity applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -44,7 +44,7 @@ public enum DomainValidationRule implements ValidationRule {
     WEB_URL_RULE {
         
         @Override
-        public ValidationResult applyTo(String target) {
+        public Validity applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -59,7 +59,7 @@ public enum DomainValidationRule implements ValidationRule {
     LOCAL_DIRECTORY_PATH_RULE {
         
         @Override
-        public ValidationResult applyTo(String target) {
+        public Validity applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }
@@ -73,7 +73,7 @@ public enum DomainValidationRule implements ValidationRule {
     SIMPLE_PATH_RULE {
         
         @Override 
-        public ValidationResult applyTo(String target) {
+        public Validity applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             } 
@@ -89,7 +89,7 @@ public enum DomainValidationRule implements ValidationRule {
     ENTITY_NAME_RULE {
         
         @Override
-        public ValidationResult applyTo(String target) {
+        public Validity applyTo(String target) {
             if ( target.isEmpty() ) {
                 return validationFailsWith("cannot be empty.");
             }

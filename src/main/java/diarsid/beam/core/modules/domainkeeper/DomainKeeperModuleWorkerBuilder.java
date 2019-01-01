@@ -81,15 +81,13 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
                 this.responsiveDataModule.commands(), 
                 this.responsiveDataModule.patternChoices(),
-                ioEngine, 
-                dialogHelper);
+                ioEngine);
         locationsKeeper = new LocationsKeeperWorker(
                 this.responsiveDataModule.locations(),
                 this.responsiveDataModule.locationSubPaths(),
                 this.responsiveDataModule.patternChoices(),
                 commandsMemoryKeeper,
                 ioEngine, 
-                dialogHelper, 
                 locationsInputParser, 
                 propertyAndTextParser);
         batchesKeeper = new BatchesKeeperWorker(

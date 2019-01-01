@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import diarsid.support.objects.Possible;
-import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
+import diarsid.beam.core.domain.entities.validation.Validity;
 import diarsid.support.objects.PooledReusable;
+import diarsid.support.objects.Possible;
 
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.validation.Validation.validateUsingRules;
@@ -33,12 +33,14 @@ class KeeperLoopValidationDialog extends PooledReusable {
     private final Possible<Consumer<String>> outputDestination;
     private final Possible<Supplier<String>> inputSource;
     private final List<ValidationRule> validationRules;
+    private final Possible<String> inputReplacement;
 
     KeeperLoopValidationDialog() {
         this.initialArgument = possibleButEmpty();
         this.outputDestination = possibleButEmpty();
         this.inputSource = possibleButEmpty();
         this.validationRules = new ArrayList<>();
+        this.inputReplacement = possibleButEmpty();
     }
     
     KeeperLoopValidationDialog withInitialArgument(String argument) {
@@ -67,6 +69,16 @@ class KeeperLoopValidationDialog extends PooledReusable {
         this.outputDestination.nullify();
         this.inputSource.nullify();
         this.validationRules.clear();
+        this.inputReplacement.nullify();
+    }
+    
+    public KeeperLoopValidationDialog replaceInput(String newValue) {
+        this.inputReplacement.resetTo(newValue);
+        return this;
+    }
+    
+    private String replacedValueOr(String inputValue) {
+        return this.inputReplacement.or(inputValue);
     }
 
     String validateAndGet() {
@@ -77,22 +89,22 @@ class KeeperLoopValidationDialog extends PooledReusable {
         if ( this.initialArgument.match(nonEmpty()) ) {
             String argument = this.initialArgument.orThrow();
             
-            ValidationResult result = validateUsingRules(argument, this.validationRules);
+            Validity result = validateUsingRules(argument, this.validationRules);
             
             if ( result.isOk() ) {
-                return argument;                
+                return this.replacedValueOr(argument);                
             } else {
                 this.outputDestination.orThrow().accept(result.getFailureMessage());
-                return this.loopValidation();
+                return this.replacedValueOr(this.loopValidation());
             }
         } else {
-            return this.loopValidation();
+            return this.replacedValueOr(this.loopValidation());
         }
     }
     
     private String loopValidation() {
         String value;
-        ValidationResult validity;
+        Validity validity;
         valueDefining: while ( true ) {
             value = this.inputSource.orThrow().get();
             if ( value.isEmpty() ) {

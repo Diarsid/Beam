@@ -36,7 +36,6 @@ import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
-import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
@@ -105,10 +104,12 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_DIRE
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_URL;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
+
+import diarsid.beam.core.domain.entities.validation.Validity;
 
 
 public class WebPagesKeeperWorker 
@@ -369,7 +370,7 @@ public class WebPagesKeeperWorker
         String shortcuts = this.ioEngine.askInput(
                 initiator, "shortcuts, if any", this.enterShortcutsHelp);
         if ( nonEmpty(shortcuts) ) {
-            ValidationResult shortcutsValidity = ENTITY_NAME_RULE.applyTo(shortcuts);
+            Validity shortcutsValidity = ENTITY_NAME_RULE.applyTo(shortcuts);
             validation: while ( shortcutsValidity.isFail() ) {
                 shortcuts = this.ioEngine.askInput(initiator, "shortcuts", this.enterShortcutsHelp);
                 if ( shortcuts.isEmpty() ) {
@@ -954,12 +955,12 @@ public class WebPagesKeeperWorker
     @Override
     public WebResponse createWebPage(
             WebPlace place, String directoryName, String pageName, String pageUrl) {   
-        ValidationResult urlValidity = WEB_URL_RULE.applyTo(pageUrl);
+        Validity urlValidity = WEB_URL_RULE.applyTo(pageUrl);
         if ( urlValidity.isFail() ) {
             return badRequestWithJson(urlValidity.getFailureMessage());
         }
         
-        ValidationResult pageNameValidity = ENTITY_NAME_RULE.applyTo(pageName);
+        Validity pageNameValidity = ENTITY_NAME_RULE.applyTo(pageName);
         if ( pageNameValidity.isFail() ) {
             return badRequestWithJson(pageNameValidity.getFailureMessage());
         }
@@ -1014,7 +1015,7 @@ public class WebPagesKeeperWorker
                         "Page '%s' not found in %s!", pageOldName, directoryName));
             }
 
-            ValidationResult newNameValidity = ENTITY_NAME_RULE.applyTo(pageNewName);
+            Validity newNameValidity = ENTITY_NAME_RULE.applyTo(pageNewName);
             if ( newNameValidity.isFail() ) {
                 return badRequestWithJson(newNameValidity.getFailureMessage());
             }
@@ -1144,7 +1145,7 @@ public class WebPagesKeeperWorker
                     "Page '%s' not found in %s!", pageName, directoryName));
         }
         
-        ValidationResult urlValidity = WEB_URL_RULE.applyTo(pageUrl);
+        Validity urlValidity = WEB_URL_RULE.applyTo(pageUrl);
         if ( urlValidity.isFail() ) {
             return badRequestWithJson(urlValidity.getFailureMessage());
         }

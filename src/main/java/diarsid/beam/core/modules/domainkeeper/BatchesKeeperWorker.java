@@ -69,8 +69,8 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.COMMANDS
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationFailsWith;
-import static diarsid.beam.core.domain.entities.validation.ValidationResults.validationOk;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
+import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
 

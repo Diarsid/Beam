@@ -9,7 +9,6 @@ import java.io.IOException;
 
 import diarsid.beam.core.base.control.io.base.interaction.WebRequest;
 import diarsid.beam.core.base.control.io.base.interaction.WebResponse;
-import diarsid.beam.core.domain.entities.validation.ValidationResult;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
 import diarsid.beam.core.modules.web.core.container.Resource;
 
@@ -19,6 +18,8 @@ import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.bad
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.ok;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
+
+import diarsid.beam.core.domain.entities.validation.Validity;
 
 /**
  *
@@ -58,7 +59,7 @@ public class WebObjectsValidationResource extends Resource {
 
     private WebResponse applyRuleToValue(ValidationRule validationRule, String value) {
         if ( nonNull(validationRule) ) {
-            ValidationResult validity = validationRule.applyTo(value);
+            Validity validity = validationRule.applyTo(value);
             if ( validity.isFail() ) {
                 return badRequestWithJson(validity.getFailureMessage());
             } else {

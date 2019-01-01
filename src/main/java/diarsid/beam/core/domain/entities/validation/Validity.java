@@ -9,7 +9,7 @@ package diarsid.beam.core.domain.entities.validation;
  *
  * @author Diarsid
  */
-public interface ValidationResult {
+public interface Validity {
     
     boolean isOk();
     

@@ -11,5 +11,5 @@ package diarsid.beam.core.domain.entities.validation;
  */
 public interface ValidationRule {
     
-    ValidationResult applyTo(String target);
+    Validity applyTo(String target);
 }
