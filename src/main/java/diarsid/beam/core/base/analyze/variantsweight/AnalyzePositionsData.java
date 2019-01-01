@@ -965,6 +965,10 @@ class AnalyzePositionsData {
                 if ( this.alonePositionBeforePreviousSeparator != POS_UNINITIALIZED && 
                      this.alonePositionBeforePreviousSeparator != POS_ERASED ) {
                     float bonus = 7.25f;
+                        if ( this.currentClusterLength > 2 ) {
+                        bonus = bonus + (this.currentClusterLength * 2) - (this.clusters.lastAddedCluster().firstPosition() - this.alonePositionBeforePreviousSeparator - 1);
+                        isClusterLongWord = true;
+                    } 
                     if ( ! containsSeparatorsInVariantInSpan(this.alonePositionBeforePreviousSeparator, this.currentPosition - this.currentClusterLength + 1) ) {
                         logAnalyze(POSITIONS_CLUSTERS, "               [weight] -%s : char before previous separator and cluster enclosing single word - %s__%s!", 
                                                        bonus, 

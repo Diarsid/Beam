@@ -320,6 +320,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_MySQLCase_msql() {
+        pattern = "msql";
+        
+        variants = asList(
+                "Tools/Servers/Data_Servers/MySQL",
+                "Tech/langs/sql",
+                "dev/sql_developer"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_gmailWithOtherMLClusterCase_ml() {
         pattern = "ml";
         
