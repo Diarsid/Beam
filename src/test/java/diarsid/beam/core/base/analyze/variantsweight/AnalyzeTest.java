@@ -392,7 +392,7 @@ public class AnalyzeTest {
         
         variants = asList(
                 "Wizoria",
-                "Projects/Diarsid/WebStorm");
+                "Projects/Diarsid/WebStorm/Node.js");
         
         expectedSameOrderAsVariants();
         
