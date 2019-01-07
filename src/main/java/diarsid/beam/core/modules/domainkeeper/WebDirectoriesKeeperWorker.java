@@ -25,6 +25,7 @@ import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+import diarsid.beam.core.domain.entities.validation.Validity;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNameAndPlace;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNamePlaceAndProperty;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
@@ -59,6 +60,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
 import static diarsid.beam.core.domain.entities.WebPlace.UNDEFINED_PLACE;
@@ -69,8 +71,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLAC
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
-
-import diarsid.beam.core.domain.entities.validation.Validity;
 
 
 class WebDirectoriesKeeperWorker 
@@ -181,33 +181,44 @@ class WebDirectoriesKeeperWorker
                         .withInitialArgument(name)
                         .validateAndGet();
                 
-                if ( name.isEmpty() ) {
-                    return name;
-                }                
-                
-                freeNameIndex = daoDirectories.findFreeNameNextIndex(initiator, name, place);
-                if ( isNotPresent(freeNameIndex) ) {
-                    this.ioEngine.report(initiator, "DAO failed to get free name index.");
-                    return "";
-                }
-                if ( freeNameIndex.get() > 0 ) {
-                    this.ioEngine.report(initiator, format("directory '%s' already exists.", name));
-                    applyIndexQuestion = format(
-                            "name directory as '%s (%s)'", name, freeNameIndex.get());
-                    applyIndexChoice = this.ioEngine.ask(
-                            initiator, applyIndexQuestion, this.applyFreeIndexToNameHelp);
-                    if ( applyIndexChoice.isPositive() ) {
-                        name = format("%s (%d)", name, freeNameIndex.get());
-                        this.ioEngine.report(
-                                initiator, format("name '%s' will be saved instead.", name));
-                        break nameDiscussing;
-                    } else if ( applyIndexChoice.isRejected() ) {
-                        return "";
-                    } else if ( applyIndexChoice.isNegative() ) {
+                if ( nonEmpty(name) ) {
+                    freeNameIndex = daoDirectories.findFreeNameNextIndex(initiator, name, place);
+                    if ( isNotPresent(freeNameIndex) ) {
+                        this.ioEngine.report(initiator, "DAO failed to get free name index.");
                         name = "";
-                        continue nameDiscussing;
-                    }                    
-                }
+                        break nameDiscussing;
+                    } else {
+                        int foundFreeNameIndex = freeNameIndex.get();
+                        if ( foundFreeNameIndex == 0 ) {
+                            break nameDiscussing;
+                        } else if ( foundFreeNameIndex > 0 ) {
+                            this.ioEngine.report(
+                                    initiator, format("directory '%s' already exists.", name));
+                            applyIndexQuestion = format(
+                                    "name directory as '%s (%s)'", name, freeNameIndex.get());
+                            applyIndexChoice = this.ioEngine.ask(
+                                    initiator, applyIndexQuestion, this.applyFreeIndexToNameHelp);
+                            if ( applyIndexChoice.isPositive() ) {
+                                name = format("%s (%d)", name, freeNameIndex.get());
+                                this.ioEngine.report(
+                                        initiator, 
+                                        format("name '%s' will be saved instead.", name));
+                                break nameDiscussing;
+                            } else if ( applyIndexChoice.isRejected() ) {
+                                name = "";
+                                break nameDiscussing;
+                            } else if ( applyIndexChoice.isNegative() ) {
+                                name = "";
+                                continue nameDiscussing;
+                            }                    
+                        } else {
+                            this.ioEngine.report(
+                                    initiator, "DAO returned negative get free name index.");
+                            name = "";
+                            break nameDiscussing;
+                        }
+                    }                                    
+                } 
             }
 
             return name;

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.modules.io.gui.Gui;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -36,10 +35,12 @@ import diarsid.beam.core.domain.entities.WebDirectoryPages;
 import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.beam.core.domain.entities.WebPlace;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
+import diarsid.beam.core.domain.entities.validation.Validity;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebPageNameUrlAndPlace;
+import diarsid.beam.core.modules.io.gui.Gui;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPictures;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebDirectories;
@@ -108,8 +109,6 @@ import static diarsid.beam.core.domain.entities.validation.Validities.validation
 import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
 import static diarsid.support.objects.Pools.giveBackToPool;
 import static diarsid.support.objects.Pools.takeFromPool;
-
-import diarsid.beam.core.domain.entities.validation.Validity;
 
 
 public class WebPagesKeeperWorker 
@@ -464,32 +463,39 @@ public class WebPagesKeeperWorker
                         .withInitialArgument(name)
                         .validateAndGet();
                 
-                if ( name.isEmpty() ) {
-                    return name;
-                }                
-                
-                freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
-                if ( isNotPresent(freeNameIndex) ) {
-                    this.ioEngine.report(initiator, "DAO failed to get free name index.");
-                    return "";
-                }
-                if ( freeNameIndex.get() > 0 ) {
-                    this.ioEngine.report(initiator, format("page '%s' already exists.", name));
-                    applyIndexQuestion = format(
-                            "name page as '%s (%s)'", name, freeNameIndex.get());
-                    applyIndexChoice = this.ioEngine.ask(
-                            initiator, applyIndexQuestion, this.applyFreeIndexToNameHelp);
-                    if ( applyIndexChoice.isPositive() ) {
-                        name = format("%s (%d)", name, freeNameIndex.get());
-                        this.ioEngine.report(
-                                initiator, format("name '%s' will be saved instead.", name));
-                        break nameDiscussing;
-                    } else if ( applyIndexChoice.isRejected() ) {
+                if ( nonEmpty(name) ) {
+                    freeNameIndex = daoPages.findFreeNameNextIndex(initiator, name);
+                    if ( isNotPresent(freeNameIndex) ) {
+                        this.ioEngine.report(initiator, "DAO failed to get free name index.");
                         return "";
-                    } else if ( applyIndexChoice.isNegative() ) {
-                        name = "";
-                        continue nameDiscussing;
-                    }                    
+                    } else {
+                        int foundFreeNameIndex = freeNameIndex.get();
+                        if ( foundFreeNameIndex == 0 ) {
+                            break nameDiscussing;
+                        } else if ( foundFreeNameIndex > 0 ) {
+                            this.ioEngine.report(
+                                    initiator, format("page '%s' already exists.", name));
+                            applyIndexQuestion = format(
+                                    "name page as '%s (%s)'", name, freeNameIndex.get());
+                            applyIndexChoice = this.ioEngine.ask(
+                                    initiator, applyIndexQuestion, this.applyFreeIndexToNameHelp);
+                            if ( applyIndexChoice.isPositive() ) {
+                                name = format("%s (%d)", name, freeNameIndex.get());
+                                this.ioEngine.report(
+                                        initiator, 
+                                        format("name '%s' will be saved instead.", name));
+                                break nameDiscussing;
+                            } else if ( applyIndexChoice.isRejected() ) {
+                                name = "";
+                                break nameDiscussing;
+                            } else if ( applyIndexChoice.isNegative() ) {
+                                name = "";
+                                continue nameDiscussing;
+                            }                    
+                        } else {
+                            
+                        }
+                    }                                      
                 }
             }
 
