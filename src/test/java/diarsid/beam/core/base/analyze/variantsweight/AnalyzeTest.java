@@ -400,6 +400,19 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_nodejsProjectsCase_nojs() {
+        pattern = "nojs";
+        
+        variants = asList(
+                "Projects/Diarsid/WebStorm/Node.js",
+                "Engines/Node.js/path");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_searchSendingBeamCase_seaersengid() {
         pattern = "seaersengid";
         
@@ -1496,9 +1509,9 @@ public class AnalyzeTest {
                 "ABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
                 "abbac_xy/cab_bac_ba_ABC_XYZ/yxzyyxz_zx",
                 "abABC_XYZ_ababbacca/abbac_xyyxzyyxz_zx",
-                "ababbacca/ABC_abbac_xyyxzyyxz_XYZ_zx",
                 "abbac_xyyxzyyxz_zx/ABC_ba_XYZ_baccaba",
                 "abbac_xyyxzyyxz_zx/caba_ABC_ba_XYZ_bac",
+                "ababbacca/ABC_abbac_xyyxzyyxz_XYZ_zx",
                 "ABC_ababbacca/abbac_xyyxzyyxz_XYZ_zx",
                 "ABC_ba_XYZ_baccaba/abbac_xyyxzyyxz_zx",
                 "ABC_baccaba_XYZ_ba/abbac_xyyxzyyxz_zx",

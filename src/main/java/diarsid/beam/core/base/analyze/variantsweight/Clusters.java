@@ -412,6 +412,14 @@ class Clusters implements StatefulClearable {
                             this.firstAndLastClustersCloserToStartAreBetter();
                             this.applyCasePenaltyToBonus(90);    
                         }
+                    } else if ( this.areAllClustersAfterLastPathSeparator() ) {
+                        this.placingBonusNoMoreThanPercent(80);
+                        if ( this.isClusteredPartFormingMajority() ) {
+                            this.manyMajorClosierToEndAreBetterAfterLastPathSeparator();
+                        } else {
+                            this.placingBonusNoMoreThanPercent(75);
+                            this.manyClosierToEndAreBetterAfterLastPathSeparator();
+                        }
                     } else if ( this.isLastClusterAtVariantEnd() ) {
                         if ( this.isClusteredPartFormingMajority() ) {
                             this.manyMajorClosierToEndAreBetterLastAtEnd();
@@ -419,14 +427,6 @@ class Clusters implements StatefulClearable {
                             this.manyClosierToEndAreBetterLastAtEnd();
                         }
                         this.applyCasePenaltyToBonus(85);  
-                    } else if ( this.areAllClustersAfterLastPathSeparator() ) {
-                        this.placingBonusNoMoreThanPercent(70);
-                        if ( this.isClusteredPartFormingMajority() ) {
-                            this.manyMajorClosierToEndAreBetterAfterLastPathSeparator();
-                        } else {
-                            this.placingBonusNoMoreThanPercent(65);
-                            this.manyClosierToEndAreBetterAfterLastPathSeparator();
-                        }
                     } else if ( this.areAllClustersBeforeFirstPathSeparator() ) {
                         this.placingBonusNoMoreThanPercent(50);
                         if ( this.isClusteredPartFormingMajority() ) {
@@ -962,7 +962,7 @@ class Clusters implements StatefulClearable {
     }
     
     private void manyClosierToEndAreBetterLastAtEnd() {
-        this.placingCase.resetTo("many clusters, with separators");
+        this.placingCase.resetTo("many clusters, with separators, last at end");
         this.meanPosition = this.findMeanPosition() / 2;
         this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
         
@@ -974,7 +974,7 @@ class Clusters implements StatefulClearable {
     }
     
     private void manyMajorClosierToEndAreBetterLastAtEnd() {
-        this.placingCase.resetTo("many clusters, forming majority, with separators");
+        this.placingCase.resetTo("many clusters, forming majority, with separators, last at end");
         this.meanPosition = this.findMeanLastPosition() / 2;
         this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
         
