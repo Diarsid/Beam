@@ -387,6 +387,19 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_wizoriaCase_wiaora() {
+        pattern = "wiaora";
+        
+        variants = asList(
+                "Wizoria",
+                "Projects/Diarsid/WebStorm");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_searchSendingBeamCase_seaersengid() {
         pattern = "seaersengid";
         

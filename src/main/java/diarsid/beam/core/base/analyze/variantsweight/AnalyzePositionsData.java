@@ -1206,15 +1206,20 @@ class AnalyzePositionsData {
     }
     
     private boolean tryToTearDown(Cluster cluster) {
-        if ( cluster.ordersDiffCount() == 0 && cluster.ordersDiffSum() == 0 ) {
-            return false;
-        } else if ( cluster.ordersDiffCount() > 0 && cluster.ordersDiffSum() == 0 ) {
-            return this.tryToTearDownBasingOnDiffCountOnly(cluster);
-        } else if ( cluster.ordersDiffSum() > 0 && cluster.ordersDiffCount() == 0 ) {
-            return this.tryToTearDownBasingOnDiffSumOnly(cluster);
+        if ( cluster.compensationSum() > cluster.length() ) {
+            this.tearDownOn(cluster.length());
+            return true;
         } else {
-            return this.tryToTearDownBasingOnDiffSumAndCount(cluster);
-        }
+            if ( cluster.ordersDiffCount() == 0 && cluster.ordersDiffSum() == 0 ) {
+                return false;
+            } else if ( cluster.ordersDiffCount() > 0 && cluster.ordersDiffSum() == 0 ) {
+                return this.tryToTearDownBasingOnDiffCountOnly(cluster);
+            } else if ( cluster.ordersDiffSum() > 0 && cluster.ordersDiffCount() == 0 ) {
+                return this.tryToTearDownBasingOnDiffSumOnly(cluster);
+            } else {
+                return this.tryToTearDownBasingOnDiffSumAndCount(cluster);
+            }
+        }        
     }
     
     private static boolean considerDiffCountCompensationWhen(int clusterLength, int patternLength) {
@@ -1275,6 +1280,7 @@ class AnalyzePositionsData {
     }
     
     private void tearDownOn(int positionsQty) {
+        positionsQty = abs(positionsQty);
         this.clustered = this.clustered - positionsQty;
         this.nonClustered = this.nonClustered + positionsQty;
         logAnalyze(POSITIONS_CLUSTERS, "               [TEARDOWN] cluster is to be teardown by %s", positionsQty);
