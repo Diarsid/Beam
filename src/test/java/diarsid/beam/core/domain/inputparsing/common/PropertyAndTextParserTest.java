@@ -13,9 +13,9 @@ import static java.util.Arrays.asList;
 
 import static org.junit.Assert.assertEquals;
 
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_PATH;
 
 /**
  *
@@ -52,14 +52,14 @@ public class PropertyAndTextParserTest {
     @Test
     public void testParse_property_text() {
         PropertyAndText pt = parser.parse(asList("content", "path"));
-        assertEquals(FILE_URL, pt.property());
+        assertEquals(FILE_PATH, pt.property());
         assertEquals("content", pt.text());
     }
     
     @Test
     public void testParse_text_property() {
         PropertyAndText pt = parser.parse(asList("path", "content"));
-        assertEquals(FILE_URL, pt.property());
+        assertEquals(FILE_PATH, pt.property());
         assertEquals("content", pt.text());
     }
 

@@ -67,7 +67,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
-import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_URL;
+import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_PATH;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
@@ -133,7 +133,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         );
         this.enterLocationNameHelp = this.ioEngine.addToHelpContext(
                 "Enter Location's name.",
-                "Name must be unique and must not contain path separators",
+                "Name must be unique and must contain neither path separators",
                 "nor following characters: " + 
                         UNACCEPTABLE_DOMAIN_CHARS.stream().collect(joining())
         );
@@ -176,6 +176,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
     
     private ValueFlow<Location> findExistingLocationInternally(Initiator initiator, String name) {
+        Location foundLocation;
         List<Location> foundLocations;     
         WeightedVariants weightedLocations;
         Answer answer;
@@ -203,11 +204,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
 
                 foundLocations = this.daoLocations.getLocationsByNamePattern(initiator, name);
                 if ( hasOne(foundLocations) ) {
-                    Location location = getOne(foundLocations);
-                    if ( ! name.equalsIgnoreCase(location.name()) ) {
-                        this.ioEngine.report(initiator, format("'%s' found.", location.name()));
-                    }                    
-                    return valueFlowCompletedWith(location);
+                    foundLocation = getOne(foundLocations);
+                    this.reportThatLocationFound(initiator, name, foundLocation);                    
+                    return valueFlowCompletedWith(foundLocation);
                 } else if ( hasMany(foundLocations) ) {
                     weightedLocations = weightVariants(name, entitiesToVariants(foundLocations));
                     if ( weightedLocations.isEmpty() ) {
@@ -215,18 +214,44 @@ class LocationsKeeperWorker implements LocationsKeeper {
                         name = "";
                         continue locationFinding;
                     }
-                    answer = this.ioEngine.chooseInWeightedVariants(
-                            initiator, weightedLocations, this.chooseOneLocationHelp);
-                    if ( answer.isGiven() ) {
-                        return valueFlowCompletedWith(foundLocations.get(answer.index()));
-                    } else if ( answer.isRejection() ) {
-                        return valueFlowStopped();
-                    } else if ( answer.variantsAreNotSatisfactory() ) {
-                        name = "";
-                        continue locationFinding;
+                    
+                    WeightedVariant bestLocation = weightedLocations.best();
+                    if ( bestLocation.text().equalsIgnoreCase(name) || 
+                         bestLocation.hasEqualOrBetterWeightThan(PERFECT) ) {
+                        foundLocation = foundLocations.get(bestLocation.index());
+                        this.reportThatLocationFound(initiator, name, foundLocation);
+                        return valueFlowCompletedWith(foundLocation);
                     } else {
-                        this.ioEngine.report(initiator, "cannot determine your answer.");
-                        return valueFlowStopped();
+                        boolean hasMatch = this.daoPatternChoices.hasMatchOf(
+                                initiator, name, bestLocation.text(), weightedLocations);
+                        if ( hasMatch ) {
+                            foundLocation = foundLocations.get(bestLocation.index());
+                            this.reportThatLocationFound(initiator, name, foundLocation);
+                            return valueFlowCompletedWith(foundLocation);
+                        } else {
+                            answer = this.ioEngine.chooseInWeightedVariants(
+                                    initiator, weightedLocations, this.chooseOneLocationHelp);
+                            if ( answer.isGiven() ) {
+                                Location location = foundLocations.get(answer.index());
+                                String pattern = name;
+                                WeightedVariants variants = weightedLocations;
+                                asyncDo(() -> {
+                                    this.daoPatternChoices.save(
+                                            initiator, pattern, location.name(), variants);
+                                });
+                                foundLocation = foundLocations.get(answer.index());
+                                this.reportThatLocationFound(initiator, name, foundLocation);
+                                return valueFlowCompletedWith(foundLocation);
+                            } else if ( answer.isRejection() ) {
+                                return valueFlowStopped();
+                            } else if ( answer.variantsAreNotSatisfactory() ) {
+                                name = "";
+                                continue locationFinding;
+                            } else {
+                                this.ioEngine.report(initiator, "cannot determine your answer.");
+                                return valueFlowStopped();
+                            }
+                        }            
                     }
                 } else {
                     this.ioEngine.report(initiator, format("not found by '%s'", name));
@@ -237,6 +262,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
         } finally {
             giveBackToPool(dialog);
         }    
+    }
+
+    private void reportThatLocationFound(Initiator initiator, String name, Location location) {
+        if ( ! name.equalsIgnoreCase(location.name()) ) {
+            this.ioEngine.report(initiator, format("'%s' found.", location.name()));
+        }
     }
 
     @Override
@@ -478,11 +509,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
                         String realFoundPath = subPathes.get(best.index()).fullPath();
                         validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));   
                     } else {
-                        boolean hasMatch = this.daoPatternChoices
-                                .hasMatchOf(initiator, newPath, best.text(), variants);
+                        boolean hasMatch = this.daoPatternChoices.hasMatchOf(
+                                initiator, newPath, best.text(), variants);
                         if ( hasMatch ) {
                             String realFoundPath = subPathes.get(best.index()).fullPath();
-                            validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
+                            validity.set(defineNewPathValidityUsing(
+                                    initiator, realFoundPath, dialog));
                         } else {
                             Answer answer = this.ioEngine.chooseInWeightedVariants(
                                     initiator, variants, this.chooseOneSubPathHelp);
@@ -493,7 +525,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
                                             initiator, newPath, foundSubPath.name(), variants);
                                 });
                                 String realFoundPath = foundSubPath.fullPath();
-                                validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
+                                validity.set(defineNewPathValidityUsing(
+                                        initiator, realFoundPath, dialog));
                             } else {
                                 validity.fails();
                             }
@@ -612,15 +645,17 @@ class LocationsKeeperWorker implements LocationsKeeper {
             }
             
             KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+            if ( propertyToEdit.isDefined() ) {
+                dialog.withInitialArgument(propertyToEdit.name());
+            }
             String propertyName = dialog
-                    .withInitialArgument(propertyToEdit.name())
                     .withRule((prop) -> {
                         EntityProperty property = argToProperty(prop);
                         if ( property.isUndefined() ) {
                             return validationFailsWith("not a property");
                         }
-                        if ( property.isNotOneOf(NAME, FILE_URL) ) {
-                            return validationFailsWith("name or url is expected");
+                        if ( property.isNotOneOf(NAME, FILE_PATH) ) {
+                            return validationFailsWith("name or file path is expected");
                         }
                         return validationOk();
                     })
@@ -642,7 +677,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 case NAME : {
                     return this.editLocationName(initiator, location);
                 }
-                case FILE_URL : {
+                case FILE_PATH : {
                     return this.edilLocationPath(initiator, location);
                 }
                 default : {

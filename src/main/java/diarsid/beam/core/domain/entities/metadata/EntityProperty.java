@@ -49,7 +49,7 @@ public enum EntityProperty implements Serializable, ParseableEnum {
     SHORTCUTS (
             "shortcuts", 
             asList("shortcuts", "shorts", "alias")),
-    FILE_URL (
+    FILE_PATH (
             "path", 
             asList("path", "file")),
     
