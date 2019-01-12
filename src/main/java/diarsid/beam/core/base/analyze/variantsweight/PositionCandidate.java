@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_SEARCH;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
+import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 
 /**
  *
@@ -21,43 +22,61 @@ class PositionCandidate {
     private static final boolean CURRENT_IS_BETTER = false;
     private static final boolean CURRENT_IS_WORSE = true;
     
+    private final AnalyzeData data;
     private int position;
     private int orderDiffInPattern;
     private int orderDiffInVariant;
+    private int placementDiff;
     private int clusteredAround;
     private int mutationsCommitted;
     private int mutationsAttempts;
 
-    public PositionCandidate() {
+    public PositionCandidate(AnalyzeData data) {
+        this.data = data;
         this.position = UNINITIALIZED;
         this.orderDiffInPattern = UNINITIALIZED;
+        this.orderDiffInVariant = UNINITIALIZED;
+        this.placementDiff = UNINITIALIZED;
         this.clusteredAround = UNINITIALIZED;
         this.mutationsCommitted = 0;
         this.mutationsAttempts = 0;
     }
     
-    void tryToMutate(int position, int orderDiffInVariant, int orderDiffInPattern, int clusteredAround, int charsRemained) {
+    void tryToMutate(
+            int position, 
+            int positionInPatternIndex, 
+            int orderDiffInVariant, 
+            int orderDiffInPattern, 
+            int clusteredAround, 
+            int charsRemained) {
         this.mutationsAttempts++;
+        
+        int variantPlacement = percentAsInt(position, this.data.variantText.length()) / 10;
+        int patternPlacement = percentAsInt(positionInPatternIndex, this.data.pattern.length()) / 10;
+        int otherPlacementDiff = absDiff(variantPlacement, patternPlacement);
         
         if (POSITIONS_SEARCH.isEnabled()) {
             logAnalyze(POSITIONS_SEARCH, "          [info] candidate %s in variant has:", position);
-            logAnalyze(POSITIONS_SEARCH, "             pattern order diff  %s", orderDiffInPattern == UNINITIALIZED ? "_" : orderDiffInPattern);
-            logAnalyze(POSITIONS_SEARCH, "             variant order diff  %s", orderDiffInVariant == UNINITIALIZED ? "_" : orderDiffInVariant);
-            logAnalyze(POSITIONS_SEARCH, "             clustered positions %s", clusteredAround);
-            logAnalyze(POSITIONS_SEARCH, "             chars remained %s", charsRemained);
+            logAnalyze(POSITIONS_SEARCH, "             pattern order diff     %s", orderDiffInPattern == UNINITIALIZED ? "_" : orderDiffInPattern);
+            logAnalyze(POSITIONS_SEARCH, "             variant order diff     %s", orderDiffInVariant == UNINITIALIZED ? "_" : orderDiffInVariant);
+            logAnalyze(POSITIONS_SEARCH, "             approx. placement diff %s", otherPlacementDiff);
+            logAnalyze(POSITIONS_SEARCH, "             clustered positions    %s", clusteredAround);
+            logAnalyze(POSITIONS_SEARCH, "             chars remained         %s", charsRemained);
         }
         
-        if ( this.isCurrentStateWorseThan(
-                orderDiffInVariant, orderDiffInPattern, clusteredAround) ) {
+        if ( this.isCurrentStateWorseThan(orderDiffInVariant, orderDiffInPattern, otherPlacementDiff, clusteredAround) ) {
             logAnalyze(POSITIONS_SEARCH, "          [info] accept %s", position);
-            this.resetTo(position, orderDiffInVariant, orderDiffInPattern, clusteredAround);
+            this.resetTo(position, orderDiffInVariant, orderDiffInPattern, otherPlacementDiff, clusteredAround);
         } else {
             logAnalyze(POSITIONS_SEARCH, "          [info] worse than %s, reject %s", this.position, position);
         }       
     }
     
     private boolean isCurrentStateWorseThan(
-            int otherOrderDiffInVariant, int otherOrderDiffInPattern, int otherClusteredAround) {
+            int otherOrderDiffInVariant, 
+            int otherOrderDiffInPattern, 
+            int otherOrderDiffAbsolute,
+            int otherClusteredAround) {
         if ( this.position == UNINITIALIZED ) {
             return CURRENT_IS_WORSE;
         }
@@ -72,8 +91,16 @@ class PositionCandidate {
             }
         }
         
-        int thisSum = this.orderDiffInPattern + this.orderDiffInVariant - this.clusteredAround;
-        int otherSum = otherOrderDiffInPattern + otherOrderDiffInVariant - otherClusteredAround;
+        int thisSum = 
+                this.orderDiffInPattern + 
+                this.orderDiffInVariant + 
+                this.placementDiff - 
+                this.clusteredAround;
+        int otherSum = 
+                otherOrderDiffInPattern + 
+                otherOrderDiffInVariant + 
+                otherOrderDiffAbsolute - 
+                otherClusteredAround;
         if ( thisSum > otherSum ) {
             return CURRENT_IS_WORSE;
         } else {
@@ -180,10 +207,11 @@ class PositionCandidate {
     }
 
     private void resetTo(
-            int position, int orderDiffInVariant, int orderDiffInPattern, int clusteredAround) {
+            int position, int orderDiffInVariant, int orderDiffInPattern, int orderDiffAbsolute, int clusteredAround) {
         this.position = position;
         this.orderDiffInPattern = orderDiffInPattern;
         this.orderDiffInVariant = orderDiffInVariant;
+        this.placementDiff = orderDiffAbsolute;
         this.clusteredAround = clusteredAround;
         this.mutationsCommitted++;
     }
@@ -216,6 +244,7 @@ class PositionCandidate {
         this.position = UNINITIALIZED;
         this.orderDiffInPattern = UNINITIALIZED;
         this.orderDiffInVariant = UNINITIALIZED;
+        this.placementDiff = UNINITIALIZED;
         this.clusteredAround = UNINITIALIZED;
         this.mutationsAttempts = 0;
         this.mutationsCommitted = 0;

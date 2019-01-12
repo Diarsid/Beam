@@ -6,6 +6,7 @@
 package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.TreeSet;
+import java.util.function.IntFunction;
 
 import diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
@@ -20,6 +21,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_NOT_FOUND;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.arePositionsEquals;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.lengthImportanceRatio;
@@ -42,8 +44,17 @@ import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
  */
 class AnalyzeData extends PooledReusable {
     
+    private static final IntFunction<String> POSITION_INT_TO_STRING;
+    
     static {
         createPoolFor(AnalyzeData.class, () -> new AnalyzeData());
+        POSITION_INT_TO_STRING = (position) -> {
+            if ( position == POS_NOT_FOUND ) {
+                return "x";
+            } else {
+                return String.valueOf(position);
+            }                    
+        };
     }
     
     final AnalyzePositionsData forwardAnalyze;
@@ -290,7 +301,7 @@ class AnalyzeData extends PooledReusable {
                 .map(s -> s.length() == 1 ? " " + s : s)
                 .collect(joining(" "));
         String positionsString =  stream(this.best.positions)
-                .mapToObj(position -> String.valueOf(position))
+                .mapToObj(POSITION_INT_TO_STRING)
                 .map(s -> s.length() == 1 ? " " + s : s)
                 .collect(joining(" "));
         logAnalyze(BASE, "  pattern chars : %s", patternCharsString);
@@ -427,7 +438,7 @@ class AnalyzeData extends PooledReusable {
 
     private void logUnsortedPositionsOf(AnalyzePositionsData data) {
         String positionsS = stream(data.positions)
-                .mapToObj(position -> String.valueOf(position))
+                .mapToObj(POSITION_INT_TO_STRING)
                 .collect(joining(" "));
         logAnalyze(BASE, "  %s positions before sorting: %s", data.direction, positionsS);
     }

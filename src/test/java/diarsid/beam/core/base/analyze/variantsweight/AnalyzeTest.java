@@ -1097,6 +1097,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_javaPathCase2_jpath() {
+        pattern = "jpath";
+        
+        variants = asList(
+                "Engines/Java/Path",
+                "Engines/Java/Path/Jshell",
+                "Engines/Java/Path/JAVA_HOME/bin"
+                );
+    
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_javaSpecCase_jspec() {
         pattern = "jspec";
         

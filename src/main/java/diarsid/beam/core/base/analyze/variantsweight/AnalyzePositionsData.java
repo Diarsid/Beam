@@ -8,7 +8,6 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +102,7 @@ class AnalyzePositionsData {
     SortedSet<Integer> forwardUnclusteredIndexes = new TreeSet<>();
     SortedSet<Integer> reverseUnclusteredIndexes = new TreeSet<>(reverseOrder());
     Set<Integer> unclusteredPatternCharIndexes = null;
-    Set<Integer> localUnclusteredPatternCharIndexes = new HashSet<>();
+    Set<Integer> localUnclusteredPatternCharIndexes = new TreeSet<>();
     FindPositionsStep findPositionsStep;
     boolean previousPositionInVariantFound;
     boolean nextPositionInVariantFound;
@@ -125,7 +124,7 @@ class AnalyzePositionsData {
     Map<Integer, Integer> positionPatternIndexes = new HashMap<>();
     Map<Integer, FindPositionsStep> positionFoundSteps = new HashMap<>();
     Set<Integer> filledPositions = positionFoundSteps.keySet();
-    PositionCandidate positionCandidate = new PositionCandidate();
+    private final PositionCandidate positionCandidate;
     int nearestPositionInVariant;
     List<Integer> currentClusterOrderDiffs = new ArrayList();
     Clusters clusters;
@@ -161,6 +160,7 @@ class AnalyzePositionsData {
     AnalyzePositionsData(AnalyzeData data, AnalyzePositionsDirection direction) {
         this.data = data;
         this.clusters = new Clusters(this.data, direction);
+        this.positionCandidate = new PositionCandidate(this.data);
         this.direction = direction;
         this.keyChars = new TreeSet<>();
         this.clearPositionsAnalyze();
@@ -409,7 +409,7 @@ class AnalyzePositionsData {
     }
         
     void findPatternCharsPositions() {
-                
+        
         proceedWith(STEP_1);
         logAnalyze(POSITIONS_SEARCH, "  %s", direction);
         logAnalyze(POSITIONS_SEARCH, "    %s", findPositionsStep);
@@ -662,6 +662,7 @@ class AnalyzePositionsData {
                         positions[currentPatternCharIndex] = currentPatternCharPositionInVariant;
                         positionPatternIndexes.put(currentPatternCharPositionInVariant, currentPatternCharIndex);
                         positionFoundSteps.put(currentPatternCharPositionInVariant, findPositionsStep);
+                        localUnclusteredPatternCharIndexes.remove(currentPatternCharIndex);
                         logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant)", currentChar, currentPatternCharPositionInVariant);
                         logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
                         logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
@@ -689,8 +690,6 @@ class AnalyzePositionsData {
                 } else {
                     // on steps, other than STEP_1, do not save positions directly, just record them as appropriate for saving (excluding STEP_4).
                     if ( findPositionsStep.canAddToPositions(charsInClusterQty) ) {
-                                                
-                        isCurrentCharPositionAddedToPositions = positionCandidate.hasAtLeastOneAcceptedCandidate();
                         
                         int orderDiffInPattern;
                         if ( nearestPositionInVariant > POS_NOT_FOUND ) {
@@ -725,7 +724,11 @@ class AnalyzePositionsData {
                             }
                             if ( nextCharInVariantByPattern > -1 ) {
                                 orderDiffInVariant = absDiff(currentPatternCharPositionInVariant, nextCharInVariantByPattern);
-                            }
+                            }                          
+                        }  
+                        if ( orderDiffInVariant == POS_UNINITIALIZED && nonEmpty(filledPositions) ) {
+                            int nearestFilledPosition = findNearestFilledPositionTo(currentPatternCharIndex);
+                            orderDiffInVariant = absDiff(currentPatternCharPositionInVariant, nearestFilledPosition);
                         }     
                         
                         // debugging zone
@@ -781,13 +784,13 @@ class AnalyzePositionsData {
                                                 
                         positionCandidate.tryToMutate(
                                 currentPatternCharPositionInVariant, 
+                                currentPatternCharIndex,
                                 orderDiffInVariant, 
                                 orderDiffInPattern, 
                                 charsInClusterQty,
                                 charsRemained);
                     }
-                }
-                
+                }                
             }         
 
             currentPatternCharPositionInVariantToSave = currentPatternCharPositionInVariant;
@@ -809,14 +812,12 @@ class AnalyzePositionsData {
         
         if ( findPositionsStep.isAfter(STEP_1) && positionCandidate.isPresent() ) {
             int position = positionCandidate.position();
-            
-            if ( positionCandidate.committedMutations() > 0 && positionCandidate.hasRejectedMutations() ) {
-                int a = 5;
-            }
-            
+                                                
+            isCurrentCharPositionAddedToPositions = true;
             positions[currentPatternCharIndex] = position;
             positionPatternIndexes.put(position, currentPatternCharIndex);
             positionFoundSteps.put(position, findPositionsStep);
+            localUnclusteredPatternCharIndexes.remove(currentPatternCharIndex);
             logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant), %s", currentChar, position, positionCandidate);
             logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
             logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
@@ -836,6 +837,7 @@ class AnalyzePositionsData {
                     positions[currentPatternCharIndex] = currentPatternCharPositionInVariantToSave;
                     positionPatternIndexes.put(currentPatternCharPositionInVariantToSave, currentPatternCharIndex);
                     positionFoundSteps.put(currentPatternCharPositionInVariantToSave, findPositionsStep);
+                    localUnclusteredPatternCharIndexes.remove(currentPatternCharIndex);
                     logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant) is single char in variant", currentChar, currentPatternCharPositionInVariantToSave);
                     logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
                     logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
@@ -856,10 +858,65 @@ class AnalyzePositionsData {
                 positions[positionIndex] = positionValue;
                 positionPatternIndexes.put(positionValue, positionIndex);
                 positionFoundSteps.put(positionValue, findPositionsStep);
+                localUnclusteredPatternCharIndexes.remove(positionIndex);
                 return true;
             }
         }
         return false;
+    }
+    
+    private int findNearestFilledPositionTo(int patternCharIndex) {
+        int nearestFoundPosition;
+        
+        if ( patternCharIndex == 0 ) {
+            nearestFoundPosition = searchForwardNearestFilledPositionTo(patternCharIndex);
+        } else if ( patternCharIndex == data.pattern.length() - 1 ) {
+            nearestFoundPosition = searchBackwardNearestFilledPositionTo(patternCharIndex);
+        } else {
+            nearestFoundPosition = searchForwardAndBackwardNearestFilledPositionTo(patternCharIndex);
+        }
+        
+        return nearestFoundPosition;
+    }
+    
+    private int searchForwardNearestFilledPositionTo(int patternCharIndex) {
+        int position;
+        for (int i = patternCharIndex + 1; i < positions.length; i++) {
+            position = positions[i];
+            if ( position != POS_UNINITIALIZED ) {
+                return position;
+            }
+        }
+        return POS_NOT_FOUND;
+    }
+    
+    private int searchBackwardNearestFilledPositionTo(int patternCharIndex) {
+        int position;
+        for (int i = patternCharIndex - 1; i > -1; i--) {
+            position = positions[i];
+            if ( position != POS_UNINITIALIZED ) {
+                return position;
+            }
+        }
+        return POS_NOT_FOUND;
+    }
+    
+    private int searchForwardAndBackwardNearestFilledPositionTo(int patternCharIndex) {
+        int position;
+        
+        if ( patternCharIndex > positions.length / 2 ) {
+            position = searchForwardNearestFilledPositionTo(patternCharIndex);
+            if ( position == POS_NOT_FOUND ) {
+                position = searchBackwardNearestFilledPositionTo(patternCharIndex);
+            }
+        } else {
+            position = searchBackwardNearestFilledPositionTo(patternCharIndex);
+            if ( position == POS_NOT_FOUND ) {
+                position = searchForwardNearestFilledPositionTo(patternCharIndex);
+            }
+        }
+        
+        return position;
     }
     
     boolean isCurrentCharVariantEnd() {
