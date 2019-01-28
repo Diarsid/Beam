@@ -9,7 +9,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isStrictSimilar;
+import static diarsid.beam.core.application.environment.BeamEnvironment.similarity;
 
 /**
  *
@@ -18,7 +18,9 @@ import static diarsid.beam.core.base.analyze.similarity.Similarity.isStrictSimil
 public interface Help {
     
     public static boolean isHelpRequest(String s) {
-        return s.equalsIgnoreCase("?") || s.equalsIgnoreCase("h") || isStrictSimilar("help", s);
+        return s.equalsIgnoreCase("?") || 
+               s.equalsIgnoreCase("h") || 
+               similarity().isStrictSimilar("help", s);
     }
     
     public static Help asHelp(String... info) {

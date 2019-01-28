@@ -12,6 +12,7 @@ import java.util.function.BiFunction;
 import diarsid.beam.core.base.analyze.cache.CacheUsage;
 import diarsid.beam.core.base.analyze.cache.PersistentAnalyzeCache;
 import diarsid.beam.core.modules.ResponsiveDataModule;
+import diarsid.support.configuration.Configuration;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
@@ -19,7 +20,6 @@ import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.Beam.systemInitiator;
-import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.cache.AnalyzeCache.PAIR_HASH_FUNCTION;
 import static diarsid.beam.core.base.analyze.cache.CacheUsage.NOT_USE_CACHE;
 import static diarsid.beam.core.base.analyze.cache.CacheUsage.USE_CACHE;
@@ -38,14 +38,24 @@ import static diarsid.support.log.Logging.logFor;
 public class Similarity {
     
     private static final int SIMILARITY_ALGORITHM_VERSION = 4;
-    private static final PersistentAnalyzeCache<Boolean> CACHE;
     
-    static {
+    private static final int CHAIN_1_NOT_FOUND = -2;
+    private static final int CHAIN_2_NOT_FOUND = -3;
+    
+    static final char CHAIN_NOT_FOUND_CHAR = '*';
+    
+    private final boolean logLevelBasicEnabled;
+    private final boolean logLevelAdvancedEnabled;
+    private final PersistentAnalyzeCache<Boolean> cache;
+
+    public Similarity(Configuration configuration) {
+        this.logLevelBasicEnabled = configuration.asBoolean("analyze.similarity.log.base");
+        this.logLevelAdvancedEnabled = configuration.asBoolean("analyze.similarity.log.advanced");  
         BiFunction<String, String, Boolean> similarityFunction = (target, pattern) -> {
             return isSimilarInternally(target, pattern, NOT_USE_CACHE);
         };
         
-        CACHE = new PersistentAnalyzeCache<>(
+        cache = new PersistentAnalyzeCache<>(
                 systemInitiator(),
                 similarityFunction,
                 PAIR_HASH_FUNCTION, 
@@ -55,24 +65,10 @@ public class Similarity {
             logFor(Similarity.class).info("requesting for data module...");
             requestPayloadThenAwaitForSupply(ResponsiveDataModule.class).ifPresent((dataModule) -> {
                 logFor(Similarity.class).info("cache loading...");
-                CACHE.initPersistenceWith(dataModule.cachedSimilarity());
+                cache.initPersistenceWith(dataModule.cachedSimilarity());
                 logFor(Similarity.class).info("cache loaded");            
             });
-        });
-    }
-    
-    static final char CHAIN_NOT_FOUND_CHAR = '*';
-    
-    private static final int CHAIN_1_NOT_FOUND = -2;
-    private static final int CHAIN_2_NOT_FOUND = -3;
-    
-    private static boolean logLevelBasicEnabled = 
-            configuration().asBoolean("analyze.similarity.log.base");
-    private static boolean logLevelAdvancedEnabled = 
-            configuration().asBoolean("analyze.similarity.log.advanced");
-    
-
-    private Similarity() {        
+        });        
     }
     
     private static int indexOfChain(String target, char chain1, char chain2) {
@@ -113,13 +109,13 @@ public class Similarity {
         return false;
     }
     
-    private static void similarityLogBreak() {
+    private void similarityLogBreak() {
         if ( logLevelBasicEnabled ) {
             logFor(Similarity.class).info("");
         }
     }
     
-    private static void similarityLog(String s, int indentLevel) {
+    private void similarityLog(String s, int indentLevel) {
         if ( indentLevel == 0 ) {
             similarityLog(s);
         } else {
@@ -129,7 +125,7 @@ public class Similarity {
         }               
     }
     
-    private static void similarityLog(String s) {
+    private void similarityLog(String s) {
         if ( logLevelBasicEnabled ) {
             logFor(Similarity.class).info(s);
         }        
@@ -145,7 +141,7 @@ public class Similarity {
         }
     }
     
-    private static int calculateSimilarityPercent(String target, String pattern) {        
+    private int calculateSimilarityPercent(String target, String pattern) {        
         if ( target.isEmpty() 
                 || pattern.isEmpty() 
                 || pattern.length() == 1 
@@ -474,14 +470,14 @@ public class Similarity {
         }
     }
     
-    public static boolean isSimilar(String target, String pattern) {
+    public boolean isSimilar(String target, String pattern) {
         return isSimilarInternally(target, pattern, USE_CACHE);
     }
     
-    static boolean isSimilarInternally(
+    boolean isSimilarInternally(
             String target, String pattern, CacheUsage cacheUsage) {
         if ( cacheUsage.equals(USE_CACHE) ) {
-            Boolean similarity = CACHE.searchNullableCachedFor(target, pattern);
+            Boolean similarity = cache.searchNullableCachedFor(target, pattern);
             if ( nonNull(similarity) ) {
                 similarityLog(format(
                         "FOUND CACHED %s (target: %s, pattern: %s)", 
@@ -501,13 +497,13 @@ public class Similarity {
                 requiredPercent));
         
         if ( cacheUsage.equals(USE_CACHE) ) {
-            CACHE.addToCache(target, pattern, similar);
+            cache.addToCache(target, pattern, similar);
         }
         
         return similar;          
     }
     
-    public static boolean isSimilarPathToPath(String targetPath, String patternPath) {
+    public boolean isSimilarPathToPath(String targetPath, String patternPath) {
         similarityLog("[PATH] pattern : " + patternPath);
         similarityLog("[PATH] target  : " + targetPath);
         String[] patterns = splitPathFragmentsFrom(patternPath);
@@ -536,13 +532,13 @@ public class Similarity {
         return matches;
     }
     
-    public static boolean hasSimilar(Collection<String> realTargets, String pattern) {
+    public boolean hasSimilar(Collection<String> realTargets, String pattern) {
         return realTargets
                 .stream()
                 .anyMatch(target -> isSimilar(target, pattern));
     }
     
-    public static boolean isStrictSimilar(String target, String pattern) {
+    public boolean isStrictSimilar(String target, String pattern) {
         target = lower(target);
         pattern = lower(pattern);
         
@@ -593,7 +589,7 @@ public class Similarity {
         return acceptable;
     }
     
-    public static boolean hasStrictSimilar(Collection<String> realTargets, String pattern) {
+    public boolean hasStrictSimilar(Collection<String> realTargets, String pattern) {
         return realTargets
                 .stream()
                 .anyMatch(target -> isStrictSimilar(target, pattern));

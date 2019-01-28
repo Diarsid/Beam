@@ -16,6 +16,7 @@ import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.RowConversion;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.support.objects.Pool;
 
 import static java.util.stream.Collectors.toList;
 
@@ -24,7 +25,6 @@ import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_INVOCATION_COMMAND;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.rowToNewInvocationCommandWithOriginal;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -32,8 +32,11 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 class H2DaoCommandsV2 extends H2DaoCommandsV0 {   
         
-    H2DaoCommandsV2(DataBase dataBase) {
+    private final Pool<SqlPatternSelect> sqlPatternSelectPool;
+    
+    H2DaoCommandsV2(DataBase dataBase, Pool<SqlPatternSelect> sqlPatternSelectPool) {
         super(dataBase);
+        this.sqlPatternSelectPool = sqlPatternSelectPool;
     }
 
     @Override
@@ -41,7 +44,7 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class);) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             List<InvocationCommand> found;            
             
@@ -119,7 +122,7 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             List<InvocationCommand> found;
             
@@ -200,7 +203,7 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class);) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             List<InvocationCommand> found;
             
@@ -265,7 +268,7 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             List<InvocationCommand> found;
             
@@ -333,7 +336,7 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {            
             RowConversion<InvocationCommand> rowToNewInvocationCommandWithPatternAsOriginal = 
                     rowToNewInvocationCommandWithOriginal(pattern);
@@ -403,7 +406,7 @@ class H2DaoCommandsV2 extends H2DaoCommandsV0 {
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction(); 
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {            
             RowConversion<InvocationCommand> rowToNewInvocationCommandWithPatternAsOriginal = 
                     rowToNewInvocationCommandWithOriginal(pattern);

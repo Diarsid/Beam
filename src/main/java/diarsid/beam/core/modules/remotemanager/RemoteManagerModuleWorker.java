@@ -16,7 +16,6 @@ import java.rmi.server.UnicastRemoteObject;
 import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
 import diarsid.beam.core.base.rmi.RemoteCoreAccessEndpoint;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.RemoteManagerModule;
@@ -31,15 +30,17 @@ import static diarsid.support.log.Logging.logFor;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRegistry;
 import static diarsid.beam.core.modules.remotemanager.CoreRemoteObjectsHolder.holdedRemoteAccessEndpoint;
 
+import diarsid.beam.core.modules.BeamEnvironmentModule;
+
 
 public class RemoteManagerModuleWorker implements RemoteManagerModule {
     
     private final RemoteCoreAccessEndpoint remoteAccessEndpoint;    
-    private final ApplicationComponentsHolderModule appComponentsHolderModule;
+    private final BeamEnvironmentModule appComponentsHolderModule;
     private final IoModule io;
     
     public RemoteManagerModuleWorker(
-            ApplicationComponentsHolderModule configModule, 
+            BeamEnvironmentModule configModule, 
             ControlModule coreControlModule, 
             IoModule ioModule) {
         this.appComponentsHolderModule = configModule;

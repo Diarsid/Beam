@@ -30,6 +30,7 @@ import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNameAndPlace;
 import diarsid.beam.core.domain.inputparsing.webpages.WebDirectoryNamePlaceAndProperty;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebDirectories;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
@@ -69,8 +70,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.ORDER;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.WEB_PLACE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 
 class WebDirectoriesKeeperWorker 
@@ -82,6 +81,7 @@ class WebDirectoriesKeeperWorker
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
     private final Initiator systemInitiator;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final KeeperDialogHelper helper;
     private final WebObjectsInputParser webObjectsParser;
     private final Help enterExistingDirectoryNameHelp;
@@ -96,6 +96,7 @@ class WebDirectoriesKeeperWorker
             CommandsMemoryKeeper commandsMemory,
             InnerIoEngine ioEngine, 
             Initiator systemInitiator,
+            Pool<KeeperLoopValidationDialog> dialogPool,
             KeeperDialogHelper helper, 
             WebObjectsInputParser webObjectsParser) {
         super(ioEngine);
@@ -104,6 +105,7 @@ class WebDirectoriesKeeperWorker
         this.commandsMemory = commandsMemory;
         this.ioEngine = ioEngine;
         this.systemInitiator = systemInitiator;
+        this.dialogPool = dialogPool;
         this.helper = helper;
         this.webObjectsParser = webObjectsParser;        
         this.enterExistingDirectoryNameHelp = this.ioEngine.addToHelpContext(
@@ -160,12 +162,12 @@ class WebDirectoriesKeeperWorker
         if ( place.isUndefined() ) {
             return "";
         }
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+        
         Optional<Integer> freeNameIndex;
         Choice applyIndexChoice;
         String applyIndexQuestion;
         
-        try { 
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
             dialog
                     .withRule(ENTITY_NAME_RULE)
                     .withInputSource(() -> {
@@ -222,9 +224,7 @@ class WebDirectoriesKeeperWorker
             }
 
             return name;
-        } finally {
-            giveBackToPool(dialog);
-        }
+        } 
     }
     
     @Override
@@ -283,10 +283,9 @@ class WebDirectoriesKeeperWorker
             Initiator initiator, String name, WebPlace place) {
         
         List<WebDirectory> foundDirs;
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
         
         synchronized ( this.allDirectoriesConsistencyLock ) {
-            try {
+            try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
                 dialog
                         .withInitialArgument(name)
                         .withRule(ENTITY_NAME_RULE)
@@ -344,9 +343,7 @@ class WebDirectoriesKeeperWorker
                         continue directoriesSearching;
                     } 
                 }
-            } finally {
-                giveBackToPool(dialog);
-            }
+            } 
         }    
     }
 

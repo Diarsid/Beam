@@ -6,11 +6,11 @@
 
 package diarsid.beam.core.base.control.io.interpreter.recognizers;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.NodeRecognizer;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isStrictSimilar;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectCommand;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.EXPECTS_MORE_ARGS;
@@ -23,14 +23,17 @@ public class WordRecognizer extends NodeRecognizer {
     private final String controlWord;
     private final ArgsExpectation moreArgsExpectation;
     private final EmptyArgsTolerance emptyArgsTolerance;
+    private final Similarity similarity;
     
     WordRecognizer(
             EmptyArgsTolerance emptyArgsTolerance, 
             ArgsExpectation moreArgsExpectation, 
-            String controlWord) {
+            String controlWord,
+            Similarity similarity) {
         this.emptyArgsTolerance = emptyArgsTolerance;
         this.moreArgsExpectation = moreArgsExpectation;
         this.controlWord = lower(controlWord).trim();
+        this.similarity = similarity;
     }
 
     @Override
@@ -76,6 +79,6 @@ public class WordRecognizer extends NodeRecognizer {
 
     private boolean currentArgIsControlWord(Input input) {
         return this.controlWord.equalsIgnoreCase(input.currentArg()) ||
-               isStrictSimilar(this.controlWord, input.currentArg());
+               this.similarity.isStrictSimilar(this.controlWord, input.currentArg());
     }
 }

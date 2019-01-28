@@ -13,28 +13,31 @@ import diarsid.beam.core.base.data.util.SqlPatternSelect;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.support.objects.Pool;
 
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
  * @author Diarsid
  */
 class H2DaoBatchesV2 extends H2DaoBatchesV0 {
+        
+    private final Pool<SqlPatternSelect> sqlPatternSelectPool;
     
-    H2DaoBatchesV2(DataBase dataBase) {
+    H2DaoBatchesV2(DataBase dataBase, Pool<SqlPatternSelect> sqlPatternSelectPool) {
         super(dataBase);
+        this.sqlPatternSelectPool = sqlPatternSelectPool;
     }
 
     @Override
     public List<String> getBatchNamesByNamePattern(String pattern) throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             List<String> found;
             

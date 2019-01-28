@@ -23,10 +23,6 @@ class Cluster
         implements 
                 Comparable<Cluster> {
     
-    static {
-        PooledReusable.createPoolFor(Cluster.class, () -> new Cluster());
-    }
-    
     private int firstPosition;
     private int length;
     private int ordersDiffMean;
@@ -36,7 +32,7 @@ class Cluster
     private boolean ordersDiffHaveCompensation;
     private int compensationSum;
 
-    private Cluster() {
+    Cluster() {
         super();
         this.firstPosition = POS_UNINITIALIZED;
         this.length = 0;

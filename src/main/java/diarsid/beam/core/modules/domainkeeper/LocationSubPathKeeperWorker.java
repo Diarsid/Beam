@@ -8,6 +8,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -22,8 +23,6 @@ import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPaths;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isVariantSatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -41,16 +40,19 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
     private final ResponsiveDaoLocationSubPaths daoSubPaths;
     private final ResponsiveDaoLocationSubPathChoices daoSubPathChoices;
     private final InnerIoEngine ioEngine;
+    private final Analyze analyze;
     private final Help getOneSubPathHelp;
     private final Help chooseOneSubPathHelp;
     
     LocationSubPathKeeperWorker(
             ResponsiveDaoLocationSubPaths daoSubPaths,
             ResponsiveDaoLocationSubPathChoices daoSubPathChoices,
+            Analyze analyze, 
             InnerIoEngine ioEngine) {        
         this.daoSubPaths = daoSubPaths;
         this.daoSubPathChoices = daoSubPathChoices;
         this.ioEngine = ioEngine;
+        this.analyze = analyze;
         this.getOneSubPathHelp = this.ioEngine.addToHelpContext(
                 "Choose if use this supbath to find specified target.",
                 "Use: ",
@@ -106,7 +108,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
 
     private ValueFlow<LocationSubPath> askAboutSubPathIfSatisfiable(
             Initiator initiator, String pattern, LocationSubPath subPath) {
-        if ( isVariantSatisfiable(pattern, subPath.toSingleVariant()) ) {
+        if ( this.analyze.isVariantSatisfiable(pattern, subPath.toSingleVariant()) ) {
             return this.askAboutSubPath(initiator, subPath, pattern);
         } else {
             return valueFlowCompletedEmpty();
@@ -148,7 +150,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
     
     private ValueFlow<LocationSubPath> resolveManySubPaths(
             Initiator initiator, String pattern, List<LocationSubPath> subPaths) {
-        WeightedVariants variants = weightVariants(pattern, toVariants(subPaths));
+        WeightedVariants variants = this.analyze.weightVariants(pattern, toVariants(subPaths));
         if ( variants.hasOne() ) {
             return this.resolveOneSubPathFrom(initiator, pattern, getOne(subPaths));
         } else if ( variants.hasMany() ) {

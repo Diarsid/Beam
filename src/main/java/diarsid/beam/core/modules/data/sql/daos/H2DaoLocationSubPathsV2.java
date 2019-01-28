@@ -15,6 +15,7 @@ import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.support.objects.Pool;
 
 import static java.util.stream.Collectors.toList;
 
@@ -22,7 +23,6 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -31,10 +31,12 @@ import static diarsid.support.objects.Pools.takeFromPool;
 class H2DaoLocationSubPathsV2 
         extends BeamCommonDao 
         implements DaoLocationSubPaths {
+        
+    private final Pool<SqlPatternSelect> sqlPatternSelectPool;
     
-    
-    H2DaoLocationSubPathsV2(DataBase dataBase) {
+    H2DaoLocationSubPathsV2(DataBase dataBase, Pool<SqlPatternSelect> sqlPatternSelectPool) {
         super(dataBase);
+        this.sqlPatternSelectPool = sqlPatternSelectPool;
     }
 
     @Override
@@ -42,7 +44,7 @@ class H2DaoLocationSubPathsV2
             throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             
             List<LocationSubPath> foundSubPaths;

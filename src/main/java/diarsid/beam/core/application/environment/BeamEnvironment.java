@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.application.environment;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.support.configuration.Configuration;
 
 import static diarsid.beam.core.application.environment.CurrentWorkingDirectory.currentWorkingDirectory;
@@ -13,12 +15,16 @@ import static diarsid.beam.core.application.environment.ScriptSyntax.scriptSynta
 import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
 import static diarsid.support.configuration.Configuration.actualConfiguration;
 import static diarsid.support.configuration.Configuration.configure;
+import static diarsid.support.objects.Pools.pools;
 
 /**
  *
  * @author Diarsid
  */
 public class BeamEnvironment {
+    
+    private static final Analyze ANALYZE;
+    private static final Similarity SIMILARITY;
     
     static {
             configure()
@@ -77,6 +83,9 @@ public class BeamEnvironment {
                             "starter.jvm.option = -Dfile.encoding=UTF-8",
                             "starter.jvm.option = -Dlog4j.configuration=file:../config/log4j.properties")
                     .read("../config/beam.config");
+        
+        SIMILARITY = new Similarity(configuration());
+        ANALYZE = new Analyze(configuration(), SIMILARITY, pools());
     }
 
     private BeamEnvironment() {
@@ -94,17 +103,26 @@ public class BeamEnvironment {
 
     public static ProgramsCatalog programsCatalog() {
         return new ProgramsCatalogReal(
-                configuration().asString("catalogs.programs"), 
-                searcherWithDepthsOf(3));
+                configuration().asString("catalogs.programs"),                 
+                searcherWithDepthsOf(3, SIMILARITY));
     }
 
     public static NotesCatalog notesCatalog() {
         return new NotesCatalogReal(
-                configuration().asString("catalogs.notes"), searcherWithDepthsOf(5));
+                configuration().asString("catalogs.notes"), 
+                searcherWithDepthsOf(5, SIMILARITY));
     }
     
     public static Configuration configuration() {
         return actualConfiguration();
+    }
+    
+    public static Similarity similarity() {
+        return SIMILARITY;
+    }
+    
+    public static Analyze analyze() {
+        return ANALYZE;
     }
     
 }

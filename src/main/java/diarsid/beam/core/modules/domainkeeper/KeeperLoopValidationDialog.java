@@ -25,10 +25,6 @@ import static diarsid.support.objects.Possibles.possibleButEmpty;
  */
 class KeeperLoopValidationDialog extends PooledReusable {
     
-    static {
-        createPoolFor(KeeperLoopValidationDialog.class, () -> new KeeperLoopValidationDialog());
-    }
-    
     private final Possible<String> initialArgument;
     private final Possible<Consumer<String>> outputDestination;
     private final Possible<Supplier<String>> inputSource;

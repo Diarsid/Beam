@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -21,8 +22,6 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoNamedEntities;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
@@ -42,12 +41,15 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
     
     private final InnerIoEngine ioEngine;
     private final ResponsiveDaoNamedEntities namedEntitiesDao;
+    private final Analyze analyze;
     private final Set<CommandType> subjectedCommandTypes;
     private final Help chooseOneEntityHelp;
 
-    NamedEntitiesKeeperWorker(InnerIoEngine ioEngine, ResponsiveDaoNamedEntities dao) {
+    NamedEntitiesKeeperWorker(
+            InnerIoEngine ioEngine, ResponsiveDaoNamedEntities dao, Analyze analyze) {
         this.ioEngine = ioEngine;
         this.namedEntitiesDao = dao;
+        this.analyze = analyze;
         this.subjectedCommandTypes = toSet(EXECUTOR_DEFAULT);
         this.chooseOneEntityHelp = this.ioEngine.addToHelpContext(
                 "Choose one variant.",
@@ -77,7 +79,7 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
                 this.namedEntitiesDao.getEntitiesByNamePattern(initiator, pattern);        
         if ( hasOne(entities) ) {
             NamedEntity entity = getOne(entities);
-            if ( isEntitySatisfiable(pattern, entity) ) {
+            if ( this.analyze.isEntitySatisfiable(pattern, entity) ) {
                 return valueFlowCompletedWith(entity);
             } else {
                 return valueFlowCompletedEmpty();
@@ -91,7 +93,8 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
     
     private ValueFlow<NamedEntity> manageWithMultipleEntities(
             Initiator initiator, String pattern, List<NamedEntity> entities) {
-        WeightedVariants variants = weightVariants(pattern, entitiesToVariants(entities));
+        WeightedVariants variants = this.analyze.weightVariants(
+                pattern, entitiesToVariants(entities));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }

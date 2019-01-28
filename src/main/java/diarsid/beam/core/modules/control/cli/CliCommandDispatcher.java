@@ -22,7 +22,6 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
 import diarsid.beam.core.base.control.io.commands.executor.PluginTaskCommand;
 import diarsid.beam.core.base.control.io.commands.executor.RunProgramCommand;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
 import diarsid.beam.core.modules.IoModule;
@@ -30,6 +29,8 @@ import diarsid.beam.core.modules.IoModule;
 import static diarsid.beam.core.Beam.beamRuntime;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.support.log.Logging.logFor;
+
+import diarsid.beam.core.modules.BeamEnvironmentModule;
 
 /**
  *
@@ -59,7 +60,7 @@ public class CliCommandDispatcher implements ConsoleCommandDispatcher {
     
     public static ConsoleCommandRealProcessor buildCommandLineProcessor(
             IoModule ioModule, 
-            ApplicationComponentsHolderModule appComponentsHolderModule, 
+            BeamEnvironmentModule appComponentsHolderModule, 
             ExecutorModule executorModule,
             DomainKeeperModule domainModule) {
         Interpreter interpreter = appComponentsHolderModule.interpreter();

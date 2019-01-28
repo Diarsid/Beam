@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -23,11 +24,10 @@ import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.domain.entities.Program;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -43,14 +43,14 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 
 class ProgramsKeeperWorker implements ProgramsKeeper {
     
     private final InnerIoEngine ioEngine;
     private final Walker walker;
+    private final Analyze analyze;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final ProgramsCatalog programsCatalog;
     private final Set<CommandType> operatingCommandTypes;
     private final Help enterProgramNameHelp;
@@ -60,9 +60,13 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     ProgramsKeeperWorker(
             InnerIoEngine ioEngine, 
             Walker walker,
+            Analyze analyze, 
+            Pool<KeeperLoopValidationDialog> dialogPool,
             ProgramsCatalog programsCatalog) {
         this.ioEngine = ioEngine;
         this.walker = walker;
+        this.analyze = analyze;
+        this.dialogPool = dialogPool;
         this.programsCatalog = programsCatalog;
         this.operatingCommandTypes = toSet(RUN_PROGRAM);
         this.enterProgramNameHelp = this.ioEngine.addToHelpContext(
@@ -102,9 +106,8 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         } else {
             name = "";
         }
-                
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-        try {
+        
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
             name = dialog
                     .withInitialArgument(name)
                     .withRule(ENTITY_NAME_RULE)
@@ -116,9 +119,8 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
                         this.ioEngine.report(initiator, validationFail);
                     })
                     .validateAndGet();
-        } finally {
-            giveBackToPool(dialog);
-        }
+        } 
+        
         if ( name.isEmpty() ) {
             return valueFlowStopped();
         }
@@ -194,13 +196,14 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
             Program program = getOne(programs);
-            if ( isEntitySatisfiable(pattern, program) ) {
+            if ( this.analyze.isEntitySatisfiable(pattern, program) ) {
                 return valueFlowCompletedWith(program);
             } else {
                 return valueFlowCompletedEmpty();
             }            
         } else if ( hasMany(programs) ) {
-            WeightedVariants variants = weightVariants(pattern, entitiesToVariants(programs));
+            WeightedVariants variants = this.analyze.weightVariants(
+                    pattern, entitiesToVariants(programs));
             if ( variants.isEmpty() ) {
                 return valueFlowCompletedEmpty();
             }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -19,8 +20,6 @@ import diarsid.beam.core.modules.ResponsiveDataModule;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
@@ -35,10 +34,13 @@ class AllKeeperWorker implements AllKeeper {
     
     private final ResponsiveDataModule data;
     private final ProgramsKeeper programs;
+    private final Analyze analyze;
 
-    AllKeeperWorker(ResponsiveDataModule dataModule, ProgramsKeeper programsKeeper) {
+    AllKeeperWorker(
+            ResponsiveDataModule dataModule, ProgramsKeeper programsKeeper, Analyze analyze) {
         this.data = dataModule;
         this.programs = programsKeeper;
+        this.analyze = analyze;
     }
 
     @Override
@@ -117,7 +119,7 @@ class AllKeeperWorker implements AllKeeper {
         }
         return stringifiedResultsToMessage("Commands:", commands
                 .stream()
-                .filter(command -> isNameSatisfiable(argument, command.bestArgument()))
+                .filter(command -> this.analyze.isNameSatisfiable(argument, command.bestArgument()))
                 .map(command -> command.toMessageString())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -128,7 +130,7 @@ class AllKeeperWorker implements AllKeeper {
                 .locations()
                 .getLocationsByNamePattern(initiator, argument)
                 .stream()
-                .filter(location -> isEntitySatisfiable(argument, location))
+                .filter(location -> this.analyze.isEntitySatisfiable(argument, location))
                 .map(location -> location.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -139,7 +141,7 @@ class AllKeeperWorker implements AllKeeper {
                 .batches()
                 .getBatchNamesByNamePattern(initiator, argument)
                 .stream()
-                .filter(batchName -> isNameSatisfiable(argument, batchName))
+                .filter(batchName -> this.analyze.isNameSatisfiable(argument, batchName))
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
@@ -149,7 +151,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webPages()
                 .findByPattern(initiator, argument)
                 .stream()
-                .filter(page -> isEntitySatisfiable(argument, page))
+                .filter(page -> this.analyze.isEntitySatisfiable(argument, page))
                 .map(page -> page.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -160,7 +162,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webDirectories()
                 .findDirectoriesByPatternInAnyPlace(initiator, argument)
                 .stream()
-                .filter(webDir -> isNameSatisfiable(argument, webDir.name()))
+                .filter(webDir -> this.analyze.isNameSatisfiable(argument, webDir.name()))
                 .map(webDir -> format("%s (%s)", webDir.name(), lower(webDir.place().name())))
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -170,7 +172,7 @@ class AllKeeperWorker implements AllKeeper {
         return stringifiedResultsToMessage("Programs:", this.programs
                 .getProgramsByPattern(initiator, argument)
                 .stream()
-                .filter(program -> isEntitySatisfiable(argument, program))
+                .filter(program -> this.analyze.isEntitySatisfiable(argument, program))
                 .map(program -> program.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));

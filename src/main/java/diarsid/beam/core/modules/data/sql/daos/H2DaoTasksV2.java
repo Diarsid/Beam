@@ -14,29 +14,32 @@ import diarsid.beam.core.domain.entities.Task;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.support.objects.Pool;
 
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_TASK;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
  * @author Diarsid
  */
 class H2DaoTasksV2 extends H2DaoTasksV0 {
+        
+    private final Pool<SqlPatternSelect> sqlPatternSelectPool;
     
-    H2DaoTasksV2(DataBase dataBase) {
+    H2DaoTasksV2(DataBase dataBase, Pool<SqlPatternSelect> sqlPatternSelectPool) {
         super(dataBase);    
+        this.sqlPatternSelectPool = sqlPatternSelectPool;
     }    
 
     @Override
     public List<Task> findTasksByTextPattern(String pattern) throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();) 
         {
             
             List<Task> tasks = transact

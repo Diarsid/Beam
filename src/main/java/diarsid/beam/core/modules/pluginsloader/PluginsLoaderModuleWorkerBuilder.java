@@ -6,11 +6,12 @@
 package diarsid.beam.core.modules.pluginsloader;
 
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.PluginsLoaderModule;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
+
+import diarsid.beam.core.modules.BeamEnvironmentModule;
 
 /**
  *
@@ -19,10 +20,10 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 class PluginsLoaderModuleWorkerBuilder implements GemModuleBuilder<PluginsLoaderModule> {
     
     private final IoModule ioModule;
-    private final ApplicationComponentsHolderModule componentsHolderModule;
+    private final BeamEnvironmentModule componentsHolderModule;
 
     PluginsLoaderModuleWorkerBuilder(
-            IoModule ioModule, ApplicationComponentsHolderModule componentsHolderModule) {
+            IoModule ioModule, BeamEnvironmentModule componentsHolderModule) {
         this.ioModule = ioModule;
         this.componentsHolderModule = componentsHolderModule;
     }

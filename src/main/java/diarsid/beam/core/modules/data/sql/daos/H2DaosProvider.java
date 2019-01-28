@@ -8,8 +8,9 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.data.DataBase;
+import diarsid.beam.core.base.data.util.SqlPatternSelect;
+import diarsid.beam.core.base.data.util.SqlPatternSelectUnion;
 import diarsid.beam.core.base.exceptions.WorkflowBrokenException;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.data.DaoBatches;
 import diarsid.beam.core.modules.data.DaoCommands;
 import diarsid.beam.core.modules.data.DaoKeyValueStorage;
@@ -25,6 +26,7 @@ import diarsid.beam.core.modules.data.DaoTasks;
 import diarsid.beam.core.modules.data.DaoWebDirectories;
 import diarsid.beam.core.modules.data.DaoWebPages;
 import diarsid.beam.core.modules.data.DaosProvider;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 
@@ -33,6 +35,8 @@ import static diarsid.beam.core.modules.data.sql.daos.DataAccessVersion.getDataA
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_BOOLEAN;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_CACHED_FLOAT;
 
+import diarsid.beam.core.modules.BeamEnvironmentModule;
+
 /**
  *
  * @author Diarsid
@@ -40,13 +44,21 @@ import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW
 public class H2DaosProvider implements DaosProvider {
     
     private final DataBase dataBase;
-    private final ApplicationComponentsHolderModule components;
+    private final BeamEnvironmentModule components;
     private final DataAccessVersion dataAccessVersion;
+    private final Pool<SqlPatternSelect> sqlPatternSelectPool; 
+    private final Pool<SqlPatternSelectUnion> sqlPatternSelectUnionPool;
     
-    public H2DaosProvider(DataBase dataBase, ApplicationComponentsHolderModule components) {
+    public H2DaosProvider(
+            DataBase dataBase, 
+            BeamEnvironmentModule components, 
+            Pool<SqlPatternSelect> sqlPatternSelectPool, 
+            Pool<SqlPatternSelectUnion> sqlPatternSelectUnionPool) {
         this.dataBase = dataBase;
         this.components = components;
         this.dataAccessVersion = getDataAccessVersion(components.configuration());
+        this.sqlPatternSelectPool = sqlPatternSelectPool;
+        this.sqlPatternSelectUnionPool = sqlPatternSelectUnionPool;
     }
     
     private WorkflowBrokenException currentDataAccessVersionHasNoSupportFor(Class daoClass) {
@@ -58,7 +70,7 @@ public class H2DaosProvider implements DaosProvider {
     public DaoLocations createDaoLocations() {
         switch ( this.dataAccessVersion ) {
             case V1 : return new H2DaoLocationsV1(this.dataBase);
-            case V2 : return new H2DaoLocationsV2(this.dataBase);
+            case V2 : return new H2DaoLocationsV2(this.dataBase, this.sqlPatternSelectPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoLocations.class);
             }
@@ -69,7 +81,7 @@ public class H2DaosProvider implements DaosProvider {
     public DaoBatches createDaoBatches() {
         switch ( this.dataAccessVersion ) {
             case V1 : return new H2DaoBatchesV1(this.dataBase);
-            case V2 : return new H2DaoBatchesV2(this.dataBase);
+            case V2 : return new H2DaoBatchesV2(this.dataBase, this.sqlPatternSelectPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoBatches.class);
             }
@@ -80,8 +92,14 @@ public class H2DaosProvider implements DaosProvider {
     public DaoNamedEntities createDaoNamedEntities() {
         ProgramsCatalog programsCatalog = this.components.programsCatalog();
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoNamedEntitiesV1(this.dataBase, programsCatalog);
-            case V2 : return new H2DaoNamedEntitiesV2(this.dataBase, programsCatalog);
+            case V1 : return new H2DaoNamedEntitiesV1(
+                    this.dataBase, 
+                    programsCatalog);
+            case V2 : return new H2DaoNamedEntitiesV2(
+                    this.dataBase, 
+                    programsCatalog, 
+                    this.sqlPatternSelectPool, 
+                    this.sqlPatternSelectUnionPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoNamedEntities.class);
             }
@@ -92,7 +110,7 @@ public class H2DaosProvider implements DaosProvider {
     public DaoCommands createDaoCommands() {
         switch ( this.dataAccessVersion ) {
             case V1 : return new H2DaoCommandsV1(this.dataBase);
-            case V2 : return new H2DaoCommandsV2(this.dataBase);
+            case V2 : return new H2DaoCommandsV2(this.dataBase, this.sqlPatternSelectPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoCommands.class);
             }
@@ -113,7 +131,7 @@ public class H2DaosProvider implements DaosProvider {
     public DaoTasks createDaoTasks() {
         switch ( this.dataAccessVersion ) {
             case V1 : return new H2DaoTasksV1(this.dataBase);
-            case V2 : return new H2DaoTasksV2(this.dataBase);
+            case V2 : return new H2DaoTasksV2(this.dataBase, this.sqlPatternSelectPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoTasks.class);
             }
@@ -129,8 +147,10 @@ public class H2DaosProvider implements DaosProvider {
     @Override
     public DaoWebPages createDaoWebPages() {
         switch ( this.dataAccessVersion ) {
-            case V1 : return new H2DaoWebPagesV1(this.dataBase);
-            case V2 : return new H2DaoWebPagesV2(this.dataBase);
+            case V1 : return new H2DaoWebPagesV1(
+                    this.dataBase);
+            case V2 : return new H2DaoWebPagesV2(
+                    this.dataBase, this.sqlPatternSelectPool, this.sqlPatternSelectUnionPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoWebPages.class);
             }
@@ -148,7 +168,7 @@ public class H2DaosProvider implements DaosProvider {
             case V1 : return new H2DaoLocationSubPathsV1(
                     this.dataBase);
             case V2 : return new H2DaoLocationSubPathsV2(
-                    this.dataBase);
+                    this.dataBase, this.sqlPatternSelectPool);
             default : {
                 throw this.currentDataAccessVersionHasNoSupportFor(DaoLocationSubPaths.class);
             }

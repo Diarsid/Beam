@@ -13,7 +13,6 @@ import java.util.Map;
 import diarsid.support.configuration.Configuration;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.support.objects.Pair;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.WebModule;
@@ -33,6 +32,8 @@ import diarsid.beam.core.modules.web.service.resources.WebObjectsValidationResou
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
+import diarsid.beam.core.modules.BeamEnvironmentModule;
+
 /**
  *
  * @author Diarsid
@@ -40,12 +41,12 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 class WebModuleWorkerBuilder implements GemModuleBuilder<WebModule> {
     
     private final IoModule ioModule;
-    private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
+    private final BeamEnvironmentModule applicationComponentsHolderModule;
     private final DomainKeeperModule domainKeeperModule;
     
     WebModuleWorkerBuilder(
             IoModule io, 
-            ApplicationComponentsHolderModule applicationComponentsHolderModule,
+            BeamEnvironmentModule applicationComponentsHolderModule,
             DomainKeeperModule domainKeeperModule) {        
         this.ioModule = io;
         this.applicationComponentsHolderModule = applicationComponentsHolderModule;

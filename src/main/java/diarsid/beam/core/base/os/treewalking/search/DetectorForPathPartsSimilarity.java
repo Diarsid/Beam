@@ -7,7 +7,7 @@ package diarsid.beam.core.base.os.treewalking.search;
 
 import java.nio.file.Path;
 
-import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 
 import static java.lang.System.arraycopy;
 
@@ -16,8 +16,6 @@ import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringUtils.joining;
 import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -26,12 +24,12 @@ import static diarsid.support.objects.Pools.takeFromPool;
 class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     
     private final String[] searchedPathPartsCopy;
-    private final SimilarityCheckSession session;
+    private final Similarity similarity;
 
-    DetectorForPathPartsSimilarity(String[] searchedPthParts) {
+    DetectorForPathPartsSimilarity(String[] searchedPthParts, Similarity similarity) {
         super(searchedPthParts);
         this.searchedPathPartsCopy = new String[searchedPthParts.length];
-        this.session = takeFromPool(SimilarityCheckSession.class);
+        this.similarity = similarity;
     }
 
     @Override
@@ -41,7 +39,6 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
     
     @Override
     void close() {
-        giveBackToPool(this.session);
     }
     
     private void fillSearchedPathPartsCopy() {
@@ -70,7 +67,7 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
                 searchedPart = this.searchedPathPartsCopy[searchedIndex];
                 if ( nonEmpty(searchedPart) ) {
                     if ( containsIgnoreCase(realPart, searchedPart) || 
-                            this.session.isSimilar(realPart, searchedPart) ) {
+                            this.similarity.isSimilar(realPart, searchedPart) ) {
                         foundQty++;
                         realPathParts[realIndex] = "";
                         this.searchedPathPartsCopy[searchedIndex] = "";
@@ -84,7 +81,7 @@ class DetectorForPathPartsSimilarity extends NameDetector<String[]> {
         }
         if (    (this.searchedPathPartsCopy.length - foundQty) <= 
                 halfRoundUp(this.searchedPathPartsCopy.length) ) {
-            boolean similar = this.session.isSimilar(
+            boolean similar = this.similarity.isSimilar(
                     joining(realPathParts), joining(this.searchedPathPartsCopy));
             return similar;            
         }

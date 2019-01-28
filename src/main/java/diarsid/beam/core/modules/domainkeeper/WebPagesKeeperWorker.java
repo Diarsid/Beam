@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -45,14 +46,13 @@ import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPictures;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebDirectories;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoWebPages;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -107,8 +107,6 @@ import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 
 public class WebPagesKeeperWorker 
@@ -124,6 +122,8 @@ public class WebPagesKeeperWorker
     private final ResponsiveDaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
+    private final Analyze analyze;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final Gui gui;
     private final Initiator systemInitiator;
     private final KeeperDialogHelper helper;
@@ -147,6 +147,8 @@ public class WebPagesKeeperWorker
             CommandsMemoryKeeper commandsMemory,
             ResponsiveDaoPatternChoices daoPatternChoices,
             InnerIoEngine ioEngine, 
+            Analyze analyze,
+            Pool<KeeperLoopValidationDialog> dialogPool,
             Gui gui,
             Initiator systemInitiator,
             KeeperDialogHelper helper,
@@ -160,6 +162,8 @@ public class WebPagesKeeperWorker
         this.daoPictures = daoPictures;
         this.daoPatternChoices = daoPatternChoices;
         this.ioEngine = ioEngine;
+        this.analyze = analyze;
+        this.dialogPool = dialogPool;
         this.gui = gui;
         this.systemInitiator = systemInitiator;
         this.helper = helper;
@@ -307,7 +311,7 @@ public class WebPagesKeeperWorker
         if ( hasOne(foundPages) ) {
             WebPage page = getOne(foundPages);
             if ( page.name().equalsIgnoreCase(namePattern) ||
-                 isEntitySatisfiable(namePattern, page) ) {
+                 this.analyze.isEntitySatisfiable(namePattern, page) ) {
                 return valueFlowCompletedWith(page);
             } else {
                 return valueFlowCompletedEmpty();
@@ -321,7 +325,7 @@ public class WebPagesKeeperWorker
     
     private ValueFlow<WebPage> manageWithManyPages(
             Initiator initiator, String pattern, List<WebPage> pages) {
-        WeightedVariants variants = weightVariants(pattern, entitiesToVariants(pages));
+        WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(pages));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
@@ -387,11 +391,11 @@ public class WebPagesKeeperWorker
     
     private ValueFlow<WebPage> findExistingPageInternally(Initiator initiator, String pagePattern) {
         List<WebPage> foundPages;
-        VariantsQuestion question;
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);                
+        VariantsQuestion question;             
                
         synchronized ( this.allPagesConsistencyLock ) {
-            try { 
+            try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+                
                 dialog
                         .withRule(ENTITY_NAME_RULE)
                         .withInputSource(() -> {
@@ -401,6 +405,7 @@ public class WebPagesKeeperWorker
                         .withOutputDestination((validationFail) -> {
                             this.ioEngine.report(initiator, validationFail);
                         });
+                
                 pageFinding : while ( true ) {  
 
                     pagePattern = dialog
@@ -436,19 +441,17 @@ public class WebPagesKeeperWorker
                         }
                     }
                 }
-            } finally {
-                giveBackToPool(dialog);
-            }
+            } 
         }
     }
 
     private String discussPageNewName(Initiator initiator, String name) {
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
         Optional<Integer> freeNameIndex;
         Choice applyIndexChoice;
         String applyIndexQuestion;
         
-        try { 
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            
             dialog
                     .withRule(ENTITY_NAME_RULE)
                     .withInputSource(() -> {
@@ -500,15 +503,12 @@ public class WebPagesKeeperWorker
             }
 
             return name;
-        } finally {
-            giveBackToPool(dialog);
-        }
+        } 
     }
     
     private String discussPageNewUrl(Initiator initiator, String url) {
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-        
-        try { 
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            
             url = dialog
                     .withInitialArgument(url)
                     .withRule(WEB_URL_RULE)
@@ -529,9 +529,7 @@ public class WebPagesKeeperWorker
                     .validateAndGet();
 
             return url;
-        } finally {
-            giveBackToPool(dialog);
-        }
+        } 
     }
     
     private ValueFlow<WebDirectory> findExistingWebDirectoryInternally(
@@ -545,19 +543,21 @@ public class WebPagesKeeperWorker
         
         String directoryName;
         List<WebDirectory> foundDirectories;
-        VariantsQuestion question;    
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class)
-                .withInitialArgument("")
-                .withRule(ENTITY_NAME_RULE)
-                .withInputSource(() -> {
-                    return this.ioEngine.askInput(
-                            initiator, "directory name", this.enterDirectoryNameHelp);
-                })
-                .withOutputDestination((validationFail) -> {
-                    this.ioEngine.report(initiator, validationFail);
-                });
-         
-        try {
+        VariantsQuestion question;
+        
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            
+            dialog
+                    .withInitialArgument("")
+                    .withRule(ENTITY_NAME_RULE)
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(
+                                initiator, "directory name", this.enterDirectoryNameHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    });         
+        
             directoryDefining: while ( true ) {            
                 directoryName = dialog
                         .withInitialArgument("")
@@ -584,9 +584,7 @@ public class WebPagesKeeperWorker
                     }
                 }
             }
-        } finally {
-            giveBackToPool(dialog);
-        }    
+        } 
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.NotesCatalog;
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -19,12 +20,12 @@ import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.EmptyCommand;
 import diarsid.beam.core.domain.entities.validation.ValidationRule;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
@@ -39,8 +40,6 @@ import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.SIMPLE_PATH_RULE;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -50,15 +49,23 @@ class NotesKeeperWorker implements NotesKeeper {
 
     private final InnerIoEngine ioEngine;
     private final NotesCatalog notesCatalog;
+    private final Analyze analyze;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final KeeperDialogHelper helper;
     private final Help enterNoteNameHelp;
     private final Help chooseOneNoteHelp;
     
     // TODO ??? find closest path te/rea -> is tech/react/ ?
     NotesKeeperWorker(
-            InnerIoEngine ioEngine, NotesCatalog notesCatalog, KeeperDialogHelper helper) {
+            InnerIoEngine ioEngine, 
+            NotesCatalog notesCatalog, 
+            Analyze analyze, 
+            Pool<KeeperLoopValidationDialog> dialogPool,
+            KeeperDialogHelper helper) {
         this.ioEngine = ioEngine;
         this.notesCatalog = notesCatalog;
+        this.analyze = analyze;
+        this.dialogPool = dialogPool;
         this.helper = helper;
         this.enterNoteNameHelp = this.ioEngine.addToHelpContext(
                 "Enter note name.", 
@@ -156,8 +163,8 @@ class NotesKeeperWorker implements NotesKeeper {
 
     private VoidFlow processMultipleNotes(
             Initiator initiator, String noteTarget, List<String> foundNoteTargets) {
-        WeightedVariants variants =
-                weightVariants(noteTarget, stringsToVariants(foundNoteTargets));
+        WeightedVariants variants =this.analyze.weightVariants(
+                noteTarget, stringsToVariants(foundNoteTargets));
         if ( variants.isEmpty() ) {
             return voidFlowFail("not found.");
         }
@@ -192,8 +199,8 @@ class NotesKeeperWorker implements NotesKeeper {
             } else {
                 rule = ENTITY_NAME_RULE;
             }
-            KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-            try {
+            
+            try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
                 noteName = dialog
                         .withInitialArgument(noteName)
                         .withRule(rule)
@@ -205,9 +212,7 @@ class NotesKeeperWorker implements NotesKeeper {
                             this.ioEngine.report(initiator, validationFail);
                         })
                         .validateAndGet();
-            } finally {
-                giveBackToPool(dialog);
-            }
+            } 
         }
         
         if ( noteName.isEmpty() ) {

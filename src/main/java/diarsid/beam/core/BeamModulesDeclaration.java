@@ -9,7 +9,7 @@ package diarsid.beam.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+import diarsid.beam.core.modules.BeamEnvironmentModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
@@ -43,8 +43,8 @@ class BeamModulesDeclaration implements Declaration {
         Set<GemModuleDeclaration> modules = new HashSet<>();
         
         modules.add(new GemModuleDeclaration(
-                ApplicationComponentsHolderModule.class.getCanonicalName(), 
-                "diarsid.beam.core.modules.applicationcomponentsholder.ApplicationComponentsHolderModuleWorker",
+                BeamEnvironmentModule.class.getCanonicalName(), 
+                "diarsid.beam.core.modules.beamenvironment.BeamEnvironmentModuleWorker",
                 GemModuleType.SINGLETON));
         
         modules.add(new GemModuleDeclaration(

@@ -7,13 +7,11 @@ package diarsid.beam.core.base.os.treewalking.search;
 
 import java.nio.file.Path;
 
-import diarsid.beam.core.base.analyze.similarity.SimilarityCheckSession;
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -21,11 +19,11 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
 
-    private final SimilarityCheckSession session;
+    private final Similarity similarity;
     
-    DetectorForNameOrSubpathSimilarity(String nameToFind) {
+    DetectorForNameOrSubpathSimilarity(String nameToFind, Similarity similarity) {
         super(nameToFind);
-        this.session = takeFromPool(SimilarityCheckSession.class);
+        this.similarity = similarity;
     }
 
     @Override
@@ -34,14 +32,14 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
         if ( containsIgnoreCase(testedName, super.itemToFind) ) {
             return true;
         } else {
-            if ( this.session.isSimilar(testedName, super.itemToFind) ) {
+            if ( this.similarity.isSimilar(testedName, super.itemToFind) ) {
                 return true;
             } else {
                 String testedPathString = removeSeparators(testedPath.toString());
                 if ( containsIgnoreCase(testedPathString, super.itemToFind) ) {
                     return true;
                 } else {
-                    return this.session.isSimilar(testedPathString, super.itemToFind);
+                    return this.similarity.isSimilar(testedPathString, super.itemToFind);
                 }
             }
         }
@@ -49,6 +47,5 @@ class DetectorForNameOrSubpathSimilarity extends NameDetector<String> {
     
     @Override
     void close() {
-        giveBackToPool(this.session);
     }
 }

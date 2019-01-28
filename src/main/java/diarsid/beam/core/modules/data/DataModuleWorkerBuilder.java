@@ -14,13 +14,16 @@ import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataBaseActuationException;
 import diarsid.beam.core.base.data.DataBaseActuator;
 import diarsid.beam.core.base.data.DataBaseModel;
+import diarsid.beam.core.base.data.util.SqlPatternSelect;
+import diarsid.beam.core.base.data.util.SqlPatternSelectUnion;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.data.sql.daos.H2DaosProvider;
 import diarsid.beam.core.modules.data.sql.database.H2DataBase;
 import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
 import diarsid.support.configuration.Configuration;
+import diarsid.support.objects.Pool;
+import diarsid.support.objects.Pools;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -29,6 +32,9 @@ import static java.lang.String.format;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.support.log.Logging.logFor;
+import static diarsid.support.objects.Pools.pools;
+
+import diarsid.beam.core.modules.BeamEnvironmentModule;
 
 
 /**
@@ -37,10 +43,10 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
     
-    private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
+    private final BeamEnvironmentModule applicationComponentsHolderModule;
     
     public DataModuleWorkerBuilder(
-            ApplicationComponentsHolderModule applicationComponentsHolderModule) {
+            BeamEnvironmentModule applicationComponentsHolderModule) {
         this.applicationComponentsHolderModule = applicationComponentsHolderModule;
     }
 
@@ -54,8 +60,20 @@ public class DataModuleWorkerBuilder implements GemModuleBuilder<DataModule> {
         
         this.actuateDataBase(dataBase, dataBaseModel);
         
+        Pools pools = pools();
+        Pool<SqlPatternSelect> sqlPatternSelectPool = pools.createPool(
+                SqlPatternSelect.class, 
+                () -> new SqlPatternSelect());
+        Pool<SqlPatternSelectUnion> sqlPatternSelectUnionPool = pools.createPool(
+                SqlPatternSelectUnion.class, 
+                () -> new SqlPatternSelectUnion());
+                
         DaosProvider daosProvider = new H2DaosProvider(
-                dataBase, this.applicationComponentsHolderModule);
+                dataBase, 
+                this.applicationComponentsHolderModule, 
+                sqlPatternSelectPool, 
+                sqlPatternSelectUnionPool);
+        
         DataModule dataModule = new DataModuleWorker(dataBase, daosProvider);
         
         return dataModule;

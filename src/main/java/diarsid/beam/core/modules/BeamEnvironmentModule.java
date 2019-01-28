@@ -7,6 +7,8 @@ package diarsid.beam.core.modules;
 
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
+import diarsid.beam.core.base.analyze.similarity.Similarity;
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.support.configuration.Configuration;
 
@@ -16,7 +18,7 @@ import com.drs.gem.injector.module.GemModule;
  *
  * @author Diarsid
  */
-public interface ApplicationComponentsHolderModule extends GemModule {
+public interface BeamEnvironmentModule extends GemModule {
     
     Configuration configuration();
     
@@ -25,5 +27,9 @@ public interface ApplicationComponentsHolderModule extends GemModule {
     ProgramsCatalog programsCatalog();
     
     NotesCatalog notesCatalog();
+    
+    Analyze analyze();
+    
+    Similarity similarity();
     
 }

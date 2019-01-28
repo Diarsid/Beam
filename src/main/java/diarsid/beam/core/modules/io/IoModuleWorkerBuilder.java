@@ -10,7 +10,6 @@ package diarsid.beam.core.modules.io;
 import diarsid.beam.core.base.control.io.base.interaction.ApplicationHelpContext;
 import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DataModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.io.gui.Gui;
@@ -24,17 +23,19 @@ import static java.lang.String.format;
 import static diarsid.beam.core.application.starter.Launcher.getLauncher;
 import static diarsid.support.log.Logging.logFor;
 
+import diarsid.beam.core.modules.BeamEnvironmentModule;
+
 /**
  *
  * @author Diarsid
  */
 class IoModuleWorkerBuilder implements GemModuleBuilder<IoModule> {
     
-    private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
+    private final BeamEnvironmentModule applicationComponentsHolderModule;
     private final DataModule dataModule;
     
     IoModuleWorkerBuilder(
-            ApplicationComponentsHolderModule applicationComponentsHolderModule,
+            BeamEnvironmentModule applicationComponentsHolderModule,
             DataModule dataModule) {
         this.applicationComponentsHolderModule = applicationComponentsHolderModule;
         this.dataModule = dataModule;

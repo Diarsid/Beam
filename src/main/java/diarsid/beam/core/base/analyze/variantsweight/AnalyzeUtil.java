@@ -16,7 +16,6 @@ import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -32,7 +31,7 @@ class AnalyzeUtil {
         return (percent + orderDiff.ordersDiffSum() + (orderDiff.ordersDiffSum()/2) ) * orderDiff.ordersDiffSum();
     }
     
-    static Cluster calculateCluster(List<Integer> ints, int clusterFirstPosition, int clusterLength) {
+    static void processCluster(Cluster cluster, List<Integer> ints, int clusterFirstPosition, int clusterLength) {
         int mean = meanSmartIngoringZeros(ints);
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs         %s", 
@@ -175,8 +174,15 @@ class AnalyzeUtil {
             diffSum = 1;
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
         }
-        return takeFromPool(Cluster.class).set(
-                clusterFirstPosition, clusterLength, mean, diffSum, diffCount, shifts, haveCompensation, compensationSum);
+        cluster.set(
+                clusterFirstPosition, 
+                clusterLength, 
+                mean, 
+                diffSum, 
+                diffCount, 
+                shifts, 
+                haveCompensation, 
+                compensationSum);
     }
     
     static int lengthTolerance(int variantLength) {

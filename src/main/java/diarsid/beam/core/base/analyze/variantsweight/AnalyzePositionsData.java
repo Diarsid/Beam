@@ -27,11 +27,11 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSIT
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_SEARCH;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.FORWARD;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.calculateCluster;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.clustersImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.inconsistencyOf;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedImportanceDependingOn;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.nonClusteredImportanceDependingOn;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.processCluster;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_1;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_2;
 import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.STEP_3;
@@ -157,10 +157,14 @@ class AnalyzePositionsData {
     
     double positionsWeight;
     
-    AnalyzePositionsData(AnalyzeData data, AnalyzePositionsDirection direction) {
+    AnalyzePositionsData(
+            AnalyzeData data, 
+            AnalyzePositionsDirection direction, 
+            Clusters clusters, 
+            PositionCandidate positionCandidate) {
         this.data = data;
-        this.clusters = new Clusters(this.data, direction);
-        this.positionCandidate = new PositionCandidate(this.data);
+        this.clusters = clusters;
+        this.positionCandidate = positionCandidate;
         this.direction = direction;
         this.keyChars = new TreeSet<>();
         this.clearPositionsAnalyze();
@@ -1215,7 +1219,9 @@ class AnalyzePositionsData {
             this.currentClusterOrdersHaveDiffCompensations = false;
             return;
         }
-        Cluster cluster = calculateCluster(
+        Cluster cluster = clusters.getUnprocessed();
+        processCluster(
+                cluster,
                 this.currentClusterOrderDiffs,                 
                 this.currentClusterFirstPosition,
                 this.currentClusterLength);
@@ -1259,7 +1265,7 @@ class AnalyzePositionsData {
         this.previousClusterOrdersIsConsistent = ! cluster.hasOrdersDiff();
         
         this.currentClusterOrderDiffs.clear();  
-        this.clusters.add(cluster);
+        this.clusters.acceptProcessed(cluster);
     }
     
     private boolean tryToTearDown(Cluster cluster) {

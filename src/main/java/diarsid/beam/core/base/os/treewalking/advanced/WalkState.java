@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.Catalog;
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightEstimate;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -26,8 +27,6 @@ import static java.util.Collections.sort;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariant;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariantsList;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.GOOD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.MODERATE;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
@@ -58,11 +57,8 @@ import static diarsid.beam.core.base.util.StringUtils.isEmpty;
 class WalkState extends PooledReusable {
     
     private static final int UNVISITED_LEVEL = -1;
-    
-    static {
-        PooledReusable.createPoolFor(WalkState.class, () -> new WalkState());
-    }
             
+    private final Analyze analyze;
     private final WalkStartPlace place;
     private final List<WeightedVariant> variants;
     private final List<String> collectedOnCurrentLevel;
@@ -76,8 +72,9 @@ class WalkState extends PooledReusable {
     private Integer visitedLevel;
     private ValueFlow<String> resultFlow;
     
-    private WalkState() {
+    WalkState(Analyze analyze) {
         super();
+        this.analyze = analyze;
         this.place = new WalkStartPlace();
         this.variants = new ArrayList<>();
         this.collectedOnCurrentLevel = new ArrayList<>();
@@ -242,11 +239,12 @@ class WalkState extends PooledReusable {
     
     void weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants() {
         if ( hasOne(this.collectedOnCurrentLevel) ) {
-            weightVariant(this.pattern, stringToVariant(getOne(this.collectedOnCurrentLevel)))
+            this.analyze.weightVariant(
+                    this.pattern, stringToVariant(getOne(this.collectedOnCurrentLevel)))
                     .ifPresent(weightedVariant -> this.variants.add(weightedVariant));
         } else {
-            List<WeightedVariant> currentLevelVariants = 
-                    weightVariantsList(this.pattern, stringsToVariants(collectedOnCurrentLevel));
+            List<WeightedVariant> currentLevelVariants = this.analyze.weightVariantsList(
+                    this.pattern, stringsToVariants(this.collectedOnCurrentLevel));
             this.variants.addAll(currentLevelVariants);
         }        
     }

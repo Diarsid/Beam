@@ -4,13 +4,15 @@
  * and open the template in the editor.
  */
 
-package diarsid.beam.core.modules.applicationcomponentsholder;
+package diarsid.beam.core.modules.beamenvironment;
 
 import diarsid.beam.core.application.environment.BeamEnvironment;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
+import diarsid.beam.core.base.analyze.similarity.Similarity;
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+import diarsid.beam.core.modules.BeamEnvironmentModule;
 import diarsid.support.configuration.Configuration;
 
 /**
@@ -22,18 +24,22 @@ import diarsid.support.configuration.Configuration;
  * 
  * @author Diarsid
  */
-class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHolderModule {
+class BeamEnvironmentModuleWorker implements BeamEnvironmentModule {
     
     private final Configuration configuration;  
     private final Interpreter interpreter;
     private final ProgramsCatalog programsCatalog;
     private final NotesCatalog notesCatalog;
+    private final Analyze analyze;
+    private final Similarity similarity;
     
-    ApplicationComponentsHolderModuleWorker() {    
+    BeamEnvironmentModuleWorker() {    
         this.configuration = BeamEnvironment.configuration();
         this.interpreter = new Interpreter();
         this.programsCatalog = BeamEnvironment.programsCatalog();
         this.notesCatalog = BeamEnvironment.notesCatalog();
+        this.analyze = BeamEnvironment.analyze();
+        this.similarity = BeamEnvironment.similarity();
     }
     
     @Override
@@ -54,6 +60,16 @@ class ApplicationComponentsHolderModuleWorker implements ApplicationComponentsHo
     @Override
     public NotesCatalog notesCatalog() {
         return this.notesCatalog;
+    }
+
+    @Override
+    public Analyze analyze() {
+        return this.analyze;
+    }
+
+    @Override
+    public Similarity similarity() {
+        return this.similarity;
     }
     
 }

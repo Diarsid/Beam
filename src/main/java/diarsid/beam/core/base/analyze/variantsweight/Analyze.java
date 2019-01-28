@@ -15,9 +15,13 @@ import java.util.function.BiFunction;
 
 import diarsid.beam.core.base.analyze.cache.CacheUsage;
 import diarsid.beam.core.base.analyze.cache.PersistentAnalyzeCache;
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.ResponsiveDataModule;
+import diarsid.support.configuration.Configuration;
+import diarsid.support.objects.Pool;
+import diarsid.support.objects.Pools;
 
 import static java.lang.Double.MAX_VALUE;
 import static java.lang.Double.MIN_VALUE;
@@ -28,11 +32,9 @@ import static java.util.Locale.US;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.Beam.systemInitiator;
-import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.analyze.cache.AnalyzeCache.PAIR_HASH_FUNCTION;
 import static diarsid.beam.core.base.analyze.cache.CacheUsage.NOT_USE_CACHE;
 import static diarsid.beam.core.base.analyze.cache.CacheUsage.USE_CACHE;
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.isVariantOkWhenAdjusted;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
@@ -43,8 +45,6 @@ import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.support.log.Logging.logFor;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -52,71 +52,75 @@ import static diarsid.support.objects.Pools.takeFromPool;
  */
 public class Analyze {
     
-    private static final int WEIGHT_ALGORITHM_VERSION = 10;
-    private static final PersistentAnalyzeCache<Float> CACHE;
-    private static final Float TOO_BAD_WEIGHT;
+    private final int weightAlgorithmVersion = 10;
+    private final PersistentAnalyzeCache<Float> cache;
+    private final Float tooBadWeight;
+    private final Pool<AnalyzeData> dataPool;
+    private final Similarity similarity;
     
-    static {
-        TOO_BAD_WEIGHT = 9000.0f;
+    private final int defaultWeightResultLimit;
+    private boolean isWeightedResultLimitPresent;
+    private int weightedResultLimit;
+    
+    public Analyze(Configuration configuration, Similarity similarity, Pools pools) {
+        this.similarity = similarity;
+        this.defaultWeightResultLimit = configuration.asInt("analyze.result.variants.limit");        
+        this.tooBadWeight = 9000.0f;
+        Pool<Cluster> clusterPool = pools.createPool(
+                Cluster.class, 
+                () -> new Cluster());        
+        this.dataPool = pools.createPool(
+                AnalyzeData.class, 
+                () -> new AnalyzeData(clusterPool));
         
         BiFunction<String, String, Float> weightFunction = (target, pattern) -> {
-            return weightStringInternally(pattern, target, NOT_USE_CACHE);
+            return this.weightStringInternally(pattern, target, NOT_USE_CACHE);
         }; 
         
-        CACHE = new PersistentAnalyzeCache<>(
+        this.cache = new PersistentAnalyzeCache<>(
                 systemInitiator(),
                 weightFunction,
                 PAIR_HASH_FUNCTION, 
-                WEIGHT_ALGORITHM_VERSION);
+                weightAlgorithmVersion);
         
         asyncDo(() -> {
             logFor(Analyze.class).info("requesting for data module...");
             requestPayloadThenAwaitForSupply(ResponsiveDataModule.class).ifPresent((dataModule) -> {
                 logFor(Analyze.class).info("cache loading...");
-                CACHE.initPersistenceWith(dataModule.cachedWeight());
+                cache.initPersistenceWith(dataModule.cachedWeight());
                 logFor(Analyze.class).info("cache loaded");            
             });
         });
+        
+        this.isWeightedResultLimitPresent = true;
+        this.weightedResultLimit = defaultWeightResultLimit;        
     }
     
-    private static final int DEFAULT_WEIGHTED_RESULT_LIMIT;
-    private static boolean isWeightedResultLimitPresent;
-    private static int weightedResultLimit;
-    
-    static {
-        isWeightedResultLimitPresent = true;
-        DEFAULT_WEIGHTED_RESULT_LIMIT = configuration().asInt("analyze.result.variants.limit");
-        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
+    public int resultsLimit() {
+        return this.weightedResultLimit;
     }
     
-    private Analyze() {        
+    public boolean isResultsLimitPresent() {
+        return this.isWeightedResultLimitPresent;
     }
     
-    public static int resultsLimit() {
-        return weightedResultLimit;
+    public void resultsLimitToDefault() {
+        this.weightedResultLimit = this.defaultWeightResultLimit;
     }
     
-    public static boolean isResultsLimitPresent() {
-        return isWeightedResultLimitPresent;
+    public void disableResultsLimit() {
+        this.isWeightedResultLimitPresent = false;
+        this.weightedResultLimit = this.defaultWeightResultLimit;
     }
     
-    public static void resultsLimitToDefault() {
-        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
+    public void enableResultsLimit() {
+        this.isWeightedResultLimitPresent = true;
+        this.weightedResultLimit = this.defaultWeightResultLimit;
     }
     
-    public static void disableResultsLimit() {
-        isWeightedResultLimitPresent = false;
-        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
-    }
-    
-    public static void enableResultsLimit() {
-        isWeightedResultLimitPresent = true;
-        weightedResultLimit = DEFAULT_WEIGHTED_RESULT_LIMIT;
-    }
-    
-    public static void setResultsLimit(int newLimit) {
-        weightedResultLimit = newLimit;
-        isWeightedResultLimitPresent = true;
+    public void setResultsLimit(int newLimit) {
+        this.weightedResultLimit = newLimit;
+        this.isWeightedResultLimitPresent = true;
     }
     
     static void logAnalyze(AnalyzeLogType logType, String format, Object... args) {
@@ -129,8 +133,8 @@ public class Analyze {
         }
     }
     
-    public static WeightedVariants weightStrings(String pattern, List<String> variants) {
-        return weightVariants(pattern, stringsToVariants(variants));
+    public WeightedVariants weightStrings(String pattern, List<String> variants) {
+        return this.weightVariants(pattern, stringsToVariants(variants));
     }
     
     private static boolean canBeEvaluatedByStrictSimilarity(String pattern, String target) {
@@ -154,46 +158,46 @@ public class Analyze {
         }
     }
     
-    private static boolean isGood(Float weight) {
-        return weight < TOO_BAD_WEIGHT;
+    private boolean isGood(Float weight) {
+        return weight < this.tooBadWeight;
     }
     
-    private static boolean isTooBad(Float weight) {
-        return weight.equals(TOO_BAD_WEIGHT) || weight > TOO_BAD_WEIGHT;
+    private boolean isTooBad(Float weight) {
+        return weight.equals(this.tooBadWeight) || weight > this.tooBadWeight;
     }
     
-    public static boolean isNameSatisfiable(String pattern, String name) {
+    public boolean isNameSatisfiable(String pattern, String name) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, name) ) {
-            return isSimilar(name, pattern);
+            return this.similarity.isSimilar(name, pattern);
         } else {
-            return isGood(weightStringInternally(pattern, name, USE_CACHE));
+            return this.isGood(weightStringInternally(pattern, name, USE_CACHE));
         }        
     }
     
-    public static boolean isVariantSatisfiable(String pattern, Variant variant) {
+    public boolean isVariantSatisfiable(String pattern, Variant variant) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, variant.text()) ) {
-            return isSimilar(variant.text(), pattern);
+            return this.similarity.isSimilar(variant.text(), pattern);
         } else {
-            return isGood(weightStringInternally(pattern, variant.text(), USE_CACHE));
+            return this.isGood(weightStringInternally(pattern, variant.text(), USE_CACHE));
         }        
     }
     
-    public static boolean isEntitySatisfiable(String pattern, NamedEntity entity) {
+    public boolean isEntitySatisfiable(String pattern, NamedEntity entity) {
         if ( canBeEvaluatedByStrictSimilarity(pattern, entity.name()) ) {
-            return isSimilar(entity.name(), pattern);
+            return this.similarity.isSimilar(entity.name(), pattern);
         } else {
-            return isGood(weightStringInternally(pattern, entity.name(), USE_CACHE));
+            return this.isGood(weightStringInternally(pattern, entity.name(), USE_CACHE));
         }        
     }
     
-    public static Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
-        return weightVariantInternally(pattern, variant, USE_CACHE);
+    public Optional<WeightedVariant> weightVariant(String pattern, Variant variant) {
+        return this.weightVariantInternally(pattern, variant, USE_CACHE);
     }
     
-    private static Optional<WeightedVariant> weightVariantInternally(
+    private Optional<WeightedVariant> weightVariantInternally(
             String pattern, Variant variant, CacheUsage cacheUsage) {
-        Float weight = weightStringInternally(pattern, variant.text(), cacheUsage);
-        if ( isGood(weight) ) {
+        Float weight = this.weightStringInternally(pattern, variant.text(), cacheUsage);
+        if ( this.isGood(weight) ) {
             WeightedVariant weightedVariant = new WeightedVariant(
                     variant, 
                     variant.text().equalsIgnoreCase(pattern), 
@@ -204,10 +208,10 @@ public class Analyze {
         }
     }
     
-    private static Float weightStringInternally(
+    private Float weightStringInternally(
             String pattern, String target, CacheUsage cacheUsage) {
         if ( cacheUsage.equals(USE_CACHE) ) {
-            Float cachedWeight = CACHE.searchNullableCachedFor(target, pattern);
+            Float cachedWeight = this.cache.searchNullableCachedFor(target, pattern);
             if ( nonNull(cachedWeight) ) {
                 logFor(Analyze.class).info(format(
                         "FOUND CACHED %s (target: %s, pattern: %s)", 
@@ -216,13 +220,13 @@ public class Analyze {
             }
         }
         
-        AnalyzeData analyze = takeFromPool(AnalyzeData.class);
+        AnalyzeData analyze = this.dataPool.give();
         try {
             analyze.set(pattern, target);
             if ( analyze.isVariantEqualsPattern() ) {
                 analyze.complete();
                 if ( cacheUsage.equals(USE_CACHE) ) {
-                    CACHE.addToCache(target, pattern, (float) analyze.variantWeight);
+                    this.cache.addToCache(target, pattern, (float) analyze.variantWeight);
                 }
                 return (float) analyze.variantWeight;
             }
@@ -236,15 +240,15 @@ public class Analyze {
             if ( analyze.ifClustersPresentButWeightTooBad() ) {
                 logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
                 if ( cacheUsage.equals(USE_CACHE) ) {
-                    CACHE.addToCache(target, pattern, TOO_BAD_WEIGHT);
+                    this.cache.addToCache(target, pattern, this.tooBadWeight);
                 }
-                return TOO_BAD_WEIGHT;
+                return this.tooBadWeight;
             }
             if ( analyze.areTooMuchPositionsMissed() ) {
                 if ( cacheUsage.equals(USE_CACHE) ) {
-                    CACHE.addToCache(target, pattern, TOO_BAD_WEIGHT);
+                    this.cache.addToCache(target, pattern, this.tooBadWeight);
                 }
-                return TOO_BAD_WEIGHT;
+                return this.tooBadWeight;
             }
             analyze.calculateClustersImportance();
             analyze.isFirstCharMatchInVariantAndPattern(pattern);
@@ -253,32 +257,32 @@ public class Analyze {
             if ( analyze.isVariantTooBad() ) {
                 logAnalyze(BASE, "%s is too bad.", analyze.variantText);
                 if ( cacheUsage.equals(USE_CACHE) ) {
-                    CACHE.addToCache(target, pattern, TOO_BAD_WEIGHT);
+                    this.cache.addToCache(target, pattern, this.tooBadWeight);
                 }
-                return TOO_BAD_WEIGHT;
+                return this.tooBadWeight;
             }
             analyze.complete();
             
             if ( cacheUsage.equals(USE_CACHE) ) {
-                CACHE.addToCache(target, pattern, (float) analyze.variantWeight);
+                this.cache.addToCache(target, pattern, (float) analyze.variantWeight);
             }
             
             return (float) analyze.variantWeight;
         } finally {
-            giveBackToPool(analyze);
+            this.dataPool.takeBack(analyze);
         }
     }
     
-    public static WeightedVariants weightVariants(String pattern, List<Variant> variants) {
-        List<WeightedVariant> weightedVariants = weightVariantsList(pattern, variants);
+    public WeightedVariants weightVariants(String pattern, List<Variant> variants) {
+        List<WeightedVariant> weightedVariants = this.weightVariantsList(pattern, variants);
         return new WeightedVariants(weightedVariants);
     }
     
-    public static List<WeightedVariant> weightVariantsList(String pattern, List<Variant> variants) {
-        return weightVariantsListInternally(pattern, variants, USE_CACHE);
+    public List<WeightedVariant> weightVariantsList(String pattern, List<Variant> variants) {
+        return this.weightVariantsListInternally(pattern, variants, USE_CACHE);
     }
     
-    private static List<WeightedVariant> weightVariantsListInternally(
+    private List<WeightedVariant> weightVariantsListInternally(
             String pattern, List<Variant> variants, CacheUsage cacheUsage) {
         pattern = lower(pattern);
         sort(variants);        
@@ -287,7 +291,7 @@ public class Analyze {
         WeightedVariant duplicateByDisplayText;
         Variant duplicateByText;
         List<WeightedVariant> weightedVariants = new ArrayList<>();        
-        AnalyzeData analyze = takeFromPool(AnalyzeData.class);
+        AnalyzeData analyze = this.dataPool.give();
         String lowerVariantText;
         double minWeight = MAX_VALUE;
         double maxWeight = MIN_VALUE;
@@ -309,7 +313,7 @@ public class Analyze {
                 variantsByText.put(lowerVariantText, variant);
                 
                 if ( cacheUsage.equals(USE_CACHE) ) {
-                    Float cachedWeight = CACHE.searchNullableCachedFor(lowerVariantText, pattern);
+                    Float cachedWeight = this.cache.searchNullableCachedFor(lowerVariantText, pattern);
                     if ( nonNull(cachedWeight) ) {
                         
                         logAnalyze(BASE, format("  FOUND CACHED weight: %s ", cachedWeight));
@@ -359,7 +363,7 @@ public class Analyze {
                         logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
                         
                         if ( cacheUsage.equals(USE_CACHE) ) {
-                            CACHE.addToCache(variant.text(), pattern, TOO_BAD_WEIGHT);
+                            this.cache.addToCache(variant.text(), pattern, this.tooBadWeight);
                         }
                         
                         analyze.clearForReuse();
@@ -368,7 +372,7 @@ public class Analyze {
                     if ( analyze.areTooMuchPositionsMissed() ) {
                         
                         if ( cacheUsage.equals(USE_CACHE) ) {
-                            CACHE.addToCache(variant.text(), pattern, TOO_BAD_WEIGHT);
+                            this.cache.addToCache(variant.text(), pattern, this.tooBadWeight);
                         }
                         
                         analyze.clearForReuse();
@@ -382,7 +386,7 @@ public class Analyze {
                         logAnalyze(BASE, "  %s is too bad.", analyze.variantText);
                         
                         if ( cacheUsage.equals(USE_CACHE) ) {
-                            CACHE.addToCache(variant.text(), pattern, TOO_BAD_WEIGHT);
+                            this.cache.addToCache(variant.text(), pattern, this.tooBadWeight);
                         }
                         
                         analyze.clearForReuse();                        
@@ -416,13 +420,13 @@ public class Analyze {
                 } 
                 
                 if ( cacheUsage.equals(USE_CACHE) ) {
-                    CACHE.addToCache(variant.text(), pattern, (float) analyze.weightedVariant.weight());
+                    cache.addToCache(variant.text(), pattern, (float) analyze.weightedVariant.weight());
                 }
                 
                 analyze.clearForReuse();
             }
         } finally {
-            giveBackToPool(analyze);
+            this.dataPool.takeBack(analyze);
         }
         
 //        double delta = minWeight;
@@ -432,8 +436,8 @@ public class Analyze {
 //                .filter(weightedVariant -> isVariantOkWhenAdjusted(weightedVariant))
 //                .collect(toList());
         sort(weightedVariants);
-        if ( isWeightedResultLimitPresent ) {
-            shrink(weightedVariants, weightedResultLimit);
+        if ( this.isWeightedResultLimitPresent ) {
+            shrink(weightedVariants, this.weightedResultLimit);
         }
         logFor(Analyze.class).info("weightedVariants qty: " + weightedVariants.size());        
         weightedVariants
@@ -460,7 +464,7 @@ public class Analyze {
         return minWeight;
     }
     
-    public static void adjustWeightAndSweepBad(List<WeightedVariant> weightedVariants) {
+    static void adjustWeightAndSweepBad(List<WeightedVariant> weightedVariants) {
         if ( weightedVariants.isEmpty() ) {
             return;
         }
@@ -476,7 +480,7 @@ public class Analyze {
         }
     }
     
-    public static void adjustWeightAndSweepBad(
+    static void adjustWeightAndSweepBad(
             List<WeightedVariant> weightedVariants, double minWeight) {
         if ( weightedVariants.isEmpty() ) {
             return;

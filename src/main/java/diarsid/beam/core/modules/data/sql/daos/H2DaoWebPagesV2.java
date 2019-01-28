@@ -15,30 +15,38 @@ import diarsid.beam.core.domain.entities.WebPage;
 import diarsid.jdbc.transactions.JdbcTransaction;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
+import diarsid.support.objects.Pool;
 
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.SqlUtil.lowerWildcard;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
  * @author Diarsid
  */
 public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
+        
+    private final Pool<SqlPatternSelect> sqlPatternSelectPool;
+    private final Pool<SqlPatternSelectUnion> sqlPatternSelectUnionPool;
     
-    H2DaoWebPagesV2(DataBase dataBase) {
+    H2DaoWebPagesV2(
+            DataBase dataBase, 
+            Pool<SqlPatternSelect> sqlPatternSelectPool, 
+            Pool<SqlPatternSelectUnion> sqlPatternSelectUnionPool) {
         super(dataBase);
+        this.sqlPatternSelectPool = sqlPatternSelectPool;
+        this.sqlPatternSelectUnionPool = sqlPatternSelectUnionPool;
     }
 
     @Override
     public List<WebPage> findByPattern(String pattern) throws DataExtractionException {
         try (
                 JdbcTransaction transact = super.openTransaction();
-                SqlPatternSelect patternSelect = takeFromPool(SqlPatternSelect.class);
-                SqlPatternSelectUnion patternUnion = takeFromPool(SqlPatternSelectUnion.class)) 
+                SqlPatternSelect patternSelect = this.sqlPatternSelectPool.give();
+                SqlPatternSelectUnion patternUnion = this.sqlPatternSelectUnionPool.give();) 
         {
             String lowerWildcardPattern = lowerWildcard(pattern);
             

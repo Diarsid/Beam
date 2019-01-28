@@ -27,10 +27,6 @@ import static diarsid.support.objects.Possibles.possibleButEmpty;
  */
 public class SqlPatternSelect extends SqlPatternQuery {
     
-    static {
-        createPoolFor(SqlPatternSelect.class, () -> new SqlPatternSelect());
-    }
-    
     private final Possible<String> pattern;
     private final Map<Character, Integer> charsOccurences;
     private final StringBuilder sql;
@@ -43,7 +39,7 @@ public class SqlPatternSelect extends SqlPatternQuery {
     private boolean groupBySelectColumns;
     private boolean distinct;
     
-    SqlPatternSelect() {
+    public SqlPatternSelect() {
         super();
         this.columns = possibleButEmpty();
         this.table = possibleButEmpty();

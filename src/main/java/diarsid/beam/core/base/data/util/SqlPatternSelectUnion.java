@@ -19,15 +19,11 @@ import static diarsid.support.objects.Possibles.possibleButEmpty;
  */
 public class SqlPatternSelectUnion extends SqlPatternQuery {
     
-    static {
-        createPoolFor(SqlPatternSelectUnion.class, () -> new SqlPatternSelectUnion());
-    }
-    
     private final Possible<String> pattern;
     private final ModifiablePatternLikeness likeness;
     private final StringBuilder sql;
     
-    private SqlPatternSelectUnion() {
+    public SqlPatternSelectUnion() {
         this.pattern = possibleButEmpty();
         this.likeness = new ModifiablePatternLikeness();
         this.sql = new StringBuilder();

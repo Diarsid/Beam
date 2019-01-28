@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection;
+import diarsid.support.objects.Pool;
 import diarsid.support.objects.Possible;
 import diarsid.support.objects.StatefulClearable;
 
@@ -26,7 +27,6 @@ import static diarsid.beam.core.base.util.MathUtil.percentAsFloat;
 import static diarsid.beam.core.base.util.MathUtil.percentAsFloatOf;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.percentAsIntOf;
-import static diarsid.support.objects.Pools.giveBackAllToPoolAndClear;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
@@ -43,8 +43,11 @@ class Clusters implements StatefulClearable {
         MAX_PLACING_BONUS = 20;
     }
     
+    private final Pool<Cluster> clusterPool;
+    
     /* Clusters variables block */
     private final List<Cluster> clusters;
+    private final List<Cluster> clustersTakenFromPool;
     private final Possible<Cluster> lastAdded;
     private final AnalyzeData data;
     private final AnalyzePositionsDirection direction;
@@ -65,10 +68,16 @@ class Clusters implements StatefulClearable {
     float placingBonus;
     float placingBonusLimit;
 
-    Clusters(AnalyzeData analyzeData, AnalyzePositionsDirection direction) {
+    Clusters(
+            AnalyzeData analyzeData, 
+            AnalyzePositionsDirection direction, 
+            Pool<Cluster> clusterPool) {
+        this.clusterPool = clusterPool;
+        
         this.data = analyzeData;
         this.direction = direction;
         this.clusters = new ArrayList<>();
+        this.clustersTakenFromPool = new ArrayList<>();
         this.lastAdded = possibleButEmpty();
         this.arranged = false;
         this.clustersTotalLength = 0;
@@ -87,7 +96,13 @@ class Clusters implements StatefulClearable {
         this.placingBonusNotApplicableReason = possibleButEmpty();
     }
     
-    void add(Cluster cluster) {
+    Cluster getUnprocessed() {
+        Cluster cluster = this.clusterPool.give();
+        this.clustersTakenFromPool.add(cluster);
+        return cluster;
+    }
+    
+    void acceptProcessed(Cluster cluster) {
         if ( this.arranged ) {
             throw new IllegalStateException(
                     "It is forbidden to add next cluster after arrengment!");
@@ -1235,7 +1250,9 @@ class Clusters implements StatefulClearable {
     @Override
     public void clear() {   
         this.lastAdded.nullify();
-        giveBackAllToPoolAndClear(this.clusters);
+        this.clusterPool.takeBackAll(this.clustersTakenFromPool);
+        this.clustersTakenFromPool.clear();
+        this.clusters.clear();
         this.arranged = false;
         this.clustersTotalLength = 0;
         this.distanceBetweenClusters = 0;

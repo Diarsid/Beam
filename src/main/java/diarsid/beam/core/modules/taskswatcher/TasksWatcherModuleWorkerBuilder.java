@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import diarsid.beam.core.modules.io.gui.TasksGui;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.TasksWatcherModule;
@@ -20,6 +19,8 @@ import com.drs.gem.injector.module.GemModuleBuilder;
 
 import static diarsid.beam.core.Beam.systemInitiator;
 
+import diarsid.beam.core.modules.BeamEnvironmentModule;
+
 /**
  *
  * @author Diarsid
@@ -27,11 +28,11 @@ import static diarsid.beam.core.Beam.systemInitiator;
 class TasksWatcherModuleWorkerBuilder implements GemModuleBuilder<TasksWatcherModule>{
     
     private final IoModule ioModule;
-    private final ApplicationComponentsHolderModule applicationComponentsHolderModule;
+    private final BeamEnvironmentModule applicationComponentsHolderModule;
     private final DomainKeeperModule domainKeeperModule;
 
     TasksWatcherModuleWorkerBuilder(
-            ApplicationComponentsHolderModule applicationComponentsHolderModule, 
+            BeamEnvironmentModule applicationComponentsHolderModule, 
             IoModule ioModule,
             DomainKeeperModule domainKeeperModule) {
         this.applicationComponentsHolderModule = applicationComponentsHolderModule;

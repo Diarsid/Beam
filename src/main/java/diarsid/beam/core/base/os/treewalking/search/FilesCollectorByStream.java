@@ -11,12 +11,12 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.util.PathUtils.asName;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
@@ -32,9 +32,11 @@ import static diarsid.beam.core.base.util.StringUtils.lower;
 class FilesCollectorByStream implements FilesCollector {
     
     private final int searchDepth;
+    private final Similarity similarity;
 
-    FilesCollectorByStream(int searchDepth) {  
+    FilesCollectorByStream(int searchDepth, Similarity similarity) {  
         this.searchDepth = searchDepth;
+        this.similarity = similarity;
     }
     
     private boolean filterByStrictName(String nameToFind, Path testedPath) {
@@ -50,14 +52,14 @@ class FilesCollectorByStream implements FilesCollector {
         if ( containsIgnoreCase(name, nameToFind) ) {
             return true;
         } else {
-            if ( isSimilar(name, nameToFind) ) {
+            if ( this.similarity.isSimilar(name, nameToFind) ) {
                 return true;
             } else {
                 String testedPathString = removeSeparators(path.toString());
                 if ( containsIgnoreCase(testedPathString, nameToFind) ) {
                     return true;
                 } else {
-                    return isSimilar(testedPathString, nameToFind);
+                    return this.similarity.isSimilar(testedPathString, nameToFind);
                 }
             }
         }
@@ -80,7 +82,7 @@ class FilesCollectorByStream implements FilesCollector {
             }
             searchedPart = searchedPathParts[counter];
             if ( containsIgnoreCase(realPart, searchedPart) || 
-                 isSimilar(realPart, searchedPart) ) {
+                 this.similarity.isSimilar(realPart, searchedPart) ) {
                 counter++;
             } 
         }

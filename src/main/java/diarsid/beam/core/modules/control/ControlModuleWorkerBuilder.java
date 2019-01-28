@@ -11,7 +11,6 @@ import diarsid.beam.core.base.control.io.base.console.ConsoleCommandRealProcesso
 import diarsid.beam.core.base.control.io.base.console.ConsolePlatform;
 import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.base.exceptions.ModuleInitializationException;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
 import diarsid.beam.core.modules.ControlModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
@@ -25,6 +24,8 @@ import static diarsid.beam.core.base.control.io.base.console.Console.buildConsol
 import static diarsid.beam.core.modules.control.cli.CliCommandDispatcher.buildCommandLineProcessor;
 import static diarsid.support.log.Logging.logFor;
 
+import diarsid.beam.core.modules.BeamEnvironmentModule;
+
 /**
  *
  * @author Diarsid
@@ -32,13 +33,13 @@ import static diarsid.support.log.Logging.logFor;
 public class ControlModuleWorkerBuilder implements GemModuleBuilder<ControlModule> {
     
     private final IoModule ioModule;
-    private final ApplicationComponentsHolderModule appComponentsHolderModule;
+    private final BeamEnvironmentModule appComponentsHolderModule;
     private final DomainKeeperModule domainModule;
     private final ExecutorModule executorModule;
     
     public ControlModuleWorkerBuilder(
             IoModule ioModule, 
-            ApplicationComponentsHolderModule appComponentsHolderModule,
+            BeamEnvironmentModule appComponentsHolderModule,
             DomainKeeperModule domainModule,
             ExecutorModule executorModule) {
         this.ioModule = ioModule;

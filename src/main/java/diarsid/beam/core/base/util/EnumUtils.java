@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.base.util;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.hasStrictSimilar;
+import static diarsid.beam.core.application.environment.BeamEnvironment.similarity;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 
 /**
@@ -21,6 +21,6 @@ public class EnumUtils {
         return 
                 arg.equalsIgnoreCase(parseableEnum.name()) || 
                 containsWordInIgnoreCase(parseableEnum.keyWords(), arg) || 
-                hasStrictSimilar(parseableEnum.keyWords(), arg);
+                similarity().hasStrictSimilar(parseableEnum.keyWords(), arg);
     }
 }

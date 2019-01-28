@@ -14,10 +14,12 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
 import diarsid.beam.core.domain.inputparsing.time.TimeParser;
 import diarsid.beam.core.domain.inputparsing.webpages.WebObjectsInputParser;
-import diarsid.beam.core.modules.ApplicationComponentsHolderModule;
+import diarsid.beam.core.modules.BeamEnvironmentModule;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.IoModule;
 import diarsid.beam.core.modules.ResponsiveDataModule;
+import diarsid.support.objects.Pool;
+import diarsid.support.objects.Pools;
 
 import com.drs.gem.injector.module.GemModuleBuilder;
 
@@ -26,6 +28,7 @@ import static diarsid.beam.core.base.os.treewalking.advanced.Walker.newWalker;
 import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getFolderTypeDetector;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.allowedTimePeriodsParser;
 import static diarsid.beam.core.domain.inputparsing.time.TimeParsing.timePatternParsersHolder;
+import static diarsid.support.objects.Pools.pools;
 
 
 /**
@@ -36,21 +39,21 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
     
     private final ResponsiveDataModule responsiveDataModule;
     private final IoModule ioModule;
-    private final ApplicationComponentsHolderModule appComponentsHolderModule;
+    private final BeamEnvironmentModule beamEnvironmentModule;
     
     public DomainKeeperModuleWorkerBuilder(
             ResponsiveDataModule dataModule, 
             IoModule ioModule, 
-            ApplicationComponentsHolderModule appComponentsHolderModule) {
+            BeamEnvironmentModule beamEnvironmentModule) {
         this.responsiveDataModule = dataModule;
         this.ioModule = ioModule;
-        this.appComponentsHolderModule = appComponentsHolderModule;
+        this.beamEnvironmentModule = beamEnvironmentModule;
     }
 
     @Override
     public DomainKeeperModule buildModule() {
         InnerIoEngine ioEngine = this.ioModule.getInnerIoEngine();
-        Interpreter interpreter = this.appComponentsHolderModule.interpreter();
+        Interpreter interpreter = this.beamEnvironmentModule.interpreter();
         Initiator systemInitiator = systemInitiator();
         KeeperDialogHelper dialogHelper = new KeeperDialogHelper(ioEngine);
         
@@ -78,15 +81,25 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
         NamedEntitiesKeeper defaultKeeper;
         AllKeeper allKeeper;
         
+        Pools pools = pools();
+        
+        Pool<KeeperLoopValidationDialog> dialogPool = pools.createPool(
+                KeeperLoopValidationDialog.class, 
+                () -> new KeeperLoopValidationDialog());
+        
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
                 this.responsiveDataModule.commands(), 
                 this.responsiveDataModule.patternChoices(),
-                ioEngine);
+                ioEngine,
+                this.beamEnvironmentModule.analyze(),
+                dialogPool);
         locationsKeeper = new LocationsKeeperWorker(
                 this.responsiveDataModule.locations(),
                 this.responsiveDataModule.locationSubPaths(),
                 this.responsiveDataModule.patternChoices(),
                 commandsMemoryKeeper,
+                this.beamEnvironmentModule.analyze(), 
+                dialogPool,
                 ioEngine, 
                 locationsInputParser, 
                 propertyAndTextParser);
@@ -94,6 +107,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.responsiveDataModule.batches(), 
                 this.responsiveDataModule.patternChoices(),
                 commandsMemoryKeeper,
+                this.beamEnvironmentModule.analyze(), 
+                dialogPool,
                 ioEngine, 
                 dialogHelper, 
                 interpreter, 
@@ -103,8 +118,13 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 newWalker(
                         ioEngine, 
                         this.responsiveDataModule.patternChoices(), 
-                        getFolderTypeDetector()),
-                this.appComponentsHolderModule.programsCatalog());
+                        getFolderTypeDetector(),
+                        this.beamEnvironmentModule.analyze(),
+                        this.beamEnvironmentModule.similarity(),
+                        pools),
+                this.beamEnvironmentModule.analyze(),
+                dialogPool,
+                this.beamEnvironmentModule.programsCatalog());
         tasksKeeper = new TasksKeeperWorker(
                 ioEngine, 
                 this.responsiveDataModule.tasks(), 
@@ -118,6 +138,8 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 commandsMemoryKeeper,
                 this.responsiveDataModule.patternChoices(),
                 ioEngine, 
+                this.beamEnvironmentModule.analyze(), 
+                dialogPool,
                 this.ioModule.gui(),
                 systemInitiator,
                 dialogHelper, 
@@ -128,22 +150,28 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 commandsMemoryKeeper,
                 ioEngine, 
                 systemInitiator,
+                dialogPool,
                 dialogHelper, 
                 webObjectsParser);   
         defaultKeeper = new NamedEntitiesKeeperWorker(
                 ioEngine, 
-                this.responsiveDataModule.namedEntities());
+                this.responsiveDataModule.namedEntities(),
+                this.beamEnvironmentModule.analyze());
         locationSubPathKeeper = new LocationSubPathKeeperWorker(
                 this.responsiveDataModule.locationSubPaths(), 
                 this.responsiveDataModule.locationSubPathChoices(),
+                this.beamEnvironmentModule.analyze(),
                 ioEngine);
         notesKeeper = new NotesKeeperWorker(
                 ioEngine,
-                this.appComponentsHolderModule.notesCatalog(), 
+                this.beamEnvironmentModule.notesCatalog(), 
+                this.beamEnvironmentModule.analyze(), 
+                dialogPool,
                 dialogHelper);
         allKeeper = new AllKeeperWorker(
                 this.responsiveDataModule,
-                programsKeeper);
+                programsKeeper, 
+                this.beamEnvironmentModule.analyze());
         return new DomainKeeperModuleWorker(
                 locationsKeeper, 
                 batchesKeeper, 

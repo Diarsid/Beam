@@ -16,8 +16,8 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.calculateCluster;
 import static diarsid.support.objects.Pools.giveBackToPool;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.processCluster;
 
 /**
  *

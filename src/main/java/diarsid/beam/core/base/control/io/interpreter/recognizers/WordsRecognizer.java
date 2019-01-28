@@ -8,6 +8,7 @@ package diarsid.beam.core.base.control.io.interpreter.recognizers;
 
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.beam.core.base.control.io.commands.Command;
 import diarsid.beam.core.base.control.io.interpreter.Input;
 import diarsid.beam.core.base.control.io.interpreter.NodeRecognizer;
@@ -16,7 +17,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.hasStrictSimilar;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectCommand;
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.EXPECTS_MORE_ARGS;
@@ -30,16 +30,19 @@ public class WordsRecognizer extends NodeRecognizer {
     private final Set<String> controlWords;
     private final ArgsExpectation moreArgsExpectation;
     private final EmptyArgsTolerance emptyArgsTolerance;
+    private final Similarity similarity;
     
     WordsRecognizer(
             EmptyArgsTolerance emptyArgsTolerance, 
-            ArgsExpectation moreArgsExpectation, 
+            ArgsExpectation moreArgsExpectation,
+            Similarity similarity,
             String... controlWords) {
         this.moreArgsExpectation = moreArgsExpectation;
         this.emptyArgsTolerance = emptyArgsTolerance;
         this.controlWords = unmodifiableSet(stream(controlWords)
                 .map(word -> lower(word).trim())
                 .collect(toSet()));
+        this.similarity = similarity;
     }
 
     @Override
@@ -85,6 +88,6 @@ public class WordsRecognizer extends NodeRecognizer {
 
     private boolean currentArgIsControlWord(Input input) {
         return containsWordInIgnoreCase(this.controlWords, input.currentArg()) ||
-               hasStrictSimilar(this.controlWords, input.currentArg());
+               this.similarity.hasStrictSimilar(this.controlWords, input.currentArg());
     }
 }

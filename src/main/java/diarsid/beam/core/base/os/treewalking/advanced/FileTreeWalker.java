@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import diarsid.beam.core.application.environment.Catalog;
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -23,10 +24,10 @@ import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
+import diarsid.support.objects.Pool;
 
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.findVariantEqualToPattern;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.unite;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
@@ -42,8 +43,6 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
 import static diarsid.beam.core.base.util.StringUtils.haveEqualLength;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.support.log.Logging.logFor;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 
 /**
@@ -54,24 +53,34 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     
     private final FolderTypeDetector folderTypeDetector;
     private final InnerIoEngine ioEngine;
+    private final Similarity similarity;
+    private final Pool<WalkState> statePool;
     private final Optional<ResponsiveDaoPatternChoices> daoPatternChoices;
     private final ThreadLocal<WalkState> localState;
     
     FileTreeWalker(
             InnerIoEngine ioEngine, 
-            FolderTypeDetector folderTypeDetector) {
+            Similarity similarity,
+            FolderTypeDetector folderTypeDetector,
+            Pool<WalkState> statePool) {
         this.folderTypeDetector = folderTypeDetector;
         this.ioEngine = ioEngine;
+        this.similarity = similarity;
+        this.statePool = statePool;
         this.daoPatternChoices = Optional.empty();
         this.localState = new ThreadLocal<>();
     }
     
     FileTreeWalker(
             InnerIoEngine ioEngine, 
+            Similarity similarity,
             ResponsiveDaoPatternChoices daoPatternChoices, 
-            FolderTypeDetector folderTypeDetector) {
+            FolderTypeDetector folderTypeDetector,
+            Pool<WalkState> statePool) {
         this.folderTypeDetector = folderTypeDetector;
         this.ioEngine = ioEngine;
+        this.similarity = similarity;
+        this.statePool = statePool;
         this.daoPatternChoices = Optional.of(daoPatternChoices);
         this.localState = new ThreadLocal<>();
     }
@@ -79,7 +88,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     private WalkState state() {
         WalkState state = this.localState.get();
         if ( isNull(state) ) {
-            state = takeFromPool(WalkState.class);
+            state = this.statePool.give();
             this.localState.set(state);
         }
         return state;
@@ -227,7 +236,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     private void cleanThreadLocalState() {
         WalkState state = this.localState.get();
         this.localState.remove();
-        giveBackToPool(state);
+        this.statePool.takeBack(state);
     }
     
     private boolean consumeWalkResultsAndDefineIfGoDeeper(WalkState state) {
@@ -251,7 +260,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         String processedFile;
         for (int i = 0; i < state.collectedOnCurrentLevel().size(); i++) {
             processedFile = state.collectedOnCurrentLevel().get(i);
-            if ( ! fileIsSimilarToPattern(processedFile, pattern) ) {
+            if ( ! this.fileIsSimilarToPattern(processedFile, pattern) ) {
                 state.collectedOnCurrentLevel().remove(i);
                 i--;
             }
@@ -361,7 +370,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
                 && this.folderTypeDetector.safeExamineTypeOf(file).isNotRestricted();
     }
     
-    static boolean fileIsSimilarToPattern(String file, String pattern) {
+    private boolean fileIsSimilarToPattern(String file, String pattern) {
         if ( pattern.isEmpty() ) {
             return true;
         }
@@ -373,16 +382,16 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             return true;
         } else {            
             if ( haveEqualLength(file, fileName) ) {
-                return isSimilar(file, pattern);
+                return this.similarity.isSimilar(file, pattern);
             } else {
-                if ( isSimilar(fileName, pattern) ) {
+                if ( this.similarity.isSimilar(fileName, pattern) ) {
                     return true;
                 } else {
                     String filePathWithoutSeparators = removeSeparators(file);
                     if ( containsIgnoreCase(filePathWithoutSeparators, pattern) ) {
                         return true;
                     } else {
-                        return isSimilar(filePathWithoutSeparators, pattern);
+                        return this.similarity.isSimilar(filePathWithoutSeparators, pattern);
                     }
                 }
             }

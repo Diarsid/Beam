@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -35,13 +36,11 @@ import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPaths;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocations;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isEntitySatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -76,8 +75,6 @@ import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.
 import static diarsid.beam.core.domain.entities.validation.UndefinedValidity.undefinedValidityMutableOnce;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 
 
@@ -88,6 +85,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final ResponsiveDaoLocationSubPaths daoLocationSubPaths;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
+    private final Analyze analyze;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final InnerIoEngine ioEngine;
     private final LocationsInputParser locationInpurParser;
     private final PropertyAndTextParser propertyTextParser;
@@ -103,6 +102,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
             ResponsiveDaoLocationSubPaths daoLocationSubPaths,
             ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
+            Analyze analyze, 
+            Pool<KeeperLoopValidationDialog> dialogPool,
             InnerIoEngine ioEngine, 
             LocationsInputParser parser,
             PropertyAndTextParser propertyTextParser) {
@@ -111,6 +112,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
         this.daoLocationSubPaths = daoLocationSubPaths;
         this.daoPatternChoices = daoPatternChoices;
         this.commandsMemory = commandsMemoryKeeper;
+        this.analyze = analyze;
+        this.dialogPool = dialogPool;
         this.ioEngine = ioEngine;
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
@@ -180,18 +183,20 @@ class LocationsKeeperWorker implements LocationsKeeper {
         List<Location> foundLocations;     
         WeightedVariants weightedLocations;
         Answer answer;
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class)
-                .withInitialArgument(name)
-                .withRule(ENTITY_NAME_RULE)
-                .withInputSource(() -> {
-                    return this.ioEngine.askInput(
-                            initiator, "name", this.enterLocationNameHelp);
-                })
-                .withOutputDestination((validationFail) -> {
-                    this.ioEngine.report(initiator, validationFail);
-                });
         
-        try {
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            dialog
+                    .withInitialArgument(name)
+                    .withRule(ENTITY_NAME_RULE)
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(
+                                initiator, "name", this.enterLocationNameHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    });
+        
+        
             locationFinding: while ( true ) {            
 
                 name = dialog
@@ -208,7 +213,8 @@ class LocationsKeeperWorker implements LocationsKeeper {
                     this.reportThatLocationFound(initiator, name, foundLocation);                    
                     return valueFlowCompletedWith(foundLocation);
                 } else if ( hasMany(foundLocations) ) {
-                    weightedLocations = weightVariants(name, entitiesToVariants(foundLocations));
+                    weightedLocations = this.analyze.weightVariants(
+                            name, entitiesToVariants(foundLocations));
                     if ( weightedLocations.isEmpty() ) {
                         this.ioEngine.report(initiator, format("not found by '%s'", name));
                         name = "";
@@ -259,9 +265,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                     continue locationFinding;
                 }
             }
-        } finally {
-            giveBackToPool(dialog);
-        }    
+        } 
     }
 
     private void reportThatLocationFound(Initiator initiator, String name, Location location) {
@@ -300,7 +304,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             if ( location.name().equalsIgnoreCase(namePattern) ) {
                 return valueFlowCompletedWith(location);
             } else {
-                if ( isEntitySatisfiable(namePattern, location) ) {
+                if ( this.analyze.isEntitySatisfiable(namePattern, location) ) {
                     return valueFlowCompletedWith(location);
                 } else {
                     return valueFlowCompletedEmpty();
@@ -329,7 +333,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
 
     private ValueFlow<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
-        WeightedVariants variants = weightVariants(pattern, entitiesToVariants(locations));
+        WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(locations));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
@@ -412,52 +416,44 @@ class LocationsKeeperWorker implements LocationsKeeper {
     }
 
     private String discussLocationNewName(Initiator initiator, String name) {
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-        
-        name = dialog
-                .withInitialArgument(name)
-                .withRule(ENTITY_NAME_RULE)
-                .withRule((newName) -> {
-                    if ( this.daoLocations.isNameFree(initiator, newName) ) {
-                        return validationOk();
-                    } else {
-                        return validationFailsWith("this name is not free!");
-                    }
-                })
-                .withInputSource(() -> {
-                    return this.ioEngine.askInput(
-                            initiator, "name", this.enterLocationNameHelp);
-                })
-                .withOutputDestination((validationFail) -> {
-                    this.ioEngine.report(initiator, validationFail);
-                })
-                .validateAndGet();
-        
-        giveBackToPool(dialog);
-        
-        return name;
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            return dialog
+                    .withInitialArgument(name)
+                    .withRule(ENTITY_NAME_RULE)
+                    .withRule((newName) -> {
+                        if ( this.daoLocations.isNameFree(initiator, newName) ) {
+                            return validationOk();
+                        } else {
+                            return validationFailsWith("this name is not free!");
+                        }
+                    })
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(
+                                initiator, "name", this.enterLocationNameHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    })
+                    .validateAndGet();
+        }  
     }
 
-    private String discussLocationNewPath(Initiator initiator, String path) {
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-        
-        path = dialog
-                .withInitialArgument(path)
-                .withRule((newLocationPath) -> {
-                    return this.validateLocationNewPath(initiator, newLocationPath, dialog);
-                })
-                .withInputSource(() -> {
-                    return this.ioEngine.askInput(
-                            initiator, "path", this.enterLocationPathHelp);
-                })
-                .withOutputDestination((validationFail) -> {
-                    this.ioEngine.report(initiator, validationFail);
-                })
-                .validateAndGet();
-        
-        giveBackToPool(dialog);
-        
-        return path;
+    private String discussLocationNewPath(Initiator initiator, String path) {        
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            return dialog
+                    .withInitialArgument(path)
+                    .withRule((newLocationPath) -> {
+                        return this.validateLocationNewPath(initiator, newLocationPath, dialog);
+                    })
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(
+                                initiator, "path", this.enterLocationPathHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    })
+                    .validateAndGet();
+        } 
     }
     
     private Validity validateLocationNewPath(
@@ -488,7 +484,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 String locationAndSubPath = locationSubPath.name();
                 boolean pathFound = 
                         locationAndSubPath.equalsIgnoreCase(newPath) ||
-                        isNameSatisfiable(newPath, locationAndSubPath);
+                        this.analyze.isNameSatisfiable(newPath, locationAndSubPath);
                 if ( pathFound ) {
                     String realFoundPath = locationSubPath.fullPath();
                     validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));   
@@ -496,7 +492,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                     validity.failsWith(format("'%s' not found", newPath));
                 }
             } else if ( hasMany(subPathes) ) {
-                WeightedVariants variants = weightVariants(
+                WeightedVariants variants = this.analyze.weightVariants(
                         newPath, entitiesToVariants(subPathes));
                 if ( variants.isEmpty() ) {
                     validity.failsWith(format("'%s' not found", newPath));
@@ -644,30 +640,32 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 }
             }
             
-            KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-            if ( propertyToEdit.isDefined() ) {
-                dialog.withInitialArgument(propertyToEdit.name());
+            String propertyName;
+            try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+                if ( propertyToEdit.isDefined() ) {
+                    dialog.withInitialArgument(propertyToEdit.name());
+                }
+                propertyName = dialog
+                        .withRule((prop) -> {
+                            EntityProperty property = argToProperty(prop);
+                            if ( property.isUndefined() ) {
+                                return validationFailsWith("not a property");
+                            }
+                            if ( property.isNotOneOf(NAME, FILE_PATH) ) {
+                                return validationFailsWith("name or file path is expected");
+                            }
+                            return validationOk();
+                        })
+                        .withInputSource(() -> {
+                            return this.ioEngine.askInput(
+                                    initiator, "property", this.enterPropertyToEditHelp);
+                        })
+                        .withOutputDestination((validationFail) -> {
+                            this.ioEngine.report(initiator, validationFail);
+                        })
+                        .validateAndGet();
             }
-            String propertyName = dialog
-                    .withRule((prop) -> {
-                        EntityProperty property = argToProperty(prop);
-                        if ( property.isUndefined() ) {
-                            return validationFailsWith("not a property");
-                        }
-                        if ( property.isNotOneOf(NAME, FILE_PATH) ) {
-                            return validationFailsWith("name or file path is expected");
-                        }
-                        return validationOk();
-                    })
-                    .withInputSource(() -> {
-                        return this.ioEngine.askInput(
-                                initiator, "property", this.enterPropertyToEditHelp);
-                    })
-                    .withOutputDestination((validationFail) -> {
-                        this.ioEngine.report(initiator, validationFail);
-                    })
-                    .validateAndGet();
-
+            
             propertyToEdit = argToProperty(propertyName);
             if ( propertyToEdit.isUndefined() ) {
                 return voidFlowStopped();

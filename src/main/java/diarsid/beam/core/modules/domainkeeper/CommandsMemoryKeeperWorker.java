@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -26,13 +27,12 @@ import diarsid.beam.core.base.control.io.commands.executor.OpenLocationTargetCom
 import diarsid.beam.core.base.util.MutableString;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoCommands;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
@@ -56,8 +56,6 @@ import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.MutableString.mutableString;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.TEXT_RULE;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 /**
  *
@@ -68,6 +66,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     private final InnerIoEngine ioEngine;
     private final ResponsiveDaoCommands daoCommands;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
+    private final Analyze analyze;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final Help enterMemoryHelp;
     private final Help exactMatchHelp;
     private final Help removeRelatedMemsHelp;
@@ -77,10 +77,14 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     CommandsMemoryKeeperWorker(
             ResponsiveDaoCommands daoCommands, 
             ResponsiveDaoPatternChoices daoChoices, 
-            InnerIoEngine ioEngine) {
+            InnerIoEngine ioEngine,
+            Analyze analyze,
+            Pool<KeeperLoopValidationDialog> dialogPool) {
         this.daoCommands = daoCommands;
         this.daoPatternChoices = daoChoices;
         this.ioEngine = ioEngine;
+        this.analyze = analyze;
+        this.dialogPool = dialogPool;
         this.enterMemoryHelp = this.ioEngine.addToHelpContext(
                 "", 
                 "" + UNACCEPTABLE_TEXT_CHARS.stream().collect(joining()));
@@ -138,10 +142,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     }
 
     private ValueFlow<List<InvocationCommand>> findCommands(
-            Initiator initiator, MutableString memPattern) {   
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
-        
-        try {
+            Initiator initiator, MutableString memPattern) {           
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
             boolean isExactSearch = false;
             Choice choice;
             String mem;
@@ -160,6 +162,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 mem = dialog
                         .withInitialArgument(memPattern.get())
                         .validateAndGet();
+                
                 memPattern.muteTo(mem);
 
                 if ( memPattern.isEmpty() ) {
@@ -191,7 +194,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     memPattern.empty();
                     continue searching;
                 } else {
-                    WeightedVariants variants = weightVariants(
+                    WeightedVariants variants = this.analyze.weightVariants(
                             memPattern.get(), commandsToVariants(foundCommands));
                     if ( variants.isNotEmpty() ) {
                        return this.getAllFoundUsingVariantsIndexes(foundCommands, variants.indexes());
@@ -202,9 +205,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     }                
                 }
             }             
-        } finally {
-            giveBackToPool(dialog);
-        }    
+        }   
     }
     
     private ValueFlow<List<InvocationCommand>> getAllFoundUsingVariantsIndexes(
@@ -346,7 +347,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return voidFlowCompleted();
         }
         matchingCommands.add(0, exactMatch);
-        WeightedVariants variants = weightVariants(
+        WeightedVariants variants = this.analyze.weightVariants(
                 command.originalArgument(), commandsToVariants(matchingCommands));
         if ( variants.isEmpty() ) {
             return voidFlowCompleted();
@@ -526,8 +527,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return valueFlowCompletedWith(exactMatch);
         }
         matchingCommands.add(0, exactMatch);
-        WeightedVariants variants = 
-                weightVariants(original, commandsToVariants(matchingCommands, view));
+        WeightedVariants variants = this.analyze.weightVariants(
+                original, commandsToVariants(matchingCommands, view));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
@@ -597,16 +598,16 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
                 
         if ( hasOne(foundCommands) ) {
-            if ( ! isNameSatisfiable(original, getOne(foundCommands).extendedArgument() ) ) {
+            InvocationCommand foundCommand = getOne(foundCommands);
+            if ( ! this.analyze.isNameSatisfiable(original, foundCommand.extendedArgument() ) ) {
                 return valueFlowCompletedEmpty();
             }
             Choice choice = this.ioEngine.ask(
-                    initiator, getOne(foundCommands).stringify(), this.isOneCommandRelevantHelp);
+                    initiator, foundCommand.stringify(), this.isOneCommandRelevantHelp);
             switch ( choice ) {
-                case POSITIVE : {
-                    InvocationCommand found = getOne(foundCommands);
+                case POSITIVE : {                    
                     InvocationCommand newCommand = createInvocationCommandFrom(
-                            found.type(), original, found.extendedArgument());
+                            foundCommand.type(), original, foundCommand.extendedArgument());
                     asyncDo(() -> {                        
                         this.daoCommands.save(initiator, newCommand);
                     });
@@ -624,8 +625,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 }
             }
         } else if ( hasMany(foundCommands) ) {
-            WeightedVariants variants = 
-                    weightVariants(original, commandsToVariants(foundCommands, view));
+            WeightedVariants variants = this.analyze.weightVariants(
+                    original, commandsToVariants(foundCommands, view));
             if ( variants.isEmpty() ) {
                 return valueFlowCompletedEmpty();
             }
@@ -658,7 +659,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
-        WeightedVariants variants = weightVariants(pattern, commandsToVariants(commands));
+        WeightedVariants variants = this.analyze.weightVariants(
+                pattern, commandsToVariants(commands));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
@@ -682,7 +684,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
-        WeightedVariants variants = weightVariants(pattern, commandsToVariants(commands));
+        WeightedVariants variants = this.analyze.weightVariants(
+                pattern, commandsToVariants(commands));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }

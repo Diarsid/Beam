@@ -5,10 +5,10 @@
  */
 package diarsid.beam.core.base.os.treewalking.search;
 
-import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
-
 import java.nio.file.Path;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
+import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.search.result.FileSearchResult;
 
 import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getFolderTypeDetector;
@@ -19,9 +19,9 @@ import static diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector.getF
  */
 public interface FileSearcher {
     
-    public static FileSearcher searcherWithDepthsOf(int depthOfSearch) {
+    public static FileSearcher searcherWithDepthsOf(int depthOfSearch, Similarity similarity) {
         FilesCollector collectorByVisitor = new FilesCollectorByVisitor(
-                depthOfSearch, getFolderTypeDetector());
+                depthOfSearch, similarity, getFolderTypeDetector());
         return new FileSearcherService(collectorByVisitor);
     } 
     

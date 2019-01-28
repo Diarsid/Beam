@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
 
@@ -32,11 +33,14 @@ class FilesCollectorByVisitor implements FilesCollector {
     }
 
     private final int searchDepth;
+    private final Similarity similarity;
     private final FolderTypeDetector folderTypeDetector;
     private final NameDetector nameDetectorStub;
 
-    FilesCollectorByVisitor(int searchDepth, FolderTypeDetector folderTypeDetector) {      
+    FilesCollectorByVisitor(
+            int searchDepth, Similarity similarity, FolderTypeDetector folderTypeDetector) {      
         this.searchDepth = searchDepth;
+        this.similarity = similarity;
         this.folderTypeDetector = folderTypeDetector;
         this.nameDetectorStub = new NameDetector(null) {
             @Override
@@ -66,14 +70,15 @@ class FilesCollectorByVisitor implements FilesCollector {
     @Override
     public List<String> collectByNameOrSubpathPatternSimilarity(
             Path root, String nameToFind, FileSearchMode mode) throws IOException {
-        NameDetector detector = new DetectorForNameOrSubpathSimilarity(nameToFind);
+        NameDetector detector = new DetectorForNameOrSubpathSimilarity(nameToFind, this.similarity);
         return this.collectWith(root, mode, detector);
     }
 
     @Override
     public List<String> collectByPathPartsSimilarity(
             Path root, String pathToFind, FileSearchMode mode) throws IOException {
-        NameDetector detector = new DetectorForPathPartsSimilarity(splitPathFragmentsFrom(pathToFind));
+        NameDetector detector = new DetectorForPathPartsSimilarity(
+                splitPathFragmentsFrom(pathToFind), this.similarity);
         return this.collectWith(root, mode, detector);
     }
 

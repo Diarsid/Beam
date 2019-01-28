@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -34,13 +35,11 @@ import diarsid.beam.core.domain.inputparsing.common.PropertyAndText;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoBatches;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoPatternChoices;
+import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.isNameSatisfiable;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightStrings;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
@@ -71,8 +70,6 @@ import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINE
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
-import static diarsid.support.objects.Pools.giveBackToPool;
-import static diarsid.support.objects.Pools.takeFromPool;
 
 class BatchesKeeperWorker implements BatchesKeeper {
     
@@ -80,6 +77,8 @@ class BatchesKeeperWorker implements BatchesKeeper {
     private final ResponsiveDaoBatches dao;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
+    private final Analyze analyze;
+    private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
     private final Interpreter interpreter;
@@ -97,6 +96,8 @@ class BatchesKeeperWorker implements BatchesKeeper {
             ResponsiveDaoBatches daoBatches, 
             ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
+            Analyze analyze,
+            Pool<KeeperLoopValidationDialog> dialogPool,
             InnerIoEngine ioEngine,
             KeeperDialogHelper helper,
             Interpreter interpreter,
@@ -105,6 +106,8 @@ class BatchesKeeperWorker implements BatchesKeeper {
         this.dao = daoBatches;
         this.daoPatternChoices = daoPatternChoices;
         this.commandsMemory = commandsMemoryKeeper;
+        this.analyze = analyze;
+        this.dialogPool = dialogPool;
         this.ioEngine = ioEngine;
         this.helper = helper;
         this.interpreter = interpreter;
@@ -197,17 +200,18 @@ class BatchesKeeperWorker implements BatchesKeeper {
         Optional<Batch> foundBatch;
         WeightedVariants weightedBatchNames;
         Answer answer;
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class)
-                .withInitialArgument(name)
-                .withRule(ENTITY_NAME_RULE)
-                .withInputSource(() -> {
-                    return this.ioEngine.askInput(initiator, "name", this.enterBatchNameHelp);
-                })
-                .withOutputDestination((validationFail) -> {
-                    this.ioEngine.report(initiator, validationFail);
-                });
         
-        try {
+        try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
+            dialog
+                    .withInitialArgument(name)
+                    .withRule(ENTITY_NAME_RULE)
+                    .withInputSource(() -> {
+                        return this.ioEngine.askInput(initiator, "name", this.enterBatchNameHelp);
+                    })
+                    .withOutputDestination((validationFail) -> {
+                        this.ioEngine.report(initiator, validationFail);
+                    });
+            
             batchDiscussing: while ( true ) {                 
                 name = dialog
                         .withInitialArgument(name)
@@ -226,7 +230,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                         continue batchDiscussing;
                     }
                 } else if ( hasMany(foundBatchNames) ) {
-                    weightedBatchNames = weightStrings(name, foundBatchNames);
+                    weightedBatchNames = this.analyze.weightStrings(name, foundBatchNames);
                     if ( weightedBatchNames.isEmpty() ) {
                         this.ioEngine.report(initiator, format("cannot get Batch by '%s'", name));
                         name = "";
@@ -259,9 +263,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                     continue batchDiscussing;
                 }
             }
-        } finally {
-            giveBackToPool(dialog);
-        }    
+        }  
     }
 
     @Override
@@ -272,7 +274,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         if ( hasOne(foundBatchNames) ) {
             String batchName = getOne(foundBatchNames);
             if ( batchName.equalsIgnoreCase(pattern) || 
-                 isNameSatisfiable(pattern, batchName) ) {
+                 this.analyze.isNameSatisfiable(pattern, batchName) ) {
                 return this.findByExactName(initiator, batchName); 
             } else {
                 return valueFlowCompletedEmpty();
@@ -292,7 +294,8 @@ class BatchesKeeperWorker implements BatchesKeeper {
 
     private ValueFlow<Batch> manageWithManyBatchNames(
             Initiator initiator, String pattern, List<String> foundBatchNames) {
-        WeightedVariants variants = weightVariants(pattern, stringsToVariants(foundBatchNames));
+        WeightedVariants variants = this.analyze.weightVariants(
+                pattern, stringsToVariants(foundBatchNames));
         if ( variants.isEmpty() ) {
             return valueFlowCompletedEmpty();
         }
@@ -358,7 +361,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     }
     
     private String discussBatchNewName(Initiator initiator, String name) {
-        KeeperLoopValidationDialog dialog = takeFromPool(KeeperLoopValidationDialog.class);
+        KeeperLoopValidationDialog dialog = this.dialogPool.give();
         
         try {
             return dialog
@@ -379,7 +382,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                     })
                     .validateAndGet();
         } finally {
-            giveBackToPool(dialog);
+            this.dialogPool.takeBack(dialog);
         }
     }
 

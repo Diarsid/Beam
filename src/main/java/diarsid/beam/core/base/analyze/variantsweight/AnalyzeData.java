@@ -10,6 +10,7 @@ import java.util.function.IntFunction;
 
 import diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection;
 import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.support.objects.Pool;
 import diarsid.support.objects.PooledReusable;
 
 import static java.util.Arrays.fill;
@@ -47,7 +48,6 @@ class AnalyzeData extends PooledReusable {
     private static final IntFunction<String> POSITION_INT_TO_STRING;
     
     static {
-        createPoolFor(AnalyzeData.class, () -> new AnalyzeData());
         POSITION_INT_TO_STRING = (position) -> {
             if ( position == POS_NOT_FOUND ) {
                 return "x";
@@ -81,10 +81,18 @@ class AnalyzeData extends PooledReusable {
     char[] patternChars;
     String pattern;
         
-    private AnalyzeData() {
+    AnalyzeData(Pool<Cluster> clusterPool) {
         super();
-        this.forwardAnalyze = new AnalyzePositionsData(this, FORWARD);
-        this.reverseAnalyze = new AnalyzePositionsData(this, REVERSE);
+        this.forwardAnalyze = new AnalyzePositionsData(
+                this, 
+                FORWARD, 
+                new Clusters(this, FORWARD, clusterPool), 
+                new PositionCandidate(this));
+        this.reverseAnalyze = new AnalyzePositionsData(
+                this, 
+                REVERSE, 
+                new Clusters(this, REVERSE, clusterPool), 
+                new PositionCandidate(this));
         this.variantSeparators = new TreeSet<>();
         this.variantPathSeparators = new TreeSet<>();
         this.variantTextSeparators = new TreeSet<>();

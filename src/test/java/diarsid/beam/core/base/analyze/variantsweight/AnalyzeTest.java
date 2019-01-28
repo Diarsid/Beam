@@ -27,12 +27,10 @@ import static java.util.stream.Collectors.joining;
 
 import static org.junit.Assert.fail;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.disableResultsLimit;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.resultsLimitToDefault;
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
-import static diarsid.support.objects.Pools.poolOf;
+import static diarsid.support.objects.Pools.pools;
 
 /**
  *
@@ -44,6 +42,7 @@ public class AnalyzeTest {
     private static long start;
     private static long stop;
     
+    private Analyze analyze;
     private boolean expectedToFail;
     private String pattern;
     private List<String> variants;
@@ -69,7 +68,7 @@ public class AnalyzeTest {
                 "\n  total time     : %s " + 
                 "\n  total variants : %s \n";
         logger.info(format(report, stop - start, totalVariantsQuantity));
-        Optional<Pool<AnalyzeData>> pool = poolOf(AnalyzeData.class);
+        Optional<Pool<AnalyzeData>> pool = pools().poolOf(AnalyzeData.class);
         if ( pool.isPresent() ) {
             Pool<AnalyzeData> c = pool.get();
             AnalyzeData analyzeData = c.give();
@@ -78,11 +77,12 @@ public class AnalyzeTest {
     
     @Before
     public void setUp() {
+        this.analyze = new Analyze(configuration(), pools());
     }
     
     @After
     public void tearDown() {
-        resultsLimitToDefault();
+        this.analyze.resultsLimitToDefault();
     }
     
     private void expectedToFail() {
@@ -1499,7 +1499,7 @@ public class AnalyzeTest {
     
     @Test
     public void test_synthetic_4() {
-        disableResultsLimit();
+        this.analyze.disableResultsLimit();
         
         pattern = "abcXYZ";
         
@@ -1651,7 +1651,7 @@ public class AnalyzeTest {
     }
     
     private void weightVariantsAndCheckMatchingInternally() {
-        weightedVariants = weightVariants(pattern, stringsToVariants(variants));
+        weightedVariants = this.analyze.weightVariants(pattern, stringsToVariants(variants));
         
         String expectedVariant;
         String actualVariant;
