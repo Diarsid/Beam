@@ -174,15 +174,23 @@ class AnalyzeData extends PooledReusable {
                 case 3 :
                 case 4 : {
                     if ( this.best.missed == 0 && this.best.nonClustered > 2 ) {
-                        this.best.badReason = "Too much unclustered positions";
-                        return; 
+                        if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+                            this.calculateAsSeparatedCharsWithoutClusters();
+                            this.calculatedAsUsualClusters = false;
+                        } else {
+                            this.best.badReason = "Too much unclustered positions: " + this.best.nonClustered;
+                            return; 
+                        }
                     } else if ( this.best.missed == 1 && this.best.nonClustered > 1 ) {
-                        this.best.badReason = "Too much unclustered positions";
+                        this.best.badReason = "Too much unclustered and missed positions: " + (this.best.missed + this.best.nonClustered);
                         return;
                     } else if ( this.best.missed == 0 && this.best.nonClustered > 1 ) {
                         if ( this.best.clustersFacingStartEdges > 0 ) {
                             this.calculateAsUsualClusters();
                             this.calculatedAsUsualClusters = true;
+                        } else if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+                            this.calculateAsSeparatedCharsWithoutClusters();
+                            this.calculatedAsUsualClusters = false;
                         } else {
                             this.best.badReason = "Too much unclustered positions";
                             return;
@@ -203,8 +211,13 @@ class AnalyzeData extends PooledReusable {
                     }
                     
                     if ( ratio(this.best.nonClustered, this.patternChars.length) > tresholdRatio ) {
-                        this.best.badReason = "Too much unclustered positions";
-                        return;
+                        if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+                            this.calculateAsSeparatedCharsWithoutClusters();
+                            this.calculatedAsUsualClusters = false;
+                        } else {
+                            this.best.badReason = "Too much unclustered positions";
+                            return;
+                        }                        
                     } else {
                         this.calculateAsUsualClusters();
                         this.calculatedAsUsualClusters = true;
@@ -212,7 +225,7 @@ class AnalyzeData extends PooledReusable {
                 }
             }            
         } else {
-            if ( this.best.unsortedPositions == 0 && this.best.missed == 0 ) {
+            if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
                 this.calculateAsSeparatedCharsWithoutClusters();
                 this.calculatedAsUsualClusters = false;
             } else {
@@ -222,6 +235,30 @@ class AnalyzeData extends PooledReusable {
         }
         
         logAnalyze(BASE, "  weight on step 2: %s", this.variantWeight);
+    }
+
+    private boolean areAllPositionsPresentSortedAndNotPathSeparatorsBetween() {
+        if (this.best.unsortedPositions == 0 && this.best.missed == 0 ) {
+            if ( this.variantPathSeparators.isEmpty() ) {
+                return true;
+            } else {
+                int first = this.best.findFirstPosition();
+                int last = this.best.findLastPosition();
+                
+                if ( first < 0 || last < 0 ) {
+                    return false;
+                }
+                
+                Integer possibleSeparator = this.variantPathSeparators.higher(first);
+                if ( nonNull(possibleSeparator) ) {
+                    return last < possibleSeparator;
+                } 
+                
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
     
     private void calculateAsUsualClusters() {

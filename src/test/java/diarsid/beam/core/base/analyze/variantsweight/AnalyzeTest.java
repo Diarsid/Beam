@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import diarsid.beam.core.base.analyze.similarity.Similarity;
 import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
@@ -38,6 +39,7 @@ import static diarsid.support.objects.Pools.pools;
  */
 public class AnalyzeTest {
     
+    private static Analyze analyzeInstance;
     private static int totalVariantsQuantity;
     private static long start;
     private static long stop;
@@ -54,6 +56,8 @@ public class AnalyzeTest {
     
     @BeforeClass
     public static void setUpClass() {
+        Similarity similarity = new Similarity(configuration());
+        analyzeInstance = new Analyze(configuration(), similarity, pools());
         start = currentTimeMillis();
     }
     
@@ -77,7 +81,7 @@ public class AnalyzeTest {
     
     @Before
     public void setUp() {
-        this.analyze = new Analyze(configuration(), pools());
+        this.analyze = analyzeInstance;
     }
     
     @After
@@ -796,6 +800,32 @@ public class AnalyzeTest {
         expected = asList(
                 "Projects/Diarsid",
                 "Projects/Diarsid/NetBeans");
+        
+        weightVariantsAndCheckMatching();
+    }
+
+    @Test
+    public void test_DiarsidProjectsCase_drsd() {
+        pattern = "drsd";
+        
+        variants = asList(
+                "Projects/Diarsid");
+        
+        expected = asList(
+                "Projects/Diarsid");
+        
+        weightVariantsAndCheckMatching();
+    }
+
+    @Test
+    public void test_GitHubPagesCase_drsd() {
+        pattern = "gihbpgs";
+        
+        variants = asList(
+                "X__GitHub_Pages");
+        
+        expected = asList(
+                "X__GitHub_Pages");
         
         weightVariantsAndCheckMatching();
     }

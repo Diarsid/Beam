@@ -77,7 +77,6 @@ class AnalyzePositionsData {
     int clustersQty;
     int clustered;
     int nonClustered;
-    int patternInVariantLength;
     
     int missed;    
     
@@ -172,6 +171,38 @@ class AnalyzePositionsData {
     
     static boolean arePositionsEquals(AnalyzePositionsData dataOne, AnalyzePositionsData dataTwo) {
         return Arrays.equals(dataOne.positions, dataTwo.positions);
+    }
+    
+    int findFirstPosition() {
+        int first = first(this.positions);
+        if ( first > -1 ) {
+            return first;
+        }
+        
+        for (int i = 1; i < this.positions.length; i++) {
+            first = this.positions[i];
+            if ( first > -1 ) {
+                return first;
+            }
+        }
+        
+        return POS_NOT_FOUND;
+    }
+    
+    int findLastPosition() {
+        int last = last(this.positions);
+        if ( last > -1 ) {
+            return last;
+        }
+        
+        for (int i = this.positions.length - 2; i > -1; i--) {
+            last = this.positions[i];
+            if ( last > -1 ) {
+                return last;
+            } 
+        }
+        
+        return POS_NOT_FOUND;
     }
     
     void fillPositionsFromIndex(int patternInVariantIndex) {
@@ -276,9 +307,7 @@ class AnalyzePositionsData {
                     this.nonClustered++;
                 }
             }            
-        }        
-        
-        this.patternInVariantLength = last(this.positions) - first(this.positions) + 1;
+        }
                 
         this.clusters.arrange();
         
@@ -1460,7 +1489,6 @@ class AnalyzePositionsData {
         this.currentClusterFirstPosition = POS_UNINITIALIZED;
         this.badReason = NO_REASON;
         this.currentChar = ' ';
-        this.patternInVariantLength = 0;
         this.skipNextPatternChar = false;
         this.positionUnsortedOrders.clear();
         this.positionPatternIndexes.clear();
