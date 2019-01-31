@@ -172,6 +172,20 @@ public class AnalyzeTest {
         
         weightVariantsAndCheckMatching();
     }
+    
+    @Test
+    public void test_FilmsListCase_lsftilm() {
+        pattern = "lsftilm";
+        
+        variants = asList(
+                "LostFilm",
+                "Films/List.txt");
+        
+        expected = asList( 
+                "LostFilm");
+        
+        weightVariantsAndCheckMatching();
+    }
 
     @Test
     public void test_JavaTechCase_jtech() {
