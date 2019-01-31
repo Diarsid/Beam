@@ -50,7 +50,7 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
         {
             String lowerWildcardPattern = lowerWildcard(pattern);
             
-            List<WebPage> tasks = transact
+            List<WebPage> pages = transact
                     .doQueryAndStreamVarargParams(
                             ROW_TO_WEBPAGE, 
                             "SELECT name, shortcuts, url, ordering, dir_id " +
@@ -60,8 +60,8 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                     .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
-            if ( nonEmpty(tasks) ) {
-                return tasks;
+            if ( nonEmpty(pages) ) {
+                return pages;
             }
             
             patternSelect
@@ -80,18 +80,18 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
             
             patternUnion.unionDistinct(patternSelect);
                         
-            tasks = transact
+            pages = transact
                     .doQueryAndStream( 
                             ROW_TO_WEBPAGE,
                             patternUnion.composeSql())                    
                     .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
-            if ( nonEmpty(tasks) ) {
-                return tasks;
+            if ( nonEmpty(pages) ) {
+                return pages;
             }
             
-            tasks = transact
+            pages = transact
                     .doQueryAndStream(  
                             ROW_TO_WEBPAGE,
                             patternUnion
@@ -100,11 +100,11 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                     .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
-            if ( nonEmpty(tasks) && patternUnion.isNextRequiredLikenessDecreaseMeaningfull() ) {
-                return tasks;
+            if ( nonEmpty(pages) && patternUnion.isNextRequiredLikenessDecreaseMeaningfull() ) {
+                return pages;
             }
             
-            tasks = transact
+            pages = transact
                     .doQueryAndStream(
                             ROW_TO_WEBPAGE,
                             patternUnion
@@ -113,7 +113,7 @@ public class H2DaoWebPagesV2 extends H2DaoWebPagesV0 {
                     .peek(page -> super.setLoadableDirectoryFor(page))
                     .collect(toList());
             
-            return tasks;
+            return pages;
             
         } catch (TransactionHandledSQLException|TransactionHandledException e) {
             throw super.logAndWrap(e);
