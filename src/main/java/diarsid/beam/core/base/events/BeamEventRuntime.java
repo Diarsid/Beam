@@ -326,7 +326,9 @@ public class BeamEventRuntime {
                 .withCallback((event) -> {
                     fireAsync(type.getCanonicalName() + "_supplied", tSupplier.get());
                 }));
-        fireAsync(type.getCanonicalName() + "_supplying_subscription_created");
+        
+        fireAsync(type.getCanonicalName() + "_supplying_subscription_created");        
+        fireAsync(type.getCanonicalName() + "_supplied", tSupplier.get());
     }
     
     public static <T> Optional<T> requestPayloadThenAwaitForSupply(Class<T> type) {
