@@ -52,7 +52,7 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class Analyze {
     
-    private final int weightAlgorithmVersion = 11;
+    private final int weightAlgorithmVersion = 12;
     private final PersistentAnalyzeCache<Float> cache;
     private final Float tooBadWeight;
     private final Pool<AnalyzeData> dataPool;

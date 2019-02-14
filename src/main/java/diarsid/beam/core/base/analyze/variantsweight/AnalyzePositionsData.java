@@ -39,6 +39,7 @@ import static diarsid.beam.core.base.analyze.variantsweight.FindPositionsStep.ST
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.BAD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimate;
 import static diarsid.beam.core.base.util.CollectionsUtils.first;
+import static diarsid.beam.core.base.util.CollectionsUtils.getNearestToValueFromSetExcluding;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
@@ -344,8 +345,8 @@ class AnalyzePositionsData {
             logAnalyze(POSITIONS_CLUSTERS, "               [weight] -17.71 : previous char is word separator, current char is at pattern start!");
             this.positionsWeight = this.positionsWeight - 17.71;
             if ( this.isClusterBeforeSeparator() ) {
-                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -15.5 : there is cluster before separator!");
-                this.positionsWeight = this.positionsWeight - 15.5;
+//                logAnalyze(POSITIONS_CLUSTERS, "               [weight] -15.5 : there is cluster before separator!");
+//                this.positionsWeight = this.positionsWeight - 15.5;
             }
         } else if ( this.isClusterBeforeSeparator() ) {
             this.keyChars.add(this.currentPosition);
@@ -814,13 +815,23 @@ class AnalyzePositionsData {
                             } 
                         }    
                         // end of debugging zone
-                                                
+                        
+                        boolean isNearSeparator = 
+                                data.variantSeparators.contains(currentPatternCharPositionInVariant + 1) ||
+                                data.variantSeparators.contains(currentPatternCharPositionInVariant - 1);
+                        Integer nearestFilledPosition = getNearestToValueFromSetExcluding(currentPatternCharPositionInVariant, filledPositions);
+                        Integer distanceToNearestFilledPosition = null;
+                        if ( nonNull(nearestFilledPosition) ) {
+                            distanceToNearestFilledPosition = absDiff(nearestFilledPosition, currentPatternCharPositionInVariant);
+                        }
                         positionCandidate.tryToMutate(
                                 currentPatternCharPositionInVariant, 
                                 currentPatternCharIndex,
                                 orderDiffInVariant, 
                                 orderDiffInPattern, 
                                 charsInClusterQty,
+                                isNearSeparator,
+                                distanceToNearestFilledPosition,
                                 charsRemained);
                     }
                 }                

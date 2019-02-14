@@ -864,6 +864,23 @@ public class AnalyzeTest {
     }
 
     @Test
+    public void test_BeamProjectCase_beporj() {
+        pattern = "beporj";
+        
+        variants = asList(                
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Beam"
+        );
+        
+        expected = asList( 
+                "Projects/Diarsid/NetBeans/Beam",                
+                "Projects/Diarsid/NetBeans"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+
+    @Test
     public void test_NetBeansShortCase_nebean() {
         pattern = "nebean";
         
@@ -900,10 +917,11 @@ public class AnalyzeTest {
         pattern = "nebaen";
         
         variants = asList(
-                "Projects/Diarsid/NetBeans/Beam",                
+                "Projects/Diarsid/NetBeans/Beam",               
                 "Projects/Diarsid/NetBeans",
                 "Projects/Diarsid/NetBeans/Research.Java",
-                "Dev/NetBeans_8.2.lnk");
+                "Dev/NetBeans_8.2.lnk"
+        );
         
         expected = asList( 
                 "Dev/NetBeans_8.2.lnk",

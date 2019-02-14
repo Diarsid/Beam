@@ -10,11 +10,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
+import static java.lang.Integer.min;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
@@ -23,6 +26,8 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+
+import static diarsid.beam.core.base.util.MathUtil.absDiff;
 
 /**
  *
@@ -85,6 +90,82 @@ public class CollectionsUtils {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Passed collection is implied to contain exactly one element."));
+        }
+    }
+    
+    public static Integer getNearestToValueFromSetExcluding(int value, Set<Integer> set) {
+        int higher = value;
+        int lower = value;
+        int current;
+        
+        Iterator<Integer> iter = set.iterator();
+        while ( iter.hasNext() ) {
+            current = iter.next();
+            if ( current == value + 1 ) {
+                return current;
+            } 
+            
+            if ( higher == value ) {
+                if ( current > higher ) {
+                    higher = current;
+                }
+            } else {
+                if ( current > value && current < higher ) {
+                    higher = current;
+                }
+            }
+            
+            if ( lower == value ) {
+                if ( current < lower ) {
+                    lower = current;
+                }
+            } else {
+                if ( current < value && current > lower ) {
+                    lower = current;
+                }
+            }
+        }
+            
+        if ( higher != value && lower != value ) {
+            return getNearest(lower, value, higher);
+        } else if ( higher != value ) {
+            return higher;
+        } else if ( lower != value ) {
+            return lower;
+        } else {
+            return null;
+        }
+    }
+    
+    public static void main(String[] args) {
+        Set<Integer> set = new HashSet<>(asList(1, 3, 5, 8, 10));
+        int value = 6;
+        System.out.println(getNearestToValueFromSetExcluding(value, set));
+    }
+    
+    public static Integer getNearestToValueFromTreeSetExcluding(
+            int value, TreeSet<Integer> treeSet) {
+        Integer higher = treeSet.higher(value);
+        Integer lower = treeSet.lower(value);
+        if ( nonNull(higher) && nonNull(lower) ) {
+            return getNearest(lower, value, higher);
+        } else if ( nonNull(lower) ) {
+            return lower;
+        } else if ( nonNull(higher) ) {
+            return higher;
+        } else {
+            return null;
+        }
+    }
+    
+    public static Integer getNearest(int lower, int value, int higher) {
+        int lowerDiff = absDiff(lower, value);
+        int higherDiff = absDiff(value, higher);
+        
+        if ( min(lowerDiff, higherDiff) == lowerDiff ) {
+            return lower;
+        } else {
+            return higher;
         }
     }
     
