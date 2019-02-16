@@ -30,19 +30,19 @@ import static java.util.Objects.nonNull;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.GOOD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.MODERATE;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
-import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.FlowResult.DONE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringToVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.os.treewalking.advanced.WalkUtil.addListedFilesTo;
-import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.ALL;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_AND_FOLDERS;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
@@ -96,13 +96,13 @@ class WalkState extends PooledReusable {
                 
         this.initialize();
         
-        return voidFlowCompleted();
+        return voidFlowDone();
     }
 
     private void initialize() {
         this.visitedLevel = UNVISITED_LEVEL;
         if ( isNull(this.mode) ) {
-            this.mode = ALL;
+            this.mode = FILES_AND_FOLDERS;
         }
     }
     
@@ -295,8 +295,8 @@ class WalkState extends PooledReusable {
         this.nextLevel = levelsSwap;
     }
     
-    void resultFlowCompletedWith(String result) {
-        this.resultFlow = valueFlowCompletedWith(result);
+    void resultFlowDoneWith(String result) {
+        this.resultFlow = valueFlowDoneWith(result);
     }
         
     void resultFlowStopped() {
@@ -309,16 +309,16 @@ class WalkState extends PooledReusable {
     }
     
     void processResultFlowAfterSearching() {        
-        if ( this.isPatternPath && this.isResultFlowCompletedWithValue() ) {
-            String lastFoundTarget = this.resultFlow.asComplete().orThrow();
+        if ( this.isPatternPath && this.isResultFlowDoneWithValue() ) {
+            String lastFoundTarget = this.resultFlow.asDone().orThrow();
             String foundPathTarget = joinToPath(this.place.relativeRoot(), lastFoundTarget);
-            this.resultFlow = valueFlowCompletedWith(foundPathTarget);
+            this.resultFlow = valueFlowDoneWith(foundPathTarget);
         }
     }
     
     void processResultFlowAfterSingleWalkIteration() {
         if ( isNull(this.resultFlow) ) {            
-            this.resultFlow = valueFlowCompletedEmpty(format(
+            this.resultFlow = valueFlowDoneEmpty(format(
                 "'%s' not found in %s", this.pattern, this.place.name()));
         }
     }
@@ -332,13 +332,13 @@ class WalkState extends PooledReusable {
     
     void muteAfterWalkingForPattern() {
         this.variants.clear();
-        String foundTarget = this.resultFlow.asComplete().orThrow();
+        String foundTarget = this.resultFlow.asDone().orThrow();
         this.place.muteUsing(foundTarget); 
         this.resultFlow = null;
     }
     
-    boolean isResultFlowCompletedWithValue() {        
-        return this.resultFlow.result().is(COMPLETE) && this.resultFlow.asComplete().hasValue();
+    boolean isResultFlowDoneWithValue() {        
+        return this.resultFlow.result().is(DONE) && this.resultFlow.asDone().hasValue();
     }
     
     void incrementVisitedLevel() {

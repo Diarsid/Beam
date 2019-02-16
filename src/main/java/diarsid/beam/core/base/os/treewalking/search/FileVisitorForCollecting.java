@@ -71,7 +71,7 @@ class FileVisitorForCollecting extends SimpleFileVisitor<Path> {
             case FILES_ONLY : {
                 return continueMode;
             }
-            case ALL :
+            case FILES_AND_FOLDERS :
             case FOLDERS_ONLY :
             default : {
                 if ( this.nameDetector.isMatch(dir) ) {
@@ -93,7 +93,7 @@ class FileVisitorForCollecting extends SimpleFileVisitor<Path> {
             case FOLDERS_ONLY : {
                 return CONTINUE;
             }
-            case ALL :
+            case FILES_AND_FOLDERS :
             case FILES_ONLY :
             default : {
                 if ( this.nameDetector.isMatch(file) ) {

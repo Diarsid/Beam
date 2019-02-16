@@ -15,7 +15,7 @@ import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.DaoLocationSubPathChoices;
 
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 
 /**
  *
@@ -85,7 +85,7 @@ public class ResponsiveDaoLocationSubPathChoices
             return super.dao().remove(subPath);
         } catch (DataExtractionException e) {
             super.responseOn(initiator, e);
-            return voidFlowCompleted();
+            return voidFlowDone();
         }
     }
     

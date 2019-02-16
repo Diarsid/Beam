@@ -173,7 +173,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             WeightedVariants weightedVariants = unite(state.variants());
             Answer userAnswer = askUserAboutFoundVariants(state, weightedVariants);
             if ( userAnswer.isGiven() ) {
-                state.resultFlowCompletedWith(userAnswer.text());
+                state.resultFlowDoneWith(userAnswer.text());
                 state.variants().clear();
                 this.asyncTryToSaveChoiceFrom(state.pattern(), userAnswer.text(), weightedVariants);
             } else if ( userAnswer.variantsAreNotSatisfactory() ) {
@@ -190,7 +190,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         walkingThroughPath: for (String pathPattern : pathPatterns) {
             state.muteBeforeWalkingForNextPatternInPath(pathPattern);
             this.singleWalkIterationUsing(state);
-            if ( state.isResultFlowCompletedWithValue() ) {
+            if ( state.isResultFlowDoneWithValue() ) {
                 if ( pathPattern.equals(lastPathPattern) ) {
                     break walkingThroughPath;
                 } else {
@@ -286,7 +286,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             Optional<WeightedVariant> variantEqualToPattern = 
                     findVariantEqualToPattern(variantsFoundOnCurrentLevel);
             if ( variantEqualToPattern.isPresent() ) {
-                state.resultFlowCompletedWith(variantEqualToPattern.get().text());
+                state.resultFlowDoneWith(variantEqualToPattern.get().text());
                 state.variants().clear();
                 ifGoDeeper = false;
                 return ifGoDeeper;
@@ -296,13 +296,13 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             
             Answer userAnswer;
             if ( this.isChoiceMadeForPatternWithBestFrom(weightedVariants) ) {
-                state.resultFlowCompletedWith(weightedVariants.best().text());
+                state.resultFlowDoneWith(weightedVariants.best().text());
                 state.variants().clear();
                 ifGoDeeper = false;
             } else {
                 userAnswer = this.askUserAboutFoundVariants(state, weightedVariants);
                 if ( userAnswer.isGiven() ) {
-                    state.resultFlowCompletedWith(userAnswer.text());
+                    state.resultFlowDoneWith(userAnswer.text());
                     state.variants().clear();
                     this.asyncTryToSaveChoiceFrom(pattern, userAnswer.text(), weightedVariants);
                     ifGoDeeper = false;

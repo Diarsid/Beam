@@ -23,9 +23,9 @@ import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPaths;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.FlowResult.DONE;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.toVariants;
@@ -78,10 +78,10 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             asyncDo(() -> {
                 this.daoSubPathChoices.saveSingle(initiator, subPath, pattern);
             });
-            return valueFlowCompletedWith(subPath);
+            return valueFlowDoneWith(subPath);
         } else if ( choice.isNegative() ) {
             VoidFlow removeFlow = this.daoSubPathChoices.remove(initiator, subPath);
-            if ( removeFlow.result().is(COMPLETE) ) {
+            if ( removeFlow.result().is(DONE) ) {
                 return this.findLocationSubPath(initiator, subPath.pattern());
             } else {
                 return valueFlowFail(removeFlow.message());
@@ -89,7 +89,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         } else if ( choice.isRejected() ) {
             return valueFlowStopped();
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -97,12 +97,12 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             Initiator initiator, String pattern, LocationSubPath subPath) {
         if ( subPath.pointsToDirectory() ) {
             if ( this.daoSubPathChoices.isChoiceExistsForSingle(initiator, subPath, pattern) ) {
-                return valueFlowCompletedWith(subPath);
+                return valueFlowDoneWith(subPath);
             } else {
                 return this.askAboutSubPathIfSatisfiable(initiator, pattern, subPath);
             }            
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     } 
 
@@ -111,7 +111,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         if ( this.analyze.isVariantSatisfiable(pattern, subPath.toSingleVariant()) ) {
             return this.askAboutSubPath(initiator, subPath, pattern);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
 
@@ -122,14 +122,14 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         if ( hasOne(subPaths) ) {
             LocationSubPath subPath = getOne(subPaths);
             if ( subPath.pattern().equalsIgnoreCase(pattern) ) {
-                return valueFlowCompletedWith(subPath);
+                return valueFlowDoneWith(subPath);
             } else {
                 return this.askAboutSubPathIfSatisfiable(initiator, pattern, subPath);
             }            
         } else if ( hasMany(subPaths) ) {
             return this.chooseOneSubPathsFromMany(initiator, pattern, subPaths);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }    
     }   
     
@@ -144,7 +144,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         } else if ( hasMany(subPaths) ) {
             return this.resolveManySubPaths(initiator, pattern, subPaths);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }    
     }    
     
@@ -156,7 +156,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         } else if ( variants.hasMany() ) {
             return this.resolveManySubPathsVariants(initiator, pattern, subPaths, variants);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -169,7 +169,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
                 initiator, pattern, variants);
         if ( chosenSubPath.isPresent() ) {
             if ( chosenSubPath.get().fullName().equalsIgnoreCase(variants.best().text()) ) {
-                return valueFlowCompletedWith(chosenSubPath);
+                return valueFlowDoneWith(chosenSubPath);
             } else {
                 return this.askAboutSubPath(initiator, chosenSubPath.get(), pattern);
             }            
@@ -190,13 +190,13 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             asyncDo(() -> {
                 this.daoSubPathChoices.saveWithVariants(initiator, subPath, pattern, variants);
             });
-            return valueFlowCompletedWith(subPath);
+            return valueFlowDoneWith(subPath);
         } else if ( answer.isRejection() ) {
             return valueFlowStopped();
         } else if ( answer.variantsAreNotSatisfactory() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
 }

@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.FlowResult.DONE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
 
@@ -21,13 +21,13 @@ import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
  */
 public class Flows {
     
-    private static final VoidFlow VOID_FLOW_COMPLETED;
+    private static final VoidFlow VOID_FLOW_DONE;
     private static final VoidFlow VOID_FLOW_STOPPED;
     private static final ValueFlow VALUE_FLOW_STOPPED;
     private static final ValueFlow<Object> VALUE_FLOW_EMPTY;
     
     static {
-        VOID_FLOW_COMPLETED = new VoidFlow() {
+        VOID_FLOW_DONE = new VoidFlow() {
             
             @Override
             public boolean hasMessage() {
@@ -41,7 +41,7 @@ public class Flows {
 
             @Override
             public FlowResult result() {
-                return COMPLETE;
+                return DONE;
             }
         };
         VOID_FLOW_STOPPED = new VoidFlow() {
@@ -64,22 +64,22 @@ public class Flows {
         VALUE_FLOW_STOPPED = new ValueFlow() {
             
             @Override
-            public ValueFlowCompleted asComplete() {
+            public ValueFlowDone asDone() {
                 throw new IllegalStateException("This is Stop operation");
             }
 
             @Override
-            public boolean isCompletedWithValue() {
+            public boolean isDoneWithValue() {
                 return false;
             }
 
             @Override
-            public boolean isNotCompletedWithValue() {
+            public boolean isNotDoneWithValue() {
                 return true;
             }
             
             @Override
-            public boolean isCompletedEmpty() {
+            public boolean isDoneEmpty() {
                 return false;
             }
 
@@ -103,7 +103,7 @@ public class Flows {
                 return this;
             }
         };
-        VALUE_FLOW_EMPTY = new ValueFlowCompleted<Object>() {
+        VALUE_FLOW_EMPTY = new ValueFlowDone<Object>() {
             
             @Override
             public boolean hasValue() {
@@ -111,17 +111,17 @@ public class Flows {
             }
                         
             @Override
-            public boolean isCompletedEmpty() {
+            public boolean isDoneEmpty() {
                 return true;
             }
 
             @Override
-            public boolean isCompletedWithValue() {
+            public boolean isDoneWithValue() {
                 return false;
             }
 
             @Override
-            public boolean isNotCompletedWithValue() {
+            public boolean isNotDoneWithValue() {
                 return true;
             }
 
@@ -137,22 +137,22 @@ public class Flows {
 
             @Override
             public FlowResult result() {
-                return COMPLETE;
+                return DONE;
             }
 
             @Override
-            public ValueFlowCompleted<Object> asComplete() {
+            public ValueFlowDone<Object> asDone() {
                 return this;
             }
 
             @Override
             public ValueFlowFail asFail() {                
-                throw new IllegalStateException("This is Completed flow.");
+                throw new IllegalStateException("This is Done flow.");
             }
             
             @Override
             public VoidFlow toVoid() {
-                return VOID_FLOW_COMPLETED;
+                return VOID_FLOW_DONE;
             }
 
             @Override
@@ -165,11 +165,11 @@ public class Flows {
     private Flows() {
     }
     
-    public static VoidFlow voidFlowCompleted() {
-        return VOID_FLOW_COMPLETED;
+    public static VoidFlow voidFlowDone() {
+        return VOID_FLOW_DONE;
     }
     
-    public static VoidFlow voidFlowCompleted(String message) {
+    public static VoidFlow voidFlowDone(String message) {
         return new VoidFlow() {
             
             @Override
@@ -184,22 +184,22 @@ public class Flows {
 
             @Override
             public FlowResult result() {
-                return COMPLETE;
+                return DONE;
             }
         };
     }
     
-    public static <T extends Object> ValueFlow<T> valueFlowCompletedWith(
+    public static <T extends Object> ValueFlow<T> valueFlowDoneWith(
             Optional<T> optT) {
         if ( optT.isPresent() ) {
-            return Flows.valueFlowCompletedWith(optT.get());
+            return Flows.valueFlowDoneWith(optT.get());
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
-    public static <T extends Object> ValueFlow<T> valueFlowCompletedWith(T t) {
-        return new ValueFlowCompleted<T>() {
+    public static <T extends Object> ValueFlow<T> valueFlowDoneWith(T t) {
+        return new ValueFlowDone<T>() {
             
             @Override
             public boolean hasValue() {
@@ -207,17 +207,17 @@ public class Flows {
             }
             
             @Override
-            public boolean isCompletedEmpty() {
+            public boolean isDoneEmpty() {
                 return false;
             }
 
             @Override
-            public boolean isCompletedWithValue() {
+            public boolean isDoneWithValue() {
                 return true;
             }
 
             @Override
-            public boolean isNotCompletedWithValue() {
+            public boolean isNotDoneWithValue() {
                 return false;
             }
 
@@ -233,11 +233,11 @@ public class Flows {
 
             @Override
             public FlowResult result() {
-                return COMPLETE;
+                return DONE;
             }
 
             @Override
-            public ValueFlowCompleted<T> asComplete() {
+            public ValueFlowDone<T> asDone() {
                 return this;
             }
 
@@ -248,31 +248,31 @@ public class Flows {
             
             @Override
             public VoidFlow toVoid() {
-                return VOID_FLOW_COMPLETED;
+                return VOID_FLOW_DONE;
             }
 
             @Override
             public <R> ValueFlow<R> toFlowWith(Function<T, R> mapFunction) {
-                return valueFlowCompletedWith(mapFunction.apply(t));
+                return valueFlowDoneWith(mapFunction.apply(t));
             }
         };
     }
     
-    public static <T extends Object> ValueFlow<T> valueFlowCompletedOrEmptyIfNull(
+    public static <T extends Object> ValueFlow<T> valueFlowDoneOrEmptyIfNull(
             ValueFlow<T> valueFlow) {
         if ( nonNull(valueFlow) ) {
             return valueFlow;
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
-    public static <T extends Object> ValueFlow<T> valueFlowCompletedEmpty() {
+    public static <T extends Object> ValueFlow<T> valueFlowDoneEmpty() {
         return (ValueFlow<T>) VALUE_FLOW_EMPTY;
     }
     
-    public static <T extends Object> ValueFlow<T> valueFlowCompletedEmpty(String message) {
-        return new ValueFlowCompleted<T>() {            
+    public static <T extends Object> ValueFlow<T> valueFlowDoneEmpty(String message) {
+        return new ValueFlowDone<T>() {            
     
             @Override
             public boolean hasMessage() {
@@ -305,38 +305,38 @@ public class Flows {
             }
 
             @Override
-            public boolean isCompletedEmpty() {
+            public boolean isDoneEmpty() {
                 return true;
             }
 
             @Override
-            public boolean isCompletedWithValue() {
+            public boolean isDoneWithValue() {
                 return false;
             }
 
             @Override
-            public boolean isNotCompletedWithValue() {
+            public boolean isNotDoneWithValue() {
                 return true;
             }
 
             @Override
-            public ValueFlowCompleted<T> asComplete() {
+            public ValueFlowDone<T> asDone() {
                 return this;
             }
 
             @Override
             public ValueFlowFail asFail() {
-                throw new IllegalStateException("This is Completed flow.");
+                throw new IllegalStateException("This is Done flow.");
             }
 
             @Override
             public VoidFlow toVoid() {
-                return VOID_FLOW_COMPLETED;
+                return VOID_FLOW_DONE;
             }
 
             @Override
             public FlowResult result() {
-                return COMPLETE;
+                return DONE;
             }
         };
     }
@@ -376,17 +376,17 @@ public class Flows {
             }
             
             @Override
-            public boolean isCompletedEmpty() {
+            public boolean isDoneEmpty() {
                 return false;
             }
 
             @Override
-            public boolean isCompletedWithValue() {
+            public boolean isDoneWithValue() {
                 return false;
             }
 
             @Override
-            public boolean isNotCompletedWithValue() {
+            public boolean isNotDoneWithValue() {
                 return true;
             }
 
@@ -396,7 +396,7 @@ public class Flows {
             }
 
             @Override
-            public ValueFlowCompleted asComplete() {                
+            public ValueFlowDone asDone() {                
                 throw new IllegalStateException("This is Fail operation.");
             }
 

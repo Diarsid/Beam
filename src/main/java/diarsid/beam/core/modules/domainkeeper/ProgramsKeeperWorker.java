@@ -28,8 +28,8 @@ import diarsid.support.objects.Pool;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
@@ -91,7 +91,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
 
     @Override
     public ValueFlow<Program> findByExactName(Initiator initiator, String name) {
-        return valueFlowCompletedWith(this.programsCatalog.findProgramByDirectName(name));
+        return valueFlowDoneWith(this.programsCatalog.findProgramByDirectName(name));
     }
 
     @Override
@@ -147,15 +147,15 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
                 .andGetResult();
         
         switch ( fileFlow.result() ) {
-            case COMPLETE : {
-                if ( fileFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( fileFlow.asDone().hasValue() ) {
                     Optional<Program> program = this.programsCatalog.toProgram(
-                            fileFlow.asComplete().orThrow());
-                    return valueFlowCompletedWith(program);
-                } else if ( fileFlow.asComplete().hasMessage() ) {
-                    return valueFlowCompletedEmpty(fileFlow.asComplete().message());
+                            fileFlow.asDone().orThrow());
+                    return valueFlowDoneWith(program);
+                } else if ( fileFlow.asDone().hasMessage() ) {
+                    return valueFlowDoneEmpty(fileFlow.asDone().message());
                 } else {
-                    return valueFlowCompletedEmpty(format(
+                    return valueFlowDoneEmpty(format(
                             "'%s' not found in %s", pattern, this.programsCatalog.name()));
                 }
             }    
@@ -176,7 +176,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         List<Program> foundPrograms = this.programsCatalog.findProgramsByWholePattern(pattern);
         if ( nonEmpty(foundPrograms) ) {
             ValueFlow<Program> flow = this.chooseOneProgram(initiator, pattern, foundPrograms);
-            if ( flow.isCompletedEmpty() ) {
+            if ( flow.isDoneEmpty() ) {
                 foundPrograms = this.programsCatalog.findProgramsByPatternSimilarity(pattern);
             } else {
                 return flow;
@@ -188,7 +188,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         if ( nonEmpty(foundPrograms) ) {
             return this.chooseOneProgram(initiator, pattern, foundPrograms);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -197,31 +197,31 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
         if ( hasOne(programs) ) {
             Program program = getOne(programs);
             if ( this.analyze.isEntitySatisfiable(pattern, program) ) {
-                return valueFlowCompletedWith(program);
+                return valueFlowDoneWith(program);
             } else {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             }            
         } else if ( hasMany(programs) ) {
             WeightedVariants variants = this.analyze.weightVariants(
                     pattern, entitiesToVariants(programs));
             if ( variants.isEmpty() ) {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             }
             Answer answer = this.ioEngine.chooseInWeightedVariants(
                     initiator, variants, this.chooseOneProgramHelp);
             if ( answer.isGiven() ) {
-                return valueFlowCompletedWith(programs.get(answer.index()));
+                return valueFlowDoneWith(programs.get(answer.index()));
             } else {
                 if ( answer.isRejection() ) {
                     return valueFlowStopped();
                 } else if ( answer.variantsAreNotSatisfactory() ) {
-                    return valueFlowCompletedEmpty();
+                    return valueFlowDoneEmpty();
                 } else {
-                    return valueFlowCompletedEmpty();
+                    return valueFlowDoneEmpty();
                 }
             }
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
 
@@ -237,7 +237,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
 
     @Override
     public ValueFlow<Message> findAll(Initiator initiator) {
-        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+        return valueFlowDoneWith(entitiesToOptionalMessageWithHeader(
                     "all Programs:", this.programsCatalog.getAll()));
     }
 }

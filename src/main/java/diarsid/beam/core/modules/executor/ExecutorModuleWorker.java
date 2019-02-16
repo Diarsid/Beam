@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
+import diarsid.beam.core.base.control.flow.ValueFlowDone;
 import diarsid.beam.core.base.control.flow.ValueFlowFail;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -49,13 +49,13 @@ import diarsid.beam.core.modules.ExecutorModule;
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 
-import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
+import static diarsid.beam.core.base.control.flow.FlowResult.DONE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.HIDE_VARIANT_TYPE;
@@ -168,8 +168,8 @@ class ExecutorModuleWorker implements ExecutorModule {
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
             switch ( entityFlow.result() ) {
-                case COMPLETE : {
-                    if ( entityFlow.asComplete().hasValue() ) {
+                case DONE : {
+                    if ( entityFlow.asDone().hasValue() ) {
                         command.setTargetFound();
                         return entityFlow;
                     } else {
@@ -204,9 +204,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .entitiesOperatedBy(command)
                 .findByNamePattern(initiator, command.argument().original());
         switch ( entityFlow.result() ) {
-            case COMPLETE : {
-                if ( entityFlow.asComplete().hasValue() ) {
-                    command.argument().setExtended(entityFlow.asComplete().orThrow().name());        
+            case DONE : {
+                if ( entityFlow.asDone().hasValue() ) {
+                    command.argument().setExtended(entityFlow.asDone().orThrow().name());        
                     command.setTargetFound();
                     return entityFlow;
                 } else {
@@ -244,15 +244,15 @@ class ExecutorModuleWorker implements ExecutorModule {
                     .entitiesOperatedBy(command)
                     .findByExactName(initiator, command.argument().extended());
             switch ( entityFlow.result() ) {
-                case COMPLETE : {
-                    if ( entityFlow.asComplete().hasValue() ) {
+                case DONE : {
+                    if ( entityFlow.asDone().hasValue() ) {
                         command.setNew().setTargetFound();
                         return entityFlow;
                     } else {
                         this.domain.commandsMemory().remove(initiator, command);
                         command.argument().unextend();
                         command.setTargetNotFound();
-                        return valueFlowCompletedEmpty();
+                        return valueFlowDoneEmpty();
                     }
                 }
                 case FAIL : {
@@ -270,7 +270,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             }
         } else {
             command.setTargetNotFound();
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -367,9 +367,9 @@ class ExecutorModuleWorker implements ExecutorModule {
             Initiator initiator, OpenLocationCommand command) {
         ValueFlow<NamedEntity> entityFlow = this.findNamedEntity(initiator, command);
         switch ( entityFlow.result() ) {
-            case COMPLETE : {
-                if ( entityFlow.asComplete().hasValue() ) {
-                    NamedEntity entity = entityFlow.asComplete().orThrow();
+            case DONE : {
+                if ( entityFlow.asDone().hasValue() ) {
+                    NamedEntity entity = entityFlow.asDone().orThrow();
                     if ( entity.is(LOCATION) ) {
                         this.openFoundLocation(initiator, command, asLocation(entity));                        
                     } else {
@@ -412,11 +412,11 @@ class ExecutorModuleWorker implements ExecutorModule {
                         OPEN_LOCATION_TARGET, 
                         HIDE_VARIANT_TYPE);
         switch ( commandFlow.result() ) {
-            case COMPLETE : {
+            case DONE : {
                 if ( this.isOpenLocationTargetCommand(commandFlow) ) {
                     this.openLocationTarget(
                             initiator, 
-                            (OpenLocationTargetCommand) commandFlow.asComplete().orThrow());
+                            (OpenLocationTargetCommand) commandFlow.asDone().orThrow());
                 } else {
                     this.reportEntityNotFound(initiator, command);
                 }
@@ -437,8 +437,8 @@ class ExecutorModuleWorker implements ExecutorModule {
     }
     
     private boolean isOpenLocationTargetCommand(ValueFlow<InvocationCommand> commandFlow) {
-        return commandFlow.asComplete().hasValue() && 
-                commandFlow.asComplete().orThrow().type().equals(OPEN_LOCATION_TARGET);
+        return commandFlow.asDone().hasValue() && 
+                commandFlow.asDone().orThrow().type().equals(OPEN_LOCATION_TARGET);
     }
     
     private String notFoundReportFrom(InvocationCommand command) {
@@ -493,10 +493,10 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .locations()
                 .findByNamePattern(initiator, command.originalLocation());
         switch ( valueFlow.result() ) {
-            case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( valueFlow.asDone().hasValue() ) {
                     this.doWhenLocationFoundFromExtended(
-                            initiator, command, valueFlow.asComplete().orThrow());
+                            initiator, command, valueFlow.asDone().orThrow());
                 } else {
                     this.doWhenNotFound(initiator, command);
                 }
@@ -550,9 +550,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .locations()
                 .findByNamePattern(initiator, command.originalLocation());
         switch ( locationFlow.result() ) {
-            case COMPLETE : {
-                if ( locationFlow.asComplete().hasValue() ) {
-                    Location location = locationFlow.asComplete().orThrow();
+            case DONE : {
+                if ( locationFlow.asDone().hasValue() ) {
+                    Location location = locationFlow.asDone().orThrow();
                     String target = command.originalTarget();
                     if ( location.has(target) ) {
                         this.openTargetAndExtendCommand(initiator, location, target, command);
@@ -590,9 +590,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .findLocationSubPath(initiator, command.originalLocation());
         
         switch ( subPathFlow.result() ) {
-            case COMPLETE : {
-                if ( subPathFlow.asComplete().hasValue() ) {
-                    LocationSubPath locationSubPath = subPathFlow.asComplete().orThrow();   
+            case DONE : {
+                if ( subPathFlow.asDone().hasValue() ) {
+                    LocationSubPath locationSubPath = subPathFlow.asDone().orThrow();   
                     if ( locationSubPath.notPointsToDirectory() ) {
                         this.doWhenNotFound(initiator, command);
                         return;
@@ -644,14 +644,14 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .andGetResult();
         
         switch ( targetFlow.result() ) {
-            case COMPLETE : {
-                ValueFlowCompleted<String> completedFlow = targetFlow.asComplete();
-                if ( completedFlow.hasValue() ) {
-                    target = joinToPath(locationSubPath.subPath(), completedFlow.orThrow());
+            case DONE : {
+                ValueFlowDone<String> doneFlow = targetFlow.asDone();
+                if ( doneFlow.hasValue() ) {
+                    target = joinToPath(locationSubPath.subPath(), doneFlow.orThrow());
                     this.openTargetAndExtendCommand(initiator, locationSubPath, target, command);
                 } else {
-                    if ( completedFlow.hasMessage() ) {
-                        this.ioEngine.report(initiator, completedFlow.message());
+                    if ( doneFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, doneFlow.message());
                     } else {
                         this.ioEngine.report(initiator, format(
                                 "'%s' not found in %s", target, locationSubPath.fullName()));
@@ -677,10 +677,10 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .locations()
                 .findByExactName(initiator, command.extendedLocation());
         switch ( valueFlow.result() ) {
-            case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( valueFlow.asDone().hasValue() ) {
                     this.doWhenLocationFoundFromExtended(
-                            initiator, command, valueFlow.asComplete().orThrow());
+                            initiator, command, valueFlow.asDone().orThrow());
                 } else {
                     this.tryToFindLocationByPattern(initiator, command);
                 }
@@ -749,14 +749,14 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .andGetResult();
         
         switch ( targetFlow.result() ) {
-            case COMPLETE : {
-                ValueFlowCompleted<String> completedFlow = targetFlow.asComplete();
-                if ( completedFlow.hasValue() ) {
-                    target = targetFlow.asComplete().orThrow();
+            case DONE : {
+                ValueFlowDone<String> doneFlow = targetFlow.asDone();
+                if ( doneFlow.hasValue() ) {
+                    target = targetFlow.asDone().orThrow();
                     this.openTargetAndExtendCommand(initiator, location, target, command);
                 } else {
-                    if ( completedFlow.hasMessage() ) {
-                        this.ioEngine.report(initiator, completedFlow.message());
+                    if ( doneFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, doneFlow.message());
                     } else {
                         this.ioEngine.report(initiator, format(
                                 "'%s' not found in %s", target, location.name()));
@@ -793,9 +793,9 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void runProgram(Initiator initiator, RunProgramCommand command) {
         ValueFlow<NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
         switch ( valueFlow.result() ) {
-            case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                    NamedEntity entity = valueFlow.asComplete().orThrow();
+            case DONE : {
+                if ( valueFlow.asDone().hasValue() ) {
+                    NamedEntity entity = valueFlow.asDone().orThrow();
                     if ( entity.is(PROGRAM) ) {
                         this.ioEngine.report(
                                 initiator, "...running " + asProgram(entity).simpleName());
@@ -840,9 +840,9 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void callBatch(Initiator initiator, CallBatchCommand command) {
         ValueFlow<NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
         switch ( valueFlow.result() ) {
-            case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                    NamedEntity entity = valueFlow.asComplete().orThrow();
+            case DONE : {
+                if ( valueFlow.asDone().hasValue() ) {
+                    NamedEntity entity = valueFlow.asDone().orThrow();
                     if ( entity.is(BATCH) ) {
                         this.ioEngine.report(initiator, "...executing " + asBatch(entity).name());
                         this.executeBatchInternally(initiator, asBatch(entity));
@@ -873,9 +873,9 @@ class ExecutorModuleWorker implements ExecutorModule {
     public void browsePage(Initiator initiator, BrowsePageCommand command) {
         ValueFlow<NamedEntity> valueFlow = this.findNamedEntity(initiator, command);
         switch ( valueFlow.result() ) {
-            case COMPLETE : {
-                if ( valueFlow.asComplete().hasValue() ) {
-                    NamedEntity entity = valueFlow.asComplete().orThrow();
+            case DONE : {
+                if ( valueFlow.asDone().hasValue() ) {
+                    NamedEntity entity = valueFlow.asDone().orThrow();
                     if ( entity.is(WEBPAGE) ) {
                         this.ioEngine.report(initiator, "...browsing " + asWebPage(entity).name());
                         asWebPage(entity).browseAsync(
@@ -937,12 +937,12 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .allEntities()
                 .findByExactName(initiator, command.argument());
         switch ( entityFlow.result() ) {
-            case COMPLETE : {
-                if ( entityFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( entityFlow.asDone().hasValue() ) {
                     VoidFlow invokeFLow = this.invokeFoundEntity(
-                            initiator, entityFlow.asComplete().orThrow(), command);
+                            initiator, entityFlow.asDone().orThrow(), command);
                     switch ( invokeFLow.result() ) {
-                        case COMPLETE : {
+                        case DONE : {
                             return;
                         }
                         case FAIL : {
@@ -975,9 +975,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .commandsMemory()
                 .findStoredCommandOfAnyType(initiator, command.argument());
         switch ( flow.result() ) {
-            case COMPLETE : {
-                if ( flow.asComplete().hasValue() ) {
-                    this.dispatchCommandInternally(initiator, flow.asComplete().orThrow());
+            case DONE : {
+                if ( flow.asDone().hasValue() ) {
+                    this.dispatchCommandInternally(initiator, flow.asDone().orThrow());
                 } else {
                     this.findAndInvokeAnyNamedEntity(initiator, command);
                 }
@@ -1002,12 +1002,12 @@ class ExecutorModuleWorker implements ExecutorModule {
         ValueFlow<NamedEntity> entityFlow = 
                 this.findNamedEntityByArgument(initiator, command.argument());
         switch ( entityFlow.result() ) {
-            case COMPLETE : {
-                if ( entityFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( entityFlow.asDone().hasValue() ) {
                     VoidFlow invokeFlow = this.invokeFoundEntity(
-                            initiator, entityFlow.asComplete().orThrow(), command);
+                            initiator, entityFlow.asDone().orThrow(), command);
                     switch ( invokeFlow.result() ) {
-                        case COMPLETE : 
+                        case DONE : 
                         case STOP : {
                             return;
                         }
@@ -1044,8 +1044,8 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .allEntities()
                 .findByExactName(initiator, argument);
         switch ( entityFlow.result() ) {
-            case COMPLETE : {
-                if ( entityFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( entityFlow.asDone().hasValue() ) {
                     return entityFlow;
                 } else {
                     return this.domain
@@ -1079,27 +1079,27 @@ class ExecutorModuleWorker implements ExecutorModule {
                 asLocation(entity).openAsync(
                         this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
                         this.thenDoOnFail(initiator));
-                return voidFlowCompleted();
+                return voidFlowDone();
             }
             case WEBPAGE : {
                 this.ioEngine.report(initiator, "...browsing " + asWebPage(entity).name());
                 asWebPage(entity).browseAsync(
                         this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
                         this.thenDoOnFail(initiator));
-                return voidFlowCompleted();
+                return voidFlowDone();
             }
             case PROGRAM : {
                 this.ioEngine.report(initiator, "...running " + asProgram(entity).simpleName());
                 asProgram(entity).runAsync(
                         this.thenDoOnSuccess(initiator, command.mergeWith(entity)), 
                         this.thenDoOnFail(initiator));
-                return voidFlowCompleted();
+                return voidFlowDone();
             }
             case BATCH : {
                 this.ioEngine.report(initiator, "...executing " + entity.name());
                 this.executeBatchInternally(initiator, asBatch(entity));
                 this.asyncSaveCommandIfNecessary(initiator, command.mergeWith(entity));
-                return voidFlowCompleted();
+                return voidFlowDone();
             }
             case UNDEFINED_ENTITY : {
                 return voidFlowFail(
@@ -1121,9 +1121,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .locations()
                 .findByNamePattern(initiator, command.joinedArguments());
         switch ( locationFlow.result() ) {
-            case COMPLETE : {
-                if ( locationFlow.asComplete().hasValue() ) {
-                    Location location = locationFlow.asComplete().orThrow();
+            case DONE : {
+                if ( locationFlow.asDone().hasValue() ) {
+                    Location location = locationFlow.asDone().orThrow();
                     Optional<List<String>> listing = this.fileLister.listContentOf(location, 5);
                     if ( listing.isPresent() && nonEmpty(listing.get()) ) {
                         listing.get().add(0, format("%s content: ", location.name()));
@@ -1162,9 +1162,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .locationSubPaths()
                 .findLocationSubPath(initiator, pattern);
         switch ( subPathFlow.result() ) {
-            case COMPLETE : {
-                if ( subPathFlow.asComplete().hasValue() ) {
-                    this.listSubPath(initiator, subPathFlow.asComplete().orThrow());
+            case DONE : {
+                if ( subPathFlow.asDone().hasValue() ) {
+                    this.listSubPath(initiator, subPathFlow.asDone().orThrow());
                 } else {
                     this.ioEngine.report(initiator, format("cannot find '%s'", pattern));
                 }
@@ -1212,12 +1212,12 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .locations()
                 .findByNamePattern(initiator, locationName);
         switch ( locationFlow.result() ) {
-            case COMPLETE : {
+            case DONE : {
                 String target = extractTargetFromPath(path);
-                if ( locationFlow.asComplete().hasValue() ) {
+                if ( locationFlow.asDone().hasValue() ) {
                     this.listPathInLocation(
                             initiator, 
-                            locationFlow.asComplete().orThrow(), 
+                            locationFlow.asDone().orThrow(), 
                             target);
                 } else {
                     this.proceedListLocationSubPath(initiator, locationName, target);
@@ -1250,9 +1250,9 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .findLocationSubPath(initiator, subPathPattern);
         
         switch ( subPathFlow.result() ) {
-            case COMPLETE : {
-                if ( subPathFlow.asComplete().hasValue() ) {
-                    LocationSubPath locationSubPath = subPathFlow.asComplete().orThrow();
+            case DONE : {
+                if ( subPathFlow.asDone().hasValue() ) {
+                    LocationSubPath locationSubPath = subPathFlow.asDone().orThrow();
                     this.listPathInLocation(initiator, locationSubPath, target);
                 } else {                    
                     this.ioEngine.report(initiator, format("cannot find '%s'", subPathPattern));
@@ -1310,14 +1310,14 @@ class ExecutorModuleWorker implements ExecutorModule {
                 .andGetResult();
         
         switch ( subpathFlow.result() ) {
-            case COMPLETE : {
-                ValueFlowCompleted<String> completedFlow = subpathFlow.asComplete();
-                if ( completedFlow.hasValue() ) {
-                    subpath = completedFlow.orThrow();
+            case DONE : {
+                ValueFlowDone<String> doneFlow = subpathFlow.asDone();
+                if ( doneFlow.hasValue() ) {
+                    subpath = doneFlow.orThrow();
                     this.doListing(initiator, location, subpath);
                 } else {
-                    if ( completedFlow.hasMessage() ) {
-                        this.ioEngine.report(initiator, completedFlow.message());
+                    if ( doneFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, doneFlow.message());
                     } else {
                         this.ioEngine.report(initiator, format(
                                 "%s/%s not found.", location.name(), subpath));

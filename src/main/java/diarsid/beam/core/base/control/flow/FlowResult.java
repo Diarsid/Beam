@@ -13,7 +13,7 @@ import static java.util.Arrays.stream;
  */
 public enum FlowResult {
     
-    COMPLETE,
+    DONE,
     FAIL,
     STOP;
     

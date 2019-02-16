@@ -14,6 +14,7 @@ import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
+import diarsid.beam.core.base.control.flow.ValueFlowDone;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -24,6 +25,7 @@ import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.control.io.commands.executor.OpenLocationCommand;
+import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.domain.entities.metadata.EntityProperty;
@@ -42,11 +44,11 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
@@ -60,12 +62,16 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATI
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
 import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.UNACCEPTABLE_DOMAIN_CHARS;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FOLDERS_ONLY;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasMany;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
+import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
+import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.FILE_PATH;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.NAME;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
@@ -88,6 +94,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final Analyze analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final InnerIoEngine ioEngine;
+    private final Walker walker;
     private final LocationsInputParser locationInpurParser;
     private final PropertyAndTextParser propertyTextParser;
     private final Set<CommandType> subjectedCommandTypes;
@@ -105,6 +112,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             Analyze analyze, 
             Pool<KeeperLoopValidationDialog> dialogPool,
             InnerIoEngine ioEngine, 
+            Walker walker,
             LocationsInputParser parser,
             PropertyAndTextParser propertyTextParser) {
         this.allLocationsConsistencyLock = new Object();
@@ -115,6 +123,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         this.analyze = analyze;
         this.dialogPool = dialogPool;
         this.ioEngine = ioEngine;
+        this.walker = walker;
         this.locationInpurParser = parser;
         this.propertyTextParser = propertyTextParser;
         this.subjectedCommandTypes = toSet(OPEN_LOCATION, OPEN_LOCATION_TARGET);
@@ -211,7 +220,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 if ( hasOne(foundLocations) ) {
                     foundLocation = getOne(foundLocations);
                     this.reportThatLocationFound(initiator, name, foundLocation);                    
-                    return valueFlowCompletedWith(foundLocation);
+                    return valueFlowDoneWith(foundLocation);
                 } else if ( hasMany(foundLocations) ) {
                     weightedLocations = this.analyze.weightVariants(
                             name, entitiesToVariants(foundLocations));
@@ -226,14 +235,14 @@ class LocationsKeeperWorker implements LocationsKeeper {
                          bestLocation.hasEqualOrBetterWeightThan(PERFECT) ) {
                         foundLocation = foundLocations.get(bestLocation.index());
                         this.reportThatLocationFound(initiator, name, foundLocation);
-                        return valueFlowCompletedWith(foundLocation);
+                        return valueFlowDoneWith(foundLocation);
                     } else {
                         boolean hasMatch = this.daoPatternChoices.hasMatchOf(
                                 initiator, name, bestLocation.text(), weightedLocations);
                         if ( hasMatch ) {
                             foundLocation = foundLocations.get(bestLocation.index());
                             this.reportThatLocationFound(initiator, name, foundLocation);
-                            return valueFlowCompletedWith(foundLocation);
+                            return valueFlowDoneWith(foundLocation);
                         } else {
                             answer = this.ioEngine.chooseInWeightedVariants(
                                     initiator, weightedLocations, this.chooseOneLocationHelp);
@@ -247,7 +256,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                                 });
                                 foundLocation = foundLocations.get(answer.index());
                                 this.reportThatLocationFound(initiator, name, foundLocation);
-                                return valueFlowCompletedWith(foundLocation);
+                                return valueFlowDoneWith(foundLocation);
                             } else if ( answer.isRejection() ) {
                                 return valueFlowStopped();
                             } else if ( answer.variantsAreNotSatisfactory() ) {
@@ -282,7 +291,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     @Override
     public ValueFlow<Location> findByExactName(
             Initiator initiator, String exactName) {
-        return valueFlowCompletedWith(this.daoLocations.getLocationByExactName(initiator, exactName));
+        return valueFlowDoneWith(this.daoLocations.getLocationByExactName(initiator, exactName));
     }
     
     @Override
@@ -302,18 +311,18 @@ class LocationsKeeperWorker implements LocationsKeeper {
         if ( hasOne(locations) ) {
             Location location = getOne(locations);
             if ( location.name().equalsIgnoreCase(namePattern) ) {
-                return valueFlowCompletedWith(location);
+                return valueFlowDoneWith(location);
             } else {
                 if ( this.analyze.isEntitySatisfiable(namePattern, location) ) {
-                    return valueFlowCompletedWith(location);
+                    return valueFlowDoneWith(location);
                 } else {
-                    return valueFlowCompletedEmpty();
+                    return valueFlowDoneEmpty();
                 }
             }                        
         } else if ( hasMany(locations) ) {
             return this.manageWithManyLocations(initiator, namePattern, locations);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -335,18 +344,18 @@ class LocationsKeeperWorker implements LocationsKeeper {
             Initiator initiator, String pattern, List<Location> locations) {
         WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(locations));
         if ( variants.isEmpty() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
         
         WeightedVariant bestVariant = variants.best();
         if ( bestVariant.text().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
-            return valueFlowCompletedWith(locations.get(bestVariant.index()));
+            return valueFlowDoneWith(locations.get(bestVariant.index()));
         } else {
             boolean hasMatch = this.daoPatternChoices
                     .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
             if ( hasMatch ) {
-                return valueFlowCompletedWith(locations.get(bestVariant.index()));
+                return valueFlowDoneWith(locations.get(bestVariant.index()));
             } else {
                 return this.askUserForLocationAndSaveChoice(
                         initiator, pattern, variants, locations);
@@ -366,13 +375,13 @@ class LocationsKeeperWorker implements LocationsKeeper {
             asyncDo(() -> {
                 this.daoPatternChoices.save(initiator, pattern, location.name(), variants);
             });
-            return valueFlowCompletedWith(location);
+            return valueFlowDoneWith(location);
         } else if ( answer.isRejection() ) {
             return valueFlowStopped();
         } else if ( answer.variantsAreNotSatisfactory() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
 
@@ -409,7 +418,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         if ( this.daoLocations.saveNewLocation(initiator, new Location(name, path)) ) {
             this.asyncAddCommand(initiator, name);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to save Location.");
         }     
@@ -475,66 +484,142 @@ class LocationsKeeperWorker implements LocationsKeeper {
             } else {
                 validity.ok();
             }            
-        } else {                    
-            List<LocationSubPath> subPathes = this.daoLocationSubPaths
-                    .getSubPathesByPattern(initiator, newPath);
-
-            if ( hasOne(subPathes) ) {
-                LocationSubPath locationSubPath = getOne(subPathes);
-                String locationAndSubPath = locationSubPath.name();
-                boolean pathFound = 
-                        locationAndSubPath.equalsIgnoreCase(newPath) ||
-                        this.analyze.isNameSatisfiable(newPath, locationAndSubPath);
-                if ( pathFound ) {
-                    String realFoundPath = locationSubPath.fullPath();
-                    validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));   
-                } else {
-                    validity.failsWith(format("'%s' not found", newPath));
-                }
-            } else if ( hasMany(subPathes) ) {
-                WeightedVariants variants = this.analyze.weightVariants(
-                        newPath, entitiesToVariants(subPathes));
-                if ( variants.isEmpty() ) {
-                    validity.failsWith(format("'%s' not found", newPath));
-                } else {
-                    WeightedVariant best = variants.best();
-                    boolean bestIsGoodEnough = 
-                            best.text().equalsIgnoreCase(newPath) || 
-                            best.hasEqualOrBetterWeightThan(PERFECT);
-                    if ( bestIsGoodEnough ) {
-                        String realFoundPath = subPathes.get(best.index()).fullPath();
-                        validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));   
-                    } else {
-                        boolean hasMatch = this.daoPatternChoices.hasMatchOf(
-                                initiator, newPath, best.text(), variants);
-                        if ( hasMatch ) {
-                            String realFoundPath = subPathes.get(best.index()).fullPath();
-                            validity.set(defineNewPathValidityUsing(
-                                    initiator, realFoundPath, dialog));
-                        } else {
-                            Answer answer = this.ioEngine.chooseInWeightedVariants(
-                                    initiator, variants, this.chooseOneSubPathHelp);
-                            if ( answer.isGiven() ) {
-                                LocationSubPath foundSubPath = subPathes.get(answer.index());
-                                asyncDo(() -> {
-                                    this.daoPatternChoices.save(
-                                            initiator, newPath, foundSubPath.name(), variants);
-                                });
-                                String realFoundPath = foundSubPath.fullPath();
-                                validity.set(defineNewPathValidityUsing(
-                                        initiator, realFoundPath, dialog));
-                            } else {
-                                validity.fails();
-                            }
-                        }            
-                    }
-                }                
+        } else {
+            String possibleLocationName = extractLocationFromPath(newPath);
+            String possibleTarget = extractTargetFromPath(newPath);
+            Optional<Location> locationByName = this.daoLocations
+                    .getLocationByExactName(initiator, possibleLocationName);
+            if ( locationByName.isPresent() ) {
+                this.searchIn(initiator, locationByName.get(), possibleTarget, validity, dialog);
             } else {
-                validity.failsWith(format("'%s' not found", newPath));
+                ValueFlow<Location> locationFlow = findByNamePattern(
+                        initiator, possibleLocationName);
+                switch ( locationFlow.result() ) {
+                    case DONE:
+                        ValueFlowDone<Location> doneLocationFlow = locationFlow.asDone();
+                        if ( doneLocationFlow.hasValue() ) {
+                            Location location = doneLocationFlow.orThrow();
+                            this.searchIn(initiator, location, possibleTarget, validity, dialog);
+                        } else {
+                            if ( doneLocationFlow.hasMessage() ) {
+                                this.ioEngine.report(initiator, doneLocationFlow.message());
+                            }
+                            this.searchInLocationSubPathes(initiator, newPath, validity, dialog);
+                        }
+                        break;
+                    case FAIL:
+                        validity.failsWith(locationFlow.asFail().reason());  
+                        break;     
+                    case STOP:
+                        dialog.stop();
+                        validity.fails();
+                        break;
+                    default:
+                        validity.failsWith("unkown result during locatiob by pattern search");           
+                }
             }
         }
 
         return validity.get();
+    }
+    
+    private void searchIn(
+            Initiator initiator, 
+            Location location, 
+            String target, 
+            UndefinedValidity validity, 
+            KeeperLoopValidationDialog dialog) {
+        ValueFlow<String> pathFlow = this.walker
+                .lookingFor(FOLDERS_ONLY)
+                .walkToFind(target)
+                .in(location)
+                .by(initiator)
+                .andGetResult();
+        
+        switch ( pathFlow.result() ) {
+            case DONE:
+                ValueFlowDone<String> donePathFlow = pathFlow.asDone();
+                if ( donePathFlow.hasValue() ) {
+                    validity.ok();
+                    dialog.replaceInput(joinToPath(location.path(), donePathFlow.orThrow()));
+                } else {
+                    String message = format("cannot find %s in %s", target, location.name());
+                    validity.failsWith(message);
+                }
+                break;
+            case FAIL:
+                validity.failsWith(pathFlow.asFail().reason());  
+                break;
+            case STOP:
+                dialog.stop();
+                validity.fails();
+                break;
+            default:
+                validity.failsWith("unkown result during locatiob by pattern search");
+        }
+    }
+
+    private void searchInLocationSubPathes(
+            Initiator initiator, 
+            String newPath, 
+            UndefinedValidity validity, 
+            KeeperLoopValidationDialog dialog) {
+        List<LocationSubPath> subPathes = this.daoLocationSubPaths
+                .getSubPathesByPattern(initiator, newPath);
+        
+        if ( hasOne(subPathes) ) {
+            LocationSubPath locationSubPath = getOne(subPathes);
+            String locationAndSubPath = locationSubPath.name();
+            boolean pathFound =
+                    locationAndSubPath.equalsIgnoreCase(newPath) ||
+                        this.analyze.isNameSatisfiable(newPath, locationAndSubPath);
+            if ( pathFound ) {
+                String realFoundPath = locationSubPath.fullPath();
+                validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
+            } else {
+                validity.failsWith(format("'%s' not found", newPath));
+            }
+        } else if ( hasMany(subPathes) ) {
+            WeightedVariants variants = this.analyze.weightVariants(
+                    newPath, entitiesToVariants(subPathes));
+            if ( variants.isEmpty() ) {
+                validity.failsWith(format("'%s' not found", newPath));
+            } else {
+                WeightedVariant best = variants.best();
+                boolean bestIsGoodEnough =
+                        best.text().equalsIgnoreCase(newPath) || 
+                            best.hasEqualOrBetterWeightThan(PERFECT);
+                if ( bestIsGoodEnough ) {
+                    String realFoundPath = subPathes.get(best.index()).fullPath();
+                    validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
+                } else {
+                    boolean hasMatch = this.daoPatternChoices.hasMatchOf(
+                            initiator, newPath, best.text(), variants);
+                    if ( hasMatch ) {
+                        String realFoundPath = subPathes.get(best.index()).fullPath();
+                        validity.set(defineNewPathValidityUsing(   
+                                initiator, realFoundPath, dialog));
+                    } else {
+                        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                                initiator, variants, this.chooseOneSubPathHelp);
+                        if ( answer.isGiven() ) {
+                            LocationSubPath foundSubPath = subPathes.get(answer.index());
+                            asyncDo(() -> {
+                                this.daoPatternChoices.save(
+                                        initiator, newPath, foundSubPath.name(), variants);
+                            });
+                            String realFoundPath = foundSubPath.fullPath();
+                            validity.set(defineNewPathValidityUsing(
+                                    initiator, realFoundPath, dialog));
+                        } else {
+                            validity.fails();
+                        }            
+                    }
+                }
+            }
+        } else {
+            validity.failsWith(format("'%s' not found", newPath));
+        }
     }
 
     private Validity defineNewPathValidityUsing(
@@ -574,9 +659,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
             ValueFlow<Location> locationFlow = this.findExistingLocationInternally(initiator, name);
             
             switch ( locationFlow.result() ) {
-                case COMPLETE:
-                    if ( locationFlow.asComplete().hasValue() ) {
-                        Location location = locationFlow.asComplete().orThrow();
+                case DONE:
+                    if ( locationFlow.asDone().hasValue() ) {
+                        Location location = locationFlow.asDone().orThrow();
                         return this.removeLocationByName(initiator, location.name());
                     } else {
                         return voidFlowFail("no such location.");
@@ -594,7 +679,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private VoidFlow removeLocationByName(Initiator initiator, String locationName) {
         if ( this.daoLocations.removeLocation(initiator, locationName) ) {
             this.asyncCleanCommandsMemory(initiator, locationName);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to remove location.");
         }
@@ -621,9 +706,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
             Location location;
             ValueFlow<Location> locationFlow = this.findExistingLocationInternally(initiator, name);
             switch ( locationFlow.result() ) {
-                case COMPLETE : {
-                    if ( locationFlow.asComplete().hasValue() ) {
-                        location = locationFlow.asComplete().orThrow();
+                case DONE : {
+                    if ( locationFlow.asDone().hasValue() ) {
+                        location = locationFlow.asDone().orThrow();
                     } else {
                         return voidFlowFail("no such location.");
                     }
@@ -693,7 +778,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         }
         
         if ( this.daoLocations.editLocationPath(initiator, location.name(), newPath) ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to edit path.");
         }
@@ -708,7 +793,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
         
         if ( this.daoLocations.editLocationName(initiator, location.name(), newName) ) {
             this.asyncChangeCommandsMemory(initiator, location.name(), newName);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to edit name.");
         }
@@ -718,7 +803,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     public VoidFlow replaceInPaths(
             Initiator initiator, String replaceable, String replacement) {        
         if ( this.daoLocations.replaceInPaths(initiator, replaceable, replacement) ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to replace path fragment.");
         }
@@ -726,7 +811,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
 
     @Override
     public ValueFlow<Message> findAll(Initiator initiator) {
-        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+        return valueFlowDoneWith(entitiesToOptionalMessageWithHeader(
                     "all Locations:", this.daoLocations.getAllLocations(initiator)));
     }
 }

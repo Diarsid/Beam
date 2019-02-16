@@ -155,9 +155,9 @@ public class WebPage
             ValueFlow<WebDirectory> directoryFlow = this.loadableDirectory.load();
             
             switch ( directoryFlow.result() ) {
-                case COMPLETE : {
-                    if ( directoryFlow.isCompletedWithValue() ) {
-                        WebDirectory directory = directoryFlow.asComplete().orThrow();
+                case DONE : {
+                    if ( directoryFlow.isDoneWithValue() ) {
+                        WebDirectory directory = directoryFlow.asDone().orThrow();
                         message.add(format(
                                 "directory %s > %s", 
                                 directory.place().displayName(), 

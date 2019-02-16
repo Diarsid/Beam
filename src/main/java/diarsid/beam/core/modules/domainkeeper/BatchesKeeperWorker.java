@@ -41,11 +41,11 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
@@ -223,7 +223,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                     if ( foundBatch.isPresent() ) {
                         this.ioEngine.report(
                                 initiator, format("'%s' found.", foundBatch.get().name()));
-                        return valueFlowCompletedWith(foundBatch);
+                        return valueFlowDoneWith(foundBatch);
                     } else {
                         this.ioEngine.report(initiator, format("not found by '%s'", name));
                         name = "";
@@ -241,7 +241,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                     if ( answer.isGiven() ) {
                         foundBatch = this.dao.getBatchByExactName(initiator, answer.text());
                         if ( foundBatch.isPresent() ) {
-                            return valueFlowCompletedWith(foundBatch);
+                            return valueFlowDoneWith(foundBatch);
                         } else {
                             this.ioEngine.report(
                                     initiator, format("cannot get Batch by '%s'", name));
@@ -277,19 +277,19 @@ class BatchesKeeperWorker implements BatchesKeeper {
                  this.analyze.isNameSatisfiable(pattern, batchName) ) {
                 return this.findByExactName(initiator, batchName); 
             } else {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             }  
         } else if ( hasMany(foundBatchNames) ) {
             return this.manageWithManyBatchNames(initiator, pattern, foundBatchNames);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
     @Override
     public ValueFlow<Batch> findByExactName(
             Initiator initiator, String exactName) {
-        return valueFlowCompletedWith(this.dao.getBatchByExactName(initiator, exactName));
+        return valueFlowDoneWith(this.dao.getBatchByExactName(initiator, exactName));
     }
 
     private ValueFlow<Batch> manageWithManyBatchNames(
@@ -297,7 +297,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         WeightedVariants variants = this.analyze.weightVariants(
                 pattern, stringsToVariants(foundBatchNames));
         if ( variants.isEmpty() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
         
         WeightedVariant bestVariant = variants.best();
@@ -332,9 +332,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
         } else if ( answer.isRejection() ) {
             return valueFlowStopped();
         } else if ( answer.variantsAreNotSatisfactory() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
 
@@ -413,7 +413,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             Batch newBatch = new Batch(name, batchCommands);
             if ( this.dao.saveBatch(initiator, newBatch) ) {
                 this.asyncAddCommand(initiator, newBatch.name());
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 return voidFlowFail("DAO failed to save new batch.");
             }
@@ -488,9 +488,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
             Batch editedBatch;
             ValueFlow<Batch> batchFlow = this.findExistingBatchInternally(initiator, name);
             switch ( batchFlow.result() ) {
-                case COMPLETE : {
-                    if ( batchFlow.asComplete().hasValue() ) {
-                        editedBatch = batchFlow.asComplete().orThrow();
+                case DONE : {
+                    if ( batchFlow.asDone().hasValue() ) {
+                        editedBatch = batchFlow.asDone().orThrow();
                     } else {                    
                         return voidFlowFail("no such batch.");
                     }
@@ -535,7 +535,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         
         if ( this.dao.editBatchName(initiator, batch.name(), newName) ) {
             this.asyncChangeCommandsMemory(initiator, batch.name(), newName);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to rename batch.");
         }
@@ -583,7 +583,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             }
             if ( this.dao.editBatchOneCommand(
                     initiator, batch.name(), answer.index(), newCommand.get()) ) {
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 return voidFlowFail("DAO failed to change one command.");
             }
@@ -599,7 +599,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         }
         
         if ( this.dao.editBatchCommands(initiator, batch.name(), newCommands) ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to change all commands.");
         }
@@ -621,9 +621,9 @@ class BatchesKeeperWorker implements BatchesKeeper {
         Batch removedBatch;
         ValueFlow<Batch> batchFlow = this.findExistingBatchInternally(initiator, name);
         switch ( batchFlow.result() ) {
-            case COMPLETE : {
-                if ( batchFlow.asComplete().hasValue() ) {
-                    removedBatch = batchFlow.asComplete().orThrow();
+            case DONE : {
+                if ( batchFlow.asDone().hasValue() ) {
+                    removedBatch = batchFlow.asDone().orThrow();
                 } else {                    
                     return voidFlowFail("no such batch.");
                 }
@@ -642,7 +642,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         
         if ( this.dao.removeBatch(initiator, removedBatch.name()) ) {
             this.asyncCleanCommandsMemory(initiator, removedBatch.name());
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to remove batch");
         }      
@@ -650,7 +650,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
 
     @Override
     public ValueFlow<Message> findAll(Initiator initiator) {
-        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+        return valueFlowDoneWith(entitiesToOptionalMessageWithHeader(
                     "all Batches:", this.dao.getAllBatches(initiator)));       
     }
 }

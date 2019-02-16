@@ -24,7 +24,7 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
@@ -52,7 +52,7 @@ abstract class H2DaoWebPagesV0
                                 "FROM web_directories " +
                                 "WHERE ( id IS ? ) ", 
                                 webPage.directoryId());
-                return valueFlowCompletedWith(dir);
+                return valueFlowDoneWith(dir);
             } catch (TransactionHandledSQLException | TransactionHandledException e) {
                 logFor(this).error(e.getMessage(), e);
                 String message = "Cannot find WebDirectory by id " + webPage.directoryId();

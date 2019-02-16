@@ -22,8 +22,8 @@ import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoNamedEntities;
 
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
@@ -69,7 +69,7 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
     @Override
     public ValueFlow<NamedEntity> findByExactName(
             Initiator initiator, String name) {
-        return valueFlowCompletedWith(this.namedEntitiesDao.getByExactName(initiator, name));
+        return valueFlowDoneWith(this.namedEntitiesDao.getByExactName(initiator, name));
     }
 
     @Override
@@ -80,14 +80,14 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
         if ( hasOne(entities) ) {
             NamedEntity entity = getOne(entities);
             if ( this.analyze.isEntitySatisfiable(pattern, entity) ) {
-                return valueFlowCompletedWith(entity);
+                return valueFlowDoneWith(entity);
             } else {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             }            
         } else if ( hasMany(entities) ) {
             return this.manageWithMultipleEntities(initiator, pattern, entities);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -96,26 +96,26 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
         WeightedVariants variants = this.analyze.weightVariants(
                 pattern, entitiesToVariants(entities));
         if ( variants.isEmpty() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
         Answer answer = this.ioEngine.chooseInWeightedVariants(
                 initiator, variants, this.chooseOneEntityHelp);
         if ( answer.isGiven() ) {
-            return valueFlowCompletedWith(entities.get(answer.index()));
+            return valueFlowDoneWith(entities.get(answer.index()));
         } else {
             if ( answer.isRejection() ) {                
                 return valueFlowStopped();
             } else if ( answer.variantsAreNotSatisfactory() ) {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             } else {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             }
         }
     } 
 
     @Override
     public ValueFlow<Message> findAll(Initiator initiator) {
-        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+        return valueFlowDoneWith(entitiesToOptionalMessageWithHeader(
                     "all named entities:", this.namedEntitiesDao.getAll(initiator)));
     }
 }

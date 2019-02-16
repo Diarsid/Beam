@@ -10,16 +10,17 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.function.Function;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 
-import static diarsid.beam.core.base.control.flow.FlowResult.COMPLETE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.FlowResult.STOP;
+import static diarsid.beam.core.base.control.flow.FlowResult.DONE;
+
+import diarsid.beam.core.base.control.flow.ValueFlowDone;
 
 /**
  *
@@ -44,7 +45,7 @@ abstract class AbstractCliAdapter {
     protected final void reportVoidFlow(
             Initiator initiator, VoidFlow flow) {
         switch ( flow.result() ) {
-            case COMPLETE : {
+            case DONE : {
                 if ( flow.hasMessage() ) {
                     this.ioEngine.report(initiator, flow.message());
                 }
@@ -67,7 +68,7 @@ abstract class AbstractCliAdapter {
     protected final void reportVoidFlow(
             Initiator initiator, VoidFlow flow, String onSuccess) {
         switch ( flow.result() ) {
-            case COMPLETE : {
+            case DONE : {
                 this.ioEngine.report(initiator, onSuccess);
                 break;
             }         
@@ -88,13 +89,13 @@ abstract class AbstractCliAdapter {
     protected final <T> void reportValueFlow(
             Initiator initiator, 
             ValueFlow<T> flow, 
-            Function<ValueFlowCompleted<T>, Message> ifNonEmptyFunction, 
+            Function<ValueFlowDone<T>, Message> ifNonEmptyFunction, 
             String ifEmptyMessage) {
         switch ( flow.result() ) {
-            case COMPLETE : {
-                if ( flow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( flow.asDone().hasValue() ) {
                     this.ioEngine.reportMessage(
-                            initiator, ifNonEmptyFunction.apply(flow.asComplete()));
+                            initiator, ifNonEmptyFunction.apply(flow.asDone()));
                 } else {
                     this.ioEngine.report(initiator, ifEmptyMessage);
                 }                
@@ -118,10 +119,10 @@ abstract class AbstractCliAdapter {
             ValueFlow<T> flow, 
             String ifEmptyMessage) {
         switch ( flow.result() ) {
-            case COMPLETE : {
-                if ( flow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( flow.asDone().hasValue() ) {
                     this.ioEngine.reportMessage(
-                            initiator, flow.asComplete().orThrow().toMessage());
+                            initiator, flow.asDone().orThrow().toMessage());
                 } else {
                     this.ioEngine.report(initiator, ifEmptyMessage);
                 }                

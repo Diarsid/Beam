@@ -9,7 +9,7 @@ package diarsid.beam.core.base.control.flow;
  *
  * @author Diarsid
  */
-public interface ValueFlowCompleted<T extends Object> extends ValueFlow<T> {
+public interface ValueFlowDone<T extends Object> extends ValueFlow<T> {
     
     boolean hasValue();
     

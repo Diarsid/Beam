@@ -16,7 +16,7 @@ import diarsid.support.objects.StatefulClearable;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
@@ -52,7 +52,7 @@ class WalkStartPlace implements StatefulClearable {
         if ( notExistsInFileSystem(this.absoluteRoot.orThrow()) ) {
             return voidFlowFail(format("%s does not exist!", this.absoluteRoot));
         }
-        return voidFlowCompleted();
+        return voidFlowDone();
     }
     
     File absoluteRootAsFile() {

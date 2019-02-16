@@ -34,11 +34,11 @@ import static java.lang.String.join;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
@@ -309,7 +309,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         
         if ( this.dao.saveTask(initiator, task) ) {
             fireAsync("tasks_updated");
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to save task.");
         }
@@ -383,7 +383,7 @@ public class TasksKeeperWorker implements TasksKeeper {
         
         if ( this.dao.deleteTaskById(initiator, taskToRemove.id()) ) {
             fireAsync("tasks_updated");
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to remove task.");
         }
@@ -458,7 +458,7 @@ public class TasksKeeperWorker implements TasksKeeper {
                     if ( this.dao.editTaskTime(
                             initiator, taskToEdit.id(), newTime.actualTime(), newPeriods.get()) ) {
                         fireAsync("tasks_updated");
-                        return voidFlowCompleted();
+                        return voidFlowDone();
                     } else {
                         return voidFlowFail("DAO failed to edit task time and periods.");
                     }
@@ -468,7 +468,7 @@ public class TasksKeeperWorker implements TasksKeeper {
             } else {
                 if ( this.dao.editTaskTime(initiator, taskToEdit.id(), newTime.actualTime()) ) {
                     fireAsync("tasks_updated");
-                    return voidFlowCompleted();
+                    return voidFlowDone();
                 } else {
                     return voidFlowFail("DAO failed to edit task time.");
                 }
@@ -489,7 +489,7 @@ public class TasksKeeperWorker implements TasksKeeper {
                 return voidFlowStopped();
             }
             if ( this.dao.editTaskText(initiator, taskToEdit.id(), newText) ) {
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 return voidFlowFail("DAO failed to edit task text.");
             }
@@ -517,9 +517,9 @@ public class TasksKeeperWorker implements TasksKeeper {
         
         List<Task> matchingTasks = this.dao.findTasksByTextPattern(initiator, text);
         if ( matchingTasks.isEmpty() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         } else {
-            return valueFlowCompletedWith(matchingTasks);
+            return valueFlowDoneWith(matchingTasks);
         }
     }      
 }

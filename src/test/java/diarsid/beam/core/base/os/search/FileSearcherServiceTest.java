@@ -39,9 +39,9 @@ import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.DI
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.PATTERN_MATCH;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.SIMILAR_MATCH;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearchMatching.STRICT_MATCH;
-import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.ALL;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_ONLY;
 import static diarsid.beam.core.base.os.treewalking.search.FileSearcher.searcherWithDepthsOf;
+import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_AND_FOLDERS;
 
 
 /**
@@ -131,7 +131,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findFile_withoutWildcard_success() {
-        FileSearchResult result = searcher.find("file_1", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("file_1", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -148,7 +148,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.find("foldaaa", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("foldaaa", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();                
@@ -176,7 +176,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findFolder_withoutWildcard_success() {
-        FileSearchResult result = searcher.find("inn", root, PATTERN_MATCH, ALL);
+        FileSearchResult result = searcher.find("inn", root, PATTERN_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().foundFile();
@@ -191,7 +191,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findFolder_withWildcard_success() {
-        FileSearchResult result = searcher.find("inr", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("inr", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();                
@@ -217,7 +217,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findMultipeFile_withoutWildcard_success() {
-        FileSearchResult result = searcher.find("file", root, PATTERN_MATCH, ALL);
+        FileSearchResult result = searcher.find("file", root, PATTERN_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -235,7 +235,7 @@ public class FileSearcherServiceTest {
 
     @Test
     public void testFindTarget_findMultipeFile_withoutWildcard_ingoreCase_success() {
-        FileSearchResult result = searcher.find("aaa", root, PATTERN_MATCH, ALL);
+        FileSearchResult result = searcher.find("aaa", root, PATTERN_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -255,7 +255,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findSingleFile_withWildcard_failure() {
-        FileSearchResult result = searcher.find("foldile", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("foldile", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -284,7 +284,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_byPath_findFile_withoutWildcard_success() {
-        FileSearchResult result = searcher.find("inn/yy", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("inn/yy", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().foundFile();
@@ -299,7 +299,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_byPath_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.find("inn/yatx", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("inn/yatx", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -318,7 +318,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_byPath2_findFile_withWildcard_success() {
-        FileSearchResult result = searcher.find("inn/es/ya", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("inn/es/ya", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().foundFile();
@@ -333,7 +333,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_byPath_findFile_withWildcard_failure() {
-        FileSearchResult result = searcher.find("inn/fold/ya", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("inn/fold/ya", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 assertThat(result.success().foundFile(), equalTo("folder_1/inner/nested/yyyAAA.txt"));                
@@ -347,7 +347,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findMultipeFile_byPath_withoutWildcard_ingoreCase_success() {
-        FileSearchResult result = searcher.find("nst/list", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("nst/list", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -366,7 +366,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findMultipeFile_byPath_withWildcard_ingoreCase_success() {
-        FileSearchResult result = searcher.find("IeR/list", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("IeR/list", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 fail();
@@ -384,7 +384,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findMultipeFile_byPath() {
-        FileSearchResult result = searcher.find("Iner/nst/ya", root, SIMILAR_MATCH, ALL);
+        FileSearchResult result = searcher.find("Iner/nst/ya", root, SIMILAR_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 assertTrue(result.success().foundFile().equals("folder_1/inner/nested/yyyAAA.txt"));
@@ -398,7 +398,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findSingleFile_byPathWithFollowedSeparator_withoutWildcard_ingoreCase_failure() {
-        FileSearchResult result = searcher.find("iNNer/", root, PATTERN_MATCH, ALL);
+        FileSearchResult result = searcher.find("iNNer/", root, PATTERN_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().foundFile();
@@ -414,7 +414,7 @@ public class FileSearcherServiceTest {
     
     @Test
     public void testFindTarget_findSingleFile_byPathWithLeadSeparator_withoutWildcard_ingoreCase_failure() {
-        FileSearchResult result = searcher.find("/iNNer", root, PATTERN_MATCH, ALL);
+        FileSearchResult result = searcher.find("/iNNer", root, PATTERN_MATCH, FILES_AND_FOLDERS);
         if ( result.isOk() ) {
             if ( result.success().hasSingleFoundFile() ) {
                 String file = result.success().foundFile();

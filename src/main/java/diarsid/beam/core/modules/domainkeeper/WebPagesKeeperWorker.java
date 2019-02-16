@@ -54,11 +54,11 @@ import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedEmpty;
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneEmpty;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
@@ -301,7 +301,7 @@ public class WebPagesKeeperWorker
     @Override
     public ValueFlow<WebPage> findByExactName(
             Initiator initiator, String name) {
-        return valueFlowCompletedWith(this.daoPages.getByExactName(initiator, name));
+        return valueFlowDoneWith(this.daoPages.getByExactName(initiator, name));
     }
     
     @Override
@@ -312,14 +312,14 @@ public class WebPagesKeeperWorker
             WebPage page = getOne(foundPages);
             if ( page.name().equalsIgnoreCase(namePattern) ||
                  this.analyze.isEntitySatisfiable(namePattern, page) ) {
-                return valueFlowCompletedWith(page);
+                return valueFlowDoneWith(page);
             } else {
-                return valueFlowCompletedEmpty();
+                return valueFlowDoneEmpty();
             }
         } else if ( hasMany(foundPages) ) {
             return this.manageWithManyPages(initiator, namePattern, foundPages);
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
     
@@ -327,18 +327,18 @@ public class WebPagesKeeperWorker
             Initiator initiator, String pattern, List<WebPage> pages) {
         WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(pages));
         if ( variants.isEmpty() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
         
         WeightedVariant bestVariant = variants.best();
         if ( bestVariant.text().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
-            return valueFlowCompletedWith(pages.get(bestVariant.index()));
+            return valueFlowDoneWith(pages.get(bestVariant.index()));
         } else {
             boolean hasMatch = this.daoPatternChoices
                     .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
             if ( hasMatch ) {
-                return valueFlowCompletedWith(pages.get(bestVariant.index()));
+                return valueFlowDoneWith(pages.get(bestVariant.index()));
             } else {
                 return this.askUserForPageAndSaveChoice(
                         initiator, pattern, variants, pages);
@@ -358,13 +358,13 @@ public class WebPagesKeeperWorker
                 this.daoPatternChoices.save(
                         initiator, pattern, pages.get(answer.index()).name(), variants);
             });
-            return valueFlowCompletedWith(pages.get(answer.index()));
+            return valueFlowDoneWith(pages.get(answer.index()));
         } else if ( answer.isRejection() ) {
             return valueFlowStopped();
         } else if ( answer.variantsAreNotSatisfactory() ) {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         } else {
-            return valueFlowCompletedEmpty();
+            return valueFlowDoneEmpty();
         }
     }
 
@@ -423,13 +423,13 @@ public class WebPagesKeeperWorker
                                 initiator, format("page not found by '%s'.", pagePattern));
                         pagePattern = "";
                     } else if ( hasOne(foundPages) ) {
-                        return valueFlowCompletedWith(getOne(foundPages));
+                        return valueFlowDoneWith(getOne(foundPages));
                     } else {
                         question = question("choose page").withAnswerEntities(foundPages);
                         Answer answer = this.ioEngine.ask(
                                 initiator, question, this.chooseOnePageHelp);
                         if ( answer.isGiven() ) {
-                            return valueFlowCompletedWith(foundPages.get(answer.index()));
+                            return valueFlowDoneWith(foundPages.get(answer.index()));
                         } else if ( answer.isRejection() ) {
                             return valueFlowStopped();
                         } else if ( answer.variantsAreNotSatisfactory() ) {
@@ -569,12 +569,12 @@ public class WebPagesKeeperWorker
                 if ( foundDirectories.isEmpty() ) {
                     this.ioEngine.report(initiator, "directory not found.");
                 } else if ( hasOne(foundDirectories) ) {
-                    return valueFlowCompletedWith(getOne(foundDirectories));
+                    return valueFlowDoneWith(getOne(foundDirectories));
                 } else {
                     question = question("choose directory").withAnswerEntities(foundDirectories);
                     Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneDirectoryHelp);
                     if ( answer.isGiven() ) {
-                        return valueFlowCompletedWith(foundDirectories.get(answer.index()));
+                        return valueFlowDoneWith(foundDirectories.get(answer.index()));
                     } else if ( answer.isRejection() ) {
                         return valueFlowStopped();
                     } else if ( answer.variantsAreNotSatisfactory() ) {
@@ -626,16 +626,16 @@ public class WebPagesKeeperWorker
             ValueFlow<WebDirectory> directoryFlow = 
                     this.findExistingWebDirectoryInternally(initiator, place);
             switch ( directoryFlow.result() ) {
-                case COMPLETE :
+                case DONE :
                     String message;
-                    if ( directoryFlow.asComplete().hasValue() ) {
+                    if ( directoryFlow.asDone().hasValue() ) {
                         message = format("directory found: '%s'", 
-                                         directoryFlow.asComplete().orThrow().name());
+                                         directoryFlow.asDone().orThrow().name());
                         
                     } else {
                         message = format("default directory '%s' will be used.", 
                                          this.defaultDirectory.name());
-                        directoryFlow = valueFlowCompletedWith(this.defaultDirectory);
+                        directoryFlow = valueFlowDoneWith(this.defaultDirectory);
                     }
                     this.ioEngine.report(initiator, message);
                     break;
@@ -647,11 +647,11 @@ public class WebPagesKeeperWorker
                     return voidFlowFail("unkown flow result");
             } 
 
-            int dirId = directoryFlow.asComplete().orThrow().id();
+            int dirId = directoryFlow.asDone().orThrow().id();
             WebPage page = newWebPage(name, shortcuts, url, dirId);
             if ( daoPages.save(initiator, page) ) {
                 this.asyncAddCommandsForPage(initiator, page);
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 return voidFlowFail("DAO failed to save new page.");
             }
@@ -678,11 +678,11 @@ public class WebPagesKeeperWorker
         
         synchronized ( this.allPagesConsistencyLock ) {
             ValueFlow<WebPage> pageFlow = this.findExistingPageInternally(initiator, pagePattern);
-            if ( pageFlow.isNotCompletedWithValue() ) {
+            if ( pageFlow.isNotDoneWithValue() ) {
                 return pageFlow.toVoid();
             }
             
-            WebPage page = pageFlow.asComplete().orThrow();
+            WebPage page = pageFlow.asDone().orThrow();
             this.ioEngine.report(initiator, format("'%s' found.", page.name()));
 
             propertyToEdit = this.helper.validatePropertyInteractively(
@@ -723,7 +723,7 @@ public class WebPagesKeeperWorker
         
         if ( this.daoPages.editName(initiator, pageName, newName) ) {
             this.asyncChangeCommandsForPageNames(initiator, pageName, newName);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to rename page.");
         }
@@ -738,7 +738,7 @@ public class WebPagesKeeperWorker
         if ( this.daoPages.editShortcuts(initiator, pageName, newShortcuts) ) {
             this.asyncChangeCommandsForPageShortcuts(
                     initiator, pageName, oldShortcuts, newShortcuts);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to change shortcuts.");
         }
@@ -752,7 +752,7 @@ public class WebPagesKeeperWorker
         }
         
         if ( this.daoPages.editUrl(initiator, pageName, url) ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to change url.");
         }
@@ -772,7 +772,7 @@ public class WebPagesKeeperWorker
         reorderAccordingToNewOrder(pagesInDirectory, page.order(), pageNewOrder);
         sort(pagesInDirectory);
         if ( this.daoPages.updatePageOrdersInDir(initiator, pagesInDirectory) ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DOA failed to reorder directory with new page order.");
         }
@@ -782,15 +782,15 @@ public class WebPagesKeeperWorker
         this.ioEngine.report(initiator, "choosing new page directory...");
         ValueFlow<WebDirectory> directoryFlow = 
                 this.findExistingWebDirectoryInternally(initiator, UNDEFINED_PLACE);
-        if ( directoryFlow.isNotCompletedWithValue() ) {
+        if ( directoryFlow.isNotDoneWithValue() ) {
             return voidFlowStopped();
         }
         
-        WebDirectory directory = directoryFlow.asComplete().orThrow();
+        WebDirectory directory = directoryFlow.asDone().orThrow();
         boolean pageMoved = this.daoPages.movePageFromDirToDir(initiator, page, directory.id());
         
         if ( pageMoved ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("DAO failed to move page to new directory.");
         }
@@ -812,16 +812,16 @@ public class WebPagesKeeperWorker
         
         synchronized ( this.allPagesConsistencyLock ) {
             ValueFlow<WebPage> pageFlow = this.findExistingPageInternally(initiator, pagePattern);
-            if ( pageFlow.isNotCompletedWithValue() ) {
+            if ( pageFlow.isNotDoneWithValue() ) {
                 return pageFlow.toVoid();                  
             } 
 
-            WebPage page = pageFlow.asComplete().orThrow();
+            WebPage page = pageFlow.asDone().orThrow();
             this.ioEngine.report(initiator, format("'%s' found.", page.name()));              
 
             if ( this.daoPages.remove(initiator, page.name()) ) {
                 this.asyncRemoveCommandsForPage(initiator, page);
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 return voidFlowFail("DAO failed to remove page.");
             }
@@ -844,8 +844,8 @@ public class WebPagesKeeperWorker
         
         ValueFlow<WebPage> pageFlow = this.findExistingPageInternally(initiator, pageNamePattern);
         switch ( pageFlow.result() ) {
-            case COMPLETE :
-                if ( pageFlow.asComplete().isEmpty() ) {
+            case DONE :
+                if ( pageFlow.asDone().isEmpty() ) {
                     return voidFlowStopped();
                 } else {
                     break;
@@ -858,7 +858,7 @@ public class WebPagesKeeperWorker
                 return voidFlowFail("unexpected flow result.");          
         }
         
-        WebPage page = pageFlow.asComplete().orThrow();
+        WebPage page = pageFlow.asDone().orThrow();
         this.ioEngine.report(initiator, format("'%s' found.", page.name()));
         
         ValueFlow<Picture> pictureFlow = awaitGetFlow(() -> {     
@@ -866,8 +866,8 @@ public class WebPagesKeeperWorker
         });
         
         switch ( pictureFlow.result() ) {
-            case COMPLETE : {
-                if ( ! pictureFlow.asComplete().hasValue() ) {
+            case DONE : {
+                if ( ! pictureFlow.asDone().hasValue() ) {
                     return pictureFlow.toVoid();
                 } 
                 break;
@@ -883,12 +883,12 @@ public class WebPagesKeeperWorker
             }    
         }
         
-        Picture picture = pictureFlow.asComplete().orThrow();
+        Picture picture = pictureFlow.asDone().orThrow();
         
         boolean saved = this.daoPictures.save(initiator, picture);
         if ( saved ) {
             fireAsync("image_saved", picture.name());
-            return voidFlowCompleted("captured!");
+            return voidFlowDone("captured!");
         } else {
             return voidFlowFail("image not saved.");
         }        
@@ -933,7 +933,7 @@ public class WebPagesKeeperWorker
                 .getAllDirectoriesPagesInPlace(initiator, place);
         
         if ( directories.isEmpty() ) {
-            return valueFlowCompletedWith(info(place.displayName() + " is empty."));
+            return valueFlowDoneWith(info(place.displayName() + " is empty."));
         }
         
         Message message = info(directories
@@ -943,7 +943,7 @@ public class WebPagesKeeperWorker
                 .collect(toList()));
         message.addHeader(place.displayName());
         
-        return valueFlowCompletedWith(message);
+        return valueFlowDoneWith(message);
     }
     
     private WebPlace commandTypeToPlace(CommandType type) {
@@ -1246,7 +1246,7 @@ public class WebPagesKeeperWorker
 
     @Override
     public ValueFlow<Message> findAll(Initiator initiator) {
-        return valueFlowCompletedWith(entitiesToOptionalMessageWithHeader(
+        return valueFlowDoneWith(entitiesToOptionalMessageWithHeader(
                     "all WebPages:", this.daoPages.getAll(initiator)));
     }
 }

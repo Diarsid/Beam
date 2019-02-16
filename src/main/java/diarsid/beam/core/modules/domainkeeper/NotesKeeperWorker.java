@@ -26,7 +26,7 @@ import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
@@ -102,7 +102,7 @@ class NotesKeeperWorker implements NotesKeeper {
         } catch (IOException e) {
             return voidFlowFail(e.getMessage());
         }    
-        return voidFlowCompleted();
+        return voidFlowDone();
     }
 
     @Override
@@ -124,7 +124,7 @@ class NotesKeeperWorker implements NotesKeeper {
         if ( hasOne(foundNotes) ) {
             try {
                 this.reportAndOpen(initiator, getOne(foundNotes));                
-                return voidFlowCompleted();
+                return voidFlowDone();
             } catch (IOException e) {
                 return voidFlowFail(e.getMessage());
             }
@@ -152,7 +152,7 @@ class NotesKeeperWorker implements NotesKeeper {
         if ( hasOne(foundNotePaths) ) {
             try {
                 this.reportAndOpen(initiator, getOne(foundNotePaths));
-                return voidFlowCompleted();
+                return voidFlowDone();
             } catch (IOException e) {
                 return voidFlowFail(e.getMessage());
             }    
@@ -173,7 +173,7 @@ class NotesKeeperWorker implements NotesKeeper {
         if ( answer.isGiven() ) {
             try {
                 this.reportAndOpen(initiator, answer.text());
-                return voidFlowCompleted();
+                return voidFlowDone();
             } catch (IOException e) {
                 return voidFlowFail(e.getMessage());
             }
@@ -221,7 +221,7 @@ class NotesKeeperWorker implements NotesKeeper {
         
         try {
             this.reportCreateAndOpen(initiator, noteName);
-            return voidFlowCompleted();
+            return voidFlowDone();
         } catch (IOException e) {
             return voidFlowFail(e.getMessage());
         }

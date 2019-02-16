@@ -7,6 +7,7 @@ package diarsid.beam.core.modules.domainkeeper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,6 +31,7 @@ class KeeperLoopValidationDialog extends PooledReusable {
     private final Possible<Supplier<String>> inputSource;
     private final List<ValidationRule> validationRules;
     private final Possible<String> inputReplacement;
+    private final AtomicBoolean stopedByUser;
 
     KeeperLoopValidationDialog() {
         this.initialArgument = possibleButEmpty();
@@ -37,6 +39,7 @@ class KeeperLoopValidationDialog extends PooledReusable {
         this.inputSource = possibleButEmpty();
         this.validationRules = new ArrayList<>();
         this.inputReplacement = possibleButEmpty();
+        this.stopedByUser = new AtomicBoolean(false);
     }
     
     KeeperLoopValidationDialog withInitialArgument(String argument) {
@@ -66,10 +69,16 @@ class KeeperLoopValidationDialog extends PooledReusable {
         this.inputSource.nullify();
         this.validationRules.clear();
         this.inputReplacement.nullify();
+        this.stopedByUser.set(false);
     }
     
     public KeeperLoopValidationDialog replaceInput(String newValue) {
         this.inputReplacement.resetTo(newValue);
+        return this;
+    }
+    
+    public KeeperLoopValidationDialog stop() {
+        this.stopedByUser.set(true);
         return this;
     }
     
@@ -102,6 +111,10 @@ class KeeperLoopValidationDialog extends PooledReusable {
         String value;
         Validity validity;
         valueDefining: while ( true ) {
+            if ( this.stopedByUser.get() ) {
+                return "";
+            }
+            
             value = this.inputSource.orThrow().get();
             if ( value.isEmpty() ) {
                 return "";

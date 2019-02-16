@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -21,6 +20,8 @@ import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
 import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
+
+import diarsid.beam.core.base.control.flow.ValueFlowDone;
 
 /**
  *
@@ -39,7 +40,7 @@ class CliAdapterForCommandsMemoryKeeper extends AbstractCliAdapter {
     void findCommandAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<List<InvocationCommand>> commandFlow = 
                 this.commandsMemoryKeeper.findMems(initiator, command);
-        Function<ValueFlowCompleted<List<InvocationCommand>>, Message> ifSuccess = (success) -> {
+        Function<ValueFlowDone<List<InvocationCommand>>, Message> ifSuccess = (success) -> {
             List<InvocationCommand> foundCommands = success.orThrow();
             return info(foundCommands
                     .stream()

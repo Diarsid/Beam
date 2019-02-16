@@ -15,13 +15,13 @@ public interface ValueFlow<T extends Object> extends Flow {
     
     <R> ValueFlow<R> toFlowWith(Function<T, R> mapFunction);
     
-    boolean isCompletedWithValue();
+    boolean isDoneWithValue();
     
-    boolean isNotCompletedWithValue();
+    boolean isNotDoneWithValue();
     
-    boolean isCompletedEmpty();
+    boolean isDoneEmpty();
     
-    ValueFlowCompleted<T> asComplete();
+    ValueFlowDone<T> asDone();
     
     ValueFlowFail asFail();
     

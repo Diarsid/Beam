@@ -37,10 +37,10 @@ import static java.lang.String.join;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
@@ -272,7 +272,7 @@ class WebDirectoriesKeeperWorker
 
             WebDirectory directory = newDirectory(name, place);
             if ( this.daoDirectories.save(initiator, directory) ) {
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 return voidFlowFail("cannot save new directory.");
             }
@@ -322,12 +322,12 @@ class WebDirectoriesKeeperWorker
                     if ( hasOne(foundDirs) ) {
                         WebDirectory dir = getOne(foundDirs);
                         this.ioEngine.report(initiator, format("'%s' found.", dir.name()));
-                        return valueFlowCompletedWith(dir);
+                        return valueFlowDoneWith(dir);
                     } else if ( hasMany(foundDirs) ) {
                         VariantsQuestion question = question("choose").withAnswerEntities(foundDirs);
                         Answer answer = this.ioEngine.ask(initiator, question, this.chooseOneDirectoryHelp);
                         if ( answer.isGiven() ) {
-                            return valueFlowCompletedWith(foundDirs.get(answer.index()));
+                            return valueFlowDoneWith(foundDirs.get(answer.index()));
                         } else if ( answer.isRejection() ) {
                             return valueFlowStopped();
                         } else if ( answer.variantsAreNotSatisfactory() ) {
@@ -369,11 +369,11 @@ class WebDirectoriesKeeperWorker
         synchronized ( this.allDirectoriesConsistencyLock ) {
             ValueFlow<WebDirectory> directoryFlow = 
                     this.findExistingExistingDirectoryInternally(initiator, name, place);
-            if ( directoryFlow.isNotCompletedWithValue() ) {
+            if ( directoryFlow.isNotDoneWithValue() ) {
                 return directoryFlow.toVoid();
             }
 
-            WebDirectory directory = directoryFlow.asComplete().orThrow();
+            WebDirectory directory = directoryFlow.asDone().orThrow();
             this.ioEngine.report(
                     initiator, "all WebPages in this WebDirectory will be removed also.");
             Choice choice = this.ioEngine.ask(
@@ -385,7 +385,7 @@ class WebDirectoriesKeeperWorker
                 if ( daoDirectories.remove(
                         initiator, directory.name(), directory.place()) ) {
                     this.asyncCleanCommandsMemory(initiator, pages.get().pages());
-                    return voidFlowCompleted();
+                    return voidFlowDone();
                 } else {
                     return voidFlowFail("cannot remove WebDirectory.");
                 }
@@ -420,11 +420,11 @@ class WebDirectoriesKeeperWorker
         synchronized ( this.allDirectoriesConsistencyLock ) {
             ValueFlow<WebDirectory> directoryFlow = 
                     this.findExistingExistingDirectoryInternally(initiator, name, place);
-            if ( directoryFlow.isNotCompletedWithValue() ) {
+            if ( directoryFlow.isNotDoneWithValue() ) {
                 return directoryFlow.toVoid();
             }
 
-            WebDirectory directory = directoryFlow.asComplete().orThrow();
+            WebDirectory directory = directoryFlow.asDone().orThrow();
 
             propertyToEdit = this.helper.validatePropertyInteractively(
                     initiator, propertyToEdit, ORDER, WEB_PLACE, NAME);
@@ -462,7 +462,7 @@ class WebDirectoriesKeeperWorker
         reorderAccordingToNewOrder(directories, directory.order(), newOrder);
         sort(directories);
         if ( this.daoDirectories.updateWebDirectoryOrders(initiator, directories) ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("cannot save reordered directories.");
         }        
@@ -477,7 +477,7 @@ class WebDirectoriesKeeperWorker
         boolean moved = this.daoDirectories.moveDirectoryToPlace(
                 initiator, directory.name(), directory.place(), destinationPlace);
         if ( moved ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("cannot move directory to new place.");
         }
@@ -505,7 +505,7 @@ class WebDirectoriesKeeperWorker
         boolean renamed = this.daoDirectories
                 .editDirectoryName(initiator, directory.name(), directory.place(), newName);
         if ( renamed ) {
-            return voidFlowCompleted();
+            return voidFlowDone();
         } else {
             return voidFlowFail("cannot rename directory.");
         }
@@ -532,18 +532,18 @@ class WebDirectoriesKeeperWorker
         
         ValueFlow<WebDirectory> directoryFlow = 
                 this.findExistingExistingDirectoryInternally(initiator, name, place);
-        if ( directoryFlow.isNotCompletedWithValue() ) {
+        if ( directoryFlow.isNotDoneWithValue() ) {
             return directoryFlow;
         }
         
         Choice needWithPages = this.ioEngine.ask(initiator, "with pages", this.withPagesChoiceHelp);   
         
         if ( needWithPages.isPositive() ) {
-            int dirId = directoryFlow.asComplete().orThrow().id();
+            int dirId = directoryFlow.asDone().orThrow().id();
             Optional<WebDirectoryPages> directoryWithPages = 
                     this.daoDirectories.getDirectoryPagesById(initiator, dirId);
             if ( directoryWithPages.isPresent() ) {
-                return valueFlowCompletedWith(directoryWithPages.get());
+                return valueFlowDoneWith(directoryWithPages.get());
             } else {
                 return valueFlowFail("cannot get directory with pages.");
             }            
@@ -560,7 +560,7 @@ class WebDirectoriesKeeperWorker
                 .sorted()
                 .map(webDir -> format("%s > %s", webDir.place().displayName(), webDir.name()))
                 .collect(toList());
-        return valueFlowCompletedWith(linesToOptionalMessageWithHeader(
+        return valueFlowDoneWith(linesToOptionalMessageWithHeader(
                 "all WebDirectories:", dirs));
     }
             

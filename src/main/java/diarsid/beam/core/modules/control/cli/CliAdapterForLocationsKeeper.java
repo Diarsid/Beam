@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.function.Function;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -17,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.domainkeeper.LocationsKeeper;
+import diarsid.beam.core.base.control.flow.ValueFlowDone;
 
 
 /**
@@ -55,7 +55,7 @@ class CliAdapterForLocationsKeeper extends AbstractCliAdapter {
     
     void showAllLocations(Initiator initiator) {
         ValueFlow<Message> flow = this.locationsKeeper.findAll(initiator);
-        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+        Function<ValueFlowDone<Message>, Message> onSuccess = (success) -> {
             return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all Locations.");

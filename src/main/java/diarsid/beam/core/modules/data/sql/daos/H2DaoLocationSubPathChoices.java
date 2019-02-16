@@ -18,7 +18,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledException;
 import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
-import static diarsid.beam.core.base.control.flow.Flows.voidFlowCompleted;
+import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.util.StringUtils.lower;
 
@@ -201,7 +201,7 @@ class H2DaoLocationSubPathChoices
                             lower(subPath.pattern()));
             
             if ( ! exist ) {
-                return voidFlowCompleted();
+                return voidFlowDone();
             }
             
             int modified = transact
@@ -212,7 +212,7 @@ class H2DaoLocationSubPathChoices
                             lower(subPath.pattern()));
             
             if ( modified == 1 ) {
-                return voidFlowCompleted();
+                return voidFlowDone();
             } else {
                 transact.rollbackAndProceed();
                 return voidFlowFail("sub_path removing error: " + modified + " rows modified!");

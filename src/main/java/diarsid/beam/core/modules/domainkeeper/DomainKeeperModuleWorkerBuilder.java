@@ -9,6 +9,7 @@ package diarsid.beam.core.modules.domainkeeper;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
+import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.domain.inputparsing.common.PropertyAndTextParser;
 import diarsid.beam.core.domain.inputparsing.locations.LocationsInputParser;
 import diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriodsParser;
@@ -87,6 +88,14 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 KeeperLoopValidationDialog.class, 
                 () -> new KeeperLoopValidationDialog());
         
+        Walker walker = newWalker(
+                ioEngine, 
+                this.responsiveDataModule.patternChoices(), 
+                getFolderTypeDetector(),
+                this.beamEnvironmentModule.analyze(),
+                this.beamEnvironmentModule.similarity(),
+                pools);
+        
         commandsMemoryKeeper = new CommandsMemoryKeeperWorker(
                 this.responsiveDataModule.commands(), 
                 this.responsiveDataModule.patternChoices(),
@@ -101,6 +110,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 this.beamEnvironmentModule.analyze(), 
                 dialogPool,
                 ioEngine, 
+                walker,
                 locationsInputParser, 
                 propertyAndTextParser);
         batchesKeeper = new BatchesKeeperWorker(
@@ -115,13 +125,7 @@ public class DomainKeeperModuleWorkerBuilder implements GemModuleBuilder<DomainK
                 propertyAndTextParser);
         programsKeeper = new ProgramsKeeperWorker(
                 ioEngine,
-                newWalker(
-                        ioEngine, 
-                        this.responsiveDataModule.patternChoices(), 
-                        getFolderTypeDetector(),
-                        this.beamEnvironmentModule.analyze(),
-                        this.beamEnvironmentModule.similarity(),
-                        pools),
+                walker,
                 this.beamEnvironmentModule.analyze(),
                 dialogPool,
                 this.beamEnvironmentModule.programsCatalog());

@@ -22,7 +22,7 @@ import static diarsid.beam.core.base.os.treewalking.base.ItemType.itemTypeOf;
  */
 public enum FileSearchMode {
     
-    ALL (FILE, FOLDER),
+    FILES_AND_FOLDERS (FILE, FOLDER),
     FILES_ONLY (FILE),
     FOLDERS_ONLY (FOLDER);
     

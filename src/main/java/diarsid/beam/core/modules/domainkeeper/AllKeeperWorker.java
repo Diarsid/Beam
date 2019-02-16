@@ -20,7 +20,7 @@ import diarsid.beam.core.modules.ResponsiveDataModule;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.flow.Flows.valueFlowCompletedWith;
+import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinToOptionalMessage;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
@@ -49,7 +49,7 @@ class AllKeeperWorker implements AllKeeper {
             return valueFlowFail("wrong command type!");
         }
         
-        return valueFlowCompletedWith(this.collectAll(initiator, command.joinedArguments()));
+        return valueFlowDoneWith(this.collectAll(initiator, command.joinedArguments()));
     }
     
     private Optional<Message> collectAll(Initiator initiator, String argument) {

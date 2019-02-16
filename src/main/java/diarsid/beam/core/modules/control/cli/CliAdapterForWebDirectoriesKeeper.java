@@ -9,7 +9,6 @@ package diarsid.beam.core.modules.control.cli;
 import java.util.function.Function;
 
 import diarsid.beam.core.base.control.flow.ValueFlow;
-import diarsid.beam.core.base.control.flow.ValueFlowCompleted;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -17,6 +16,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.domain.entities.WebDirectory;
 import diarsid.beam.core.modules.domainkeeper.WebDirectoriesKeeper;
+import diarsid.beam.core.base.control.flow.ValueFlowDone;
 
 /**
  *
@@ -35,7 +35,7 @@ class CliAdapterForWebDirectoriesKeeper extends AbstractCliAdapter {
     void findWebDirectoryAndReport(Initiator initiator, ArgumentsCommand command) {
         ValueFlow<WebDirectory> flow = 
                 this.directoriesKeeper.findWebDirectory(initiator, command);
-        Function<ValueFlowCompleted<WebDirectory>, Message> onSuccess = (success) -> {
+        Function<ValueFlowDone<WebDirectory>, Message> onSuccess = (success) -> {
             return success.orThrow().toMessage();
         };
         super.reportValueFlow(initiator, flow, onSuccess, "web directory not found.");
@@ -58,7 +58,7 @@ class CliAdapterForWebDirectoriesKeeper extends AbstractCliAdapter {
     
     void showAllWebDirectories(Initiator initiator) {
         ValueFlow<Message> flow = this.directoriesKeeper.showAll(initiator);
-        Function<ValueFlowCompleted<Message>, Message> onSuccess = (success) -> {
+        Function<ValueFlowDone<Message>, Message> onSuccess = (success) -> {
             return success.orThrow();
         }; 
         super.reportValueFlow(initiator, flow, onSuccess, "cannot get all WebDirectories.");
