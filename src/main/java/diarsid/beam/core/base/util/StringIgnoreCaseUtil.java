@@ -15,7 +15,7 @@ import static java.util.Arrays.stream;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

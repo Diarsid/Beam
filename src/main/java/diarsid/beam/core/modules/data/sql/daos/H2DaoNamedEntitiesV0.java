@@ -29,7 +29,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.sortAndGetFirstFrom;
 import static diarsid.beam.core.base.util.SqlUtil.spacingWildcards;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceAfter;
 import static diarsid.beam.core.base.util.SqlUtil.wildcardSpaceBefore;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.NamedEntityType.BATCH;
 import static diarsid.beam.core.domain.entities.NamedEntityType.LOCATION;
 import static diarsid.beam.core.domain.entities.NamedEntityType.PROGRAM;

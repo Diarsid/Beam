@@ -17,7 +17,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_IMAGE;
 
 /**

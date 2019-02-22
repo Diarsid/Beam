@@ -7,7 +7,7 @@ package diarsid.beam.core.base.analyze.cache;
 
 import java.util.function.BiFunction;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

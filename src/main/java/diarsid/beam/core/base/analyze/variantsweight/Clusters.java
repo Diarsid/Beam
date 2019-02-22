@@ -15,11 +15,15 @@ import diarsid.support.objects.Pool;
 import diarsid.support.objects.Possible;
 import diarsid.support.objects.StatefulClearable;
 
+import static java.lang.Math.negateExact;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
+import static diarsid.beam.core.base.util.CollectionsUtils.containsAnyCommonElement;
+import static diarsid.beam.core.base.util.CollectionsUtils.isNotEmpty;
 import static diarsid.beam.core.base.util.CollectionsUtils.lastFrom;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.mean;
@@ -44,6 +48,9 @@ class Clusters implements StatefulClearable {
     }
     
     private final Pool<Cluster> clusterPool;
+    private int rejectedTeardownSum;
+    private final List<Cluster> clustersMarkedTeardown;
+    private final List<Cluster> clustersMarkedTeardownRejected;
     
     /* Clusters variables block */
     private final List<Cluster> clusters;
@@ -73,6 +80,9 @@ class Clusters implements StatefulClearable {
             AnalyzePositionsDirection direction, 
             Pool<Cluster> clusterPool) {
         this.clusterPool = clusterPool;
+        
+        this.clustersMarkedTeardown = new ArrayList<>();
+        this.clustersMarkedTeardownRejected = new ArrayList<>();
         
         this.data = analyzeData;
         this.direction = direction;
@@ -222,6 +232,50 @@ class Clusters implements StatefulClearable {
         this.arranged = true;
         
         this.loopThroughClustersAndCollectData();
+    }
+    
+    boolean testOnTeardown(Cluster cluster) {
+        boolean teardown = cluster.testOnTeardown();
+        if ( teardown ) {
+            this.clustersMarkedTeardown.add(cluster);
+        }
+        return teardown;
+    }
+    
+    int lookupForTearDowns() {
+        for (Cluster cluster : this.clustersMarkedTeardown) {
+            Cluster exchangeCluster = this.clustersMarkedTeardown
+                    .stream()
+                    .filter(otherCluster -> {
+                        return 
+                                otherCluster != cluster &&
+                                otherCluster.ordersDiffSumReal() == negateExact(cluster.ordersDiffSumReal()) &&
+                                containsAnyCommonElement(
+                                        otherCluster.repeatQties(),
+                                        cluster.repeatQties());
+                    })
+                    .findFirst()
+                    .orElse(null);
+            
+            if ( nonNull(exchangeCluster) ) {
+                this.clustersMarkedTeardownRejected.add(cluster);
+                this.clustersMarkedTeardownRejected.add(exchangeCluster);
+                logAnalyze(POSITIONS_CLUSTERS, "               [TEARDOWN REJECTION] clusters %s <---> %s has mutualy compensated subclusters", cluster, exchangeCluster);
+            }                    
+        }
+        
+        if ( isNotEmpty(this.clustersMarkedTeardownRejected) ) {
+            this.clustersMarkedTeardown.removeAll(this.clustersMarkedTeardownRejected);
+        }
+        
+        if ( isNotEmpty(this.clustersMarkedTeardown) ) {
+            return this.clustersMarkedTeardown
+                    .stream()
+                    .mapToInt(cluster -> cluster.teardown())
+                    .sum();
+        } else {
+            return 0;
+        }
     }
     
     private void loopThroughClustersAndCollectData() {
@@ -1253,6 +1307,9 @@ class Clusters implements StatefulClearable {
         this.clusterPool.takeBackAll(this.clustersTakenFromPool);
         this.clustersTakenFromPool.clear();
         this.clusters.clear();
+        this.rejectedTeardownSum = 0;
+        this.clustersMarkedTeardown.clear();
+        this.clustersMarkedTeardownRejected.clear();
         this.arranged = false;
         this.clustersTotalLength = 0;
         this.distanceBetweenClusters = 0;

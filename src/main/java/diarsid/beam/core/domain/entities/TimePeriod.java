@@ -11,7 +11,7 @@ import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.util.CollectionsUtils.toUnmodifiableList;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

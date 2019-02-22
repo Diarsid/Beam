@@ -23,7 +23,7 @@ import static java.util.stream.Stream.generate;
 import static diarsid.beam.core.base.util.MathUtil.isEven;
 import static diarsid.beam.core.base.util.MathUtil.isOdd;
 import static diarsid.beam.core.base.util.SqlUtil.SqlOperator.AND;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

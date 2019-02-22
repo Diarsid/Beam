@@ -14,8 +14,8 @@ import static java.lang.System.arraycopy;
 import static diarsid.beam.core.base.util.MathUtil.halfRoundUp;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.joining;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.joining;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 
 /**
  *

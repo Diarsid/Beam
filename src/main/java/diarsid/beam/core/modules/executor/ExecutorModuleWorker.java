@@ -37,7 +37,7 @@ import diarsid.beam.core.base.control.plugins.Plugin;
 import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.base.os.treewalking.listing.FileLister;
 import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
-import diarsid.beam.core.base.util.StringUtils;
+import diarsid.support.strings.StringUtils;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.Location;

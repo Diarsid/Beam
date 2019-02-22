@@ -46,8 +46,8 @@ import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.cube;
 import static diarsid.beam.core.base.util.MathUtil.onePointRatio;
 import static diarsid.beam.core.base.util.MathUtil.square;
-import static diarsid.beam.core.base.util.StringUtils.countWordSeparatorsInBetween;
-import static diarsid.beam.core.base.util.StringUtils.isWordsSeparator;
+import static diarsid.support.strings.StringUtils.countWordSeparatorsInBetween;
+import static diarsid.support.strings.StringUtils.isWordsSeparator;
 
 /**
  *
@@ -314,6 +314,12 @@ class AnalyzePositionsData {
         
         if ( this.clusters.nonEmpty() ) {
             this.analyzeAllClustersOrderDiffs();
+            int totalTearDown = this.clusters.lookupForTearDowns();
+            if ( totalTearDown > 0 ) {
+                this.clustered = this.clustered - totalTearDown;
+                this.nonClustered = this.nonClustered + totalTearDown;
+                logAnalyze(POSITIONS_CLUSTERS, "               [TEARDOWN] total : %s", totalTearDown);
+            }            
         }
         
         if ( this.clustersQty > 1 && this.allClustersInconsistency == 0 ) {
@@ -588,6 +594,7 @@ class AnalyzePositionsData {
                                     previousCharInVariant, currentPatternCharPositionInVariant - 1, currentChar);
                             charsInClusterQty++;
                             nearestPositionInVariant = currentPatternCharPositionInVariant - 1;
+                            // TODO loop previous chars backward
                         } else {
                             if ( direction.equals(FORWARD) ) {
                                 if ( previousPositionInVariantFound ) {
@@ -612,6 +619,9 @@ class AnalyzePositionsData {
                                 nextCharInVariant, currentPatternCharPositionInVariant + 1, currentChar);
                         charsInClusterQty++;
                         nearestPositionInVariant = currentPatternCharPositionInVariant + 1;
+                        if ( findPositionsStep.equals(STEP_1) ) {
+                            // TODO loop next chars forward
+                        }                        
                     }
                 }
                 
@@ -691,7 +701,7 @@ class AnalyzePositionsData {
 
                 if ( findPositionsStep.equals(STEP_1) ) {
                     if ( findPositionsStep.canAddToPositions(charsInClusterQty) ) {
-                        
+                        // TODO do not save positions directly, just fill them in candidate-to-save positions List.
                         isCurrentCharPositionAddedToPositions = true;
                         positions[currentPatternCharIndex] = currentPatternCharPositionInVariant;
                         positionPatternIndexes.put(currentPatternCharPositionInVariant, currentPatternCharIndex);
@@ -835,6 +845,8 @@ class AnalyzePositionsData {
                                 charsRemained);
                     }
                 }                
+            } else {
+                logAnalyze(POSITIONS_SEARCH, "          [info] already filled, skip");
             }         
 
             currentPatternCharPositionInVariantToSave = currentPatternCharPositionInVariant;
@@ -852,8 +864,11 @@ class AnalyzePositionsData {
                                         currentPatternCharPositionInVariant - 1);
             }
         }  
-        // end of characterFinding loop
+        /* 
+         * end of characterFinding loop 
+         */
         
+        // TODO if STEP_1 
         if ( findPositionsStep.isAfter(STEP_1) && positionCandidate.isPresent() ) {
             int position = positionCandidate.position();
                                                 
@@ -1261,6 +1276,7 @@ class AnalyzePositionsData {
         }
         Cluster cluster = clusters.getUnprocessed();
         processCluster(
+                data.pattern.length(),
                 cluster,
                 this.currentClusterOrderDiffs,                 
                 this.currentClusterFirstPosition,
@@ -1270,7 +1286,7 @@ class AnalyzePositionsData {
         this.currentClusterOrdersHaveDiffCompensations = cluster.haveOrdersDiffCompensations();
 
         if ( cluster.hasOrdersDiff() ) {
-            boolean teardown = this.tryToTearDown(cluster);
+            boolean teardown = this.clusters.testOnTeardown(cluster);
             if ( ! teardown ) {
                 int incosistency = inconsistencyOf(cluster, this.currentClusterLength);
                 logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for inconsistency", incosistency);
@@ -1288,7 +1304,7 @@ class AnalyzePositionsData {
                 logAnalyze(POSITIONS_CLUSTERS, "               [weight] +%s : for shifts", shiftDeviation);
                 this.positionsWeight = this.positionsWeight + shiftDeviation;    
             } else {
-                boolean teardown = this.tryToTearDown(cluster);
+                boolean teardown = this.clusters.testOnTeardown(cluster);
                 if ( ! teardown ) {
                     if ( this.currentClusterLength == 2 ) {
                         // no reward
@@ -1306,87 +1322,6 @@ class AnalyzePositionsData {
         
         this.currentClusterOrderDiffs.clear();  
         this.clusters.acceptProcessed(cluster);
-    }
-    
-    private boolean tryToTearDown(Cluster cluster) {
-        if ( cluster.compensationSum() > cluster.length() ) {
-            this.tearDownOn(cluster.length());
-            return true;
-        } else {
-            if ( cluster.ordersDiffCount() == 0 && cluster.ordersDiffSum() == 0 ) {
-                return false;
-            } else if ( cluster.ordersDiffCount() > 0 && cluster.ordersDiffSum() == 0 ) {
-                return this.tryToTearDownBasingOnDiffCountOnly(cluster);
-            } else if ( cluster.ordersDiffSum() > 0 && cluster.ordersDiffCount() == 0 ) {
-                return this.tryToTearDownBasingOnDiffSumOnly(cluster);
-            } else {
-                return this.tryToTearDownBasingOnDiffSumAndCount(cluster);
-            }
-        }        
-    }
-    
-    private static boolean considerDiffCountCompensationWhen(int clusterLength, int patternLength) {
-        boolean tolerate = true;
-        
-        if ( clusterLength <= patternLength / 2 ) {
-            return true;
-        }
-        
-        if ( clusterLength < 4 ) {
-            return false;
-        }
-        
-        return tolerate;
-    }
-    
-    private boolean tryToTearDownBasingOnDiffCountOnly(Cluster cluster) {
-        boolean teardown = false;
-        
-        if ( cluster.ordersDiffCount() > cluster.length() / 2 ) {
-            if ( considerDiffCountCompensationWhen(cluster.length(), data.pattern.length()) ) {
-                if ( cluster.compensationSum() < cluster.ordersDiffCount() ) {
-                    this.tearDownOn(cluster.ordersDiffCount() - cluster.compensationSum());
-                    teardown = true;
-                }
-            } else {
-                this.tearDownOn(cluster.ordersDiffCount());
-                teardown = true;
-            }            
-        } else {
-            if ( cluster.haveOrdersDiffCompensations() ) {
-                if ( cluster.compensationSum() < cluster.ordersDiffCount() ) {
-                    this.tearDownOn(cluster.ordersDiffCount() - cluster.compensationSum());
-                    teardown = true;
-                }
-            }
-        }
-        
-        return teardown;
-    }
-    
-    private boolean tryToTearDownBasingOnDiffSumOnly(Cluster cluster) {
-        this.tearDownOn(cluster.ordersDiffSum());
-        return true;
-    }
-    
-    private boolean tryToTearDownBasingOnDiffSumAndCount(Cluster cluster) {
-        int tearDown = cluster.ordersDiffCount();
-        
-        if ( cluster.haveOrdersDiffCompensations() ) {
-            if ( considerDiffCountCompensationWhen(cluster.length(), data.pattern.length()) ) {
-                tearDown = tearDown - cluster.compensationSum();
-            }
-        }       
-        
-        this.tearDownOn(tearDown);
-        return true;
-    }
-    
-    private void tearDownOn(int positionsQty) {
-        positionsQty = abs(positionsQty);
-        this.clustered = this.clustered - positionsQty;
-        this.nonClustered = this.nonClustered + positionsQty;
-        logAnalyze(POSITIONS_CLUSTERS, "               [TEARDOWN] cluster is to be teardown by %s", positionsQty);
     }
 
     boolean isCurrentAndNextPositionInCluster() {

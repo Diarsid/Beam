@@ -15,7 +15,7 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.incorrectC
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.EXPECTS_MORE_ARGS;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.EmptyArgsTolerance.TOLERATE_EMPTY_ARGS;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 
 public class WordRecognizer extends NodeRecognizer {

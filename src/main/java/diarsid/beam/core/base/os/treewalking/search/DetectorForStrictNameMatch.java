@@ -8,7 +8,7 @@ package diarsid.beam.core.base.os.treewalking.search;
 import java.nio.file.Path;
 
 import static diarsid.beam.core.base.util.PathUtils.asName;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

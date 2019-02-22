@@ -37,7 +37,7 @@ import static diarsid.beam.core.base.util.SqlUtil.multipleLowerGroupedLikesAndOr
 import static diarsid.beam.core.base.util.SqlUtil.multipleLowerLikeAnd;
 import static diarsid.beam.core.base.util.SqlUtil.patternToCharCriterias;
 import static diarsid.beam.core.base.util.SqlUtil.shift;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.WebDirectories.restoreDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.restorePage;
 import static diarsid.beam.core.domain.entities.WebPlace.parsePlace;

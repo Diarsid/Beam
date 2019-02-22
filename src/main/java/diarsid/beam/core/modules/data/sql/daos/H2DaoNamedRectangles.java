@@ -19,7 +19,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 
 class H2DaoNamedRectangles 

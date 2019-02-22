@@ -14,7 +14,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.util.StringUtils.isEmpty;
+import static diarsid.support.strings.StringUtils.isEmpty;
 
 /**
  *

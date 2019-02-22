@@ -9,7 +9,7 @@ package diarsid.beam.core.base.control.io.base.interaction;
 import java.io.Serializable;
 import java.util.Objects;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

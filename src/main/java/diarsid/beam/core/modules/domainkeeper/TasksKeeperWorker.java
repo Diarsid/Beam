@@ -52,7 +52,7 @@ import static diarsid.beam.core.base.events.BeamEventRuntime.when;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.TaskRepeat.DAILY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.HOURLY_REPEAT;
 import static diarsid.beam.core.domain.entities.TaskRepeat.MONTHLY_REPEAT;

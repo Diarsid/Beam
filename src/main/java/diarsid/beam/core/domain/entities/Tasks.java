@@ -20,7 +20,7 @@ import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 
 /**
  *

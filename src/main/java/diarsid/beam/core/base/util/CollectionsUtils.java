@@ -265,4 +265,34 @@ public class CollectionsUtils {
         }
         list.remove(list.size() - 1);
     }
+    
+    public static <T> boolean containsAnyCommonElement(Collection<T> col1, Collection<T> col2) {
+        if ( col1.isEmpty() || col2.isEmpty() ) {
+            return false;
+        }
+        
+        if ( hasOne(col1) && hasOne(col2) ) {
+            return getOne(col1).equals(getOne(col2));
+        }
+        
+        if ( hasOne(col1) && hasMany(col2) ) {
+            T t = getOne(col1);
+            return col2.stream().anyMatch(anyT -> anyT.equals(t));
+        }
+        
+        if ( hasOne(col2) && hasMany(col1) ) {
+            T t = getOne(col2);
+            return col1.stream().anyMatch(anyT -> anyT.equals(t));
+        }
+        
+        for (T t1 : col1) {
+            for (T t2 : col2) {
+                if ( t1.equals(t2) ) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
 }

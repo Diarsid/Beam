@@ -16,8 +16,8 @@ import static java.util.Arrays.stream;
 
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumericRange;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.support.strings.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.TimePeriod.DAYS;
 import static diarsid.beam.core.domain.entities.TimePeriod.HOURS;
 import static diarsid.beam.core.domain.inputparsing.time.AllowedTimePeriod.emptyTime;

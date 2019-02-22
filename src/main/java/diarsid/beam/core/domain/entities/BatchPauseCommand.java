@@ -20,8 +20,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
-import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.upper;
+import static diarsid.support.strings.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.upper;
 import static diarsid.beam.core.domain.entities.TimePeriod.SECONDS;
 
 /**

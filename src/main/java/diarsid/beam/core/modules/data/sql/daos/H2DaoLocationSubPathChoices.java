@@ -20,7 +20,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionTerminationException;
 
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 
 class H2DaoLocationSubPathChoices 

@@ -34,9 +34,9 @@ import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.indexOfAny;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.beam.core.base.util.StringUtils.splitToLines;
+import static diarsid.support.strings.StringUtils.indexOfAny;
+import static diarsid.support.strings.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.splitToLines;
 import static diarsid.beam.core.base.util.TextUtil.indexOfFirstNonSpaceIn;
 import static diarsid.beam.core.base.util.TextUtil.lineAtCaret;
 

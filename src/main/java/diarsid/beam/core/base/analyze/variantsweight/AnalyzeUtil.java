@@ -28,10 +28,15 @@ class AnalyzeUtil {
     
     static int inconsistencyOf(Cluster orderDiff, int clusterLength) {
         int percent = percentAsInt(orderDiff.ordersDiffCount(), clusterLength) / 10;
-        return (percent + orderDiff.ordersDiffSum() + (orderDiff.ordersDiffSum()/2) ) * orderDiff.ordersDiffSum();
+        return (percent + orderDiff.ordersDiffSumAbs() + (orderDiff.ordersDiffSumAbs()/2) ) * orderDiff.ordersDiffSumAbs();
     }
     
-    static void processCluster(Cluster cluster, List<Integer> ints, int clusterFirstPosition, int clusterLength) {
+    static void processCluster(
+            int patternLength,
+            Cluster cluster, 
+            List<Integer> ints, 
+            int clusterFirstPosition, 
+            int clusterLength) {
         int mean = meanSmartIngoringZeros(ints);
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs         %s", 
@@ -53,14 +58,17 @@ class AnalyzeUtil {
         boolean haveCompensation = false;
         boolean haveCompensationInCurrentStep = false;
         boolean previousIsRepeat = false;
+        boolean currentEqualsNext = false;
         int repeatAbsDiffSum;
         
         boolean isLastPair;
         
         // initial analize of first element
-        int diffSum = absDiff(ints.get(0), mean);
+        int firstOrder = ints.get(0);
+        int diffSumAbs = absDiff(firstOrder, mean);
+        int diffSumReal = firstOrder;
         int diffCount = 0;        
-        if ( ints.get(0) != mean ) {
+        if ( firstOrder != mean ) {
             diffCount++;
         }   
         
@@ -70,29 +78,36 @@ class AnalyzeUtil {
             current = ints.get(i);
             next = ints.get(i + 1);
             
-            diffSum = diffSum + absDiff(next, mean);
+            currentEqualsNext = current == next;
+            
+            if ( currentEqualsNext ) {
+                
+            }
+            
+            diffSumAbs = diffSumAbs + absDiff(next, mean);
+            diffSumReal = diffSumReal + next;
             if ( next != mean ) {
                 diffCount++;
             }
             
-            if ( current == next && ! isLastPair ) { 
+            if ( currentEqualsNext && ! isLastPair ) { 
                 previousIsRepeat = true;                
                 
                 repeat = current;
                 if ( repeatQty == 0 ) {
-                    repeatQty = repeatQty + 2;
+                    repeatQty = 2;
                 } else {
                     repeatQty++;
                 }
                 
             } else {
                 
-                if ( current == next && isLastPair ) {
+                if ( currentEqualsNext && isLastPair ) {
                     previousIsRepeat = true;                
                 
                     repeat = current;
                     if ( repeatQty == 0 ) {
-                        repeatQty = repeatQty + 2;
+                        repeatQty = 2;
                     } else {
                         repeatQty++;
                     }
@@ -104,7 +119,7 @@ class AnalyzeUtil {
                         haveCompensation = true;
                         compensationSum = compensationSum + 2;
                         haveCompensationInCurrentStep = true;
-                        diffSum = diffSum - 2;
+                        diffSumAbs = diffSumAbs - 2;
                         lastBeforeRepeat = UNINITIALIZED;
                         if ( clusterLength == 2 ) {
                             shifts = 2;
@@ -115,7 +130,7 @@ class AnalyzeUtil {
                         logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] mutual +2 0 -2 compensation for %s_vs_%s", previous, next);
                         haveCompensation = true;
                         haveCompensationInCurrentStep = true;
-                        diffSum = diffSum - 4;
+                        diffSumAbs = diffSumAbs - 4;
                         if ( diffCount == 2 ) {
                             compensationSum = compensationSum + 2;
                         }                        
@@ -134,13 +149,13 @@ class AnalyzeUtil {
                         if ( repeatAbsDiffSum > 0 ) {
                             if ( lastBeforeRepeat != UNINITIALIZED && absDiff(lastBeforeRepeat, mean) == repeatAbsDiffSum ) {
                                 logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] compensation for %s_vs_(%s * %s)", lastBeforeRepeat, repeat, repeatQty);
-                                diffSum = diffSum - (repeatAbsDiffSum * 2);
+                                diffSumAbs = diffSumAbs - (repeatAbsDiffSum * 2);
                                 shifts = shifts + repeatQty;
                                 haveCompensation = true;
                                 lastBeforeRepeat = UNINITIALIZED;
                             } else if ( absDiff(next, mean) == repeatAbsDiffSum ) {
                                 logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] compensation for (%s * %s)_vs_%s", repeat, repeatQty, next);
-                                diffSum = diffSum - (repeatAbsDiffSum * 2);
+                                diffSumAbs = diffSumAbs - (repeatAbsDiffSum * 2);
                                 shifts = shifts + repeatQty;
                                 haveCompensation = true;
                                 lastBeforeRepeat = UNINITIALIZED;
@@ -153,6 +168,8 @@ class AnalyzeUtil {
                 
                 haveCompensationInCurrentStep = false;
                 previousIsRepeat = false;
+                cluster.repeats().add(repeat);
+                cluster.repeatQties().add(repeatQty);
                 repeat = 0;
                 repeatQty = 0;
             }
@@ -160,25 +177,32 @@ class AnalyzeUtil {
         }
         
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
-            if ( repeat != 0 ) {
-                logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] repeating order     : %s", repeat);
-                logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] repeating order qty : %s", repeatQty);
-            } else {
-                logAnalyze(POSITIONS_CLUSTERS, "              [O-diff] no repeats");
-            }    
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum      %s", diffSum);
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order repeats       %s", cluster
+                        .repeats()
+                        .stream()
+                        .map(repeating -> String.valueOf(repeating))
+                        .collect(joining(",", "<", ">")));    
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order repeats qties %s", cluster
+                        .repeatQties()
+                        .stream()
+                        .map(repeating -> String.valueOf(repeating))
+                        .collect(joining(",", "<", ">")));    
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum real %s", diffSumReal);
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum abs  %s", diffSumAbs);
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff count    %s", diffCount);
             logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff compensation  %s", compensationSum);
         }
-        if ( diffSum == 0 && haveCompensation && clusterLength == 2 ) {            
-            diffSum = 1;
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSum);
+        if ( diffSumAbs == 0 && haveCompensation && clusterLength == 2 ) {            
+            diffSumAbs = 1;
+            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSumAbs);
         }
         cluster.set(
                 clusterFirstPosition, 
+                patternLength,
                 clusterLength, 
                 mean, 
-                diffSum, 
+                diffSumReal,
+                diffSumAbs, 
                 diffCount, 
                 shifts, 
                 haveCompensation, 

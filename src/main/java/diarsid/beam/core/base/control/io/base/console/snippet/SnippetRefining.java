@@ -6,7 +6,7 @@
 package diarsid.beam.core.base.control.io.base.console.snippet;
 
 import static diarsid.beam.core.base.util.StringNumberUtils.removeLeadingDigitsFrom;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

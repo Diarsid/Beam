@@ -112,7 +112,7 @@ public class AnalyzeUtilTest {
         process(3, -2, 1, -3);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(9));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(9));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));        
     }
@@ -122,7 +122,7 @@ public class AnalyzeUtilTest {
         process(3, -2, 2, -3);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(10));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(10));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
     }
@@ -132,7 +132,7 @@ public class AnalyzeUtilTest {
         process(1, -1);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));
     }
@@ -142,7 +142,7 @@ public class AnalyzeUtilTest {
         process(-1, -2);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-1));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
     }
@@ -162,7 +162,7 @@ public class AnalyzeUtilTest {
         process(3, -1);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(4));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(4));
         assertThat(cluster.ordersDiffMean(), equalTo(1));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
     }
@@ -172,7 +172,7 @@ public class AnalyzeUtilTest {
         process(-2, -1);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-1));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));        
     }
@@ -182,7 +182,7 @@ public class AnalyzeUtilTest {
         process(2, -1);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(3));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(3));
         assertThat(cluster.ordersDiffMean(), equalTo(1));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));        
     }
@@ -192,7 +192,7 @@ public class AnalyzeUtilTest {
         process(-2, -4);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-3));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));
     }
@@ -202,7 +202,7 @@ public class AnalyzeUtilTest {
         process(-4, -2);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-3));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(true));
     }
@@ -212,7 +212,7 @@ public class AnalyzeUtilTest {
         process(1, -1, -5);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(7));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(7));
         assertThat(cluster.ordersDiffMean(), equalTo(-2));
         assertThat("shifts expected, but not present", cluster.hasOrdersDiffShifts(), equalTo(false));
     }
@@ -252,7 +252,7 @@ public class AnalyzeUtilTest {
         process(-1, 1, 1);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
         assertThat(cluster.hasOrdersDiffShifts(), equalTo(false));
     }
@@ -272,7 +272,7 @@ public class AnalyzeUtilTest {
         process(-1, -1, -1, 3, -2);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(true));
-        assertThat(cluster.ordersDiffSum(), equalTo(2));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(2));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
         assertThat(cluster.hasOrdersDiffShifts(), equalTo(true));
     }
@@ -282,7 +282,7 @@ public class AnalyzeUtilTest {
         process(-1, -1, -1, -1, -2);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(1));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(1));
         assertThat(cluster.ordersDiffMean(), equalTo(-1));
         assertThat(cluster.hasOrdersDiffShifts(), equalTo(false));
     }
@@ -302,7 +302,7 @@ public class AnalyzeUtilTest {
         process(3, 1, -2, -2);
         
         assertThat(cluster.haveOrdersDiffCompensations(), equalTo(false));
-        assertThat(cluster.ordersDiffSum(), equalTo(8));
+        assertThat(cluster.ordersDiffSumAbs(), equalTo(8));
         assertThat(cluster.ordersDiffMean(), equalTo(0));
         assertThat(cluster.hasOrdersDiffShifts(), equalTo(false));
     }

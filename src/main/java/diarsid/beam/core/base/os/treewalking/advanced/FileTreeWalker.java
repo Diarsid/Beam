@@ -40,8 +40,8 @@ import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.haveEqualLength;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.haveEqualLength;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.support.log.Logging.logFor;
 
 

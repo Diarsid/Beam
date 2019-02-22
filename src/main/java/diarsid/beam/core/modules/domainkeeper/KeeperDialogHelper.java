@@ -19,7 +19,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
 import static diarsid.beam.core.base.util.StringNumberUtils.notNumeric;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.UNDEFINED_PROPERTY;
 import static diarsid.beam.core.domain.entities.metadata.EntityProperty.argToProperty;
 

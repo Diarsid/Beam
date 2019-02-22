@@ -15,10 +15,10 @@ import static java.util.Objects.isNull;
 
 import static diarsid.beam.core.base.util.SqlUtil.SQL_SINGLE_QUOTE_ESCAPE;
 import static diarsid.beam.core.base.util.SqlUtil.isSqlWildcard;
-import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.beam.core.base.util.StringUtils.purge;
-import static diarsid.beam.core.base.util.StringUtils.replaceAll;
+import static diarsid.support.strings.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.purge;
+import static diarsid.support.strings.StringUtils.replaceAll;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**

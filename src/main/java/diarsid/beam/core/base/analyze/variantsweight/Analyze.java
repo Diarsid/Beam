@@ -42,9 +42,9 @@ import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenA
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
-import static diarsid.beam.core.base.util.StringUtils.containsWordsSeparator;
-import static diarsid.beam.core.base.util.StringUtils.lower;
 import static diarsid.support.log.Logging.logFor;
+import static diarsid.support.strings.StringUtils.containsWordsSeparator;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *
@@ -52,7 +52,7 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class Analyze {
     
-    private final int weightAlgorithmVersion = 12;
+    private final int weightAlgorithmVersion = 14;
     private final PersistentAnalyzeCache<Float> cache;
     private final Float tooBadWeight;
     private final Pool<AnalyzeData> dataPool;

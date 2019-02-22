@@ -34,10 +34,10 @@ import static diarsid.beam.core.base.util.CollectionsUtils.isNotEmpty;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.indexOfIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.lastIndexOfIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.isPathSeparator;
-import static diarsid.beam.core.base.util.StringUtils.isTextSeparator;
-import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.isPathSeparator;
+import static diarsid.support.strings.StringUtils.isTextSeparator;
+import static diarsid.support.strings.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 
 /**
  *
@@ -470,6 +470,8 @@ class AnalyzeData extends PooledReusable {
         this.forwardAndReverseEqual = arePositionsEquals(this.forwardAnalyze, this.reverseAnalyze);
         if ( this.forwardAndReverseEqual ) {
             logAnalyze(BASE, "  FORWARD equals to REVERSE");
+        } else {
+            logAnalyze(BASE, "  FORWARD differ to REVERSE");
         }
     }
 

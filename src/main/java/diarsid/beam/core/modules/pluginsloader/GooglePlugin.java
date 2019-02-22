@@ -15,7 +15,7 @@ import diarsid.beam.core.base.control.plugins.Plugin;
 
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.support.log.Logging.logFor;
-import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 
 /**
  *

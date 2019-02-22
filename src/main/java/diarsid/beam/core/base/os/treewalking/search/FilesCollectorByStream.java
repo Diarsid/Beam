@@ -23,7 +23,7 @@ import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
 import static diarsid.beam.core.base.util.PathUtils.splitToParts;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

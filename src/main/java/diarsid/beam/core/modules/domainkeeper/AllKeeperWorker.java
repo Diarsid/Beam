@@ -26,7 +26,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinTo
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.base.util.TextUtil.shorterStringsFirstNotCountingSpaces;
 
 

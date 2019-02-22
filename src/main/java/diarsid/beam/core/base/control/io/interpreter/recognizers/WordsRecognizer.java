@@ -22,7 +22,7 @@ import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedC
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.ArgsExpectation.EXPECTS_MORE_ARGS;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.EmptyArgsTolerance.TOLERATE_EMPTY_ARGS;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 
 public class WordsRecognizer extends NodeRecognizer {

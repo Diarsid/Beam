@@ -22,7 +22,7 @@ import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
 import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.pathIsDirectory;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

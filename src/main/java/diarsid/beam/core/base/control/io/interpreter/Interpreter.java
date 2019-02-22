@@ -91,7 +91,7 @@ import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognit
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.relativePath;
 import static diarsid.beam.core.base.control.io.interpreter.recognizers.Recognition.singleArg;
 import static diarsid.support.log.Logging.logFor;
-import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 
 /**
  * Class that interprets CLI input commands and transforms them into

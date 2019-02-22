@@ -27,8 +27,8 @@ import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenA
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
-import static diarsid.beam.core.base.util.StringUtils.lower;
-import static diarsid.beam.core.base.util.StringUtils.removeAllSeparators;
+import static diarsid.support.strings.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.removeAllSeparators;
 import static diarsid.support.log.Logging.logFor;
 
 /**

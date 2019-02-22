@@ -40,7 +40,7 @@ import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDoIndependently;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitDo;
 import static diarsid.beam.core.base.util.MutableString.emptyMutableString;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
-import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 
 /**
  *

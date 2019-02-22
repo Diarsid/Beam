@@ -37,7 +37,7 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
-import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.SIMPLE_PATH_RULE;
 

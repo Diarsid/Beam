@@ -25,7 +25,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWi
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.support.log.Logging.logFor;
 

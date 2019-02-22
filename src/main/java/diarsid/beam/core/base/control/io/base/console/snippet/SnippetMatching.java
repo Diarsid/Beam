@@ -15,7 +15,7 @@ import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCas
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsIngoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsWithIgnoreCaseAnyFragment;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

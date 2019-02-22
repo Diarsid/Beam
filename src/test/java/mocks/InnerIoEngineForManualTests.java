@@ -30,7 +30,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Choice.REJECT;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isRejection;
 import static diarsid.beam.core.base.util.StringNumberUtils.isNumeric;
-import static diarsid.beam.core.base.util.StringUtils.normalizeSpaces;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 
 /**
  *

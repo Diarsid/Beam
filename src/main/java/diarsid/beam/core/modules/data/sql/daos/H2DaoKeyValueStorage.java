@@ -22,7 +22,7 @@ import diarsid.jdbc.transactions.exceptions.TransactionHandledSQLException;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.Attribute.optionalAttribute;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_ATTRIBUTE;
 

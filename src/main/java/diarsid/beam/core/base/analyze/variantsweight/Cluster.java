@@ -6,10 +6,16 @@
 package diarsid.beam.core.base.analyze.variantsweight;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import diarsid.support.objects.PooledReusable;
 
+import static java.lang.Math.abs;
 import static java.lang.String.format;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
+import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
 
 
@@ -23,45 +29,66 @@ class Cluster
         implements 
                 Comparable<Cluster> {
     
+    private final List<Integer> repeats;
+    private final List<Integer> repeatQties;
     private int firstPosition;
+    private int patternLength;
     private int length;
     private int ordersDiffMean;
-    private int ordersDiffSum;
+    private int ordersDiffSumReal;
+    private int ordersDiffSumAbs;
     private int ordersDiffCount;
     private int ordersDiffShifts;
     private boolean ordersDiffHaveCompensation;
     private int compensationSum;
+    private int teardown;
 
     Cluster() {
         super();
+        this.repeats = new ArrayList<>();
+        this.repeatQties = new ArrayList<>();
         this.firstPosition = POS_UNINITIALIZED;
         this.length = 0;
         this.ordersDiffMean = 0;
-        this.ordersDiffSum = 0;
+        this.ordersDiffSumReal = 0;
+        this.ordersDiffSumAbs = 0;
         this.ordersDiffCount = 0;
         this.ordersDiffShifts = 0;
         this.ordersDiffHaveCompensation = false;
         this.compensationSum = 0;
+        this.teardown = 0;
     }
     
     Cluster set(
             int firstPosition,
+            int patternLength,
             int length, 
-            int mean, 
-            int diffSum, 
+            int mean,  
+            int diffSumReal,
+            int diffSumAbs, 
             int diffCount, 
             int shifts, 
             boolean haveCompensation,
             int compensationSum) {
         this.firstPosition = firstPosition;
+        this.patternLength = patternLength;
         this.length = length;
         this.ordersDiffMean = mean;
-        this.ordersDiffSum = diffSum;
+        this.ordersDiffSumReal = diffSumReal;
+        this.ordersDiffSumAbs = diffSumAbs;
         this.ordersDiffCount = diffCount;
         this.ordersDiffShifts = shifts;
         this.ordersDiffHaveCompensation = haveCompensation;
         this.compensationSum = compensationSum;
         return this;
+    }
+    
+    List<Integer> repeats() {
+        return this.repeats;
+    }
+    
+    List<Integer> repeatQties() {
+        return this.repeatQties;
     }
     
     int firstPosition() {
@@ -84,8 +111,12 @@ class Cluster
         return this.ordersDiffMean;
     }
 
-    int ordersDiffSum() {
-        return this.ordersDiffSum;
+    int ordersDiffSumReal() {
+        return this.ordersDiffSumReal;
+    }
+
+    int ordersDiffSumAbs() {
+        return this.ordersDiffSumAbs;
     }
     
     int ordersDiffCount() {
@@ -97,7 +128,7 @@ class Cluster
     }
     
     boolean hasOrdersDiff() {
-        return this.ordersDiffSum > 0;
+        return this.ordersDiffSumAbs > 0;
     }
     
     boolean hasOrdersDiffShifts() {
@@ -111,17 +142,110 @@ class Cluster
     int compensationSum() {
         return this.compensationSum;
     }
+    
+    int teardown() {
+        return this.teardown;
+    }
+    
+    boolean isMarkedForTeardown() {
+        return this.teardown > 0;
+    }
+    
+    boolean testOnTeardown() {
+        if ( this.compensationSum > this.length ) {
+            this.tearDownOn(this.length);
+            return true;
+        } else {
+            if ( this.ordersDiffCount == 0 && this.ordersDiffSumAbs == 0 ) {
+                return false;
+            } else if ( this.ordersDiffCount > 0 && this.ordersDiffSumAbs == 0 ) {
+                return this.tryToTearDownBasingOnDiffCountOnly();
+            } else if ( this.ordersDiffSumAbs > 0 && this.ordersDiffCount == 0 ) {
+                return this.tryToTearDownBasingOnDiffSumOnly();
+            } else {
+                return this.tryToTearDownBasingOnDiffSumAndCount();
+            }
+        }        
+    }
+    
+    private boolean considerDiffCountCompensationWhen() {
+        boolean tolerate = true;
+        
+        if ( this.length <= this.patternLength / 2 ) {
+            return true;
+        }
+        
+        if ( this.length < 4 ) {
+            return false;
+        }
+        
+        return tolerate;
+    }
+    
+    private boolean tryToTearDownBasingOnDiffCountOnly() {
+        boolean isToTeardown = false;
+        
+        if ( this.ordersDiffCount > this.length / 2 ) {
+            if ( this.considerDiffCountCompensationWhen() ) {
+                if ( this.compensationSum < this.ordersDiffCount ) {
+                    this.tearDownOn(this.ordersDiffCount - this.compensationSum);
+                    isToTeardown = true;
+                }
+            } else {
+                this.tearDownOn(this.ordersDiffCount);
+                isToTeardown = true;
+            }            
+        } else {
+            if ( this.ordersDiffHaveCompensation ) {
+                if ( this.compensationSum < this.ordersDiffCount ) {
+                    this.tearDownOn(this.ordersDiffCount - this.compensationSum);
+                    isToTeardown = true;
+                }
+            }
+        }
+        
+        return isToTeardown;
+    }
+    
+    private boolean tryToTearDownBasingOnDiffSumOnly() {
+        this.tearDownOn(this.ordersDiffSumAbs);
+        return true;
+    }
+    
+    private boolean tryToTearDownBasingOnDiffSumAndCount() {
+        int tearDown = this.ordersDiffCount();
+        
+        if ( this.ordersDiffHaveCompensation ) {
+            if ( this.considerDiffCountCompensationWhen() ) {
+                tearDown = tearDown - this.compensationSum;
+            }
+        }       
+        
+        this.tearDownOn(tearDown);
+        return true;
+    }
+    
+    private void tearDownOn(int positionsQty) {
+        positionsQty = abs(positionsQty);
+        this.teardown = positionsQty;
+        logAnalyze(POSITIONS_CLUSTERS, "               [TEARDOWN] cluster is to be teardown by %s", positionsQty);
+    }
 
     @Override
     public void clearForReuse() {
+        this.repeats.clear();
+        this.repeatQties.clear();
         this.firstPosition = POS_UNINITIALIZED;
+        this.patternLength = 0;
         this.length = 0;
         this.ordersDiffMean = 0;
-        this.ordersDiffSum = 0;
+        this.ordersDiffSumReal = 0;
+        this.ordersDiffSumAbs = 0;
         this.ordersDiffCount = 0;
         this.ordersDiffShifts = 0;
         this.ordersDiffHaveCompensation = false;
         this.compensationSum = 0;
+        this.teardown = 0;
     }
 
     @Override
@@ -130,7 +254,7 @@ class Cluster
         hash = 79 * hash + this.firstPosition;
         hash = 79 * hash + this.length;
         hash = 79 * hash + this.ordersDiffMean;
-        hash = 79 * hash + this.ordersDiffSum;
+        hash = 79 * hash + this.ordersDiffSumAbs;
         hash = 79 * hash + this.ordersDiffCount;
         hash = 79 * hash + this.ordersDiffShifts;
         hash = 79 * hash + (this.ordersDiffHaveCompensation ? 1 : 0);
@@ -159,7 +283,7 @@ class Cluster
         if ( this.ordersDiffMean != other.ordersDiffMean ) {
             return false;
         }
-        if ( this.ordersDiffSum != other.ordersDiffSum ) {
+        if ( this.ordersDiffSumAbs != other.ordersDiffSumAbs ) {
             return false;
         }
         if ( this.ordersDiffCount != other.ordersDiffCount ) {

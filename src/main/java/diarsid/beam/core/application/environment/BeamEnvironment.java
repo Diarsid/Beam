@@ -54,7 +54,7 @@ public class BeamEnvironment {
                             "ui.console.default.width = ",
                             "ui.screen.insets = 30",
                             "analyze.weight.base.log = true",
-                            "analyze.weight.positions.search.log = false",
+                            "analyze.weight.positions.search.log = true",
                             "analyze.weight.positions.clusters.log = true",
                             "analyze.result.variants.limit = 11",
                             "analyze.similarity.log.base = true",

@@ -26,7 +26,7 @@ import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBDIRECTORY;
 import static diarsid.beam.core.modules.data.sql.daos.RowToEntityConversions.ROW_TO_WEBPAGE;
 import static diarsid.jdbc.transactions.core.Params.params;

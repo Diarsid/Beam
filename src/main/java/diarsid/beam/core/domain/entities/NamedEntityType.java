@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.domain.entities;
 
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 /**
  *

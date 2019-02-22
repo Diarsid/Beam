@@ -174,6 +174,34 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_AvailableJavaCase_availabljava () {
+        pattern = "availabljava ";
+        
+        variants = asList(
+                "Engines/Java/Path/available"
+        );
+        
+        expected = asList( 
+                "Engines/Java/Path/available");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_AvailableJavaCase_avaijava () {
+        pattern = "avaijava";
+        
+        variants = asList(
+                "Engines/Java/Path/available",
+                "Books/Tech/Java/JavaFX"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_FilmsListCase_lsftilm() {
         pattern = "lsftilm";
         

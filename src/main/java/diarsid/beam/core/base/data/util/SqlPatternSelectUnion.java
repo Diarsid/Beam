@@ -8,9 +8,9 @@ package diarsid.beam.core.base.data.util;
 
 import diarsid.support.objects.Possible;
 
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
-import static diarsid.beam.core.base.util.StringUtils.purge;
-import static diarsid.beam.core.base.util.StringUtils.replaceAll;
+import static diarsid.support.strings.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.purge;
+import static diarsid.support.strings.StringUtils.replaceAll;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**

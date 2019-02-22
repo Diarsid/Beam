@@ -16,7 +16,7 @@ import diarsid.beam.core.domain.entities.validation.Validity;
 import diarsid.support.objects.PooledReusable;
 import diarsid.support.objects.Possible;
 
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.validation.Validation.validateUsingRules;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 

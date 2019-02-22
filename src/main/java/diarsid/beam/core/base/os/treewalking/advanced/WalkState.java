@@ -48,7 +48,7 @@ import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
-import static diarsid.beam.core.base.util.StringUtils.isEmpty;
+import static diarsid.support.strings.StringUtils.isEmpty;
 
 /**
  *

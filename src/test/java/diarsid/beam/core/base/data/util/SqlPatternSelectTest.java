@@ -16,7 +16,7 @@ import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static diarsid.beam.core.base.util.StringUtils.countOccurences;
+import static diarsid.support.strings.StringUtils.countOccurences;
 import static diarsid.support.objects.Pools.takeFromPool;
 
 /**

@@ -9,7 +9,7 @@ package diarsid.beam.core.base.control.io.base.actors;
 import java.io.Serializable;
 import java.util.Objects;
 
-import static diarsid.beam.core.base.util.StringUtils.randomString;
+import static diarsid.support.strings.StringUtils.randomString;
 
 /**
  *

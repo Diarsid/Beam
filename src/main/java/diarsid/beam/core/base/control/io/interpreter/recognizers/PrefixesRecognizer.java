@@ -18,7 +18,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 
 import static diarsid.beam.core.base.control.io.commands.EmptyCommand.undefinedCommand;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 
 
 public class PrefixesRecognizer extends NodeRecognizer {

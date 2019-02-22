@@ -13,7 +13,7 @@ import static java.lang.String.join;
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.countNonSpecialChars;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsWordInIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.indexOfIgnoreCase;
-import static diarsid.beam.core.base.util.StringUtils.splitBySpacesToList;
+import static diarsid.support.strings.StringUtils.splitBySpacesToList;
 
 /**
  *

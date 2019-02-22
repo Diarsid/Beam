@@ -21,7 +21,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
-import static diarsid.beam.core.base.util.StringUtils.lower;
+import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.domain.entities.WebPlace.BOOKMARKS;
 import static diarsid.beam.core.domain.entities.WebPlace.WEBPANEL;
 

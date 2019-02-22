@@ -20,7 +20,7 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
-import static diarsid.beam.core.base.util.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 
 /**
