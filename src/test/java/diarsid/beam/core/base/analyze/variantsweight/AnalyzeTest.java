@@ -175,7 +175,7 @@ public class AnalyzeTest {
     
     @Test
     public void test_AvailableJavaCase_availabljava () {
-        pattern = "availabljava ";
+        pattern = "avaijava";
         
         variants = asList(
                 "Engines/Java/Path/available"

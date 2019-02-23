@@ -113,11 +113,14 @@ class AnalyzePositionsData {
     boolean positionAlreadyFilled;
     boolean isCurrentCharPositionAddedToPositions;
     boolean continueSearching;
-    boolean skipNextPatternChar;
+    int nextPatternCharsToSkip;
     int charsInClusterQty;
     int currentCharInVariantQty;
     int currentPatternCharPositionInVariantToSave;
     // --
+    
+    StepOneSubclusterCandidate currentClusterCandidate = new StepOneSubclusterCandidate();
+    StepOneSubclusterCandidate prevClusterCandidate = new StepOneSubclusterCandidate();
     
     // v.3
     Map<Integer, Integer> positionUnsortedOrders = new HashMap<>();
@@ -542,11 +545,17 @@ class AnalyzePositionsData {
     private void processCurrentPatternCharOf(int currentPatternCharIndex, int charsRemained) {
         currentChar = data.patternChars[currentPatternCharIndex];
         logAnalyze(POSITIONS_SEARCH, "      [explore] '%s'(%s in pattern)", this.currentChar, currentPatternCharIndex);
-        if ( skipNextPatternChar ) {
-            logAnalyze(POSITIONS_SEARCH, "          [info] '%s'(%s in pattern) is skipped!", this.currentChar, currentPatternCharIndex);
-            skipNextPatternChar = false;
-            return;
-        }
+        /* EXP BREAKING */ if ( nextPatternCharsToSkip > 0 ) {
+        /* EXP BREAKING */     logAnalyze(POSITIONS_SEARCH, "          [info] '%s'(%s in pattern) is skipped!", this.currentChar, currentPatternCharIndex);
+        /* EXP BREAKING */     nextPatternCharsToSkip--;
+        /* EXP BREAKING */     return;
+        /* EXP BREAKING */ }
+        
+        /* EXP */ //if ( prevClusterCandidate.skipIfPossible() ) {
+        /* EXP */ //    logAnalyze(POSITIONS_SEARCH, "          [info] '%s'(%s in pattern) is skipped!", this.currentChar, currentPatternCharIndex);
+        /* EXP */ //    return;
+        /* EXP */ //}
+        
         if ( positions[currentPatternCharIndex] != POS_UNINITIALIZED ) {
             logAnalyze(POSITIONS_SEARCH, "          [info] '%s' in pattern is already found - %s", this.currentChar, positions[currentPatternCharIndex]);
             return;
@@ -594,7 +603,6 @@ class AnalyzePositionsData {
                                     previousCharInVariant, currentPatternCharPositionInVariant - 1, currentChar);
                             charsInClusterQty++;
                             nearestPositionInVariant = currentPatternCharPositionInVariant - 1;
-                            // TODO loop previous chars backward
                         } else {
                             if ( direction.equals(FORWARD) ) {
                                 if ( previousPositionInVariantFound ) {
@@ -619,9 +627,6 @@ class AnalyzePositionsData {
                                 nextCharInVariant, currentPatternCharPositionInVariant + 1, currentChar);
                         charsInClusterQty++;
                         nearestPositionInVariant = currentPatternCharPositionInVariant + 1;
-                        if ( findPositionsStep.equals(STEP_1) ) {
-                            // TODO loop next chars forward
-                        }                        
                     }
                 }
                 
@@ -701,35 +706,72 @@ class AnalyzePositionsData {
 
                 if ( findPositionsStep.equals(STEP_1) ) {
                     if ( findPositionsStep.canAddToPositions(charsInClusterQty) ) {
-                        // TODO do not save positions directly, just fill them in candidate-to-save positions List.
+                        /* EXP do not save positions directly, just fill them in candidate-to-save positions List. */ 
+                        /* EXP */ currentClusterCandidate.setMain(currentPatternCharIndex, currentPatternCharPositionInVariant);
                         isCurrentCharPositionAddedToPositions = true;
-                        positions[currentPatternCharIndex] = currentPatternCharPositionInVariant;
-                        positionPatternIndexes.put(currentPatternCharPositionInVariant, currentPatternCharIndex);
-                        positionFoundSteps.put(currentPatternCharPositionInVariant, findPositionsStep);
-                        localUnclusteredPatternCharIndexes.remove(currentPatternCharIndex);
-                        logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant)", currentChar, currentPatternCharPositionInVariant);
+                         /* EXP BREAKING */ //fillPosition(currentPatternCharIndex, currentPatternCharPositionInVariant);
+                        
+                        logAnalyze(POSITIONS_SEARCH, "        [STEP_1 SAVE CANDIDATE] '%s'(%s in variant)", currentChar, currentPatternCharPositionInVariant);
                         logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
                         logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
                         
-                        if ( fillPositionIfPossible(currentPatternCharIndex - 1, currentPatternCharPositionInVariant - 1) ) {
-                            logAnalyze(POSITIONS_SEARCH, "          [SAVE] '%s'(%s in variant) is previous both in pattern and variant", previousCharInVariant, currentPatternCharPositionInVariant - 1);
+                        if ( canFillPosition(currentPatternCharIndex - 1, currentPatternCharPositionInVariant - 1) ) {     
+                            /* EXP */ currentClusterCandidate.setPrev(currentPatternCharPositionInVariant - 1);
+                            /* EXP BREAKING */ //fillPosition(currentPatternCharIndex - 1, currentPatternCharPositionInVariant - 1);
+                            logAnalyze(POSITIONS_SEARCH, "          [STEP_1 SAVE CANDIDATE] '%s'(%s in variant) is previous both in pattern and variant", previousCharInVariant, currentPatternCharPositionInVariant - 1);
                             logAnalyze(POSITIONS_SEARCH, "                 %s", displayPositions());
                             logAnalyze(POSITIONS_SEARCH, "                 %s : %s", data.pattern, data.variantText);
                             if ( direction.equals(REVERSE) ) {
-                                skipNextPatternChar = true;
+                                /* EXP BREAKING */ // nextPatternCharsToSkip++;
+                                /* EXP */ currentClusterCandidate.incrementSkip();
                             }
+                            
+                            /* EXP */ int i = 2;
+                            /* EXP */ step1BackwardLoop: while ( positionsExistAndCanFillPosition(currentPatternCharIndex - i, currentPatternCharPositionInVariant - i) ) {                                
+                            /* EXP */     char patChar = data.pattern.charAt(currentPatternCharIndex - i);
+                            /* EXP */     char varChar = data.variantText.charAt(currentPatternCharPositionInVariant - i);
+                            /* EXP */     if ( patChar == varChar ) {
+                            /* EXP */         if ( direction.equals(REVERSE) ) {
+                            /* EXP */             currentClusterCandidate.incrementSkip();
+                            /* EXP */         }
+                            /* EXP */         currentClusterCandidate.addPrev(currentPatternCharPositionInVariant - i);    
+                            /* EXP */         logAnalyze(POSITIONS_SEARCH, "          [EXP STEP_1 SAVE CANDIDATE] '%s'(%s in variant) precigind <<<", varChar, currentPatternCharPositionInVariant - i);
+                            /* EXP */     } else {
+                            /* EXP */         break step1BackwardLoop;    
+                            /* EXP */     }
+                            /* EXP */     i++;
+                            /* EXP */ }
                         }
                         
-                        if ( fillPositionIfPossible(currentPatternCharIndex + 1, currentPatternCharPositionInVariant + 1) ) {
-                            logAnalyze(POSITIONS_SEARCH, "          [SAVE] '%s'(%s in variant) is next both in pattern and variant", nextCharInVariant, currentPatternCharPositionInVariant + 1);
+                        if ( canFillPosition(currentPatternCharIndex + 1, currentPatternCharPositionInVariant + 1) ) {       
+                            /* EXP */ currentClusterCandidate.setNext(currentPatternCharPositionInVariant + 1);                          
+                            /* EXP BREAKING */ //fillPosition(currentPatternCharIndex + 1, currentPatternCharPositionInVariant + 1);
+                            logAnalyze(POSITIONS_SEARCH, "          [STEP_1 SAVE CANDIDATE] '%s'(%s in variant) is next both in pattern and variant", nextCharInVariant, currentPatternCharPositionInVariant + 1);
                             logAnalyze(POSITIONS_SEARCH, "                 %s", displayPositions());
                             logAnalyze(POSITIONS_SEARCH, "                 %s : %s", data.pattern, data.variantText);
                             if ( direction.equals(FORWARD) ) {
-                                skipNextPatternChar = true;
+                                /* EXP BREAKING */ // nextPatternCharsToSkip++;
+                                /* EXP */ currentClusterCandidate.incrementSkip();
                             }
+                            
+                            /* EXP */ int i = 2;
+                            /* EXP */ step1ForwardLoop: while ( positionsExistAndCanFillPosition(currentPatternCharIndex + i, currentPatternCharPositionInVariant + i) ) {  
+                            /* EXP */     char patChar = data.pattern.charAt(currentPatternCharIndex + i);
+                            /* EXP */     char varChar = data.variantText.charAt(currentPatternCharPositionInVariant + i);
+                            /* EXP */     if ( patChar == varChar ) {
+                            /* EXP */         if ( direction.equals(FORWARD) ) {
+                            /* EXP */             currentClusterCandidate.incrementSkip();
+                            /* EXP */         }
+                            /* EXP */         currentClusterCandidate.addNext(currentPatternCharPositionInVariant + i);      
+                            /* EXP */         logAnalyze(POSITIONS_SEARCH, "          [EXP STEP_1 SAVE CANDIDATE] '%s'(%s in variant) following >>>", varChar, currentPatternCharPositionInVariant + i);
+                            /* EXP */     } else {
+                            /* EXP */         break step1ForwardLoop;    
+                            /* EXP */     }
+                            /* EXP */     i++;
+                            /* EXP */ }
                         }                        
                         
-                        continueSearching = false;
+                        /* EXP BREAKING */ //continueSearching = false;
                     }
                 } else {
                     // on steps, other than STEP_1, do not save positions directly, just record them as appropriate for saving (excluding STEP_4).
@@ -775,57 +817,6 @@ class AnalyzePositionsData {
                             orderDiffInVariant = absDiff(currentPatternCharPositionInVariant, nearestFilledPosition);
                         }     
                         
-                        // debugging zone
-                        boolean runtimeConditionalDebug = false;
-                        if ( runtimeConditionalDebug ) {
-                            if ( direction.equals(FORWARD) ) {
-                                if ( orderDiffInVariant > POS_UNINITIALIZED ) {
-                                    if ( orderDiffInVariant == 1 ) {
-                                        if ( orderDiffInPattern == 1 ) {
-                                            boolean breakpoint = true;
-                                        } else {
-                                            boolean breakpoint = true;
-                                        }                                
-                                    } else if ( orderDiffInVariant > 1 ) {
-                                        if ( orderDiffInPattern == 1 ) {
-                                            boolean breakpoint = true;
-                                        } else {
-                                            boolean breakpoint = true;
-                                        }
-                                    }
-                                } else if ( hasPreviousInPattern ) {
-                                    if ( orderDiffInPattern == 1 ) {
-                                        boolean breakpoint = true;
-                                    } else {
-                                        boolean breakpoint = true;
-                                    }
-                                }
-                            } else {
-                                if ( orderDiffInVariant > POS_UNINITIALIZED ) {
-                                    if ( orderDiffInVariant == 1 ) {
-                                        if ( orderDiffInPattern == 1 ) {
-                                            boolean breakpoint = true;
-                                        } else {
-                                            boolean breakpoint = true;
-                                        }                                
-                                    } else if ( orderDiffInVariant > 1 ) {
-                                        if ( orderDiffInPattern == 1 ) {
-                                            boolean breakpoint = true;
-                                        } else {
-                                            boolean breakpoint = true;
-                                        }
-                                    }
-                                } else {
-                                    if ( orderDiffInPattern == 1 ) {
-                                        boolean breakpoint = true;
-                                    } else {
-                                        boolean breakpoint = true;
-                                    }
-                                }
-                            } 
-                        }    
-                        // end of debugging zone
-                        
                         boolean isNearSeparator = 
                                 data.variantSeparators.contains(currentPatternCharPositionInVariant + 1) ||
                                 data.variantSeparators.contains(currentPatternCharPositionInVariant - 1);
@@ -847,7 +838,26 @@ class AnalyzePositionsData {
                 }                
             } else {
                 logAnalyze(POSITIONS_SEARCH, "          [info] already filled, skip");
-            }         
+            } 
+            
+            if ( findPositionsStep.equals(STEP_1) ) {
+                if ( currentClusterCandidate.isSet() ) {
+                    if ( prevClusterCandidate.isSet() ) {
+                        if ( currentClusterCandidate.isBetterThan(prevClusterCandidate) ) {
+                            logAnalyze(POSITIONS_SEARCH, "        [EXP CLUSTER CANDIDATE] %s is better than %s", currentClusterCandidate, prevClusterCandidate);
+                            StepOneSubclusterCandidate swap = currentClusterCandidate;
+                            prevClusterCandidate.clear();
+                            currentClusterCandidate = prevClusterCandidate;
+                            prevClusterCandidate = swap;
+                        }
+                    } else {
+                        StepOneSubclusterCandidate swap = currentClusterCandidate;
+                        prevClusterCandidate.clear();
+                        currentClusterCandidate = prevClusterCandidate;
+                        prevClusterCandidate = swap;
+                    }                    
+                }                
+            }
 
             currentPatternCharPositionInVariantToSave = currentPatternCharPositionInVariant;
             if ( direction.equals(FORWARD) ) {
@@ -868,15 +878,16 @@ class AnalyzePositionsData {
          * end of characterFinding loop 
          */
         
-        // TODO if STEP_1 
-        if ( findPositionsStep.isAfter(STEP_1) && positionCandidate.isPresent() ) {
+        if ( findPositionsStep.equals(STEP_1)) {
+            if ( prevClusterCandidate.isSet() ) {
+                logAnalyze(POSITIONS_SEARCH, "        [EXP SAVE CLUSTER] %s", prevClusterCandidate);
+                fillPositionsFrom(prevClusterCandidate);
+            }
+        } else if ( positionCandidate.isPresent() ) {
             int position = positionCandidate.position();
                                                 
             isCurrentCharPositionAddedToPositions = true;
-            positions[currentPatternCharIndex] = position;
-            positionPatternIndexes.put(position, currentPatternCharIndex);
-            positionFoundSteps.put(position, findPositionsStep);
-            localUnclusteredPatternCharIndexes.remove(currentPatternCharIndex);
+            fillPosition(currentPatternCharIndex, position);
             logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant), %s", currentChar, position, positionCandidate);
             logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
             logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
@@ -893,10 +904,7 @@ class AnalyzePositionsData {
                     logAnalyze(POSITIONS_SEARCH, "          [info] '%s'(%s in variant) is single char in variant and already saved", currentChar, currentPatternCharPositionInVariantToSave);
                     positions[currentPatternCharIndex] = POS_NOT_FOUND;
                 } else {
-                    positions[currentPatternCharIndex] = currentPatternCharPositionInVariantToSave;
-                    positionPatternIndexes.put(currentPatternCharPositionInVariantToSave, currentPatternCharIndex);
-                    positionFoundSteps.put(currentPatternCharPositionInVariantToSave, findPositionsStep);
-                    localUnclusteredPatternCharIndexes.remove(currentPatternCharIndex);
+                    fillPosition(currentPatternCharIndex, currentPatternCharPositionInVariantToSave);
                     logAnalyze(POSITIONS_SEARCH, "        [SAVE] '%s'(%s in variant) is single char in variant", currentChar, currentPatternCharPositionInVariantToSave);
                     logAnalyze(POSITIONS_SEARCH, "               %s", displayPositions());
                     logAnalyze(POSITIONS_SEARCH, "               %s : %s", data.pattern, data.variantText);
@@ -908,20 +916,47 @@ class AnalyzePositionsData {
         }
 
         isCurrentCharPositionAddedToPositions = false;
-        currentPatternCharPositionInVariantToSave = POS_UNINITIALIZED;            
+        currentPatternCharPositionInVariantToSave = POS_UNINITIALIZED;     
+        nextPatternCharsToSkip = prevClusterCandidate.skip();
+        prevClusterCandidate.clear();
+        currentClusterCandidate.clear();
     }
     
-    private boolean fillPositionIfPossible(int positionIndex, int positionValue) {
+    private boolean canFillPosition(int positionIndex, int positionValue) {
         if ( positions[positionIndex] == POS_UNINITIALIZED ) {
             if ( ! filledPositions.contains(positionValue) ) {
-                positions[positionIndex] = positionValue;
-                positionPatternIndexes.put(positionValue, positionIndex);
-                positionFoundSteps.put(positionValue, findPositionsStep);
-                localUnclusteredPatternCharIndexes.remove(positionIndex);
                 return true;
             }
         }
         return false;
+    }
+    
+    private boolean positionsExistAndCanFillPosition(int positionIndex, int positionValue) {
+        if ( positionIndex > -1 && 
+             positionValue > -1 && 
+             positionIndex < positions.length && 
+             positionValue < data.variantText.length() ) {
+            return canFillPosition(positionIndex, positionValue);
+        } else {
+            return false;
+        }
+    }
+    
+    private void fillPositionsFrom(StepOneSubclusterCandidate subcluster) {
+        List<Integer> found = subcluster.found();
+        List<Integer> indexes = subcluster.foundIndexes();
+        logAnalyze(POSITIONS_SEARCH, "               FOUND positions %s", found);
+        logAnalyze(POSITIONS_SEARCH, "               FOUND indexes   %s", indexes);
+        for (int i = 0; i < found.size(); i++) {
+            fillPosition(indexes.get(i), found.get(i));
+        }
+    }
+
+    private void fillPosition(int positionIndex, int positionValue) {
+        positions[positionIndex] = positionValue;
+        positionPatternIndexes.put(positionValue, positionIndex);
+        positionFoundSteps.put(positionValue, findPositionsStep);
+        localUnclusteredPatternCharIndexes.remove(positionIndex);
     }
     
     private int findNearestFilledPositionTo(int patternCharIndex) {
@@ -1435,7 +1470,7 @@ class AnalyzePositionsData {
         this.currentClusterFirstPosition = POS_UNINITIALIZED;
         this.badReason = NO_REASON;
         this.currentChar = ' ';
-        this.skipNextPatternChar = false;
+        this.nextPatternCharsToSkip = 0;
         this.positionUnsortedOrders.clear();
         this.positionPatternIndexes.clear();
         this.positionFoundSteps.clear();
