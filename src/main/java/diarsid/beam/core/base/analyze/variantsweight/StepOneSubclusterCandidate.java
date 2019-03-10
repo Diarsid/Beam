@@ -132,7 +132,7 @@ class StepOneSubclusterCandidate {
         }
         this.hasPrevs = true;
         this.prevs.add(prevOne);
-        this.nextsIndexes.add(this.prevIndex + this.prevs.size());
+        this.prevsIndexes.add(this.prevIndex - this.prevs.size());
     }
     
     int length() {

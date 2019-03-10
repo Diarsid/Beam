@@ -211,6 +211,26 @@ class Clusters implements StatefulClearable {
         return lastFrom(this.clusters);
     }
     
+    Cluster firstClusterAfter(int position) {
+        if ( this.lastCluster().firstPosition() < position ) {
+            return null;
+        }
+        
+        Cluster previousCluster = lastFrom(this.clusters);
+        Cluster visitedCluster;
+        for (int i = this.clusters.size() - 1; i > -1; i--) {
+            visitedCluster = this.clusters.get(i);
+            if ( visitedCluster.firstPosition() == position ) {
+                return visitedCluster;
+            } else if ( visitedCluster.firstPosition() > position ) {
+                previousCluster = visitedCluster;
+            } else {
+                break;
+            }
+        }
+        return previousCluster;
+    }
+    
     boolean isEmpty() {
         return this.clusters.isEmpty();
     }
@@ -471,7 +491,7 @@ class Clusters implements StatefulClearable {
                                 this.placingBonusOf(80, "two clusters at start and end");
                             } else {
                                 this.placingBonusNoMoreThanPercent(80);
-                                this.lastClusterCloserToStartIsBetter();
+                                this.clusterCloserToLastSeparatorIsBetter();
                             }
                         } else if ( this.isLastClusterStartsWithSeparator() ) {
                             this.placingBonusNoMoreThanPercent(80);
@@ -575,6 +595,7 @@ class Clusters implements StatefulClearable {
             return;
         }
         
+        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing bonus separators penalty : -%s", separatorsBetweenClustersPenalty);
         this.placingBonus = this.placingBonus - separatorsBetweenClustersPenalty;
         
         if ( this.placingBonus < 0 ) {
@@ -712,10 +733,11 @@ class Clusters implements StatefulClearable {
         this.placingBonus = ( MAX_PLACING_BONUS * (float) percent ) / 100f;
     }
     
-    private void lastClusterCloserToStartIsBetter() {
+    private void clusterCloserToLastSeparatorIsBetter() {
         this.placingCase.resetTo("first cluster starts with variant, last cluster in last path element");
-        this.meanPosition = this.lastCluster().firstPosition();
-        this.adjustMeanPositionAfterLastPathSeparator();
+        int lastPathSeparator = this.data.variantPathSeparators.last();
+        this.meanPosition = this.firstClusterAfter(lastPathSeparator).firstPosition();
+        this.adjustMeanPositionAfterLastPathSeparator(lastPathSeparator);
         this.placingPercent = 100f - percentAsFloat(this.meanPosition, this.adjustedVariantLength);
         
         this.placingBonus = ( MAX_PLACING_BONUS
@@ -1022,8 +1044,14 @@ class Clusters implements StatefulClearable {
     }
     
     private void adjustMeanPositionAfterLastPathSeparator() {
-        this.meanPosition = this.meanPosition - this.data.variantPathSeparators.last();
-        this.adjustedVariantLength = this.data.variantText.length() - 1 - this.data.variantPathSeparators.last();
+        int lastPathSeparator = this.data.variantPathSeparators.last();
+        this.meanPosition = this.meanPosition - lastPathSeparator;
+        this.adjustedVariantLength = this.data.variantText.length() - 1 - lastPathSeparator;
+    }
+    
+    private void adjustMeanPositionAfterLastPathSeparator(int lastPathSeparator) {        
+        this.meanPosition = this.meanPosition - lastPathSeparator;
+        this.adjustedVariantLength = this.data.variantText.length() - 1 - lastPathSeparator;
     }
     
     private void adjustVariantLengthBeforeFirstPathSeparator() {

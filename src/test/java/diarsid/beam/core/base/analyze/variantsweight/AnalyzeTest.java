@@ -961,6 +961,19 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_NetBeansCase_single_nebaen() {
+        pattern = "nebaen";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam");
+               
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();      
+    }      
+                
+    
+    @Test
     public void test_NetBeansCase_nebaen_short() {
         pattern = "nebaen";
         
@@ -1019,12 +1032,12 @@ public class AnalyzeTest {
                 "netbeans_projects",
                 "beam_project/src",
                 "beam netpro",
-                "abe_netpro",
-                "babel_pro");
+                "babel_pro",
+                "abe_netpro");
         
         weightVariantsAndCheckMatching();
     }
-
+    
     @Test
     public void test_JavaSE8Case_jse8() {
         pattern = "jse8";
@@ -1381,6 +1394,30 @@ public class AnalyzeTest {
         expected = asList(
                 "Projects/UkrPoshta/UkrPostAPI",
                 "Projects/UkrPoshta/CainiaoAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_single_pstoapi() {
+        pattern = "pstoapi";
+        
+        variants = asList(
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_single_potsapi() {
+        pattern = "potsapi";
+        
+        variants = asList(
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }

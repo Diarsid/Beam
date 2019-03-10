@@ -121,9 +121,9 @@ class AnalyzeUtil {
                         haveCompensationInCurrentStep = true;
                         diffSumAbs = diffSumAbs - 2;
                         lastBeforeRepeat = UNINITIALIZED;
-                        if ( clusterLength == 2 ) {
+                        if ( clusterLength == 2 || clusterLength == 3 ) {
                             shifts = 2;
-                        }
+                        } 
                     } else if ( absDiff(previous, next) == 4 && 
                                 absDiff(previous, current) == 2 && 
                                 absDiff(current, mean) == 0 ) {
@@ -168,8 +168,10 @@ class AnalyzeUtil {
                 
                 haveCompensationInCurrentStep = false;
                 previousIsRepeat = false;
-                cluster.repeats().add(repeat);
-                cluster.repeatQties().add(repeatQty);
+                if ( repeatQty != 0 ) {
+                    cluster.repeats().add(repeat);
+                    cluster.repeatQties().add(repeatQty);
+                }                
                 repeat = 0;
                 repeatQty = 0;
             }

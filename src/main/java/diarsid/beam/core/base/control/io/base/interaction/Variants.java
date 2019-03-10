@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,6 +53,25 @@ public class Variants {
     
     public static Variant stringToVariant(String s) {
         return new Variant(s, 0);
+    }
+    
+    public static List<Variant> namedStringsToVariants(
+            List<String> stringNames, 
+            List<String> variantStrings) {
+        if ( stringNames.size() != variantStrings.size() ) {
+            throw new IllegalArgumentException(
+                    "variant strings and string names differ in length!");
+        }
+        List<Variant> variants = new ArrayList<>();
+        int size = variantStrings.size();
+        String variantString;
+        String stringName;
+        for (int i = 0; i < size; i++) {
+            stringName = stringNames.get(i);
+            variantString = variantStrings.get(i);
+            variants.add(new Variant(variantString, stringName, i));
+        }
+        return variants;
     }
     
     public static List<Variant> stringsToVariants(List<String> variantStrings) {

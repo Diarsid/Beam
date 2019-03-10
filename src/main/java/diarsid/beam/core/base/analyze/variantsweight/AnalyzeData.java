@@ -24,7 +24,6 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.AnalyzePositionsDirection.REVERSE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_NOT_FOUND;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.arePositionsEquals;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.lengthImportanceRatio;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.BAD;
@@ -294,16 +293,17 @@ class AnalyzeData extends PooledReusable {
         if ( this.forwardAndReverseEqual ) {
             return;
         }
-        this.reverseAnalyze.calculateImportance();
+        /* EXP BREAKING */ // this.reverseAnalyze.calculateImportance();
     }
     
     AnalyzePositionsData bestPositions() {
-        if ( this.forwardAndReverseEqual ) {
-            return this.forwardAnalyze;
-        }
-        return this.forwardAnalyze.clustersImportance + ( this.forwardAnalyze.positionsWeight * -1.0d ) 
-                >= this.reverseAnalyze.clustersImportance + ( this.reverseAnalyze.positionsWeight * -1.0d )  ? 
-                this.forwardAnalyze : this.reverseAnalyze;
+        /* EXP */ return this.forwardAnalyze;
+//        if ( this.forwardAndReverseEqual ) {
+//            return this.forwardAnalyze;
+//        }
+//        return this.forwardAnalyze.clustersImportance + ( this.forwardAnalyze.positionsWeight * -1.0d ) 
+//                >= this.reverseAnalyze.clustersImportance + ( this.reverseAnalyze.positionsWeight * -1.0d )  ? 
+//                this.forwardAnalyze : this.reverseAnalyze;
     }
     
     AnalyzePositionsData positionsOf(AnalyzePositionsDirection direction) {
@@ -315,9 +315,13 @@ class AnalyzeData extends PooledReusable {
     }
     
     boolean ifClustersPresentButWeightTooBad() {
-        return ( this.forwardAnalyze.clustersQty > 0 && estimatePreliminarily(this.forwardAnalyze.positionsWeight).equals(BAD) ) 
+        if ( this.forwardAndReverseEqual ) {
+            return this.forwardAnalyze.clustersQty > 0 && estimatePreliminarily(this.forwardAnalyze.positionsWeight).equals(BAD);
+        } else {
+            return ( this.forwardAnalyze.clustersQty > 0 && estimatePreliminarily(this.forwardAnalyze.positionsWeight).equals(BAD) ) 
                && 
                ( this.reverseAnalyze.clustersQty > 0 && estimatePreliminarily(this.reverseAnalyze.positionsWeight).equals(BAD));
+        }        
     }
 
     boolean isVariantTooBad() {
@@ -395,7 +399,7 @@ class AnalyzeData extends PooledReusable {
         if ( this.forwardAndReverseEqual ) {
             return;
         }
-        this.reverseAnalyze.sortPositions();
+        /* EXP BREAKING */ // this.reverseAnalyze.sortPositions();
     }
     
     void findPositionsClusters() {
@@ -403,7 +407,7 @@ class AnalyzeData extends PooledReusable {
         if ( this.forwardAndReverseEqual ) {
             return;
         }
-        this.reverseAnalyze.analyzePositionsClusters();
+        /* EXP BREAKING */ // this.reverseAnalyze.analyzePositionsClusters();
     }
     
     boolean isVariantEqualsPattern() {
@@ -445,8 +449,8 @@ class AnalyzeData extends PooledReusable {
         this.patternChars = this.pattern.toCharArray();
         this.forwardAnalyze.positions = new int[this.patternChars.length];
         fill(this.forwardAnalyze.positions, POS_UNINITIALIZED);
-        this.reverseAnalyze.positions = new int[this.patternChars.length];
-        fill(this.reverseAnalyze.positions, POS_UNINITIALIZED);
+        /* EXP BREAKING */ // this.reverseAnalyze.positions = new int[this.patternChars.length];
+        /* EXP BREAKING */ // fill(this.reverseAnalyze.positions, POS_UNINITIALIZED);
     }
     
     private static double patternLengthRatio(String pattern) {
@@ -457,17 +461,18 @@ class AnalyzeData extends PooledReusable {
         if ( this.variantContainsPattern ) {
             this.forwardAnalyze.fillPositionsFromIndex(this.patternInVariantIndex);
             if ( variantText.length() < this.pattern.length() * 2 ) {
-                this.reverseAnalyze.fillPositionsFromIndex(this.patternInVariantIndex);                
+                /* EXP BREAKING */ // this.reverseAnalyze.fillPositionsFromIndex(this.patternInVariantIndex);                
             } else {
                 int patternInVariantReverseIndex = lastIndexOfIgnoreCase(this.variantText, this.pattern);
-                this.reverseAnalyze.fillPositionsFromIndex(patternInVariantReverseIndex);
+                /* EXP BREAKING */ // this.reverseAnalyze.fillPositionsFromIndex(patternInVariantReverseIndex);
             }            
         } else {
             this.forwardAnalyze.findPatternCharsPositions();
-            this.reverseAnalyze.findPatternCharsPositions();
+            /* EXP BREAKING */ // this.reverseAnalyze.findPatternCharsPositions();
         }
         
-        this.forwardAndReverseEqual = arePositionsEquals(this.forwardAnalyze, this.reverseAnalyze);
+        /* EXP BREAKING */ // this.forwardAndReverseEqual = arePositionsEquals(this.forwardAnalyze, this.reverseAnalyze);
+        /* EXP BREAKING */  this.forwardAndReverseEqual = true;
         if ( this.forwardAndReverseEqual ) {
             logAnalyze(BASE, "  FORWARD equals to REVERSE");
         } else {
@@ -480,7 +485,7 @@ class AnalyzeData extends PooledReusable {
         if ( this.forwardAndReverseEqual ) {
             return;
         }
-        this.logUnsortedPositionsOf(this.reverseAnalyze);
+        /* EXP BREAKING */ // this.logUnsortedPositionsOf(this.reverseAnalyze);
     }
 
     private void logUnsortedPositionsOf(AnalyzePositionsData data) {
