@@ -244,7 +244,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                             this.reportThatLocationFound(initiator, name, foundLocation);
                             return valueFlowDoneWith(foundLocation);
                         } else {
-                            answer = this.ioEngine.chooseInWeightedVariants(
+                            answer = this.ioEngine.ask(
                                     initiator, weightedLocations, this.chooseOneLocationHelp);
                             if ( answer.isGiven() ) {
                                 Location location = foundLocations.get(answer.index());
@@ -368,7 +368,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             String pattern, 
             WeightedVariants variants, 
             List<Location> locations) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneLocationHelp);
         if ( answer.isGiven() ) {
             Location location = locations.get(answer.index());
@@ -600,7 +600,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                         validity.set(defineNewPathValidityUsing(   
                                 initiator, realFoundPath, dialog));
                     } else {
-                        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                        Answer answer = this.ioEngine.ask(
                                 initiator, variants, this.chooseOneSubPathHelp);
                         if ( answer.isGiven() ) {
                             LocationSubPath foundSubPath = subPathes.get(answer.index());

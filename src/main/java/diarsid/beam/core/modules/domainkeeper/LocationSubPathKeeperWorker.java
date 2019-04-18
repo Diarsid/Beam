@@ -183,7 +183,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             String pattern, 
             List<LocationSubPath> subPaths, 
             WeightedVariants variants) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneSubPathHelp);
         if ( answer.isGiven() ) {
             LocationSubPath subPath = subPaths.get(answer.index());

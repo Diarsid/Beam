@@ -168,7 +168,7 @@ class NotesKeeperWorker implements NotesKeeper {
         if ( variants.isEmpty() ) {
             return voidFlowFail("not found.");
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneNoteHelp);
         if ( answer.isGiven() ) {
             try {

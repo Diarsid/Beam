@@ -40,8 +40,8 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
     
     @Override
-    public String askForInput(String inputRequest) throws RemoteException {        
-        return this.console.askForInput(inputRequest);
+    public String askInput(String inputRequest) throws RemoteException {        
+        return this.console.askInput(inputRequest);
     }
     
     @Override

@@ -529,8 +529,7 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Content/WH/Game/The_9th_Age/Rosters",
-                "Music/2__Store/Therion"
+                "Content/WH/Game/The_9th_Age/Rosters"
         );
         
         weightVariantsAndCheckMatching();
@@ -817,7 +816,7 @@ public class AnalyzeTest {
     }
     
     @Test
-    public void test_EarthMoviesCase_soulprogs() {
+    public void test_EarthMoviesCase_earhmives() {
         pattern = "earhmives";
         
         variants = asList(
@@ -860,7 +859,7 @@ public class AnalyzeTest {
     }
 
     @Test
-    public void test_GitHubPagesCase_drsd() {
+    public void test_GitHubPagesCase_gihbpgs() {
         pattern = "gihbpgs";
         
         variants = asList(

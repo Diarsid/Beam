@@ -17,47 +17,48 @@ import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSIT
  *
  * @author Diarsid
  */
-class StepTwoSubclusterCandidate {
+class PositionsSearchStepTwoCluster {
     
     private static final int UNINITIALIZED = -9;
+    private static final int BEFORE_START = -1;
     
-    static class PositionView {
+    private static class StepTwoClusterPositionView implements PositionView {
 
-        public PositionView(StepTwoSubclusterCandidate subcluster) {
-            this.subcluster = subcluster;
+        public StepTwoClusterPositionView(PositionsSearchStepTwoCluster cluster) {
+            this.cluster = cluster;
         }
         
-        private final StepTwoSubclusterCandidate subcluster;
+        private final PositionsSearchStepTwoCluster cluster;
         private int i;
         private char character;
         private int patternPosition;
         private int variantPosition;
-        private boolean included;
+        private boolean filled;
         private MatchType matchType;
         private boolean filledFromSubcluster;
         
-        private PositionView fill(
+        private StepTwoClusterPositionView fill(
                 char c, 
                 int patternPosition, 
                 int variantPosition, 
                 boolean included, 
                 MatchType matchType) {
             this.character = c;
-            this.included = included;
+            this.filled = included;
             this.patternPosition = patternPosition;
             this.variantPosition = variantPosition;
             this.matchType = matchType;
             
-            this.i = UNINITIALIZED;
+            this.i = BEFORE_START;
             this.filledFromSubcluster = false;
             
             return this;
         }
         
-        private boolean isBetterThan(PositionView other) {
-            if ( this.included && (! other.included) ) {
+        private boolean isBetterThan(StepTwoClusterPositionView other) {
+            if ( this.filled && (! other.filled) ) {
                 return true;
-            } else if ( (! this.included) && other.included ) {
+            } else if ( (! this.filled) && other.filled ) {
                 return false;
             } else {
                 if ( this.matchType.strength() > other.matchType.strength() ) {
@@ -70,34 +71,34 @@ class StepTwoSubclusterCandidate {
             }
         }
         
-        private void mergeInSubclusterInsteadOf(PositionView other) {
+        private void mergeInSubclusterInsteadOf(StepTwoClusterPositionView other) {
             this.i = other.i;
             
-            this.subcluster
+            this.cluster
                     .chars
                     .set(this.i, this.character);
-            this.subcluster
-                    .inclusions
-                    .set(this.i, this.included);
-            this.subcluster
+            this.cluster
+                    .fillings
+                    .set(this.i, this.filled);
+            this.cluster
                     .patternPositions
                     .set(this.i, this.patternPosition);
-            this.subcluster
+            this.cluster
                     .variantPositions
                     .set(this.i, this.variantPosition);
-            this.subcluster
+            this.cluster
                     .matches
                     .set(this.i, this.matchType);
             
-            this.subcluster.matchStrength = this.subcluster.matchStrength + this.matchType.strength();            
+            this.cluster.matchStrength = this.cluster.matchStrength + this.matchType.strength();            
         }
 
-        private PositionView fillFromSubcluster(int i) {
-            this.character = this.subcluster.chars.get(i);
-            this.included = this.subcluster.inclusions.get(i);
-            this.patternPosition = this.subcluster.patternPositions.get(i);
-            this.variantPosition = this.subcluster.variantPositions.get(i);
-            this.matchType = this.subcluster.matches.get(i);
+        private StepTwoClusterPositionView fillFromSubcluster(int i) {
+            this.character = this.cluster.chars.get(i);
+            this.filled = this.cluster.fillings.get(i);
+            this.patternPosition = this.cluster.patternPositions.get(i);
+            this.variantPosition = this.cluster.variantPositions.get(i);
+            this.matchType = this.cluster.matches.get(i);
             
             this.i = i;
             this.filledFromSubcluster = true;
@@ -105,39 +106,37 @@ class StepTwoSubclusterCandidate {
             return this;
         }
         
-        boolean goToNext() {
-            boolean hasNext = this.i < this.subcluster.variantPositions.size() - 1;
-            
-            if ( hasNext ) {
+        @Override
+        public void goToNext() {
+            if ( this.hasNext() ) {
                 this.i++;
                 this.fillFromSubcluster(this.i);
-            }        
-            
-            return hasNext;
+            }   
         }
         
-        char character() {
-            return this.character;
+        @Override
+        public boolean hasNext() {
+            return this.i < this.cluster.variantPositions.size() - 1;
         }
         
-        int patternPosition() {
+        @Override
+        public int patternPosition() {
             return this.patternPosition;
         }
         
-        int variantPosition() {
+        @Override
+        public int variantPosition() {
             return this.variantPosition;
         }
         
-        boolean included() {
-            return this.included;
+        @Override
+        public boolean isFilled() {
+            return this.filled;
         }
         
-        boolean notIncluded() {
-            return ! this.included;
-        }
-        
-        MatchType matchType() {
-            return this.matchType;
+        @Override
+        public boolean isNotFilled() {
+            return ! this.filled;
         }
     }
     
@@ -145,33 +144,33 @@ class StepTwoSubclusterCandidate {
     private final List<Integer> patternPositions;
     private final List<Integer> variantPositions;
     private final List<MatchType> matches;
-    private final List<Boolean> inclusions;
+    private final List<Boolean> fillings;
     
-    private final PositionView existingPositionView;
-    private final PositionView possiblePositionView;
+    private final StepTwoClusterPositionView existingPositionView;
+    private final StepTwoClusterPositionView possiblePositionView;
     
     private char assessedChar;
     private int assessedCharPatternPosition;
     private int assessedCharVariantPosition;    
-    private int includedQty;
+    private int filledQty;
     private int matchStrength;
     private int mergedDuplicates;
 
-    public StepTwoSubclusterCandidate() {
+    public PositionsSearchStepTwoCluster() {
         this.chars = new ArrayList<>();
         this.patternPositions = new ArrayList<>();
         this.variantPositions = new ArrayList<>();
         this.matches = new ArrayList<>();
-        this.inclusions = new ArrayList<>();
-        this.includedQty = 0;
+        this.fillings = new ArrayList<>();
+        this.filledQty = 0;
         this.matchStrength = 0;
         this.mergedDuplicates = 0;
         this.assessedChar = ' ';
         this.assessedCharPatternPosition = UNINITIALIZED;
         this.assessedCharVariantPosition = UNINITIALIZED;
         
-        this.existingPositionView = new PositionView(this);
-        this.possiblePositionView = new PositionView(this);
+        this.existingPositionView = new StepTwoClusterPositionView(this);
+        this.possiblePositionView = new StepTwoClusterPositionView(this);
     }
     
     void setAssessed(char c, int patternPosition, int variantPosition) {
@@ -188,12 +187,11 @@ class StepTwoSubclusterCandidate {
         return this.assessedCharVariantPosition;
     }
     
-    PositionView positionView() {
-        this.existingPositionView.fillFromSubcluster(0);
+    StepTwoClusterPositionView positionView() {
         return this.existingPositionView;
     }
     
-    private PositionView positionViewAt(int i) {
+    private StepTwoClusterPositionView positionViewAt(int i) {
         this.existingPositionView.fillFromSubcluster(i);
         return this.existingPositionView;
     }
@@ -206,12 +204,12 @@ class StepTwoSubclusterCandidate {
             char c, 
             int patternPosition, 
             int variantPosition, 
-            boolean included, 
+            boolean isFilled, 
             MatchType matchType) {
         int alreadyExisted = this.patternPositions.indexOf(patternPosition);
         if ( alreadyExisted > -1 ) {
-            PositionView existingPosition = this.positionViewAt(alreadyExisted);
-            PositionView possiblePosition = this.possiblePositionView.fill(c, patternPosition, variantPosition, included, matchType);
+            StepTwoClusterPositionView existingPosition = this.positionViewAt(alreadyExisted);
+            StepTwoClusterPositionView possiblePosition = this.possiblePositionView.fill(c, patternPosition, variantPosition, isFilled, matchType);
             logAnalyze(
                     POSITIONS_SEARCH, 
                     "          [info] positions-in-cluster duplicate: new '%s' pattern:%s, variant:%s -vs- existed '%s' pattern:%s, variant:%s",
@@ -235,20 +233,20 @@ class StepTwoSubclusterCandidate {
             this.patternPositions.add(patternPosition);
             this.variantPositions.add(variantPosition);
             this.matches.add(matchType);
-            this.inclusions.add(included);
-            if ( included ) {
-                this.includedQty++;
+            this.fillings.add(isFilled);
+            if ( isFilled ) {
+                this.filledQty++;
             } 
             this.matchStrength = this.matchStrength + matchType.strength();
             logAnalyze(
                     POSITIONS_SEARCH, 
                     "          [info] positions-in-cluster '%s' pattern:%s, variant:%s, included: %s, %s", 
-                    c, patternPosition, variantPosition, included, matchType.name());
+                    c, patternPosition, variantPosition, isFilled, matchType.name());
         }        
     }
     
-    boolean isBetterThan(StepTwoSubclusterCandidate other) {
-        if ( this.includedQty == 0 && other.includedQty == 0 ) {
+    boolean isBetterThan(PositionsSearchStepTwoCluster other) {
+        if ( this.filledQty == 0 && other.filledQty == 0 ) {
             /* comparison of found subclusters, both are new */
             /* prefer subcluster that have more matches to fill more chars */
             if ( this.matched() > other.matched() ) {
@@ -261,9 +259,9 @@ class StepTwoSubclusterCandidate {
         } else {
             /* comparison of found subclusters, some subclusters have ties with already found chars */
             /* prefer subcluster that have more ties with found chars to increase consistency */
-            if ( this.includedQty > other.includedQty ) {
+            if ( this.filledQty > other.filledQty ) {
                 return true;
-            } else if ( this.includedQty < other.includedQty ) {
+            } else if ( this.filledQty < other.filledQty ) {
                 return false;
             } else {
                 if ( this.matched() > other.matched() ) {
@@ -286,19 +284,21 @@ class StepTwoSubclusterCandidate {
         this.patternPositions.clear();
         this.variantPositions.clear();
         this.matches.clear();
-        this.inclusions.clear();
-        this.includedQty = 0;
+        this.fillings.clear();
+        this.filledQty = 0;
         this.matchStrength = 0;
         this.mergedDuplicates = 0;
         this.assessedChar = ' ';
         this.assessedCharPatternPosition = UNINITIALIZED;
         this.assessedCharVariantPosition = UNINITIALIZED;
+        this.existingPositionView.i = BEFORE_START;
+        this.possiblePositionView.i = BEFORE_START;
     }
     
     @Override
     public String toString() {
         return format(
                 "PositionCandidate['%s' variant:%s, clusters - %s, pattern:%s, variant:%s, included:%s, matches:%s]", 
-                this.assessedChar, this.assessedCharVariantPosition, this.chars, this.patternPositions, this.variantPositions, this.inclusions, this.matches);
+                this.assessedChar, this.assessedCharVariantPosition, this.chars, this.patternPositions, this.variantPositions, this.fillings, this.matches);
     }
 }

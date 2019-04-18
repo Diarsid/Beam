@@ -16,7 +16,7 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
+import static diarsid.beam.core.base.analyze.variantsweight.PositionsAnalyze.POS_UNINITIALIZED;
 
 
 /**

@@ -351,7 +351,7 @@ public class WebPagesKeeperWorker
             String pattern, 
             WeightedVariants variants, 
             List<WebPage> pages) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOnePageHelp);
         if ( answer.isGiven() ) {
             asyncDo(() -> {

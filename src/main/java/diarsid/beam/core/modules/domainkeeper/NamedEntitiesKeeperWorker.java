@@ -98,7 +98,7 @@ class NamedEntitiesKeeperWorker implements NamedEntitiesKeeper<NamedEntity> {
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneEntityHelp);
         if ( answer.isGiven() ) {
             return valueFlowDoneWith(entities.get(answer.index()));

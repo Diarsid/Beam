@@ -27,8 +27,7 @@ public interface InnerIoEngine {
     
     Answer ask(Initiator initiator, VariantsQuestion question, Help help);
     
-    Answer chooseInWeightedVariants(
-            Initiator initiator, WeightedVariants variants, Help help);
+    Answer ask(Initiator initiator, WeightedVariants variants, Help help);
     
     HelpKey addToHelpContext(String... help);
     

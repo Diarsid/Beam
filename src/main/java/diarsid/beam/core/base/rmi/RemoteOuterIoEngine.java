@@ -30,7 +30,7 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     void close() throws RemoteException;
     
     @Override
-    String askForInput(String inputRequest) throws RemoteException;
+    String askInput(String inputRequest) throws RemoteException;
     
     @Override
     Choice resolve(String yesOrNoQuestion) throws RemoteException;

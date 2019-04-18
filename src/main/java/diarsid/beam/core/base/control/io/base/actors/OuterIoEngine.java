@@ -24,7 +24,7 @@ public interface OuterIoEngine {
     
     String name() throws IOException;
     
-    String askForInput(String inputRequest) throws IOException;
+    String askInput(String inputRequest) throws IOException;
     
     Choice resolve(String yesOrNoQuestion) throws IOException;
     

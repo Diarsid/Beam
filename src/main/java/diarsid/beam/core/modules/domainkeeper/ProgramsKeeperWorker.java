@@ -207,7 +207,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             if ( variants.isEmpty() ) {
                 return valueFlowDoneEmpty();
             }
-            Answer answer = this.ioEngine.chooseInWeightedVariants(
+            Answer answer = this.ioEngine.ask(
                     initiator, variants, this.chooseOneProgramHelp);
             if ( answer.isGiven() ) {
                 return valueFlowDoneWith(programs.get(answer.index()));

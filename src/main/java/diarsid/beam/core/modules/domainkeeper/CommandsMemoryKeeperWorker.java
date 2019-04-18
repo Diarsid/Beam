@@ -368,7 +368,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 });
                 return voidFlowDone();
             } else {
-                Answer answer = this.ioEngine.chooseInWeightedVariants(
+                Answer answer = this.ioEngine.ask(
                         initiator, variants, this.chooseOneCommandHelp);
                 if ( answer.isGiven() ) {
                     command.setStored();
@@ -553,7 +553,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             if ( exactMatchChoosen ) {
                 return valueFlowDoneWith(exactMatch);
             }
-            Answer answer = this.ioEngine.chooseInWeightedVariants(
+            Answer answer = this.ioEngine.ask(
                     initiator, variants, this.chooseOneCommandHelp);
             if ( answer.isGiven() ) {
                 InvocationCommand newCommand = createInvocationCommandFrom(
@@ -630,7 +630,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             if ( variants.isEmpty() ) {
                 return valueFlowDoneEmpty();
             }
-            Answer answer = this.ioEngine.chooseInWeightedVariants(
+            Answer answer = this.ioEngine.ask(
                     initiator, variants, this.chooseOneCommandHelp);
             if ( answer.isGiven() ) {                    
                 InvocationCommand newCommand = createInvocationCommandFrom(
@@ -667,7 +667,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.best().text().equalsIgnoreCase(pattern) ) {
             return valueFlowDoneWith(commands.get(variants.best().index()));
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneCommandHelp);
         if ( answer.isGiven() ) {
             return valueFlowDoneWith(commands.get(answer.index()));
@@ -700,7 +700,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     .filter(command -> command.isExtendedArgument(choice.get()))
                     .findFirst());
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneCommandHelp);
         if ( answer.isGiven() ) {
             InvocationCommand chosen = commands.get(answer.index());

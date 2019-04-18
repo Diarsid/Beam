@@ -209,7 +209,7 @@ public class Console implements OuterIoEngine {
     }
     
     @Override
-    public String askForInput(String inputRequest) {        
+    public String askInput(String inputRequest) {        
         String input = "";
         boolean answerIsNotGiven = true;
         while ( answerIsNotGiven ) {

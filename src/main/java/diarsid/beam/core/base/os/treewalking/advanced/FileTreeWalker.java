@@ -347,7 +347,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     private Answer askUserAboutFoundVariants(WalkState state, WeightedVariants weightedVariants) {        
         Help help = state.composeHelp();
         Answer answer = this.ioEngine
-                .chooseInWeightedVariants(state.initiator(), weightedVariants, help);
+                .ask(state.initiator(), weightedVariants, help);
         return answer;
     }
 

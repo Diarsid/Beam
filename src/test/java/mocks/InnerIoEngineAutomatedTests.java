@@ -91,7 +91,7 @@ public class InnerIoEngineAutomatedTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer chooseInWeightedVariants(
+    public Answer ask(
             Initiator initiator, WeightedVariants variants, Help help) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

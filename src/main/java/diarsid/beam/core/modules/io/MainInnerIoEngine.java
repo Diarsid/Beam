@@ -101,7 +101,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
     }
 
     @Override
-    public Answer chooseInWeightedVariants(
+    public Answer ask(
             Initiator initiator, WeightedVariants variants, Help help) {
         if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             return awaitGet(() -> {
@@ -131,10 +131,10 @@ public class MainInnerIoEngine implements InnerIoEngine {
             return awaitGet(() -> {
                 try {
                     OuterIoEngine ioEngine = this.ioEnginesHolder.getEngineBy(initiator);
-                    String input = ioEngine.askForInput(inputQuestion); 
+                    String input = ioEngine.askInput(inputQuestion); 
                     while ( isHelpRequest(input) ) {
                         this.reportHelpUsing(ioEngine, help);
-                        input = ioEngine.askForInput(inputQuestion); 
+                        input = ioEngine.askInput(inputQuestion); 
                     }    
                     return input;
                 } catch (IOException ex) {

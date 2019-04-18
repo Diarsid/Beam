@@ -236,7 +236,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
                         name = "";
                         continue batchDiscussing;
                     }
-                    answer = this.ioEngine.chooseInWeightedVariants(
+                    answer = this.ioEngine.ask(
                             initiator, weightedBatchNames, this.chooseBatchNameHelp);
                     if ( answer.isGiven() ) {
                         foundBatch = this.dao.getBatchByExactName(initiator, answer.text());
@@ -321,7 +321,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             String pattern, 
             WeightedVariants variants, 
             List<String> batchNames) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseBatchNameHelp);
         if ( answer.isGiven() ) {
             asyncDo(() -> {
