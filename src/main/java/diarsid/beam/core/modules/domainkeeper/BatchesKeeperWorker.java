@@ -12,8 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -49,7 +49,6 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_BATCH;
@@ -198,7 +197,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     private ValueFlow<Batch> findExistingBatchInternally(Initiator initiator, String name) {
         List<String> foundBatchNames;     
         Optional<Batch> foundBatch;
-        WeightedVariants weightedBatchNames;
+        Variants weightedBatchNames;
         Answer answer;
         
         try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
@@ -294,13 +293,12 @@ class BatchesKeeperWorker implements BatchesKeeper {
 
     private ValueFlow<Batch> manageWithManyBatchNames(
             Initiator initiator, String pattern, List<String> foundBatchNames) {
-        WeightedVariants variants = this.analyze.weightVariants(
-                pattern, stringsToVariants(foundBatchNames));
+        Variants variants = this.analyze.weightStrings(pattern, foundBatchNames);
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
         
-        WeightedVariant bestVariant = variants.best();
+        Variant bestVariant = variants.best();
         if ( bestVariant.text().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
@@ -319,7 +317,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     private ValueFlow<Batch> askUserForBatchAndSaveChoice(
             Initiator initiator, 
             String pattern, 
-            WeightedVariants variants, 
+            Variants variants, 
             List<String> batchNames) {
         Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseBatchNameHelp);

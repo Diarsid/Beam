@@ -29,7 +29,6 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.support.objects.Pools.pools;
 
@@ -49,7 +48,7 @@ public class AnalyzeTest {
     private String pattern;
     private List<String> variants;
     private List<String> expected;
-    private WeightedVariants weightedVariants;
+    private Variants weightedVariants;
     
     public AnalyzeTest() {
     }
@@ -1312,6 +1311,22 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_projectsUkrPoshta_posthproj() {
+        pattern = "posthproj";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/UkrPostAPI"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_projectsUkrPoshta_ukrpsoht() {
         pattern = "ukrpsoht";
         
@@ -1345,8 +1360,23 @@ public class AnalyzeTest {
         pattern = "techbok";
         
         variants = asList(
-                "Books/tech", // TODO increase here
+                "Books/tech",
                 "Books/Tech/Unsorted"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_WinampCase_() {
+        pattern = "winan";
+        
+        variants = asList(
+                "Winamp", 
+                "Folder/Winamp.ext",                
+                "Folder/Winamp_2.3.ext"
         );
         
         expectedSameOrderAsVariants();
@@ -1542,7 +1572,6 @@ public class AnalyzeTest {
         expected = asList(
                 "ABC/123",
                 "xy/ABC_z123er",
-                "qwCABgfg132",
                 "xcdfABdC_fg123fdf23hj12");
         
         weightVariantsAndCheckMatching();
@@ -1777,11 +1806,11 @@ public class AnalyzeTest {
     }
     
     private void weightVariantsAndCheckMatchingInternally() {
-        weightedVariants = this.analyze.weightVariants(pattern, stringsToVariants(variants));
+        weightedVariants = this.analyze.weightStrings(pattern, variants);
         
         String expectedVariant;
         String actualVariant;
-        List<WeightedVariant> nextSimilarVariants;
+        List<Variant> nextSimilarVariants;
         
         List<String> reports = new ArrayList();        
         List<String> presentButNotExpected = new ArrayList<>();        
@@ -1811,7 +1840,7 @@ public class AnalyzeTest {
                 }
             } else {            
                 nextSimilarVariants = weightedVariants.nextSimilarVariants();
-                for (WeightedVariant weightedVariant : nextSimilarVariants) {
+                for (Variant weightedVariant : nextSimilarVariants) {
                     actualVariant = weightedVariant.text();
                     
                     if ( counter.get() < expected.size() ) {

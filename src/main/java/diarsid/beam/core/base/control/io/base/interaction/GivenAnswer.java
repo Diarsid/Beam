@@ -13,14 +13,17 @@ package diarsid.beam.core.base.control.io.base.interaction;
 class GivenAnswer implements Answer {
     
     static final GivenAnswer EMPTY_CHOICE;
+    
     static {
-        EMPTY_CHOICE = new GivenAnswer(null);
+        EMPTY_CHOICE = new GivenAnswer(null, -1);
     }
     
-    private final Variant chosen;
+    private final String text;
+    private final int index;
         
-    GivenAnswer(Variant chosen) {
-        this.chosen = chosen;
+    GivenAnswer(String text, int index) {
+        this.text = text;
+        this.index = index;
     }
     
     @Override
@@ -35,17 +38,17 @@ class GivenAnswer implements Answer {
     
     @Override
     public String text() {
-        return this.chosen.text();
+        return this.text;
     }
     
     @Override
     public boolean is(String text) {
-        return this.chosen.text().equals(text);
+        return this.text.equals(text);
     }
     
     @Override
     public int index() {
-        return this.chosen.index();
+        return this.index;
     }
 
     @Override

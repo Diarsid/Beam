@@ -5,8 +5,6 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
-import java.util.function.BiFunction;
-
 import diarsid.beam.core.base.analyze.variantsweight.PositionsSearchStepOneCluster.PatternCluster;
 
 import static java.util.Objects.nonNull;
@@ -21,56 +19,10 @@ import static diarsid.beam.core.base.analyze.variantsweight.PositionsSearchStepO
  */
 public enum PositionsSearchStepOneClusterDuplicateComparison {
     
-    PREFERE_FIRST((one, two) -> {
-        if ( one.isAtStart() ) {
-            return LEFT_IS_BETTER;
-        }
-        if ( one.isBefore(two) ) {
-            return LEFT_IS_BETTER;
-        } else {
-            return LEFT_IS_WORSE;
-        }
-    }),
+    A;
     
-    PREFERE_LAST((one, two) -> {
-        if ( one.isBefore(two) ) {
-            return LEFT_IS_WORSE;
-        } else {
-            return LEFT_IS_BETTER;
-        }
-    }),
-    
-    PREFERE_APPROPRIATE((one, two) -> {
-        return compareByPossibleTypoMatches(one, two);
-    });
-    
-    private final BiFunction<PositionsSearchStepOneCluster, PositionsSearchStepOneCluster, ClusterComparison> resolution;
-
-    private PositionsSearchStepOneClusterDuplicateComparison(
-            BiFunction<PositionsSearchStepOneCluster, PositionsSearchStepOneCluster, ClusterComparison> resolution) {
-        this.resolution = resolution;
-    }
-    
-    ClusterComparison compare(PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
-        return this.resolution.apply(one, two);
-    }
-    
-    static PositionsSearchStepOneClusterDuplicateComparison defineFor(
-            PatternCluster one, PatternCluster two) {
-        if ( one.equals(two) ) {
-            if ( one.isAtPatternStart() ) {
-                return PREFERE_FIRST;
-            } 
-            if ( one.isAtPatternEnd() ) {
-                return PREFERE_LAST;
-            }
-            return PREFERE_APPROPRIATE;
-        } else {
-            return PREFERE_APPROPRIATE;
-        }
-    }
-    
-    static ClusterComparison compare1(PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
+    static ClusterComparison compare(
+            PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
         if ( one.patternCluster().equals(two.patternCluster()) ) {
             PatternCluster commonPatternCluster = one.patternCluster();
             

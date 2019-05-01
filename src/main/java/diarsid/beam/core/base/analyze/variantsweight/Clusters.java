@@ -340,7 +340,7 @@ class Clusters implements StatefulClearable {
     }
     
     float calculatePlacingBonus() {        
-        this.clustersPercentInVariant = percentAsInt(this.totalLength(), this.data.variantText.length()); 
+        this.clustersPercentInVariant = percentAsInt(this.totalLength(), this.data.variant.length()); 
         
         if ( this.data.variantPathSeparators.isEmpty() ) {
             if ( this.quantity() == 1 ) {
@@ -554,7 +554,7 @@ class Clusters implements StatefulClearable {
     private void applyBonusHigherLimitationIfSpecified() {
         if ( this.placingBonusLimit != UNKNOWN_VALUE ) {
             if ( this.placingBonus > this.placingBonusLimit ) {
-                logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] WARN!!! placing bonus limit applied : placing bonus is %s but limit is %s", this.placingBonus, this.placingBonusLimit);     
+                logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] WARN!!! placing bonus limit applied : placing bonus is %s but limit is %s", this.placingBonus, this.placingBonusLimit);     
                 this.placingBonus = this.placingBonusLimit;
             }
         }
@@ -568,7 +568,7 @@ class Clusters implements StatefulClearable {
         
         float presentPercent = percentAsFloat(this.data.patternChars.length - positionsData.missed, this.data.patternChars.length);
         
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] missed position placing penalty : *%s%%", presentPercent);     
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] missed position placing penalty : *%s%%", presentPercent);     
         this.placingBonus = percentAsFloatOf(this.placingBonus, presentPercent);
         
         if ( this.placingBonus < 0 ) {
@@ -591,7 +591,7 @@ class Clusters implements StatefulClearable {
             return;
         }
         
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing bonus separators penalty : -%s", separatorsBetweenClustersPenalty);
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing bonus separators penalty : -%s", separatorsBetweenClustersPenalty);
         this.placingBonus = this.placingBonus - separatorsBetweenClustersPenalty;
         
         if ( this.placingBonus < 0 ) {
@@ -601,7 +601,7 @@ class Clusters implements StatefulClearable {
     
     private void placingBonusNoMoreThanPercent(int percent) {
         this.placingBonusLimit = (MAX_PLACING_BONUS * (float) percent) / 100;
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing bonus limit : %s (%s%%)", this.placingBonusLimit, percent);        
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing bonus limit : %s (%s%%)", this.placingBonusLimit, percent);        
     }
 
     private void placingPercentNoHigherThan(int limit) {
@@ -757,7 +757,7 @@ class Clusters implements StatefulClearable {
         
         int lastPathSeparator = this.data.variantPathSeparators.last();
         int lastClusterAdjustedMeanPosition = this.lastCluster().firstPosition() - lastPathSeparator;
-        int lastPathElementLength = this.data.variantText.length() - 1 - lastPathSeparator;
+        int lastPathElementLength = this.data.variant.length() - 1 - lastPathSeparator;
         float placingPercentInLastPathElement = 100f - percentAsFloat(lastClusterAdjustedMeanPosition, lastPathElementLength);
         
         int firstPathSeparator = this.data.variantPathSeparators.first();
@@ -775,7 +775,7 @@ class Clusters implements StatefulClearable {
     private void singleClosierToStartIsBetter() {
         this.placingCase.resetTo("single cluster, no separators");
         this.meanPosition = this.findMeanPosition();
-        this.placingPercent = 100f - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100f - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(90);
         
@@ -787,7 +787,7 @@ class Clusters implements StatefulClearable {
     private void singleMajorClosierToStartIsBetter() {
         this.placingCase.resetTo("single cluster, forming majority, no separators");
         this.meanPosition = this.firstCluster().firstPosition();
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(93);
         
@@ -800,7 +800,7 @@ class Clusters implements StatefulClearable {
         this.placingCase.resetTo("single cluster, with separators");
         this.meanPosition = this.findMeanPosition();
         
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         this.applyKeyCharsBonusToPlacingPercent();
         
         this.clustersPlacingImportance = 100f - this.clustersPercentInVariant;
@@ -818,7 +818,7 @@ class Clusters implements StatefulClearable {
         this.placingCase.resetTo("single cluster, forming majority, with separators");
         this.meanPosition = this.lastCluster().lastPosition();
         
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);        
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);        
         this.applyKeyCharsBonusToPlacingPercent();
         
         this.clustersPlacingImportance = this.clustersPercentInVariant;
@@ -863,7 +863,7 @@ class Clusters implements StatefulClearable {
     private void manyClosierToStartAreBetterFirstAtStart() {
         this.placingCase.resetTo("many clusters, no separators, first at start");
         this.meanPosition = this.findMeanPosition() / 2;
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(87);
         
@@ -875,7 +875,7 @@ class Clusters implements StatefulClearable {
     private void manyMajorClosierToStartAreBetterFirstAtStart() {
         this.placingCase.resetTo("many clusters, forming majority, no separators");
         this.meanPosition = this.findMeanFirstPosition() / 2;
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(95);
         
@@ -888,7 +888,7 @@ class Clusters implements StatefulClearable {
         this.placingCase.resetTo("many clusters, no separators");
         this.meanPosition = this.findMeanPosition();
         
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         this.placingPercentNoHigherThan(75);
         
         this.clustersPlacingImportance = 100 - this.clustersPercentInVariant;
@@ -908,7 +908,7 @@ class Clusters implements StatefulClearable {
         this.placingCase.resetTo("many clusters, forming majority, no separators");
         this.meanPosition = this.findMeanPosition();
         
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         this.placingPercentNoHigherThan(80);
         
         this.calculateDistanceBetweenClustersImportance();
@@ -921,7 +921,7 @@ class Clusters implements StatefulClearable {
     private void manyAsOneClosierToStartAreBetter() {
         this.placingCase.resetTo("many-as-one clusters, no separators");
         this.meanPosition = this.findMeanPosition();
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(85);
         
@@ -933,7 +933,7 @@ class Clusters implements StatefulClearable {
     private void manyAsOneMajorClosierToStartAreBetter() {
         this.placingCase.resetTo("many-as-one clusters, forming majority, no separators");
         this.meanPosition = this.findMeanFirstPosition();
-        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = 100 - percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(93);
         
@@ -945,7 +945,7 @@ class Clusters implements StatefulClearable {
     private void manyAsOneClosierToEndAreBetter() {
         this.placingCase.resetTo("many-as-one clusters, with separators");
         this.meanPosition = this.findMeanLastPosition();
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(85);
         this.applyPathComplexityPenaltyToPlacingPercent();
@@ -958,7 +958,7 @@ class Clusters implements StatefulClearable {
     private void manyAsOneMajorClosierToEndAreBetter() {
         this.placingCase.resetTo("many-as-one clusters, forming majority, with separators");
         this.meanPosition = this.lastCluster().lastPosition();
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(93);
         this.applyPathComplexityPenaltyToPlacingPercent();
@@ -1008,7 +1008,7 @@ class Clusters implements StatefulClearable {
             return;
         }
         
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] path complexity bonus penalty : -%s%%", pathComplexity * 10); 
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] path complexity bonus penalty : -%s%%", pathComplexity * 10); 
         this.placingBonus = percentAsFloatOf(this.placingBonus, 100 - (pathComplexity * 10));
         this.placingBonus = placingBonus - pathComplexity;
         
@@ -1024,7 +1024,7 @@ class Clusters implements StatefulClearable {
             return;
         }
         
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] path complexity placing penalty : -%s%%", pathComplexity * 10);   
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] path complexity placing penalty : -%s%%", pathComplexity * 10);   
         
         this.placingPercent = this.placingPercent - (pathComplexity * 10);
         if ( this.placingPercent <= 0 ) {
@@ -1040,28 +1040,28 @@ class Clusters implements StatefulClearable {
     
     private void applyCasePenaltyToBonus(int penaltyPercent) {
         this.placingBonus = percentAsFloatOf(this.placingBonus, penaltyPercent);
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] case-dependent bonus penalty : *%s%%", penaltyPercent); 
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] case-dependent bonus penalty : *%s%%", penaltyPercent); 
     }
     
     private void adjustMeanPositionAfterLastPathSeparator() {
         int lastPathSeparator = this.data.variantPathSeparators.last();
         this.meanPosition = this.meanPosition - lastPathSeparator;
-        this.adjustedVariantLength = this.data.variantText.length() - 1 - lastPathSeparator;
+        this.adjustedVariantLength = this.data.variant.length() - 1 - lastPathSeparator;
     }
     
     private void adjustMeanPositionAfterLastPathSeparator(int lastPathSeparator) {        
         this.meanPosition = this.meanPosition - lastPathSeparator;
-        this.adjustedVariantLength = this.data.variantText.length() - 1 - lastPathSeparator;
+        this.adjustedVariantLength = this.data.variant.length() - 1 - lastPathSeparator;
     }
     
     private void adjustVariantLengthBeforeFirstPathSeparator() {
-        this.adjustedVariantLength = this.data.variantText.length() - 1 - this.data.variantPathSeparators.first();
+        this.adjustedVariantLength = this.data.variant.length() - 1 - this.data.variantPathSeparators.first();
     }
     
     private void manyClosierToEndAreBetterLastAtEnd() {
         this.placingCase.resetTo("many clusters, with separators, last at end");
         this.meanPosition = this.findMeanPosition() / 2;
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(87);
         
@@ -1073,7 +1073,7 @@ class Clusters implements StatefulClearable {
     private void manyMajorClosierToEndAreBetterLastAtEnd() {
         this.placingCase.resetTo("many clusters, forming majority, with separators, last at end");
         this.meanPosition = this.findMeanLastPosition() / 2;
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         
         this.placingPercentNoHigherThan(95);
         
@@ -1124,7 +1124,7 @@ class Clusters implements StatefulClearable {
         this.placingCase.resetTo("many clusters, with separators");
         this.meanPosition = this.findMeanPosition();
         
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         this.applyKeyCharsBonusToPlacingPercent();
         this.placingPercentNoHigherThan(70);
         this.applyPathComplexityPenaltyToPlacingPercent();
@@ -1145,7 +1145,7 @@ class Clusters implements StatefulClearable {
     }
 
     private void calculateDistanceBetweenClustersImportance() {
-        float distanceToVariantLengthPercent = 100 - percentAsFloat(this.distanceBetweenClusters, this.data.variantText.length() - this.totalLength());
+        float distanceToVariantLengthPercent = 100 - percentAsFloat(this.distanceBetweenClusters, this.data.variant.length() - this.totalLength());
         int distanceToTotalLengthPercent = percentAsInt(this.distanceBetweenClusters, this.totalLength());
         this.distanceBetweenClustersImportance = distanceToVariantLengthPercent;
     }
@@ -1154,7 +1154,7 @@ class Clusters implements StatefulClearable {
         this.placingCase.resetTo("many clusters, forming majority, with separators");
         this.meanPosition = this.findMeanPosition();
         
-        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variantText.length() - 1);
+        this.placingPercent = percentAsFloat(this.meanPosition, this.data.variant.length() - 1);
         this.applyKeyCharsBonusToPlacingPercent();
         this.placingPercentNoHigherThan(75);
         
@@ -1170,7 +1170,7 @@ class Clusters implements StatefulClearable {
     
     private void applyKeyCharsBonusToPlacingPercent() {
         if ( this.data.positions().keyChars.size() > 0 ) {
-            logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] key chars bonus to placing : +20% ");
+            logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] key chars bonus to placing : +20% ");
             this.placingPercent = this.placingPercent + 20;
             
             if ( this.placingPercent > 100 ) {
@@ -1185,7 +1185,7 @@ class Clusters implements StatefulClearable {
         }
         
         if ( this.data.positions().keyChars.size() > 0 ) {
-            logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] key chars bonus to placing importance : +10% ");
+            logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] key chars bonus to placing importance : +10% ");
             this.clustersPlacingImportance = this.clustersPlacingImportance + 10;
             
             if ( this.clustersPlacingImportance > 100 ) {
@@ -1213,7 +1213,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = 100 - percentAsFloat(this.meanPosition, adjustedVariantLength);
         this.applyKeyCharsBonusToPlacingPercent();
         this.applyPathComplexityPenaltyToPlacingPercent();
-        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
+        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variant.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
         
@@ -1237,7 +1237,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = 100 - percentAsFloat(this.meanPosition, adjustedVariantLength);
         this.applyKeyCharsBonusToPlacingPercent();
         this.applyPathComplexityPenaltyToPlacingPercent();
-        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
+        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variant.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
         
@@ -1260,7 +1260,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = 100 - percentAsFloat(this.meanPosition, firstPathSeparator - 1);
         this.applyKeyCharsBonusToPlacingPercent();
         this.applyPathComplexityPenaltyToPlacingPercent();
-        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
+        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variant.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
         
@@ -1283,7 +1283,7 @@ class Clusters implements StatefulClearable {
         this.placingPercent = 100 - percentAsFloat(this.meanPosition, firstPathSeparator - 1);
         this.applyKeyCharsBonusToPlacingPercent();
         this.applyPathComplexityPenaltyToPlacingPercent();
-        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variantText.length());
+        float firstPathPartPercent = percentAsFloat(firstPathSeparator, this.data.variant.length());
         
         this.placingPercent = percentAsFloatOf(this.placingPercent, firstPathPartPercent);
         
@@ -1299,34 +1299,34 @@ class Clusters implements StatefulClearable {
     }
 
     private boolean isLastClusterAtVariantEnd() {
-        return this.lastCluster().lastPosition() == this.data.variantText.length() - 1;
+        return this.lastCluster().lastPosition() == this.data.variant.length() - 1;
     }
 
     void logState() {
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] %s", this.toString());
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] %s", this.toString());
         if ( placingBonusNotApplicableReason.isNotPresent() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing case       : %s ", placingCase.orThrow());
+            logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing case       : %s ", placingCase.orThrow());
             if ( meanPosition != UNKNOWN_VALUE ) {
                 if ( this.adjustedVariantLength != UNKNOWN_VALUE ) {
-                    logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] mean position      : %s/%s (%s) ", meanPosition, this.adjustedVariantLength, this.data.variantText.length() - 1);
+                    logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] mean position      : %s/%s (%s) ", meanPosition, this.adjustedVariantLength, this.data.variant.length() - 1);
                 } else {
-                    logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] mean position      : %s/%s ", meanPosition, this.data.variantText.length() - 1);
+                    logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] mean position      : %s/%s ", meanPosition, this.data.variant.length() - 1);
                 } 
             }
             if ( placingPercent != UNKNOWN_VALUE ) {
-                logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing percent    : %s%% ", placingPercent);
+                logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing percent    : %s%% ", placingPercent);
             }
             if ( clustersPlacingImportance != UNKNOWN_VALUE ) {
-                logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing importance : %s%% ", clustersPlacingImportance);
+                logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing importance : %s%% ", clustersPlacingImportance);
             }
             if ( distanceBetweenClustersImportance != UNKNOWN_VALUE ) {
-                logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] cluster distance importance : %s%% ", distanceBetweenClustersImportance);
+                logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] cluster distance importance : %s%% ", distanceBetweenClustersImportance);
             }
         } else {
-            logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing not applicable : %s ", placingBonusNotApplicableReason.orThrow());
+            logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing not applicable : %s ", placingBonusNotApplicableReason.orThrow());
         }
 
-        logAnalyze(POSITIONS_CLUSTERS, "    [C-placing] placing bonus      : %s ", placingBonus);
+        logAnalyze(POSITIONS_CLUSTERS, "    [cluster placing] placing bonus      : %s ", placingBonus);
     }
     
     @Override

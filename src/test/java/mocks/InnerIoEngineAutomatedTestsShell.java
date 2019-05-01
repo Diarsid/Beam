@@ -8,7 +8,7 @@ package mocks;
 
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -70,7 +70,7 @@ public class InnerIoEngineAutomatedTestsShell implements InnerIoEngine {
 
     @Override
     public Answer ask(
-            Initiator initiator, WeightedVariants variants, Help help) {
+            Initiator initiator, Variants variants, Help help) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

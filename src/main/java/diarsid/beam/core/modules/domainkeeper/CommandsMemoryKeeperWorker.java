@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -19,7 +19,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
-import diarsid.beam.core.base.control.io.base.interaction.Variants.View;
+import diarsid.beam.core.base.control.io.base.interaction.VariantConversions.View;
 import diarsid.beam.core.base.control.io.commands.ArgumentsCommand;
 import diarsid.beam.core.base.control.io.commands.CommandType;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -40,8 +40,8 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.SHOW_VARIANT_TYPE;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.commandsToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.View.SHOW_VARIANT_TYPE;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.commandsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_MEM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
@@ -194,7 +194,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                     memPattern.empty();
                     continue searching;
                 } else {
-                    WeightedVariants variants = this.analyze.weightVariants(
+                    Variants variants = this.analyze.weightVariants(
                             memPattern.get(), commandsToVariants(foundCommands));
                     if ( variants.isNotEmpty() ) {
                        return this.getAllFoundUsingVariantsIndexes(foundCommands, variants.indexes());
@@ -347,7 +347,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return voidFlowDone();
         }
         matchingCommands.add(0, exactMatch);
-        WeightedVariants variants = this.analyze.weightVariants(
+        Variants variants = this.analyze.weightVariants(
                 command.originalArgument(), commandsToVariants(matchingCommands));
         if ( variants.isEmpty() ) {
             return voidFlowDone();
@@ -527,7 +527,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             return valueFlowDoneWith(exactMatch);
         }
         matchingCommands.add(0, exactMatch);
-        WeightedVariants variants = this.analyze.weightVariants(
+        Variants variants = this.analyze.weightVariants(
                 original, commandsToVariants(matchingCommands, view));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
@@ -625,7 +625,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 }
             }
         } else if ( hasMany(foundCommands) ) {
-            WeightedVariants variants = this.analyze.weightVariants(
+            Variants variants = this.analyze.weightVariants(
                     original, commandsToVariants(foundCommands, view));
             if ( variants.isEmpty() ) {
                 return valueFlowDoneEmpty();
@@ -659,7 +659,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
-        WeightedVariants variants = this.analyze.weightVariants(
+        Variants variants = this.analyze.weightVariants(
                 pattern, commandsToVariants(commands));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
@@ -684,7 +684,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             Initiator initiator, 
             String pattern, 
             List<InvocationCommand> commands) {
-        WeightedVariants variants = this.analyze.weightVariants(
+        Variants variants = this.analyze.weightVariants(
                 pattern, commandsToVariants(commands));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();

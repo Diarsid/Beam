@@ -9,8 +9,8 @@ package diarsid.beam.core.base.control.io.base.console;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
@@ -138,12 +138,12 @@ public class Console implements OuterIoEngine {
     }
 
     @Override
-    public Answer resolve(WeightedVariants variants) {        
+    public Answer resolve(Variants variants) {        
         String line;
         Answer answer = variantsDontContainSatisfiableAnswer();
         Choice choice;
         int chosenVariantIndex;
-        List<WeightedVariant> similarVariants;
+        List<Variant> similarVariants;
         
         variantsChoosing: while ( variants.next() ) {         
             answer = variantsDontContainSatisfiableAnswer();   

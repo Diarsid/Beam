@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.responsivedata;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -25,7 +25,7 @@ public class ResponsiveDaoPatternChoices extends BeamCommonResponsiveDao<DaoPatt
     }
     
     public boolean hasMatchOf(
-            Initiator initiator, String original, String extended, WeightedVariants variants) {
+            Initiator initiator, String original, String extended, Variants variants) {
         try {
             return super.dao().hasMatchOf(original, extended, variants);
         } catch (DataExtractionException e) {
@@ -35,7 +35,7 @@ public class ResponsiveDaoPatternChoices extends BeamCommonResponsiveDao<DaoPatt
     }
     
     public Optional<String> findChoiceFor(
-            Initiator initiator, String original, WeightedVariants variants) {
+            Initiator initiator, String original, Variants variants) {
         try {
             return super.dao().findChoiceFor(original, variants);
         } catch (DataExtractionException e) {
@@ -45,7 +45,7 @@ public class ResponsiveDaoPatternChoices extends BeamCommonResponsiveDao<DaoPatt
     }
     
     public boolean save(
-            Initiator initiator, String original, String extended, WeightedVariants variants) {
+            Initiator initiator, String original, String extended, Variants variants) {
         try {
             return super.dao().save(original, extended, variants);
         } catch (DataExtractionException e) {
@@ -55,7 +55,7 @@ public class ResponsiveDaoPatternChoices extends BeamCommonResponsiveDao<DaoPatt
     }
     
     public boolean save(
-            Initiator initiator, InvocationCommand command, WeightedVariants variants) {
+            Initiator initiator, InvocationCommand command, Variants variants) {
         try {
             return super.dao().save(command, variants);
         } catch (DataExtractionException e) {

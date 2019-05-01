@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.support.objects.Pools.pools;
 
@@ -51,7 +51,7 @@ public class AnalyzeTestTwo {
     private String pattern;
     private List<String> variants;
     private List<String> expected;
-    private WeightedVariants weightedVariants;
+    private Variants weightedVariants;
     
     public AnalyzeTestTwo() {
     }

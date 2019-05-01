@@ -9,7 +9,7 @@ package diarsid.beam.core.domain.entities;
 import java.util.Objects;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 /**

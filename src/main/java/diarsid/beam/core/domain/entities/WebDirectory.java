@@ -14,7 +14,7 @@ import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;

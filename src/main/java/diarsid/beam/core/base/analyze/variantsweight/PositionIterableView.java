@@ -9,9 +9,13 @@ package diarsid.beam.core.base.analyze.variantsweight;
  *
  * @author Diarsid
  */
-public interface PositionView {
+public interface PositionIterableView extends PositionView {
     
-    int patternPosition();
+    boolean hasNext();
     
-    int variantPosition();
+    void goToNext();
+    
+    boolean isFilled();
+    
+    boolean isNotFilled();
 }

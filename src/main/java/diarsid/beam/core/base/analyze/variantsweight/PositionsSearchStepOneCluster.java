@@ -12,7 +12,6 @@ import java.util.Objects;
 import diarsid.support.objects.Possible;
 
 import static java.lang.Integer.min;
-import static java.lang.String.format;
 
 import static diarsid.beam.core.base.analyze.variantsweight.ClusterComparison.LEFT_IS_BETTER;
 import static diarsid.beam.core.base.analyze.variantsweight.ClusterComparison.LEFT_IS_WORSE;
@@ -21,6 +20,7 @@ import static diarsid.beam.core.base.util.MathUtil.zeroIfNegative;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
 import static diarsid.support.strings.StringUtils.countCharMatchesIn;
 import static diarsid.support.strings.StringUtils.isWordsSeparator;
+import static diarsid.support.strings.StringUtils.joinAll;
 
 /**
  *
@@ -35,9 +35,29 @@ class PositionsSearchStepOneCluster {
     private static class StepOneClusterPositionView implements PositionView {
         
         private final PositionsSearchStepOneCluster cluster;
+
+        public StepOneClusterPositionView(PositionsSearchStepOneCluster cluster) {
+            this.cluster = cluster;
+        }
+
+        @Override
+        public int patternPosition() {
+            return this.cluster.lastAddedPatternPosition;
+        }
+
+        @Override
+        public int variantPosition() {
+            return this.cluster.lastAddedVariantPosition;
+        }
+        
+    }
+    
+    private static class StepOneClusterPositionIterableView implements PositionIterableView {
+        
+        private final PositionsSearchStepOneCluster cluster;
         private int i;
 
-        private StepOneClusterPositionView(PositionsSearchStepOneCluster cluster) {
+        private StepOneClusterPositionIterableView(PositionsSearchStepOneCluster cluster) {
             this.cluster = cluster;
             this.i = BEFORE_START;
         }
@@ -136,6 +156,7 @@ class PositionsSearchStepOneCluster {
     private final Possible<String> variant;
     private final Possible<String> pattern;
     
+    private final StepOneClusterPositionIterableView positionIterableView;
     private final StepOneClusterPositionView positionView;
     private final PatternCluster patternCluster;
     
@@ -153,15 +174,19 @@ class PositionsSearchStepOneCluster {
     
     private int possibleTypoMatchesBefore;
     private int possibleTypoMatchesAfter;
+    private int possibleTypoMatches;
     
-    private int prev;
-    private int main;
-    private int next;
-    private int prevIndex;
-    private int mainIndex;
-    private int nextIndex;
+    private int prevVariantPosition;
+    private int mainVariantPosition;
+    private int nextVariantPosition;
+    private int prevPatternPosition;
+    private int mainPatternPosition;
+    private int nextPatternPosition;
     private boolean hasPrevs;
     private boolean hasNexts;
+    
+    private int lastAddedVariantPosition;
+    private int lastAddedPatternPosition;
     
     private boolean finished;
     
@@ -170,6 +195,7 @@ class PositionsSearchStepOneCluster {
     public PositionsSearchStepOneCluster() {
         this.variant = possibleButEmpty();
         this.pattern = possibleButEmpty();
+        this.positionIterableView = new StepOneClusterPositionIterableView(this);
         this.positionView = new StepOneClusterPositionView(this);
         this.patternCluster = new PatternCluster(this);
         this.allVariantPositions = new ArrayList<>();
@@ -178,14 +204,16 @@ class PositionsSearchStepOneCluster {
         this.prevsPatternPositions = new ArrayList<>();
         this.nextsVariantPositions = new ArrayList<>();
         this.nextsPatternPositions = new ArrayList<>();
-        this.prev = UNINITIALIZED;
-        this.main = UNINITIALIZED;
-        this.next = UNINITIALIZED;
-        this.prevIndex = UNINITIALIZED;
-        this.mainIndex = UNINITIALIZED;
-        this.nextIndex = UNINITIALIZED;
+        this.prevVariantPosition = UNINITIALIZED;
+        this.mainVariantPosition = UNINITIALIZED;
+        this.nextVariantPosition = UNINITIALIZED;
+        this.prevPatternPosition = UNINITIALIZED;
+        this.mainPatternPosition = UNINITIALIZED;
+        this.nextPatternPosition = UNINITIALIZED;
         this.hasPrevs = false;
         this.hasNexts = false;
+        this.lastAddedVariantPosition = UNINITIALIZED;
+        this.lastAddedPatternPosition = UNINITIALIZED;
         this.finished = true;
         this.skip = 0;
         this.possibleTypoMatchesBefore = 0;
@@ -204,9 +232,13 @@ class PositionsSearchStepOneCluster {
         return this.skip;
     }
     
-    StepOneClusterPositionView positionView() {
+    PositionIterableView positionIterableView() {
         this.finishIfNot();
-        this.positionView.i = BEFORE_START;
+        this.positionIterableView.i = BEFORE_START;
+        return this.positionIterableView;
+    }
+    
+    PositionView lastAdded() {
         return this.positionView;
     }
     
@@ -215,11 +247,11 @@ class PositionsSearchStepOneCluster {
     }
     
     int possibleTypoMatches() {
-        return this.possibleTypoMatchesBefore + this.possibleTypoMatchesAfter;
+        return this.possibleTypoMatches;
     }
     
     boolean doesHaveMorePossibleTypoMatchesThan(PositionsSearchStepOneCluster other) {
-        return this.possibleTypoMatches() > other.possibleTypoMatches();
+        return this.possibleTypoMatches > other.possibleTypoMatches;
     }
     
     boolean isAtStart() {
@@ -246,38 +278,36 @@ class PositionsSearchStepOneCluster {
         }        
     }
     
-    private List<Integer> composeVariantPositions() {
+    private void composeVariantPositions() {
         for (int i = this.prevsVariantPositions.size() - 1; i > -1; i--) {
             this.allVariantPositions.add(this.prevsVariantPositions.get(i));
         }
-        if ( this.prev > -1 ) {
-            this.allVariantPositions.add(this.prev);
+        if ( this.prevVariantPosition > -1 ) {
+            this.allVariantPositions.add(this.prevVariantPosition);
         }
-        if ( this.main > -1 ) {
-            this.allVariantPositions.add(this.main);
+        if ( this.mainVariantPosition > -1 ) {
+            this.allVariantPositions.add(this.mainVariantPosition);
         }
-        if ( this.next > -1 ) {
-            this.allVariantPositions.add(this.next);
+        if ( this.nextVariantPosition > -1 ) {
+            this.allVariantPositions.add(this.nextVariantPosition);
         }
         this.allVariantPositions.addAll(this.nextsVariantPositions);
-        return this.allVariantPositions;
     }
     
-    private List<Integer> composePatternIndexes() {
+    private void composePatternIndexes() {
         for (int i = this.prevsPatternPositions.size() - 1; i > -1; i--) {
             this.allPatternPositions.add(this.prevsPatternPositions.get(i));
         }
-        if ( this.prevIndex > -1 ) {
-            this.allPatternPositions.add(this.prevIndex);
+        if ( this.prevPatternPosition > -1 ) {
+            this.allPatternPositions.add(this.prevPatternPosition);
         }
-        if ( this.mainIndex > -1 ) {
-            this.allPatternPositions.add(this.mainIndex);
+        if ( this.mainPatternPosition > -1 ) {
+            this.allPatternPositions.add(this.mainPatternPosition);
         }
-        if ( this.nextIndex > -1 ) {
-            this.allPatternPositions.add(this.nextIndex);
+        if ( this.nextPatternPosition > -1 ) {
+            this.allPatternPositions.add(this.nextPatternPosition);
         }
         this.allPatternPositions.addAll(this.nextsPatternPositions);
-        return this.allPatternPositions;
     }
     
     void finish(String variant, String pattern) {   
@@ -300,6 +330,7 @@ class PositionsSearchStepOneCluster {
                 this.possibleTypoMatchesBefore = countCharMatchesIn(
                         variant, variantFromIncl, variantToExcl, 
                         pattern, patternFromIncl, patternToExcl);
+                this.possibleTypoMatches = this.possibleTypoMatches + this.possibleTypoMatchesBefore;
             }
         }
         
@@ -320,6 +351,7 @@ class PositionsSearchStepOneCluster {
                 this.possibleTypoMatchesAfter = countCharMatchesIn(
                         variant, variantFromIncl, variantToExcl, 
                         pattern, patternFromIncl, patternToExcl);
+                this.possibleTypoMatches = this.possibleTypoMatches + this.possibleTypoMatchesAfter;
             }
         }
         
@@ -486,44 +518,61 @@ class PositionsSearchStepOneCluster {
     }
     
     boolean isSet() {
-        return this.main > -1;
+        return this.mainVariantPosition > -1;
     }
     
     boolean isNotSet() {
-        return this.main < 0;
+        return this.mainVariantPosition < 0;
     }
     
-    void setMain(int index, int main) {
-        this.main = main;
-        this.mainIndex = index;
+    void setMain(int patternP, int variantP) {
+        this.lastAddedVariantPosition = variantP;
+        this.lastAddedPatternPosition = patternP;
+        
+        this.mainVariantPosition = variantP;
+        this.mainPatternPosition = patternP;
     }
 
     void setPrev(int prev) {
-        this.prev = prev;
-        this.prevIndex = this.mainIndex - 1;
+        this.lastAddedVariantPosition = prev;
+        this.lastAddedPatternPosition = this.mainPatternPosition - 1;
+        
+        this.prevVariantPosition = this.lastAddedVariantPosition;
+        this.prevPatternPosition = this.lastAddedPatternPosition;
     }
 
     void setNext(int next) {
-        this.next = next;
-        this.nextIndex = this.mainIndex + 1;
+        this.lastAddedVariantPosition = next;
+        this.lastAddedPatternPosition = this.mainPatternPosition + 1;
+        
+        this.nextVariantPosition = this.lastAddedVariantPosition;
+        this.nextPatternPosition = this.lastAddedPatternPosition;
     }
     
     void addNext(int nextOne) {
-        if ( this.next < 0 ) {
+        if ( this.nextVariantPosition < 0 ) {
             throw new IllegalStateException();
         }
         this.hasNexts = true;
-        this.nextsVariantPositions.add(nextOne);
-        this.nextsPatternPositions.add(this.nextIndex + this.nextsVariantPositions.size());
+        
+        this.lastAddedVariantPosition = nextOne;
+        this.lastAddedPatternPosition = this.nextPatternPosition + this.nextsVariantPositions.size() + 1;
+        
+        this.nextsVariantPositions.add(this.lastAddedVariantPosition);
+        this.nextsPatternPositions.add(this.lastAddedPatternPosition);
     }
     
     void addPrev(int prevOne) {
-        if ( this.prev < 0 ) {
+        if ( this.prevVariantPosition < 0 ) {
             throw new IllegalStateException();
         }
         this.hasPrevs = true;
-        this.prevsVariantPositions.add(prevOne);
-        this.prevsPatternPositions.add(this.prevIndex - this.prevsVariantPositions.size());
+        
+        this.lastAddedVariantPosition = prevOne;
+        this.lastAddedPatternPosition = this.prevPatternPosition - this.prevsVariantPositions.size() + 1;
+        
+        this.prevsVariantPositions.add(this.lastAddedVariantPosition);
+        this.prevsPatternPositions.add(this.lastAddedPatternPosition);
     }
     
     int length() {
@@ -531,7 +580,8 @@ class PositionsSearchStepOneCluster {
     }
     
     boolean isLongerThan(PositionsSearchStepOneCluster other) {
-        return this.length() > other.length();
+        return this.length() + this.possibleTypoMatches() > 
+               other.length() + other.possibleTypoMatches();
     }
     
     private int firstVariantPosition() {
@@ -549,25 +599,28 @@ class PositionsSearchStepOneCluster {
     void clear() {
         this.variant.nullify();
         this.pattern.nullify();
-        this.positionView.i = BEFORE_START;
+        this.positionIterableView.i = BEFORE_START;
         this.allVariantPositions.clear();
         this.prevsVariantPositions.clear();
         this.nextsVariantPositions.clear();
         this.allPatternPositions.clear();
         this.prevsPatternPositions.clear();
         this.nextsPatternPositions.clear();
-        this.prev = UNINITIALIZED;
-        this.main = UNINITIALIZED;
-        this.next = UNINITIALIZED;
-        this.prevIndex = UNINITIALIZED;
-        this.mainIndex = UNINITIALIZED;
-        this.nextIndex = UNINITIALIZED;
+        this.prevVariantPosition = UNINITIALIZED;
+        this.mainVariantPosition = UNINITIALIZED;
+        this.nextVariantPosition = UNINITIALIZED;
+        this.prevPatternPosition = UNINITIALIZED;
+        this.mainPatternPosition = UNINITIALIZED;
+        this.nextPatternPosition = UNINITIALIZED;
         this.hasPrevs = false;
         this.hasNexts = false;
+        this.lastAddedVariantPosition = UNINITIALIZED;
+        this.lastAddedPatternPosition = UNINITIALIZED;
         this.finished = true;
         this.skip = 0;
         this.possibleTypoMatchesBefore = 0;
         this.possibleTypoMatchesAfter = 0;
+        this.possibleTypoMatches = 0;
         this.variantPositionsAtStart = null;
         this.startsAfterSeparator = null;
         this.variantPositionsAtEnd = null;
@@ -577,14 +630,24 @@ class PositionsSearchStepOneCluster {
     @Override
     public String toString() {
         return 
-                this.prevsVariantPositions.toString() + format("%s,%s,%s", this.prev, this.main, this.next) + this.nextsVariantPositions.toString() + ", indexes: " + 
-                this.prevsPatternPositions.toString() + format("%s,%s,%s", this.prevIndex, this.mainIndex, this.nextIndex) + this.nextsPatternPositions.toString();
+                "[positions: " +
+                joinAll(",", this.prevsVariantPositions, this.prevVariantPosition, this.mainVariantPosition, this.nextVariantPosition, this.nextsVariantPositions) + ", indexes: " + 
+                joinAll(",", this.prevsPatternPositions, this.prevPatternPosition, this.mainPatternPosition, this.nextPatternPosition, this.nextsPatternPositions) +
+                this.plusTyposString() + "]";
+    }
+    
+    private String plusTyposString() {
+        if ( this.possibleTypoMatches > 0 ) {
+            return ", poss.typos: " + this.possibleTypoMatches;
+        } else {
+            return "";
+        }
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.positionView);
+        hash = 89 * hash + Objects.hashCode(this.positionIterableView);
         hash = 89 * hash + Objects.hashCode(this.allVariantPositions);
         hash = 89 * hash + Objects.hashCode(this.allPatternPositions);
         hash = 89 * hash + Objects.hashCode(this.prevsVariantPositions);
@@ -597,12 +660,12 @@ class PositionsSearchStepOneCluster {
         hash = 89 * hash + Objects.hashCode(this.variantPositionsAtEnd);
         hash = 89 * hash + this.possibleTypoMatchesBefore;
         hash = 89 * hash + this.possibleTypoMatchesAfter;
-        hash = 89 * hash + this.prev;
-        hash = 89 * hash + this.main;
-        hash = 89 * hash + this.next;
-        hash = 89 * hash + this.prevIndex;
-        hash = 89 * hash + this.mainIndex;
-        hash = 89 * hash + this.nextIndex;
+        hash = 89 * hash + this.prevVariantPosition;
+        hash = 89 * hash + this.mainVariantPosition;
+        hash = 89 * hash + this.nextVariantPosition;
+        hash = 89 * hash + this.prevPatternPosition;
+        hash = 89 * hash + this.mainPatternPosition;
+        hash = 89 * hash + this.nextPatternPosition;
         hash = 89 * hash + (this.hasPrevs ? 1 : 0);
         hash = 89 * hash + (this.hasNexts ? 1 : 0);
         hash = 89 * hash + (this.finished ? 1 : 0);
@@ -628,22 +691,22 @@ class PositionsSearchStepOneCluster {
         if ( this.possibleTypoMatchesAfter != other.possibleTypoMatchesAfter ) {
             return false;
         }
-        if ( this.prev != other.prev ) {
+        if ( this.prevVariantPosition != other.prevVariantPosition ) {
             return false;
         }
-        if ( this.main != other.main ) {
+        if ( this.mainVariantPosition != other.mainVariantPosition ) {
             return false;
         }
-        if ( this.next != other.next ) {
+        if ( this.nextVariantPosition != other.nextVariantPosition ) {
             return false;
         }
-        if ( this.prevIndex != other.prevIndex ) {
+        if ( this.prevPatternPosition != other.prevPatternPosition ) {
             return false;
         }
-        if ( this.mainIndex != other.mainIndex ) {
+        if ( this.mainPatternPosition != other.mainPatternPosition ) {
             return false;
         }
-        if ( this.nextIndex != other.nextIndex ) {
+        if ( this.nextPatternPosition != other.nextPatternPosition ) {
             return false;
         }
         if ( this.hasPrevs != other.hasPrevs ) {
@@ -658,7 +721,7 @@ class PositionsSearchStepOneCluster {
         if ( this.skip != other.skip ) {
             return false;
         }
-        if ( !Objects.equals(this.positionView, other.positionView) ) {
+        if ( !Objects.equals(this.positionIterableView, other.positionIterableView) ) {
             return false;
         }
         if ( !Objects.equals(this.allVariantPositions, other.allVariantPositions) ) {

@@ -8,7 +8,7 @@ package diarsid.beam.core.base.rmi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
@@ -39,7 +39,7 @@ public interface RemoteOuterIoEngine extends Remote, OuterIoEngine {
     Answer resolve(VariantsQuestion question) throws RemoteException;
     
     @Override
-    Answer resolve(WeightedVariants variants) throws RemoteException;
+    Answer resolve(Variants variants) throws RemoteException;
     
     @Override
     void report(String string) throws RemoteException;

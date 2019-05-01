@@ -11,8 +11,8 @@ import java.util.Optional;
 
 import diarsid.beam.core.application.environment.Catalog;
 import diarsid.beam.core.base.analyze.similarity.Similarity;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -28,8 +28,8 @@ import diarsid.support.objects.Pool;
 
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.findVariantEqualToPattern;
-import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.unite;
+import static diarsid.beam.core.base.analyze.variantsweight.Variants.findVariantEqualToPattern;
+import static diarsid.beam.core.base.analyze.variantsweight.Variants.unite;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
@@ -40,9 +40,9 @@ import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.support.strings.StringUtils.haveEqualLength;
 import static diarsid.support.strings.StringUtils.lower;
-import static diarsid.support.log.Logging.logFor;
 
 
 /**
@@ -170,7 +170,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         if ( state.variants().isEmpty() ) {
             state.processResultFlowAfterSearching();
         } else {
-            WeightedVariants weightedVariants = unite(state.variants());
+            Variants weightedVariants = unite(state.variants());
             Answer userAnswer = askUserAboutFoundVariants(state, weightedVariants);
             if ( userAnswer.isGiven() ) {
                 state.resultFlowDoneWith(userAnswer.text());
@@ -278,12 +278,12 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         }
                 
         if ( state.hasFirstVariantAcceptableWeightEstimate() ) {
-            List<WeightedVariant> variantsFoundOnCurrentLevel = 
+            List<Variant> variantsFoundOnCurrentLevel = 
                     state.extractVariantsAcceptableOnCurrentLevel();
             
             boolean ifGoDeeper = true;
             
-            Optional<WeightedVariant> variantEqualToPattern = 
+            Optional<Variant> variantEqualToPattern = 
                     findVariantEqualToPattern(variantsFoundOnCurrentLevel);
             if ( variantEqualToPattern.isPresent() ) {
                 state.resultFlowDoneWith(variantEqualToPattern.get().text());
@@ -292,7 +292,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
                 return ifGoDeeper;
             }
             
-            WeightedVariants weightedVariants = unite(variantsFoundOnCurrentLevel);
+            Variants weightedVariants = unite(variantsFoundOnCurrentLevel);
             
             Answer userAnswer;
             if ( this.isChoiceMadeForPatternWithBestFrom(weightedVariants) ) {
@@ -322,7 +322,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         return true;
     }
     
-    private boolean isChoiceMadeForPatternWithBestFrom(WeightedVariants weightedVariants) {
+    private boolean isChoiceMadeForPatternWithBestFrom(Variants weightedVariants) {
         if ( isNotPresent(this.daoPatternChoices) ) {
             return false;
         }
@@ -335,7 +335,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     }
     
     private void asyncTryToSaveChoiceFrom(
-            String pattern, String choice, WeightedVariants weightedVariants) {
+            String pattern, String choice, Variants weightedVariants) {
         if ( this.daoPatternChoices.isPresent() ) {
             Initiator initiator = this.state().initiator();
             asyncDo(() -> {
@@ -344,7 +344,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         }
     }
 
-    private Answer askUserAboutFoundVariants(WalkState state, WeightedVariants weightedVariants) {        
+    private Answer askUserAboutFoundVariants(WalkState state, Variants weightedVariants) {        
         Help help = state.composeHelp();
         Answer answer = this.ioEngine
                 .ask(state.initiator(), weightedVariants, help);

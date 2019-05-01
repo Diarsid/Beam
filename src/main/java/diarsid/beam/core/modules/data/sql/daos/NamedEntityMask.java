@@ -8,7 +8,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.Objects;
 
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.domain.entities.NamedEntityType;
 import diarsid.jdbc.transactions.Row;

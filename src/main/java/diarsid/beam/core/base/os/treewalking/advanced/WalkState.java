@@ -11,8 +11,8 @@ import java.util.List;
 
 import diarsid.beam.core.application.environment.Catalog;
 import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.analyze.variantsweight.WeightEstimate;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -39,8 +39,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringToVariant;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.stringToVariant;
 import static diarsid.beam.core.base.os.treewalking.advanced.WalkUtil.addListedFilesTo;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_AND_FOLDERS;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
@@ -60,7 +59,7 @@ class WalkState extends PooledReusable {
             
     private final Analyze analyze;
     private final WalkStartPlace place;
-    private final List<WeightedVariant> variants;
+    private final List<Variant> variants;
     private final List<String> collectedOnCurrentLevel;
     private /* non-final in order to swap levels with ease */ List<File> currentLevel;
     private /* non-final in order to swap levels with ease */ List<File> nextLevel;
@@ -218,7 +217,7 @@ class WalkState extends PooledReusable {
         return this.nextLevel;
     }
     
-    List<WeightedVariant> variants() {
+    List<Variant> variants() {
         return this.variants;
     }
     
@@ -243,8 +242,8 @@ class WalkState extends PooledReusable {
                     this.pattern, stringToVariant(getOne(this.collectedOnCurrentLevel)))
                     .ifPresent(weightedVariant -> this.variants.add(weightedVariant));
         } else {
-            List<WeightedVariant> currentLevelVariants = this.analyze.weightVariantsList(
-                    this.pattern, stringsToVariants(this.collectedOnCurrentLevel));
+            List<Variant> currentLevelVariants = this.analyze.weightStringsList(
+                    this.pattern, this.collectedOnCurrentLevel);
             this.variants.addAll(currentLevelVariants);
         }        
     }
@@ -258,11 +257,11 @@ class WalkState extends PooledReusable {
         return this.variants.get(0).hasEqualOrBetterWeightThan(acceptableWeightEstimate);
     }
     
-    List<WeightedVariant> extractVariantsAcceptableOnCurrentLevel() {
+    List<Variant> extractVariantsAcceptableOnCurrentLevel() {
         WeightEstimate acceptableWeightEstimate = this.weightEstimateAcceptableForCurrentLevel();
-        List<WeightedVariant> extractedAcceptableVariants = new ArrayList<>();
+        List<Variant> extractedAcceptableVariants = new ArrayList<>();
         
-        WeightedVariant variant;
+        Variant variant;
         acceptableVariantsExtraction: for (int i = 0; i < this.variants.size(); i++) {
             variant = this.variants.get(i);
             if ( variant.hasEqualOrBetterWeightThan(acceptableWeightEstimate) ) {

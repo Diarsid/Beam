@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+
 /**
  *
  * @author Diarsid

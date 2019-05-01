@@ -39,9 +39,9 @@ class AnalyzeUtil {
             int clusterLength) {
         int mean = meanSmartIngoringZeros(ints);
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs         %s", 
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diffs         %s", 
                     ints.stream().map(i -> i.toString()).collect(joining(" ")));
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs mean    %s", mean);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diffs mean    %s", mean);
         }
         
         int limit = ints.size() - 1;
@@ -179,24 +179,24 @@ class AnalyzeUtil {
         }
         
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order repeats       %s", cluster
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order repeats       %s", cluster
                         .repeats()
                         .stream()
                         .map(repeating -> String.valueOf(repeating))
                         .collect(joining(",", "<", ">")));    
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order repeats qties %s", cluster
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order repeats qties %s", cluster
                         .repeatQties()
                         .stream()
                         .map(repeating -> String.valueOf(repeating))
                         .collect(joining(",", "<", ">")));    
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum real %s", diffSumReal);
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum abs  %s", diffSumAbs);
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff count    %s", diffCount);
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff compensation  %s", compensationSum);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff sum real %s", diffSumReal);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff sum abs  %s", diffSumAbs);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff count    %s", diffCount);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff compensation  %s", compensationSum);
         }
         if ( diffSumAbs == 0 && haveCompensation && clusterLength == 2 ) {            
             diffSumAbs = 1;
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSumAbs);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff sum fix  %s", diffSumAbs);
         }
         cluster.set(
                 clusterFirstPosition, 
@@ -340,7 +340,7 @@ class AnalyzeUtil {
         return importance * nonClustered;
     }
     
-    static boolean isVariantOkWhenAdjusted(WeightedVariant variant) {
+    static boolean isVariantOkWhenAdjusted(Variant variant) {
         return variant.weight() <= 
                 ADJUSTED_WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
     }

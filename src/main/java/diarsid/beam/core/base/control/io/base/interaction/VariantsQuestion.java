@@ -6,6 +6,8 @@
 
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,8 +116,8 @@ public class VariantsQuestion implements Serializable {
         List<Answer> matches = this.variants
                 .stream()
                 .filter(variant -> { 
-                    if ( variant.hasDisplayText() ) {
-                        return containsIgnoreCase(variant.displayText(), possibleFragment);
+                    if ( variant.doesHaveName() ) {
+                        return containsIgnoreCase(variant.name(), possibleFragment);
                     } else {
                         return containsIgnoreCase(variant.text(), possibleFragment);
                     }

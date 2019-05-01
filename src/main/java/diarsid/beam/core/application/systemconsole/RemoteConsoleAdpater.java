@@ -9,7 +9,7 @@ package diarsid.beam.core.application.systemconsole;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
 import diarsid.beam.core.base.control.io.base.console.Console;
@@ -55,7 +55,7 @@ public class RemoteConsoleAdpater implements RemoteOuterIoEngine {
     }
 
     @Override
-    public Answer resolve(WeightedVariants variants) throws RemoteException {
+    public Answer resolve(Variants variants) throws RemoteException {
         return this.console.resolve(variants);
     }
 

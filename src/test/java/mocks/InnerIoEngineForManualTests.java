@@ -10,7 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
@@ -18,7 +18,7 @@ import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
 import diarsid.beam.core.base.control.io.base.interaction.HelpKey;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
 
 import static java.lang.Integer.parseInt;
@@ -83,8 +83,8 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
             System.out.println(format("fake io > %s", question.getQuestion()));
             for (int i = 0; i < question.getVariants().size(); i++) {
                 variant = question.getVariants().get(i);
-                if ( variant.hasDisplayText() ) {
-                    System.out.println(format("fake io >     %d : %s", i + 1, variant.displayText()));
+                if ( variant.doesHaveName() ) {
+                    System.out.println(format("fake io >     %d : %s", i + 1, variant.name()));
                 } else {
                     System.out.println(format("fake io >     %d : %s", i + 1, variant.text()));
                 }
@@ -150,7 +150,7 @@ public class InnerIoEngineForManualTests implements InnerIoEngine {
     }
 
     @Override
-    public Answer ask(Initiator initiator, WeightedVariants variants, Help help) {
+    public Answer ask(Initiator initiator, Variants variants, Help help) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

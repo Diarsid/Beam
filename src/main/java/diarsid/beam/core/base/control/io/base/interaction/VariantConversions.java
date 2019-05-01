@@ -9,25 +9,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.SHOW_VARIANT_TYPE;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.View.SHOW_VARIANT_TYPE;
 
 /**
  *
  * @author Diarsid
  */
-public class Variants {
+public class VariantConversions {
     
     public static enum View {
         SHOW_VARIANT_TYPE,
         HIDE_VARIANT_TYPE
     }
     
-    private Variants() {        
+    private VariantConversions() {        
     }
     
     public static List<Variant> commandsToVariants(List<InvocationCommand> commands) {
@@ -72,14 +73,6 @@ public class Variants {
             variants.add(new Variant(variantString, stringName, i));
         }
         return variants;
-    }
-    
-    public static List<Variant> stringsToVariants(List<String> variantStrings) {
-        AtomicInteger counter = new AtomicInteger(0);
-        return variantStrings
-                .stream()
-                .map(string -> new Variant(string, counter.getAndIncrement()))
-                .collect(toList());
     }
     
     public static List<Variant> entitiesToVariants(List<? extends NamedEntity> entites) {

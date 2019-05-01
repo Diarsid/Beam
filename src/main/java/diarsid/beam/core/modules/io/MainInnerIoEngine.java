@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.modules.io.gui.Gui;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngine;
@@ -102,7 +102,7 @@ public class MainInnerIoEngine implements InnerIoEngine {
 
     @Override
     public Answer ask(
-            Initiator initiator, WeightedVariants variants, Help help) {
+            Initiator initiator, Variants variants, Help help) {
         if ( this.ioEnginesHolder.hasEngineBy(initiator) ) {
             return awaitGet(() -> {
                 try {

@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataExtractionException;
@@ -87,7 +87,7 @@ class H2DaoLocationSubPathChoices
     public boolean saveWithVariants(            
             LocationSubPath subPath, 
             String pattern, 
-            WeightedVariants variants) 
+            Variants variants) 
             throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
@@ -163,7 +163,7 @@ class H2DaoLocationSubPathChoices
 
     @Override
     public Optional<LocationSubPath> getChoiceFor(
-            String pattern, WeightedVariants variants) throws DataExtractionException {
+            String pattern, Variants variants) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams( 

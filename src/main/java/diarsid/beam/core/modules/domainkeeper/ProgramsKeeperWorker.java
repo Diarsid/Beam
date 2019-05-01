@@ -12,7 +12,7 @@ import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -33,7 +33,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_ONLY;
@@ -202,7 +202,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
                 return valueFlowDoneEmpty();
             }            
         } else if ( hasMany(programs) ) {
-            WeightedVariants variants = this.analyze.weightVariants(
+            Variants variants = this.analyze.weightVariants(
                     pattern, entitiesToVariants(programs));
             if ( variants.isEmpty() ) {
                 return valueFlowDoneEmpty();

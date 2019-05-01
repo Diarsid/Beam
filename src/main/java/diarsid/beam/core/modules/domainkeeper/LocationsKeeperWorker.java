@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.ValueFlowDone;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -52,7 +52,7 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
@@ -190,7 +190,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private ValueFlow<Location> findExistingLocationInternally(Initiator initiator, String name) {
         Location foundLocation;
         List<Location> foundLocations;     
-        WeightedVariants weightedLocations;
+        Variants weightedLocations;
         Answer answer;
         
         try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
@@ -230,7 +230,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                         continue locationFinding;
                     }
                     
-                    WeightedVariant bestLocation = weightedLocations.best();
+                    Variant bestLocation = weightedLocations.best();
                     if ( bestLocation.text().equalsIgnoreCase(name) || 
                          bestLocation.hasEqualOrBetterWeightThan(PERFECT) ) {
                         foundLocation = foundLocations.get(bestLocation.index());
@@ -249,7 +249,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
                             if ( answer.isGiven() ) {
                                 Location location = foundLocations.get(answer.index());
                                 String pattern = name;
-                                WeightedVariants variants = weightedLocations;
+                                Variants variants = weightedLocations;
                                 asyncDo(() -> {
                                     this.daoPatternChoices.save(
                                             initiator, pattern, location.name(), variants);
@@ -342,12 +342,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
 
     private ValueFlow<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
-        WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(locations));
+        Variants variants = this.analyze.weightVariants(pattern, entitiesToVariants(locations));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
         
-        WeightedVariant bestVariant = variants.best();
+        Variant bestVariant = variants.best();
         if ( bestVariant.text().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return valueFlowDoneWith(locations.get(bestVariant.index()));
@@ -366,7 +366,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private ValueFlow<Location> askUserForLocationAndSaveChoice(
             Initiator initiator, 
             String pattern, 
-            WeightedVariants variants, 
+            Variants variants, 
             List<Location> locations) {
         Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneLocationHelp);
@@ -580,12 +580,12 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 validity.failsWith(format("'%s' not found", newPath));
             }
         } else if ( hasMany(subPathes) ) {
-            WeightedVariants variants = this.analyze.weightVariants(
+            Variants variants = this.analyze.weightVariants(
                     newPath, entitiesToVariants(subPathes));
             if ( variants.isEmpty() ) {
                 validity.failsWith(format("'%s' not found", newPath));
             } else {
-                WeightedVariant best = variants.best();
+                Variant best = variants.best();
                 boolean bestIsGoodEnough =
                         best.text().equalsIgnoreCase(newPath) || 
                             best.hasEqualOrBetterWeightThan(PERFECT);

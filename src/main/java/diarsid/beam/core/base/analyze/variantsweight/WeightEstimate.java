@@ -26,8 +26,8 @@ public enum WeightEstimate {
     private static final double MODERATE_BOUND = -36;
     private static final double GOOD_BOUND = -75;
     
-    public static WeightEstimate estimateWeightOf(WeightedVariant weightedVariant) {
-        return estimate(weightedVariant.weight());
+    public static WeightEstimate estimateWeightOf(Variant variant) {
+        return estimate(variant.weight());
     }
     
     static WeightEstimate estimatePreliminarily(double weight) { 

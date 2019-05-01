@@ -7,7 +7,7 @@ package diarsid.beam.core.base.control.io.base.console;
 
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
@@ -100,9 +100,9 @@ class ConsolePlatformOperator {
         }
     }
     
-    void print(List<WeightedVariant> weightedVariants) {
+    void print(List<Variant> мariants) {
         try {
-            this.io.print(weightedVariants);
+            this.io.print(мariants);
         } catch (Exception e) {
             this.consolePlatform.reportException(e);
         }

@@ -22,7 +22,7 @@ class PositionsSearchStepTwoCluster {
     private static final int UNINITIALIZED = -9;
     private static final int BEFORE_START = -1;
     
-    private static class StepTwoClusterPositionView implements PositionView {
+    private static class StepTwoClusterPositionView implements PositionIterableView {
 
         public StepTwoClusterPositionView(PositionsSearchStepTwoCluster cluster) {
             this.cluster = cluster;
@@ -298,7 +298,7 @@ class PositionsSearchStepTwoCluster {
     @Override
     public String toString() {
         return format(
-                "PositionCandidate['%s' variant:%s, clusters - %s, pattern:%s, variant:%s, included:%s, matches:%s]", 
+                "['%s' variant:%s, clustered:['%s', pattern:%s, variant:%s, included:%s, matches:%s]]", 
                 this.assessedChar, this.assessedCharVariantPosition, this.chars, this.patternPositions, this.variantPositions, this.fillings, this.matches);
     }
 }

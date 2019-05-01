@@ -33,28 +33,28 @@ import static diarsid.support.strings.StringUtils.lower;
  *
  * @author Diarsid
  */
-public class WeightedVariants implements Serializable {
+public class Variants implements Serializable {
     
-    private final List<WeightedVariant> variants;
-    private List<WeightedVariant> currentSimilarVariants;
+    private final List<Variant> variants;
+    private List<Variant> currentSimilarVariants;
     private int currentVariantIndex;
 
-    WeightedVariants(List<WeightedVariant> variants) {
+    Variants(List<Variant> variants) {
         this.variants = new ArrayList<>(variants);
         sort(this.variants);
         this.currentVariantIndex = -1;
         this.currentSimilarVariants = null;
     }
     
-    public static WeightedVariants unite(List<WeightedVariant> variants) {
-        return new WeightedVariants(variants);
+    public static Variants unite(List<Variant> variants) {
+        return new Variants(variants);
     }
     
-    public static Optional<WeightedVariant> findVariantEqualToPattern(
-            List<WeightedVariant> variants) {
+    public static Optional<Variant> findVariantEqualToPattern(
+            List<Variant> variants) {
         return variants
                 .stream()
-                .filter(weightedVariant -> weightedVariant.isEqualToPattern())
+                .filter(variant -> variant.isEqualToPattern())
                 .findFirst();
     }
     
@@ -96,7 +96,7 @@ public class WeightedVariants implements Serializable {
         return ! this.variants.isEmpty();
     }
     
-    public WeightedVariant best() {
+    public Variant best() {
         return this.variants.get(0);
     }
     
@@ -149,8 +149,8 @@ public class WeightedVariants implements Serializable {
         List<Answer> matches = this.currentSimilarVariants
                 .stream()
                 .filter(variant -> { 
-                    if ( variant.hasDisplayText() ) {
-                        return containsIgnoreCase(variant.displayText(), possibleFragment);
+                    if ( variant.doesHaveName() ) {
+                        return containsIgnoreCase(variant.name(), possibleFragment);
                     } else {
                         return containsIgnoreCase(variant.text(), possibleFragment);
                     }
@@ -219,11 +219,11 @@ public class WeightedVariants implements Serializable {
         }
     }
     
-    public WeightedVariant current() {
+    public Variant current() {
         return this.variants.get(this.currentVariantIndex);
     }
     
-    public List<WeightedVariant> nextSimilarVariants() {
+    public List<Variant> nextSimilarVariants() {
         if ( nonNull(this.currentSimilarVariants) ) {
             this.currentSimilarVariants.clear();
         } else {

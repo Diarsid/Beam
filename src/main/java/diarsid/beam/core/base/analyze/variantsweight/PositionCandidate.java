@@ -60,7 +60,7 @@ class PositionCandidate {
             int charsRemained) {
         this.mutationsAttempts++;
         
-        int variantPlacement = percentAsInt(position, this.data.variantText.length()) / 10;
+        int variantPlacement = percentAsInt(position, this.data.variant.length()) / 10;
         int patternPlacement = percentAsInt(positionInPatternIndex, this.data.pattern.length()) / 10;
         int otherPlacementDiff = absDiff(variantPlacement, patternPlacement);
         
