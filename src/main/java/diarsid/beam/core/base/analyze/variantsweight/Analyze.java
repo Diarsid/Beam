@@ -51,7 +51,7 @@ import static diarsid.support.strings.StringUtils.lower;
  */
 public class Analyze {
     
-    private final int weightAlgorithmVersion = 15;
+    private final int weightAlgorithmVersion = 16;
     private final PersistentAnalyzeCache<Float> cache;
     private final Float tooBadWeight;
     private final Pool<AnalyzeData> dataPool;

@@ -1227,6 +1227,23 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_JavaBooksCase_jboks() {
+        pattern = "jboks";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R",
+                "Current_Job/Workspace",
+                "Books/Tech/Java");
+        
+        expected = asList(
+                "Books/Common/Tolkien_J.R.R", 
+                "Books/Tech/Java",
+                "Current_Job/Workspace");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_commonBooksCase_comboks() {
         pattern = "comboks";
         

@@ -1435,6 +1435,23 @@ class PositionsAnalyze {
                     } 
                     if ( ! containsSeparatorsInVariantInSpan(this.alonePositionBeforePreviousSeparator, this.currentPosition - this.currentClusterLength + 1) ) {
                         this.weight.add(-bonus, CHAR_BEFORE_PREVIOUS_SEPARATOR_AND_CLUSTER_ENCLOSING_WORD);
+                        if ( absDiff(this.alonePositionBeforePreviousSeparator, this.clusters.lastAddedCluster().firstPosition()) == 2 ) {
+                            char alonePositionBeforePreviousSeparatorChar = data.variant.charAt(this.alonePositionBeforePreviousSeparator);
+                            char missedPositionChar = data.variant.charAt(this.alonePositionBeforePreviousSeparator + 1);
+                            char firstClusterPositionChar = data.variant.charAt(this.clusters.lastAddedCluster().firstPosition());
+                            if ( missedPositionChar == alonePositionBeforePreviousSeparatorChar || 
+                                 missedPositionChar == firstClusterPositionChar ) {
+                                this.clustered++;
+                                this.nonClustered--;
+                                String log = format(
+                                        "    [cluster fix] missed outer repeat detected %s(%s)%s", 
+                                        alonePositionBeforePreviousSeparatorChar, 
+                                        missedPositionChar,
+                                        firstClusterPositionChar);
+                                logAnalyze(POSITIONS_CLUSTERS, 
+                                        "         %s", log);
+                            }
+                        }
                     }                   
                 }
             }
@@ -1737,7 +1754,7 @@ class PositionsAnalyze {
                     this.missedRepeatedPositions.add(this.currentPosition + 1);
                     if ( POSITIONS_CLUSTERS.isEnabled() ) {
                         String log = format(
-                                "    [cluster fix] missed repeat detected %s(%s)%s", 
+                                "    [cluster fix] missed internal repeat detected %s(%s)%s", 
                                 currChar, 
                                 missChar,
                                 nextChar);
