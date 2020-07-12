@@ -41,12 +41,12 @@ public class AnalyzeTestTwo {
     
     
     
-    private static Analyze analyzeInstance;
+    private static WeightAnalyzeReal analyzeInstance;
     private static int totalVariantsQuantity;
     private static long start;
     private static long stop;
     
-    private Analyze analyze;
+    private WeightAnalyzeReal analyze;
     private boolean expectedToFail;
     private String pattern;
     private List<String> variants;
@@ -59,7 +59,7 @@ public class AnalyzeTestTwo {
     @BeforeClass
     public static void setUpClass() {
         Similarity similarity = new Similarity(configuration());
-        analyzeInstance = new Analyze(configuration(), similarity, pools());
+        analyzeInstance = new WeightAnalyzeReal(configuration(), similarity, pools());
         start = currentTimeMillis();
     }
     
@@ -74,10 +74,10 @@ public class AnalyzeTestTwo {
                 "\n  total time     : %s " + 
                 "\n  total variants : %s \n";
         logger.info(format(report, stop - start, totalVariantsQuantity));
-        Optional<Pool<AnalyzeData>> pool = pools().poolOf(AnalyzeData.class);
+        Optional<Pool<AnalyzeUnit>> pool = pools().poolOf(AnalyzeUnit.class);
         if ( pool.isPresent() ) {
-            Pool<AnalyzeData> c = pool.get();
-            AnalyzeData analyzeData = c.give();
+            Pool<AnalyzeUnit> c = pool.get();
+            AnalyzeUnit analyzeData = c.give();
         }
     }
     
@@ -168,7 +168,7 @@ public class AnalyzeTestTwo {
             if ( weightedVariants.currentIsMuchBetterThanNext() ) {
                 
                 expectedVariant = expected.get(counter.getAndIncrement());
-                actualVariant = weightedVariants.current().text();
+                actualVariant = weightedVariants.current().value();
                 
                 if ( actualVariant.equalsIgnoreCase(expectedVariant) ) {
                     reports.add(format("\n%s variant matches expected: %s", counter.get() - 1, expectedVariant));
@@ -249,13 +249,13 @@ public class AnalyzeTestTwo {
 
         while ( weightedVariants.next() ) {            
             if ( weightedVariants.currentIsMuchBetterThanNext() ) {
-                variantsWithWeight.add("\n" + weightedVariants.current().text() + " is much better than next: " + weightedVariants.current().weight());
+                variantsWithWeight.add("\n" + weightedVariants.current().value() + " is much better than next: " + weightedVariants.current().weight());
             } else {
                 variantsWithWeight.add("\nnext candidates are similar: ");                
                 weightedVariants.nextSimilarVariants()
                         .stream()
                         .forEach(candidate -> {
-                            variantsWithWeight.add("\n  - " + candidate.text() + " : " + candidate.weight());
+                            variantsWithWeight.add("\n  - " + candidate.value() + " : " + candidate.weight());
                         });
             }
         }

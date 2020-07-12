@@ -13,9 +13,9 @@ import static org.eclipse.jetty.util.StringUtil.startsWithIgnoreCase;
 
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
-import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsIngoreCase;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsWithIgnoreCaseAnyFragment;
 import static diarsid.support.strings.StringUtils.lower;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsIgnoreCase;
 
 /**
  *
@@ -49,7 +49,7 @@ interface SnippetMatching {
     
     static SnippetMatching matchesByStartingWith(String start) {
         return (line) -> {
-            return startsIngoreCase(line.trim(), start);
+            return startsIgnoreCase(line.trim(), start);
         };
     }
     

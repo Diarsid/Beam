@@ -9,6 +9,7 @@ import java.util.List;
 
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataExtractionException;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 import diarsid.jdbc.transactions.JdbcTransaction;
@@ -36,6 +37,13 @@ class H2DaoLocationSubPathsV1
     H2DaoLocationSubPathsV1(DataBase dataBase) {
         super(dataBase);
     }
+
+    @Override
+    public List<LocationSubPath> getSubPathesByPattern(
+            Location location, String pattern) throws DataExtractionException {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
+    
 
     @Override
     public List<LocationSubPath> getSubPathesByPattern(String pattern) 

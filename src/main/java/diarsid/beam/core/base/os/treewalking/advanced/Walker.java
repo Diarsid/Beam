@@ -6,7 +6,7 @@
 package diarsid.beam.core.base.os.treewalking.advanced;
 
 import diarsid.beam.core.base.analyze.similarity.Similarity;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.os.treewalking.base.FileSearchMode;
 import diarsid.beam.core.base.os.treewalking.base.FolderTypeDetector;
@@ -23,7 +23,7 @@ public interface Walker {
     static Walker newWalker(
             InnerIoEngine ioEngine, 
             FolderTypeDetector folderTypeDetector,
-            Analyze analyze,
+            WeightAnalyzeReal analyze,
             Similarity similarity,
             Pools pools) {
         Pool<WalkState> walkStatePool = pools.createPool(
@@ -36,7 +36,7 @@ public interface Walker {
             InnerIoEngine ioEngine, 
             ResponsiveDaoPatternChoices daoPatternChoices, 
             FolderTypeDetector folderTypeDetector,
-            Analyze analyze,
+            WeightAnalyzeReal analyze,
             Similarity similarity,
             Pools pools) {
         Pool<WalkState> walkStatePool = pools.createPool(

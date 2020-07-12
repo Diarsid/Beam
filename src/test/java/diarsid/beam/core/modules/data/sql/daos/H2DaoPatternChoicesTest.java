@@ -31,7 +31,7 @@ import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.weightVariants;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;

@@ -3,9 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.control.io.base.interaction;
-
-import diarsid.beam.core.base.analyze.variantsweight.Variant;
+package diarsid.beam.core.base.analyze.variantsweight;
 
 /**
  *

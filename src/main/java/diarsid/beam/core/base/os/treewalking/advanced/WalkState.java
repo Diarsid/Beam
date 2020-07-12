@@ -8,10 +8,12 @@ package diarsid.beam.core.base.os.treewalking.advanced;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import diarsid.beam.core.application.environment.Catalog;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.analyze.variantsweight.WeightEstimate;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -27,6 +29,7 @@ import static java.util.Collections.sort;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+import static diarsid.beam.core.base.analyze.variantsweight.Reindexable.reindex;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.GOOD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.MODERATE;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.PERFECT;
@@ -39,14 +42,18 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.asHelp;
-import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.stringToVariant;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.namedStringToVariant;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.namedStringsToVariants;
 import static diarsid.beam.core.base.os.treewalking.advanced.WalkUtil.addListedFilesTo;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_AND_FOLDERS;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
+import static diarsid.beam.core.base.util.PathUtils.findDepthOf;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.endsIgnoreCase;
 import static diarsid.support.strings.StringUtils.isEmpty;
 
 /**
@@ -55,28 +62,34 @@ import static diarsid.support.strings.StringUtils.isEmpty;
  */
 class WalkState extends PooledReusable {
     
-    private static final int UNVISITED_LEVEL = -1;
+    private static final int UNVISITED_LEVEL = 0;
             
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final WalkStartPlace place;
     private final List<Variant> variants;
-    private final List<String> collectedOnCurrentLevel;
+    private final List<String> collectedOnCurrentLevelPathsWithoutRoot;
+    private final List<String> collectedOnCurrentLevelPathsWithRoot;
     private /* non-final in order to swap levels with ease */ List<File> currentLevel;
     private /* non-final in order to swap levels with ease */ List<File> nextLevel;
     private Initiator initiator;
     private String pattern;
+    private List<Variant> predefinedVariants;
+    private double predefinedWeightLimit;
+    private boolean hasPredefinedWeightLimit;
     private Boolean isPatternPath;
     private FileSearchMode mode;
+    private Integer minLevelsToVisit;
     private Integer maxLevelsToVisit;
     private Integer visitedLevel;
     private ValueFlow<String> resultFlow;
     
-    WalkState(Analyze analyze) {
+    WalkState(WeightAnalyzeReal analyze) {
         super();
         this.analyze = analyze;
         this.place = new WalkStartPlace();
         this.variants = new ArrayList<>();
-        this.collectedOnCurrentLevel = new ArrayList<>();
+        this.collectedOnCurrentLevelPathsWithoutRoot = new ArrayList<>();
+        this.collectedOnCurrentLevelPathsWithRoot = new ArrayList<>();
         this.currentLevel = new ArrayList<>();
         this.nextLevel = new ArrayList<>();
     }
@@ -103,6 +116,18 @@ class WalkState extends PooledReusable {
         if ( isNull(this.mode) ) {
             this.mode = FILES_AND_FOLDERS;
         }
+        if ( nonEmpty(this.predefinedVariants) ) {
+            this.variants.addAll(this.predefinedVariants);
+            
+            if ( isNull(this.minLevelsToVisit) ) {
+                int maxPredefinedVariantsDepth = this.predefinedVariants
+                        .stream()
+                        .mapToInt(pathVariant -> findDepthOf(pathVariant.nameOrValue()))
+                        .max()
+                        .orElse(0);
+                this.minLevelsToVisit = maxPredefinedVariantsDepth;
+            }            
+        }
     }
     
     ValueFlow<String> resultFlow() {        
@@ -114,7 +139,8 @@ class WalkState extends PooledReusable {
         this.place.clear();
         
         this.variants.clear();
-        this.collectedOnCurrentLevel.clear();
+        this.collectedOnCurrentLevelPathsWithoutRoot.clear();
+        this.collectedOnCurrentLevelPathsWithRoot.clear();
         this.currentLevel.clear();
         this.nextLevel.clear();
         
@@ -122,13 +148,22 @@ class WalkState extends PooledReusable {
         
         this.initiator = null;
         this.pattern = null;
+        this.predefinedVariants = null;
         this.isPatternPath = null;
         this.mode = null;
+        this.minLevelsToVisit = null;
         this.maxLevelsToVisit = null;
         this.resultFlow = null;
+        
+        this.predefinedWeightLimit = 0.0;
+        this.hasPredefinedWeightLimit = false;
     }
     
-    void setHowDeepToGo(int maxDepth) {
+    void setHowDeepToGoMin(int minDepth) {
+        this.minLevelsToVisit = minDepth;
+    }
+    
+    void setHowDeepToGoMax(int maxDepth) {
         this.maxLevelsToVisit = maxDepth;
     }
     
@@ -144,6 +179,16 @@ class WalkState extends PooledReusable {
         this.pattern = pattern;
         this.isPatternPath = containsPathSeparator(pattern);
         this.place.setIsPatternPath(this.isPatternPath);
+    }
+    
+    void setPredefinedVariants(List<Variant> predefinedVariants) {
+        this.predefinedVariants = predefinedVariants;
+        this.predefinedWeightLimit = predefinedVariants
+                .stream()
+                .mapToDouble(Variant::weight)
+                .max()
+                .orElse(0.0);
+        this.hasPredefinedWeightLimit = true;
     }
     
     void setWhereToSearch(Catalog where) {
@@ -166,8 +211,12 @@ class WalkState extends PooledReusable {
         return this.isPatternPath;
     }
     
-    String absoluteRoot() {
+    String root() {
         return this.place.absoluteRoot();
+    }
+    
+    String rootName() {
+        return this.place.absoluteRootName();
     }
     
     File absoluteRootAsFile() {
@@ -177,8 +226,9 @@ class WalkState extends PooledReusable {
     WeightEstimate weightEstimateAcceptableForCurrentLevel() {
         switch ( this.visitedLevel ) {
             case 0:
-                return PERFECT;
             case 1:
+                return PERFECT;
+            case 2:
                 return GOOD;
             default:
                 return MODERATE; 
@@ -189,11 +239,11 @@ class WalkState extends PooledReusable {
         return this.pattern;
     }
     
-    boolean isDepthDefined() {
+    boolean isMaxDepthDefined() {
         return nonNull(this.maxLevelsToVisit);
     }
     
-    Integer depth() {
+    Integer maxDepth() {
         return this.maxLevelsToVisit;
     }
     
@@ -205,8 +255,36 @@ class WalkState extends PooledReusable {
         return splitPathFragmentsFrom(this.pattern);
     }
     
-    List<String> collectedOnCurrentLevel() {
-        return this.collectedOnCurrentLevel;
+    int collectedOnCurrentLevelSize() {
+        return this.collectedOnCurrentLevelPathsWithoutRoot.size();
+    }
+    
+    String collectedOnCurrentLevelGet(int i) {
+        return this.collectedOnCurrentLevelPathsWithoutRoot.get(i);
+    }
+    
+    void collectedOnCurrentLevelAdd(String pathWithoutRoot, String pathWithRoot) {
+        this.collectedOnCurrentLevelPathsWithoutRoot.add(pathWithoutRoot);
+        this.collectedOnCurrentLevelPathsWithRoot.add(pathWithRoot);
+    }
+    
+    void collectedOnCurrentLevelSet(int i, String path, String pathName) {
+        this.collectedOnCurrentLevelPathsWithoutRoot.set(i, path);
+        this.collectedOnCurrentLevelPathsWithRoot.set(i, pathName);
+    }
+    
+    void collectedOnCurrentLevelRemove(int i) {
+        this.collectedOnCurrentLevelPathsWithoutRoot.remove(i);
+        this.collectedOnCurrentLevelPathsWithRoot.remove(i);
+    }
+    
+    void collectedOnCurrentLevelClear() {
+        this.collectedOnCurrentLevelPathsWithoutRoot.clear();
+        this.collectedOnCurrentLevelPathsWithRoot.clear();
+    }
+    
+    boolean collectedOnCurrentLevelNonEmpty() {
+        return this.collectedOnCurrentLevelPathsWithoutRoot.size() > 0;
     }
     
     List<File> currentLevel() {
@@ -237,19 +315,31 @@ class WalkState extends PooledReusable {
     }
     
     void weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants() {
-        if ( hasOne(this.collectedOnCurrentLevel) ) {
-            this.analyze.weightVariant(
-                    this.pattern, stringToVariant(getOne(this.collectedOnCurrentLevel)))
+        if ( hasOne(this.collectedOnCurrentLevelPathsWithoutRoot) ) {
+            Variant variant = namedStringToVariant(
+                    getOne(this.collectedOnCurrentLevelPathsWithoutRoot), 
+                    getOne(this.collectedOnCurrentLevelPathsWithRoot));
+            this.analyze
+                    .weightVariant(this.pattern, variant)
                     .ifPresent(weightedVariant -> this.variants.add(weightedVariant));
         } else {
-            List<Variant> currentLevelVariants = this.analyze.weightStringsList(
-                    this.pattern, this.collectedOnCurrentLevel);
+            List<Variant> pathVariants = namedStringsToVariants(
+                    this.collectedOnCurrentLevelPathsWithoutRoot, 
+                    this.collectedOnCurrentLevelPathsWithRoot);
+            List<Variant> currentLevelVariants = this.analyze
+                    .weightVariantsList(this.pattern, pathVariants);
             this.variants.addAll(currentLevelVariants);
-        }        
+        } 
+        sort(this.variants);
+        reindex(this.variants);
     }
     
-    void sortVariants() {
-        sort(this.variants);
+    boolean doesFirstVariantMatchPatternExactly() {
+        Variant variant = this.variants.get(0);
+        String variantText = variant.value();
+        return 
+                variantText.equalsIgnoreCase(this.pattern) ||
+                endsIgnoreCase(variantText, this.pattern);
     }
     
     boolean hasFirstVariantAcceptableWeightEstimate() {
@@ -257,20 +347,32 @@ class WalkState extends PooledReusable {
         return this.variants.get(0).hasEqualOrBetterWeightThan(acceptableWeightEstimate);
     }
     
-    List<Variant> extractVariantsAcceptableOnCurrentLevel() {
-        WeightEstimate acceptableWeightEstimate = this.weightEstimateAcceptableForCurrentLevel();
+    List<Variant> extractVariantsAcceptableOnCurrentLevel() {        
         List<Variant> extractedAcceptableVariants = new ArrayList<>();
         
+        Predicate<Variant> acceptance;
+        
+        if ( this.hasPredefinedWeightLimit ) {
+            acceptance = variant -> variant.weight() < this.predefinedWeightLimit;
+        } else {
+            WeightEstimate acceptableWeightEstimate = this.weightEstimateAcceptableForCurrentLevel();
+            acceptance = variant -> variant.hasEqualOrBetterWeightThan(acceptableWeightEstimate);
+        }
+            
         Variant variant;
         acceptableVariantsExtraction: for (int i = 0; i < this.variants.size(); i++) {
             variant = this.variants.get(i);
-            if ( variant.hasEqualOrBetterWeightThan(acceptableWeightEstimate) ) {
+            if ( acceptance.test(variant) ) {
                 extractedAcceptableVariants.add(variant);
                 this.variants.remove(i);
                 i--;
             } else {
                 break acceptableVariantsExtraction;
             }
+        }
+        
+        if ( nonEmpty(extractedAcceptableVariants) ) {
+            reindex(this.variants);
         }
         
         return extractedAcceptableVariants;
@@ -345,19 +447,89 @@ class WalkState extends PooledReusable {
     }
     
     boolean ifCannotGoDeeper() {
-        return ( nonNull(this.maxLevelsToVisit) && this.maxLevelsToVisit == 0 );
+        return nonNull(this.maxLevelsToVisit) && this.maxLevelsToVisit == 0 ;
     }
     
     boolean ifCanGoDeeper() {
         return isNull(this.maxLevelsToVisit) || this.visitedLevel < this.maxLevelsToVisit;
     }
     
-    String walkingQuery() {
+    boolean canStopAtCurrentLevel() {
+        if ( isNull(this.minLevelsToVisit) ) {
+            return true;
+        } else {
+            return this.visitedLevel >= this.minLevelsToVisit;
+        }
+    }
+    
+    boolean hasMinPredefinedWeight() {
+        return this.hasPredefinedWeightLimit;
+    }
+    
+    boolean isFirstCollectedVariantBetterThanMinPredefinedWeight() {
+        if ( this.hasPredefinedWeightLimit ) {
+            Variant bestPredefined = this.predefinedVariants.get(0);
+            Variant bestCollected = this.variants.get(0);
+            
+            if ( bestCollected.doesNotEqual(bestPredefined) ) {
+                return true;
+            } else {
+                Optional<Variant> betterCollected = this.variants
+                        .stream()
+                        .sorted()
+                        .filter(variant -> ! this.predefinedVariants.contains(variant))
+                        .findFirst();
+                if ( betterCollected.isPresent() ) {
+                    return betterCollected.get().weight() < this.predefinedWeightLimit;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return this.variants.size() > 0;
+        }
+    }
+    
+    String reportCollectedOnCurrentLevel() {
+        StringBuilder s = new StringBuilder();
+        s.append("\n    paths collected on ").append(this.visitedLevel).append(" level:");
+        for (String relativePath : this.collectedOnCurrentLevelPathsWithoutRoot) {
+            s.append("\n").append("    ").append(relativePath);
+        }
+        return s.toString();
+    }
+    
+    String reportWalkingQuery() {
+        StringBuilder s = new StringBuilder();
+        
+        s.append("\n")
+                .append("    FIND ").append(this.mode.name()).append("\n")
+                .append("    LIKE PATTERN ").append(this.pattern).append("\n")
+                .append("    IN ").append(this.place.absoluteRoot()).append("\n");
+        if ( nonNull(this.minLevelsToVisit) ) {
+            s.append("    WITH MIN DEPTH ").append(this.minLevelsToVisit).append("\n");
+        }
+        if ( this.isMaxDepthDefined() ) {
+            s.append("    WITH MAX DEPTH ").append(this.maxLevelsToVisit).append("\n");
+        }
+        if ( nonEmpty(this.predefinedVariants) ) {
+            s.append("    WITH PREDEFINED PATHS: ");
+            for (Variant variant : this.predefinedVariants) {
+                s.append("\n        weight: ")
+                        .append(variant.weight())
+                        .append(" ")
+                        .append(variant.value());
+            }
+        }
+        
+        return s.toString();
+    }
+    
+    String reportWalkingQueryOld() {
         String query;
         
-        if ( this.isDepthDefined() ) {
-            query = format(
-                "\n" +
+        if ( this.isMaxDepthDefined() ) {
+            query = format("\n" +
                 "    FIND %s\n" +
                 "    LIKE PATTERN %s\n" +
                 "    IN %s\n" +
@@ -365,7 +537,7 @@ class WalkState extends PooledReusable {
                 this.mode, 
                 this.pattern, 
                 this.place.absoluteRoot(), 
-                this.depth());
+                this.maxDepth());
         } else {
             query = format(
                 "\n" +

@@ -87,7 +87,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
         sb.append(format("     > %s", question.getQuestion()));
         for (int i = 0; i < question.getVariants().size(); i++) {
             sb.append(
-                    format("\n       %d : %s", i + 1, question.getVariants().get(i).bestText()));
+                    format("\n       %d : %s", i + 1, question.getVariants().get(i).nameOrValue()));
         }
         sb.append("\n     > choose : ");
         this.intoConsole.put(sb.toString());
@@ -98,7 +98,7 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
         StringBuilder sb = new StringBuilder();
         sb.append("     > is one of ?");
         for (int i = 0; i < variants.size(); i++) {
-            sb.append(format("\n       %d : %s", i + 1, variants.get(i).bestText()));
+            sb.append(format("\n       %d : %s", i + 1, variants.get(i).nameOrValue()));
         }
         sb.append("\n     > choose : ");
         this.intoConsole.put(sb.toString());

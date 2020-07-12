@@ -34,6 +34,6 @@ public class Answers {
     }
     
     public static Answer answerOfVariant(Variant variant) {
-        return new GivenAnswer(variant.text(), variant.index());
+        return new GivenAnswer(variant.value(), variant.index());
     }
 }

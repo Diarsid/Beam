@@ -13,12 +13,13 @@ import diarsid.support.objects.Possible;
 
 import static java.lang.Integer.min;
 
-import static diarsid.beam.core.base.analyze.variantsweight.ClusterComparison.LEFT_IS_BETTER;
-import static diarsid.beam.core.base.analyze.variantsweight.ClusterComparison.LEFT_IS_WORSE;
+import static diarsid.beam.core.base.analyze.variantsweight.ClusterPreference.PREFERE_LEFT;
+import static diarsid.beam.core.base.analyze.variantsweight.ClusterPreference.PREFERE_RIGHT;
+import static diarsid.beam.core.base.analyze.variantsweight.Typos.Placing.AFTER;
+import static diarsid.beam.core.base.analyze.variantsweight.Typos.Placing.BEFORE;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.MathUtil.zeroIfNegative;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
-import static diarsid.support.strings.StringUtils.countCharMatchesIn;
 import static diarsid.support.strings.StringUtils.isWordsSeparator;
 import static diarsid.support.strings.StringUtils.joinAll;
 
@@ -172,9 +173,7 @@ class PositionsSearchStepOneCluster {
     private Boolean variantPositionsAtStart;
     private Boolean variantPositionsAtEnd;
     
-    private int possibleTypoMatchesBefore;
-    private int possibleTypoMatchesAfter;
-    private int possibleTypoMatches;
+    private final Typos typos;
     
     private int prevVariantPosition;
     private int mainVariantPosition;
@@ -216,12 +215,11 @@ class PositionsSearchStepOneCluster {
         this.lastAddedPatternPosition = UNINITIALIZED;
         this.finished = true;
         this.skip = 0;
-        this.possibleTypoMatchesBefore = 0;
-        this.possibleTypoMatchesAfter = 0;
         this.variantPositionsAtStart = null;
         this.startsAfterSeparator = null;
         this.variantPositionsAtEnd = null;
         this.endsBeforeSeparator = null;
+        this.typos = new Typos();
     }
     
     void incrementSkip() {
@@ -247,11 +245,11 @@ class PositionsSearchStepOneCluster {
     }
     
     int possibleTypoMatches() {
-        return this.possibleTypoMatches;
+        return this.typos.qtyTotal();
     }
     
     boolean doesHaveMorePossibleTypoMatchesThan(PositionsSearchStepOneCluster other) {
-        return this.possibleTypoMatches > other.possibleTypoMatches;
+        return this.typos.qtyTotal() > other.typos.qtyTotal();
     }
     
     boolean isAtStart() {
@@ -314,6 +312,7 @@ class PositionsSearchStepOneCluster {
         this.variant.resetTo(variant);
         this.pattern.resetTo(pattern);
         this.finishIfNot();
+        this.typos.set(variant, pattern);
         
         if ( this.patternCluster.isAtPatternStart() ) {
             
@@ -327,10 +326,10 @@ class PositionsSearchStepOneCluster {
                 int variantToExcl = variantClusterFirstPosition;
                 int variantFromIncl = zeroIfNegative(variantToExcl - TYPO_RANGE);
                 
-                this.possibleTypoMatchesBefore = countCharMatchesIn(
-                        variant, variantFromIncl, variantToExcl, 
-                        pattern, patternFromIncl, patternToExcl);
-                this.possibleTypoMatches = this.possibleTypoMatches + this.possibleTypoMatchesBefore;
+                this.typos.findIn(
+                        BEFORE, 
+                        variantFromIncl, variantToExcl, 
+                        patternFromIncl, patternToExcl);
             }
         }
         
@@ -348,10 +347,10 @@ class PositionsSearchStepOneCluster {
                 int variantToExcl = variantFromIncl + TYPO_RANGE;
                 variantToExcl = min(variantToExcl, variant.length());
                 
-                this.possibleTypoMatchesAfter = countCharMatchesIn(
-                        variant, variantFromIncl, variantToExcl, 
-                        pattern, patternFromIncl, patternToExcl);
-                this.possibleTypoMatches = this.possibleTypoMatches + this.possibleTypoMatchesAfter;
+                this.typos.findIn(
+                        AFTER, 
+                        variantFromIncl, variantToExcl, 
+                        patternFromIncl, patternToExcl);
             }
         }
         
@@ -371,7 +370,38 @@ class PositionsSearchStepOneCluster {
         }
     }
     
-    static ClusterComparison calculateAdditionalPossibleTypoMatches(
+    static double calculateSimilarity(
+            PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
+        int coincide = min(one.coreLength(), two.coreLength());
+        double bonus;
+                
+        switch (coincide) {
+            case 0:
+            case 1: 
+            case 2: {
+                throw new IllegalStateException("Step one clusters length must not be less than 3!");
+            }
+            case 3: {
+                bonus = 2.5;
+                break;
+            }
+            case 4: {
+                bonus = 3.2;
+                break;
+            }
+            case 5: {
+                bonus = 3.8;
+                break;
+            }
+            default: {
+                bonus = coincide * 0.7;
+            }
+        }
+        
+        return bonus;
+    }
+    
+    static ClusterPreference calculateAdditionalPossibleTypoMatches(
             PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
         String pattern = one.pattern.orThrow();
         String variant = one.variant.orThrow();
@@ -439,9 +469,9 @@ class PositionsSearchStepOneCluster {
 
                 if ( ! additionalMatchesEqual ) {
                     if ( oneAdditionalMatches > twoAdditionalMatches ) {
-                        return LEFT_IS_BETTER;
+                        return PREFERE_LEFT;
                     } else if ( oneAdditionalMatches < twoAdditionalMatches ) {
-                        return LEFT_IS_WORSE;
+                        return PREFERE_RIGHT;
                     }
                 }
             }            
@@ -509,9 +539,9 @@ class PositionsSearchStepOneCluster {
         }
         
         if ( oneAdditionalMatches > twoAdditionalMatches ) {
-            return LEFT_IS_BETTER;
+            return PREFERE_LEFT;
         } else if ( oneAdditionalMatches < twoAdditionalMatches ) {
-            return LEFT_IS_WORSE;
+            return PREFERE_RIGHT;
         } else {
             return null;
         }
@@ -575,13 +605,54 @@ class PositionsSearchStepOneCluster {
         this.prevsPatternPositions.add(this.lastAddedPatternPosition);
     }
     
-    int length() {
+    int coreLength() {
         return this.prevsVariantPositions.size() + 3 + this.nextsVariantPositions.size();
     }
     
-    boolean isLongerThan(PositionsSearchStepOneCluster other) {
-        return this.length() + this.possibleTypoMatches() > 
-               other.length() + other.possibleTypoMatches();
+    boolean isBetterThan(PositionsSearchStepOneCluster other) {
+        int thisLengthWithNearTypos = this.lengthWithNearTypos();
+        int otherLengthWithNearTypos = other.lengthWithNearTypos();
+        
+        if ( thisLengthWithNearTypos > otherLengthWithNearTypos ) {
+            return true;
+        } else if ( thisLengthWithNearTypos < otherLengthWithNearTypos ) {
+            return false;
+        } else {
+            int thisTotalTypos = this.typos.qtyTotal();
+            int thisLength = this.coreLength();
+            int otherTotalTypos = other.typos.qtyTotal();
+            int otherLength = other.coreLength();
+            int thisTotalLength = thisLength + thisTotalTypos;
+            int otherTotalLength = otherLength + otherTotalTypos;
+            
+            if ( thisTotalLength > otherTotalLength ) {
+                return true;
+            } else if ( thisTotalLength < otherTotalLength ) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+    
+    private int lengthWithNearTypos() {
+        int length = this.coreLength();
+        
+        if ( this.typos.hasBefore() ) {
+            int firstVariantPosition = this.firstVariantPosition();
+            if ( this.typos.hasInBefore(firstVariantPosition - 1) ) {
+                length = length + this.typos.qtyBefore();
+            }
+        }
+        
+        if ( this.typos.hasAfter() ) {
+            int lastVariantPosition = this.lastVariantPosition();
+            if ( this.typos.hasInAfter(lastVariantPosition + 1) ) {
+                length = length + this.typos.qtyAfter();
+            }
+        }
+        
+        return length;
     }
     
     private int firstVariantPosition() {
@@ -618,13 +689,11 @@ class PositionsSearchStepOneCluster {
         this.lastAddedPatternPosition = UNINITIALIZED;
         this.finished = true;
         this.skip = 0;
-        this.possibleTypoMatchesBefore = 0;
-        this.possibleTypoMatchesAfter = 0;
-        this.possibleTypoMatches = 0;
         this.variantPositionsAtStart = null;
         this.startsAfterSeparator = null;
         this.variantPositionsAtEnd = null;
         this.endsBeforeSeparator = null;
+        this.typos.clear();
     }
     
     @Override
@@ -637,8 +706,8 @@ class PositionsSearchStepOneCluster {
     }
     
     private String plusTyposString() {
-        if ( this.possibleTypoMatches > 0 ) {
-            return ", poss.typos: " + this.possibleTypoMatches;
+        if ( this.typos.qtyTotal() > 0 ) {
+            return ", poss.typos: " + this.typos;
         } else {
             return "";
         }
@@ -647,29 +716,34 @@ class PositionsSearchStepOneCluster {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.positionIterableView);
-        hash = 89 * hash + Objects.hashCode(this.allVariantPositions);
-        hash = 89 * hash + Objects.hashCode(this.allPatternPositions);
-        hash = 89 * hash + Objects.hashCode(this.prevsVariantPositions);
-        hash = 89 * hash + Objects.hashCode(this.prevsPatternPositions);
-        hash = 89 * hash + Objects.hashCode(this.nextsVariantPositions);
-        hash = 89 * hash + Objects.hashCode(this.nextsPatternPositions);
-        hash = 89 * hash + Objects.hashCode(this.startsAfterSeparator);
-        hash = 89 * hash + Objects.hashCode(this.endsBeforeSeparator);
-        hash = 89 * hash + Objects.hashCode(this.variantPositionsAtStart);
-        hash = 89 * hash + Objects.hashCode(this.variantPositionsAtEnd);
-        hash = 89 * hash + this.possibleTypoMatchesBefore;
-        hash = 89 * hash + this.possibleTypoMatchesAfter;
-        hash = 89 * hash + this.prevVariantPosition;
-        hash = 89 * hash + this.mainVariantPosition;
-        hash = 89 * hash + this.nextVariantPosition;
-        hash = 89 * hash + this.prevPatternPosition;
-        hash = 89 * hash + this.mainPatternPosition;
-        hash = 89 * hash + this.nextPatternPosition;
-        hash = 89 * hash + (this.hasPrevs ? 1 : 0);
-        hash = 89 * hash + (this.hasNexts ? 1 : 0);
-        hash = 89 * hash + (this.finished ? 1 : 0);
-        hash = 89 * hash + this.skip;
+        hash = 61 * hash + Objects.hashCode(this.variant);
+        hash = 61 * hash + Objects.hashCode(this.pattern);
+        hash = 61 * hash + Objects.hashCode(this.positionIterableView);
+        hash = 61 * hash + Objects.hashCode(this.positionView);
+        hash = 61 * hash + Objects.hashCode(this.patternCluster);
+        hash = 61 * hash + Objects.hashCode(this.allVariantPositions);
+        hash = 61 * hash + Objects.hashCode(this.allPatternPositions);
+        hash = 61 * hash + Objects.hashCode(this.prevsVariantPositions);
+        hash = 61 * hash + Objects.hashCode(this.prevsPatternPositions);
+        hash = 61 * hash + Objects.hashCode(this.nextsVariantPositions);
+        hash = 61 * hash + Objects.hashCode(this.nextsPatternPositions);
+        hash = 61 * hash + Objects.hashCode(this.startsAfterSeparator);
+        hash = 61 * hash + Objects.hashCode(this.endsBeforeSeparator);
+        hash = 61 * hash + Objects.hashCode(this.variantPositionsAtStart);
+        hash = 61 * hash + Objects.hashCode(this.variantPositionsAtEnd);
+        hash = 61 * hash + Objects.hashCode(this.typos);
+        hash = 61 * hash + this.prevVariantPosition;
+        hash = 61 * hash + this.mainVariantPosition;
+        hash = 61 * hash + this.nextVariantPosition;
+        hash = 61 * hash + this.prevPatternPosition;
+        hash = 61 * hash + this.mainPatternPosition;
+        hash = 61 * hash + this.nextPatternPosition;
+        hash = 61 * hash + (this.hasPrevs ? 1 : 0);
+        hash = 61 * hash + (this.hasNexts ? 1 : 0);
+        hash = 61 * hash + this.lastAddedVariantPosition;
+        hash = 61 * hash + this.lastAddedPatternPosition;
+        hash = 61 * hash + (this.finished ? 1 : 0);
+        hash = 61 * hash + this.skip;
         return hash;
     }
 
@@ -685,12 +759,6 @@ class PositionsSearchStepOneCluster {
             return false;
         }
         final PositionsSearchStepOneCluster other = ( PositionsSearchStepOneCluster ) obj;
-        if ( this.possibleTypoMatchesBefore != other.possibleTypoMatchesBefore ) {
-            return false;
-        }
-        if ( this.possibleTypoMatchesAfter != other.possibleTypoMatchesAfter ) {
-            return false;
-        }
         if ( this.prevVariantPosition != other.prevVariantPosition ) {
             return false;
         }
@@ -715,13 +783,31 @@ class PositionsSearchStepOneCluster {
         if ( this.hasNexts != other.hasNexts ) {
             return false;
         }
+        if ( this.lastAddedVariantPosition != other.lastAddedVariantPosition ) {
+            return false;
+        }
+        if ( this.lastAddedPatternPosition != other.lastAddedPatternPosition ) {
+            return false;
+        }
         if ( this.finished != other.finished ) {
             return false;
         }
         if ( this.skip != other.skip ) {
             return false;
         }
+        if ( !Objects.equals(this.variant, other.variant) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.pattern, other.pattern) ) {
+            return false;
+        }
         if ( !Objects.equals(this.positionIterableView, other.positionIterableView) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.positionView, other.positionView) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.patternCluster, other.patternCluster) ) {
             return false;
         }
         if ( !Objects.equals(this.allVariantPositions, other.allVariantPositions) ) {
@@ -752,6 +838,9 @@ class PositionsSearchStepOneCluster {
             return false;
         }
         if ( !Objects.equals(this.variantPositionsAtEnd, other.variantPositionsAtEnd) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.typos, other.typos) ) {
             return false;
         }
         return true;

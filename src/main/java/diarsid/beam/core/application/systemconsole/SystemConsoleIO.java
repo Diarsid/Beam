@@ -82,7 +82,7 @@ class SystemConsoleIO implements ConsoleIO {
         this.writer.newLine();
         for (int i = 0; i < question.getVariants().size(); i++) {
             this.writer.write(
-                    format("       %d : %s", i + 1, question.getVariants().get(i).bestText()));
+                    format("       %d : %s", i + 1, question.getVariants().get(i).nameOrValue()));
             this.writer.newLine();
         }
         this.printInDialogInviteLine("choose");
@@ -93,7 +93,7 @@ class SystemConsoleIO implements ConsoleIO {
         this.writer.write("     > is one of ?");
         this.writer.newLine();
         for (int i = 0; i < variants.size(); i++) {
-            this.writer.write(format("       %d : %s", i + 1, variants.get(i).bestText()));
+            this.writer.write(format("       %d : %s", i + 1, variants.get(i).nameOrValue()));
             this.writer.newLine();
         }
         this.printInDialogInviteLine("choose");

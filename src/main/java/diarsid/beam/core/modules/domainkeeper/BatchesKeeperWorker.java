@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
@@ -76,7 +76,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
     private final ResponsiveDaoBatches dao;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final InnerIoEngine ioEngine;
     private final KeeperDialogHelper helper;
@@ -95,7 +95,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
             ResponsiveDaoBatches daoBatches, 
             ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
-            Analyze analyze,
+            WeightAnalyzeReal analyze,
             Pool<KeeperLoopValidationDialog> dialogPool,
             InnerIoEngine ioEngine,
             KeeperDialogHelper helper,
@@ -273,7 +273,7 @@ class BatchesKeeperWorker implements BatchesKeeper {
         if ( hasOne(foundBatchNames) ) {
             String batchName = getOne(foundBatchNames);
             if ( batchName.equalsIgnoreCase(pattern) || 
-                 this.analyze.isNameSatisfiable(pattern, batchName) ) {
+                 this.analyze.isSatisfiable(pattern, batchName) ) {
                 return this.findByExactName(initiator, batchName); 
             } else {
                 return valueFlowDoneEmpty();
@@ -299,12 +299,12 @@ class BatchesKeeperWorker implements BatchesKeeper {
         }
         
         Variant bestVariant = variants.best();
-        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+        if ( bestVariant.value().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
         } else {
             boolean hasMatch = this.daoPatternChoices
-                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+                    .hasMatchOf(initiator, pattern, bestVariant.value(), variants);
             if ( hasMatch ) {
                 return this.findByExactName(initiator, foundBatchNames.get(bestVariant.index()));
             } else {

@@ -10,7 +10,7 @@ import java.util.List;
 
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_SEARCH;
 
 /**

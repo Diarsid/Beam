@@ -166,4 +166,14 @@ public class MathUtil {
         }        
     }
     
+    public static int sumInts(Iterable<Integer> ints) {
+        int sum = 0;
+        
+        for (Integer i : ints) {
+            sum = sum + i;
+        }
+        
+        return sum;
+    }
+    
 }

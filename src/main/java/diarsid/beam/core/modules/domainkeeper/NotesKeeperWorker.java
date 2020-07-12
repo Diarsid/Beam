@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.NotesCatalog;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -48,7 +48,7 @@ class NotesKeeperWorker implements NotesKeeper {
 
     private final InnerIoEngine ioEngine;
     private final NotesCatalog notesCatalog;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final KeeperDialogHelper helper;
     private final Help enterNoteNameHelp;
@@ -58,7 +58,7 @@ class NotesKeeperWorker implements NotesKeeper {
     NotesKeeperWorker(
             InnerIoEngine ioEngine, 
             NotesCatalog notesCatalog, 
-            Analyze analyze, 
+            WeightAnalyzeReal analyze, 
             Pool<KeeperLoopValidationDialog> dialogPool,
             KeeperDialogHelper helper) {
         this.ioEngine = ioEngine;

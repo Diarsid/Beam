@@ -29,6 +29,7 @@ import static diarsid.beam.core.base.control.io.base.interaction.Answers.helpReq
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.helpRequestAnswerFor;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.rejectedAnswer;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
+import static diarsid.beam.core.base.control.io.base.interaction.Choice.NOT_MADE;
 import static diarsid.beam.core.base.control.io.base.interaction.Choice.choiceOfPattern;
 import static diarsid.beam.core.base.control.io.base.interaction.Help.isHelpRequest;
 import static diarsid.beam.core.base.control.io.base.interaction.UserReaction.isNo;
@@ -141,20 +142,25 @@ public class Console implements OuterIoEngine {
     public Answer resolve(Variants variants) {        
         String line;
         Answer answer = variantsDontContainSatisfiableAnswer();
-        Choice choice;
+        Choice choice = NOT_MADE;
+        Choice previousChoice = NOT_MADE;
         int chosenVariantIndex;
         List<Variant> similarVariants;
+        Variant currentVariant;
         
         variantsChoosing: while ( variants.next() ) {         
             answer = variantsDontContainSatisfiableAnswer();   
             if ( variants.currentIsMuchBetterThanNext() ) {
-                this.consoleOperator.printYesNoQuestion(variants.current().bestText());
+                currentVariant = variants.current();
+                this.consoleOperator.printYesNoQuestion(currentVariant.nameOrValue());
+                previousChoice = choice;
                 choice = choiceOfPattern(this.consoleOperator.read());
                 switch ( choice ) {
                     case POSITIVE : {
-                        return answerOfVariant(variants.current());
+                        return answerOfVariant(currentVariant);
                     }
                     case NEGATIVE : {
+//                        variants.removeHavingSameStartAs(currentVariant);
                         continue variantsChoosing;
                     }
                     case REJECT : {

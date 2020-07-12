@@ -5,14 +5,19 @@
  */
 package diarsid.beam.core.base.analyze.variantsweight;
 
+import java.util.function.Consumer;
+
 /**
  *
  * @author Diarsid
  */
-public enum ClusterComparison {
+class AnalyzeLog {
     
-    LEFT_IS_BETTER,
-    LEFT_IS_WORSE,
+    private final Consumer<String> logger;
+
+    AnalyzeLog(Consumer<String> logger) {
+        this.logger = logger;
+    }
     
     
 }

@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -122,7 +122,7 @@ public class WebPagesKeeperWorker
     private final ResponsiveDaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final Gui gui;
     private final Initiator systemInitiator;
@@ -147,7 +147,7 @@ public class WebPagesKeeperWorker
             CommandsMemoryKeeper commandsMemory,
             ResponsiveDaoPatternChoices daoPatternChoices,
             InnerIoEngine ioEngine, 
-            Analyze analyze,
+            WeightAnalyzeReal analyze,
             Pool<KeeperLoopValidationDialog> dialogPool,
             Gui gui,
             Initiator systemInitiator,
@@ -311,7 +311,7 @@ public class WebPagesKeeperWorker
         if ( hasOne(foundPages) ) {
             WebPage page = getOne(foundPages);
             if ( page.name().equalsIgnoreCase(namePattern) ||
-                 this.analyze.isEntitySatisfiable(namePattern, page) ) {
+                 this.analyze.isSatisfiable(namePattern, page.name()) ) {
                 return valueFlowDoneWith(page);
             } else {
                 return valueFlowDoneEmpty();
@@ -331,12 +331,12 @@ public class WebPagesKeeperWorker
         }
         
         Variant bestVariant = variants.best();
-        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+        if ( bestVariant.value().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return valueFlowDoneWith(pages.get(bestVariant.index()));
         } else {
             boolean hasMatch = this.daoPatternChoices
-                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+                    .hasMatchOf(initiator, pattern, bestVariant.value(), variants);
             if ( hasMatch ) {
                 return valueFlowDoneWith(pages.get(bestVariant.index()));
             } else {

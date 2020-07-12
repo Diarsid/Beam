@@ -15,7 +15,9 @@ import java.util.stream.IntStream;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.util.CollectionsUtils;
 
+import static java.lang.String.format;
 import static java.util.Collections.sort;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -23,9 +25,11 @@ import static java.util.stream.Collectors.toList;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.answerOfVariant;
 import static diarsid.beam.core.base.control.io.base.interaction.Answers.variantsDontContainSatisfiableAnswer;
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
+import static diarsid.beam.core.base.util.CollectionsUtils.last;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.startsIgnoreCase;
 import static diarsid.support.strings.StringUtils.lower;
 
 
@@ -35,13 +39,30 @@ import static diarsid.support.strings.StringUtils.lower;
  */
 public class Variants implements Serializable {
     
+    private static final int FEED_ALGORITHM_VERSION = 2;
+    
     private final List<Variant> variants;
+    private final double bestWeight;
+    private final double worstWeight;
+    private final double weightDifference;
+    private final double weightStep;
     private List<Variant> currentSimilarVariants;
     private int currentVariantIndex;
 
     Variants(List<Variant> variants) {
-        this.variants = new ArrayList<>(variants);
-        sort(this.variants);
+        sort(variants);
+        this.variants = unmodifiableList(variants);
+        if ( nonEmpty(this.variants) ) {
+            this.bestWeight = variants.get(0).weight();
+            this.worstWeight = last(variants).weight();
+            this.weightDifference = absDiff(this.bestWeight, this.worstWeight);
+            this.weightStep = this.weightDifference / this.variants.size();
+        } else {
+            this.bestWeight = 0;
+            this.worstWeight = 0;
+            this.weightDifference = 0;
+            this.weightStep = 0;
+        }
         this.currentVariantIndex = -1;
         this.currentSimilarVariants = null;
     }
@@ -103,26 +124,45 @@ public class Variants implements Serializable {
     public String stamp() {
         return this.variants
                 .stream()
-                .map(variant -> lower(variant.text()))
+                .map(variant -> lower(variant.value()))
                 .collect(joining(";"));
     }
     
-    public void removeWorseThan(String variantValue) {
-        boolean needToRemove = false;
+    public void removeHavingSameStartAs(Variant variant) {
+        Variant current;
+        
         for (int i = 0; i < this.variants.size(); i++) {
-            if ( needToRemove ) {
+            current = this.variants.get(i);
+            if ( current.index() <= variant.index()) {
+                continue;
+            }
+            
+            if ( startsIgnoreCase(current.nameOrValue(), variant.nameOrValue()) ) {
                 this.variants.remove(i);
                 i--;
-            } else {
-                if ( this.variants.get(i).text().equalsIgnoreCase(variantValue) ) {
-                    needToRemove = true;
-                }
             }
         }
     }
     
+    public Variants removeWorseThan(String variantValue) {
+        List<Variant> moidifiableVariants = new ArrayList<>(this.variants);
+        boolean needToRemove = false;
+        for (int i = 0; i < moidifiableVariants.size(); i++) {
+            if ( needToRemove ) {
+                moidifiableVariants.remove(i);
+                i--;
+            } else {
+                if ( moidifiableVariants.get(i).value().equalsIgnoreCase(variantValue) ) {
+                    needToRemove = true;
+                }
+            }
+        }
+        
+        return new Variants(moidifiableVariants);
+    }
+    
     public String getVariantAt(int i) {
-        return this.variants.get(i).text();
+        return this.variants.get(i).value();
     }
     
     public int size() {
@@ -152,7 +192,7 @@ public class Variants implements Serializable {
                     if ( variant.doesHaveName() ) {
                         return containsIgnoreCase(variant.name(), possibleFragment);
                     } else {
-                        return containsIgnoreCase(variant.text(), possibleFragment);
+                        return containsIgnoreCase(variant.value(), possibleFragment);
                     }
                 })
                 .map(variant -> answerOfVariant(variant))
@@ -190,28 +230,39 @@ public class Variants implements Serializable {
     
     public boolean currentIsMuchBetterThanNext() {
         if ( this.currentVariantIndex < this.variants.size() - 1 ) {
-            double currentWeight = this.current().weight();
-            double nextWeight = this.variants.get(this.currentVariantIndex + 1).weight();
-            
             if ( this.currentVariantIndex < 0 ) {
                 throw new IllegalStateException(
                         "Unexpected behavior: call .next() before accessing variants!");
-            } else if ( this.currentVariantIndex == 0 ) {
-                return absDiff(currentWeight, nextWeight) >= 1.0;
-            } else if ( this.currentVariantIndex < 4 ) {
-                return absDiff(currentWeight, nextWeight) >= 2.0;
-            } else {
-                return ( currentWeight * 0.8 < nextWeight );
             }
             
-//            return ( absDiff(currentWeight, nextWeight) < abs(currentWeight * 0.2) );
-//            if ( currentWeight < 5.0 ) {
-//                return ( nextWeight - currentWeight ) >= 1.0;
-//            } else {
-//                double currentDouble = currentWeight * 1.0;
-//                double nextDouble = nextWeight * 0.75;
-//                return currentDouble < nextDouble;
-//            }
+            double currentWeight = this.current().weight();
+            double nextWeight = this.variants.get(this.currentVariantIndex + 1).weight();
+            
+            switch ( FEED_ALGORITHM_VERSION ) {
+                case 1 : {
+                    if ( this.currentVariantIndex == 0 ) {
+                        return absDiff(currentWeight, nextWeight) >= 1.0;
+                    } else if ( this.currentVariantIndex < 4 ) {
+                        return absDiff(currentWeight, nextWeight) >= 2.0;
+                    } else {
+                        return ( currentWeight * 0.8 < nextWeight );
+                    }
+                }
+                case 2 : {
+                    if ( this.currentVariantIndex == 0 ) {
+                        return absDiff(currentWeight, nextWeight) >= this.weightStep;
+                    } else if ( this.currentVariantIndex < 4 ) {
+                        return absDiff(currentWeight, nextWeight) >= this.weightDifference / 4 ;
+                    } else {
+                        return absDiff(currentWeight, nextWeight) >= this.weightDifference / 2 ;
+                    }
+                }
+                default : {
+                    throw new IllegalStateException(format(
+                            "There is not feed algorithm with version %s", FEED_ALGORITHM_VERSION));
+                }
+            }
+            
         } else if ( this.currentVariantIndex == this.variants.size() - 1 ) {
             return true;
         } else {

@@ -77,7 +77,7 @@ public class OpenLocationTargetCommandTest {
         Variant v = c.toVariant(1);
         assertEquals(1, v.index());
         assertEquals("open projects/netbeans", v.name());
-        assertEquals("projects/netbeans", v.text());
+        assertEquals("projects/netbeans", v.value());
     }
 
     /**

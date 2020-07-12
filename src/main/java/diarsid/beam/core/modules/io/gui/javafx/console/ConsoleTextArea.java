@@ -5,6 +5,7 @@
  */
 package diarsid.beam.core.modules.io.gui.javafx.console;
 
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
@@ -258,22 +259,27 @@ class ConsoleTextArea {
     }
     
     final void startListenBlockingConsoleIncome() {        
-        /* 
+//        listenWithSynchronization_V1_byWaitNotify();
+        listenWithSynchronization_V2_bySynchronousQueue();
+    }
+
+    private void listenWithSynchronization_V1_byWaitNotify() {
+        /*
          * mutableChangeProcess is a lock shared only between two threads:
          *  - JavaFX Application Thread can only .notify
          *  - JavaFX Console Listener Thread can only .wait
          * There are no any other threads accessing this lock.
          *
          * These threads should act in a strict order:
-         *  - JavaFX Console Listener Thread is a permanently running thread, 
+         *  - JavaFX Console Listener Thread is a permanently running thread,
          *    waiting each time on blocking get method to obtain next user input 
          *    from console.
          *  - When user input has been provided, JavaFX Console Listener Thread launches
          *    JavaFX console change as a Runnable constant that should be executed 
          *    in JavaFX Application Thread to adopt given changes to a JavaFX component.
-         *  - The crucial point in this interaction is that Listener Thread MUST NOT 
-         *    attempt to take new part of user input UNTIL PREVIOUS ONE IS COMPLETELY 
-         *    PROCESSED in JavaFX Thread. That's why JavaFX Application Thread is 
+         *  - The crucial point in this interaction is that Listener Thread MUST NOT
+         *    attempt to take new part of user input UNTIL PREVIOUS ONE IS COMPLETELY
+         *    PROCESSED in JavaFX Thread. That's why JavaFX Application Thread is
          *    notifying lock when it finished its work and Listener Thread is 
          *    waiting.
          */
@@ -291,7 +297,7 @@ class ConsoleTextArea {
             }
         };
         
-        asyncDoIndependently("JavaFX Console Listener Thread", ()-> {
+        asyncDoIndependently("JavaFX Console Listener Thread V1", () -> {
             while ( true ) {                
                 try {
                     synchronized ( mutableChangeProcess ) {
@@ -305,6 +311,56 @@ class ConsoleTextArea {
             }
         });
     }
+
+    private void listenWithSynchronization_V2_bySynchronousQueue() {
+        /*
+         * mutableChangeProcess is a lock shared only between two threads:
+         *  - JavaFX Application Thread can only .notify
+         *  - JavaFX Console Listener Thread can only .wait
+         * There are no any other threads accessing this lock.
+         *
+         * These threads should act in a strict order:
+         *  - JavaFX Console Listener Thread is a permanently running thread,
+         *    waiting each time on blocking get method to obtain next user input 
+         *    from console.
+         *  - When user input has been provided, JavaFX Console Listener Thread launches
+         *    JavaFX console change as a Runnable constant that should be executed 
+         *    in JavaFX Application Thread to adopt given changes to a JavaFX component.
+         *  - The crucial point in this interaction is that Listener Thread MUST NOT
+         *    attempt to take new part of user input UNTIL PREVIOUS ONE IS COMPLETELY
+         *    PROCESSED in JavaFX Thread. That's why JavaFX Application Thread is
+         *    notifying lock when it finished its work and Listener Thread is 
+         *    waiting.
+         */
+        Object mutableChangeProcess = new Object();
+        SynchronousQueue sync = new SynchronousQueue(true);
+        MutableString mutableNewLine = emptyMutableString();
+        Runnable consoleTextAreaMutableChange = () -> {
+            synchronized ( this.consoleTextAreaLock ) {
+                this.consoleTextAreaInternalInputCounter.incrementAndGet();
+                this.textArea.setEditable(false);
+                this.textArea.appendText(mutableNewLine.getAndEmpty());
+                this.textArea.commitValue();
+                try {
+                    sync.put(mutableChangeProcess);
+                } catch (InterruptedException e) {
+
+                }
+            }
+        };
+        
+        asyncDoIndependently("JavaFX Console Listener Thread V2", () -> {
+            while ( true ) {                
+                try {
+                    mutableNewLine.muteTo(this.consoleBlockingIo.blockingGetPrintedString());
+                    Platform.runLater(consoleTextAreaMutableChange);
+                    sync.take();
+                } catch (InterruptedException ignore) {
+                    // do nothing
+                }
+            }
+        });
+    }    
     
     private void acceptInput(String input) {
         try {

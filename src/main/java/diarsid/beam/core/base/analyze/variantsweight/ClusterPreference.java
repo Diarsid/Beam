@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.analyze;
+package diarsid.beam.core.base.analyze.variantsweight;
 
 /**
  *
  * @author Diarsid
  */
-public interface Analyze {
+public enum ClusterPreference {
     
-    int algorithmVersion();
+    PREFERE_LEFT,
+    PREFERE_RIGHT    
+    
 }

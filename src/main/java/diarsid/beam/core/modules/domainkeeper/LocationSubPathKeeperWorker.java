@@ -8,8 +8,9 @@ package diarsid.beam.core.modules.domainkeeper;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -17,6 +18,7 @@ import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPathChoices;
 import diarsid.beam.core.modules.responsivedata.ResponsiveDaoLocationSubPaths;
@@ -40,14 +42,14 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
     private final ResponsiveDaoLocationSubPaths daoSubPaths;
     private final ResponsiveDaoLocationSubPathChoices daoSubPathChoices;
     private final InnerIoEngine ioEngine;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Help getOneSubPathHelp;
     private final Help chooseOneSubPathHelp;
     
     LocationSubPathKeeperWorker(
             ResponsiveDaoLocationSubPaths daoSubPaths,
             ResponsiveDaoLocationSubPathChoices daoSubPathChoices,
-            Analyze analyze, 
+            WeightAnalyzeReal analyze, 
             InnerIoEngine ioEngine) {        
         this.daoSubPaths = daoSubPaths;
         this.daoSubPathChoices = daoSubPathChoices;
@@ -68,7 +70,47 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
                 "   - n/no to see other found subpaths if any",
                 "   - dot to break"
         );
-    }    
+    }  
+
+    @Override
+    public List<Variant> findAllLocationSubPaths(
+            Initiator initiator, Location location, String pattern) {
+        List<LocationSubPath> subPaths = this.daoSubPaths
+                .getSubPathesByPattern(initiator, location, pattern);
+        return this.analyze.weightVariantsList(pattern, toVariants(subPaths));
+    }
+
+    @Override
+    public ValueFlow<LocationSubPath> findLocationSubPath(
+            Initiator initiator, Location location, String pattern) {
+        List<LocationSubPath> subPaths = this.daoSubPaths
+                .getSubPathesByPattern(initiator, location, pattern);
+        return this.resloveFoundSubPaths(initiator, location.relativePathTo(pattern), subPaths);
+    }
+
+    @Override
+    public ValueFlow<LocationSubPath> findLocationSubPath(
+            Initiator initiator, String pattern) {
+        List<LocationSubPath> subPaths = this.daoSubPaths
+                .getSubPathesByPattern(initiator, pattern);
+        return this.resloveFoundSubPaths(initiator, pattern, subPaths);
+    }     
+
+    private ValueFlow<LocationSubPath> resloveFoundSubPaths(
+            Initiator initiator, String pattern, List<LocationSubPath> subPaths) {
+        if ( hasOne(subPaths) ) {
+            LocationSubPath subPath = getOne(subPaths);
+            if ( subPath.pattern().equalsIgnoreCase(pattern) ) {
+                return valueFlowDoneWith(subPath);
+            } else {
+                return this.askAboutSubPathIfSatisfiable(initiator, pattern, subPath);
+            }            
+        } else if ( hasMany(subPaths) ) {
+            return this.chooseOneSubPathsFromMany(initiator, pattern, subPaths);
+        } else {
+            return valueFlowDoneEmpty();
+        }
+    }     
     
     private ValueFlow<LocationSubPath> askAboutSubPath(
             Initiator initiator, LocationSubPath subPath, String pattern) {
@@ -108,30 +150,12 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
 
     private ValueFlow<LocationSubPath> askAboutSubPathIfSatisfiable(
             Initiator initiator, String pattern, LocationSubPath subPath) {
-        if ( this.analyze.isVariantSatisfiable(pattern, subPath.toSingleVariant()) ) {
+        if ( this.analyze.isSatisfiable(pattern, subPath.toSingleVariant()) ) {
             return this.askAboutSubPath(initiator, subPath, pattern);
         } else {
             return valueFlowDoneEmpty();
         }
     }
-
-    @Override
-    public ValueFlow<LocationSubPath> findLocationSubPath(
-            Initiator initiator, String pattern) {
-        List<LocationSubPath> subPaths = this.daoSubPaths.getSubPathesByPattern(initiator, pattern);
-        if ( hasOne(subPaths) ) {
-            LocationSubPath subPath = getOne(subPaths);
-            if ( subPath.pattern().equalsIgnoreCase(pattern) ) {
-                return valueFlowDoneWith(subPath);
-            } else {
-                return this.askAboutSubPathIfSatisfiable(initiator, pattern, subPath);
-            }            
-        } else if ( hasMany(subPaths) ) {
-            return this.chooseOneSubPathsFromMany(initiator, pattern, subPaths);
-        } else {
-            return valueFlowDoneEmpty();
-        }    
-    }   
     
     private ValueFlow<LocationSubPath> chooseOneSubPathsFromMany(
             Initiator initiator, String pattern, List<LocationSubPath> subPaths) {
@@ -152,7 +176,8 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
             Initiator initiator, String pattern, List<LocationSubPath> subPaths) {
         Variants variants = this.analyze.weightVariants(pattern, toVariants(subPaths));
         if ( variants.hasOne() ) {
-            return this.resolveOneSubPathFrom(initiator, pattern, getOne(subPaths));
+            LocationSubPath chosen = subPaths.get(variants.best().index());
+            return this.resolveOneSubPathFrom(initiator, pattern, chosen);
         } else if ( variants.hasMany() ) {
             return this.resolveManySubPathsVariants(initiator, pattern, subPaths, variants);
         } else {
@@ -168,7 +193,7 @@ class LocationSubPathKeeperWorker implements LocationSubPathKeeper {
         Optional<LocationSubPath> chosenSubPath = this.daoSubPathChoices.getChoiceFor(
                 initiator, pattern, variants);
         if ( chosenSubPath.isPresent() ) {
-            if ( chosenSubPath.get().fullName().equalsIgnoreCase(variants.best().text()) ) {
+            if ( chosenSubPath.get().name().equalsIgnoreCase(variants.best().value()) ) {
                 return valueFlowDoneWith(chosenSubPath);
             } else {
                 return this.askAboutSubPath(initiator, chosenSubPath.get(), pattern);

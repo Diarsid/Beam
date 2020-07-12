@@ -9,8 +9,8 @@ import diarsid.beam.core.base.analyze.variantsweight.PositionsSearchStepOneClust
 
 import static java.util.Objects.nonNull;
 
-import static diarsid.beam.core.base.analyze.variantsweight.ClusterComparison.LEFT_IS_BETTER;
-import static diarsid.beam.core.base.analyze.variantsweight.ClusterComparison.LEFT_IS_WORSE;
+import static diarsid.beam.core.base.analyze.variantsweight.ClusterPreference.PREFERE_LEFT;
+import static diarsid.beam.core.base.analyze.variantsweight.ClusterPreference.PREFERE_RIGHT;
 import static diarsid.beam.core.base.analyze.variantsweight.PositionsSearchStepOneCluster.calculateAdditionalPossibleTypoMatches;
 
 /**
@@ -21,24 +21,24 @@ public enum PositionsSearchStepOneClusterDuplicateComparison {
     
     A;
     
-    static ClusterComparison compare(
+    static ClusterPreference compare(
             PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
         if ( one.patternCluster().equals(two.patternCluster()) ) {
             PatternCluster commonPatternCluster = one.patternCluster();
             
             if ( commonPatternCluster.isAtPatternStart() ) {
                 if ( one.isAtStart() ) {
-                    return LEFT_IS_BETTER;
+                    return PREFERE_LEFT;
                 } else if ( two.isAtStart() ) {
-                    return LEFT_IS_WORSE;
+                    return PREFERE_RIGHT;
                 } else {
                     return compareByPossibleTypoMatches(one, two);
                 }
             } else if ( commonPatternCluster.isAtPatternEnd() ) {
                 if ( one.isAtEnd() ) {
-                    return LEFT_IS_BETTER;
+                    return PREFERE_LEFT;
                 } else if ( two.isAtEnd() ) {
-                    return LEFT_IS_WORSE;
+                    return PREFERE_RIGHT;
                 } else {
                     return compareByPossibleTypoMatches(one, two);
                 }
@@ -50,38 +50,38 @@ public enum PositionsSearchStepOneClusterDuplicateComparison {
         }
     }
 
-    private static ClusterComparison compareByPossibleTypoMatches(
+    private static ClusterPreference compareByPossibleTypoMatches(
             PositionsSearchStepOneCluster one, PositionsSearchStepOneCluster two) {
         if ( one.doesHaveMorePossibleTypoMatchesThan(two) ) {
-            return LEFT_IS_BETTER;
+            return PREFERE_LEFT;
         } else if ( two.doesHaveMorePossibleTypoMatchesThan(one) ) {
-            return LEFT_IS_WORSE;
+            return PREFERE_RIGHT;
         } else {
-            ClusterComparison comparison = calculateAdditionalPossibleTypoMatches(one, two);
-            if ( nonNull(comparison) ) {
-                return comparison;
+            ClusterPreference preference = calculateAdditionalPossibleTypoMatches(one, two);
+            if ( nonNull(preference) ) {
+                return preference;
             } else {
                 if ( one.doesStartAfterSeparator() ) {
                     if ( two.doesStartAfterSeparator() ) {
                         if ( one.doesEndBeforeSeparator() ) {
-                            return LEFT_IS_BETTER;
+                            return PREFERE_LEFT;
                         } else if ( two.doesEndBeforeSeparator() ) {
-                            return LEFT_IS_WORSE;
+                            return PREFERE_RIGHT;
                         } else {
-                            return LEFT_IS_WORSE;
+                            return PREFERE_RIGHT;
                         }
                     } else {
-                        return LEFT_IS_BETTER;
+                        return PREFERE_LEFT;
                     }
                 } else if ( two.doesStartAfterSeparator() ) {
-                    return LEFT_IS_WORSE;
+                    return PREFERE_RIGHT;
                 } else {
                     if ( one.doesEndBeforeSeparator() ) {
-                        return LEFT_IS_BETTER;
+                        return PREFERE_LEFT;
                     } else if ( two.doesEndBeforeSeparator() ) {
-                        return LEFT_IS_WORSE;
+                        return PREFERE_RIGHT;
                     } else {
-                        return LEFT_IS_WORSE;
+                        return PREFERE_RIGHT;
                     }
                 }
             }

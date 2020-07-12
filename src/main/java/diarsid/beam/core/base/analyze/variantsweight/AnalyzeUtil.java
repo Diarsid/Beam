@@ -10,8 +10,8 @@ import java.util.List;
 import static java.lang.Integer.MIN_VALUE;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.logAnalyze;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
@@ -178,6 +178,8 @@ class AnalyzeUtil {
             previous = current;
         }
         
+        cluster.finish();
+        
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
             logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order repeats       %s", cluster
                         .repeats()
@@ -342,7 +344,7 @@ class AnalyzeUtil {
     
     static boolean isVariantOkWhenAdjusted(Variant variant) {
         return variant.weight() <= 
-                ADJUSTED_WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
+                ADJUSTED_WEIGHT_TRESHOLD + lengthTolerance(variant.value().length());
     }
     
     static boolean missedTooMuch(int missed, int patterLength) {

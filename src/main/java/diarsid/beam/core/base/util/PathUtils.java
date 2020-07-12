@@ -6,8 +6,6 @@
 
 package diarsid.beam.core.base.util;
 
-import diarsid.support.objects.Pair;
-
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,12 +15,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import diarsid.support.objects.Pair;
+
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 import static diarsid.beam.core.base.control.io.interpreter.ControlKeys.charsAreDomainAcceptable;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCaseAnyFragment;
+import static diarsid.support.strings.StringUtils.isPathSeparator;
 
 /**
  *
@@ -247,5 +248,42 @@ public class PathUtils {
             decomposedPaths.add(path);
         }
         return decomposedPaths;
+    }
+    
+    public static int findDepthOf(String path) {
+        int separators = 0;
+        int pathLength = path.length();
+        int lastCharIndex = pathLength - 1;
+        boolean previousIsSeparator = false;
+        boolean hasSeparatorsAtStart = false;
+        boolean hasSeparatorsAtEnd = false;
+        
+        for (int i = 0; i < pathLength; i++) {
+            if ( isPathSeparator(path.charAt(i)) ) {
+                if ( i == 0 ) {
+                    hasSeparatorsAtStart = true;
+                } else if ( i == lastCharIndex ) {
+                    hasSeparatorsAtEnd = true;
+                }
+                if ( previousIsSeparator ) {
+                    continue;
+                }
+                separators++;
+                previousIsSeparator = true;
+            } else {
+                previousIsSeparator = false;
+            }
+        }
+        
+        int depth = separators + 1;
+        
+        if ( hasSeparatorsAtStart ) {
+            depth--;
+        }
+        if ( hasSeparatorsAtEnd ) {
+            depth--;
+        }
+        
+        return depth;
     }
 }

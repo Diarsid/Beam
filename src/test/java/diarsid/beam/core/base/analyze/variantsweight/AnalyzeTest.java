@@ -24,6 +24,7 @@ import diarsid.support.objects.Pool;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 
 import static org.junit.Assert.fail;
@@ -38,14 +39,15 @@ import static diarsid.support.objects.Pools.pools;
  */
 public class AnalyzeTest {
     
-    private static Analyze analyzeInstance;
+    private static WeightAnalyzeReal analyzeInstance;
     private static int totalVariantsQuantity;
     private static long start;
     private static long stop;
     
-    private Analyze analyze;
+    private WeightAnalyzeReal analyze;
     private boolean expectedToFail;
     private String pattern;
+    private String noWorseThan;
     private List<String> variants;
     private List<String> expected;
     private Variants weightedVariants;
@@ -56,7 +58,7 @@ public class AnalyzeTest {
     @BeforeClass
     public static void setUpClass() {
         Similarity similarity = new Similarity(configuration());
-        analyzeInstance = new Analyze(configuration(), similarity, pools());
+        analyzeInstance = new WeightAnalyzeReal(configuration(), similarity, pools());
         start = currentTimeMillis();
     }
     
@@ -71,10 +73,10 @@ public class AnalyzeTest {
                 "\n  total time     : %s " + 
                 "\n  total variants : %s \n";
         logger.info(format(report, stop - start, totalVariantsQuantity));
-        Optional<Pool<AnalyzeData>> pool = pools().poolOf(AnalyzeData.class);
+        Optional<Pool<AnalyzeUnit>> pool = pools().poolOf(AnalyzeUnit.class);
         if ( pool.isPresent() ) {
-            Pool<AnalyzeData> c = pool.get();
-            AnalyzeData analyzeData = c.give();
+            Pool<AnalyzeUnit> c = pool.get();
+            AnalyzeUnit analyzeData = c.give();
         }
     }
     
@@ -380,6 +382,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_MavenLocalRepo_mvrep() {
+        pattern = "mvrep";
+        
+        variants = asList(
+                "Dev/Lib/Maven_Local_Repo",
+                "Dev/Lib/Maven_Local_Repo/org",
+                "Dev/Lib/Maven_Local_Repo/diarsid"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_gmailWithOtherMLClusterCase_ml() {
         pattern = "ml";
         
@@ -388,6 +405,7 @@ public class AnalyzeTest {
                 "some_ml_string",
                 "some_ml",
                 "some_Mstring_Lwith_ml_cluster",
+                "mail",
                 "gmail");
         
         expected = asList(
@@ -395,7 +413,25 @@ public class AnalyzeTest {
                 "some_ml",
                 "some_ml_string",
                 "some_Mstring_Lwith_ml_cluster",
+                "mail",
                 "gmail"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_googleWithOtherGLClusterCase_gl() {
+        pattern = "gl";
+        
+        variants = asList(
+                "google",
+                "english"
+        );
+        
+        expected = asList(
+                "google",
+                "english"
         );
         
         weightVariantsAndCheckMatching();
@@ -410,9 +446,107 @@ public class AnalyzeTest {
                 "gmail");
         
         expected = asList(
-                "gmail",
-                "some_stMring_wLith_cluster"
+                "gmail"
         );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_javaEngines_enginsjv() {
+        pattern = "enginsjv";
+        
+        variants = asList(
+                "Engines/Java/Path/JAVA_HOME/bin/jvisualvm.exe",
+                "Engines/Java");
+        
+        expected = asList(
+                "Engines/Java",
+                "Engines/Java/Path/JAVA_HOME/bin/jvisualvm.exe"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_messageServers_msser() {
+        pattern = "msser";
+        
+        variants = asList(
+                "Tools/Servers/Messaging_Servers",
+                "Images/Photos/Miniatures"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_webServers_wsr() {
+        pattern = "wsr";
+        
+        variants = asList(
+                "Tools/Servers/Web_Servers"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }      
+    
+    @Test
+    public void test_webServers_wesrrv() {
+        pattern = "wesrrv";
+        
+        variants = asList(
+                "Tools/Servers/Web_Servers"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_8dot5_85() {
+        pattern = "85";
+        
+        variants = asList(
+                "Tools/Servers/Web_Servers/Apache_Tomcat/8.5.5",
+                "Tools/Servers/Web_Servers/Apache_Tomcat/8.5.5/bin"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_servers_1_sers() {
+        pattern = "sers";
+        
+        variants = asList(
+                "Tools/Servers",
+                "Films/Serials",
+                "Dev/Start_MySQL_server"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_servers_2_sers() {
+        pattern = "sers";
+        
+        variants = asList(
+                "Tools/Servers",
+                "Tools/Servers/Web_Servers"
+                );
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -439,7 +573,7 @@ public class AnalyzeTest {
                 "Wizoria",
                 "Projects/Diarsid/WebStorm/Node.js");
         
-        expectedSameOrderAsVariants();
+        expected = asList("Wizoria");
         
         weightVariantsAndCheckMatching();
     }
@@ -546,6 +680,32 @@ public class AnalyzeTest {
         expected = asList(
                 "Content/WH/Game/The_9th_Age/Rosters/Elves.txt"
         );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_rostersCase3_roseter() {
+        pattern = "roseter";
+        
+        variants = asList(
+                "Content/WH/Game/The_9th_Age/Rosters/Elves.txt"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_rostersCase3_reostr() {
+        pattern = "reostr";
+        
+        variants = asList(
+                "Content/WH/Game/The_9th_Age/Rosters"
+        );
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -954,6 +1114,27 @@ public class AnalyzeTest {
                 "Projects/Diarsid/NetBeans",
                 "Projects/Diarsid/NetBeans/Beam",
                 "Projects/Diarsid/NetBeans/Research.Java");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_NetBeansCase_nebaen_noWorseThan() {
+        pattern = "nebaen";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam",               
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Research.Java",
+                "Dev/NetBeans_8.2.lnk"
+        );
+        
+        noWorseThan = "Projects/Diarsid/NetBeans/Beam";
+        
+        expected = asList( 
+                "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Beam");
         
         weightVariantsAndCheckMatching();
     }
@@ -1368,6 +1549,22 @@ public class AnalyzeTest {
         expected = asList(
                 "Projects/UkrPoshta/PriceCalculationAPI",
                 "Projects/UkrPoshta/CainiaoAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_PostAPICase_poshapi() {
+        pattern = "poshapi";
+        
+        variants = asList(            
+                "Projects/UkrPoshta/StatusTrackingAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/StatusTrackingAPI"
+        );
         
         weightVariantsAndCheckMatching();
     }
@@ -1823,7 +2020,11 @@ public class AnalyzeTest {
     }
     
     private void weightVariantsAndCheckMatchingInternally() {
-        weightedVariants = this.analyze.weightStrings(pattern, variants);
+        if ( isNull(this.noWorseThan) ) {
+            weightedVariants = this.analyze.weightStrings(pattern, variants);
+        } else {
+            weightedVariants = this.analyze.weightStrings(pattern, noWorseThan, variants);
+        }        
         
         String expectedVariant;
         String actualVariant;
@@ -1844,7 +2045,7 @@ public class AnalyzeTest {
             if ( weightedVariants.currentIsMuchBetterThanNext() ) {
                 
                 expectedVariant = expected.get(counter.getAndIncrement());
-                actualVariant = weightedVariants.current().text();
+                actualVariant = weightedVariants.current().value();
                 
                 if ( actualVariant.equalsIgnoreCase(expectedVariant) ) {
                     reports.add(format("\n%s variant matches expected: %s", counter.get() - 1, expectedVariant));
@@ -1858,7 +2059,7 @@ public class AnalyzeTest {
             } else {            
                 nextSimilarVariants = weightedVariants.nextSimilarVariants();
                 for (Variant weightedVariant : nextSimilarVariants) {
-                    actualVariant = weightedVariant.text();
+                    actualVariant = weightedVariant.value();
                     
                     if ( counter.get() < expected.size() ) {
                         expectedVariant = expected.get(counter.getAndIncrement());
@@ -1925,13 +2126,13 @@ public class AnalyzeTest {
 
         while ( weightedVariants.next() ) {            
             if ( weightedVariants.currentIsMuchBetterThanNext() ) {
-                variantsWithWeight.add("\n" + weightedVariants.current().text() + " is much better than next: " + weightedVariants.current().weight());
+                variantsWithWeight.add("\n" + weightedVariants.current().value() + " is much better than next: " + weightedVariants.current().weight());
             } else {
                 variantsWithWeight.add("\nnext candidates are similar: ");                
                 weightedVariants.nextSimilarVariants()
                         .stream()
                         .forEach(candidate -> {
-                            variantsWithWeight.add("\n  - " + candidate.text() + " : " + candidate.weight());
+                            variantsWithWeight.add("\n  - " + candidate.value() + " : " + candidate.weight());
                         });
             }
         }

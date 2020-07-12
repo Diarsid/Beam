@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyze;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -66,7 +66,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
     private final InnerIoEngine ioEngine;
     private final ResponsiveDaoCommands daoCommands;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
-    private final Analyze analyze;
+    private final WeightAnalyze analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final Help enterMemoryHelp;
     private final Help exactMatchHelp;
@@ -78,7 +78,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
             ResponsiveDaoCommands daoCommands, 
             ResponsiveDaoPatternChoices daoChoices, 
             InnerIoEngine ioEngine,
-            Analyze analyze,
+            WeightAnalyze analyze,
             Pool<KeeperLoopValidationDialog> dialogPool) {
         this.daoCommands = daoCommands;
         this.daoPatternChoices = daoChoices;
@@ -267,8 +267,10 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 initiator, "remove all related mems also", this.removeRelatedMemsHelp);
         if ( choice.isPositive() ) {
             this.daoPatternChoices.delete(initiator, command);
-            boolean removed = this.daoCommands.delete(initiator, command);
-            return this.reportRemoving(removed);
+            boolean removedDirect = this.daoCommands.delete(initiator, command);
+            boolean removedOthers = this.daoCommands.deleteByPrefixInExtended(
+                    initiator, command.extendedArgument(), command.type());            
+            return this.reportRemoving(removedDirect || removedOthers);
         } else if ( choice.isNotMade() || choice.isNegative() ) {
             boolean removed = this.daoCommands.deleteByExactOriginalOfType(
                     initiator, command.originalArgument(), command.type());
@@ -348,11 +350,13 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
         matchingCommands.add(0, exactMatch);
         Variants variants = this.analyze.weightVariants(
-                command.originalArgument(), commandsToVariants(matchingCommands));
+                command.originalArgument(), 
+                exactMatchExtended, 
+                commandsToVariants(matchingCommands));
         if ( variants.isEmpty() ) {
             return voidFlowDone();
         }
-        variants.removeWorseThan(exactMatchExtended);
+//        variants.removeWorseThan(exactMatchExtended);
         if ( variants.hasOne() ) {
             command.setStored();
             command.argument().setExtended(exactMatchExtended);
@@ -528,16 +532,18 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         }
         matchingCommands.add(0, exactMatch);
         Variants variants = this.analyze.weightVariants(
-                original, commandsToVariants(matchingCommands, view));
+                original, 
+                exactMatch.extendedArgument(),
+                commandsToVariants(matchingCommands, view));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
-        variants.removeWorseThan(exactMatch.extendedArgument());
+//        variants.removeWorseThan(exactMatch.extendedArgument());
         if ( variants.hasOne() ) {
             InvocationCommand newCommand = createInvocationCommandFrom(
                     matchingCommands.get(variants.best().index()).type(), 
                     original, 
-                    variants.best().text());
+                    variants.best().value());
             if ( exactMatch.equals(newCommand) ) {
                 return valueFlowDoneWith(exactMatch);
             }
@@ -599,7 +605,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                 
         if ( hasOne(foundCommands) ) {
             InvocationCommand foundCommand = getOne(foundCommands);
-            if ( ! this.analyze.isNameSatisfiable(original, foundCommand.extendedArgument() ) ) {
+            if ( ! this.analyze.isSatisfiable(original, foundCommand.extendedArgument() ) ) {
                 return valueFlowDoneEmpty();
             }
             Choice choice = this.ioEngine.ask(
@@ -638,7 +644,8 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
                         original, 
                         answer.text());
                 asyncDo(() -> {
-                    variants.removeWorseThan(newCommand.extendedArgument());
+                    String argument = newCommand.extendedArgument();
+                    Variants cleanedVariants = variants.removeWorseThan(argument);
                     this.daoPatternChoices.save(initiator, newCommand, variants);
                     this.daoCommands.save(initiator, newCommand);
                 });
@@ -664,7 +671,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
-        if ( variants.best().text().equalsIgnoreCase(pattern) ) {
+        if ( variants.best().value().equalsIgnoreCase(pattern) ) {
             return valueFlowDoneWith(commands.get(variants.best().index()));
         }
         Answer answer = this.ioEngine.ask(
@@ -689,7 +696,7 @@ class CommandsMemoryKeeperWorker implements CommandsMemoryKeeper {
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
-        if ( variants.best().text().equalsIgnoreCase(pattern) ) {
+        if ( variants.best().value().equalsIgnoreCase(pattern) ) {
             return valueFlowDoneWith(commands.get(variants.best().index()));
         }
         Optional<String> choice = 

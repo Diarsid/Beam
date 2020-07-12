@@ -17,17 +17,31 @@ import static java.util.Arrays.stream;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.BASE;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.lengthImportanceRatio;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeUtil.missedTooMuch;
 import static diarsid.beam.core.base.analyze.variantsweight.PositionsAnalyze.POS_NOT_FOUND;
 import static diarsid.beam.core.base.analyze.variantsweight.PositionsAnalyze.POS_UNINITIALIZED;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.logAnalyze;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.CLUSTERS_IMPORTANCE;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.LENGTH_DELTA;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.NO_CLUSTERS_ALL_SEPARATED_POSITIONS_MEANINGFUL;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.NO_CLUSTERS_SEPARATED_POSITIONS_MEANINGFUL;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.NO_CLUSTERS_SEPARATED_POSITIONS_SORTED;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.PERCENT_FOR_MISSED;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.SINGLE_WORD_VARIANT_CONTAINS_PATTERN;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.TOTAL_CLUSTERED_CHARS;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.TOTAL_UNCLUSTERED_CHARS_IMPORTANCE;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.VARIANT_CONTAINS_PATTERN;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.VARIANT_EQUAL_PATTERN;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.VARIANT_PATH_SEPARATORS;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightElement.VARIANT_TEXT_SEPARATORS;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.BAD;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimate;
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimatePreliminarily;
 import static diarsid.beam.core.base.util.CollectionsUtils.isNotEmpty;
+import static diarsid.beam.core.base.util.MathUtil.percentAsFloat;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
 import static diarsid.beam.core.base.util.MathUtil.ratio;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.indexOfIgnoreCase;
@@ -40,7 +54,7 @@ import static diarsid.support.strings.StringUtils.nonEmpty;
  *
  * @author Diarsid
  */
-class AnalyzeData extends PooledReusable {
+class AnalyzeUnit extends PooledReusable {
     
     private static final IntFunction<String> POSITION_INT_TO_STRING;
     
@@ -64,16 +78,18 @@ class AnalyzeData extends PooledReusable {
     boolean variantContainsPattern;
     int patternInVariantIndex;
     
-    double weight;
+    Weight weight;
     double lengthDelta;
+    boolean allPositionsPresentSortedAndNotPathSeparatorsBetween;
     boolean calculatedAsUsualClusters;
+    boolean canClustersBeBad = true;
     
     char[] patternChars;
     String pattern;
     
     int missedPercent;
         
-    AnalyzeData(Pool<Cluster> clusterPool) {
+    AnalyzeUnit(Pool<Cluster> clusterPool) {
         super();
         this.positionsAnalyze = new PositionsAnalyze(
                 this, 
@@ -82,6 +98,7 @@ class AnalyzeData extends PooledReusable {
         this.variantSeparators = new TreeSet<>();
         this.variantPathSeparators = new TreeSet<>();
         this.variantTextSeparators = new TreeSet<>();
+        this.weight = new Weight();
     }
     
     void set(String pattern, String variant) {
@@ -93,8 +110,7 @@ class AnalyzeData extends PooledReusable {
     private void checkIfVariantEqualsToPatternAndAssignWeight() {
         this.variantEqualsToPattern = this.pattern.equalsIgnoreCase(this.variant);
         if ( this.variantEqualsToPattern ) {
-            this.weight = - this.variant.length() * 1024;
-            logAnalyze(BASE, "  variant is equal to pattern: weight %s", this.weight);            
+            this.weight.add(- this.variant.length() * 1024, VARIANT_EQUAL_PATTERN);       
         }
     }
     
@@ -109,24 +125,19 @@ class AnalyzeData extends PooledReusable {
         this.variantEqualsToPattern = false;
         this.variantContainsPattern = false;
         this.patternInVariantIndex = -1;
-        this.weight = 0;
+        this.weight.clear();
         this.lengthDelta = 0;
         this.calculatedAsUsualClusters = true;
+        this.canClustersBeBad = true;
+        this.allPositionsPresentSortedAndNotPathSeparatorsBetween = false;
         this.missedPercent = 0;
     }
 
     void calculateWeight() {        
-        this.weight = this.weight + this.positionsAnalyze.weight.sum();
-        logAnalyze(BASE, "  weight on step 1: %s (positions: %s) ", this.weight, this.positionsAnalyze.weight);
-        
-        
-        if (POSITIONS_CLUSTERS.isEnabled()) {
-            this.positionsAnalyze.weight.observeAll((i, weight, element) -> {
-                logAnalyze(POSITIONS_CLUSTERS, format("               [weight] %1$s) %2$-+7.1f : %3$s", i, weight, element.description()));
-            });
-        }
-        
-        if ( this.weight > 0 ) {
+        this.weight.add(this.positionsAnalyze.weight);
+        logAnalyze(BASE, "  weight on step 1: %s (positions: %s) ", this.weight.sum(), this.positionsAnalyze.weight.sum());
+                
+        if ( this.weight.sum() > 0 ) {
             this.positionsAnalyze.badReason = "preliminary position calculation is too bad";
             return;
         }
@@ -145,7 +156,7 @@ class AnalyzeData extends PooledReusable {
                 case 3 :
                 case 4 : {
                     if ( this.positionsAnalyze.missed == 0 && this.positionsAnalyze.nonClustered > 2 ) {
-                        if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+                        if ( this.allPositionsPresentSortedAndNotPathSeparatorsBetween ) {
                             this.calculateAsSeparatedCharsWithoutClusters();
                             this.calculatedAsUsualClusters = false;
                         } else {
@@ -159,7 +170,7 @@ class AnalyzeData extends PooledReusable {
                         if ( this.positionsAnalyze.clustersFacingStartEdges > 0 ) {
                             this.calculateAsUsualClusters();
                             this.calculatedAsUsualClusters = true;
-                        } else if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+                        } else if ( this.allPositionsPresentSortedAndNotPathSeparatorsBetween ) {
                             this.calculateAsSeparatedCharsWithoutClusters();
                             this.calculatedAsUsualClusters = false;
                         } else {
@@ -182,7 +193,7 @@ class AnalyzeData extends PooledReusable {
                     }
                     
                     if ( ratio(this.positionsAnalyze.nonClustered, this.patternChars.length) > tresholdRatio ) {
-                        if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+                        if ( this.allPositionsPresentSortedAndNotPathSeparatorsBetween ) {
                             this.calculateAsSeparatedCharsWithoutClusters();
                             this.calculatedAsUsualClusters = false;
                         } else {
@@ -196,7 +207,7 @@ class AnalyzeData extends PooledReusable {
                 }
             }            
         } else {
-            if ( this.areAllPositionsPresentSortedAndNotPathSeparatorsBetween() ) {
+            if ( this.allPositionsPresentSortedAndNotPathSeparatorsBetween ) {
                 this.calculateAsSeparatedCharsWithoutClusters();
                 this.calculatedAsUsualClusters = false;
             } else {
@@ -208,27 +219,27 @@ class AnalyzeData extends PooledReusable {
         logAnalyze(BASE, "  weight on step 2: %s", this.weight);
     }
 
-    private boolean areAllPositionsPresentSortedAndNotPathSeparatorsBetween() {
-        if (this.positionsAnalyze.unsortedPositions == 0 && this.positionsAnalyze.missed == 0 ) {
+    void areAllPositionsPresentSortedAndNotPathSeparatorsBetween() {
+        if ( this.positionsAnalyze.unsortedPositions == 0 && this.positionsAnalyze.missed == 0 ) {
             if ( this.variantPathSeparators.isEmpty() ) {
-                return true;
+                this.allPositionsPresentSortedAndNotPathSeparatorsBetween = true;
             } else {
                 int first = this.positionsAnalyze.findFirstPosition();
                 int last = this.positionsAnalyze.findLastPosition();
                 
                 if ( first < 0 || last < 0 ) {
-                    return false;
+                    this.allPositionsPresentSortedAndNotPathSeparatorsBetween = false;
+                } else {
+                    Integer possibleSeparator = this.variantPathSeparators.higher(first);
+                    if ( nonNull(possibleSeparator) ) {
+                        this.allPositionsPresentSortedAndNotPathSeparatorsBetween = last < possibleSeparator;
+                    } else {
+                        this.allPositionsPresentSortedAndNotPathSeparatorsBetween = true;
+                    }
                 }
-                
-                Integer possibleSeparator = this.variantPathSeparators.higher(first);
-                if ( nonNull(possibleSeparator) ) {
-                    return last < possibleSeparator;
-                } 
-                
-                return true;
             }
         } else {
-            return false;
+            this.allPositionsPresentSortedAndNotPathSeparatorsBetween = false;
         }
     }
     
@@ -238,31 +249,42 @@ class AnalyzeData extends PooledReusable {
              this.variant.length() == this.positionsAnalyze.clustered + 
                                           this.variantPathSeparators.size() + 
                                           this.variantTextSeparators.size() ) {
-            this.weight = this.weight - this.positionsAnalyze.clustersImportance - this.positionsAnalyze.clustered;
+            this.weight.add(-this.positionsAnalyze.clustersImportance, CLUSTERS_IMPORTANCE);
+            this.weight.add(-this.positionsAnalyze.clustered, TOTAL_CLUSTERED_CHARS);
         } else {
             double lengthImportance = lengthImportanceRatio(this.variant.length());
-            this.lengthDelta = ( this.variant.length() - this.positionsAnalyze.clustered ) * 0.3 * lengthImportance;
-
-            this.weight = this.weight + (
-                    this.positionsAnalyze.nonClusteredImportance 
-                    - this.positionsAnalyze.clustersImportance
-/* EXP BREAKING */ //                     + this.positionsAnalyze.missedImportance
-                    + this.lengthDelta  
-                    + this.variantPathSeparators.size() 
-                    + this.variantTextSeparators.size()
-            );
+            this.lengthDelta = ( this.variant.length() - this.positionsAnalyze.clustered - this.positionsAnalyze.meaningful ) * 0.3 * lengthImportance;
+            
+            this.weight.add(this.positionsAnalyze.nonClusteredImportance, TOTAL_UNCLUSTERED_CHARS_IMPORTANCE);
+            this.weight.add(-this.positionsAnalyze.clustersImportance, CLUSTERS_IMPORTANCE);
+            this.weight.add(this.lengthDelta, LENGTH_DELTA);
+            this.weight.add(this.variantPathSeparators.size(), VARIANT_PATH_SEPARATORS);
+            this.weight.add(this.variantTextSeparators.size(), VARIANT_TEXT_SEPARATORS);
             
             if ( this.positionsAnalyze.missed > 0 ) {
                 this.missedPercent = 100 - percentAsInt(this.positionsAnalyze.missed, this.pattern.length());
-                this.weight = this.weight * this.missedPercent / 100;
+                this.weight.applyPercent(missedPercent, PERCENT_FOR_MISSED);
             }
         }        
     }
     
-    private void calculateAsSeparatedCharsWithoutClusters() {
+    private void calculateAsSeparatedCharsWithoutClusters() {        
+        double lengthImportance = lengthImportanceRatio(this.variant.length());
+        this.lengthDelta = ( this.variant.length() - this.positionsAnalyze.meaningful ) * 0.1 * lengthImportance;
+        this.weight.add(this.lengthDelta, LENGTH_DELTA);
+            
         double bonus = this.positionsAnalyze.positions.length * 5.1;
-        this.weight = this.weight - bonus;
-        logAnalyze(BASE, "               [weight] -%s : no clusters, all positions are sorted, none missed", bonus);
+        this.weight.add(-bonus, NO_CLUSTERS_SEPARATED_POSITIONS_SORTED);
+        
+        int meanigfulPositions = this.positionsAnalyze.meaningful;
+        if ( meanigfulPositions > 0 ) {
+            bonus = bonus * ( meanigfulPositions + 1 ) * 0.8;
+            this.weight.add(-bonus, NO_CLUSTERS_SEPARATED_POSITIONS_MEANINGFUL);
+            if ( meanigfulPositions == this.pattern.length() ) {
+                bonus = meanigfulPositions * 2.8;
+                this.weight.add(-bonus, NO_CLUSTERS_ALL_SEPARATED_POSITIONS_MEANINGFUL);
+            }
+        }
     }
 
     void calculateClustersImportance() {
@@ -274,11 +296,14 @@ class AnalyzeData extends PooledReusable {
     }
     
     boolean ifClustersPresentButWeightTooBad() {
-        return this.positionsAnalyze.clustersQty > 0 && estimatePreliminarily(this.positionsAnalyze.weight.sum()).equals(BAD);
+        return 
+                this.canClustersBeBad &&
+                this.positionsAnalyze.clustersQty > 0 && 
+                estimatePreliminarily(this.positionsAnalyze.weight.sum()).equals(BAD);
     }
 
     boolean isVariantTooBad() {
-        return nonEmpty(this.positionsAnalyze.badReason) || estimate(this.weight).equals(BAD);
+        return nonEmpty(this.positionsAnalyze.badReason) || estimate(this.weight.sum()).equals(BAD);
     }
 
     void isFirstCharMatchInVariantAndPattern(String pattern) {
@@ -289,7 +314,7 @@ class AnalyzeData extends PooledReusable {
 //        }
     }
 
-    void logState() {
+    void logState() {  
         logAnalyze(BASE, "  variant       : %s", this.variant);
         
         String patternCharsString = stream(this.positionsAnalyze.positions)
@@ -319,7 +344,13 @@ class AnalyzeData extends PooledReusable {
         } else {
             logAnalyze(BASE, "  calculated as separated characters");
         }
-        logAnalyze(BASE, "    %1$-25s %s", "total weight", this.weight); 
+        if (POSITIONS_CLUSTERS.isEnabled()) {
+            logAnalyze(POSITIONS_CLUSTERS, "  weight elements:");
+            this.weight.observeAll((i, weightValue, element) -> {
+                logAnalyze(POSITIONS_CLUSTERS, format("      %1$s) %2$-+7.2f : %3$s", i, weightValue, element.description()));
+            });
+        }
+        logAnalyze(BASE, "    %1$-25s %2$s", "total weight", this.weight); 
     }
     
     private void logClustersState() {
@@ -353,6 +384,43 @@ class AnalyzeData extends PooledReusable {
         this.positionsAnalyze.analyzePositionsClusters();
     }
     
+    void ifSingleWordAbbreviation() {
+        boolean patternIsSingleWord = this.variantSeparators.isEmpty();
+        if ( patternIsSingleWord ) {
+            this.canClustersBeBad = false;
+            logAnalyze(BASE, "  variant is a single word");
+            switch ( this.positionsAnalyze.clusters.quantity() ) {
+                case 0 : doWhenNoClusters(); break;
+                case 1 : doWhenSingleCluster(); break;
+                default : doWhenManyClusters(); break;
+            }
+        }
+    } 
+    
+    private void doWhenNoClusters() {
+        logAnalyze(BASE, "    [abbreviation] ");
+        if ( this.allPositionsPresentSortedAndNotPathSeparatorsBetween ) {
+            this.positionsAnalyze.lookForSeparatedCharsPlacing();
+        }
+    }
+    
+    private void doWhenSingleCluster() {
+        if ( this.positionsAnalyze.clusters.firstCluster().length() < 4 ) {
+            logAnalyze(BASE, "    [mark sequence] ");
+            if ( this.weight.contains(VARIANT_CONTAINS_PATTERN) ) {
+                double bonus = percentAsFloat(pattern.length(), variant.length()) / 10;
+                this.weight.add(-bonus, SINGLE_WORD_VARIANT_CONTAINS_PATTERN);
+            }
+            this.positionsAnalyze.lookForDuplicatedCharsOfSingleCluster();
+        } else {
+            
+        }        
+    }
+    
+    private void doWhenManyClusters() {
+        // no logic here yet
+    }
+    
     boolean isVariantEqualsPattern() {
         return this.variantEqualsToPattern;
     }
@@ -366,7 +434,7 @@ class AnalyzeData extends PooledReusable {
         if ( this.patternInVariantIndex >= 0 ) {
             double lengthRatio = patternLengthRatio(this.pattern);
             logAnalyze(BASE, "  variant contains pattern: weight -%s", lengthRatio);
-            this.weight = this.weight - lengthRatio;
+            this.weight.add(-lengthRatio, VARIANT_CONTAINS_PATTERN);
             this.variantContainsPattern = true;
         }
     }

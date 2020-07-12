@@ -6,12 +6,12 @@
 
 package diarsid.beam.core.base.util;
 
-import diarsid.support.objects.Pair;
-
 import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import diarsid.support.objects.Pair;
 
 import static java.util.Arrays.asList;
 
@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.decomposePath;
+import static diarsid.beam.core.base.util.PathUtils.findDepthOf;
 import static diarsid.beam.core.base.util.PathUtils.indexOfNextPathSeparatorAfter;
 import static diarsid.beam.core.base.util.PathUtils.subpathToPattern;
 import static diarsid.beam.core.base.util.PathUtils.toSubpathAndTarget;
@@ -212,5 +213,113 @@ public class PathUtilsTest {
         Pair<String, String> subpathTarget = toSubpathAndTarget(path);
         assertThat(subpathTarget.first(), equalTo("some/path/to"));
         assertThat(subpathTarget.second(), equalTo("target"));
+    }
+    
+    @Test
+    public void testFindDepthOf_notPath() {
+        String path = "not a path";
+        assertThat(findDepthOf(path), equalTo(1));
+    }
+    
+    @Test
+    public void testFindDepthOf_path_usual() {
+        String path = "is a/path";
+        assertThat(findDepthOf(path), equalTo(2));
+    }
+    
+    @Test
+    public void testFindDepthOf_pathDepth2_duplicatedSeparators() {
+        String path;
+        
+        path = "is a//path";
+        assertThat(findDepthOf(path), equalTo(2));
+        path = "is a///path";
+        assertThat(findDepthOf(path), equalTo(2));
+        path = "is a///\\path";
+        assertThat(findDepthOf(path), equalTo(2));
+    }
+    
+    @Test
+    public void testFindDepthOf_pathDepth3_duplicatedSeparators() {
+        String path;
+        
+        path = "this\\is a//path";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "this/is a/path";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "this////is a\\path";
+        assertThat(findDepthOf(path), equalTo(3));
+    }
+    
+    @Test
+    public void testFindDepthOf_pathDepth3_leadingSeparators() {
+        String path;
+        
+        path = "/this/is a/path";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "///this/is a/path";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "/\\/this/is a/path";
+        assertThat(findDepthOf(path), equalTo(3));
+    }
+    
+    @Test
+    public void testFindDepthOf_notPath_leadingSeparators() {
+        String path;
+        
+        path = "/not a path";
+        assertThat(findDepthOf(path), equalTo(1));
+        path = "///not a path";
+        assertThat(findDepthOf(path), equalTo(1));
+        path = "/\\/not a path";
+        assertThat(findDepthOf(path), equalTo(1));
+    }
+    
+    @Test
+    public void testFindDepthOf_pathDepth3_trailingSeparators() {
+        String path;
+        
+        path = "this/is a/path/";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "this/is a/path///";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "this/is a/path/\\/";
+        assertThat(findDepthOf(path), equalTo(3));
+    }
+    
+    @Test
+    public void testFindDepthOf_notPath_trailingSeparators() {
+        String path;
+        
+        path = "not a path/";
+        assertThat(findDepthOf(path), equalTo(1));
+        path = "not a path///";
+        assertThat(findDepthOf(path), equalTo(1));
+        path = "not a path/\\/";
+        assertThat(findDepthOf(path), equalTo(1));
+    }
+    
+    @Test
+    public void testFindDepthOf_pathDepth3_leadingAndTrailingSeparators() {
+        String path;
+        
+        path = "/this/is a/path/";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "///this/is a/path///";
+        assertThat(findDepthOf(path), equalTo(3));
+        path = "/\\/this/is a/path/\\/";
+        assertThat(findDepthOf(path), equalTo(3));
+    }
+    
+    @Test
+    public void testFindDepthOf_notPath_leadingAndTrailingSeparators() {
+        String path;
+        
+        path = "/not a path/";
+        assertThat(findDepthOf(path), equalTo(1));
+        path = "///not a path///";
+        assertThat(findDepthOf(path), equalTo(1));
+        path = "/\\/not a path/\\/";
+        assertThat(findDepthOf(path), equalTo(1));
     }
 }

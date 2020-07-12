@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
 import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -49,7 +49,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     
     private final InnerIoEngine ioEngine;
     private final Walker walker;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final ProgramsCatalog programsCatalog;
     private final Set<CommandType> operatingCommandTypes;
@@ -60,7 +60,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     ProgramsKeeperWorker(
             InnerIoEngine ioEngine, 
             Walker walker,
-            Analyze analyze, 
+            WeightAnalyzeReal analyze, 
             Pool<KeeperLoopValidationDialog> dialogPool,
             ProgramsCatalog programsCatalog) {
         this.ioEngine = ioEngine;
@@ -196,7 +196,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
             Program program = getOne(programs);
-            if ( this.analyze.isEntitySatisfiable(pattern, program) ) {
+            if ( this.analyze.isSatisfiable(pattern, program.name()) ) {
                 return valueFlowDoneWith(program);
             } else {
                 return valueFlowDoneEmpty();

@@ -6,6 +6,7 @@
 
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import diarsid.beam.core.base.analyze.variantsweight.ConvertableToVariant;
 import diarsid.beam.core.base.analyze.variantsweight.Variant;
 
 import java.io.Serializable;
@@ -119,7 +120,7 @@ public class VariantsQuestion implements Serializable {
                     if ( variant.doesHaveName() ) {
                         return containsIgnoreCase(variant.name(), possibleFragment);
                     } else {
-                        return containsIgnoreCase(variant.text(), possibleFragment);
+                        return containsIgnoreCase(variant.value(), possibleFragment);
                     }
                 })
                 .map(variant -> answerOfVariant(variant))

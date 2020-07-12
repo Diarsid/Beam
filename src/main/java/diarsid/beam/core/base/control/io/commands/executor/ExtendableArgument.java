@@ -8,6 +8,8 @@ package diarsid.beam.core.base.control.io.commands.executor;
 
 import java.util.Objects;
 
+import static java.util.Objects.isNull;
+
 import static diarsid.beam.core.base.util.Requirements.requireNonEmpty;
 
 /**
@@ -37,6 +39,10 @@ public class ExtendableArgument {
     }
 
     public void setExtended(String extendedArgument) {
+        if (isNull(extendedArgument)) {
+//            extendedArgument = "";
+            throw new NullPointerException("Extended argument cannot be null");
+        }
         this.extendedArgument = extendedArgument;
     }
     

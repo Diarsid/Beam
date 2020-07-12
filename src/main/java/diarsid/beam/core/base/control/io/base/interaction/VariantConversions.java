@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.base.analyze.variantsweight.ConvertableToVariant;
 import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
@@ -52,25 +53,29 @@ public class VariantConversions {
         }
     }
     
-    public static Variant stringToVariant(String s) {
-        return new Variant(s, 0);
+    public static Variant stringToVariant(String value) {
+        return new Variant(value, 0);
+    }
+    
+    public static Variant namedStringToVariant(String value, String name) {
+        return new Variant(value, name, 0);
     }
     
     public static List<Variant> namedStringsToVariants(
-            List<String> stringNames, 
-            List<String> variantStrings) {
-        if ( stringNames.size() != variantStrings.size() ) {
+            List<String> values,
+            List<String> names) {
+        if ( names.size() != values.size() ) {
             throw new IllegalArgumentException(
                     "variant strings and string names differ in length!");
         }
         List<Variant> variants = new ArrayList<>();
-        int size = variantStrings.size();
-        String variantString;
-        String stringName;
+        int size = values.size();
+        String value;
+        String name;
         for (int i = 0; i < size; i++) {
-            stringName = stringNames.get(i);
-            variantString = variantStrings.get(i);
-            variants.add(new Variant(variantString, stringName, i));
+            value = values.get(i);
+            name = names.get(i);
+            variants.add(new Variant(value, name, i));
         }
         return variants;
     }

@@ -11,6 +11,7 @@ import java.util.List;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.data.DataExtractionException;
+import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.modules.data.DaoLocationSubPaths;
 
@@ -26,7 +27,18 @@ public class ResponsiveDaoLocationSubPaths extends BeamCommonResponsiveDao<DaoLo
         super(dao, ioEngine);
     }
     
-    public List<LocationSubPath> getSubPathesByPattern(Initiator initiator, String pattern) {
+    public List<LocationSubPath> getSubPathesByPattern(
+            Initiator initiator, Location location, String pattern) {
+        try {
+            return super.dao().getSubPathesByPattern(location, pattern);
+        } catch (DataExtractionException e) {
+            super.responseOn(initiator, e);
+            return emptyList();
+        }
+    }
+    
+    public List<LocationSubPath> getSubPathesByPattern(
+            Initiator initiator, String pattern) {
         try {
             return super.dao().getSubPathesByPattern(pattern);
         } catch (DataExtractionException e) {

@@ -9,6 +9,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
 import java.io.Serializable;
 import java.util.Objects;
 
+import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 
 import static diarsid.beam.core.base.analyze.variantsweight.WeightEstimate.estimateWeightOf;
@@ -18,29 +19,29 @@ import static diarsid.support.strings.StringUtils.lower;
  *
  * @author Diarsid
  */
-public class Variant implements Serializable, Comparable<Variant> {
+public class Variant implements Serializable, Comparable<Variant>, Reindexable {
     
-    private final String text;
-    private final String name;
-    private final int index;
+    private String value;
+    private String name;
+    private int index;
     
     private Boolean equalsToPattern;
     private double weight;
     
-    public Variant(String text, int variantIndex) {
-        this.text = text;
+    public Variant(String value, int variantIndex) {
+        this.value = value;
         this.name = "";
         this.index = variantIndex;
     }
     
-    public Variant(String text, String displayText, int variantIndex) {
-        this.text = text;
-        this.name = displayText;
+    public Variant(String value, String name, int variantIndex) {
+        this.value = value;
+        this.name = name;
         this.index = variantIndex;
     }
     
     protected Variant(Variant other) {
-        this.text = other.text;
+        this.value = other.value;
         this.name = other.name;
         this.index = other.index;
     }
@@ -49,12 +50,12 @@ public class Variant implements Serializable, Comparable<Variant> {
         return ! this.name.isEmpty();
     }
 
-    public String bestText() {
-        return this.doesHaveName() ? this.name : this.text;
+    public String nameOrValue() {
+        return this.doesHaveName() ? this.name : this.value;
     }
     
-    public String text() {
-        return this.text;
+    public String value() {
+        return this.value;
     }
 
     public String name() {
@@ -69,6 +70,26 @@ public class Variant implements Serializable, Comparable<Variant> {
         this.weight = weight;
         this.equalsToPattern = equalsToPattern;
         
+        return this;
+    }
+    
+    public Variant retainInNameOnly(String part) {
+        if ( this.name.contains(part) ) {
+            this.name = part;
+        } else {
+            throw new IllegalArgumentException(format(
+                    "Variant name '%s' does not contain '%s'", this.name, part));
+        }
+        return this;
+    }
+    
+    public Variant retainInValueOnly(String part) {
+        if ( this.value.contains(part) ) {
+            this.value = part;
+        } else {
+            throw new IllegalArgumentException(format(
+                    "Variant value '%s' does not contain '%s'", this.value, part));
+        }
         return this;
     }
     
@@ -88,8 +109,8 @@ public class Variant implements Serializable, Comparable<Variant> {
         return this.weight;
     }
     
-    public boolean equalsByLowerText(Variant variant) {
-        return lower(this.text).equals(lower(variant.text));
+    public boolean equalsByLowerValue(Variant variant) {
+        return lower(this.value).equals(lower(variant.value));
     }
     
     public boolean equalsByLowerName(Variant variant) {
@@ -97,14 +118,20 @@ public class Variant implements Serializable, Comparable<Variant> {
                 lower(this.name).equals(lower(variant.name));
     }
     
+    @Override
     public int index() {
         return this.index;
     }
+
+    @Override
+    public void setIndex(int index) {
+        this.index = index;
+    }    
     
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.text);
+        hash = 89 * hash + Objects.hashCode(this.value);
         hash = 89 * hash + Objects.hashCode(this.name);
         return hash;
     }
@@ -121,7 +148,7 @@ public class Variant implements Serializable, Comparable<Variant> {
             return false;
         }
         final Variant other = ( Variant ) obj;
-        if ( !Objects.equals(this.text, other.text) ) {
+        if ( !Objects.equals(this.value, other.value) ) {
             return false;
         }
         if ( !Objects.equals(this.name, other.name) ) {
@@ -129,7 +156,11 @@ public class Variant implements Serializable, Comparable<Variant> {
         }
         return true;
     }
-
+    
+    public boolean doesNotEqual(Variant other) {
+        return ! this.equals(other);
+    }
+    
     @Override
     public int compareTo(Variant other) {
         if ( this.weight > other.weight) {

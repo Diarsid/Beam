@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyze;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -26,18 +26,18 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.joinTo
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.linesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_ALL;
 import static diarsid.beam.core.base.util.CollectionsUtils.shrink;
-import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.beam.core.base.util.TextUtil.shorterStringsFirstNotCountingSpaces;
+import static diarsid.support.strings.StringUtils.lower;
 
 
 class AllKeeperWorker implements AllKeeper {
     
     private final ResponsiveDataModule data;
     private final ProgramsKeeper programs;
-    private final Analyze analyze;
+    private final WeightAnalyze analyze;
 
     AllKeeperWorker(
-            ResponsiveDataModule dataModule, ProgramsKeeper programsKeeper, Analyze analyze) {
+            ResponsiveDataModule dataModule, ProgramsKeeper programsKeeper, WeightAnalyze analyze) {
         this.data = dataModule;
         this.programs = programsKeeper;
         this.analyze = analyze;
@@ -119,7 +119,7 @@ class AllKeeperWorker implements AllKeeper {
         }
         return stringifiedResultsToMessage("Commands:", commands
                 .stream()
-                .filter(command -> this.analyze.isNameSatisfiable(argument, command.bestArgument()))
+                .filter(command -> this.analyze.isSatisfiable(argument, command.bestArgument()))
                 .map(command -> command.toMessageString())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -130,7 +130,7 @@ class AllKeeperWorker implements AllKeeper {
                 .locations()
                 .getLocationsByNamePattern(initiator, argument)
                 .stream()
-                .filter(location -> this.analyze.isEntitySatisfiable(argument, location))
+                .filter(location -> this.analyze.isSatisfiable(argument, location.name()))
                 .map(location -> location.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -141,7 +141,7 @@ class AllKeeperWorker implements AllKeeper {
                 .batches()
                 .getBatchNamesByNamePattern(initiator, argument)
                 .stream()
-                .filter(batchName -> this.analyze.isNameSatisfiable(argument, batchName))
+                .filter(batchName -> this.analyze.isSatisfiable(argument, batchName))
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
     }
@@ -151,7 +151,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webPages()
                 .findByPattern(initiator, argument)
                 .stream()
-                .filter(page -> this.analyze.isEntitySatisfiable(argument, page))
+                .filter(page -> this.analyze.isSatisfiable(argument, page.name()))
                 .map(page -> page.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -162,7 +162,7 @@ class AllKeeperWorker implements AllKeeper {
                 .webDirectories()
                 .findDirectoriesByPatternInAnyPlace(initiator, argument)
                 .stream()
-                .filter(webDir -> this.analyze.isNameSatisfiable(argument, webDir.name()))
+                .filter(webDir -> this.analyze.isSatisfiable(argument, webDir.name()))
                 .map(webDir -> format("%s (%s)", webDir.name(), lower(webDir.place().name())))
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));
@@ -172,7 +172,7 @@ class AllKeeperWorker implements AllKeeper {
         return stringifiedResultsToMessage("Programs:", this.programs
                 .getProgramsByPattern(initiator, argument)
                 .stream()
-                .filter(program -> this.analyze.isEntitySatisfiable(argument, program))
+                .filter(program -> this.analyze.isSatisfiable(argument, program.name()))
                 .map(program -> program.name())
                 .sorted(shorterStringsFirstNotCountingSpaces())
                 .collect(toList()));

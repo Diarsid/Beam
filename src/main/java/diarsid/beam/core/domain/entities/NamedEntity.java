@@ -5,7 +5,7 @@
  */
 package diarsid.beam.core.domain.entities;
 
-import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.analyze.variantsweight.ConvertableToVariant;
 
 /**
  *

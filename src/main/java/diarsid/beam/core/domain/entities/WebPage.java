@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import diarsid.beam.core.base.analyze.variantsweight.ConvertableToVariant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToJson;
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
-import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.data.Loadable;
 
 import static java.lang.Integer.MIN_VALUE;
@@ -25,9 +25,9 @@ import static diarsid.beam.core.base.control.io.base.interaction.Messages.infoWi
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.DesktopUtil.browseWithDesktop;
 import static diarsid.beam.core.base.util.JsonUtil.asJson;
-import static diarsid.support.strings.StringUtils.nonEmpty;
 import static diarsid.beam.core.domain.entities.NamedEntityType.WEBPAGE;
 import static diarsid.support.log.Logging.logFor;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -165,6 +165,7 @@ public class WebPage
                     } else {
                         message.add(format("directory with id %s not found", this.directoryId));
                     }
+                    break;
                 }
                 case FAIL : {
                     message.add(format("cannot load directory with id %s:", this.directoryId));
