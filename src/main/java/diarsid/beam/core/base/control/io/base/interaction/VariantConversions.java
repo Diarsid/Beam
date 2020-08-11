@@ -5,28 +5,31 @@
  */
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import diarsid.beam.core.base.analyze.variantsweight.ConvertableToVariant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.domain.entities.NamedEntity;
 
 import static java.util.stream.Collectors.toList;
 
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.SHOW_VARIANT_TYPE;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.View.SHOW_VARIANT_TYPE;
 
 /**
  *
  * @author Diarsid
  */
-public class Variants {
+public class VariantConversions {
     
     public static enum View {
         SHOW_VARIANT_TYPE,
         HIDE_VARIANT_TYPE
     }
     
-    private Variants() {        
+    private VariantConversions() {        
     }
     
     public static List<Variant> commandsToVariants(List<InvocationCommand> commands) {
@@ -50,16 +53,31 @@ public class Variants {
         }
     }
     
-    public static Variant stringToVariant(String s) {
-        return new Variant(s, 0);
+    public static Variant stringToVariant(String value) {
+        return new Variant(value, 0);
     }
     
-    public static List<Variant> stringsToVariants(List<String> variantStrings) {
-        AtomicInteger counter = new AtomicInteger(0);
-        return variantStrings
-                .stream()
-                .map(string -> new Variant(string, counter.getAndIncrement()))
-                .collect(toList());
+    public static Variant namedStringToVariant(String value, String name) {
+        return new Variant(value, name, 0);
+    }
+    
+    public static List<Variant> namedStringsToVariants(
+            List<String> values,
+            List<String> names) {
+        if ( names.size() != values.size() ) {
+            throw new IllegalArgumentException(
+                    "variant strings and string names differ in length!");
+        }
+        List<Variant> variants = new ArrayList<>();
+        int size = values.size();
+        String value;
+        String name;
+        for (int i = 0; i < size; i++) {
+            value = values.get(i);
+            name = names.get(i);
+            variants.add(new Variant(value, name, i));
+        }
+        return variants;
     }
     
     public static List<Variant> entitiesToVariants(List<? extends NamedEntity> entites) {

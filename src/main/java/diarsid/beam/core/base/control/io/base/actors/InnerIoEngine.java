@@ -7,7 +7,7 @@ package diarsid.beam.core.base.control.io.base.actors;
 
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.interaction.Answer;
 import diarsid.beam.core.base.control.io.base.interaction.Choice;
 import diarsid.beam.core.base.control.io.base.interaction.Help;
@@ -27,8 +27,7 @@ public interface InnerIoEngine {
     
     Answer ask(Initiator initiator, VariantsQuestion question, Help help);
     
-    Answer chooseInWeightedVariants(
-            Initiator initiator, WeightedVariants variants, Help help);
+    Answer ask(Initiator initiator, Variants variants, Help help);
     
     HelpKey addToHelpContext(String... help);
     

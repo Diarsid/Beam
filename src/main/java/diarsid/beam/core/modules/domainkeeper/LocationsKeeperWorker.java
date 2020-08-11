@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyze;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.ValueFlowDone;
 import diarsid.beam.core.base.control.flow.VoidFlow;
@@ -52,7 +52,7 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.DELETE_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.EDIT_LOCATION;
@@ -91,7 +91,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private final ResponsiveDaoLocationSubPaths daoLocationSubPaths;
     private final ResponsiveDaoPatternChoices daoPatternChoices;
     private final CommandsMemoryKeeper commandsMemory;
-    private final Analyze analyze;
+    private final WeightAnalyze analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final InnerIoEngine ioEngine;
     private final Walker walker;
@@ -109,7 +109,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             ResponsiveDaoLocationSubPaths daoLocationSubPaths,
             ResponsiveDaoPatternChoices daoPatternChoices,
             CommandsMemoryKeeper commandsMemoryKeeper,
-            Analyze analyze, 
+            WeightAnalyze analyze, 
             Pool<KeeperLoopValidationDialog> dialogPool,
             InnerIoEngine ioEngine, 
             Walker walker,
@@ -190,7 +190,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private ValueFlow<Location> findExistingLocationInternally(Initiator initiator, String name) {
         Location foundLocation;
         List<Location> foundLocations;     
-        WeightedVariants weightedLocations;
+        Variants weightedLocations;
         Answer answer;
         
         try (KeeperLoopValidationDialog dialog = this.dialogPool.give()) {
@@ -230,26 +230,26 @@ class LocationsKeeperWorker implements LocationsKeeper {
                         continue locationFinding;
                     }
                     
-                    WeightedVariant bestLocation = weightedLocations.best();
-                    if ( bestLocation.text().equalsIgnoreCase(name) || 
+                    Variant bestLocation = weightedLocations.best();
+                    if ( bestLocation.value().equalsIgnoreCase(name) || 
                          bestLocation.hasEqualOrBetterWeightThan(PERFECT) ) {
                         foundLocation = foundLocations.get(bestLocation.index());
                         this.reportThatLocationFound(initiator, name, foundLocation);
                         return valueFlowDoneWith(foundLocation);
                     } else {
                         boolean hasMatch = this.daoPatternChoices.hasMatchOf(
-                                initiator, name, bestLocation.text(), weightedLocations);
+                                initiator, name, bestLocation.value(), weightedLocations);
                         if ( hasMatch ) {
                             foundLocation = foundLocations.get(bestLocation.index());
                             this.reportThatLocationFound(initiator, name, foundLocation);
                             return valueFlowDoneWith(foundLocation);
                         } else {
-                            answer = this.ioEngine.chooseInWeightedVariants(
+                            answer = this.ioEngine.ask(
                                     initiator, weightedLocations, this.chooseOneLocationHelp);
                             if ( answer.isGiven() ) {
                                 Location location = foundLocations.get(answer.index());
                                 String pattern = name;
-                                WeightedVariants variants = weightedLocations;
+                                Variants variants = weightedLocations;
                                 asyncDo(() -> {
                                     this.daoPatternChoices.save(
                                             initiator, pattern, location.name(), variants);
@@ -313,7 +313,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             if ( location.name().equalsIgnoreCase(namePattern) ) {
                 return valueFlowDoneWith(location);
             } else {
-                if ( this.analyze.isEntitySatisfiable(namePattern, location) ) {
+                if ( this.analyze.isSatisfiable(namePattern, location.name()) ) {
                     return valueFlowDoneWith(location);
                 } else {
                     return valueFlowDoneEmpty();
@@ -342,18 +342,18 @@ class LocationsKeeperWorker implements LocationsKeeper {
 
     private ValueFlow<Location> manageWithManyLocations(
             Initiator initiator, String pattern, List<Location> locations) {
-        WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(locations));
+        Variants variants = this.analyze.weightVariants(pattern, entitiesToVariants(locations));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
         
-        WeightedVariant bestVariant = variants.best();
-        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+        Variant bestVariant = variants.best();
+        if ( bestVariant.value().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return valueFlowDoneWith(locations.get(bestVariant.index()));
         } else {
             boolean hasMatch = this.daoPatternChoices
-                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+                    .hasMatchOf(initiator, pattern, bestVariant.value(), variants);
             if ( hasMatch ) {
                 return valueFlowDoneWith(locations.get(bestVariant.index()));
             } else {
@@ -366,9 +366,9 @@ class LocationsKeeperWorker implements LocationsKeeper {
     private ValueFlow<Location> askUserForLocationAndSaveChoice(
             Initiator initiator, 
             String pattern, 
-            WeightedVariants variants, 
+            Variants variants, 
             List<Location> locations) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneLocationHelp);
         if ( answer.isGiven() ) {
             Location location = locations.get(answer.index());
@@ -572,7 +572,7 @@ class LocationsKeeperWorker implements LocationsKeeper {
             String locationAndSubPath = locationSubPath.name();
             boolean pathFound =
                     locationAndSubPath.equalsIgnoreCase(newPath) ||
-                        this.analyze.isNameSatisfiable(newPath, locationAndSubPath);
+                        this.analyze.isSatisfiable(newPath, locationAndSubPath);
             if ( pathFound ) {
                 String realFoundPath = locationSubPath.fullPath();
                 validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
@@ -580,27 +580,27 @@ class LocationsKeeperWorker implements LocationsKeeper {
                 validity.failsWith(format("'%s' not found", newPath));
             }
         } else if ( hasMany(subPathes) ) {
-            WeightedVariants variants = this.analyze.weightVariants(
+            Variants variants = this.analyze.weightVariants(
                     newPath, entitiesToVariants(subPathes));
             if ( variants.isEmpty() ) {
                 validity.failsWith(format("'%s' not found", newPath));
             } else {
-                WeightedVariant best = variants.best();
+                Variant best = variants.best();
                 boolean bestIsGoodEnough =
-                        best.text().equalsIgnoreCase(newPath) || 
-                            best.hasEqualOrBetterWeightThan(PERFECT);
+                        best.value().equalsIgnoreCase(newPath) || 
+                        best.hasEqualOrBetterWeightThan(PERFECT);
                 if ( bestIsGoodEnough ) {
                     String realFoundPath = subPathes.get(best.index()).fullPath();
                     validity.set(defineNewPathValidityUsing(initiator, realFoundPath, dialog));
                 } else {
                     boolean hasMatch = this.daoPatternChoices.hasMatchOf(
-                            initiator, newPath, best.text(), variants);
+                            initiator, newPath, best.value(), variants);
                     if ( hasMatch ) {
                         String realFoundPath = subPathes.get(best.index()).fullPath();
                         validity.set(defineNewPathValidityUsing(   
                                 initiator, realFoundPath, dialog));
                     } else {
-                        Answer answer = this.ioEngine.chooseInWeightedVariants(
+                        Answer answer = this.ioEngine.ask(
                                 initiator, variants, this.chooseOneSubPathHelp);
                         if ( answer.isGiven() ) {
                             LocationSubPath foundSubPath = subPathes.get(answer.index());

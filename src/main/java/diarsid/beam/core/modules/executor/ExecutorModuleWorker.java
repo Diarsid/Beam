@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.ValueFlowDone;
 import diarsid.beam.core.base.control.flow.ValueFlowFail;
@@ -37,7 +40,6 @@ import diarsid.beam.core.base.control.plugins.Plugin;
 import diarsid.beam.core.base.os.treewalking.advanced.Walker;
 import diarsid.beam.core.base.os.treewalking.listing.FileLister;
 import diarsid.beam.core.base.os.treewalking.search.FileSearcher;
-import diarsid.support.strings.StringUtils;
 import diarsid.beam.core.domain.entities.Batch;
 import diarsid.beam.core.domain.entities.BatchPauseCommand;
 import diarsid.beam.core.domain.entities.Location;
@@ -45,9 +47,12 @@ import diarsid.beam.core.domain.entities.LocationSubPath;
 import diarsid.beam.core.domain.entities.NamedEntity;
 import diarsid.beam.core.modules.DomainKeeperModule;
 import diarsid.beam.core.modules.ExecutorModule;
+import diarsid.beam.core.modules.domainkeeper.CommandsMemoryKeeper;
+import diarsid.support.strings.StringUtils;
 
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
+import static java.util.stream.Collectors.toList;
 
 import static diarsid.beam.core.base.control.flow.FlowResult.DONE;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
@@ -58,7 +63,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.View.HIDE_VARIANT_TYPE;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.View.HIDE_VARIANT_TYPE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BATCH_PAUSE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.BROWSE_WEBPAGE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CALL_BATCH;
@@ -67,12 +72,15 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.LIST_PATH;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandLifePhase.NEW;
+import static diarsid.beam.core.base.control.io.commands.executor.InvocationCommandTargetState.TARGET_FOUND;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractLocationFromPath;
 import static diarsid.beam.core.base.util.PathUtils.extractTargetFromPath;
+import static diarsid.beam.core.base.util.PathUtils.findDepthOf;
 import static diarsid.beam.core.base.util.PathUtils.joinPathFrom;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.joinToPathFrom;
@@ -93,6 +101,9 @@ import static diarsid.support.log.Logging.logFor;
  * @author Diarsid
  */
 class ExecutorModuleWorker implements ExecutorModule {
+    
+    private final static Logger log = logFor(ExecutorModule.class);
+    private final static int MAX_WALKER_DEPTH = 5;
     
     private final DomainKeeperModule domain;
     private final InnerIoEngine ioEngine;
@@ -123,6 +134,24 @@ class ExecutorModuleWorker implements ExecutorModule {
             asyncDo(() -> {
                 this.domain.commandsMemory().save(initiator, command);
             });
+        }
+    }
+
+    private void saveCommandIfNecessary(
+            Initiator initiator, InvocationCommand command) {
+        if ( command.wasNotUsedBefore() && command.isTargetFound() ) {
+            this.domain.commandsMemory().save(initiator, command);
+        }
+    }
+
+    private void saveCommandsIfNecessary(
+            Initiator initiator, InvocationCommand command1, InvocationCommand command2) {
+        CommandsMemoryKeeper commandsMemory = this.domain.commandsMemory();
+        if ( command1.wasNotUsedBefore() && command1.isTargetFound() ) {
+            commandsMemory.save(initiator, command1);
+        }
+        if ( command2.wasNotUsedBefore() && command2.isTargetFound() ) {
+            commandsMemory.save(initiator, command2);
         }
     }
     
@@ -518,6 +547,7 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     @Override
     public void openLocationTarget(Initiator initiator, OpenLocationTargetCommand command) {
+        log.info(".open location target: " + command.stringify());
         if ( command.argument().isNotExtended() ) {
             VoidFlow flow = this.domain
                     .commandsMemory()
@@ -654,7 +684,7 @@ class ExecutorModuleWorker implements ExecutorModule {
                         this.ioEngine.report(initiator, doneFlow.message());
                     } else {
                         this.ioEngine.report(initiator, format(
-                                "'%s' not found in %s", target, locationSubPath.fullName()));
+                                "'%s' not found in %s", target, locationSubPath.name()));
                     }                   
                 }                
                 break;
@@ -733,21 +763,71 @@ class ExecutorModuleWorker implements ExecutorModule {
             String target, 
             OpenLocationTargetCommand command) {
         command.setNew();
-        this.doWhenTargetNotFoundDirectlyByFileWalker(initiator, location, target, command);
+        this.searchForTargetInLocationSubPaths(initiator, location, target, command);
     }
     
-    private void doWhenTargetNotFoundDirectlyByFileWalker(
+    private void searchForTargetInLocationSubPaths(
             Initiator initiator, 
             Location location, 
             String target, 
             OpenLocationTargetCommand command) {
-        ValueFlow<String> targetFlow = this.walker                
+        behavior_v2_searchForTargetInLocationSubPaths(initiator, location, target, command);
+    }
+
+    private void behavior_v2_searchForTargetInLocationSubPaths(
+            Initiator initiator, Location location, String target, OpenLocationTargetCommand command) {
+        List<Variant> foundSubPathsVariants = this.domain
+                .locationSubPaths()
+                .findAllLocationSubPaths(initiator, location, target);
+        
+        if ( nonEmpty(foundSubPathsVariants) ) {
+            List<Variant> possibleTargets = foundSubPathsVariants
+                    .stream()
+                    .map((pathVariant) -> {
+                        String fullSubPath = pathVariant.value();
+                        String pathWithoutLocation = extractTargetFromPath(fullSubPath);
+                        return pathVariant
+                                .retainInValueOnly(pathWithoutLocation)
+                                .retainInNameOnly(fullSubPath);
+                    })
+                    .collect(toList());
+            this.searchForTargetByFileWalkerWithFoundSubPaths(
+                    initiator, location, target, possibleTargets, command);
+        } else {
+            this.searchForTargetByFileWalker(initiator, location, target, command);            
+        }
+    }
+
+    private void searchForTargetByFileWalkerWithFoundSubPaths(
+            Initiator initiator, 
+            Location location, 
+            String target, 
+            List<Variant> pathsVariants,
+            OpenLocationTargetCommand command) {
+        int maxSubPathsDepth = pathsVariants
+                .stream()
+                .mapToInt(subPathVariant -> findDepthOf(subPathVariant.nameOrValue()))
+                .max()
+                .orElse(0);
+        
+        if ( location.hasSubPath() ) {
+            int locationSubPathDepth = findDepthOf(location.name());
+            maxSubPathsDepth = maxSubPathsDepth - locationSubPathDepth;
+            if ( maxSubPathsDepth < 1 ) {
+                maxSubPathsDepth = 1;
+            }
+        }
+        
+        int depthToGo = maxSubPathsDepth > MAX_WALKER_DEPTH ? maxSubPathsDepth : MAX_WALKER_DEPTH;
+        
+        ValueFlow<String> targetFlow = this.walker
                 .walkToFind(target)
-                .withMaxDepthOf(5)
+                .withPredefined(pathsVariants)
+                .withMinDepthOf(maxSubPathsDepth)
+                .withMaxDepthOf(depthToGo)
                 .in(location)
                 .by(initiator)
                 .andGetResult();
-        
         switch ( targetFlow.result() ) {
             case DONE : {
                 ValueFlowDone<String> doneFlow = targetFlow.asDone();
@@ -760,15 +840,53 @@ class ExecutorModuleWorker implements ExecutorModule {
                     } else {
                         this.ioEngine.report(initiator, format(
                                 "'%s' not found in %s", target, location.name()));
-                    }                    
+                    }
                 }                
                 break;
             }    
             case FAIL : {
                 this.ioEngine.report(initiator, targetFlow.asFail().reason());
                 break;
+            }
+            case STOP:
+            default : {
+                // do nothing;
+            }
+        }
+    }
+    
+    private void searchForTargetByFileWalker(
+            Initiator initiator, 
+            Location location, 
+            String target, 
+            OpenLocationTargetCommand command) {
+        ValueFlow<String> targetFlow = this.walker
+                .walkToFind(target)
+                .withMaxDepthOf(MAX_WALKER_DEPTH)
+                .in(location)
+                .by(initiator)
+                .andGetResult();
+        switch ( targetFlow.result() ) {
+            case DONE : {
+                ValueFlowDone<String> doneFlow = targetFlow.asDone();
+                if ( doneFlow.hasValue() ) {
+                    target = targetFlow.asDone().orThrow();
+                    this.openTargetAndExtendCommand(initiator, location, target, command);
+                } else {
+                    if ( doneFlow.hasMessage() ) {
+                        this.ioEngine.report(initiator, doneFlow.message());
+                    } else {
+                        this.ioEngine.report(initiator, format(
+                                "'%s' not found in %s", target, location.name()));
+                    }
+                }                
+                break;
             }    
-            case STOP :
+            case FAIL : {
+                this.ioEngine.report(initiator, targetFlow.asFail().reason());
+                break;
+            }
+            case STOP:
             default : {
                 // do nothing;
             }
@@ -782,10 +900,24 @@ class ExecutorModuleWorker implements ExecutorModule {
             OpenLocationTargetCommand command) {
         command.argument().setExtended(location.relativePathTo(target));
         command.setTargetFound();
+        
+        CallbackEmpty doOnSuccess;
+        if ( location.hasSubPath() ) {
+            LocationSubPath originalFoundSubPath = (LocationSubPath) location;
+            OpenLocationTargetCommand originalSubPathCommand = new OpenLocationTargetCommand(
+                    command.originalLocation(), 
+                    originalFoundSubPath.name(), 
+                    NEW, 
+                    TARGET_FOUND);
+            doOnSuccess = this.thenDoOnSuccess(initiator, originalSubPathCommand, command);
+        } else {
+            doOnSuccess = this.thenDoOnSuccess(initiator, command);
+        }
+        
         this.ioEngine.report(initiator, "...opening " + command.extendedArgument());
         location.openAsync(
                 target,
-                this.thenDoOnSuccess(initiator, command),
+                doOnSuccess,
                 this.thenDoOnFail(initiator, command));
     }
 
@@ -918,7 +1050,16 @@ class ExecutorModuleWorker implements ExecutorModule {
 
     private CallbackEmpty thenDoOnSuccess(Initiator initiator, InvocationCommand command) {
         return () -> {
-            this.asyncSaveCommandIfNecessary(initiator, command);
+            this.saveCommandIfNecessary(initiator, command);
+        };
+    }
+
+    private CallbackEmpty thenDoOnSuccess(
+            Initiator initiator, 
+            OpenLocationTargetCommand command1, 
+            OpenLocationTargetCommand command2) {
+        return () -> {
+            this.saveCommandsIfNecessary(initiator, command1, command2);
         };
     }
     
@@ -926,7 +1067,7 @@ class ExecutorModuleWorker implements ExecutorModule {
             Initiator initiator, Optional<InvocationCommand> command) {
         return () -> {
             if ( command.isPresent() ) {
-                this.asyncSaveCommandIfNecessary(initiator, command.get());                
+                this.saveCommandIfNecessary(initiator, command.get());                
             }
         };
     }
@@ -1278,11 +1419,11 @@ class ExecutorModuleWorker implements ExecutorModule {
         if ( pathIsDirectory(realPath) ) {
             Optional<List<String>> listing = this.fileLister.listContentOf(realPath, 5);
             if ( listing.isPresent() ) {
-                listing.get().add(0, subPath.fullName() + " content:");
+                listing.get().add(0, subPath.name() + " content:");
                 this.ioEngine.reportMessage(initiator, info(listing.get()));
             } else {
                 this.ioEngine.report(initiator, format(
-                        "cannot list %s content.", subPath.fullName()));
+                        "cannot list %s content.", subPath.name()));
             }
         }
     }    

@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataExtractionException;
@@ -29,7 +29,7 @@ class H2DaoPatternChoices
     }
 
     @Override
-    public boolean hasMatchOf(String original, String extended, WeightedVariants variants) 
+    public boolean hasMatchOf(String original, String extended, Variants variants) 
             throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
@@ -47,7 +47,7 @@ class H2DaoPatternChoices
     }
 
     @Override
-    public Optional<String> findChoiceFor(String original, WeightedVariants variants) 
+    public Optional<String> findChoiceFor(String original, Variants variants) 
             throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
@@ -63,7 +63,7 @@ class H2DaoPatternChoices
     }  
     
     @Override
-    public boolean save(String original, String extended, WeightedVariants variants) 
+    public boolean save(String original, String extended, Variants variants) 
             throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
@@ -110,7 +110,7 @@ class H2DaoPatternChoices
     }
     
     @Override
-    public boolean save(InvocationCommand command, WeightedVariants variants) 
+    public boolean save(InvocationCommand command, Variants variants) 
             throws DataExtractionException {
         return this.save(command.originalArgument(), command.extendedArgument(), variants);
     }

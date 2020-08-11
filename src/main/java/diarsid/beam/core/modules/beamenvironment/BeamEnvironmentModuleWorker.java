@@ -10,7 +10,7 @@ import diarsid.beam.core.application.environment.BeamEnvironment;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.analyze.similarity.Similarity;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.beam.core.modules.BeamEnvironmentModule;
 import diarsid.support.configuration.Configuration;
@@ -30,7 +30,7 @@ class BeamEnvironmentModuleWorker implements BeamEnvironmentModule {
     private final Interpreter interpreter;
     private final ProgramsCatalog programsCatalog;
     private final NotesCatalog notesCatalog;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Similarity similarity;
     
     BeamEnvironmentModuleWorker() {    
@@ -63,7 +63,7 @@ class BeamEnvironmentModuleWorker implements BeamEnvironmentModule {
     }
 
     @Override
-    public Analyze analyze() {
+    public WeightAnalyzeReal analyze() {
         return this.analyze;
     }
 

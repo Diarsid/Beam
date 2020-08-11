@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
 import diarsid.beam.core.base.data.DataExtractionException;
 
@@ -18,19 +18,19 @@ import diarsid.beam.core.base.data.DataExtractionException;
 public interface DaoPatternChoices extends Dao {
     
     boolean hasMatchOf(
-            String original, String extended, WeightedVariants variants) 
+            String original, String extended, Variants variants) 
             throws DataExtractionException;
     
     Optional<String> findChoiceFor(
-            String original, WeightedVariants variants)
+            String original, Variants variants)
             throws DataExtractionException;
     
     boolean save(
-            String original, String extended, WeightedVariants variants)
+            String original, String extended, Variants variants)
             throws DataExtractionException;
     
     boolean save(
-            InvocationCommand command, WeightedVariants variants)
+            InvocationCommand command, Variants variants)
             throws DataExtractionException;
     
     boolean delete(

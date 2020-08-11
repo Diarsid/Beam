@@ -12,6 +12,7 @@ import java.io.Serializable;
  * @author Diarsid
  */
 public enum OuterIoEngineType implements Serializable {
+    
     REMOTE (true), 
     IN_MACHINE (false);
     

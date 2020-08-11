@@ -9,10 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEmpty;
 import diarsid.beam.core.base.control.io.base.interaction.CallbackEvent;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -51,6 +51,10 @@ public class LocationSubPath extends Location {
     @Override
     public String name() {
         return joinToPathFrom(super.name(), this.subPath);
+    }
+    
+    public String locationName() {
+        return super.name();
     }
     
     @Override
@@ -101,10 +105,6 @@ public class LocationSubPath extends Location {
         return this.subPath;
     }
     
-    public String fullName() {
-        return joinToPathFrom(super.name(), this.subPath);
-    }
-    
     public String fullPath() {
         return joinToPathFrom(super.path(), this.subPath);
     }
@@ -123,9 +123,8 @@ public class LocationSubPath extends Location {
     
     @Override
     public Variant toVariant(int variantIndex) {
-        String combinedPath = joinToPathFrom(super.name(), this.subPath);
         return new Variant(
-                combinedPath, 
+                this.name(), 
                 this.variantDisplayName(), 
                 variantIndex);
     }

@@ -7,7 +7,7 @@ package diarsid.beam.core.base.control.io.base.console;
 
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
 import diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion;
@@ -22,7 +22,7 @@ public interface ConsoleIO {
 
     void print(VariantsQuestion question) throws Exception;
 
-    void print(List<WeightedVariant> variants) throws Exception;
+    void print(List<Variant> variants) throws Exception;
 
     void print(Exception e);
 

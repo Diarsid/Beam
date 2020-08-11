@@ -11,7 +11,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.base.console.ConsoleIO;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -82,18 +82,18 @@ class SystemConsoleIO implements ConsoleIO {
         this.writer.newLine();
         for (int i = 0; i < question.getVariants().size(); i++) {
             this.writer.write(
-                    format("       %d : %s", i + 1, question.getVariants().get(i).bestText()));
+                    format("       %d : %s", i + 1, question.getVariants().get(i).nameOrValue()));
             this.writer.newLine();
         }
         this.printInDialogInviteLine("choose");
     }
     
     @Override
-    public void print(List<WeightedVariant> variants) throws IOException {
+    public void print(List<Variant> variants) throws IOException {
         this.writer.write("     > is one of ?");
         this.writer.newLine();
         for (int i = 0; i < variants.size(); i++) {
-            this.writer.write(format("       %d : %s", i + 1, variants.get(i).bestText()));
+            this.writer.write(format("       %d : %s", i + 1, variants.get(i).nameOrValue()));
             this.writer.newLine();
         }
         this.printInDialogInviteLine("choose");

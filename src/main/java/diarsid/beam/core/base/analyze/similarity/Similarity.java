@@ -27,9 +27,9 @@ import static diarsid.beam.core.base.events.BeamEventRuntime.requestPayloadThenA
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.MathUtil.absDiffOneIfZero;
 import static diarsid.beam.core.base.util.PathUtils.splitPathFragmentsFrom;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.support.strings.StringUtils.lower;
 import static diarsid.support.strings.StringUtils.removeAllSeparators;
-import static diarsid.support.log.Logging.logFor;
 
 /**
  *
@@ -37,7 +37,7 @@ import static diarsid.support.log.Logging.logFor;
  */
 public class Similarity {
     
-    private static final int SIMILARITY_ALGORITHM_VERSION = 4;
+    private static final int SIMILARITY_ALGORITHM_VERSION = 5;
     
     private static final int CHAIN_1_NOT_FOUND = -2;
     private static final int CHAIN_2_NOT_FOUND = -3;
@@ -179,6 +179,7 @@ public class Similarity {
         int previousChainsNotFoundQty = 0;
         boolean previousChainFoundAsReverse = false;
         boolean previousChainFoundAsWeak = false;
+        boolean chainEqualToPreviousAndIngored = false;
         char weakChainLastChar = CHAIN_NOT_FOUND_CHAR;
         
         int consistencyPercent;
@@ -206,10 +207,13 @@ public class Similarity {
             chainIndexTarget = indexOfChain(target, chain1, chain2);
             if ( chainIndexTarget > -1 && chainIndexTarget == chainIndexTargetPrev ) {
                 similarityLog("found, equal to previous, ignore and continue", 2);
+                chainEqualToPreviousAndIngored = true;
                 chainIndexTarget = indexOfChainFrom(target, chainIndexTarget, chain1, chain2);
+            } else {
+                chainEqualToPreviousAndIngored = false;
             }
             
-            if ( chainIndexTarget == CHAIN_1_NOT_FOUND ) {
+            if ( chainIndexTarget == CHAIN_1_NOT_FOUND && ! chainEqualToPreviousAndIngored ) {
                 missingPatternCharsPercentSum = missingPatternCharsPercentSum + patternCharPercent;
                 similarityLog(format("char '%s' not found", chain1), 2);
                 if ( missingPatternCharsPercentSum > 50 ) {
@@ -234,7 +238,14 @@ public class Similarity {
                 }
                 if ( chainIndexTargetPrev > -1 ) {
                     if ( chainIndexTarget < chainIndexTargetPrev ) {
-                        inconsistencySum++;
+                        if ( ! chainEqualToPreviousAndIngored ) {
+                            int possibleChainIndexTarget = indexOfChainFrom(target, chainIndexTargetPrev, chain1, chain2);
+                            if ( possibleChainIndexTarget > -1 ) {
+                                chainIndexTarget = possibleChainIndexTarget;
+                            } else {                                
+                                inconsistencySum++;
+                            }                            
+                        }
                     }
                 }
                 chainIndexTargetPrev = chainIndexTarget;

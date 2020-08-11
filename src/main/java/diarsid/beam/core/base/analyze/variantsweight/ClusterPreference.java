@@ -3,17 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package diarsid.beam.core.base.control.io.base.interaction;
+package diarsid.beam.core.base.analyze.variantsweight;
 
 /**
  *
  * @author Diarsid
  */
-public interface ConvertableToVariant {
+public enum ClusterPreference {
     
-    Variant toVariant(int variantIndex);
+    PREFERE_LEFT,
+    PREFERE_RIGHT    
     
-    default Variant toSingleVariant() {
-        return this.toVariant(0);
-    }
 }

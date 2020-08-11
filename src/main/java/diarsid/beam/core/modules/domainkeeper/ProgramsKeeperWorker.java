@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import diarsid.beam.core.application.environment.ProgramsCatalog;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -33,7 +33,7 @@ import static diarsid.beam.core.base.control.flow.Flows.valueFlowDoneWith;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.FIND_PROGRAM;
 import static diarsid.beam.core.base.control.io.commands.CommandType.RUN_PROGRAM;
 import static diarsid.beam.core.base.os.treewalking.base.FileSearchMode.FILES_ONLY;
@@ -49,7 +49,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     
     private final InnerIoEngine ioEngine;
     private final Walker walker;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final ProgramsCatalog programsCatalog;
     private final Set<CommandType> operatingCommandTypes;
@@ -60,7 +60,7 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
     ProgramsKeeperWorker(
             InnerIoEngine ioEngine, 
             Walker walker,
-            Analyze analyze, 
+            WeightAnalyzeReal analyze, 
             Pool<KeeperLoopValidationDialog> dialogPool,
             ProgramsCatalog programsCatalog) {
         this.ioEngine = ioEngine;
@@ -196,18 +196,18 @@ class ProgramsKeeperWorker implements ProgramsKeeper {
             Initiator initiator, String pattern, List<Program> programs) {
         if ( hasOne(programs) ) {
             Program program = getOne(programs);
-            if ( this.analyze.isEntitySatisfiable(pattern, program) ) {
+            if ( this.analyze.isSatisfiable(pattern, program.name()) ) {
                 return valueFlowDoneWith(program);
             } else {
                 return valueFlowDoneEmpty();
             }            
         } else if ( hasMany(programs) ) {
-            WeightedVariants variants = this.analyze.weightVariants(
+            Variants variants = this.analyze.weightVariants(
                     pattern, entitiesToVariants(programs));
             if ( variants.isEmpty() ) {
                 return valueFlowDoneEmpty();
             }
-            Answer answer = this.ioEngine.chooseInWeightedVariants(
+            Answer answer = this.ioEngine.ask(
                     initiator, variants, this.chooseOneProgramHelp);
             if ( answer.isGiven() ) {
                 return valueFlowDoneWith(programs.get(answer.index()));

@@ -157,4 +157,23 @@ public class MathUtil {
     public static int cube(int x) {
         return x * x * x;
     }
+    
+    public static int zeroIfNegative(int x) {
+        if ( x < 0 ) {
+            return 0;
+        } else {
+            return x;
+        }        
+    }
+    
+    public static int sumInts(Iterable<Integer> ints) {
+        int sum = 0;
+        
+        for (Integer i : ints) {
+            sum = sum + i;
+        }
+        
+        return sum;
+    }
+    
 }

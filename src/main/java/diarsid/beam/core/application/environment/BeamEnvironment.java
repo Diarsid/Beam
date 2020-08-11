@@ -7,7 +7,7 @@
 package diarsid.beam.core.application.environment;
 
 import diarsid.beam.core.base.analyze.similarity.Similarity;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.support.configuration.Configuration;
 
 import static diarsid.beam.core.application.environment.CurrentWorkingDirectory.currentWorkingDirectory;
@@ -23,7 +23,7 @@ import static diarsid.support.objects.Pools.pools;
  */
 public class BeamEnvironment {
     
-    private static final Analyze ANALYZE;
+    private static final WeightAnalyzeReal ANALYZE;
     private static final Similarity SIMILARITY;
     
     static {
@@ -53,6 +53,9 @@ public class BeamEnvironment {
                             "ui.console.default.height = ",
                             "ui.console.default.width = ",
                             "ui.screen.insets = 30",
+//                            "analyze.weight.base.log = false",
+//                            "analyze.weight.positions.search.log = false",
+//                            "analyze.weight.positions.clusters.log = false",
                             "analyze.weight.base.log = true",
                             "analyze.weight.positions.search.log = true",
                             "analyze.weight.positions.clusters.log = true",
@@ -85,7 +88,7 @@ public class BeamEnvironment {
                     .read("../config/beam.config");
         
         SIMILARITY = new Similarity(configuration());
-        ANALYZE = new Analyze(configuration(), SIMILARITY, pools());
+        ANALYZE = new WeightAnalyzeReal(configuration(), SIMILARITY, pools());
     }
 
     private BeamEnvironment() {
@@ -121,7 +124,7 @@ public class BeamEnvironment {
         return SIMILARITY;
     }
     
-    public static Analyze analyze() {
+    public static WeightAnalyzeReal analyze() {
         return ANALYZE;
     }
     

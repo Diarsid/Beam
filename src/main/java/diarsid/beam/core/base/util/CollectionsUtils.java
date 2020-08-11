@@ -94,6 +94,10 @@ public class CollectionsUtils {
     }
     
     public static Integer getNearestToValueFromSetExcluding(int value, Set<Integer> set) {
+        if ( set.isEmpty() ) {
+            throw new IllegalArgumentException("Set<Integer> should not be empty!");
+        }
+        
         int higher = value;
         int lower = value;
         int current;
@@ -130,11 +134,9 @@ public class CollectionsUtils {
             return getNearest(lower, value, higher);
         } else if ( higher != value ) {
             return higher;
-        } else if ( lower != value ) {
-            return lower;
         } else {
-            return null;
-        }
+            return lower;
+        } 
     }
     
     public static void main(String[] args) {

@@ -24,12 +24,12 @@ import diarsid.support.objects.Pool;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.joining;
 
 import static org.junit.Assert.fail;
 
 import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.support.objects.Pools.pools;
 
@@ -39,17 +39,18 @@ import static diarsid.support.objects.Pools.pools;
  */
 public class AnalyzeTest {
     
-    private static Analyze analyzeInstance;
+    private static WeightAnalyzeReal analyzeInstance;
     private static int totalVariantsQuantity;
     private static long start;
     private static long stop;
     
-    private Analyze analyze;
+    private WeightAnalyzeReal analyze;
     private boolean expectedToFail;
     private String pattern;
+    private String noWorseThan;
     private List<String> variants;
     private List<String> expected;
-    private WeightedVariants weightedVariants;
+    private Variants weightedVariants;
     
     public AnalyzeTest() {
     }
@@ -57,7 +58,7 @@ public class AnalyzeTest {
     @BeforeClass
     public static void setUpClass() {
         Similarity similarity = new Similarity(configuration());
-        analyzeInstance = new Analyze(configuration(), similarity, pools());
+        analyzeInstance = new WeightAnalyzeReal(configuration(), similarity, pools());
         start = currentTimeMillis();
     }
     
@@ -72,10 +73,10 @@ public class AnalyzeTest {
                 "\n  total time     : %s " + 
                 "\n  total variants : %s \n";
         logger.info(format(report, stop - start, totalVariantsQuantity));
-        Optional<Pool<AnalyzeData>> pool = pools().poolOf(AnalyzeData.class);
+        Optional<Pool<AnalyzeUnit>> pool = pools().poolOf(AnalyzeUnit.class);
         if ( pool.isPresent() ) {
-            Pool<AnalyzeData> c = pool.get();
-            AnalyzeData analyzeData = c.give();
+            Pool<AnalyzeUnit> c = pool.get();
+            AnalyzeUnit analyzeData = c.give();
         }
     }
     
@@ -175,7 +176,7 @@ public class AnalyzeTest {
     
     @Test
     public void test_AvailableJavaCase_availabljava () {
-        pattern = "availabljava ";
+        pattern = "avaijava";
         
         variants = asList(
                 "Engines/Java/Path/available"
@@ -381,6 +382,21 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_MavenLocalRepo_mvrep() {
+        pattern = "mvrep";
+        
+        variants = asList(
+                "Dev/Lib/Maven_Local_Repo",
+                "Dev/Lib/Maven_Local_Repo/org",
+                "Dev/Lib/Maven_Local_Repo/diarsid"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_gmailWithOtherMLClusterCase_ml() {
         pattern = "ml";
         
@@ -389,6 +405,7 @@ public class AnalyzeTest {
                 "some_ml_string",
                 "some_ml",
                 "some_Mstring_Lwith_ml_cluster",
+                "mail",
                 "gmail");
         
         expected = asList(
@@ -396,7 +413,25 @@ public class AnalyzeTest {
                 "some_ml",
                 "some_ml_string",
                 "some_Mstring_Lwith_ml_cluster",
+                "mail",
                 "gmail"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_googleWithOtherGLClusterCase_gl() {
+        pattern = "gl";
+        
+        variants = asList(
+                "google",
+                "english"
+        );
+        
+        expected = asList(
+                "google",
+                "english"
         );
         
         weightVariantsAndCheckMatching();
@@ -411,9 +446,107 @@ public class AnalyzeTest {
                 "gmail");
         
         expected = asList(
-                "gmail",
-                "some_stMring_wLith_cluster"
+                "gmail"
         );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_javaEngines_enginsjv() {
+        pattern = "enginsjv";
+        
+        variants = asList(
+                "Engines/Java/Path/JAVA_HOME/bin/jvisualvm.exe",
+                "Engines/Java");
+        
+        expected = asList(
+                "Engines/Java",
+                "Engines/Java/Path/JAVA_HOME/bin/jvisualvm.exe"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_messageServers_msser() {
+        pattern = "msser";
+        
+        variants = asList(
+                "Tools/Servers/Messaging_Servers",
+                "Images/Photos/Miniatures"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_webServers_wsr() {
+        pattern = "wsr";
+        
+        variants = asList(
+                "Tools/Servers/Web_Servers"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }      
+    
+    @Test
+    public void test_webServers_wesrrv() {
+        pattern = "wesrrv";
+        
+        variants = asList(
+                "Tools/Servers/Web_Servers"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_8dot5_85() {
+        pattern = "85";
+        
+        variants = asList(
+                "Tools/Servers/Web_Servers/Apache_Tomcat/8.5.5",
+                "Tools/Servers/Web_Servers/Apache_Tomcat/8.5.5/bin"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_servers_1_sers() {
+        pattern = "sers";
+        
+        variants = asList(
+                "Tools/Servers",
+                "Films/Serials",
+                "Dev/Start_MySQL_server"
+                );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }    
+    
+    @Test
+    public void test_servers_2_sers() {
+        pattern = "sers";
+        
+        variants = asList(
+                "Tools/Servers",
+                "Tools/Servers/Web_Servers"
+                );
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -440,7 +573,7 @@ public class AnalyzeTest {
                 "Wizoria",
                 "Projects/Diarsid/WebStorm/Node.js");
         
-        expectedSameOrderAsVariants();
+        expected = asList("Wizoria");
         
         weightVariantsAndCheckMatching();
     }
@@ -529,8 +662,7 @@ public class AnalyzeTest {
         );
         
         expected = asList(
-                "Content/WH/Game/The_9th_Age/Rosters",
-                "Music/2__Store/Therion"
+                "Content/WH/Game/The_9th_Age/Rosters"
         );
         
         weightVariantsAndCheckMatching();
@@ -548,6 +680,32 @@ public class AnalyzeTest {
         expected = asList(
                 "Content/WH/Game/The_9th_Age/Rosters/Elves.txt"
         );
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_rostersCase3_roseter() {
+        pattern = "roseter";
+        
+        variants = asList(
+                "Content/WH/Game/The_9th_Age/Rosters/Elves.txt"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+        
+    @Test
+    public void test_rostersCase3_reostr() {
+        pattern = "reostr";
+        
+        variants = asList(
+                "Content/WH/Game/The_9th_Age/Rosters"
+        );
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -817,7 +975,7 @@ public class AnalyzeTest {
     }
     
     @Test
-    public void test_EarthMoviesCase_soulprogs() {
+    public void test_EarthMoviesCase_earhmives() {
         pattern = "earhmives";
         
         variants = asList(
@@ -860,7 +1018,7 @@ public class AnalyzeTest {
     }
 
     @Test
-    public void test_GitHubPagesCase_drsd() {
+    public void test_GitHubPagesCase_gihbpgs() {
         pattern = "gihbpgs";
         
         variants = asList(
@@ -961,6 +1119,40 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_NetBeansCase_nebaen_noWorseThan() {
+        pattern = "nebaen";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam",               
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Research.Java",
+                "Dev/NetBeans_8.2.lnk"
+        );
+        
+        noWorseThan = "Projects/Diarsid/NetBeans/Beam";
+        
+        expected = asList( 
+                "Dev/NetBeans_8.2.lnk",
+                "Projects/Diarsid/NetBeans",
+                "Projects/Diarsid/NetBeans/Beam");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_NetBeansCase_single_nebaen() {
+        pattern = "nebaen";
+        
+        variants = asList(
+                "Projects/Diarsid/NetBeans/Beam");
+               
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();      
+    }      
+                
+    
+    @Test
     public void test_NetBeansCase_nebaen_short() {
         pattern = "nebaen";
         
@@ -1019,12 +1211,12 @@ public class AnalyzeTest {
                 "netbeans_projects",
                 "beam_project/src",
                 "beam netpro",
-                "abe_netpro",
-                "babel_pro");
+                "babel_pro",
+                "abe_netpro");
         
         weightVariantsAndCheckMatching();
     }
-
+    
     @Test
     public void test_JavaSE8Case_jse8() {
         pattern = "jse8";
@@ -1216,6 +1408,23 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_JavaBooksCase_jboks() {
+        pattern = "jboks";
+        
+        variants = asList(
+                "Books/Common/Tolkien_J.R.R",
+                "Current_Job/Workspace",
+                "Books/Tech/Java");
+        
+        expected = asList(
+                "Books/Common/Tolkien_J.R.R", 
+                "Books/Tech/Java",
+                "Current_Job/Workspace");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_commonBooksCase_comboks() {
         pattern = "comboks";
         
@@ -1300,6 +1509,22 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_projectsUkrPoshta_posthproj() {
+        pattern = "posthproj";
+        
+        variants = asList(            
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta",
+                "Projects/UkrPoshta/UkrPostAPI"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_projectsUkrPoshta_ukrpsoht() {
         pattern = "ukrpsoht";
         
@@ -1329,12 +1554,43 @@ public class AnalyzeTest {
     }
     
     @Test
+    public void test_PostAPICase_poshapi() {
+        pattern = "poshapi";
+        
+        variants = asList(            
+                "Projects/UkrPoshta/StatusTrackingAPI",
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expected = asList(
+                "Projects/UkrPoshta/UkrPostAPI",
+                "Projects/UkrPoshta/StatusTrackingAPI"
+        );
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
     public void test_TechBooksCase_() {
         pattern = "techbok";
         
         variants = asList(
-                "Books/tech", // TODO increase here
+                "Books/tech",
                 "Books/Tech/Unsorted"
+        );
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_WinampCase_() {
+        pattern = "winan";
+        
+        variants = asList(
+                "Winamp", 
+                "Folder/Winamp.ext",                
+                "Folder/Winamp_2.3.ext"
         );
         
         expectedSameOrderAsVariants();
@@ -1381,6 +1637,30 @@ public class AnalyzeTest {
         expected = asList(
                 "Projects/UkrPoshta/UkrPostAPI",
                 "Projects/UkrPoshta/CainiaoAPI");
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_single_pstoapi() {
+        pattern = "pstoapi";
+        
+        variants = asList(
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expectedSameOrderAsVariants();
+        
+        weightVariantsAndCheckMatching();
+    }
+    
+    @Test
+    public void test_projectsUkrPoshta_single_potsapi() {
+        pattern = "potsapi";
+        
+        variants = asList(
+                "Projects/UkrPoshta/UkrPostAPI");
+        
+        expectedSameOrderAsVariants();
         
         weightVariantsAndCheckMatching();
     }
@@ -1506,7 +1786,6 @@ public class AnalyzeTest {
         expected = asList(
                 "ABC/123",
                 "xy/ABC_z123er",
-                "qwCABgfg132",
                 "xcdfABdC_fg123fdf23hj12");
         
         weightVariantsAndCheckMatching();
@@ -1741,11 +2020,15 @@ public class AnalyzeTest {
     }
     
     private void weightVariantsAndCheckMatchingInternally() {
-        weightedVariants = this.analyze.weightVariants(pattern, stringsToVariants(variants));
+        if ( isNull(this.noWorseThan) ) {
+            weightedVariants = this.analyze.weightStrings(pattern, variants);
+        } else {
+            weightedVariants = this.analyze.weightStrings(pattern, noWorseThan, variants);
+        }        
         
         String expectedVariant;
         String actualVariant;
-        List<WeightedVariant> nextSimilarVariants;
+        List<Variant> nextSimilarVariants;
         
         List<String> reports = new ArrayList();        
         List<String> presentButNotExpected = new ArrayList<>();        
@@ -1762,7 +2045,7 @@ public class AnalyzeTest {
             if ( weightedVariants.currentIsMuchBetterThanNext() ) {
                 
                 expectedVariant = expected.get(counter.getAndIncrement());
-                actualVariant = weightedVariants.current().text();
+                actualVariant = weightedVariants.current().value();
                 
                 if ( actualVariant.equalsIgnoreCase(expectedVariant) ) {
                     reports.add(format("\n%s variant matches expected: %s", counter.get() - 1, expectedVariant));
@@ -1775,8 +2058,8 @@ public class AnalyzeTest {
                 }
             } else {            
                 nextSimilarVariants = weightedVariants.nextSimilarVariants();
-                for (WeightedVariant weightedVariant : nextSimilarVariants) {
-                    actualVariant = weightedVariant.text();
+                for (Variant weightedVariant : nextSimilarVariants) {
+                    actualVariant = weightedVariant.value();
                     
                     if ( counter.get() < expected.size() ) {
                         expectedVariant = expected.get(counter.getAndIncrement());
@@ -1843,13 +2126,13 @@ public class AnalyzeTest {
 
         while ( weightedVariants.next() ) {            
             if ( weightedVariants.currentIsMuchBetterThanNext() ) {
-                variantsWithWeight.add("\n" + weightedVariants.current().text() + " is much better than next: " + weightedVariants.current().weight());
+                variantsWithWeight.add("\n" + weightedVariants.current().value() + " is much better than next: " + weightedVariants.current().weight());
             } else {
                 variantsWithWeight.add("\nnext candidates are similar: ");                
                 weightedVariants.nextSimilarVariants()
                         .stream()
                         .forEach(candidate -> {
-                            variantsWithWeight.add("\n  - " + candidate.text() + " : " + candidate.weight());
+                            variantsWithWeight.add("\n  - " + candidate.value() + " : " + candidate.weight());
                         });
             }
         }

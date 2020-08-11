@@ -8,15 +8,17 @@ package diarsid.beam.core.base.analyze.variantsweight;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import diarsid.support.objects.PooledReusable;
 
 import static java.lang.Math.abs;
 import static java.lang.String.format;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
-import static diarsid.beam.core.base.analyze.variantsweight.AnalyzePositionsData.POS_UNINITIALIZED;
+import static diarsid.beam.core.base.analyze.variantsweight.PositionsAnalyze.POS_UNINITIALIZED;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.logAnalyze;
+import static diarsid.beam.core.base.util.MathUtil.sumInts;
 
 
 /**
@@ -40,6 +42,7 @@ class Cluster
     private int ordersDiffCount;
     private int ordersDiffShifts;
     private boolean ordersDiffHaveCompensation;
+    private boolean hasOnlyOneExccessCharBetween;
     private int compensationSum;
     private int teardown;
 
@@ -55,6 +58,7 @@ class Cluster
         this.ordersDiffCount = 0;
         this.ordersDiffShifts = 0;
         this.ordersDiffHaveCompensation = false;
+        this.hasOnlyOneExccessCharBetween = false;
         this.compensationSum = 0;
         this.teardown = 0;
     }
@@ -131,6 +135,10 @@ class Cluster
         return this.ordersDiffSumAbs > 0;
     }
     
+    boolean hasOnlyOneExccessCharBetween() {
+        return this.hasOnlyOneExccessCharBetween;
+    }
+    
     boolean hasOrdersDiffShifts() {
         return this.ordersDiffShifts > 0;
     }
@@ -149,6 +157,15 @@ class Cluster
     
     boolean isMarkedForTeardown() {
         return this.teardown > 0;
+    }
+    
+    void finish() {        
+        boolean repeatsContainsZero = this.repeats.contains(0);
+        boolean repeatsContainsAbsOne = this.repeats.contains(-1) || this.repeats.contains(1);
+        boolean repeateOnlyTwo = this.repeatQties.size() == 2;
+        
+        this.hasOnlyOneExccessCharBetween = 
+                repeatsContainsZero && repeatsContainsAbsOne && repeateOnlyTwo;        
     }
     
     boolean testOnTeardown() {
@@ -212,10 +229,18 @@ class Cluster
         return true;
     }
     
-    private boolean tryToTearDownBasingOnDiffSumAndCount() {
-        int tearDown = this.ordersDiffCount();
+    private boolean tryToTearDownBasingOnDiffSumAndCount() {  
+        if ( this.hasOnlyOneExccessCharBetween ) {
+            return false;
+        }
         
-        if ( this.ordersDiffHaveCompensation ) {
+//        int tearDown = this.ordersDiffCount();
+        int tearDown = this.length - sumInts(this.repeatQties);
+        
+        if ( this.length > 2 && repeats.isEmpty() ) {
+            tearDown = this.length;
+        } 
+        else if ( this.ordersDiffHaveCompensation ) {
             if ( this.considerDiffCountCompensationWhen() ) {
                 tearDown = tearDown - this.compensationSum;
             }
@@ -244,21 +269,28 @@ class Cluster
         this.ordersDiffCount = 0;
         this.ordersDiffShifts = 0;
         this.ordersDiffHaveCompensation = false;
+        this.hasOnlyOneExccessCharBetween = false;
         this.compensationSum = 0;
         this.teardown = 0;
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 79 * hash + this.firstPosition;
-        hash = 79 * hash + this.length;
-        hash = 79 * hash + this.ordersDiffMean;
-        hash = 79 * hash + this.ordersDiffSumAbs;
-        hash = 79 * hash + this.ordersDiffCount;
-        hash = 79 * hash + this.ordersDiffShifts;
-        hash = 79 * hash + (this.ordersDiffHaveCompensation ? 1 : 0);
-        hash = 79 * hash + this.compensationSum;
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.repeats);
+        hash = 47 * hash + Objects.hashCode(this.repeatQties);
+        hash = 47 * hash + this.firstPosition;
+        hash = 47 * hash + this.patternLength;
+        hash = 47 * hash + this.length;
+        hash = 47 * hash + this.ordersDiffMean;
+        hash = 47 * hash + this.ordersDiffSumReal;
+        hash = 47 * hash + this.ordersDiffSumAbs;
+        hash = 47 * hash + this.ordersDiffCount;
+        hash = 47 * hash + this.ordersDiffShifts;
+        hash = 47 * hash + (this.ordersDiffHaveCompensation ? 1 : 0);
+        hash = 47 * hash + (this.hasOnlyOneExccessCharBetween ? 1 : 0);
+        hash = 47 * hash + this.compensationSum;
+        hash = 47 * hash + this.teardown;
         return hash;
     }
 
@@ -277,10 +309,16 @@ class Cluster
         if ( this.firstPosition != other.firstPosition ) {
             return false;
         }
+        if ( this.patternLength != other.patternLength ) {
+            return false;
+        }
         if ( this.length != other.length ) {
             return false;
         }
         if ( this.ordersDiffMean != other.ordersDiffMean ) {
+            return false;
+        }
+        if ( this.ordersDiffSumReal != other.ordersDiffSumReal ) {
             return false;
         }
         if ( this.ordersDiffSumAbs != other.ordersDiffSumAbs ) {
@@ -295,7 +333,19 @@ class Cluster
         if ( this.ordersDiffHaveCompensation != other.ordersDiffHaveCompensation ) {
             return false;
         }
+        if ( this.hasOnlyOneExccessCharBetween != other.hasOnlyOneExccessCharBetween ) {
+            return false;
+        }
         if ( this.compensationSum != other.compensationSum ) {
+            return false;
+        }
+        if ( this.teardown != other.teardown ) {
+            return false;
+        }
+        if ( !Objects.equals(this.repeats, other.repeats) ) {
+            return false;
+        }
+        if ( !Objects.equals(this.repeatQties, other.repeatQties) ) {
             return false;
         }
         return true;

@@ -53,16 +53,24 @@ public class SqlUtil {
     private SqlUtil() {
     }
     
+    public static String wildcardBefore(String part) {
+        return "%" + part;
+    }
+    
+    public static String wildcardAfter(String part) {
+        return part + "%";
+    }
+    
     public static String lowerWildcardBefore(String part) {
         return "%" + lower(part);
     }
     
-    public static String wildcardSpaceBefore(String lowerPart) {
-        return "% " + lowerPart;
-    }
-    
     public static String lowerWildcardAfter(String part) {
         return lower(part) + "%";
+    }
+    
+    public static String wildcardSpaceBefore(String lowerPart) {
+        return "% " + lowerPart;
     }
     
     public static String wildcardSpaceAfter(String lowerPart) {

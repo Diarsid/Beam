@@ -10,8 +10,8 @@ import java.util.List;
 import static java.lang.Integer.MIN_VALUE;
 import static java.util.stream.Collectors.joining;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_CLUSTERS;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.logAnalyze;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.meanSmartIngoringZeros;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
@@ -39,9 +39,9 @@ class AnalyzeUtil {
             int clusterLength) {
         int mean = meanSmartIngoringZeros(ints);
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs         %s", 
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diffs         %s", 
                     ints.stream().map(i -> i.toString()).collect(joining(" ")));
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diffs mean    %s", mean);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diffs mean    %s", mean);
         }
         
         int limit = ints.size() - 1;
@@ -121,9 +121,9 @@ class AnalyzeUtil {
                         haveCompensationInCurrentStep = true;
                         diffSumAbs = diffSumAbs - 2;
                         lastBeforeRepeat = UNINITIALIZED;
-                        if ( clusterLength == 2 ) {
+                        if ( clusterLength == 2 || clusterLength == 3 ) {
                             shifts = 2;
-                        }
+                        } 
                     } else if ( absDiff(previous, next) == 4 && 
                                 absDiff(previous, current) == 2 && 
                                 absDiff(current, mean) == 0 ) {
@@ -168,33 +168,37 @@ class AnalyzeUtil {
                 
                 haveCompensationInCurrentStep = false;
                 previousIsRepeat = false;
-                cluster.repeats().add(repeat);
-                cluster.repeatQties().add(repeatQty);
+                if ( repeatQty != 0 ) {
+                    cluster.repeats().add(repeat);
+                    cluster.repeatQties().add(repeatQty);
+                }                
                 repeat = 0;
                 repeatQty = 0;
             }
             previous = current;
         }
         
+        cluster.finish();
+        
         if ( POSITIONS_CLUSTERS.isEnabled() ) {
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order repeats       %s", cluster
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order repeats       %s", cluster
                         .repeats()
                         .stream()
                         .map(repeating -> String.valueOf(repeating))
                         .collect(joining(",", "<", ">")));    
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order repeats qties %s", cluster
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order repeats qties %s", cluster
                         .repeatQties()
                         .stream()
                         .map(repeating -> String.valueOf(repeating))
                         .collect(joining(",", "<", ">")));    
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum real %s", diffSumReal);
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum abs  %s", diffSumAbs);
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff count    %s", diffCount);
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff compensation  %s", compensationSum);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff sum real %s", diffSumReal);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff sum abs  %s", diffSumAbs);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff count    %s", diffCount);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff compensation  %s", compensationSum);
         }
         if ( diffSumAbs == 0 && haveCompensation && clusterLength == 2 ) {            
             diffSumAbs = 1;
-            logAnalyze(POSITIONS_CLUSTERS, "            [C-stat] cluster order diff sum fix  %s", diffSumAbs);
+            logAnalyze(POSITIONS_CLUSTERS, "            [cluster stats] order diff sum fix  %s", diffSumAbs);
         }
         cluster.set(
                 clusterFirstPosition, 
@@ -338,9 +342,9 @@ class AnalyzeUtil {
         return importance * nonClustered;
     }
     
-    static boolean isVariantOkWhenAdjusted(WeightedVariant variant) {
+    static boolean isVariantOkWhenAdjusted(Variant variant) {
         return variant.weight() <= 
-                ADJUSTED_WEIGHT_TRESHOLD + lengthTolerance(variant.text().length());
+                ADJUSTED_WEIGHT_TRESHOLD + lengthTolerance(variant.value().length());
     }
     
     static boolean missedTooMuch(int missed, int patterLength) {

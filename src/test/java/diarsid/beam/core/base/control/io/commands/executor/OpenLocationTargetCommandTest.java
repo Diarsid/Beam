@@ -9,7 +9,7 @@ package diarsid.beam.core.base.control.io.commands.executor;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.exceptions.RequirementException;
 
 import static org.junit.Assert.*;
@@ -76,8 +76,8 @@ public class OpenLocationTargetCommandTest {
         OpenLocationTargetCommand c = new OpenLocationTargetCommand("proj/netb", "projects/netbeans", STORED, TARGET_FOUND);
         Variant v = c.toVariant(1);
         assertEquals(1, v.index());
-        assertEquals("open projects/netbeans", v.displayText());
-        assertEquals("projects/netbeans", v.text());
+        assertEquals("open projects/netbeans", v.name());
+        assertEquals("projects/netbeans", v.value());
     }
 
     /**

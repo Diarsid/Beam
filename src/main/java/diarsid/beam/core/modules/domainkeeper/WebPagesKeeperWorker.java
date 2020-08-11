@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -63,7 +63,7 @@ import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.entitiesToOptionalMessageWithHeader;
 import static diarsid.beam.core.base.control.io.base.interaction.Messages.info;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.entitiesToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.entitiesToVariants;
 import static diarsid.beam.core.base.control.io.base.interaction.VariantsQuestion.question;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.badRequestWithJson;
 import static diarsid.beam.core.base.control.io.base.interaction.WebResponse.notFoundWithJson;
@@ -89,8 +89,6 @@ import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.awaitGetFlow;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
-import static diarsid.support.strings.StringUtils.nonEmpty;
-import static diarsid.support.strings.StringUtils.splitBySpacesToList;
 import static diarsid.beam.core.domain.entities.Orderables.reorderAccordingToNewOrder;
 import static diarsid.beam.core.domain.entities.WebDirectories.newDirectory;
 import static diarsid.beam.core.domain.entities.WebPages.newWebPage;
@@ -107,6 +105,8 @@ import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.WEB_URL_RULE;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationFailsWith;
 import static diarsid.beam.core.domain.entities.validation.Validities.validationOk;
+import static diarsid.support.strings.StringUtils.nonEmpty;
+import static diarsid.support.strings.StringUtils.splitBySpacesToList;
 
 
 public class WebPagesKeeperWorker 
@@ -122,7 +122,7 @@ public class WebPagesKeeperWorker
     private final ResponsiveDaoPictures daoPictures;
     private final CommandsMemoryKeeper commandsMemory;
     private final InnerIoEngine ioEngine;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final Gui gui;
     private final Initiator systemInitiator;
@@ -147,7 +147,7 @@ public class WebPagesKeeperWorker
             CommandsMemoryKeeper commandsMemory,
             ResponsiveDaoPatternChoices daoPatternChoices,
             InnerIoEngine ioEngine, 
-            Analyze analyze,
+            WeightAnalyzeReal analyze,
             Pool<KeeperLoopValidationDialog> dialogPool,
             Gui gui,
             Initiator systemInitiator,
@@ -311,7 +311,7 @@ public class WebPagesKeeperWorker
         if ( hasOne(foundPages) ) {
             WebPage page = getOne(foundPages);
             if ( page.name().equalsIgnoreCase(namePattern) ||
-                 this.analyze.isEntitySatisfiable(namePattern, page) ) {
+                 this.analyze.isSatisfiable(namePattern, page.name()) ) {
                 return valueFlowDoneWith(page);
             } else {
                 return valueFlowDoneEmpty();
@@ -325,18 +325,18 @@ public class WebPagesKeeperWorker
     
     private ValueFlow<WebPage> manageWithManyPages(
             Initiator initiator, String pattern, List<WebPage> pages) {
-        WeightedVariants variants = this.analyze.weightVariants(pattern, entitiesToVariants(pages));
+        Variants variants = this.analyze.weightVariants(pattern, entitiesToVariants(pages));
         if ( variants.isEmpty() ) {
             return valueFlowDoneEmpty();
         }
         
-        WeightedVariant bestVariant = variants.best();
-        if ( bestVariant.text().equalsIgnoreCase(pattern) || 
+        Variant bestVariant = variants.best();
+        if ( bestVariant.value().equalsIgnoreCase(pattern) || 
              bestVariant.hasEqualOrBetterWeightThan(PERFECT) ) {
             return valueFlowDoneWith(pages.get(bestVariant.index()));
         } else {
             boolean hasMatch = this.daoPatternChoices
-                    .hasMatchOf(initiator, pattern, bestVariant.text(), variants);
+                    .hasMatchOf(initiator, pattern, bestVariant.value(), variants);
             if ( hasMatch ) {
                 return valueFlowDoneWith(pages.get(bestVariant.index()));
             } else {
@@ -349,9 +349,9 @@ public class WebPagesKeeperWorker
     private ValueFlow<WebPage> askUserForPageAndSaveChoice(
             Initiator initiator, 
             String pattern, 
-            WeightedVariants variants, 
+            Variants variants, 
             List<WebPage> pages) {
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOnePageHelp);
         if ( answer.isGiven() ) {
             asyncDo(() -> {

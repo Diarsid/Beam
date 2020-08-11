@@ -100,7 +100,7 @@ public class StringIgnoreCaseUtil {
         }  
     }
     
-    public static boolean startsIngoreCase(String whereToSearch, String start) {
+    public static boolean startsIgnoreCase(String whereToSearch, String start) {
         if ( isNull(whereToSearch) || isNull(start) || start.isEmpty() ) {
             return false;
         } else {
@@ -108,7 +108,7 @@ public class StringIgnoreCaseUtil {
         }
     }
     
-    public static boolean endsIngoreCase(String whereToSearch, String end) {
+    public static boolean endsIgnoreCase(String whereToSearch, String end) {
         if ( isNull(whereToSearch) || isNull(end) || end.isEmpty() ) {
             return false;
         } else {
@@ -160,7 +160,7 @@ public class StringIgnoreCaseUtil {
     public static boolean startsWithIgnoreCaseAnyFragment(
             String whereToSearch, String... searchedStarts) {
         return stream(searchedStarts)
-                .filter(starting -> startsIngoreCase(whereToSearch, starting))
+                .filter(starting -> startsIgnoreCase(whereToSearch, starting))
                 .findFirst()
                 .isPresent();
     }
@@ -169,7 +169,7 @@ public class StringIgnoreCaseUtil {
             String whereToSearch, Collection<String> searchedStarts) {
         return searchedStarts
                 .stream()
-                .filter(starting -> startsIngoreCase(whereToSearch, starting))
+                .filter(starting -> startsIgnoreCase(whereToSearch, starting))
                 .findFirst()
                 .isPresent();
     }
@@ -177,7 +177,7 @@ public class StringIgnoreCaseUtil {
     public static boolean endsWithIgnoreCaseAnyFragment(
             String whereToSearch, String... searchedEnds) {
         return stream(searchedEnds)
-                .filter(starting -> endsIngoreCase(whereToSearch, starting))
+                .filter(starting -> endsIgnoreCase(whereToSearch, starting))
                 .findFirst()
                 .isPresent();
     }
@@ -186,7 +186,7 @@ public class StringIgnoreCaseUtil {
             String whereToSearch, Collection<String> searchedEnds) {
         return searchedEnds
                 .stream()
-                .filter(starting -> endsIngoreCase(whereToSearch, starting))
+                .filter(starting -> endsIgnoreCase(whereToSearch, starting))
                 .findFirst()
                 .isPresent();
     }

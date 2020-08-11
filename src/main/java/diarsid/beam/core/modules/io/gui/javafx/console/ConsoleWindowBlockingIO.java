@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.base.console.ConsoleIO;
 import diarsid.beam.core.base.control.io.base.interaction.HelpInfo;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
@@ -87,18 +87,18 @@ class ConsoleWindowBlockingIO implements ConsoleIO {
         sb.append(format("     > %s", question.getQuestion()));
         for (int i = 0; i < question.getVariants().size(); i++) {
             sb.append(
-                    format("\n       %d : %s", i + 1, question.getVariants().get(i).bestText()));
+                    format("\n       %d : %s", i + 1, question.getVariants().get(i).nameOrValue()));
         }
         sb.append("\n     > choose : ");
         this.intoConsole.put(sb.toString());
     }
     
     @Override
-    public void print(List<WeightedVariant> variants) throws Exception {
+    public void print(List<Variant> variants) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("     > is one of ?");
         for (int i = 0; i < variants.size(); i++) {
-            sb.append(format("\n       %d : %s", i + 1, variants.get(i).bestText()));
+            sb.append(format("\n       %d : %s", i + 1, variants.get(i).nameOrValue()));
         }
         sb.append("\n     > choose : ");
         this.intoConsole.put(sb.toString());

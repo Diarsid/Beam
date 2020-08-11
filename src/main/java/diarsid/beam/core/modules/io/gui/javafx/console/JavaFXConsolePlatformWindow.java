@@ -146,6 +146,7 @@ public class JavaFXConsolePlatformWindow
     private void throwOnTop() {
         this.stage.setAlwaysOnTop(true);
         this.stage.setAlwaysOnTop(false);
+        this.stage.requestFocus();
         this.consoleTextArea.requestFocus();
     }
     
@@ -184,7 +185,7 @@ public class JavaFXConsolePlatformWindow
     private void onInitialShow() {
         if ( this.persistableFrame.isTransient() ) {
             this.persistableFrame.setAnchor(this.stage.getX(), this.stage.getY());
-            this.persistableFrame.setSize(prefereableWidth, prefereableHeight);
+            this.persistableFrame.setSize(this.prefereableWidth, this.prefereableHeight);
         }
     }
     

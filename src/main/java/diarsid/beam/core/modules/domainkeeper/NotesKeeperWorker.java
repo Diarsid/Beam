@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.List;
 
 import diarsid.beam.core.application.environment.NotesCatalog;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -29,7 +29,6 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowStopped;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.CREATE_NOTE;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_NOTES;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_PATH_IN_NOTES;
@@ -37,9 +36,9 @@ import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_TARGET
 import static diarsid.beam.core.base.util.CollectionsUtils.getOne;
 import static diarsid.beam.core.base.util.CollectionsUtils.hasOne;
 import static diarsid.beam.core.base.util.PathUtils.containsPathSeparator;
-import static diarsid.support.strings.StringUtils.normalizeSpaces;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.ENTITY_NAME_RULE;
 import static diarsid.beam.core.domain.entities.validation.DomainValidationRule.SIMPLE_PATH_RULE;
+import static diarsid.support.strings.StringUtils.normalizeSpaces;
 
 /**
  *
@@ -49,7 +48,7 @@ class NotesKeeperWorker implements NotesKeeper {
 
     private final InnerIoEngine ioEngine;
     private final NotesCatalog notesCatalog;
-    private final Analyze analyze;
+    private final WeightAnalyzeReal analyze;
     private final Pool<KeeperLoopValidationDialog> dialogPool;
     private final KeeperDialogHelper helper;
     private final Help enterNoteNameHelp;
@@ -59,7 +58,7 @@ class NotesKeeperWorker implements NotesKeeper {
     NotesKeeperWorker(
             InnerIoEngine ioEngine, 
             NotesCatalog notesCatalog, 
-            Analyze analyze, 
+            WeightAnalyzeReal analyze, 
             Pool<KeeperLoopValidationDialog> dialogPool,
             KeeperDialogHelper helper) {
         this.ioEngine = ioEngine;
@@ -163,12 +162,11 @@ class NotesKeeperWorker implements NotesKeeper {
 
     private VoidFlow processMultipleNotes(
             Initiator initiator, String noteTarget, List<String> foundNoteTargets) {
-        WeightedVariants variants =this.analyze.weightVariants(
-                noteTarget, stringsToVariants(foundNoteTargets));
+        Variants variants =this.analyze.weightStrings(noteTarget, foundNoteTargets);
         if ( variants.isEmpty() ) {
             return voidFlowFail("not found.");
         }
-        Answer answer = this.ioEngine.chooseInWeightedVariants(
+        Answer answer = this.ioEngine.ask(
                 initiator, variants, this.chooseOneNoteHelp);
         if ( answer.isGiven() ) {
             try {

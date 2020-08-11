@@ -11,8 +11,8 @@ import java.util.Optional;
 
 import diarsid.beam.core.application.environment.Catalog;
 import diarsid.beam.core.base.analyze.similarity.Similarity;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariant;
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.ValueFlow;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
@@ -28,8 +28,8 @@ import diarsid.support.objects.Pool;
 
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.findVariantEqualToPattern;
-import static diarsid.beam.core.base.analyze.variantsweight.WeightedVariants.unite;
+import static diarsid.beam.core.base.analyze.variantsweight.Variants.findVariantEqualToPattern;
+import static diarsid.beam.core.base.analyze.variantsweight.Variants.unite;
 import static diarsid.beam.core.base.control.flow.FlowResult.FAIL;
 import static diarsid.beam.core.base.control.flow.Flows.valueFlowFail;
 import static diarsid.beam.core.base.util.CollectionsUtils.last;
@@ -37,12 +37,13 @@ import static diarsid.beam.core.base.util.CollectionsUtils.nonEmpty;
 import static diarsid.beam.core.base.util.ConcurrencyUtil.asyncDo;
 import static diarsid.beam.core.base.util.OptionalUtil.isNotPresent;
 import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
+import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.normalizeSeparators;
 import static diarsid.beam.core.base.util.PathUtils.removeSeparators;
 import static diarsid.beam.core.base.util.StringIgnoreCaseUtil.containsIgnoreCase;
+import static diarsid.support.log.Logging.logFor;
 import static diarsid.support.strings.StringUtils.haveEqualLength;
 import static diarsid.support.strings.StringUtils.lower;
-import static diarsid.support.log.Logging.logFor;
 
 
 /**
@@ -124,8 +125,14 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     }
     
     @Override
+    public WalkingToFind withMinDepthOf(int minDepth) {
+        this.state().setHowDeepToGoMin(minDepth);
+        return this;
+    }
+    
+    @Override
     public WalkingToFind withMaxDepthOf(int maxDepth) {
-        this.state().setHowDeepToGo(maxDepth);
+        this.state().setHowDeepToGoMax(maxDepth);
         return this;
     }
     
@@ -134,7 +141,13 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         this.state().setWhatToSearch(pattern);
         return this;
     }
-    
+
+    @Override
+    public WalkingToFind withPredefined(List<Variant> predefinedVariants) {
+        this.state().setPredefinedVariants(predefinedVariants);
+        return this;
+    }
+        
     @Override
     public Walker lookingFor(FileSearchMode mode) {
         this.state().set(mode);
@@ -158,7 +171,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     }
     
     private void walkUsing(WalkState state) {
-        logFor(this).info(this.state().walkingQuery());
+        logFor(this).info(this.state().reportWalkingQuery());
         if ( state.patternIsPath() ) {
             this.multipleWalkIterationsThroughPathUsing(state);
         } else {
@@ -170,12 +183,12 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         if ( state.variants().isEmpty() ) {
             state.processResultFlowAfterSearching();
         } else {
-            WeightedVariants weightedVariants = unite(state.variants());
-            Answer userAnswer = askUserAboutFoundVariants(state, weightedVariants);
+            Variants variants = unite(state.variants());
+            Answer userAnswer = this.askUserAboutFoundVariants(state, variants);
             if ( userAnswer.isGiven() ) {
                 state.resultFlowDoneWith(userAnswer.text());
                 state.variants().clear();
-                this.asyncTryToSaveChoiceFrom(state.pattern(), userAnswer.text(), weightedVariants);
+                this.asyncTryToSaveChoiceFrom(state.pattern(), userAnswer.text(), variants);
             } else if ( userAnswer.variantsAreNotSatisfactory() ) {
                 state.variants().clear();
             } else if ( userAnswer.isRejection() ) {
@@ -215,7 +228,8 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
 
             state.addListedFilesToCurrentLevel(root.listFiles());
             this.walkThroughCurrentLevel(state);
-            needToGoDeeper = this.consumeWalkResultsAndDefineIfGoDeeper(state);
+            needToGoDeeper = this.consumeRefinedWalkResultsAndDefineIfGoDeeper(state);
+            state.collectedOnCurrentLevelClear();
 
             if ( state.nextLevel().isEmpty() || state.ifCannotGoDeeper() ) {
                 return;
@@ -225,7 +239,8 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
             while ( needToGoDeeper && canGoDeeper && nonEmpty(state.nextLevel()) ) {   
                 state.swapNextLevelToCurrentLevel();            
                 this.walkThroughCurrentLevel(state);
-                needToGoDeeper = this.consumeWalkResultsAndDefineIfGoDeeper(state);
+                needToGoDeeper = this.consumeRefinedWalkResultsAndDefineIfGoDeeper(state);
+                state.collectedOnCurrentLevelClear();
                 canGoDeeper = state.ifCanGoDeeper();
             }
         } finally {
@@ -239,95 +254,96 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         this.statePool.takeBack(state);
     }
     
-    private boolean consumeWalkResultsAndDefineIfGoDeeper(WalkState state) {
-        try {
-            String processedFile;
-            int rootLength = state.absoluteRoot().length() + 1; // +1 to cut separator after root
-            List<String> collectedOnCurrentLevel = state.collectedOnCurrentLevel();
-            for (int i = 0; i < collectedOnCurrentLevel.size(); i++) {
-                processedFile = collectedOnCurrentLevel.get(i).substring(rootLength); 
-                state.collectedOnCurrentLevel().set(i, processedFile);
-            }  
-            return this.consumeRefinedWalkResultsAndDefineIfGoDeeper(state);
-        } finally {
-            state.collectedOnCurrentLevel().clear();
-        }
-    }
-    
     private boolean consumeRefinedWalkResultsAndDefineIfGoDeeper(WalkState state) {
+        logFor(this).info(state.reportCollectedOnCurrentLevel());
         
         String pattern = state.pattern();
         String processedFile;
-        for (int i = 0; i < state.collectedOnCurrentLevel().size(); i++) {
-            processedFile = state.collectedOnCurrentLevel().get(i);
+        for (int i = 0; i < state.collectedOnCurrentLevelSize(); i++) {
+            processedFile = state.collectedOnCurrentLevelGet(i);
             if ( ! this.fileIsSimilarToPattern(processedFile, pattern) ) {
-                state.collectedOnCurrentLevel().remove(i);
+                state.collectedOnCurrentLevelRemove(i);
                 i--;
             }
         }
         
-        if ( nonEmpty(state.collectedOnCurrentLevel()) ) {
+        if ( state.collectedOnCurrentLevelNonEmpty() ) {
             state.weightCollectedOnCurrentLevelAgainstPatternAndAddToVariants();
-            if ( nonEmpty(state.variants()) ) {
-                state.sortVariants();
-            }        
         }
         
         if ( state.variants().isEmpty() ) {
             return true;
         }
+        
+        if ( state.doesFirstVariantMatchPatternExactly() ) {
+            state.resultFlowDoneWith(state.variants().get(0).value());
+            state.variants().clear();
+            return false;
+        }
+        
+        boolean minimumLevelReachedAndAcceptableVariantExist = 
+                state.hasFirstVariantAcceptableWeightEstimate() &&
+                state.canStopAtCurrentLevel();
+        
+        boolean bestVariantExceedBestPredefinedVariant = 
+                state.hasMinPredefinedWeight() && 
+                state.isFirstCollectedVariantBetterThanMinPredefinedWeight();
+        
+        boolean canStopAtCurrentLevel = 
+                minimumLevelReachedAndAcceptableVariantExist ||
+                bestVariantExceedBestPredefinedVariant;
                 
-        if ( state.hasFirstVariantAcceptableWeightEstimate() ) {
-            List<WeightedVariant> variantsFoundOnCurrentLevel = 
+        if ( canStopAtCurrentLevel ) {
+            List<Variant> variantsFoundOnCurrentLevel = 
                     state.extractVariantsAcceptableOnCurrentLevel();
             
-            boolean ifGoDeeper = true;
+            boolean needGoDeeper = true;
             
-            Optional<WeightedVariant> variantEqualToPattern = 
+            Optional<Variant> variantEqualToPattern = 
                     findVariantEqualToPattern(variantsFoundOnCurrentLevel);
             if ( variantEqualToPattern.isPresent() ) {
-                state.resultFlowDoneWith(variantEqualToPattern.get().text());
+                state.resultFlowDoneWith(variantEqualToPattern.get().value());
                 state.variants().clear();
-                ifGoDeeper = false;
-                return ifGoDeeper;
+                needGoDeeper = false;
+                return needGoDeeper;
             }
             
-            WeightedVariants weightedVariants = unite(variantsFoundOnCurrentLevel);
+            Variants weightedVariants = unite(variantsFoundOnCurrentLevel);
             
             Answer userAnswer;
             if ( this.isChoiceMadeForPatternWithBestFrom(weightedVariants) ) {
-                state.resultFlowDoneWith(weightedVariants.best().text());
+                state.resultFlowDoneWith(weightedVariants.best().value());
                 state.variants().clear();
-                ifGoDeeper = false;
+                needGoDeeper = false;
             } else {
                 userAnswer = this.askUserAboutFoundVariants(state, weightedVariants);
                 if ( userAnswer.isGiven() ) {
                     state.resultFlowDoneWith(userAnswer.text());
                     state.variants().clear();
                     this.asyncTryToSaveChoiceFrom(pattern, userAnswer.text(), weightedVariants);
-                    ifGoDeeper = false;
+                    needGoDeeper = false;
                 } else if ( userAnswer.variantsAreNotSatisfactory() ) {
                     state.variants().clear();
-                    ifGoDeeper = true;
+                    needGoDeeper = true;
                 } else if ( userAnswer.isRejection() ) {
                     state.resultFlowStopped();
                     state.variants().clear();
-                    ifGoDeeper = false;
+                    needGoDeeper = false;
                 }
             }            
                          
-            return ifGoDeeper;
+            return needGoDeeper;
         } 
         
         return true;
     }
     
-    private boolean isChoiceMadeForPatternWithBestFrom(WeightedVariants weightedVariants) {
+    private boolean isChoiceMadeForPatternWithBestFrom(Variants weightedVariants) {
         if ( isNotPresent(this.daoPatternChoices) ) {
             return false;
         }
         
-        String bestVariant = weightedVariants.best().text();
+        String bestVariant = weightedVariants.best().value();
         WalkState state = this.state();
         return this.daoPatternChoices
                 .get()
@@ -335,7 +351,7 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
     }
     
     private void asyncTryToSaveChoiceFrom(
-            String pattern, String choice, WeightedVariants weightedVariants) {
+            String pattern, String choice, Variants weightedVariants) {
         if ( this.daoPatternChoices.isPresent() ) {
             Initiator initiator = this.state().initiator();
             asyncDo(() -> {
@@ -344,18 +360,28 @@ class FileTreeWalker implements Walker, WalkingInPlace, WalkingByInitiator, Walk
         }
     }
 
-    private Answer askUserAboutFoundVariants(WalkState state, WeightedVariants weightedVariants) {        
+    private Answer askUserAboutFoundVariants(WalkState state, Variants weightedVariants) {        
         Help help = state.composeHelp();
         Answer answer = this.ioEngine
-                .chooseInWeightedVariants(state.initiator(), weightedVariants, help);
+                .ask(state.initiator(), weightedVariants, help);
         return answer;
     }
 
     private void walkThroughCurrentLevel(WalkState state) {
         state.nextLevel().clear();
+        
+        String absolutePath;
+        String relativePathWithRoot;
+        String relativePathWithoutRoot;
+        
+        int rootLengthWithName = state.root().length() + 1; // +1 to cut separator after root
+        
         for (File file : state.currentLevel()) {            
             if ( state.searchMode().correspondsTo(file) ) {
-                state.collectedOnCurrentLevel().add(normalizeSeparators(file.getAbsolutePath()));
+                absolutePath = normalizeSeparators(file.getAbsolutePath());
+                relativePathWithoutRoot = absolutePath.substring(rootLengthWithName);
+                relativePathWithRoot = joinToPath(state.rootName(), relativePathWithoutRoot);
+                state.collectedOnCurrentLevelAdd(relativePathWithoutRoot, relativePathWithRoot);
             }
             if ( this.canEnterIn(file) ) {
                 state.addListedFilesToNextLevel(file.listFiles());

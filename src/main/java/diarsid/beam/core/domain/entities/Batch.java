@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
 import diarsid.beam.core.base.control.io.base.interaction.Message;
-import diarsid.beam.core.base.control.io.base.interaction.Variant;
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
 import diarsid.beam.core.base.control.io.commands.executor.ExecutorCommand;
 
 import static java.lang.String.format;

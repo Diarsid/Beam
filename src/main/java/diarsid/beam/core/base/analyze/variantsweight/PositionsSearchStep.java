@@ -9,7 +9,7 @@ package diarsid.beam.core.base.analyze.variantsweight;
  *
  * @author Diarsid
  */
-public enum FindPositionsStep {
+public enum PositionsSearchStep {
     
     STEP_1 (
             /*order*/ 0, 
@@ -42,7 +42,7 @@ public enum FindPositionsStep {
     private final boolean typoSearchingAllowed;
     private final boolean foundPositionsCanBeClustered;
     
-    private FindPositionsStep(
+    private PositionsSearchStep(
             int order, 
             int permissionTreshold, 
             int minPatternLength, 
@@ -67,11 +67,11 @@ public enum FindPositionsStep {
         return this.typoSearchingAllowed;
     }
     
-    boolean isAfter(FindPositionsStep other) {
+    boolean isAfter(PositionsSearchStep other) {
         return this.order > other.order;
     }
     
-    boolean isBefore(FindPositionsStep other) {
+    boolean isBefore(PositionsSearchStep other) {
         return this.order < other.order;
     }
     

@@ -18,10 +18,11 @@ import static java.lang.String.format;
 
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowDone;
 import static diarsid.beam.core.base.control.flow.Flows.voidFlowFail;
+import static diarsid.beam.core.base.util.PathUtils.extractLastElementFromPath;
 import static diarsid.beam.core.base.util.PathUtils.joinToPath;
 import static diarsid.beam.core.base.util.PathUtils.notExistsInFileSystem;
-import static diarsid.support.strings.StringUtils.nonEmpty;
 import static diarsid.support.objects.Possibles.possibleButEmpty;
+import static diarsid.support.strings.StringUtils.nonEmpty;
 
 /**
  *
@@ -30,6 +31,7 @@ import static diarsid.support.objects.Possibles.possibleButEmpty;
 class WalkStartPlace implements StatefulClearable {
 
     private final Possible<String> absoluteRoot;
+    private final Possible<String> absoluteRootName;
     private final Possible<Location> location;
     private final Possible<LocationSubPath> locationSubPath;
     private final Possible<Catalog> catalog;      
@@ -38,6 +40,7 @@ class WalkStartPlace implements StatefulClearable {
     
     WalkStartPlace() {
         this.absoluteRoot = possibleButEmpty();
+        this.absoluteRootName = possibleButEmpty();
         this.location = possibleButEmpty();
         this.locationSubPath = possibleButEmpty();
         this.catalog = possibleButEmpty();
@@ -61,6 +64,10 @@ class WalkStartPlace implements StatefulClearable {
     
     String absoluteRoot() {
         return this.absoluteRoot.orThrow();
+    }    
+    
+    String absoluteRootName() {
+        return this.absoluteRootName.orThrow();
     }
     
     String relativeRoot() {
@@ -74,6 +81,7 @@ class WalkStartPlace implements StatefulClearable {
             this.relativeRoot.resetTo(foundTarget);
         }
         this.absoluteRoot.resetTo(joinToPath(this.absoluteRoot.orThrow(), foundTarget));  
+        this.absoluteRootName.resetTo(extractLastElementFromPath(this.absoluteRoot.orThrow()));
     }
     
     String name() {
@@ -86,7 +94,7 @@ class WalkStartPlace implements StatefulClearable {
                     where = joinToPath(where, this.relativeRoot.orThrow());
                 }                
             } else if ( this.locationSubPath.isPresent() ) {
-                where = locationSubPath.orThrow().fullName();
+                where = locationSubPath.orThrow().name();
                 if ( this.relativeRoot.isPresent() ) {
                     where = joinToPath(where, this.relativeRoot.orThrow());
                 }
@@ -102,7 +110,7 @@ class WalkStartPlace implements StatefulClearable {
             if ( this.location.isPresent() ) {
                 where = this.location.orThrow().name();
             } else if ( this.locationSubPath.isPresent() ) {
-                where = this.locationSubPath.orThrow().fullName();
+                where = this.locationSubPath.orThrow().name();
             } else if ( this.catalog.isPresent() ) { 
                 where = this.catalog.orThrow().name();
             } else {
@@ -120,25 +128,30 @@ class WalkStartPlace implements StatefulClearable {
     void setWhereToSearch(Catalog where) {
         this.catalog.resetTo(where);
         this.absoluteRoot.resetTo(where.path().toString());
+        this.absoluteRootName.resetTo(where.name());
     }
     
     void setWhereToSearch(String where) {
         this.absoluteRoot.resetTo(where);
+        this.absoluteRootName.resetTo(extractLastElementFromPath(where));
     }
     
     void setWhereToSearch(Location where) {
         this.location.resetTo(where);
         this.absoluteRoot.resetTo(where.path());
+        this.absoluteRootName.resetTo(where.name());
     }
     
     void setWhereToSearch(LocationSubPath where) {
         this.locationSubPath.resetTo(where);
         this.absoluteRoot.resetTo(where.fullPath());
+        this.absoluteRootName.resetTo(where.name());
     }
     
     @Override
     public void clear() {
         this.absoluteRoot.nullify();
+        this.absoluteRootName.nullify();
         this.location.nullify();
         this.locationSubPath.nullify();
         this.catalog.nullify();

@@ -8,7 +8,7 @@ package diarsid.beam.core.modules;
 import diarsid.beam.core.application.environment.NotesCatalog;
 import diarsid.beam.core.application.environment.ProgramsCatalog;
 import diarsid.beam.core.base.analyze.similarity.Similarity;
-import diarsid.beam.core.base.analyze.variantsweight.Analyze;
+import diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal;
 import diarsid.beam.core.base.control.io.interpreter.Interpreter;
 import diarsid.support.configuration.Configuration;
 
@@ -28,7 +28,7 @@ public interface BeamEnvironmentModule extends GemModule {
     
     NotesCatalog notesCatalog();
     
-    Analyze analyze();
+    WeightAnalyzeReal analyze();
     
     Similarity similarity();
     

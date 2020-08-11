@@ -6,7 +6,7 @@
 package diarsid.beam.core.base.control.io.commands.executor;
 
 import diarsid.beam.core.base.control.io.base.interaction.ConvertableToMessage;
-import diarsid.beam.core.base.control.io.base.interaction.ConvertableToVariant;
+import diarsid.beam.core.base.analyze.variantsweight.ConvertableToVariant;
 import diarsid.beam.core.base.control.io.commands.Command;
 
 /**

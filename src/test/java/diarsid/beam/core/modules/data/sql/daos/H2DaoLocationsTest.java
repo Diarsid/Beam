@@ -23,6 +23,7 @@ import testing.embedded.base.h2.TestDataBase;
 
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
+import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.base.data.SqlDataBaseModel;
 import diarsid.beam.core.domain.entities.Location;
 import diarsid.beam.core.modules.data.DaoLocations;
@@ -109,17 +110,17 @@ public class H2DaoLocationsTest {
     }
     
     @Test
-    public void testIsNameFree() {
-        boolean mustBeFree = daoLocations.isNameFree(initiator, "pictures");
+    public void testIsNameFree() throws DataExtractionException {
+        boolean mustBeFree = daoLocations.isNameFree("pictures");
         assertTrue(mustBeFree);
         
-        boolean notFree = daoLocations.isNameFree(initiator, "BOOKS");
+        boolean notFree = daoLocations.isNameFree("BOOKS");
         assertFalse(notFree);
     }
     
     @Test
-    public void testGetLocationsByExactName() {
-        Optional<Location> loc = daoLocations.getLocationByExactName(initiator, "my_projects");
+    public void testGetLocationsByExactName() throws DataExtractionException {
+        Optional<Location> loc = daoLocations.getLocationByExactName("my_projects");
         assertTrue(loc.isPresent());
         assertEquals("My_Projects", loc.get().name());
     }

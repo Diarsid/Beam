@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data.sql.daos;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.data.DataBase;
 import diarsid.beam.core.base.data.DataExtractionException;
@@ -53,9 +53,9 @@ class H2DaoLocationSubPathChoices
                                 "   subpath = ?, " +
                                 "   variants_stamp = ? " +
                                 "WHERE ( LOWER(pattern) IS ? ) ", 
-                                subPath.name(), 
+                                subPath.locationName(), 
                                 lower(subPath.subPath()), 
-                                lower(subPath.fullName()), 
+                                lower(subPath.name()), 
                                 lower(pattern));
             } else {
                 modified = transact
@@ -67,9 +67,9 @@ class H2DaoLocationSubPathChoices
                                 "   variants_stamp) " +
                                 "VALUES ( ?, ?, ?, ? ) ", 
                                 lower(pattern), 
-                                subPath.name(), 
+                                subPath.locationName(), 
                                 lower(subPath.subPath()), 
-                                lower(subPath.fullName()));
+                                lower(subPath.name()));
             }
             
             if ( modified != 1 ) {
@@ -87,7 +87,7 @@ class H2DaoLocationSubPathChoices
     public boolean saveWithVariants(            
             LocationSubPath subPath, 
             String pattern, 
-            WeightedVariants variants) 
+            Variants variants) 
             throws DataExtractionException {
         try (JdbcTransaction transact = super.openTransaction()) {
             
@@ -108,7 +108,7 @@ class H2DaoLocationSubPathChoices
                                 "   subpath = ?, " +
                                 "   variants_stamp = ? " +
                                 "WHERE ( LOWER(pattern) IS ? ) ", 
-                                subPath.name(), 
+                                subPath.locationName(), 
                                 subPath.subPath(), 
                                 variants.stamp(), 
                                 lower(pattern));
@@ -122,7 +122,7 @@ class H2DaoLocationSubPathChoices
                                 "   variants_stamp) " +
                                 "VALUES ( ?, ?, ?, ? ) ", 
                                 pattern, 
-                                subPath.name(), 
+                                subPath.locationName(), 
                                 subPath.subPath(), 
                                 variants.stamp());
             }
@@ -154,7 +154,7 @@ class H2DaoLocationSubPathChoices
                             "    ( LOWER(loc_name) IS ? ) AND " +
                             "    ( LOWER(subpath) IS ? )", 
                             lower(pattern), 
-                            lower(subPath.name()), 
+                            lower(subPath.locationName()), 
                             lower(subPath.subPath()));
         } catch (TransactionHandledException|TransactionHandledSQLException e) {
             throw super.logAndWrap(e);
@@ -163,7 +163,7 @@ class H2DaoLocationSubPathChoices
 
     @Override
     public Optional<LocationSubPath> getChoiceFor(
-            String pattern, WeightedVariants variants) throws DataExtractionException {
+            String pattern, Variants variants) throws DataExtractionException {
         try {
             return super.openDisposableTransaction()
                     .doQueryAndConvertFirstRowVarargParams( 

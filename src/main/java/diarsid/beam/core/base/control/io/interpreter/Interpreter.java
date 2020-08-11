@@ -134,6 +134,7 @@ public class Interpreter {
                         "w/", 
                         "i/").priority(HIGH).and(domainWord().and(executable(BROWSE_WEBPAGE))),
                 prefixes(
+                        ">",
                         "r/", 
                         "p/").priority(HIGH).andAny(
                                 domainWord().and(executable(RUN_PROGRAM)),

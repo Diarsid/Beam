@@ -11,9 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static diarsid.beam.core.base.analyze.similarity.Similarity.hasSimilar;
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilar;
-import static diarsid.beam.core.base.analyze.similarity.Similarity.isSimilarPathToPath;
+import static diarsid.beam.core.application.environment.BeamEnvironment.configuration;
 import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
 
 /**
@@ -22,251 +20,258 @@ import static diarsid.beam.core.base.util.CollectionsUtils.toSet;
  */
 public class SimilarityTest {
     
+    public Similarity similarity = new Similarity(configuration());
+    
     @Test
     public void test_isSimilar() {
-        assertFalse(isSimilar("AAaaDir", "foldile"));
+        assertFalse(similarity.isSimilar("AAaaDir", "foldile"));
     }
     
     @Test
     public void test_isSimilar_get_gte() {
-        assertTrue(isSimilar("get", "gte"));
+        assertTrue(similarity.isSimilar("get", "gte"));
     }
     
     @Test
     public void test_isSimilar_get_tge() {
-        assertFalse(isSimilar("get", "tge"));
+        assertFalse(similarity.isSimilar("get", "tge"));
     }
     
     @Test
     public void test_isSimilar_get_tag() {
-        assertFalse(isSimilar("get", "tag"));
+        assertFalse(similarity.isSimilar("get", "tag"));
     }
     
     @Test
     public void test_isSimilar_apacheds_messea() {
-        assertFalse(isSimilar("apacheds", "messea"));
+        assertFalse(similarity.isSimilar("apacheds", "messea"));
     }
     
     @Test
     public void test_isSimilar_get_teg() {
-        assertFalse(isSimilar("get", "teg"));
+        assertFalse(similarity.isSimilar("get", "teg"));
     }
     
     @Test
     public void test_isSimilar_page_paeg() {
-        assertTrue(isSimilar("page", "paeg"));
+        assertTrue(similarity.isSimilar("page", "paeg"));
     }
     
     @Test
     public void test_isSimilar_inner_ier() {
-        assertTrue(isSimilar("inner", "ier"));
+        assertTrue(similarity.isSimilar("inner", "ier"));
     }
     
     @Test
     public void test_isSimilar_page_apeg() {
-        assertFalse(isSimilar("page", "apeg"));
+        assertFalse(similarity.isSimilar("page", "apeg"));
     }
     
     @Test
     public void test_isSimilar_webpage_wepaeg() {
-        assertTrue(isSimilar("webpage", "wepaeg"));
+        assertTrue(similarity.isSimilar("webpage", "wepaeg"));
     }
     
     @Test
     public void test_isSimilar_open_opn() {
-        assertTrue(isSimilar("open", "opn"));
+        assertTrue(similarity.isSimilar("open", "opn"));
     }
     
     @Test
     public void test_isSimilar_sigmar_sigram() {
-        assertTrue(isSimilar("sigmar", "sigram"));
+        assertTrue(similarity.isSimilar("sigmar", "sigram"));
     }
     
     @Test
     public void test_isSimilar_SoulWindows7_win7() {
-        assertTrue(isSimilar("SoulWindows7upd12fw446fngg67jf.exe", "win7"));
+        assertTrue(similarity.isSimilar("SoulWindows7upd12fw446fngg67jf.exe", "win7"));
     }
     
     @Test
     public void test_isSimilar_exit_ext() {
-        assertTrue(isSimilar("exit", "ext"));
+        assertTrue(similarity.isSimilar("exit", "ext"));
     }
     
     @Test
     public void test_isSimilar_exit_exet() {
-        assertTrue(isSimilar("exit", "exet"));
+        assertTrue(similarity.isSimilar("exit", "exet"));
     }
     
     @Test
     public void test_isSimilar_game_games() {
-        assertTrue(isSimilar("game", "games"));
+        assertTrue(similarity.isSimilar("game", "games"));
     }
     
     @Test
     public void test_isSimilar_exit_exut() {
-        assertTrue(isSimilar("exit", "exut"));
+        assertTrue(similarity.isSimilar("exit", "exut"));
     }
     
     @Test
     public void test_isSimilar_locations_locastion() {
-        assertTrue(isSimilar("locations", "locastion"));
+        assertTrue(similarity.isSimilar("locations", "locastion"));
     }
     
     @Test
     public void test_isSimilar_webpage_egpawe_false() {
-        assertFalse(isSimilar("webpage", "egpawe"));
+        assertFalse(similarity.isSimilar("webpage", "egpawe"));
     }
     
     @Test
     public void test_isSimilar_projects_programs_false() {
-        assertFalse(isSimilar("projects", "programs"));
+        assertFalse(similarity.isSimilar("projects", "programs"));
     }
     
     @Test
     public void test_isSimilar_projects_phots_false() {
-        assertFalse(isSimilar("projects", "phots"));
+        assertFalse(similarity.isSimilar("projects", "phots"));
     }
     
     @Test
     public void test_isSimilar_projects_photos_false() {
-        assertFalse(isSimilar("projects", "photos"));
+        assertFalse(similarity.isSimilar("projects", "photos"));
     }
     
     @Test
     public void test_isSimilar_images_games_false() {
-        assertFalse(isSimilar("images", "games"));
+        assertFalse(similarity.isSimilar("images", "games"));
     }
     
     @Test
     public void test_isSimilar_programs_proagm() {
-        assertTrue(isSimilar("programs", "proagm"));
+        assertTrue(similarity.isSimilar("programs", "proagm"));
     }
     
     @Test
     public void test_isSimilar_jshell_shall() {
-        assertTrue(isSimilar("jshell", "shall"));
+        assertTrue(similarity.isSimilar("jshell", "shall"));
     }
     
     @Test
     public void test_isSimilar_folderinner_inr() {
-        assertTrue(isSimilar("folder_1/inner/bbbb.txt", "inr"));
+        assertTrue(similarity.isSimilar("folder_1/inner/bbbb.txt", "inr"));
     }
     
     @Test
     public void test_isSimilar_folder_1_foldile() {
-        assertTrue(isSimilar("folder_1", "foldile"));
+        assertTrue(similarity.isSimilar("folder_1", "foldile"));
     }
     
     @Test
     public void test_webpanel_paeg() {
-        assertFalse(isSimilar("webpanel", "paeg"));
+        assertFalse(similarity.isSimilar("webpanel", "paeg"));
     }
     
     @Test
     public void test_isSimilar_webpanel_webpnel() {
-        assertTrue(isSimilar("webpanel", "webpnel"));
+        assertTrue(similarity.isSimilar("webpanel", "webpnel"));
     }
     
     @Test
     public void test_isSimilar_directory_dierctry() {
-        assertTrue(isSimilar("directory", "dierctry"));
+        assertTrue(similarity.isSimilar("directory", "dierctry"));
     }
     
     @Test
     public void test_isSimilar_engines_eninges() {
-        assertTrue(isSimilar("engines", "eninges"));
+        assertTrue(similarity.isSimilar("engines", "eninges"));
     }
     
     @Test
     public void test_isSimilar_design_engines() {
-        assertFalse(isSimilar("design", "engines"));
+        assertFalse(similarity.isSimilar("design", "engines"));
     }
     
     @Test
     public void test_isSimilar_webpanel_peabwlne() {
-        assertFalse(isSimilar("webpanel", "peabwlne"));
+        assertFalse(similarity.isSimilar("webpanel", "peabwlne"));
     }
     
     @Test
     public void test_isSimilar_directory_yretdoicr() {
-        assertFalse(isSimilar("directory", "yretdoicr"));
+        assertFalse(similarity.isSimilar("directory", "yretdoicr"));
     }
     
     @Test
     public void test_isSimilar_panel_page() {
-        assertFalse(isSimilar("panel", "page"));
+        assertFalse(similarity.isSimilar("panel", "page"));
     }
     
     @Test
     public void test_isSimilar_edit_delet() {
-        assertFalse(isSimilar("edit", "delet"));
+        assertFalse(similarity.isSimilar("edit", "delet"));
     }
     
     @Test
     public void test_isSimilar_delete_delet() {
-        assertTrue(isSimilar("delete", "delete"));
+        assertTrue(similarity.isSimilar("delete", "delete"));
     }
     
     @Test
     public void test_isSimilar_notes() {
-        assertTrue(isSimilar("notes", "noets"));
+        assertTrue(similarity.isSimilar("notes", "noets"));
     }
     
     @Test
     public void test_isSimilar_note() {
-        assertTrue(isSimilar("notes", "noet"));
+        assertTrue(similarity.isSimilar("notes", "noet"));
     }
     
     @Test
     public void test_isSimilar_Live_At_Donington() {
-        assertTrue(isSimilar("1994 - Live_At_Donington_CD1", "livdeongi"));
+        assertTrue(similarity.isSimilar("1994 - Live_At_Donington_CD1", "livdeongi"));
+    }
+    
+    @Test
+    public void test_isSimilar_A_Matter_of_Life_and_Death() {
+        assertTrue(similarity.isSimilar("2006_A_Matter_of_Life_and_Death", "lifedeath"));
     }
     
     @Test
     public void test_isSimilar_webpanel() {
-        assertTrue(isSimilar("webpanel", "wepanel"));
-        assertTrue(isSimilar("webpanel", "wepanl"));
+        assertTrue(similarity.isSimilar("webpanel", "wepanel"));
+        assertTrue(similarity.isSimilar("webpanel", "wepanl"));
     }
     
     @Test
     public void test_isSimilar_create() {
-        assertTrue(isSimilar("create", "cretae"));
-        assertTrue(isSimilar("create", "crate"));
+        assertTrue(similarity.isSimilar("create", "cretae"));
+        assertTrue(similarity.isSimilar("create", "crate"));
     }
     
     @Test
     public void test_isSimilar_page_get() {
-        assertFalse(isSimilar("page", "get"));
+        assertFalse(similarity.isSimilar("page", "get"));
     }
     
     @Test
     public void test_isSimilar_page_image() {
-        assertFalse(isSimilar("page", "image"));
+        assertFalse(similarity.isSimilar("page", "image"));
     } 
     
     @Test
     public void test_isSimilar_dirct_directory() {
-        assertTrue(isSimilar("directory", "dirct"));
+        assertTrue(similarity.isSimilar("directory", "dirct"));
     }
     
     @Test
     public void test_isSimilar_shorehowrd_2__Store_Howard_Shore() {
-        assertTrue(isSimilar("2__Store/Howard Shore", "shorehowrd"));
+        assertTrue(similarity.isSimilar("2__Store/Howard Shore", "shorehowrd"));
     }
     
     @Test
     public void test_isSimilar_ambein_ambient() {
-        assertTrue(isSimilar("The Hobbit (Calm Ambient Mix by Syneptic)  Episode II.mp3", "ambein"));
+        assertTrue(similarity.isSimilar("The Hobbit (Calm Ambient Mix by Syneptic)  Episode II.mp3", "ambein"));
     }
     
     @Test
     public void test_isSimilar_amibent_ambient() {
-        assertTrue(isSimilar("The Hobbit (Calm Ambient Mix by Syneptic)  Episode II.mp3", "amibent"));
+        assertTrue(similarity.isSimilar("The Hobbit (Calm Ambient Mix by Syneptic)  Episode II.mp3", "amibent"));
     }
     
     @Test
     public void test_hasSimilarIgnoreCase_directory() {
-        assertTrue(hasSimilar(toSet(
+        assertTrue(similarity.hasSimilar(toSet(
                 "dir", 
                 "direct", 
                 "directory"), "dirct"));
@@ -274,7 +279,7 @@ public class SimilarityTest {
     
     @Test
     public void test_hasSimilarIgnoreCase_get_gte() {
-        assertTrue(hasSimilar(toSet(
+        assertTrue(similarity.hasSimilar(toSet(
                 "?", 
                 "find", 
                 "get"), "gte"));
@@ -282,7 +287,7 @@ public class SimilarityTest {
     
     @Test
     public void test_hasSimilarIgnoreCase_find() {
-        assertTrue(hasSimilar(toSet(
+        assertTrue(similarity.hasSimilar(toSet(
                 "?", 
                 "get", 
                 "find"), "fnd"));
@@ -290,7 +295,7 @@ public class SimilarityTest {
     
     @Test
     public void test_hasSimilarIgnoreCase_page() {
-        assertTrue(hasSimilar(toSet(
+        assertTrue(similarity.hasSimilar(toSet(
                 "page", 
                 "webpage", 
                 "webp", 
@@ -299,7 +304,7 @@ public class SimilarityTest {
     
     @Test
     public void test_hasSimilar_exit() {
-        assertFalse(hasSimilar(toSet(
+        assertFalse(similarity.hasSimilar(toSet(
                 "call", 
                 "exe", 
                 "exec"), "exit"));
@@ -307,14 +312,14 @@ public class SimilarityTest {
     
     @Test
     public void test_hasSimilar_loc() {
-        assertTrue(hasSimilar(toSet(
+        assertTrue(similarity.hasSimilar(toSet(
                 "loc", 
                 "location"), "loc"));
     }
     
     @Test
     public void test_hasSimilar_loc_false() {
-        assertFalse(hasSimilar(toSet(
+        assertFalse(similarity.hasSimilar(toSet(
                 "mem", 
                 "memory", 
                 "com", 
@@ -324,16 +329,16 @@ public class SimilarityTest {
     
     @Test
     public void isSimilarPathToPath_hiring_Cvs_hiring_cv() {
-        assertTrue(isSimilarPathToPath("Current/Hiring/CVs", "hirng/cv"));
+        assertTrue(similarity.isSimilarPathToPath("Current/Hiring/CVs", "hirng/cv"));
     }
     
     @Test
     public void isSimilar_hiring_Cvs_hiringcv() {
-        assertTrue(isSimilar("Current/Hiring/CVs", "hirngcv"));
+        assertTrue(similarity.isSimilar("Current/Hiring/CVs", "hirngcv"));
     }
     
     @Test
     public void isSimilar_hiring_Cvs_hiring_cv() {
-        assertTrue(isSimilar("Current/Hiring/CVs", "hirng/cv"));
+        assertTrue(similarity.isSimilar("Current/Hiring/CVs", "hirng/cv"));
     }
 }

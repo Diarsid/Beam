@@ -5,6 +5,8 @@
  */
 package diarsid.beam.core.base.control.io.base.interaction;
 
+import diarsid.beam.core.base.analyze.variantsweight.Variant;
+
 import static diarsid.beam.core.base.control.io.base.interaction.NotGivenAnswer.HELP_REQUEST_ANSWER_WITHOU_INDEX;
 import static diarsid.beam.core.base.control.io.base.interaction.NotGivenAnswer.REJECTED_ANSWER;
 import static diarsid.beam.core.base.control.io.base.interaction.NotGivenAnswer.UNSATISFIED_ANSWER;
@@ -32,6 +34,6 @@ public class Answers {
     }
     
     public static Answer answerOfVariant(Variant variant) {
-        return new GivenAnswer(variant);
+        return new GivenAnswer(variant.value(), variant.index());
     }
 }

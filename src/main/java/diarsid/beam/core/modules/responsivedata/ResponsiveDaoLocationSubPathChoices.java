@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.responsivedata;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
@@ -45,7 +45,7 @@ public class ResponsiveDaoLocationSubPathChoices
             Initiator initiator, 
             LocationSubPath subPath, 
             String pattern, 
-            WeightedVariants variants) {
+            Variants variants) {
         try {
             return super.dao().saveWithVariants(subPath, pattern, variants);
         } catch (DataExtractionException e) {
@@ -69,7 +69,7 @@ public class ResponsiveDaoLocationSubPathChoices
     public Optional<LocationSubPath> getChoiceFor(
             Initiator initiator, 
             String pattern, 
-            WeightedVariants variants) {
+            Variants variants) {
         try {
             return super.dao().getChoiceFor(pattern, variants);
         } catch (DataExtractionException e) {

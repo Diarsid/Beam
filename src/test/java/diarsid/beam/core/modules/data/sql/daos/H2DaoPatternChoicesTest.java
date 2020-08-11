@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import testing.embedded.base.h2.H2TestDataBase;
 import testing.embedded.base.h2.TestDataBase;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.io.base.actors.Initiator;
 import diarsid.beam.core.base.control.io.base.actors.InnerIoEngine;
 import diarsid.beam.core.base.control.io.commands.executor.InvocationCommand;
@@ -31,9 +31,9 @@ import diarsid.beam.core.modules.data.sql.database.H2DataBaseModel;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.weightVariants;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.weightVariants;
 import static diarsid.beam.core.base.control.io.base.actors.OuterIoEngineType.IN_MACHINE;
-import static diarsid.beam.core.base.control.io.base.interaction.Variants.stringsToVariants;
+import static diarsid.beam.core.base.control.io.base.interaction.VariantConversions.stringsToVariants;
 import static diarsid.beam.core.base.control.io.commands.CommandType.OPEN_LOCATION_TARGET;
 import static diarsid.beam.core.base.control.io.commands.Commands.createInvocationCommandFrom;
 import static diarsid.beam.core.base.data.DataBaseActuator.getActuatorFor;
@@ -54,7 +54,7 @@ public class H2DaoPatternChoicesTest {
     static TestDataBase dataBase;
     static InnerIoEngine ioEngine;
     
-    WeightedVariants variants;
+    Variants variants;
     
     public H2DaoPatternChoicesTest() {
     }
@@ -120,7 +120,7 @@ public class H2DaoPatternChoicesTest {
     public void testIsTypeChoiceDoneFor() {
         String pattern = "fb";
         List<String> variantsStrings = arrayListOf("c:/books/library/common/author/book.fb2", "facebook");
-        WeightedVariants fbVariants = weightVariants(pattern, stringsToVariants(variantsStrings));
+        Variants fbVariants = weightVariants(pattern, stringsToVariants(variantsStrings));
         
         Optional<String> choice = dao.findChoiceFor("Fb", fbVariants);
         assertEquals(true, choice.isPresent());
@@ -134,7 +134,7 @@ public class H2DaoPatternChoicesTest {
                 "C:/Projects/NetBeans", 
                 "C:/Projects/NetBeans/Beam", 
                 "C:/Projects/NetBeans/Beam.server");
-        WeightedVariants negativeVariants = weightVariants(pattern, stringsToVariants(variantsStrings));
+        Variants negativeVariants = weightVariants(pattern, stringsToVariants(variantsStrings));
         
         boolean isDone;
         

@@ -7,7 +7,7 @@ package diarsid.beam.core.modules.data;
 
 import java.util.Optional;
 
-import diarsid.beam.core.base.analyze.variantsweight.WeightedVariants;
+import diarsid.beam.core.base.analyze.variantsweight.Variants;
 import diarsid.beam.core.base.control.flow.VoidFlow;
 import diarsid.beam.core.base.data.DataExtractionException;
 import diarsid.beam.core.domain.entities.LocationSubPath;
@@ -25,7 +25,7 @@ public interface DaoLocationSubPathChoices extends Dao {
     boolean saveWithVariants(
             LocationSubPath subPath, 
             String pattern, 
-            WeightedVariants variants) throws DataExtractionException;
+            Variants variants) throws DataExtractionException;
     
     boolean isChoiceExistsForSingle(
             LocationSubPath subPath, 
@@ -33,7 +33,7 @@ public interface DaoLocationSubPathChoices extends Dao {
     
     Optional<LocationSubPath> getChoiceFor(
             String pattern, 
-            WeightedVariants variants) throws DataExtractionException;
+            Variants variants) throws DataExtractionException;
     
     VoidFlow remove(
             LocationSubPath subPath) throws DataExtractionException;

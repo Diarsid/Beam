@@ -9,8 +9,8 @@ import static java.lang.Integer.max;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
-import static diarsid.beam.core.base.analyze.variantsweight.Analyze.logAnalyze;
 import static diarsid.beam.core.base.analyze.variantsweight.AnalyzeLogType.POSITIONS_SEARCH;
+import static diarsid.beam.core.base.analyze.variantsweight.WeightAnalyzeReal.logAnalyze;
 import static diarsid.beam.core.base.util.BooleanUtils.areDifferent;
 import static diarsid.beam.core.base.util.MathUtil.absDiff;
 import static diarsid.beam.core.base.util.MathUtil.percentAsInt;
@@ -25,7 +25,7 @@ class PositionCandidate {
     private static final boolean CURRENT_IS_BETTER = false;
     private static final boolean CURRENT_IS_WORSE = true;
     
-    private final AnalyzeData data;
+    private final AnalyzeUnit data;
     private int position;
     private int orderDiffInPattern;
     private int orderDiffInVariant;
@@ -36,7 +36,7 @@ class PositionCandidate {
     private int mutationsCommitted;
     private int mutationsAttempts;
 
-    public PositionCandidate(AnalyzeData data) {
+    public PositionCandidate(AnalyzeUnit data) {
         this.data = data;
         this.position = UNINITIALIZED;
         this.orderDiffInPattern = UNINITIALIZED;
@@ -60,7 +60,7 @@ class PositionCandidate {
             int charsRemained) {
         this.mutationsAttempts++;
         
-        int variantPlacement = percentAsInt(position, this.data.variantText.length()) / 10;
+        int variantPlacement = percentAsInt(position, this.data.variant.length()) / 10;
         int patternPlacement = percentAsInt(positionInPatternIndex, this.data.pattern.length()) / 10;
         int otherPlacementDiff = absDiff(variantPlacement, patternPlacement);
         
@@ -75,10 +75,16 @@ class PositionCandidate {
             logAnalyze(POSITIONS_SEARCH, "             chars remained         %s", charsRemained);
         }
         
-        if ( position == 26 ) {
-            int a = 5;
-        }
-        if ( this.isCurrentStateWorseThan(orderDiffInVariant, orderDiffInPattern, otherPlacementDiff, isNearSeparator, distanceToNearestFilledPosition, clusteredAround) ) {
+        /* DEBUG */ if ( position == 12 ) {
+        /* DEBUG */     int a = 5;
+        /* DEBUG */ }
+        if ( this.isCurrentStateWorseThan(
+                orderDiffInVariant, 
+                orderDiffInPattern, 
+                otherPlacementDiff, 
+                isNearSeparator, 
+                distanceToNearestFilledPosition, 
+                clusteredAround) ) {
             logAnalyze(POSITIONS_SEARCH, "          [info] accept %s", position);
             this.position = position;
             this.orderDiffInPattern = orderDiffInPattern;
@@ -170,21 +176,15 @@ class PositionCandidate {
             int otherOrderDiffAbsolute,
             int otherDistanceToNearestFilledPosition) {
         int thisSum =
-                this.orderDiffInPattern +
+                zeroIfNotInit(this.orderDiffInPattern) +
                 zeroIfNotInit(this.orderDiffInVariant) +
                 max(this.placementDiff, this.distanceToNearestFilledPosition) -
                 this.clusteredAround;
         int otherSum =
-                otherOrderDiffInPattern +
+                zeroIfNotInit(otherOrderDiffInPattern) +
                 zeroIfNotInit(otherOrderDiffInVariant) +
                 max(otherOrderDiffAbsolute, otherDistanceToNearestFilledPosition) - 
                 otherClusteredAround;
-        
-//        if ( this.distanceToNearestFilledPosition > otherDistanceToNearestFilledPosition ) {
-//            thisSum = thisSum + this.distanceToNearestFilledPosition;
-//        } else {
-//            otherSum = otherSum + otherDistanceToNearestFilledPosition;
-//        }
         
         if ( thisSum > otherSum ) {
             return CURRENT_IS_WORSE;
@@ -199,10 +199,10 @@ class PositionCandidate {
             int otherOrderDiffInVariant, 
             int otherPlacementDiff,
             int otherDistanceToNearestFilledPosition) {
-        int thisSum = this.orderDiffInPattern + 
+        int thisSum = zeroIfNotInit(this.orderDiffInPattern) + 
                       this.distanceToNearestFilledPosition - 
                       this.clusteredAround;
-        int otherSum = otherOrderDiffInPattern + 
+        int otherSum = zeroIfNotInit(otherOrderDiffInPattern) + 
                        otherDistanceToNearestFilledPosition - 
                        otherClusteredAround;
         
@@ -211,12 +211,6 @@ class PositionCandidate {
         } else {
             thisSum = thisSum + zeroIfNotInit(this.orderDiffInVariant) + this.placementDiff;
         }
-        
-//        if ( this.distanceToNearestFilledPosition > otherDistanceToNearestFilledPosition ) {
-//            thisSum = thisSum + this.distanceToNearestFilledPosition;
-//        } else {
-//            otherSum = otherSum + otherDistanceToNearestFilledPosition;
-//        }
         
         if ( thisSum > otherSum ) {
             return CURRENT_IS_WORSE;
@@ -230,8 +224,8 @@ class PositionCandidate {
             int otherClusteredAround, 
             int otherOrderDiffInVariant, 
             int otherPlacementDiff) {
-        int thisSum = this.orderDiffInPattern - this.clusteredAround;
-        int otherSum = otherOrderDiffInPattern - otherClusteredAround;
+        int thisSum = zeroIfNotInit(this.orderDiffInPattern) - this.clusteredAround;
+        int otherSum = zeroIfNotInit(otherOrderDiffInPattern) - otherClusteredAround;
         
         if ( this.isNearSeparator ) {
             otherSum = otherSum + zeroIfNotInit(otherOrderDiffInVariant) + otherPlacementDiff;
@@ -252,12 +246,12 @@ class PositionCandidate {
             int otherOrderDiffAbsolute, 
             int otherClusteredAround) {
         int thisSum =
-                this.orderDiffInPattern +
+                zeroIfNotInit(this.orderDiffInPattern) +
                 zeroIfNotInit(this.orderDiffInVariant) +
                 this.placementDiff -
                 this.clusteredAround;
         int otherSum =
-                otherOrderDiffInPattern +
+                zeroIfNotInit(otherOrderDiffInPattern) +
                 zeroIfNotInit(otherOrderDiffInVariant) +
                 otherOrderDiffAbsolute - 
                 otherClusteredAround;
